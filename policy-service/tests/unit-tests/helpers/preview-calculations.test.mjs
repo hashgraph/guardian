@@ -62,7 +62,8 @@ describe('@unit preview calculations', () => {
                 [{ name: 'total', value: 'c' }],
                 { b: 'a * 2', c: 'b + 1' },
                 { a: 2 },
-                { a: 2, b: 4, c: 5 }
+                { a: 2, b: 4, c: 5 },
+                { total: 5 }
             );
             assert.deepEqual(calculation, {
                 source: 'calc',
@@ -83,14 +84,29 @@ describe('@unit preview calculations', () => {
                 [],
                 { a: 'a + 1' },
                 { a: 2 },
-                { a: 3 }
+                { a: 3 },
+                {}
             );
             assert.equal(calculation.inputs[0].value, 2);
             assert.equal(calculation.values[0].value, 3);
         });
 
+        it('shows the output value from the saved document, not from the scope', () => {
+            const calculation = buildCalculatePreviewCalculation(
+                'calc',
+                [{ name: 'amount', value: 'a' }],
+                [{ name: 'total', value: 'c' }],
+                { c: 'a * 0' },
+                { a: 2 },
+                { a: 2, c: 0 },
+                {}
+            );
+            assert.equal(calculation.values[0].value, 0);
+            assert.equal(calculation.outputs[0].value, null);
+        });
+
         it('accepts a block without input or output fields', () => {
-            const calculation = buildCalculatePreviewCalculation('calc', undefined, undefined, {}, {}, {});
+            const calculation = buildCalculatePreviewCalculation('calc', undefined, undefined, {}, {}, {}, {});
             assert.deepEqual(calculation.inputs, []);
             assert.deepEqual(calculation.outputs, []);
         });

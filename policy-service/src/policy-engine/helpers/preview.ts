@@ -1,6 +1,7 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
-import { GenerateUUIDv4, LocationType, SchemaField } from '@guardian/interfaces';
+import { GenerateUUIDv4, ISchema, LocationType, SchemaField, SchemaHelper } from '@guardian/interfaces';
 import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { VcHelper } from '@guardian/hedera/vc-helper';
 import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/policy-event-type.js';
 import { AnyBlockType, IPolicyDocument, IPolicyInterfaceBlock } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
@@ -8,6 +9,7 @@ import { IPreviewCalculation, IPreviewRead, IPreviewSource, RecordActionStep } f
 import { PolicyUtils } from './utils.js';
 import { getDocumentValueByPath, MathEngine, MathItemType } from './math-model/index.js';
 import { buildTableHelper } from './table-field-core.js';
+import { PreviewReadTracker } from './workers/preview-read-tracker.js';
 
 export const PREVIEW_BLOCK_TYPES: ReadonlySet<string> = new Set([
     'mathBlock',
@@ -78,6 +80,54 @@ export function createPreviewDocument(
     return item;
 }
 
+export interface IPreviewMetadata {
+    owner: PolicyUser;
+    relayerAccount: string;
+    id: string;
+    reference: string;
+    accounts: any;
+    tokens: any;
+    relationships: any[];
+}
+
+export function createPreviewSubject(
+    ref: AnyBlockType,
+    schema: ISchema,
+    json: any,
+    metadata: IPreviewMetadata
+): any {
+    const subject: any = {
+        ...SchemaHelper.getContext(schema),
+        ...json
+    };
+    subject.policyId = ref.policyId;
+    subject.id = metadata.id;
+    PolicyUtils.setGuardianVersion(subject, schema);
+    if (metadata.reference) {
+        subject.ref = metadata.reference;
+    }
+    if (ref.dryRun) {
+        new VcHelper().addDryRunContext(subject);
+    }
+    return subject;
+}
+
+export function createPreviewResult(
+    ref: AnyBlockType,
+    subject: any,
+    schema: string,
+    issuer: string | null,
+    recordActionId: string | null,
+    metadata: IPreviewMetadata
+): IPolicyDocument {
+    const item = createPreviewDocument(ref, metadata.owner, subject, schema, issuer, recordActionId);
+    item.relationships = metadata.relationships?.length ? metadata.relationships : null;
+    item.accounts = metadata.accounts && Object.keys(metadata.accounts).length ? metadata.accounts : null;
+    item.tokens = metadata.tokens && Object.keys(metadata.tokens).length ? metadata.tokens : null;
+    item.relayerAccount = metadata.relayerAccount;
+    return item;
+}
+
 export function buildMathPreviewCalculation(
     source: string | null,
     expression: unknown,
@@ -131,7 +181,8 @@ export function buildCalculatePreviewCalculation(
     outputFields: { name: string; value: string }[] | undefined,
     formulas: Record<string, unknown>,
     inputScope: Record<string, unknown>,
-    scope: Record<string, unknown>
+    scope: Record<string, unknown>,
+    result: Record<string, unknown>
 ): IPreviewCalculation {
     return {
         source,
@@ -150,7 +201,7 @@ export function buildCalculatePreviewCalculation(
         outputs: (outputFields || []).map((field) => ({
             name: field.value,
             path: field.name,
-            value: scope[field.value] ?? null
+            value: result[field.name] ?? null
         }))
     };
 }
@@ -275,18 +326,26 @@ export function calculatePreviewAutoFields(
         }
         const path = `${prefix}${field.name}`;
         const reads = new Set<string>(dependencies[path] || []);
+        const tracker = new PreviewReadTracker();
         const scope = new Proxy(document, {
             has(target, key) {
                 if (typeof key === 'string' && names.has(key)) {
-                    reads.add(`${prefix}${key}`);
                     return true;
                 }
                 return Reflect.has(target, key);
+            },
+            get(target, key, receiver) {
+                const value = Reflect.get(target, key, receiver);
+                if (typeof key !== 'string' || !names.has(key)) {
+                    return value;
+                }
+                reads.add(`${prefix}${key}`);
+                return tracker.track(value, null, `${prefix}${key}`);
             }
         });
         try {
             const func = Function('table', `with (this) { return ${field.expression} }`);
-            const result = func.apply(scope, [buildTableHelper()]);
+            const result = tracker.unwrap(func.apply(scope, [buildTableHelper()]));
             if (result === undefined) {
                 Reflect.deleteProperty(document, field.name);
             } else {
@@ -295,6 +354,9 @@ export function calculatePreviewAutoFields(
         } catch (error) {
             Reflect.deleteProperty(document, field.name);
             errors.push(`Invalid expression: ${path}`);
+        }
+        for (const read of tracker.take()) {
+            reads.add(read.path);
         }
         reads.delete(path);
         dependencies[path] = [...reads];
@@ -311,6 +373,141 @@ export function getMathPreviewReads(expression: unknown, currentSchema: string |
         .getItems()
         .filter((link) => !!link.path)
         .map((link) => ({ schema: link.schema || currentSchema, path: link.path }));
+}
+
+export function getMathPreviewOutputPaths(expression: unknown): string[] {
+    const engine = MathEngine.from(expression);
+    if (!engine) {
+        return [];
+    }
+    engine.validate();
+    return engine.outputs
+        .getItems()
+        .filter((link) => !!link.path)
+        .map((link) => normalizePreviewPath(link.path));
+}
+
+export function isPreviewOutputRead(path: string, outputPaths: string[]): boolean {
+    const normalized = normalizePreviewPath(path);
+    return outputPaths.some((output) => normalized === output
+        || normalized.startsWith(`${output}.`)
+        || output.startsWith(`${normalized}.`));
+}
+
+const previewComputed = new WeakMap<object, string[]>();
+
+export function getPreviewComputed(document: unknown): string[] {
+    return document && typeof document === 'object' ? previewComputed.get(document) ?? [] : [];
+}
+
+export function setPreviewComputed<T>(document: T, paths: string[]): T {
+    if (document && typeof document === 'object') {
+        previewComputed.set(document, [...new Set(paths.filter((path) => !!path))]);
+    }
+    return document;
+}
+
+const previewSchemas = new WeakMap<object, string>();
+
+export function getPreviewDocumentSchema(document: unknown): string | null {
+    if (!document || typeof document !== 'object') {
+        return null;
+    }
+    const schema = Reflect.get(document, 'schema');
+    return typeof schema === 'string' ? schema : previewSchemas.get(document) ?? null;
+}
+
+export function setPreviewDocumentSchema<T>(document: T, schema: string | null | undefined): T {
+    if (document && typeof document === 'object' && schema) {
+        previewSchemas.set(document, schema);
+    }
+    return document;
+}
+
+function isPreviewIndex(part: string): boolean {
+    return /^\d+$/.test(part);
+}
+
+export function isPreviewPathCovered(path: string, computed: string): boolean {
+    const read = path.split('.').filter((part) => part !== '');
+    const written = computed.split('.').filter((part) => part !== '');
+    let readIndex = 0;
+    let writtenIndex = 0;
+    while (readIndex < read.length && writtenIndex < written.length) {
+        if (read[readIndex] === written[writtenIndex]) {
+            readIndex++;
+            writtenIndex++;
+        } else if (isPreviewIndex(read[readIndex]) && !isPreviewIndex(written[writtenIndex])) {
+            readIndex++;
+        } else {
+            return false;
+        }
+    }
+    return true;
+}
+
+function expandPreviewPath(node: unknown, parts: string[], prefix: string[]): string[] {
+    if (!parts.length) {
+        return [prefix.join('.')];
+    }
+    if (Array.isArray(node)) {
+        if (isPreviewIndex(parts[0])) {
+            return expandPreviewPath(node[Number(parts[0])], parts.slice(1), [...prefix, parts[0]]);
+        }
+        return node.flatMap((item, index) => expandPreviewPath(item, parts, [...prefix, String(index)]));
+    }
+    if (node && typeof node === 'object') {
+        return expandPreviewPath(Reflect.get(node, parts[0]), parts.slice(1), [...prefix, parts[0]]);
+    }
+    return [[...prefix, ...parts].join('.')];
+}
+
+export function isPreviewComputedRead(documents: unknown, schema: string | null, path: string): boolean {
+    const items = (Array.isArray(documents) ? documents : [documents])
+        .filter((document) => getPreviewDocumentSchema(document) === schema);
+    return items.length > 0 && items.every((document) => {
+        const computed = getPreviewComputed(document);
+        const paths = expandPreviewPath(getPreviewSubject(document), path.split('.').filter((part) => part !== ''), []);
+        return (paths.length ? paths : [path]).every((item) => computed.some((written) => isPreviewPathCovered(item, written)));
+    });
+}
+
+export function getPreviewSubject(document: unknown): unknown {
+    const vc = document && typeof document === 'object' ? Reflect.get(document, 'document') : undefined;
+    const subject = vc && typeof vc === 'object' ? Reflect.get(vc, 'credentialSubject') : undefined;
+    return Array.isArray(subject) ? subject[0] : subject;
+}
+
+function isPreviewPathRead(path: string, reads: Set<string>): boolean {
+    const parts = normalizePreviewPath(path).split('.');
+    return parts.some((_, index) => reads.has(parts.slice(0, index + 1).join('.')));
+}
+
+export function getPreviewChangedPaths(
+    before: unknown,
+    after: unknown,
+    reads: Set<string> | null = null,
+    prefix: string = ''
+): string[] {
+    if (!after || typeof after !== 'object') {
+        return [];
+    }
+    const isList = Array.isArray(after);
+    const keys = Array.isArray(after) ? after.map((_, index) => String(index)) : Object.keys(after);
+    const paths: string[] = [];
+    for (const key of keys) {
+        const path = `${prefix}${key}`;
+        const next = Reflect.get(after, key);
+        const previous = before && typeof before === 'object' && Array.isArray(before) === isList
+            ? Reflect.get(before, key)
+            : undefined;
+        if (next && typeof next === 'object' && previous && typeof previous === 'object' && Array.isArray(next) === Array.isArray(previous)) {
+            paths.push(...getPreviewChangedPaths(previous, next, reads, `${path}.`));
+        } else if (JSON.stringify(next) !== JSON.stringify(previous) || (reads && !isPreviewPathRead(path, reads))) {
+            paths.push(path);
+        }
+    }
+    return paths;
 }
 
 export function findScriptFieldReads(script: string, source: IPreviewSource | null): IPreviewRead[] {
@@ -356,11 +553,14 @@ export function resolvePreviewFields(
         }
         seen.add(path);
         for (const dependency of fieldDependencies) {
-            visit(dependency, seen);
+            const dependencyField = toField(dependency);
+            if (dependencyField) {
+                visit(dependencyField, seen);
+            }
         }
     };
     for (const read of reads) {
-        if (read.schema !== source.schema) {
+        if (read.schema && read.schema !== source.schema) {
             continue;
         }
         const field = toField(read.path);

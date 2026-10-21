@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { SwitchBlock } from '../../../dist/policy-engine/blocks/switch-block.js';
 import { PolicyComponentsUtils } from '../../../dist/policy-engine/policy-components-utils.js';
 import { PolicyUtils } from '../../../dist/policy-engine/helpers/utils.js';
-import { resolvePreviewFields } from '../../../dist/policy-engine/helpers/preview.js';
+import { resolvePreviewFields, setPreviewComputed } from '../../../dist/policy-engine/helpers/preview.js';
 import { RecordActionStep } from '../../../dist/policy-engine/record-action-step.js';
 
 const rawRunAction = Object.getPrototypeOf(SwitchBlock.prototype).runAction;
@@ -50,9 +50,10 @@ describe('@unit switchBlock preview field reads', () => {
         PolicyComponentsUtils.ExternalEventFn = origExternal;
     });
 
-    const run = async (step, amount) => {
+    const run = async (step, amount, computed = []) => {
         const block = Object.create(SwitchBlock.prototype);
-        await rawRunAction.call(block, { user: { id: 'u', userId: 'uid' }, data: { data: formDocument(amount) }, actionStatus: step });
+        const document = setPreviewComputed(formDocument(amount), computed);
+        await rawRunAction.call(block, { user: { id: 'u', userId: 'uid' }, data: { data: document }, actionStatus: step });
     };
 
     const previewStep = (document) => {
@@ -78,6 +79,52 @@ describe('@unit switchBlock preview field reads', () => {
         assert.deepEqual(resolvePreviewFields(step.getPreviewSource(), step.getPreviewReads()), {
             fields: ['amount'],
             missingFields: []
+        });
+    });
+
+    it('does not report a field an earlier block computed in the document', async () => {
+        const step = previewStep({});
+        await run(step, 20, ['amount']);
+        assert.ok(fired.includes('high'));
+        assert.deepEqual(step.getPreviewReads(), []);
+    });
+
+    it('reports a condition field when only the first of several documents computed it', async () => {
+        const step = previewStep({});
+        const block = Object.create(SwitchBlock.prototype);
+        const first = setPreviewComputed(formDocument(20), ['amount']);
+        const second = formDocument(undefined);
+        await rawRunAction.call(block, { user: { id: 'u', userId: 'uid' }, data: { data: [first, second] }, actionStatus: step });
+        assert.deepEqual(resolvePreviewFields(step.getPreviewSource(), step.getPreviewReads()), {
+            fields: ['amount'],
+            missingFields: ['amount']
+        });
+    });
+
+    const unknownDocument = () => ({
+        owner: 'did:user',
+        document: PolicyUtils.createVcFromSubject({}).toJsonTree()
+    });
+
+    it('reports a condition field of a document whose schema is unknown', async () => {
+        const step = previewStep({});
+        const block = Object.create(SwitchBlock.prototype);
+        await rawRunAction.call(block, { user: { id: 'u', userId: 'uid' }, data: { data: unknownDocument() }, actionStatus: step });
+        assert.ok(fired.includes('low'));
+        assert.deepEqual(resolvePreviewFields(step.getPreviewSource(), step.getPreviewReads()), {
+            fields: ['amount'],
+            missingFields: ['amount']
+        });
+    });
+
+    it('reports a condition field computed only in the documents whose schema is known', async () => {
+        const step = previewStep({});
+        const block = Object.create(SwitchBlock.prototype);
+        const first = setPreviewComputed(formDocument(20), ['amount']);
+        await rawRunAction.call(block, { user: { id: 'u', userId: 'uid' }, data: { data: [first, unknownDocument()] }, actionStatus: step });
+        assert.deepEqual(resolvePreviewFields(step.getPreviewSource(), step.getPreviewReads()), {
+            fields: ['amount'],
+            missingFields: ['amount']
         });
     });
 

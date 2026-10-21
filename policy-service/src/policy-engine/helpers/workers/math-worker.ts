@@ -52,28 +52,42 @@ function execute(): void {
     //Code
     const code = Code.from(expression);
     if (code) {
+        const tracked = tracker ? tracker.track(document, null) : document;
         code.setContext({
             ...context,
-            document: tracker ? tracker.track(document, null) : document,
+            document: tracked,
             getField: tracker
-                ? (path: string) => {
-                    tracker.add(null, path);
-                    return context.getField(path);
-                }
+                ? (path: string) => tracker.trackField(context.getField(path), path)
                 : context.getField,
-            result,
+            result: copy ? tracked : result,
             user,
             table: buildTableHelper(tablesPack)
         });
-        result = code.run();
+        try {
+            result = code.run();
+        } catch (error) {
+            if (!tracker) {
+                throw error;
+            }
+            parentPort.postMessage({
+                type: 'error',
+                error: error instanceof Error ? error.message : String(error),
+                reads: tracker.take()
+            });
+            return;
+        }
     }
 
+    const plain = tracker ? tracker.unwrap(result) : result;
+    const reads = tracker ? tracker.take() : undefined;
+    const writes = tracker ? tracker.takeWrites() : undefined;
     parentPort.postMessage({
         type: 'done',
-        result: tracker ? tracker.unwrap(result) : result,
+        result: plain,
         warnings: groupContext.getWarnings(),
         scope: withScope ? context.scope : undefined,
-        reads: tracker ? tracker.take() : undefined
+        reads,
+        writes: copy && plain === document ? writes : undefined
     });
 }
 

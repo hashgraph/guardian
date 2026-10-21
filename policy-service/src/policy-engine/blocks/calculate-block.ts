@@ -14,7 +14,16 @@ import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { RecordActionStep } from '../record-action-step.js';
-import { buildCalculatePreviewCalculation, createPreviewDocument, PreviewScope } from '../helpers/preview.js';
+import {
+    buildCalculatePreviewCalculation,
+    createPreviewResult,
+    createPreviewSubject,
+    getPreviewDocumentSchema,
+    isPreviewComputedRead,
+    PreviewScope,
+    setPreviewComputed,
+    setPreviewDocumentSchema
+} from '../helpers/preview.js';
 
 interface IMetadata {
     owner: PolicyUser;
@@ -120,10 +129,13 @@ export class CalculateContainerBlock {
         if (actionStatus) {
             const formulas: Record<string, unknown> = {};
             for (const addon of addons) {
-                addon.getVariables(formulas);
+                const addonOptions = await addon.getOptions(docOwner);
+                for (const equation of addonOptions.equations || []) {
+                    formulas[equation.variable] = equation.formula;
+                }
             }
             actionStatus.addPreviewCalculation(
-                buildCalculatePreviewCalculation(ref.tag, options.inputFields, options.outputFields, formulas, inputScope, scope)
+                buildCalculatePreviewCalculation(ref.tag, options.inputFields, options.outputFields, formulas, inputScope, scope, newJson)
             );
         }
         return newJson;
@@ -157,7 +169,10 @@ export class CalculateContainerBlock {
             const readDocuments = Array.isArray(contextDocuments) ? contextDocuments : [contextDocuments];
             for (const readDocument of readDocuments) {
                 for (const field of options.inputFields || []) {
-                    actionStatus.addPreviewRead(readDocument.schema ?? null, field.name);
+                    const readSchema = getPreviewDocumentSchema(readDocument);
+                    if (!isPreviewComputedRead(readDocument, readSchema, field.name)) {
+                        actionStatus.addPreviewRead(readSchema, field.name);
+                    }
                 }
             }
         }
@@ -179,11 +194,20 @@ export class CalculateContainerBlock {
 
         const newJson = await this.calculate(json, ref, contextDocuments, userId, user);
         if (options.unsigned) {
-            return await this.createUnsignedDocument(newJson, ref, actionStatus?.id);
+            const item = await this.createUnsignedDocument(newJson, ref, actionStatus?.id);
+            if (actionStatus?.preview) {
+                setPreviewDocumentSchema(item, options.outputSchema);
+                setPreviewComputed(item, (options.outputFields || []).map((field) => field.name));
+            }
+            return item;
         } else if (actionStatus?.preview) {
-            const firstDocument = Array.isArray(contextDocuments) ? contextDocuments[0] : contextDocuments;
-            const owner = await PolicyUtils.getDocumentOwner(ref, firstDocument, userId);
-            return createPreviewDocument(ref, owner, newJson, options.outputSchema, ref.policyOwner, actionStatus.id);
+            const metadata = await this.aggregateMetadata(contextDocuments, ref, userId, user);
+            const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema);
+            const subject = createPreviewSubject(ref, outputSchema, newJson, metadata);
+            return setPreviewComputed(
+                createPreviewResult(ref, subject, outputSchema.iri, ref.policyOwner, actionStatus.id, metadata),
+                (options.outputFields || []).map((field) => field.name)
+            );
         } else {
             const metadata = await this.aggregateMetadata(contextDocuments, ref, userId, user);
             return await this.createDocument(newJson, metadata, ref, userId, actionStatus?.id, user);

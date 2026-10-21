@@ -13,6 +13,9 @@ const addon = {
     getVariables(variables) {
         variables.b = 'a * 2';
         return variables;
+    },
+    async getOptions() {
+        return { equations: [{ variable: 'b', formula: 'a * 2' }] };
     }
 };
 
@@ -55,9 +58,51 @@ describe('@unit calculateContainerBlock preview calculation', () => {
         }]);
     });
 
+    it('shows the equations from the options the user ran with', async () => {
+        const users = [];
+        const edited = {
+            async run(scope) {
+                scope.c = scope.a * 3;
+                return scope;
+            },
+            getVariables(variables) {
+                variables.b = 'a * 2';
+                return variables;
+            },
+            async getOptions(user) {
+                users.push(user?.did);
+                return { equations: [{ variable: 'c', formula: 'a * 3' }] };
+            }
+        };
+        const ref = {
+            ...refWith(),
+            getAddons: () => [edited],
+            getOptions: async () => ({
+                inputFields: [{ name: 'amount', value: 'a' }],
+                outputFields: [{ name: 'total', value: 'c' }]
+            })
+        };
+        const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
+        const result = await PreviewScope.run(step, () => block().calculate({ amount: 3 }, ref, {}, 'uid', makeUser()));
+        assert.deepEqual(result, { total: 9 });
+        const [calculation] = step.getPreviewCalculations();
+        assert.deepEqual(calculation.values, [{ name: 'c', description: '', formula: 'a * 3', value: 9 }]);
+        assert.deepEqual(calculation.outputs, [{ name: 'c', path: 'total', value: 9 }]);
+        assert.deepEqual(users, ['did:owner']);
+    });
+
+    it('shows an output the document does not keep as null', async () => {
+        const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
+        const result = await PreviewScope.run(step, () => block().calculate({ amount: 0 }, refWith(), {}, 'uid', makeUser()));
+        assert.deepEqual(result, {});
+        const [calculation] = step.getPreviewCalculations();
+        assert.deepEqual(calculation.values, [{ name: 'b', description: '', formula: 'a * 2', value: 0 }]);
+        assert.deepEqual(calculation.outputs, [{ name: 'b', path: 'total', value: null }]);
+    });
+
     it('records nothing outside a preview', async () => {
         let asked = 0;
-        const counting = { ...addon, getVariables(variables) { asked++; return variables; } };
+        const counting = { ...addon, async getOptions() { asked++; return {}; } };
         const ref = { ...refWith(), getAddons: () => [counting] };
         const result = await block().calculate({ amount: 3 }, ref, {}, 'uid', makeUser());
         assert.deepEqual(result, { total: 6 });

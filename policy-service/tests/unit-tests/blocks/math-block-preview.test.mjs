@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { makeBlock, makeUser, restoreHarness } from './_block-exec-harness.mjs';
 import { MathBlock } from '../../../dist/policy-engine/blocks/math-block.js';
 import { PolicyUtils } from '../../../dist/policy-engine/helpers/utils.js';
+import { getPreviewComputed, getPreviewDocumentSchema, setPreviewComputed } from '../../../dist/policy-engine/helpers/preview.js';
 
 const firstSubject = (item) => Array.isArray(item.document.credentialSubject)
     ? item.document.credentialSubject[0]
@@ -13,22 +14,35 @@ describe('@unit mathBlock preview', () => {
     beforeEach(() => {
         orig = {
             findRelationships: PolicyUtils.findRelationships,
-            getDocumentOwner: PolicyUtils.getDocumentOwner
+            getDocumentOwner: PolicyUtils.getDocumentOwner,
+            getDocumentRelayerAccount: PolicyUtils.getDocumentRelayerAccount,
+            loadSchemaByID: PolicyUtils.loadSchemaByID
         };
         PolicyUtils.findRelationships = async () => [];
         PolicyUtils.getDocumentOwner = async () => ({ did: 'did:owner', group: null });
+        PolicyUtils.getDocumentRelayerAccount = async () => '0.0.42';
+        PolicyUtils.loadSchemaByID = async (ref, iri) => ({
+            iri,
+            codeVersion: '1.0.0',
+            contextURL: 'schema:ctx',
+            document: JSON.stringify({ $id: iri, type: 'object', properties: { total: { type: 'number' } } })
+        });
     });
 
     afterEach(() => {
         PolicyUtils.findRelationships = orig.findRelationships;
         PolicyUtils.getDocumentOwner = orig.getDocumentOwner;
+        PolicyUtils.getDocumentRelayerAccount = orig.getDocumentRelayerAccount;
+        PolicyUtils.loadSchemaByID = orig.loadSchemaByID;
     });
 
     after(() => restoreHarness());
 
     const input = () => ({
         schema: '#in',
-        document: PolicyUtils.createVcFromSubject({ amount: 2 }).toJsonTree()
+        messageId: 'msg-1',
+        accounts: { default: '0.0.7' },
+        document: PolicyUtils.createVcFromSubject({ amount: 2, id: 'source-id', ref: 'parent-id' }).toJsonTree()
     });
 
     const refWith = (options) => ({
@@ -67,13 +81,53 @@ describe('@unit mathBlock preview', () => {
         assert.deepEqual(firstSubject(item).results, { type: 'table', rows: [{ year: 2020 }] });
     });
 
+    it('keeps the reference, id, policy and links of the input document when it writes another schema', async () => {
+        const { block } = setup();
+        const item = await block.process(input(), refWith({ outputSchema: '#out' }), 'uid', 'step-1', makeUser(), [], true);
+        const subject = firstSubject(item);
+        assert.equal(subject.ref, 'parent-id');
+        assert.equal(subject.id, 'urn:uuid:source-id');
+        assert.equal(subject.policyId, 'p-1');
+        assert.equal(subject.total, 4);
+        assert.deepEqual(item.relationships, ['msg-1']);
+        assert.deepEqual(item.accounts, { default: '0.0.7' });
+        assert.equal(item.relayerAccount, '0.0.42');
+    });
+
+    it('marks its outputs as computed, adding those of the input document when it writes the same schema', async () => {
+        const options = {
+            expression: {
+                variables: [],
+                formulas: [],
+                outputs: [{ type: 'link', name: 'b', description: '', field: 'total', schema: '#in' }]
+            }
+        };
+        const source = setPreviewComputed(input(), ['temp']);
+        const same = await setup().block.process(source, refWith({ ...options, inputSchema: '#in', outputSchema: '#in' }), 'uid', 'step-1', makeUser(), [], true);
+        assert.deepEqual(getPreviewComputed(same), ['temp', 'total', 'results']);
+        const other = await setup().block.process(source, refWith({ ...options, inputSchema: '#in', outputSchema: '#out' }), 'uid', 'step-1', makeUser(), [], true);
+        assert.deepEqual(getPreviewComputed(other), ['total', 'results']);
+    });
+
     it('builds the same unsigned document as a normal run when the block is set to unsigned', async () => {
         const { block, stored } = setup();
         const item = await block.process(input(), refWith({ outputSchema: '#out', unsigned: true }), 'uid', 'step-1', makeUser(), [], true);
         assert.equal(stored.length, 0);
         assert.equal(item.owner, undefined);
         assert.equal(item.document.issuer, undefined);
+        assert.equal(item.schema, undefined);
         assert.equal(firstSubject(item).total, 4);
+        assert.equal(getPreviewDocumentSchema(item), '#out');
+        assert.deepEqual(getPreviewComputed(item), ['total', 'results']);
+    });
+
+    it('gives an unsigned document of the same schema the schema and computed fields of its input', async () => {
+        const { block } = setup();
+        const source = setPreviewComputed(input(), ['temp']);
+        const item = await block.process(source, refWith({ inputSchema: '#in', outputSchema: '#in', unsigned: true }), 'uid', 'step-1', makeUser(), [], true);
+        assert.equal(item.schema, undefined);
+        assert.equal(getPreviewDocumentSchema(item), '#in');
+        assert.deepEqual(getPreviewComputed(item), ['temp', 'total', 'results']);
     });
 
     it('still stores result tables and signs outside a preview', async () => {

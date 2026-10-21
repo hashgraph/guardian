@@ -3,7 +3,7 @@ import { makeBlock, makeUser, restoreHarness } from './_block-exec-harness.mjs';
 import { MathBlock } from '../../../dist/policy-engine/blocks/math-block.js';
 import { DocumentMap } from '../../../dist/policy-engine/helpers/math-model/index.js';
 import { PolicyUtils } from '../../../dist/policy-engine/helpers/utils.js';
-import { PreviewScope } from '../../../dist/policy-engine/helpers/preview.js';
+import { PreviewScope, setPreviewComputed } from '../../../dist/policy-engine/helpers/preview.js';
 import { RecordActionStep } from '../../../dist/policy-engine/record-action-step.js';
 
 const expression = {
@@ -12,7 +12,7 @@ const expression = {
     outputs: [{ type: 'link', name: 'b', description: '', field: 'total', schema: '#out' }]
 };
 
-const refWith = () => ({
+const refWith = (overrides = {}) => ({
     blockType: 'mathBlock',
     uuid: 'uuid-1',
     tag: 'math',
@@ -21,7 +21,8 @@ const refWith = () => ({
         expression,
         artifacts: [],
         inputSchema: '#in',
-        outputSchema: '#out'
+        outputSchema: '#out',
+        ...overrides
     })
 });
 
@@ -39,7 +40,7 @@ describe('@unit mathBlock preview calculation', () => {
 
     after(() => restoreHarness());
 
-    const setup = () => {
+    const setup = (reads = [{ schema: null, path: 'note' }]) => {
         const map = new DocumentMap();
         map.addDocument({ schema: '#in', document: { amount: 2 } });
         const { block } = makeBlock(MathBlock, { options: {} });
@@ -50,7 +51,7 @@ describe('@unit mathBlock preview calculation', () => {
                 result: { total: 4 },
                 warnings: [],
                 scope: workerData.withScope ? { a: 2, b: 4 } : undefined,
-                reads: workerData.trackReads ? [{ schema: null, path: 'note' }] : undefined
+                reads: workerData.trackReads ? reads : undefined
             };
         };
         return { block, map, sent };
@@ -87,5 +88,63 @@ describe('@unit mathBlock preview calculation', () => {
             { schema: '#in', path: 'amount' },
             { schema: '#in', path: 'note' }
         ]);
+    });
+
+    it('does not record a field the block writes into the same document before the code section reads it', async () => {
+        const { block, map, sent } = setup([{ schema: null, path: 'total' }, { schema: null, path: 'note' }]);
+        const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
+        await PreviewScope.run(step, () => block.calculate(refWith({ outputSchema: '#in' }), map, makeUser(), '#in'));
+        assert.equal(sent[0].copy, true);
+        assert.deepEqual(step.getPreviewReads(), [
+            { schema: '#in', path: 'amount' },
+            { schema: '#in', path: 'note' }
+        ]);
+    });
+
+    it('keeps a code read of a field with the output name when the block writes into another schema', async () => {
+        const { block, map, sent } = setup([{ schema: null, path: 'total' }]);
+        const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
+        await PreviewScope.run(step, () => block.calculate(refWith(), map, makeUser(), '#in'));
+        assert.equal(sent[0].copy, false);
+        assert.deepEqual(step.getPreviewReads(), [
+            { schema: '#in', path: 'amount' },
+            { schema: '#in', path: 'total' }
+        ]);
+    });
+
+    it('does not record a field an earlier block computed in the input document', async () => {
+        const { block, map } = setup([{ schema: null, path: 'amount' }, { schema: null, path: 'note' }]);
+        const source = setPreviewComputed({ schema: '#in' }, ['amount']);
+        const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
+        await PreviewScope.run(step, () => block.calculate(refWith(), map, makeUser(), '#in', source));
+        assert.deepEqual(step.getPreviewReads(), [{ schema: '#in', path: 'note' }]);
+    });
+
+    it('records the field when the input document did not get it from an earlier block', async () => {
+        const { block, map } = setup([]);
+        setPreviewComputed({ schema: '#in' }, ['amount']);
+        const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
+        await PreviewScope.run(step, () => block.calculate(refWith(), map, makeUser(), '#in', { schema: '#in' }));
+        assert.deepEqual(step.getPreviewReads(), [{ schema: '#in', path: 'amount' }]);
+    });
+
+    it('keeps the code-section reads of a failed run, fails with its error and records no calculation', async () => {
+        const { block, map } = setup();
+        block.createWorker = async () => ({
+            result: null,
+            warnings: [],
+            reads: [{ schema: null, path: 'rate' }],
+            error: 'Cannot read properties of undefined'
+        });
+        const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
+        await assert.rejects(
+            PreviewScope.run(step, () => block.calculate(refWith(), map, makeUser(), '#in')),
+            { message: 'Cannot read properties of undefined' }
+        );
+        assert.deepEqual(step.getPreviewReads(), [
+            { schema: '#in', path: 'amount' },
+            { schema: '#in', path: 'rate' }
+        ]);
+        assert.deepEqual(step.getPreviewCalculations(), []);
     });
 });

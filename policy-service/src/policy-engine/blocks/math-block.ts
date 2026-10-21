@@ -37,9 +37,18 @@ import {
 } from '../helpers/table-output.js';
 import {
     buildMathPreviewCalculation,
-    createPreviewDocument,
+    createPreviewResult,
+    createPreviewSubject,
+    getMathPreviewOutputPaths,
     getMathPreviewReads,
-    PreviewScope
+    getPreviewChangedPaths,
+    getPreviewComputed,
+    getPreviewDocumentSchema,
+    isPreviewComputedRead,
+    isPreviewOutputRead,
+    PreviewScope,
+    setPreviewComputed,
+    setPreviewDocumentSchema
 } from '../helpers/preview.js';
 import { IPreviewReadRecord } from '../helpers/workers/preview-read-tracker.js';
 
@@ -60,6 +69,8 @@ interface IMathWorkerResult {
     warnings: string[];
     scope?: Record<string, unknown>;
     reads?: IPreviewReadRecord[];
+    writes?: IPreviewReadRecord[];
+    error?: string;
 }
 
 interface IStoredTable {
@@ -155,7 +166,16 @@ export class MathBlock {
                             result: data.result,
                             warnings: Array.isArray(data.warnings) ? data.warnings : [],
                             scope: data.scope,
-                            reads: Array.isArray(data.reads) ? data.reads : undefined
+                            reads: Array.isArray(data.reads) ? data.reads : undefined,
+                            writes: Array.isArray(data.writes) ? data.writes : undefined
+                        })
+                    } else if (data?.type === 'error') {
+                        cleanup();
+                        resolve({
+                            result: null,
+                            warnings: [],
+                            reads: Array.isArray(data.reads) ? data.reads : undefined,
+                            error: String(data.error)
                         })
                     }
                 } catch (error) {
@@ -177,7 +197,8 @@ export class MathBlock {
         ref: IPolicyCalculateBlock,
         documents: DocumentMap,
         user: PolicyUser,
-        currentSchema: string | null = null
+        currentSchema: string | null = null,
+        source: IPolicyDocument | null = null
     ): Promise<any> {
         const options = await ref.getOptions(user);
         const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema);
@@ -202,10 +223,13 @@ export class MathBlock {
         const tablesPack = collectTablesPack(tableDocuments);
 
         // Run
+        const copy = !options.outputSchema || options.outputSchema === options.inputSchema;
         const actionStatus = PreviewScope.current();
         if (actionStatus) {
             for (const read of getMathPreviewReads(options.expression, currentSchema)) {
-                actionStatus.addPreviewRead(read.schema, read.path);
+                if (!isPreviewComputedRead(source, read.schema, read.path)) {
+                    actionStatus.addPreviewRead(read.schema, read.path);
+                }
             }
         }
         const workerResult = await this.createWorker({
@@ -215,7 +239,7 @@ export class MathBlock {
             user,
             schema,
             tablesPack,
-            copy: !options.outputSchema || options.outputSchema === options.inputSchema,
+            copy,
             withScope: !!actionStatus,
             trackReads: !!actionStatus
         })
@@ -225,12 +249,20 @@ export class MathBlock {
         }
 
         if (actionStatus) {
+            const outputPaths = copy ? getMathPreviewOutputPaths(options.expression) : [];
             for (const read of workerResult.reads ?? []) {
-                actionStatus.addPreviewRead(read.schema ?? currentSchema, read.path);
+                const readSchema = read.schema ?? currentSchema;
+                if (!isPreviewOutputRead(read.path, outputPaths) && !isPreviewComputedRead(source, readSchema, read.path)) {
+                    actionStatus.addPreviewRead(readSchema, read.path);
+                }
+            }
+            if (workerResult.error) {
+                throw new Error(workerResult.error);
             }
             actionStatus.addPreviewCalculation(
                 buildMathPreviewCalculation(ref.tag, options.expression, workerResult.scope ?? {}, workerResult.result)
             );
+            setPreviewComputed(workerResult.result, (workerResult.writes ?? []).map((write) => write.path));
         }
 
         return workerResult.result;
@@ -394,12 +426,32 @@ export class MathBlock {
         map.addDocument(this.getCredentialSubject(contextDocument));
         map.addRelationships(contextRelationships.map((d) => this.getCredentialSubject(d)));
 
-        const newJson = await this.calculate(ref, map, docOwner, contextDocument.schema ?? null);
+        const currentSchema = getPreviewDocumentSchema(contextDocument);
+        const newJson = await this.calculate(ref, map, docOwner, currentSchema, contextDocument);
         if (preview) {
+            const copy = !options.outputSchema || options.outputSchema === options.inputSchema;
+            const computed = [
+                ...(copy ? getPreviewComputed(contextDocument) : []),
+                ...getMathPreviewOutputPaths(options.expression),
+                ...getPreviewComputed(newJson),
+                ...getPreviewChangedPaths(copy ? map.getCurrent() : {}, newJson)
+            ];
             if (options.unsigned) {
-                return await this.createUnsignedDocument(newJson, ref, recordActionId);
+                return setPreviewDocumentSchema(
+                    setPreviewComputed(await this.createUnsignedDocument(newJson, ref, recordActionId), computed),
+                    copy ? currentSchema : options.outputSchema
+                );
             }
-            return createPreviewDocument(ref, docOwner, newJson, options.outputSchema, ref.policyOwner, recordActionId);
+            const metadata = await this.aggregateMetadata(contextDocument, ref, userId);
+            const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema);
+            const subject = createPreviewSubject(ref, outputSchema, newJson, metadata);
+            const schema = new Schema(outputSchema);
+            ContextHelper.setContext(subject, schema);
+            ContextHelper.clearEmptyProperties(subject);
+            return setPreviewComputed(
+                createPreviewResult(ref, subject, outputSchema.iri, ref.policyOwner, recordActionId, metadata),
+                computed
+            );
         }
         await this.storeResultTables(ref, newJson, userId, storedTables, user);
         if (options.unsigned) {

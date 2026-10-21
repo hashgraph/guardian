@@ -18,7 +18,20 @@ import { BlockActionError } from '../errors/index.js';
 import { collectTablesPack, hydrateTablesInObject, loadFileTextById } from '../helpers/table-field.js';
 import { RecordActionStep } from '../record-action-step.js';
 import { buildSandboxWorkerEnv } from '../helpers/workers/sandbox-worker-env.js';
-import { createPreviewDocument, findScriptFieldReads } from '../helpers/preview.js';
+import {
+    createPreviewResult,
+    createPreviewSubject,
+    findScriptFieldReads,
+    getPreviewChangedPaths,
+    getPreviewComputed,
+    getPreviewDocumentId,
+    getPreviewDocumentSchema,
+    getPreviewSubject,
+    isPreviewComputedRead,
+    normalizePreviewPath,
+    setPreviewComputed,
+    setPreviewDocumentSchema
+} from '../helpers/preview.js';
 
 const filename = fileURLToPath(import.meta.url);
 
@@ -255,6 +268,9 @@ export class CustomLogicBlock {
                     metadata = await this.aggregateMetadata(documents, user, ref, userId);
                 }
                 const didBatch: IGenerateDidBatch = {};
+                const scriptReads = new Set<string>();
+                const scriptWrites: { path: string; document: number | null }[] = [];
+                const scriptSources = new Map<unknown, number>();
                 const done = async (result: any | any[], final: boolean) => {
                     if (!result) {
                         await triggerEvents(null);
@@ -269,17 +285,44 @@ export class CustomLogicBlock {
                         }
                         return;
                     }
-                    const processing = async (json: any): Promise<IPolicyDocument> => {
+                    const createItem = async (json: any): Promise<IPolicyDocument> => {
                         if (options.passOriginal) {
                             return json;
                         }
                         if (options.unsigned) {
                             return await this.createUnsignedDocument(json, ref, actionStatus?.id);
                         } else if (actionStatus?.preview) {
-                            return createPreviewDocument(ref, metadata.owner, json, options.outputSchema, metadata.issuer, actionStatus.id);
+                            const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema);
+                            const subject = createPreviewSubject(ref, outputSchema, json, metadata);
+                            const previewId = getPreviewDocumentId(options.idType, metadata.owner);
+                            if (previewId) {
+                                subject.id = previewId;
+                            }
+                            return createPreviewResult(ref, subject, outputSchema.iri, metadata.issuer, actionStatus.id, metadata);
                         } else {
                             return await this.createDocument(json, metadata, ref, userId, actionStatus?.id, user, didBatch);
                         }
+                    }
+                    const processing = async (json: any): Promise<IPolicyDocument> => {
+                        const item = await createItem(json);
+                        if (!actionStatus?.preview) {
+                            return item;
+                        }
+                        const found = scriptSources.get(json) ?? -1;
+                        const source = documents[found >= 0 ? found : documents.length === 1 ? 0 : -1];
+                        if (options.passOriginal) {
+                            const schemas = new Set((source ? [source] : documents).map(getPreviewDocumentSchema));
+                            setPreviewDocumentSchema(item, schemas.size === 1 ? [...schemas][0] : null);
+                        } else if (options.unsigned) {
+                            setPreviewDocumentSchema(item, options.outputSchema);
+                        }
+                        const output = options.passOriginal ? getPreviewSubject(json) : json;
+                        const reads = scriptSources.has(json) && found < 0 && !options.passOriginal ? scriptReads : null;
+                        return setPreviewComputed(item, [
+                            ...getPreviewComputed(source),
+                            ...scriptWrites.filter((write) => found >= 0 && write.document === found).map((write) => write.path),
+                            ...getPreviewChangedPaths(source ? getPreviewSubject(source) : output, output, reads)
+                        ]);
                     }
                     if (Array.isArray(result)) {
                         const items = await this.processItems(result, processing, ref);
@@ -341,7 +384,10 @@ export class CustomLogicBlock {
                 if (options.selectedScriptLanguage === ScriptLanguageOption.PYTHON) {
                     if (actionStatus?.preview) {
                         for (const read of findScriptFieldReads(`${execCode}${expression}`, actionStatus.getPreviewSource())) {
-                            actionStatus.addPreviewRead(read.schema, read.path);
+                            scriptReads.add(normalizePreviewPath(read.path));
+                            if (!isPreviewComputedRead(documents, read.schema, read.path)) {
+                                actionStatus.addPreviewRead(read.schema, read.path);
+                            }
                         }
                     }
                     const pythonWorkerData = {
@@ -484,7 +530,10 @@ export class CustomLogicBlock {
                                 documents: context.documents,
                                 sources: context.sources,
                                 tablesPack,
-                                trackReads: !!actionStatus?.preview
+                                trackReads: !!actionStatus?.preview,
+                                schemas: actionStatus?.preview && Array.isArray(context.documents)
+                                    ? context.documents.map(getPreviewDocumentSchema)
+                                    : []
                             },
                             env: buildSandboxWorkerEnv()
                         });
@@ -507,8 +556,18 @@ export class CustomLogicBlock {
                     worker.on('message', async (data) => {
                         if (Array.isArray(data?.reads)) {
                             for (const read of data.reads) {
-                                actionStatus?.addPreviewRead(read.schema, read.path);
+                                scriptReads.add(normalizePreviewPath(read.path));
+                                if (!isPreviewComputedRead(documents, read.schema, read.path)) {
+                                    actionStatus?.addPreviewRead(read.schema, read.path);
+                                }
                             }
+                        }
+                        if (Array.isArray(data?.writes)) {
+                            scriptWrites.push(...data.writes);
+                        }
+                        if (Array.isArray(data?.sources)) {
+                            const results = Array.isArray(data.result) ? data.result : [data.result];
+                            results.forEach((item: unknown, index: number) => scriptSources.set(item, data.sources[index]));
                         }
                         // A thrown script posts an 'error' sentinel; reject so runAction's catch
                         // surfaces it (BlockErrorFn + log) instead of silently parking the step.

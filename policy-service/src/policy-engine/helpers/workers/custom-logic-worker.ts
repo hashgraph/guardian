@@ -19,18 +19,21 @@ import { PreviewReadTracker } from './preview-read-tracker.js';
  */
 function execute(): void {
     const done = (result: any, final: boolean = true) => {
+        const plain = tracker ? tracker.unwrap(result) : result;
         parentPort.postMessage({
             type: 'done',
-            result: tracker ? tracker.unwrap(result) : result,
+            result: plain,
             final,
-            reads: tracker ? tracker.take() : undefined
+            reads: tracker ? tracker.take() : undefined,
+            writes: tracker ? tracker.takeWrites() : undefined,
+            sources: tracker ? tracker.findSources(plain) : undefined
         });
     }
     const debug = (message: any) => {
         parentPort.postMessage({ type: 'debug', message });
     }
 
-    const { execFunc, user, documents, artifacts, sources, tablesPack, trackReads } = workerData;
+    const { execFunc, user, documents, artifacts, sources, tablesPack, trackReads, schemas } = workerData;
     const tracker = trackReads ? new PreviewReadTracker() : null;
 
     // Create sandbox with only the documented API surface
@@ -39,7 +42,7 @@ function execute(): void {
     sandbox.done = done;
     sandbox.debug = debug;
     sandbox.user = user;
-    sandbox.documents = tracker ? tracker.trackPolicyDocuments(documents) : documents;
+    sandbox.documents = tracker ? tracker.trackPolicyDocuments(documents, schemas) : documents;
     sandbox.mathjs = mathjs;
     sandbox.artifacts = artifacts;
     sandbox.formulajs = formulajs;
