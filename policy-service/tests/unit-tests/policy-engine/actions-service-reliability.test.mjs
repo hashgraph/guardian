@@ -48,6 +48,9 @@ function matches(row, filter) {
             if ('$lt' in expected && !(value < expected.$lt)) {
                 return false;
             }
+            if ('$ne' in expected && (value ?? null) === expected.$ne) {
+                return false;
+            }
         } else if ((value ?? null) !== (expected ?? null)) {
             return false;
         }
@@ -81,12 +84,14 @@ async function createSide({
     notificationError = null,
     updateManyDelay = 0,
     actionsUtils = undefined,
+    start = true,
 } = {}) {
     const rows = [];
     const calls = {
         getUserCredentials: [],
         loadMessageKey: [],
         loadDocument: [],
+        tryGetMessage: [],
         notifications: [],
         subscribed: null,
         updateManyDone: 0,
@@ -110,7 +115,10 @@ async function createSide({
                         if (row) {
                             Object.assign(row, $set);
                         }
-                    }
+                    },
+                    find: (filter) => ({
+                        toArray: async () => rows.filter((r) => matches(r, filter))
+                    })
                 })
             }
         };
@@ -155,6 +163,14 @@ async function createSide({
             topic.messages.push(entry);
             topic.documents.set(entry.id, message.document);
             return { getId: () => entry.id, payer: entry.payer };
+        }
+
+        static async tryGetMessage({ messageId }) {
+            calls.tryGetMessage.push(messageId);
+            if (!topic.documents.has(messageId)) {
+                return null;
+            }
+            return { id: messageId, getDocument() { return this.document; } };
         }
 
         static async loadDocument(message, key) {
@@ -262,6 +278,9 @@ async function createSide({
         },
         'owner-id'
     );
+    if (start) {
+        service.start();
+    }
     // what the topic listener hands to the service
     service.receive = (entry) => service.loadTask(toTopicMessage(entry));
     return { service, rows, calls, policyUser, module };
@@ -419,63 +438,173 @@ describe('@unit PolicyActionsService – rejecting a request', function () {
 describe('@unit PolicyActionsService – restart', function () {
     this.timeout(60000);
 
-    async function restartedMain() {
+    const DAY = 24 * 60 * 60 * 1000;
+
+    /**
+     * A main instance coming back up. Its actions are recorded instead of run,
+     * and it is not started unless asked.
+     */
+    async function restartedMain({ start = false, rows = [] } = {}) {
         const topic = createTopic();
-        const main = await createSide({ topic, main: true });
+        const main = await createSide({ topic, main: true, start: false });
         main.rows.push(
             // sent by this instance, waiting on the user
             pendingRow({ messageId: 'request-1', type: PolicyActionType.REQUEST, sender: OWNER_ACCOUNT, document: { type: 'sign-vc' } }),
             // posted on the topic by somebody else
             pendingRow({ messageId: 'request-2', type: PolicyActionType.REQUEST, sender: OTHER_ACCOUNT, document: { type: 'sign-vc' } }),
             // an incoming action whose execution was cut short
-            pendingRow({ messageId: 'action-1', type: PolicyActionType.ACTION, sender: USER_ACCOUNT, blockTag: 'block', document: {} }),
+            pendingRow({ messageId: 'action-1', type: PolicyActionType.ACTION, sender: USER_ACCOUNT, blockTag: 'block', document: {}, index: 1, executedAt: new Date() }),
             // finished before the restart
-            pendingRow({ messageId: 'action-2', type: PolicyActionType.ACTION, sender: USER_ACCOUNT, lastStatus: PolicyActionStatus.COMPLETED }),
+            pendingRow({ messageId: 'action-2', type: PolicyActionType.ACTION, sender: USER_ACCOUNT, lastStatus: PolicyActionStatus.COMPLETED, index: 2 }),
+            // still queued when the service stopped
+            pendingRow({ messageId: 'action-3', type: PolicyActionType.ACTION, sender: USER_ACCOUNT, blockTag: 'block', document: { n: 3 }, index: 4 }),
+            // never started, and the home side has given up on it
+            pendingRow({ messageId: 'action-4', type: PolicyActionType.ACTION, sender: USER_ACCOUNT, blockTag: 'block', document: {}, index: 3, createDate: new Date(Date.now() - 8 * DAY) }),
+            // saved before the owner's key was here
+            pendingRow({ messageId: 'action-5', type: PolicyActionType.ACTION, sender: USER_ACCOUNT, blockTag: 'block', document: null, loaded: false, index: 3.5 }),
+            ...rows
         );
+        topic.documents.set('action-5', { n: 5 });
+        const executed = [];
+        if (!rows.length) {
+            main.service.executeAction = async (row) => { executed.push([row.messageId, row.document]); };
+        }
         await main.service.init();
+        if (start) {
+            main.service.start();
+        }
         await tick(20);
-        return { topic, main };
+        return { topic, main, executed };
     }
 
-    it('fails requests and actions whose continuation was lost, before listening', async () => {
+    const thread = (main, messageId) => main.rows.find((r) => r.messageId === messageId);
+
+    it('fails what had started, before listening, and keeps the first row as the request', async () => {
         const { main } = await restartedMain();
 
-        const status = (messageId) => main.rows.find((r) => r.messageId === messageId);
-        assert.equal(status('request-1').status, PolicyActionStatus.ERROR);
-        assert.equal(status('request-1').lastStatus, PolicyActionStatus.ERROR);
-        assert.equal(status('request-2').status, PolicyActionStatus.ERROR);
-        assert.equal(status('action-1').status, PolicyActionStatus.ERROR);
-        assert.equal(status('action-2').status, PolicyActionStatus.NEW, 'a finished action is left alone');
-        assert.equal(status('action-2').lastStatus, PolicyActionStatus.COMPLETED);
+        for (const messageId of ['request-1', 'request-2', 'action-1']) {
+            assert.equal(thread(main, messageId).lastStatus, PolicyActionStatus.ERROR, messageId);
+            assert.equal(thread(main, messageId).status, PolicyActionStatus.NEW, `${messageId} stays the request`);
+        }
+        assert.equal(thread(main, 'action-2').lastStatus, PolicyActionStatus.COMPLETED, 'a finished action is left alone');
+        assert.equal(thread(main, 'action-3').lastStatus, PolicyActionStatus.NEW, 'a queued action is not failed');
+        assert.equal(thread(main, 'action-4').lastStatus, PolicyActionStatus.ERROR, 'an expired one is');
 
-        const atSubscribe = Object.fromEntries(main.calls.subscribed.map((r) => [r.messageId, r.status]));
-        assert.equal(atSubscribe['request-1'], PolicyActionStatus.ERROR, 'marked before the listener starts');
-        assert.equal(atSubscribe['action-1'], PolicyActionStatus.ERROR);
+        const marked = await main.service.findPending([PolicyActionType.REQUEST, PolicyActionType.ACTION]);
+        assert.sameMembers(marked.map((r) => r.messageId), ['action-3', 'action-5']);
+        assert.isNotNull(main.calls.subscribed, 'the listener started');
     });
 
-    it('tells the home instance, but only about what this instance sent', async () => {
+    it('tells the home instance only about what had started and what this instance sent', async () => {
         const { topic } = await restartedMain();
 
         const sent = topic.messages.map((e) => ({ action: e.message.action, parent: e.message.parent, payer: e.payer }));
         assert.deepInclude(sent, { action: MessageAction.ErrorPolicyRequest, parent: 'request-1', payer: OWNER_ACCOUNT });
         assert.deepInclude(sent, { action: MessageAction.ErrorPolicyAction, parent: 'action-1', payer: OWNER_ACCOUNT });
-        assert.notDeepInclude(sent.map((e) => e.parent), 'request-2');
+        const parents = sent.map((e) => e.parent);
+        for (const quiet of ['request-2', 'action-3', 'action-4', 'action-5']) {
+            assert.notInclude(parents, quiet);
+        }
         const error = topic.messages.find((e) => e.message.parent === 'request-1');
         assert.match(error.message.document, /restart – please try again/);
     });
 
+    it('runs what never started once started, in topic order, reloading a missing document', async () => {
+        const { main, executed } = await restartedMain();
+        assert.deepEqual(executed, [], 'nothing runs before start()');
+
+        main.service.start();
+        await tick(20);
+
+        assert.deepEqual(executed, [['action-5', { n: 5 }], ['action-3', { n: 3 }]]);
+        assert.isTrue(thread(main, 'action-5').loaded);
+        assert.deepEqual(main.calls.tryGetMessage, ['action-5'], 'only the unloaded row is fetched');
+    });
+
+    it('keeps a live action of the same owner behind the queued ones', async () => {
+        const { main, executed } = await restartedMain();
+        const message = new PolicyActionMessage(MessageAction.CreatePolicyAction);
+        message.setDocument(pendingRow({ messageId: 'live', type: PolicyActionType.ACTION }), { n: 'live' });
+        message.parent = undefined;
+        await main.service.receive({ message, payer: USER_ACCOUNT, index: 10, id: 'live' });
+        await tick();
+        assert.deepEqual(executed, []);
+
+        main.service.start();
+        await tick(20);
+
+        assert.deepEqual(executed.map(([id]) => id), ['action-5', 'action-3', 'live']);
+    });
+
+    it('skips a row whose owner key is still missing, leaving it new', async () => {
+        const topic = createTopic();
+        const main = await createSide({ topic, main: true, start: false, messageKey: null });
+        main.rows.push(pendingRow({ messageId: 'action-5', type: PolicyActionType.ACTION, sender: USER_ACCOUNT, document: null, loaded: false }));
+        topic.documents.set('action-5', { n: 5 });
+        const executed = [];
+        main.service.executeAction = async (row) => { executed.push(row.messageId); };
+        await main.service.init();
+        main.service.start();
+        await tick(20);
+
+        assert.deepEqual(executed, []);
+        assert.deepEqual(main.calls.tryGetMessage, [], 'no fetch without a key');
+        assert.equal(main.rows[0].lastStatus, PolicyActionStatus.NEW);
+    });
+
+    it('does not fetch for an owner this instance does not know', async () => {
+        const topic = createTopic();
+        const main = await createSide({ topic, main: true, start: false, users: {} });
+        main.rows.push(pendingRow({ messageId: 'action-5', owner: 'did:stranger', type: PolicyActionType.ACTION, sender: USER_ACCOUNT, document: null, loaded: false }));
+        topic.documents.set('action-5', { n: 5 });
+        main.service.executeAction = async () => assert.fail('must not run');
+        await main.service.init();
+        main.service.start();
+        await tick(20);
+
+        assert.deepEqual(main.calls.tryGetMessage, []);
+        assert.lengthOf(main.calls.loadMessageKey, 0);
+    });
+
+    it('drops a forged action that never started without publishing', async () => {
+        const { topic, main } = await restartedMain({
+            start: true,
+            rows: [pendingRow({ messageId: 'forged', type: PolicyActionType.ACTION, sender: OTHER_ACCOUNT, blockTag: 'block', document: {}, index: 20 })]
+        });
+
+        assert.notInclude(topic.messages.map((e) => e.message.parent), 'forged');
+        assert.equal(thread(main, 'forged').lastStatus, PolicyActionStatus.NEW);
+    });
+
+    it('runs nothing once the policy stops, without logging an error', async () => {
+        const logged = [];
+        const consoleError = console.error;
+        console.error = (...args) => logged.push(args[0]);
+        try {
+            const { main, executed } = await restartedMain();
+            await main.service.destroy();
+            main.service.start();
+            await tick(20);
+
+            assert.deepEqual(executed, []);
+        } finally {
+            console.error = consoleError;
+        }
+        assert.notInclude(logged.map((e) => e?.message), 'The policy was stopped');
+    });
+
     it('does not run a replayed action again', async () => {
-        const { main } = await restartedMain();
-        let executed = 0;
-        main.service.executeAction = async () => { executed++; };
+        const { main, executed } = await restartedMain({ start: true });
+        await tick(20);
+        executed.length = 0;
 
         const message = new PolicyActionMessage(MessageAction.CreatePolicyAction);
-        message.setDocument(main.rows.find((r) => r.messageId === 'action-1'), {});
+        message.setDocument(thread(main, 'action-1'), {});
         await main.service.receive({ message, payer: USER_ACCOUNT, index: 1, id: 'action-1' });
         await tick(10);
 
-        assert.equal(executed, 0);
-        assert.equal(main.rows.find((r) => r.messageId === 'action-1').status, PolicyActionStatus.ERROR);
+        assert.deepEqual(executed, []);
+        assert.equal(thread(main, 'action-1').lastStatus, PolicyActionStatus.ERROR);
     });
 
     it('leaves the home side alone: a late response still updates its rows', async () => {
@@ -485,7 +614,7 @@ describe('@unit PolicyActionsService – restart', function () {
         await home.service.init();
         await tick(20);
 
-        assert.equal(home.rows[0].status, PolicyActionStatus.NEW);
+        assert.equal(home.rows[0].lastStatus, PolicyActionStatus.NEW);
         assert.lengthOf(topic.messages, 0);
     });
 });
@@ -528,7 +657,9 @@ describe('@unit PolicyActionsService – expiry', function () {
 
         assert.deepEqual(await state(step), { rejected: 'The request expired without a response' });
         assert.isFalse(main.service.callback.has(create.id));
-        assert.equal(main.rows.find((r) => r.messageId === create.id).status, PolicyActionStatus.ERROR);
+        const request = main.rows.find((r) => r.messageId === create.id);
+        assert.equal(request.lastStatus, PolicyActionStatus.ERROR);
+        assert.equal(request.status, PolicyActionStatus.NEW, 'the first row stays the request');
 
         const error = topic.messages.at(-1);
         assert.equal(error.message.action, MessageAction.ErrorPolicyRequest);
@@ -562,13 +693,13 @@ describe('@unit PolicyActionsService – expiry', function () {
         const home = await createSide({ topic, main: false });
         home.rows.push(pendingRow({ messageId: 'recent', type: PolicyActionType.ACTION }));
         await home.service.expirePending();
-        assert.equal(home.rows[0].status, PolicyActionStatus.NEW);
+        assert.equal(home.rows[0].lastStatus, PolicyActionStatus.NEW);
 
         process.env.REMOTE_ACTIONS_EXPIRATION_DAYS = '0';
         const never = await createSide({ topic, main: false });
         never.rows.push(pendingRow({ messageId: 'old', type: PolicyActionType.ACTION, createDate: new Date(0) }));
         await never.service.expirePending();
-        assert.equal(never.rows[0].status, PolicyActionStatus.NEW);
+        assert.equal(never.rows[0].lastStatus, PolicyActionStatus.NEW);
     });
 });
 

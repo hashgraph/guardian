@@ -731,6 +731,7 @@ export class BlockTreeGenerator extends NatsService {
                     const service = new PolicyActionsService(policyId, policyInstance, policy, policyOwnerId);
                     await service.init();
                     PolicyComponentsUtils.RegisterActionsService(policyId, service);
+                    service.start();
                 }
             }
             if (policy.status === PolicyStatus.VIEW) {
@@ -743,6 +744,7 @@ export class BlockTreeGenerator extends NatsService {
                     const service = new PolicyActionsService(policyId, policyInstance, policy, policyOwnerId);
                     await service.init();
                     PolicyComponentsUtils.RegisterActionsService(policyId, service);
+                    service.start();
                 }
             }
         } catch (error) {

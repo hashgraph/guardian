@@ -65,6 +65,10 @@ export class PolicyActionsService {
     private readonly executions: Map<string, Promise<void>>;
     private readonly expiration: number;
     private expirationTimer: ReturnType<typeof setInterval> | null;
+    private readonly ready: Promise<void>;
+    private resolveReady: () => void;
+    private rejectReady: (error: Error) => void;
+    private destroyed: boolean;
 
     constructor(
         policyId: string,
@@ -84,6 +88,13 @@ export class PolicyActionsService {
         this.executions = new Map<string, Promise<void>>();
         this.expiration = PolicyActionsService.getExpiration();
         this.expirationTimer = null;
+        this.destroyed = false;
+        this.ready = new Promise<void>((resolve, reject) => {
+            this.resolveReady = resolve;
+            this.rejectReady = reject;
+        });
+        // Queued actions handle a stop themselves, this only keeps it from going unhandled
+        this.ready.catch(() => null);
     }
 
     /**
@@ -105,7 +116,8 @@ export class PolicyActionsService {
             throw Error('Invalid action topic');
         }
 
-        // Before the listener starts, so a replayed message cannot race the cleanup
+        // Before the listener starts, so a replayed message cannot race the cleanup,
+        // and actions queued here stay ahead of live ones of the same owner
         await this.failInterrupted();
 
         this.topicListener = new TopicListener(this.topicId);
@@ -115,7 +127,17 @@ export class PolicyActionsService {
         this.startExpiration();
     }
 
+    /**
+     * Let queued actions run. Called once the service is registered: an action
+     * may send a request to the user through it.
+     */
+    public start(): void {
+        this.resolveReady();
+    }
+
     public async destroy(): Promise<void> {
+        this.destroyed = true;
+        this.rejectReady(new Error('The policy was stopped'));
         if (this.expirationTimer) {
             clearInterval(this.expirationTimer);
             this.expirationTimer = null;
@@ -513,10 +535,9 @@ export class PolicyActionsService {
         const userMessageKey = await userCred.loadMessageKey(this.policyInstance, user.userId);
         if (!userMessageKey) {
             // Nothing can be sent without the key: reject locally and let the
-            // main instance settle the request when it expires.
-            row.status = PolicyActionStatus.REJECTED;
+            // main instance settle the request when it expires. As in markFailed,
+            // the first row keeps its status.
             row.lastStatus = PolicyActionStatus.REJECTED;
-            await collection.insertOrUpdate([row], 'messageId');
             await this.updateLastStatus(row);
             await this.sentNotification(row);
             return row;
@@ -833,22 +854,40 @@ export class PolicyActionsService {
      * Run actions off the listener, so one long execution does not hold up the
      * whole topic. Actions of the same owner still run in order.
      */
-    private queueAction(row: PolicyAction): void {
+    private queueAction(row: PolicyAction, reload: boolean = false): void {
         // Already settled: a message replayed after a restart must not run twice
         if (!row || SETTLED_STATUSES.includes(row.status) || SETTLED_STATUSES.includes(row.lastStatus)) {
             return;
         }
         const key = row.owner || '';
-        const previous = this.executions.get(key) || Promise.resolve();
+        const previous = this.executions.get(key) || this.ready;
         const next = previous
-            .then(() => this.executeAction(row))
-            .catch((error) => console.error(error));
+            .then(() => this.runQueued(row, reload))
+            .catch((error) => {
+                if (!this.destroyed) {
+                    console.error(error);
+                }
+            });
         this.executions.set(key, next);
         next.then(() => {
             if (this.executions.get(key) === next) {
                 this.executions.delete(key);
             }
         });
+    }
+
+    private async runQueued(row: PolicyAction, reload: boolean): Promise<void> {
+        if (this.destroyed) {
+            return;
+        }
+        // Saved before the owner's key was here: try again now, unless the owner
+        // is not one this instance can hold a key for
+        if (reload && !row.loaded) {
+            if (!await this.isKnownOwner(row.owner) || !await this.reloadDocument(row)) {
+                return;
+            }
+        }
+        await this.executeAction(row);
     }
 
     private async executeAction(row: PolicyAction) {
@@ -1128,27 +1167,52 @@ export class PolicyActionsService {
     /**
      * What waits on a pending row lives in memory and does not survive a restart.
      * On the main instance that is the block waiting on a request, or the
-     * execution of an incoming action (it may have stopped half way, so it is
-     * not run again). Fail them so neither side keeps showing them as new.
-     * The home side keeps nothing that cannot be rebuilt: a late response still
-     * updates its rows.
+     * execution of an incoming action. An action that had started may have
+     * stopped half way, so it is failed, not run again. One that never started
+     * (still queued, or its owner not registered yet) is queued again, unless
+     * the home side has already given up on it. The home side keeps nothing that
+     * cannot be rebuilt: a late response still updates its rows.
      */
     private async failInterrupted(): Promise<void> {
         if (!this.isLocal) {
             return;
         }
         try {
-            const rows = await this.findPending([
-                PolicyActionType.REQUEST,
-                PolicyActionType.ACTION,
-                PolicyActionType.REMOTE_ACTION
-            ]);
-            await this.markFailed(rows);
+            const requests = await this.findPending([PolicyActionType.REQUEST]);
+            const actions = await this.findPending([PolicyActionType.ACTION, PolicyActionType.REMOTE_ACTION]);
+            const started = await this.findStarted(actions);
+            const interrupted = [...requests, ...actions.filter((row) => started.has(row.messageId))];
+            const notStarted = actions.filter((row) => !started.has(row.messageId));
+            const since = this.expiration ? Date.now() - this.expiration : null;
+            const requeue = notStarted.filter((row) => since === null || new Date(row.createDate).getTime() >= since);
+            // The home side failed its copy at expiry without telling anyone, so these go quietly
+            const expired = notStarted.filter((row) => !requeue.includes(row));
+
+            await this.markFailed([...interrupted, ...expired]);
+            requeue.sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
+            for (const row of requeue) {
+                this.queueAction(row, true);
+            }
             // Sending to Hedera must not hold up the policy start
-            this.notifyFailed(rows, RESTART_ERROR).catch((error) => console.error(error));
+            this.notifyFailed(interrupted, RESTART_ERROR).catch((error) => console.error(error));
         } catch (error) {
             console.error(error);
         }
+    }
+
+    /**
+     * Message IDs of the actions whose execution began (see claimForExecution)
+     */
+    private async findStarted(rows: PolicyAction[]): Promise<Set<string>> {
+        if (!rows.length) {
+            return new Set();
+        }
+        const collection = DataBaseHelper.orm.em.getCollection('PolicyAction');
+        const started = await collection.find(
+            { messageId: { $in: rows.map((row) => row.messageId) }, executedAt: { $ne: null } },
+            { projection: { messageId: 1 } }
+        ).toArray();
+        return new Set(started.map((row) => row.messageId));
     }
 
     private startExpiration(): void {
@@ -1192,14 +1256,12 @@ export class PolicyActionsService {
         return await collection.find(filter);
     }
 
+    /**
+     * Only the thread's lastStatus changes: the first row stays the NEW request,
+     * which the requests grid and its counts look for
+     */
     private async markFailed(rows: PolicyAction[]): Promise<void> {
-        const collection = DataBaseHelper.orm.em.getCollection<PolicyAction>('PolicyAction');
         for (const row of rows) {
-            await collection.updateOne(
-                { messageId: row.messageId },
-                { $set: { status: PolicyActionStatus.ERROR } }
-            );
-            row.status = PolicyActionStatus.ERROR;
             row.lastStatus = PolicyActionStatus.ERROR;
             await this.updateLastStatus(row);
         }
@@ -1404,23 +1466,36 @@ export class PolicyActionsService {
         if (!row) {
             throw Error('Action not found');
         }
+        await this.reloadDocument(row);
+    }
+
+    /**
+     * Fetch and decrypt the document of a row saved without it. False when the
+     * owner's key or the message is not there.
+     */
+    private async reloadDocument(row: PolicyAction): Promise<boolean> {
+        const userMessageKey = await UserCredentials.loadMessageKey(this.messageId, row.owner, null);
+        if (!userMessageKey) {
+            return false;
+        }
         const message = await MessageServer.tryGetMessage<PolicyActionMessage>({
-            messageId,
+            messageId: row.messageId,
             loadIPFS: false,
             type: MessageType.PolicyAction,
             interception: null,
             dryRun: null,
             mockId: null
-        })
-        if (message) {
-            const userMessageKey = await UserCredentials.loadMessageKey(this.messageId, message.owner, null);
-            await MessageServer.loadDocument(message, userMessageKey, {
-                dryRun: null,
-                mockId: null
-            });
-            row.document = message.getDocument();
-            row.loaded = true;
-            await collection.insertOrUpdate([row], 'messageId');
+        });
+        if (!message) {
+            return false;
         }
+        await MessageServer.loadDocument(message, userMessageKey, {
+            dryRun: null,
+            mockId: null
+        });
+        row.document = message.getDocument();
+        row.loaded = true;
+        await new DataBaseHelper(PolicyAction).insertOrUpdate([row], 'messageId');
+        return true;
     }
 }
