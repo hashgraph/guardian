@@ -226,7 +226,7 @@ function parseJson(json: any): any {
         return json;
     }
     if (typeof json === 'string') {
-        if (json.length >= 2 && json.startsWith("'") && json.endsWith("'")) {
+        if (json.length >= 2 && json.startsWith('\'') && json.endsWith('\'')) {
             return json.slice(1, -1);
         }
         if (json === 'NaN' || json === 'ComplexInfinity') {
