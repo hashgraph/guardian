@@ -4,14 +4,18 @@ import { PrivateKey } from '@hiero-ledger/sdk';
 import { MessageAction } from '@guardian/hedera/message/message-action';
 import { createRemoteJoinDocument } from '@guardian/hedera/remote-policy-join';
 import { CommonDidDocument } from '@guardian/hedera/vcjs/did/common-did-document';
+import { HederaDid } from '@guardian/hedera/vcjs/did/hedera-did';
 import { HederaEd25519Method } from '@guardian/hedera/vcjs/did/components/hedera-ed25519-method';
 import { RemoteJoinStatus, RemoteParticipantStatus } from '@guardian/interfaces';
 
 const SERVICE = '../../../dist/policy-engine/policy-join-service.js';
 
 const POLICY = '1706823227.586179534';
-const USER = 'did:hedera:testnet:user_0.0.5';
-const OWNER = 'did:hedera:testnet:owner_0.0.7';
+const USER_KEY = PrivateKey.generateED25519();
+const OWNER_KEY = PrivateKey.generateED25519();
+// a DID is the hash of its key
+const USER = (await HederaDid.generate('testnet', USER_KEY, '0.0.5')).toString();
+const OWNER = (await HederaDid.generate('testnet', OWNER_KEY, '0.0.7')).toString();
 const ACCOUNT = '0.0.100';
 
 /*
@@ -19,8 +23,8 @@ const ACCOUNT = '0.0.100';
  * post one. Only the payer and the DID signature tie it to the user, and only the
  * policy owner can open the message key sealed in it.
  */
-async function didWithKeys(did) {
-    const method = await HederaEd25519Method.generate(did, PrivateKey.generateED25519());
+async function didWithKeys(did, key = did === USER ? USER_KEY : OWNER_KEY) {
+    const method = await HederaEd25519Method.generate(did, key);
     const document = CommonDidDocument.from({
         '@context': 'https://www.w3.org/ns/did/v1',
         id: did,
@@ -210,7 +214,7 @@ describe('@unit PolicyJoinService – join requests on the Main instance', funct
     });
 
     it('rejects a join signed with another key', async () => {
-        const forged = await didWithKeys(USER);
+        const forged = await didWithKeys(USER, PrivateKey.generateED25519());
         const { receive, store } = await makeService({ user, owner });
         const document = createRemoteJoinDocument(forged.document, owner.published, ACCOUNT, '0.0.5', POLICY, messageKey);
 
@@ -319,7 +323,7 @@ describe('@unit PolicyJoinService – join requests on the Main instance', funct
         try {
             await receiveWithRetry(topicMessage(join()));
             await new Promise((resolve) => setTimeout(resolve, 100));
-            const forged = await didWithKeys(USER);
+            const forged = await didWithKeys(USER, PrivateKey.generateED25519());
             const permanent = await rejection(receiveWithRetry(topicMessage(
                 createRemoteJoinDocument(forged.document, owner.published, ACCOUNT, '0.0.5', POLICY, messageKey)
             )));
@@ -409,7 +413,7 @@ describe('@unit PolicyJoinService – join requests on the Main instance', funct
     });
 
     it('does not reconnect on a join signed with another key', async () => {
-        const forged = await didWithKeys(USER);
+        const forged = await didWithKeys(USER, PrivateKey.generateED25519());
         const { receive, calls } = await makeService({ user, owner, disconnected: true });
         const t = now();
 

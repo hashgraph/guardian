@@ -1,6 +1,7 @@
 import { ed25519 } from '@noble/curves/ed25519';
 import { Hashing } from '@guardian/common/helpers/hashing';
 import type { CommonDidDocument } from './vcjs/did/common-did-document.js';
+import { didIdentifierOfKey, parseDid } from './did-identifier.js';
 import { HederaEd25519Method } from './vcjs/did/components/hedera-ed25519-method.js';
 import type { VerificationMethod } from './vcjs/did/components/verification-method.js';
 
@@ -44,7 +45,11 @@ function proofPayload(proof: Pick<IRemoteUserProof, 'did' | 'hederaAccountId' | 
  * @param didDocument
  */
 export function getDidEd25519Seed(didDocument: CommonDidDocument): { id: string, seed: Uint8Array } {
-    const method = getDidRootEd25519Method(didDocument);
+    // the signing side only has to find its own key: whoever verifies the signature
+    // accepts nothing but the key the DID identifier is the hash of
+    const method = getDidRootEd25519Method(didDocument)
+        || didDocument.getMethodByName(didDocument.getDid() + HederaEd25519Method.DID_ROOT_KEY_NAME)
+        || didDocument.getMethodByType(HederaEd25519Method.TYPE);
     const privateKey = method?.toObject(true).privateKeyBase58;
     if (!privateKey) {
         throw new Error('DID key is not available.');
@@ -54,13 +59,31 @@ export function getDidEd25519Seed(didDocument: CommonDidDocument): { id: string,
 }
 
 /**
- * Root Ed25519 key of a DID document. A Hedera DID identifier is derived from this key,
- * so it is the only key that proves control of the DID: a document can carry any other methods.
+ * Root Ed25519 key of a DID document: the one the DID identifier is the hash of. It is the only key
+ * that proves control of the DID, whatever the document names it, and a document can carry any other methods.
  * @param didDocument
  */
 export function getDidRootEd25519Method(didDocument: CommonDidDocument): VerificationMethod | null {
-    const method = didDocument.getMethodByName(didDocument.getDid() + HederaEd25519Method.DID_ROOT_KEY_NAME);
-    return method?.getType() === HederaEd25519Method.TYPE ? method : null;
+    let identifier: string;
+    try {
+        identifier = parseDid(didDocument.getDid()).identifier;
+    } catch (error) {
+        return null;
+    }
+    for (const method of didDocument.getVerificationMethods()) {
+        if (method.getType() !== HederaEd25519Method.TYPE) {
+            continue;
+        }
+        try {
+            const publicKey = Hashing.base58.decode(method.toObject(false).publicKeyBase58);
+            if (didIdentifierOfKey(publicKey) === identifier) {
+                return method;
+            }
+        } catch (error) {
+            // not a key
+        }
+    }
+    return null;
 }
 
 /**
