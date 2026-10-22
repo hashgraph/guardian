@@ -1,0 +1,45 @@
+name: Feature request
+description: Describe a new feature ready for development to help complete a job or activity
+type: Story
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What is the situation, motivation, and outcome, and why is this needed?
+      value: |
+        ### Job Story
+
+        When [situation], I want [motivation/problem to solve], so that [outcome].
+
+        ### Summary
+
+        Why this is needed:
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: What must be true for this to be complete?
+      placeholder: |
+        - [ ] item 1
+        - [ ] item 2
+    validations:
+      required: true
+
+  - type: textarea
+    id: requirements
+    attributes:
+      label: Requirements & Tasks
+      description: List requirements and tasks.
+      placeholder: |
+        - [ ] item 1
+        - [ ] item 2
+
+  - type: textarea
+    id: artifacts
+    attributes:
+      label: Resources & Notes
+      description: Supporting artifacts, context, or constraints, e.g. discussions, media, Figma, api docs, specs
