@@ -1,7 +1,7 @@
 """Compare two Guardian .policy files: what changed apart from the IDs, dates and names that MGS assigns on every import.
 
 Usage (from the package root):
-    python3 policy/v3.2_backup/tools/compare_policies.py <first.policy> <second.policy>
+    python3 policy/v3.2_fNRB_input_checks/tools/compare_policies.py <first.policy> <second.policy>
 
 Checks, with UUIDs, database IDs, dates, owners, topic IDs and 13-digit MGS timestamps ignored:
     - the block tree (type, tag and nesting of every block)

@@ -3,9 +3,9 @@
 Usage: python3 -I patch_fnrb.py <extracted policy dir>
 Edits <dir>/policy.json in place. Every replacement must match exactly once per mathBlock, or the script stops.
 
-How the v3.2 files in policy/v3.2_backup/without_integrity_test/ were made (run from the package root):
+How the v3.2 files in policy/v3.2_fNRB_input_checks/without_integrity_test/ were made (run from the package root):
     mkdir /tmp/a && (cd /tmp/a && unzip -q "$OLDPWD/policy/without_integrity_test/VMR0015_Safe_Drinking_Water_dMRV_v3.1_VCS-v5.0A.policy")
-    python3 -I policy/v3.2_backup/tools/patch_fnrb.py /tmp/a
+    python3 -I policy/v3.2_fNRB_input_checks/tools/patch_fnrb.py /tmp/a
     python3 -I tools/template_build/rezip.py policy/without_integrity_test/VMR0015_Safe_Drinking_Water_dMRV_v3.1_VCS-v5.0A.policy /tmp/a out.policy
 and the same for v5.0B. rezip.py keeps the zip entry order of the original. Every file inside the output is byte-identical
 to the file here; the .policy zip itself differs only in the entry timestamps, so its sha256 does not match.

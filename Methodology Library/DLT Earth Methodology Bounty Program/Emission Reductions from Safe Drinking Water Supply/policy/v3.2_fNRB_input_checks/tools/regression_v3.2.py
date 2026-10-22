@@ -8,7 +8,7 @@ the same code path as the math worker on MGS: declared formulas evaluated by the
 Otherwise the block code runs in a plain Node Function (formulas not evaluated).
 
 Usage (from the package root):
-        python3 policy/v3.2_backup/tools/regression_v3.2.py <policy.json or .policy> <PD.full.json> <MR.full.json>
+        python3 policy/v3.2_fNRB_input_checks/tools/regression_v3.2.py <policy.json or .policy> <PD.full.json> <MR.full.json>
         It uses the package's tools/guardian_math when that is installed (cd tools/guardian_math && npm install).
 Needs:  node on PATH. Exit code 1 if any case fails.
 """
@@ -16,7 +16,7 @@ import json, sys, copy, subprocess, zipfile, os, tempfile, datetime
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 GUARDIAN = os.path.join(HERE, 'guardian_math')
-if not os.path.isdir(GUARDIAN):   # this copy lives in policy/v3.2_backup/tools: use the package's tools/guardian_math
+if not os.path.isdir(GUARDIAN):   # this copy lives in policy/v3.2_fNRB_input_checks/tools: use the package's tools/guardian_math
     GUARDIAN = os.path.normpath(os.path.join(HERE, '..', '..', '..', 'tools', 'guardian_math'))
 PLAIN_JS = r"""
 const fs = require('fs');

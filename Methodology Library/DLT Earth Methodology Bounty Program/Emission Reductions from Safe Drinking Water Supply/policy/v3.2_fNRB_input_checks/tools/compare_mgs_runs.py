@@ -2,7 +2,7 @@
 "..._with_integrity_test.policy" files.
 
 Usage (from the package root):
-    python3 policy/v3.2_backup/tools/compare_mgs_runs.py <first_with_integrity_test.policy> <second_with_integrity_test.policy>
+    python3 policy/v3.2_fNRB_input_checks/tools/compare_mgs_runs.py <first_with_integrity_test.policy> <second_with_integrity_test.policy>
 
 Each recording (tests/*.record) holds the documents MGS produced during the run. This script maps each document's
 schema to its schema name (through the schemas of its own policy file), pairs the documents by schema name in the order

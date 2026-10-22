@@ -1,14 +1,26 @@
-# VMR0015 v3.2: backup with the fNRB input checks closed
+# VMR0015 v3.2: the fNRB input checks of VMR0015 s9.2 enforced
 
 **The submission is v3.1**, the two policy files in `policy/` one level up. They are unchanged.
 
-This folder holds v3.2, a backup of the same policy. It closes two input-check gaps in the fNRB determination (VMR0015 s9.2), found in a review after v3.1 was submitted. Everything else is v3.1:
+This folder holds v3.2, the same policy with two input checks on the fNRB determination (VMR0015 s9.2) enforced. The checks were found missing in a review after v3.1 was submitted. Everything else is v3.1:
 - the same workflow and the same 219 blocks
 - the same schemas and templates
 - the same token and mint rule
 - the same results on the sample: 1,666.620262475 t CO2e/yr ex-ante, 1,556.947181413 t CO2e ex-post, 1,556 VCU
 
 Use v3.2 only if the reviewers ask for these checks to be enforced inside the policy. Adding this folder changed no other file in the package.
+
+## Why there are several policy files
+
+The package has eight `.policy` files. A reviewer imports one of them.
+
+| Why | Files |
+|---|---|
+| **Two Verra template sets.** Guardian cannot switch template sets inside one policy, so each version comes as two files. VCS v5.0A is for projects starting before 1 January 2027; VCS v5.0B is for projects starting on or after that date. The calculation blocks are identical in both | `..._VCS-v5.0A...` and `..._VCS-v5.0B...` |
+| **Two forms of each file.** The as-built file is what the offline tools check. The MGS export is the same policy with its Policy Integrity Test saved inside, and it is the file to import | `without_integrity_test/...` and `..._with_integrity_test.policy` |
+| **Two versions.** v3.1 is the submission. v3.2, here, adds only the fNRB input checks | `policy/` (v3.1) and `policy/v3.2_fNRB_input_checks/` (v3.2) |
+
+To review the submission, import `policy/VMR0015_Safe_Drinking_Water_dMRV_v3.1_VCS-v5.0B_with_integrity_test.policy`, or the v5.0A file for a project starting before 2027.
 
 ## What v3.2 closes
 
@@ -132,13 +144,13 @@ From the package root, once:
 The engine also needs `tools/guardian_math/dist/`. The repository's `.gitignore` (`dist/`) kept it out of the v3.1 commit, so a separate commit adds it, unchanged from the package as built. The same commit fixes the path of the log file `sim.mjs` writes, which failed in folders whose names contain spaces. If `dist/` is ever missing, rebuild it with `npx tsc -p .` in that folder. `tsc` reports one type error (`Cannot find module 'node:crypto'`: `@types/node` is not installed) but still writes `dist/`. Then:
 
 ```
-N=policy/v3.2_backup/VMR0015_Safe_Drinking_Water_dMRV_v3.2_VCS-v5.0B_with_integrity_test.policy      # or ..._VCS-v5.0A_... with tools/fixtures/v5.0A/
+N=policy/v3.2_fNRB_input_checks/VMR0015_Safe_Drinking_Water_dMRV_v3.2_VCS-v5.0B_with_integrity_test.policy      # or ..._VCS-v5.0A_... with tools/fixtures/v5.0A/
 O=policy/VMR0015_Safe_Drinking_Water_dMRV_v3.1_VCS-v5.0B_with_integrity_test.policy
-python3 policy/v3.2_backup/tools/regression_v3.2.py $N tools/fixtures/PD.full.json tools/fixtures/MR.full.json   # 65/65
-python3 policy/v3.2_backup/tools/regression_v3.2.py $O tools/fixtures/PD.full.json tools/fixtures/MR.full.json   # 60/65, the 5 fNRB cases fail
+python3 policy/v3.2_fNRB_input_checks/tools/regression_v3.2.py $N tools/fixtures/PD.full.json tools/fixtures/MR.full.json   # 65/65
+python3 policy/v3.2_fNRB_input_checks/tools/regression_v3.2.py $O tools/fixtures/PD.full.json tools/fixtures/MR.full.json   # 60/65, the 5 fNRB cases fail
 python3 tools/regression.py $N tools/fixtures/PD.full.json tools/fixtures/MR.full.json                           # 60/60
-python3 policy/v3.2_backup/tools/compare_policies.py $O $N
-python3 policy/v3.2_backup/tools/compare_mgs_runs.py $O $N
+python3 policy/v3.2_fNRB_input_checks/tools/compare_policies.py $O $N
+python3 policy/v3.2_fNRB_input_checks/tools/compare_mgs_runs.py $O $N
 mkdir /tmp/p && (cd /tmp/p && unzip -q $OLDPWD/$N) && node tools/guardian_math/sim.mjs /tmp/p sample-data/v5.0B   # 94/94
 ```
 
