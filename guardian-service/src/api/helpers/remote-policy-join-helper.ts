@@ -9,12 +9,11 @@ import { MessageServer } from '@guardian/hedera/message/message-server';
 import { MessageType } from '@guardian/hedera/message/message-type';
 import { PolicyJoinMessage } from '@guardian/hedera/message/policy-join-message';
 import { PolicyMessage } from '@guardian/hedera/message/policy-message';
-import { resolveOwnerDidDocument } from '@guardian/hedera/published-did-document';
+import { parseDid, resolveOwnerDidDocument } from '@guardian/hedera/published-did-document';
 import { createRemoteJoinDocument } from '@guardian/hedera/remote-policy-join';
 import { REMOTE_POLICY_JOIN_TAG } from '@guardian/hedera/remote-policy-join-reply';
 import { TopicConfig } from '@guardian/hedera/topic';
 import { VcHelper } from '@guardian/hedera/vc-helper';
-import { HederaDid } from '@guardian/hedera/vcjs/did/hedera-did';
 import { ExternalPolicyStatus, ExternalPolicyType, GenerateUUIDv4, LocationType, RemoteJoinStatus, TopicType, UserRole } from '@guardian/interfaces';
 import { PrivateKey } from '@hiero-ledger/sdk';
 
@@ -91,7 +90,9 @@ export async function sendRemotePolicyJoin(
     if (
         !force &&
         item.joinMessageId && (
-            item.joinStatus === RemoteJoinStatus.SENT ||
+            // a join that is still unanswered is sent again when the user imports the policy again:
+            // the Main instance may have missed it
+            (item.joinStatus === RemoteJoinStatus.SENT && !retryRejected) ||
             item.joinStatus === RemoteJoinStatus.ACCEPTED ||
             (item.joinStatus === RemoteJoinStatus.REJECTED && !retryRejected)
         )
@@ -123,7 +124,7 @@ export async function sendRemotePolicyJoin(
         if (!ownerDid || !policyMessage.payer) {
             throw new Error('Policy owner is unknown.');
         }
-        const ownerTopicId = HederaDid.parse(ownerDid).topicId?.toString();
+        const ownerTopicId = parseDid(ownerDid).topicId;
         // the owner's DID topic usually has a submit key; an open topic falls back to the payer of the policy
         const ownerDidDocument = await resolveOwnerDidDocument(
             ownerDid,

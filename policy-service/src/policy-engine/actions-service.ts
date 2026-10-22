@@ -141,6 +141,7 @@ export class PolicyActionsService {
 
     public async destroy(): Promise<void> {
         this.destroyed = true;
+        this.joins.stop();
         this.rejectReady(new Error('The policy was stopped'));
         if (this.expirationTimer) {
             clearInterval(this.expirationTimer);
@@ -698,7 +699,7 @@ export class PolicyActionsService {
                 }
                 case MessageAction.RemotePolicyJoinRequest: {
                     if (this.isLocal) {
-                        await this.joins.processJoinRequest(data);
+                        await this.joins.receiveJoinRequest(data);
                     }
                     break;
                 }

@@ -11,7 +11,7 @@ import { MessageAction } from '@guardian/hedera/message/message-action';
 import { MessageServer } from '@guardian/hedera/message/message-server';
 import { PolicyActionMessage } from '@guardian/hedera/message/policy-action-message';
 import { PolicyJoinMessage } from '@guardian/hedera/message/policy-join-message';
-import { resolvePublishedDidDocument } from '@guardian/hedera/published-did-document';
+import { DidTopicReadError, resolvePublishedDidDocument } from '@guardian/hedera/published-did-document';
 import { IRemoteJoinDocument, openRemoteJoinMessageKey, verifyRemoteJoinProof } from '@guardian/hedera/remote-policy-join';
 import { expireRemoteParticipants, IRemoteJoinReply, remoteJoinLimits, saveRemoteUserMessageKey, sendRemoteJoinReply } from '@guardian/hedera/remote-policy-join-reply';
 import { VcHelper } from '@guardian/hedera/vc-helper';
@@ -43,18 +43,66 @@ function compareMessageIds(a: string, b: string): number {
 }
 
 /**
+ * Delays before a join request is processed again after a temporary error, ms
+ */
+const JOIN_RETRY_DELAYS = [30 * 1000, 2 * 60 * 1000, 10 * 60 * 1000, 30 * 60 * 1000];
+
+/**
  * Join requests of remote users.
  * On the Main instance a join request creates a remote user without a login and a
  * pending participant the policy owner approves or rejects. On the home instance
  * the reply of the policy owner updates the status of the remote policy.
  */
 export class PolicyJoinService {
+    /**
+     * Delays before a join request is processed again after a temporary error, ms
+     */
+    public static retryDelays: number[] = JOIN_RETRY_DELAYS;
+
+    private readonly retries = new Set<ReturnType<typeof setTimeout>>();
+    private stopped = false;
+
     constructor(
         private readonly policyId: string,
         private readonly policyMessageId: string,
         private readonly policyOwner: string,
         private readonly policyOwnerId: string | null
     ) {
+    }
+
+    /**
+     * Process a join request and try it again later when the Hedera topics or IPFS are unavailable.
+     * The topic listener does not redeliver a message, so a request lost to a temporary error
+     * would otherwise wait for the user to send it again.
+     * @param data - topic message
+     * @param attempt
+     */
+    public async receiveJoinRequest(data: ITopicMessage, attempt: number = 0): Promise<void> {
+        try {
+            await this.processJoinRequest(data);
+        } catch (error) {
+            if (error?.transient && !this.stopped && attempt < PolicyJoinService.retryDelays.length) {
+                const timer = setTimeout(() => {
+                    this.retries.delete(timer);
+                    this.receiveJoinRequest(data, attempt + 1).catch((e) => console.error(e));
+                }, PolicyJoinService.retryDelays[attempt]);
+                timer.unref?.();
+                this.retries.add(timer);
+                return;
+            }
+            throw error;
+        }
+    }
+
+    /**
+     * Stop the pending retries
+     */
+    public stop(): void {
+        this.stopped = true;
+        for (const timer of this.retries) {
+            clearTimeout(timer);
+        }
+        this.retries.clear();
     }
 
     /**
@@ -69,7 +117,11 @@ export class PolicyJoinService {
      */
     public async processJoinRequest(data: ITopicMessage): Promise<RemotePolicyParticipant | null> {
         const message = PolicyJoinMessage.from(data);
-        await MessageServer.loadDocument(message, null, { dryRun: null, mockId: null } as any);
+        try {
+            await MessageServer.loadDocument(message, null, { dryRun: null, mockId: null } as any);
+        } catch (error) {
+            throw new DidTopicReadError(`Unable to load the join request, try again later: ${error?.message || error}`);
+        }
         const document: IRemoteJoinDocument = message.getDocument();
         const proof = document?.proof;
         if (!proof || typeof proof !== 'object') {
@@ -100,6 +152,16 @@ export class PolicyJoinService {
             if (existing.joinMessageId && compareMessageIds(message.id, existing.joinMessageId) <= 0) {
                 return existing;
             }
+        }
+        // a participant keeps the account and topic of its first join: they are where its
+        // requests are paid from, and a different pair needs the owner to decide again
+        if (
+            existing &&
+            existing.status !== RemoteParticipantStatus.REJECTED &&
+            (existing.hederaAccountId !== proof.hederaAccountId || existing.topicId !== proof.topicId)
+        ) {
+            console.warn(`Remote join of ${proof.did} to policy ${this.policyId} ignored: another account or topic.`);
+            return existing;
         }
         const approved = existing?.status === RemoteParticipantStatus.APPROVED;
         const newPending = !existing || existing.status === RemoteParticipantStatus.REJECTED;
