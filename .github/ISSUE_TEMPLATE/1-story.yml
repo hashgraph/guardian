@@ -1,5 +1,5 @@
 name: Story
-description: Add a functional or technical user story to help complete a job or activity
+description: Add a functional or technical user story to help complete a job or activity.
 type: Story
 body:
   - type: textarea
