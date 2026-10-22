@@ -15,7 +15,7 @@ async function makeService(status) {
     const { PolicyActionsService } = await esmock(SERVICE, {
         [JOIN_SERVICE]: {
             PolicyJoinService: class {
-                async processJoinRequest(data) { calls.requests.push(data); }
+                async receiveJoinRequest(data) { calls.requests.push(data); }
                 async processJoinReply(message) { calls.replies.push(message); }
             },
         },
