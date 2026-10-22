@@ -1,12 +1,9 @@
 name: E2E Tests
 run-name: E2E Tests · ${{ github.event_name == 'schedule' && 'all' || (inputs.tags || 'smoke') }}
-
 on:
   schedule:
     - cron: '0 3 * * *' # Run at 03:00 UTC every day (nightly)
   push:
-    branches-ignore:
-      - 'dependabot/**'
     paths-ignore:
       - '.github/**'
       - 'docs/**'

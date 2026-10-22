@@ -1,9 +1,6 @@
 name: Component Tests
-
 on:
   push:
-    branches-ignore:
-      - 'dependabot/**'
     paths-ignore:
       - '.github/**'
       - 'docs/**'
