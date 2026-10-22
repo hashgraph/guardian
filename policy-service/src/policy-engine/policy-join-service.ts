@@ -1,29 +1,20 @@
-import {
-    DataBaseHelper,
-    DatabaseServer,
-    DisconnectedPolicy,
-    ExternalPolicy,
-    expireRemoteParticipants,
-    IRemoteJoinDocument,
-    IRemoteJoinReply,
-    ITopicMessage,
-    KeyType,
-    MessageAction,
-    MessageServer,
-    NotificationHelper,
-    openRemoteJoinMessageKey,
-    PolicyActionMessage,
-    PolicyJoinMessage,
-    RemotePolicyParticipant,
-    remoteJoinLimits,
-    resolvePublishedDidDocument,
-    saveRemoteUserMessageKey,
-    sendRemoteJoinReply,
-    Users,
-    VcHelper,
-    verifyRemoteJoinProof,
-    Wallet,
-} from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { DisconnectedPolicy } from '@guardian/common/entity/disconnected-policy';
+import { ExternalPolicy } from '@guardian/common/entity/external-policy';
+import { RemotePolicyParticipant } from '@guardian/common/entity/remote-policy-participant';
+import { DataBaseHelper } from '@guardian/common/helpers/db-helper';
+import { Users } from '@guardian/common/helpers/users';
+import { KeyType, Wallet } from '@guardian/common/helpers/wallet';
+import { NotificationHelper } from '@guardian/common/notification/notification-helper';
+import { ITopicMessage } from '@guardian/common/topic-listener/topic-listener';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { PolicyActionMessage } from '@guardian/hedera/message/policy-action-message';
+import { PolicyJoinMessage } from '@guardian/hedera/message/policy-join-message';
+import { resolvePublishedDidDocument } from '@guardian/hedera/published-did-document';
+import { IRemoteJoinDocument, openRemoteJoinMessageKey, verifyRemoteJoinProof } from '@guardian/hedera/remote-policy-join';
+import { expireRemoteParticipants, IRemoteJoinReply, remoteJoinLimits, saveRemoteUserMessageKey, sendRemoteJoinReply } from '@guardian/hedera/remote-policy-join-reply';
+import { VcHelper } from '@guardian/hedera/vc-helper';
 import { RemoteJoinStatus, RemoteParticipantStatus } from '@guardian/interfaces';
 
 /**

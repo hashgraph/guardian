@@ -1,5 +1,6 @@
 import { createCipheriv, createDecipheriv, createHash, hkdfSync, randomBytes } from 'node:crypto';
 import { edwardsToMontgomeryPriv, edwardsToMontgomeryPub, x25519 } from '@noble/curves/ed25519';
+import type { ISealedBox } from '@guardian/interfaces';
 import type { CommonDidDocument } from './vcjs/did/common-did-document.js';
 import {
     checkProofIssued,
@@ -31,25 +32,6 @@ const SEAL_INFO = 'guardian-remote-policy-join-key-v1';
  * Sealing scheme name
  */
 export const SEALED_BOX_ALGORITHM = 'X25519-HKDF-SHA256-A256GCM';
-
-/**
- * Secret sealed to the Ed25519 DID key of the recipient
- */
-export interface ISealedBox {
-    alg: string;
-    /**
-     * Ephemeral X25519 public key, base64
-     */
-    epk: string;
-    /**
-     * AES-GCM nonce, base64
-     */
-    iv: string;
-    /**
-     * Cipher text followed by the 16-byte tag, base64
-     */
-    data: string;
-}
 
 /**
  * Join proof

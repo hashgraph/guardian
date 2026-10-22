@@ -1,23 +1,20 @@
-import {
-    createRemoteJoinDocument,
-    DatabaseServer,
-    ExternalPolicy,
-    HederaDid,
-    IAuthUser,
-    KeyType,
-    MessageServer,
-    MessageType,
-    PinoLogger,
-    Policy,
-    PolicyJoinMessage,
-    PolicyMessage,
-    REMOTE_POLICY_JOIN_TAG,
-    resolveOwnerDidDocument,
-    TopicConfig,
-    Users,
-    VcHelper,
-    Wallet,
-} from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { ExternalPolicy } from '@guardian/common/entity/external-policy';
+import { Policy } from '@guardian/common/entity/policy';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { Users } from '@guardian/common/helpers/users';
+import { KeyType, Wallet } from '@guardian/common/helpers/wallet';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { MessageType } from '@guardian/hedera/message/message-type';
+import { PolicyJoinMessage } from '@guardian/hedera/message/policy-join-message';
+import { PolicyMessage } from '@guardian/hedera/message/policy-message';
+import { resolveOwnerDidDocument } from '@guardian/hedera/published-did-document';
+import { createRemoteJoinDocument } from '@guardian/hedera/remote-policy-join';
+import { REMOTE_POLICY_JOIN_TAG } from '@guardian/hedera/remote-policy-join-reply';
+import { TopicConfig } from '@guardian/hedera/topic';
+import { VcHelper } from '@guardian/hedera/vc-helper';
+import { HederaDid } from '@guardian/hedera/vcjs/did/hedera-did';
 import { ExternalPolicyStatus, ExternalPolicyType, GenerateUUIDv4, LocationType, RemoteJoinStatus, TopicType, UserRole } from '@guardian/interfaces';
 import { PrivateKey } from '@hiero-ledger/sdk';
 
