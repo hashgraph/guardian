@@ -8,18 +8,14 @@ import { RemoteParticipantStatus } from '@guardian/interfaces';
  */
 async function load() {
     const deleted = [];
-    // strict: loading the real module graph from this entry point hits a module cycle
-    const helper = await esmock.strict('../../dist/helpers/remote-policy-join-reply.js', {
-        '../../dist/database-modules/index.js': { DatabaseServer: class {} },
-        '../../dist/entity/index.js': {
-            DidDocument: class {}, RemotePolicyParticipant: class RemotePolicyParticipant {}, Topic: class {}
-        },
-        '../../dist/hedera-modules/index.js': {
-            MessageAction: {}, MessageServer: class {}, PolicyActionMessage: class {}, TopicConfig: class {}
-        },
-        '../../dist/helpers/users.js': { Users: class {} },
-        '../../dist/helpers/wallet.js': { KeyType: {}, Wallet: class {} },
-        '../../dist/helpers/db-helper.js': {
+    const helper = await esmock('../../dist/remote-policy-join-reply.js', {
+        '@guardian/common/database-modules/database-server': { DatabaseServer: class {} },
+        '@guardian/common/entity/did-document': { DidDocument: class {} },
+        '@guardian/common/entity/remote-policy-participant': { RemotePolicyParticipant: class RemotePolicyParticipant {} },
+        '@guardian/common/entity/topic': { Topic: class {} },
+        '@guardian/common/helpers/users': { Users: class {} },
+        '@guardian/common/helpers/wallet': { KeyType: {}, Wallet: class {} },
+        '@guardian/common/helpers/db-helper': {
             DataBaseHelper: class {
                 async delete(filter) { deleted.push(filter); return 1; }
             },
