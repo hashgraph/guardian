@@ -52,7 +52,7 @@ function topicMessage(join, { payer = ACCOUNT, owner = USER, accountId = ACCOUNT
 }
 
 
-async function makeService({ user, owner, limit = 100, disconnected = false } = {}) {
+async function makeService({ user, owner, limit = 100, disconnected = false, resolveFailures = [] } = {}) {
     const store = {
         RemotePolicyParticipant: [],
         DisconnectedPolicy: disconnected ? [{ policyId: 'policy-1', owner: USER }] : [],
@@ -106,6 +106,7 @@ async function makeService({ user, owner, limit = 100, disconnected = false } = 
         },
         '@guardian/hedera/published-did-document': {
             resolvePublishedDidDocument: async (did, topicId, account) => {
+                if (resolveFailures.length) { throw resolveFailures.shift(); }
                 assert.equal(did, USER);
                 assert.equal(account, ACCOUNT);
                 return user.published;
@@ -137,7 +138,11 @@ async function makeService({ user, owner, limit = 100, disconnected = false } = 
         ipfs.set(`cid-${data.consensusTimestamp}`, data.document);
         return await service.processJoinRequest(data);
     };
-    return { service, receive, store, calls };
+    const receiveWithRetry = async (data) => {
+        ipfs.set(`cid-${data.consensusTimestamp}`, data.document);
+        return await service.receiveJoinRequest(data);
+    };
+    return { service, receive, receiveWithRetry, store, calls, PolicyJoinService };
 }
 
 async function rejection(promise) {
@@ -254,6 +259,79 @@ describe('@unit PolicyJoinService – join requests on the Main instance', funct
 
         assert.equal(participant.joinMessageId, `${t}.000000002`);
         assert.lengthOf(store.RemotePolicyParticipant, 1);
+    });
+
+    it('ignores a newer join of a pending participant from another account', async () => {
+        const { receive, store } = await makeService({ user, owner });
+        const t = now();
+
+        await receive(topicMessage(join(), { timestamp: `${t}.000000001` }));
+        const other = createRemoteJoinDocument(user.document, owner.published, '0.0.101', '0.0.5', POLICY, messageKey);
+        await receive(topicMessage(other, { payer: '0.0.101', accountId: '0.0.101', timestamp: `${t}.000000002` }));
+
+        assert.equal(store.RemotePolicyParticipant[0].hederaAccountId, ACCOUNT);
+        assert.equal(store.RemotePolicyParticipant[0].joinMessageId, `${t}.000000001`);
+    });
+
+    it('ignores a newer join of an approved participant from another account or topic', async () => {
+        const { receive, store, calls } = await makeService({ user, owner });
+        const t = now();
+
+        const participant = await receive(topicMessage(join(), { timestamp: `${t}.000000001` }));
+        participant.status = RemoteParticipantStatus.APPROVED;
+        participant.sealedKey = null;
+        const otherAccount = createRemoteJoinDocument(user.document, owner.published, '0.0.101', '0.0.5', POLICY, messageKey);
+        await receive(topicMessage(otherAccount, { payer: '0.0.101', accountId: '0.0.101', timestamp: `${t}.000000002` }));
+        const otherTopic = createRemoteJoinDocument(user.document, owner.published, ACCOUNT, '0.0.6', POLICY, messageKey);
+        await receive(topicMessage(otherTopic, { timestamp: `${t}.000000003` }));
+
+        assert.lengthOf(calls.keys, 0, 'the stored message key is not replaced');
+        assert.lengthOf(calls.replies, 0);
+        assert.equal(store.RemotePolicyParticipant[0].joinMessageId, `${t}.000000001`);
+    });
+
+    it('processes a join again after a temporary error', async () => {
+        const transient = Object.assign(new Error('Unable to read the DID topic'), { transient: true });
+        const { receiveWithRetry, store, service, PolicyJoinService } = await makeService({ user, owner, resolveFailures: [transient] });
+        const delays = PolicyJoinService.retryDelays;
+        PolicyJoinService.retryDelays = [5, 5];
+        try {
+            await receiveWithRetry(topicMessage(join()));
+            assert.lengthOf(store.RemotePolicyParticipant, 0, 'not recorded yet');
+            await new Promise((resolve) => setTimeout(resolve, 100));
+        } finally {
+            PolicyJoinService.retryDelays = delays;
+            service.stop();
+        }
+
+        assert.lengthOf(store.RemotePolicyParticipant, 1);
+        assert.equal(store.RemotePolicyParticipant[0].status, RemoteParticipantStatus.PENDING);
+    });
+
+    it('gives up after the last retry and does not retry a permanent error', async () => {
+        const transient = Object.assign(new Error('Unable to read the DID topic'), { transient: true });
+        const { receiveWithRetry, store, service, PolicyJoinService } = await makeService({ user, owner, resolveFailures: [transient, transient, transient] });
+        const delays = PolicyJoinService.retryDelays;
+        PolicyJoinService.retryDelays = [5, 5];
+        const errors = [];
+        const log = console.error;
+        console.error = (error) => errors.push(error);
+        try {
+            await receiveWithRetry(topicMessage(join()));
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            const forged = await didWithKeys(USER);
+            const permanent = await rejection(receiveWithRetry(topicMessage(
+                createRemoteJoinDocument(forged.document, owner.published, ACCOUNT, '0.0.5', POLICY, messageKey)
+            )));
+            assert.match(permanent?.message, /Invalid join proof/);
+        } finally {
+            console.error = log;
+            PolicyJoinService.retryDelays = delays;
+            service.stop();
+        }
+
+        assert.lengthOf(store.RemotePolicyParticipant, 0);
+        assert.lengthOf(errors, 1, 'the last attempt reports the error');
     });
 
     it('drops a new join without a reply when the pending limit is reached', async () => {

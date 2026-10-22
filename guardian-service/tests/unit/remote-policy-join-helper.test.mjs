@@ -91,6 +91,18 @@ describe('@unit remote policy join on the home instance', function () {
         assert.equal(item.joinStatus, RemoteJoinStatus.ACCEPTED);
     });
 
+    it('sends an unanswered join again when the policy is imported again, not on approval', async () => {
+        const { sendRemotePolicyJoin, calls } = await loadHelper();
+        const item = { ...answered(), joinStatus: RemoteJoinStatus.SENT, joinReplyMessageId: null };
+
+        await sendRemotePolicyJoin(policy, item, logger);
+        assert.lengthOf(calls.sent, 0, 'the join sent at approval is not duplicated');
+
+        await sendRemotePolicyJoin(policy, item, logger, true);
+        assert.lengthOf(calls.sent, 1, 'importing again sends it again, the Main instance may have missed it');
+        assert.equal(item.joinStatus, RemoteJoinStatus.SENT);
+    });
+
     it('sends a fresh join to reconnect', async () => {
         const { sendRemotePolicyJoin, calls } = await loadHelper();
         const item = answered();
