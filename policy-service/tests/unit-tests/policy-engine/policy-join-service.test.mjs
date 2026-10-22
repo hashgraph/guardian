@@ -1,12 +1,10 @@
 import { assert } from 'chai';
 import esmock from 'esmock';
 import { PrivateKey } from '@hiero-ledger/sdk';
-import {
-    CommonDidDocument,
-    createRemoteJoinDocument,
-    HederaEd25519Method,
-    MessageAction,
-} from '@guardian/common';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { createRemoteJoinDocument } from '@guardian/hedera/remote-policy-join';
+import { CommonDidDocument } from '@guardian/hedera/vcjs/did/common-did-document';
+import { HederaEd25519Method } from '@guardian/hedera/vcjs/did/components/hedera-ed25519-method';
 import { RemoteJoinStatus, RemoteParticipantStatus } from '@guardian/interfaces';
 
 const SERVICE = '../../../dist/policy-engine/policy-join-service.js';
@@ -65,13 +63,15 @@ async function makeService({ user, owner, limit = 100, disconnected = false } = 
     const matches = (row, filter) => Object.entries(filter).every(([k, v]) => row[k] === v);
 
     const { PolicyJoinService } = await esmock(SERVICE, {
-        '@guardian/common': {
+        '@guardian/hedera/message/message-server': {
             MessageServer: class {
                 static async loadDocument(message) {
                     message.document = ipfs.get(message.getUrls()[0].cid);
                     return message;
                 }
             },
+        },
+        '@guardian/common/helpers/db-helper': {
             DataBaseHelper: class {
                 constructor(entity) { this.rows = store[entity.name]; }
                 create(row) { return { ...row }; }
@@ -85,6 +85,8 @@ async function makeService({ user, owner, limit = 100, disconnected = false } = 
                     return row;
                 }
             },
+        },
+        '@guardian/common/database-modules/database-server': {
             DatabaseServer: class {
                 static async reconnectPolicy(policyId, did) {
                     calls.reconnected.push({ policyId, did });
@@ -92,31 +94,41 @@ async function makeService({ user, owner, limit = 100, disconnected = false } = 
                 }
                 async reconnectPolicyDocuments() { return null; }
             },
+        },
+        '@guardian/hedera/remote-policy-join-reply': {
             expireRemoteParticipants: async () => { calls.expired++; },
             remoteJoinLimits: () => ({ pendingLimit: limit, pendingExpiryMs: 1000 }),
+            saveRemoteUserMessageKey: async (did, messageId, key) => { calls.keys.push({ did, messageId, key }); },
+            sendRemoteJoinReply: async (participant, accepted, userId, key) => {
+                calls.replies.push({ participant, accepted, key });
+                return 'reply-1';
+            },
+        },
+        '@guardian/hedera/published-did-document': {
             resolvePublishedDidDocument: async (did, topicId, account) => {
                 assert.equal(did, USER);
                 assert.equal(account, ACCOUNT);
                 return user.published;
             },
+        },
+        '@guardian/hedera/vc-helper': {
             VcHelper: class {
                 async loadDidDocument(did) {
                     assert.equal(did, OWNER);
                     return owner.document;
                 }
             },
+        },
+        '@guardian/common/helpers/users': {
             Users: class {
                 async createRemoteUser(did, account, parent) {
                     calls.users.push({ did, account, parent });
                     return { did };
                 }
             },
-            saveRemoteUserMessageKey: async (did, messageId, key) => { calls.keys.push({ did, messageId, key }); },
+        },
+        '@guardian/common/notification/notification-helper': {
             NotificationHelper: { info: async (...args) => { calls.notifications.push(args); } },
-            sendRemoteJoinReply: async (participant, accepted, userId, key) => {
-                calls.replies.push({ participant, accepted, key });
-                return 'reply-1';
-            },
         },
     });
 
@@ -339,16 +351,20 @@ describe('@unit PolicyJoinService – replies on the home instance', function ()
     async function makeHome({ item, key = 'user-key', document }) {
         const updated = [];
         const { PolicyJoinService } = await esmock(SERVICE, {
-            '@guardian/common': {
+            '@guardian/common/database-modules/database-server': {
                 DatabaseServer: {
                     getExternalPolicy: async (filter) => (
                         filter.messageId === POLICY && filter.creator === item.creator ? item : null
                     ),
                     updateExternalPolicy: async (row) => { updated.push({ ...row }); return row; },
                 },
+            },
+            '@guardian/common/helpers/wallet': {
                 Wallet: class {
                     async getUserKey(did, type, slot) { return slot === `${USER}#${POLICY}` ? key : null; }
                 },
+            },
+            '@guardian/hedera/message/message-server': {
                 MessageServer: class {
                     static async loadDocument(message, messageKey) {
                         if (messageKey !== 'user-key') { throw new Error('Unable to decrypt'); }
@@ -356,7 +372,11 @@ describe('@unit PolicyJoinService – replies on the home instance', function ()
                         return message;
                     }
                 },
+            },
+            '@guardian/common/helpers/users': {
                 Users: class { async getUserById() { return { id: 'u-1' }; } },
+            },
+            '@guardian/common/notification/notification-helper': {
                 NotificationHelper: { info: async () => null },
             },
         });

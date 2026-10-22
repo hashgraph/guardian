@@ -1,7 +1,6 @@
 import { BeforeCreate, Entity, Property, Unique } from '@mikro-orm/core';
 import { BaseEntity } from '../models/index.js';
-import { RemoteParticipantStatus } from '@guardian/interfaces';
-import type { ISealedBox } from '../helpers/remote-policy-join.js';
+import { ISealedBox, RemoteParticipantStatus } from '@guardian/interfaces';
 
 /**
  * A user of another instance who asked to take part in a policy of this instance
