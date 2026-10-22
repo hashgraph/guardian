@@ -1,6 +1,6 @@
 import { assert } from 'chai';
 import esmock from 'esmock';
-import { MessageAction } from '@guardian/common';
+import { MessageAction } from '@guardian/hedera/message/message-action';
 import { PolicyStatus } from '@guardian/interfaces';
 
 const SERVICE = '../../../dist/policy-engine/actions-service.js';

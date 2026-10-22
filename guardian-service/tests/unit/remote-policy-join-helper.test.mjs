@@ -12,13 +12,15 @@ const OWNER_DID = 'did:hedera:testnet:owner_0.0.7';
 async function loadHelper() {
     const calls = { sent: [], resolved: [] };
     const helper = await esmock('../../dist/api/helpers/remote-policy-join-helper.js', {
-        '@guardian/common': {
+        '@guardian/common/helpers/users': {
             Users: class {
                 async getUserById(did) {
                     return { id: 'u-1', did, hederaAccountId: '0.0.100', role: 'USER', location: 'LOCAL', parent: 'did:home-sr' };
                 }
                 async getHederaAccount() { return { hederaAccountId: '0.0.100', hederaAccountKey: 'key', signOptions: {} }; }
             },
+        },
+        '@guardian/hedera/message/message-server': {
             MessageServer: class {
                 static async getMessage() { return { owner: OWNER_DID, payer: '0.0.9' }; }
                 setTopicObject() { return this; }
@@ -27,13 +29,23 @@ async function loadHelper() {
                     return { getId: () => `join-${calls.sent.length + 1}` };
                 }
             },
+        },
+        '@guardian/hedera/vcjs/did/hedera-did': {
             HederaDid: { parse: () => ({ topicId: '0.0.7' }) },
+        },
+        '@guardian/hedera/published-did-document': {
             resolveOwnerDidDocument: async (did, topicId, payer) => {
                 calls.resolved.push({ did, topicId, payer });
                 return {};
             },
+        },
+        '@guardian/hedera/vc-helper': {
             VcHelper: class { async loadDidDocument() { return {}; } },
+        },
+        '@guardian/common/helpers/wallet': {
             Wallet: class { async getUserKey() { return 'stored-key'; } },
+        },
+        '@guardian/common/database-modules/database-server': {
             DatabaseServer: class {
                 static async getTopicById() { return {}; }
                 static async updateExternalPolicy(row) { return row; }
@@ -41,8 +53,14 @@ async function loadHelper() {
                 async getDidDocument() { return { topicId: '0.0.5' }; }
                 async getTopic() { return null; }
             },
+        },
+        '@guardian/hedera/topic': {
             TopicConfig: { fromObject: async () => ({}) },
+        },
+        '@guardian/hedera/remote-policy-join': {
             createRemoteJoinDocument: () => ({ proof: {}, messageKey: {} }),
+        },
+        '@guardian/hedera/message/policy-join-message': {
             PolicyJoinMessage: class { setDocument(row, document) { this.row = row; this.document = document; } },
         },
     });
@@ -111,7 +129,7 @@ describe('@unit remote policy import after a disconnection', function () {
                 },
                 sendRemotePolicyJoins: async () => null,
             },
-            '@guardian/common': {
+            '@guardian/common/database-modules/database-server': {
                 DatabaseServer: class {
                     static async getPolicy() { return { id: 'view-1', status: PolicyStatus.VIEW, messageId: '1.1' }; }
                     static async getExternalPolicy() { return request; }

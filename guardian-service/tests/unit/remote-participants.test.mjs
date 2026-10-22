@@ -23,7 +23,7 @@ async function load({ participant, policy, createUserError = null, existingUser 
             '../../dist/api/permission.service.js': {
                 serDefaultRole: async (user, owner) => { calls.permissions.push({ user, owner }); },
             },
-            '@guardian/common': {
+            '@guardian/common/helpers/db-helper': {
                 DataBaseHelper: class {
                     constructor(entity) { this.entity = entity.name; }
                     async findOne(filter) {
@@ -35,6 +35,8 @@ async function load({ participant, policy, createUserError = null, existingUser 
                     async save(row) { return row; }
                     async remove(row) { calls.removedParticipants.push(row); }
                 },
+            },
+            '@guardian/common/database-modules/database-server': {
                 DatabaseServer: class {
                     static async getPolicyById(id) { return policy && id === policy.id ? policy : null; }
                     static async getAssignedEntity(type, entityId, did) {
@@ -51,16 +53,24 @@ async function load({ participant, policy, createUserError = null, existingUser 
                     static async reconnectPolicy(policyId, did) { calls.reconnected.push({ policyId, did }); }
                     async reconnectPolicyDocuments() { return null; }
                 },
+            },
+            '@guardian/hedera/published-did-document': {
                 resolvePublishedDidDocument: async (did, topicId, account) => ({
                     getDocument: () => ({ id: did, topicId, account })
                 }),
+            },
+            '@guardian/hedera/vc-helper': {
                 VcHelper: class { async loadDidDocument(did) { return { owner: did }; } },
+            },
+            '@guardian/hedera/remote-policy-join': {
                 openRemoteJoinMessageKey: (document, ownerDid) => {
                     calls.opened++;
                     assert.deepEqual(document.messageKey, SEALED);
                     assert.equal(ownerDid.owner, 'did:sr');
                     return 'opened-key';
                 },
+            },
+            '@guardian/common/helpers/users': {
                 Users: class {
                     async createRemoteUser(did, account, parent) {
                         calls.users.push({ did, account, parent });
@@ -69,7 +79,11 @@ async function load({ participant, policy, createUserError = null, existingUser 
                     }
                     async getUserById(did) { return { did, permissionsGroup: [] }; }
                 },
+            },
+            '@guardian/common/helpers/wallet': {
                 Wallet: class { async getUserKey() { return storedKey; } },
+            },
+            '@guardian/hedera/remote-policy-join-reply': {
                 saveRemoteUserDidDocument: async (did, document, topicId) => { calls.didDocuments.push({ did, topicId }); },
                 saveRemoteUserMessageKey: async (did, messageId, key) => { calls.keys.push({ did, messageId, key }); },
                 isRemoteParticipantExpired: (row) => row.expired === true,

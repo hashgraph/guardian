@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import axios from 'axios';
 import { HederaSDKHelper } from '../dist/api/helpers/hedera-sdk-helper.js';
-import { Environment } from '@guardian/common';
+import { Environment } from '@guardian/common/helpers/environment';
 
 /*
  * The home instance trusts any DID document on a Standard Registry topic that has a

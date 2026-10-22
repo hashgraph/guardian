@@ -1,24 +1,16 @@
 import { ApiResponse } from './helpers/api-response.js';
-import {
-    DataBaseHelper,
-    DatabaseServer,
-    DisconnectedPolicy,
-    expireRemoteParticipants,
-    isRemoteParticipantExpired,
-    KeyType,
-    MessageError,
-    MessageResponse,
-    openRemoteJoinMessageKey,
-    PinoLogger,
-    RemotePolicyParticipant,
-    resolvePublishedDidDocument,
-    saveRemoteUserDidDocument,
-    saveRemoteUserMessageKey,
-    sendRemoteJoinReply,
-    Users,
-    VcHelper,
-    Wallet,
-} from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { DisconnectedPolicy } from '@guardian/common/entity/disconnected-policy';
+import { RemotePolicyParticipant } from '@guardian/common/entity/remote-policy-participant';
+import { DataBaseHelper } from '@guardian/common/helpers/db-helper';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { Users } from '@guardian/common/helpers/users';
+import { KeyType, Wallet } from '@guardian/common/helpers/wallet';
+import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { resolvePublishedDidDocument } from '@guardian/hedera/published-did-document';
+import { openRemoteJoinMessageKey } from '@guardian/hedera/remote-policy-join';
+import { expireRemoteParticipants, isRemoteParticipantExpired, saveRemoteUserDidDocument, saveRemoteUserMessageKey, sendRemoteJoinReply } from '@guardian/hedera/remote-policy-join-reply';
+import { VcHelper } from '@guardian/hedera/vc-helper';
 import { AssignedEntityType, EntityOwner, IOwner, MessageAPI, RemoteParticipantStatus } from '@guardian/interfaces';
 import { serDefaultRole } from './permission.service.js';
 
