@@ -16,3 +16,4 @@ export * from './remote-user-proof.js';
 export * from './published-did-document.js';
 export * from './remote-policy-join.js';
 export * from './remote-policy-join-reply.js';
+export * from './did-identifier.js';

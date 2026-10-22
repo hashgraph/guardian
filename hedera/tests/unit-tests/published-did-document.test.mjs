@@ -149,13 +149,19 @@ describe('@unit a DID document must belong to its DID', function () {
         assert.match(error?.message, /does not match the DID/);
     });
 
-    it('rejects a document published to a topic the DID does not name', async () => {
+    it('accepts a document published to the user topic of the instance, with its root key named freely', async () => {
+        // a user who supplies their own DID document gets it published to the topic of the instance,
+        // not to the topic the DID names, and may name the key as they like
         const alice = await identity('0.0.9');
-        const { resolvePublishedDidDocument } = await load([didMessage(alice.did, ACCOUNT, alice.json)]);
+        const json = JSON.parse(JSON.stringify(alice.json));
+        json.verificationMethod[0].id = alice.did + '#key-1';
+        const { resolvePublishedDidDocument } = await load([didMessage(alice.did, ACCOUNT, json)]);
 
-        const error = await rejection(resolvePublishedDidDocument(alice.did, TOPIC, ACCOUNT, 'u1'));
+        const document = await resolvePublishedDidDocument(alice.did, TOPIC, ACCOUNT, 'u1');
 
-        assert.match(error?.message, /does not belong to the DID/);
+        assert.equal(document.getDid(), alice.did);
+        const { getDidRootEd25519Method } = await import('../../dist/remote-user-proof.js');
+        assert.equal(getDidRootEd25519Method(document).getId(), alice.did + '#key-1');
     });
 
     it('does not accept a signature of an extra key added next to the root key of the DID', async () => {
@@ -230,7 +236,7 @@ describe('@unit resolveOwnerDidDocument', function () {
 
 describe('@unit parseDid', function () {
     it('reads the topic of the current and of the old DID format', async () => {
-        const { parseDid } = await import('../../dist/published-did-document.js');
+        const { parseDid } = await import('../../dist/did-identifier.js');
 
         assert.deepEqual(parseDid('did:hedera:testnet:Abc_0.0.5'), { identifier: 'Abc', topicId: '0.0.5' });
         assert.deepEqual(

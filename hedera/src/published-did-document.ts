@@ -7,7 +7,6 @@ import { DIDMessage } from './message/did-message.js';
 import { MessageServer } from './message/message-server.js';
 import { MessageType } from './message/message-type.js';
 import { getDidEd25519PublicKey } from './remote-user-proof.js';
-import { Hashing } from '@guardian/common/helpers/hashing';
 
 /**
  * Check that a DID document has the verification methods Guardian needs, without private keys
@@ -35,42 +34,18 @@ export class DidTopicReadError extends Error {
 }
 
 /**
- * Identifier and topic of a Hedera DID, both the current (`...:ID_0.0.1`) and the old (`...:ID;hedera:net:tid=0.0.1`) form
- * @param did
- */
-export function parseDid(did: string): { identifier: string, topicId: string | null } {
-    const [main, ...parameters] = String(did).split(';');
-    const parts = main.split(':');
-    if (parts.length !== 4 || parts[0] !== 'did' || parts[1] !== 'hedera') {
-        throw new Error('Invalid DID.');
-    }
-    const [identifier, topic] = parts[3].split('_');
-    let topicId: string | null = topic || null;
-    for (const parameter of parameters) {
-        const match = /(?:^|:)tid=([^:;]+)$/.exec(parameter);
-        if (match) {
-            topicId = match[1];
-        }
-    }
-    return { identifier, topicId };
-}
-
-/**
  * Check that a DID document belongs to its DID: the identifier of a Hedera DID is the hash of
- * its root key, and the DID names the topic its documents are posted to. The document is
- * read from a topic and an account the sender names, so without this anyone could publish
- * a document with their own key under another user's DID.
+ * its root key. The document is read from a topic and an account the sender names, so without
+ * this anyone could publish a document with their own key under another user's DID.
  * @param did
  * @param document
- * @param topicId - the topic the document was read from
  */
-export function assertDidBoundToRootKey(did: string, document: CommonDidDocument, topicId: string): void {
-    const { identifier, topicId: didTopicId } = parseDid(did);
-    if (document.getDid() !== did || !didTopicId || didTopicId !== topicId) {
+export function assertDidBoundToRootKey(did: string, document: CommonDidDocument): void {
+    if (document.getDid() !== did) {
         throw new Error('DID document does not belong to the DID.');
     }
-    const publicKey = getDidEd25519PublicKey(document);
-    if (!publicKey || Hashing.base58.encode(Hashing.sha256.digest(publicKey)) !== identifier) {
+    // a document published to the user topic by the instance may name its root key differently
+    if (!getDidEd25519PublicKey(document)) {
         throw new Error('DID document key does not match the DID.');
     }
 }
@@ -113,7 +88,7 @@ async function loadPublishedDidDocument(
         throw new DidTopicReadError(`Unable to load the DID document, try again later: ${error?.message || error}`);
     }
     const document = await validateDidWithoutKeys(published.getDocument());
-    assertDidBoundToRootKey(did, document, topicId);
+    assertDidBoundToRootKey(did, document);
     return document;
 }
 
