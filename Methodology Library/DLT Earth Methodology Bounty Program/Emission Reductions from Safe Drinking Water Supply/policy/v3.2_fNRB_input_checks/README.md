@@ -1,14 +1,25 @@
-# VMR0015 v3.2: the fNRB input checks of VMR0015 s9.2 enforced
+# VMR0015 v3.2: two fNRB gaps closed (VMR0015 s9.2)
 
 **The submission is v3.1**, the two policy files in `policy/` one level up. They are unchanged.
 
-This folder holds v3.2, the same policy with two input checks on the fNRB determination (VMR0015 s9.2) enforced. The checks were found missing in a review after v3.1 was submitted. Everything else is v3.1:
+This folder holds **v3.2**: the same policy with the two gaps in its fNRB input checks closed (VMR0015 s9.2; see [Gaps closed](#gaps-closed)). Both gaps were found in a review after v3.1 was submitted. Everything else is v3.1:
 - the same workflow and the same 219 blocks
 - the same schemas and templates
 - the same token and mint rule
 - the same results on the sample: 1,666.620262475 t CO2e/yr ex-ante, 1,556.947181413 t CO2e ex-post, 1,556 VCU
 
-Use v3.2 only if the reviewers ask for these checks to be enforced inside the policy. Adding this folder changed no other file in the package.
+Use v3.2 if the reviewers ask for these checks to be enforced inside the policy. Adding this folder changed no policy file of v3.1.
+
+## The two v3.2 policy files
+
+Like v3.1, v3.2 comes as two files, one per Verra template set. Both are MGS exports with their Policy Integrity Test saved inside; the test scored 100 % on both. Import the file for the project's start date.
+
+| Template set | Use for | File | sha256 |
+|---|---|---|---|
+| VCS v5.0A | Projects starting before 1 January 2027 | [`VMR0015_Safe_Drinking_Water_dMRV_v3.2_VCS-v5.0A_with_integrity_test.policy`](VMR0015_Safe_Drinking_Water_dMRV_v3.2_VCS-v5.0A_with_integrity_test.policy) | `20d5c8b04bfb9e5bc84b3318a831ec78107313c72ed4b7bd8a70d58a7311c5f9` |
+| VCS v5.0B | Projects starting on or after 1 January 2027 | [`VMR0015_Safe_Drinking_Water_dMRV_v3.2_VCS-v5.0B_with_integrity_test.policy`](VMR0015_Safe_Drinking_Water_dMRV_v3.2_VCS-v5.0B_with_integrity_test.policy) | `086d5b1bfccc7b6cb776ea0fcad04a500f93ad18215858b990f5aa686b9f1f0c` |
+
+The same two policies as built, before the MGS import, are in [`without_integrity_test/`](without_integrity_test/).
 
 ## Why there are several policy files
 
@@ -18,13 +29,29 @@ The package has eight `.policy` files. A reviewer imports one of them.
 |---|---|
 | **Two Verra template sets.** Guardian cannot switch template sets inside one policy, so each version comes as two files. VCS v5.0A is for projects starting before 1 January 2027; VCS v5.0B is for projects starting on or after that date. The calculation blocks are identical in both | `..._VCS-v5.0A...` and `..._VCS-v5.0B...` |
 | **Two forms of each file.** The as-built file is what the offline tools check. The MGS export is the same policy with its Policy Integrity Test saved inside, and it is the file to import | `without_integrity_test/...` and `..._with_integrity_test.policy` |
-| **Two versions.** v3.1 is the submission. v3.2, here, adds only the fNRB input checks | `policy/` (v3.1) and `policy/v3.2_fNRB_input_checks/` (v3.2) |
+| **Two versions.** v3.1 is the submission. v3.2, here, closes the two fNRB gaps and changes nothing else | `policy/` (v3.1) and `policy/v3.2_fNRB_input_checks/` (v3.2) |
 
-To review the submission, import `policy/VMR0015_Safe_Drinking_Water_dMRV_v3.1_VCS-v5.0B_with_integrity_test.policy`, or the v5.0A file for a project starting before 2027.
+Which file to import:
 
-## What v3.2 closes
+| To review | Project starts before 1 January 2027 | Project starts on or after 1 January 2027 |
+|---|---|---|
+| v3.1, the submission | `policy/VMR0015_Safe_Drinking_Water_dMRV_v3.1_VCS-v5.0A_with_integrity_test.policy` | `policy/VMR0015_Safe_Drinking_Water_dMRV_v3.1_VCS-v5.0B_with_integrity_test.policy` |
+| v3.2, the two gaps closed | `VMR0015_Safe_Drinking_Water_dMRV_v3.2_VCS-v5.0A_with_integrity_test.policy` (this folder) | `VMR0015_Safe_Drinking_Water_dMRV_v3.2_VCS-v5.0B_with_integrity_test.policy` (this folder) |
+
+## Gaps closed
 
 VMR0015 v1.0 s9.2 (p.11), data/parameter f<sub>NRB,i,y</sub>: "Where the baseline fuel is woody biomass, one of the following sources must be used: 1) Most recent national default values published by the UNFCCC 2) Calculated based on CDM TOOL30 and applying an uncertainty discount of 26% 3) Default value from the most recent version of CDM TOOL33". The data unit is given as "Fraction or %".
+
+**Gap 1: the cited source value did not govern fNRB.**
+- *v3.1:* for options 1 and 3, a typed "f_NRB applied" replaced the UNFCCC or TOOL33 value of the same record, with no flag. So a value that came from none of the sources s9.2 lists could be credited.
+- *v3.2:* the source value is used and any difference is flagged. The applied value is used only when the source value is missing, and that is flagged too.
+- *Option 2* already used the computed TOOL30 × 0.74. It now also flags an applied value that differs from that.
+
+**Gap 2: the UNFCCC value had no range check.**
+- *v3.1:* the applied, TOOL30 and TOOL33 values were range-checked, but the UNFCCC value was not. Because s9.2 gives the unit as "Fraction or %", a percentage such as 62 (meaning 0.62) was used as the fraction 62.
+- *v3.2:* the calculation is voided and the value listed, as for the other fNRB fields.
+
+How each case behaves:
 
 | Case | v3.1 | v3.2 |
 |---|---|---|

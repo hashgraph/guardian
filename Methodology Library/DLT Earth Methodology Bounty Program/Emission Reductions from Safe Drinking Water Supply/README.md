@@ -12,6 +12,8 @@ It covers the full chain:
 
 Prepared by Bikram Biswas for the DLT Earth Methodology Bounty. v3.1 builds on the v3 policy (MGS id `6aca81f672c7fd6f74f88f61`).
 
+**v3.2** is the same policy with two gaps in the fNRB input checks closed (VMR0015 s9.2): the cited UNFCCC, TOOL30 or TOOL33 value now governs fNRB, and the UNFCCC value is range-checked. Its two policy files, one per template set, are in [`policy/v3.2_fNRB_input_checks/`](policy/v3.2_fNRB_input_checks/), with a README on both gaps. v3.1 remains the submission.
+
 ## Contents
 
 | Path | What it is |
@@ -19,6 +21,9 @@ Prepared by Bikram Biswas for the DLT Earth Methodology Bounty. v3.1 builds on t
 | `policy/VMR0015_Safe_Drinking_Water_dMRV_v3.1_VCS-v5.0A_with_integrity_test.policy` | **Policy for projects starting before 1 Jan 2027** (VCS v5.0A templates), exported from MGS with its Policy Integrity Test (100 %). sha256 `5d22de23fe65b9028f552b533035c8eb2aa349bf73fd9903543ec27d01eaa2f2` |
 | `policy/VMR0015_Safe_Drinking_Water_dMRV_v3.1_VCS-v5.0B_with_integrity_test.policy` | **Policy for projects starting on or after 1 Jan 2027** (VCS v5.0B templates), exported from MGS with its Policy Integrity Test (100 %). sha256 `18b50f669d62ca7df9bae418641938fa7290c2d64cd6245de7393277adbaaa88` |
 | `policy/without_integrity_test/` | The same two policies as built, before the MGS import: A sha256 `fcdd6964647028c3ae7082947dc215ec543b24fa3769b2bbcf4f67c7b4867d07`, B `6c5031eb263e46c9a7afb60de78b61a337f189264cb748060f9f1374dc5451ab`. The `tools/` checks run on these |
+| `policy/v3.2_fNRB_input_checks/VMR0015_Safe_Drinking_Water_dMRV_v3.2_VCS-v5.0A_with_integrity_test.policy` | **v3.2, two fNRB gaps closed: projects starting before 1 Jan 2027** (VCS v5.0A templates), exported from MGS with its Policy Integrity Test (100 %). sha256 `20d5c8b04bfb9e5bc84b3318a831ec78107313c72ed4b7bd8a70d58a7311c5f9` |
+| `policy/v3.2_fNRB_input_checks/VMR0015_Safe_Drinking_Water_dMRV_v3.2_VCS-v5.0B_with_integrity_test.policy` | **v3.2, two fNRB gaps closed: projects starting on or after 1 Jan 2027** (VCS v5.0B templates), exported from MGS with its Policy Integrity Test (100 %). sha256 `086d5b1bfccc7b6cb776ea0fcad04a500f93ad18215858b990f5aa686b9f1f0c` |
+| `policy/v3.2_fNRB_input_checks/` | v3.2's README (the two gaps closed, with v3.1 and v3.2 results side by side), the two policies as built, the MGS recordings, the tools that made and check the change, and the output of every check |
 | `evidence/mgs_round4/` | The two MGS recordings the integrity tests were made from |
 | `reference/schema_excel/` | Every schema of each file as Guardian's own Excel export (one sheet per schema: field, type, required, description), for reading the forms against the Verra templates |
 | `docs/MGS_ROUND4_RESULTS.md` | **MGS results** and the check that each export is the policy as built, plus its test |
