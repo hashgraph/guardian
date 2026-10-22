@@ -2,6 +2,8 @@
 name: "PR Formatting"
 on:
   pull_request_target:
+    branches-ignore:
+      - 'dependabot/**'
     types:
       - assigned
       - unassigned
