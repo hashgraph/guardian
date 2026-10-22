@@ -29,3 +29,16 @@ describe('FormulaTree', () => {
         expect(item._linkItem?.uuid).toBe('item-1');
     });
 });
+
+describe('FormulaItem relationships order', () => {
+    it('follows the order of the relationships list, not the order of the items', () => {
+        const formula = tree('f-3', [
+            { uuid: 'a', name: 'A', description: '', type: FormulaItemType.Variable, value: '' },
+            { uuid: 'b', name: 'B', description: '', type: FormulaItemType.Variable, value: '' },
+            { uuid: 'c', name: 'C', description: '', type: FormulaItemType.Constant, value: '1' },
+            { uuid: 'f', name: 'F', description: '', type: FormulaItemType.Formula, value: 'x', relationships: ['c', 'a', 'missing', 'b'] }
+        ]);
+        const item: any = formula.get('f');
+        expect(item.relationshipItems.map((e: any) => e.uuid)).toEqual(['c', 'a', 'b']);
+    });
+});

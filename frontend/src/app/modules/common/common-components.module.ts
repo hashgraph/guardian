@@ -24,6 +24,7 @@ import { CompareBtnComponent } from './compare-btn/compare-btn.component';
 import { CompareViewerComponent } from './compare-viewer/compare-viewer.component';
 import { AlertComponent } from './alert/alert.component';
 import { ConditionIfEditorComponent } from './condition-if-editor/condition-if-editor.component';
+import { SchemaPathInputComponent } from './schema-path-input/schema-path-input.component';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
@@ -62,6 +63,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 @NgModule({
     declarations: [
         ConditionIfEditorComponent,
+        SchemaPathInputComponent,
         DatetimePicker,
         HederaExplorer,
         SelectMenuButton,
@@ -131,6 +133,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
     ],
     exports: [
         ConditionIfEditorComponent,
+        SchemaPathInputComponent,
         DatetimePicker,
         HederaExplorer,
         SelectMenuButton,

@@ -9,10 +9,10 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MathLiveComponent } from '../../common/mathlive/mathlive.component';
 import { LinkDialog } from '../dialogs/link-dialog/link-dialog.component';
-import { Formulas, MISSING_LINK_TEXT } from '../models/formulas';
+import { Formulas, IFormulaSegment, MISSING_LINK_TEXT, highlightSegments } from '../models/formulas';
 import { FORMULA_TYPES, SOURCE_FIELDS, formulaTypeIcon, formulaTypeName } from '../models/formula-meta';
 import { moveLink } from '../models/field-bindings';
-import { CdkDragDrop } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { ConditionFieldGroup } from '../../common/condition-if-editor/condition-if-editor.component';
 import { FormulaFilesDialog } from '../dialogs/formula-files-dialog/formula-files-dialog.component';
 
@@ -65,6 +65,9 @@ export class FormulaConfigurationComponent implements OnInit {
     public readonly typeIcons = formulaTypeIcon;
 
     public selected: IFormulaItem | null = null;
+    public relationshipsEdit = false;
+    /** the search text of the open relationship dropdown, for highlighting the matches */
+    public relationshipFilter = '';
     /** the selected item as a list (the editor is re-mounted for every item) */
     public selectedList: IFormulaItem[] = [];
     public typePosition: number = 0;
@@ -106,6 +109,7 @@ export class FormulaConfigurationComponent implements OnInit {
 
     private schemasMap: Map<string, string> = new Map<string, string>();
     private schemasFieldMap: Map<string, string> = new Map<string, string>();
+    private schemaPaths: Map<string, Set<string>> = new Map<string, Set<string>>();
     private formulasMap: Map<string, string> = new Map<string, string>();
     private formulasFieldMap: Map<string, string> = new Map<string, string>();
 
@@ -222,10 +226,14 @@ export class FormulaConfigurationComponent implements OnInit {
         this.linkFirstEntryCache.clear();
         this.schemasMap.clear();
         this.schemasFieldMap.clear();
+        this.schemaPaths.clear();
         for (const schema of this.schemas) {
             this.schemasMap.set(String(schema.iri), String(schema.name));
             const fields = schema.getFields();
+            const paths = new Set<string>();
+            this.schemaPaths.set(String(schema.iri), paths);
             for (const field of fields) {
+                paths.add(String(field.path));
                 this.schemasFieldMap.set(`${schema.iri}.${field.path}`, String(field.description));
             }
         }
@@ -262,6 +270,7 @@ export class FormulaConfigurationComponent implements OnInit {
     }
 
     public onSave() {
+        this.relationshipsEdit = false;
         this.loading = true;
         this.formulasService
             .updateFormula(this.getSaveItem())
@@ -477,6 +486,7 @@ export class FormulaConfigurationComponent implements OnInit {
             return;
         }
         this.selected = item;
+        this.relationshipsEdit = false;
         this.keyboard = false;
         this.refreshSelection();
     }
@@ -692,6 +702,36 @@ export class FormulaConfigurationComponent implements OnInit {
         this.markDirty();
     }
 
+    public hasLinkSchema(link: IFormulaLink): boolean {
+        return this.schemasMap.has(link.entityId);
+    }
+
+    public getLinkPaths(link: IFormulaLink): Set<string> | null {
+        return this.schemaPaths.get(link.entityId) || null;
+    }
+
+    /**
+     * The display condition is cleared, its paths belong to the previous schema.
+     */
+    public onLinkSchemaChange(item: IFormulaItem, schemaIri: string) {
+        if (this.readonly) {
+            return;
+        }
+        item.link = moveLink(item.link, { schemaIri, fieldPath: '' });
+        this.markDirty();
+    }
+
+    /**
+     * The display condition is kept, the schema is the same.
+     */
+    public onLinkPathChange(item: IFormulaItem, path: string) {
+        if (this.readonly || item.link?.type !== 'schema') {
+            return;
+        }
+        item.link = moveLink(item.link, { schemaIri: item.link.entityId, fieldPath: path });
+        this.markDirty();
+    }
+
     public getEntityName(link: IFormulaLink): string {
         if (link.type === 'schema') {
             return this.schemasMap.get(link.entityId) || '';
@@ -734,6 +774,61 @@ export class FormulaConfigurationComponent implements OnInit {
         $event.stopPropagation();
         item.link = null;
         this.markDirty();
+    }
+
+    public relationshipName(uuid: string): string {
+        return this.config.getItem(uuid)?.name || 'N/A';
+    }
+
+    /**
+     * Items that can still be added; the item at `keep` stays in the list so it can be shown as selected.
+     */
+    public relationshipOptions(item: IFormulaItem, keep?: string): IFormulaItem[] {
+        const used = item.relationships || [];
+        return this.config.all.filter((e) => e.uuid !== item.uuid && (e.uuid === keep || !used.includes(e.uuid)));
+    }
+
+    public relationshipSegments(text: string): IFormulaSegment[] {
+        const term = this.relationshipFilter.trim().toLowerCase();
+        return highlightSegments(text, term ? [term] : []);
+    }
+
+    public replaceRelationship(item: IFormulaItem, index: number, uuid: string) {
+        if (this.readonly || !uuid || !item.relationships || item.relationships[index] === uuid) {
+            return;
+        }
+        item.relationships = item.relationships.map((e, i) => i === index ? uuid : e);
+        this.markDirty();
+    }
+
+    public addRelationship(item: IFormulaItem, uuid: string) {
+        if (this.readonly || !uuid || item.relationships?.includes(uuid)) {
+            return;
+        }
+        item.relationships = [...(item.relationships || []), uuid];
+        this.markDirty();
+    }
+
+    public removeRelationship(item: IFormulaItem, index: number) {
+        if (this.readonly || !item.relationships) {
+            return;
+        }
+        item.relationships = item.relationships.filter((_, i) => i !== index);
+        this.markDirty();
+    }
+
+    public moveRelationship(item: IFormulaItem, from: number, to: number) {
+        if (this.readonly || !item.relationships || to < 0 || to >= item.relationships.length) {
+            return;
+        }
+        const list = [...item.relationships];
+        moveItemInArray(list, from, to);
+        item.relationships = list;
+        this.markDirty();
+    }
+
+    public dropRelationship(item: IFormulaItem, event: CdkDragDrop<string[]>) {
+        this.moveRelationship(item, event.previousIndex, event.currentIndex);
     }
 
     public drop(event: CdkDragDrop<any[]>) {
