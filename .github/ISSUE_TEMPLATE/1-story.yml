@@ -1,5 +1,5 @@
-name: Feature request
-description: Describe a new feature ready for development to help complete a job or activity
+name: Story
+description: Add a functional or technical user story to help complete a job or activity
 type: Story
 body:
   - type: textarea
