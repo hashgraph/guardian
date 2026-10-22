@@ -32,6 +32,10 @@
     </div>
   }
 
+  @if (json) {
+    <div class="confirmation-document">{{ json }}</div>
+  }
+
   @if (options) {
     <div class="options">
       @for (op of options; track op) {

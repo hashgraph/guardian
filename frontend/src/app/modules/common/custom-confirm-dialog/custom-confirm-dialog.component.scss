@@ -204,3 +204,24 @@
         }
     }
 }
+
+.confirmation-details {
+    max-height: 240px;
+    overflow-y: auto;
+}
+
+// Same rendering as the JSON view of the "View document" dialog
+.confirmation-document {
+    word-break: keep-all;
+    white-space: pre;
+    font-family: monospace;
+    cursor: text;
+    width: 100%;
+    max-height: 320px;
+    overflow: auto;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    padding: 10px;
+    box-sizing: border-box;
+    margin-bottom: 24px;
+}

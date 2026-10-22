@@ -49,4 +49,31 @@ describe('ExternalPoliciesService', () => {
         expect(req.request.context.get(SILENT_HTTP_ERRORS)).toBeFalse();
         req.flush({});
     });
+
+    // The bulk actions list failures per row, so they opt out of the global toast.
+    it('marks the bulk approve and reject calls as handled by the caller only when asked', () => {
+        service.approveAction('msg-1').subscribe();
+        const approve = httpMock.expectOne(`${URL}/requests/msg-1/approve`);
+        expect(approve.request.method).toBe('PUT');
+        expect(approve.request.context.get(SILENT_HTTP_ERRORS)).toBeFalse();
+        approve.flush({});
+
+        service.approveAction('msg-2', true).subscribe();
+        const silentApprove = httpMock.expectOne(`${URL}/requests/msg-2/approve`);
+        expect(silentApprove.request.context.get(SILENT_HTTP_ERRORS)).toBeTrue();
+        silentApprove.flush({});
+
+        service.rejectAction('msg-3', true).subscribe();
+        const silentReject = httpMock.expectOne(`${URL}/requests/msg-3/reject`);
+        expect(silentReject.request.context.get(SILENT_HTTP_ERRORS)).toBeTrue();
+        silentReject.flush({});
+    });
+
+    it('sends the sort parameters of the incoming requests grid', () => {
+        service.getActionRequests(0, 10, { sortField: 'createDate', sortDirection: 'asc' }).subscribe();
+        const req = httpMock.expectOne((r) => r.url === `${URL}/requests`);
+        expect(req.request.params.get('sortField')).toBe('createDate');
+        expect(req.request.params.get('sortDirection')).toBe('asc');
+        req.flush([]);
+    });
 });

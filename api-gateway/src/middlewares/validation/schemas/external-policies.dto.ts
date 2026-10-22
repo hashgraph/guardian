@@ -247,7 +247,7 @@ export class PolicyRequestDTO {
 export class PolicyRequestCountDTO {
     @ApiProperty({
         type: 'number',
-        description: 'Number of new requests',
+        description: 'Number of requests waiting for the user (per thread)',
         example: 0
     })
     @IsOptional()
@@ -256,12 +256,30 @@ export class PolicyRequestCountDTO {
 
     @ApiProperty({
         type: 'number',
-        description: 'Number of new actions',
+        description: 'Number of actions waiting for the remote policy (per thread)',
         example: 0
     })
     @IsOptional()
     @IsNumber()
     actionsCount?: number;
+
+    @ApiProperty({
+        type: 'number',
+        description: 'Number of failed threads',
+        example: 0
+    })
+    @IsOptional()
+    @IsNumber()
+    failedCount?: number;
+
+    @ApiProperty({
+        type: 'number',
+        description: 'Number of threads, as the grid lists them',
+        example: 0
+    })
+    @IsOptional()
+    @IsNumber()
+    threadsCount?: number;
 
     @ApiProperty({
         type: 'number',

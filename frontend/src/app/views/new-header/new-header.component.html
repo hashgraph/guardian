@@ -137,7 +137,7 @@
     </div>
   </div>
 
-  @if (policyRequests && policyRequests > 0) {
+  @if (policyRequests > 0 || hasRemotePolicies) {
     <div
       [class.current]="activeLink.startsWith('/policy-requests')"
       [routerLink]="'/policy-requests'"
