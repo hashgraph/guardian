@@ -44743,6 +44743,193 @@ paths:
         Guardian instance only.
       tags:
         - external-policies
+  /external-policies/participants/{policyId}:
+    get:
+      description: >-
+        Returns the users of other instances who asked to take part in the
+        policy. Only for the owner of the policy.
+      operationId: ExternalPoliciesApi_getRemoteParticipants
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy ID
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          schema:
+            example: 0
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          schema:
+            example: 20
+            type: number
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RemoteParticipantDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Policy does not exist.
+      security:
+        - bearer: []
+      summary: >-
+        Returns the users of other instances who asked to take part in the
+        policy.
+      tags:
+        - external-policies
+  /external-policies/participants/{participantId}/approve:
+    post:
+      description: >-
+        Assigns the policy to the remote user and publishes the answer for the
+        home instance of the user.
+      operationId: ExternalPoliciesApi_approveRemoteParticipant
+      parameters:
+        - name: participantId
+          required: true
+          in: path
+          description: Participant ID
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RemoteParticipantDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Participant does not exist.
+      security:
+        - bearer: []
+      summary: Approves a remote participant.
+      tags:
+        - external-policies
+  /external-policies/participants/{participantId}/reject:
+    post:
+      description: >-
+        Leaves the policy unassigned and publishes the answer for the home
+        instance of the user.
+      operationId: ExternalPoliciesApi_rejectRemoteParticipant
+      parameters:
+        - name: participantId
+          required: true
+          in: path
+          description: Participant ID
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RemoteParticipantDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Participant does not exist.
+      security:
+        - bearer: []
+      summary: Rejects a remote participant.
+      tags:
+        - external-policies
   /external-policies/{messageId}:
     delete:
       description: Removes the remote policy from the current Guardian instance.
@@ -62036,6 +62223,18 @@ components:
           type: string
           description: Username
           example: Username
+        joinStatus:
+          type: string
+          description: Status of the join request sent to the Main instance
+          enum:
+            - SENT
+            - ACCEPTED
+            - REJECTED
+            - FAILED
+          example: SENT
+        joinError:
+          type: string
+          description: Why the join request could not be sent
       required:
         - uuid
         - name
@@ -62048,6 +62247,54 @@ components:
         - owner
         - status
         - username
+    RemoteParticipantDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Participant ID
+          example: 69aeb71ef8c5b278e3bab4e5
+        policyId:
+          type: string
+          description: Policy ID
+          example: 69aeb71ef8c5b278e3bab4e5
+        policyMessageId:
+          type: string
+          description: Policy message ID
+          example: '1773670900.819264517'
+        did:
+          type: string
+          description: User DID
+          example: >-
+            did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+        hederaAccountId:
+          type: string
+          description: User Hedera account, the payer of the join request
+          example: 0.0.6046379
+        joinMessageId:
+          type: string
+          description: Join request message ID
+          example: '1773670900.819264517'
+        issued:
+          type: string
+          description: Issue time of the join proof
+          example: '2026-01-01T00:00:00.000Z'
+        status:
+          type: string
+          enum:
+            - PENDING
+            - APPROVED
+            - REJECTED
+          example: PENDING
+      required:
+        - id
+        - policyId
+        - policyMessageId
+        - did
+        - hederaAccountId
+        - joinMessageId
+        - issued
+        - status
     PolicyRequestDTO:
       type: object
       properties:
