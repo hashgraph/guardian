@@ -2,6 +2,7 @@ import { ed25519 } from '@noble/curves/ed25519';
 import { Hashing } from '@guardian/common/helpers/hashing';
 import type { CommonDidDocument } from './vcjs/did/common-did-document.js';
 import { HederaEd25519Method } from './vcjs/did/components/hedera-ed25519-method.js';
+import type { VerificationMethod } from './vcjs/did/components/verification-method.js';
 
 /**
  * Remote user registration proof.
@@ -43,7 +44,7 @@ function proofPayload(proof: Pick<IRemoteUserProof, 'did' | 'hederaAccountId' | 
  * @param didDocument
  */
 export function getDidEd25519Seed(didDocument: CommonDidDocument): { id: string, seed: Uint8Array } {
-    const method = didDocument.getMethodByType(HederaEd25519Method.TYPE);
+    const method = getDidRootEd25519Method(didDocument);
     const privateKey = method?.toObject(true).privateKeyBase58;
     if (!privateKey) {
         throw new Error('DID key is not available.');
@@ -53,17 +54,26 @@ export function getDidEd25519Seed(didDocument: CommonDidDocument): { id: string,
 }
 
 /**
- * Ed25519 public key of a verification method of a DID document
+ * Root Ed25519 key of a DID document. A Hedera DID identifier is derived from this key,
+ * so it is the only key that proves control of the DID: a document can carry any other methods.
  * @param didDocument
- * @param verificationMethod - method id, or the first Ed25519 method when omitted
+ */
+export function getDidRootEd25519Method(didDocument: CommonDidDocument): VerificationMethod | null {
+    const method = didDocument.getMethodByName(didDocument.getDid() + HederaEd25519Method.DID_ROOT_KEY_NAME);
+    return method?.getType() === HederaEd25519Method.TYPE ? method : null;
+}
+
+/**
+ * Root Ed25519 public key of a DID document
+ * @param didDocument
+ * @param verificationMethod - method id the caller names, it has to be the root key method
  */
 export function getDidEd25519PublicKey(didDocument: CommonDidDocument, verificationMethod?: string): Uint8Array | null {
-    const method = verificationMethod
-        ? didDocument.getMethodByName(verificationMethod)
-        : didDocument.getMethodByType(HederaEd25519Method.TYPE);
-    const publicKey = method?.getType() === HederaEd25519Method.TYPE
-        ? method.toObject(false).publicKeyBase58
-        : null;
+    const method = getDidRootEd25519Method(didDocument);
+    if (!method || (verificationMethod && verificationMethod !== method.getId())) {
+        return null;
+    }
+    const publicKey = method.toObject(false).publicKeyBase58;
     if (!publicKey) {
         return null;
     }
