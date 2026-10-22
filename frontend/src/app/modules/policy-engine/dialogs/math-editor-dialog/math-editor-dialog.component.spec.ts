@@ -119,13 +119,9 @@ describe('MathEditorDialogComponent Table column fields', () => {
         dialog.inputSchemaFieldMap = dialog.createFieldMap(fields, new Map());
         dialog.outputSchemaFieldMap = new Map();
         dialog.schemaFieldMap = new Map();
-        dialog.pathSuggestions = [];
-        dialog.activePathItem = null;
         const item: any = { field: 'area', schema: null };
 
-        dialog._computePathSuggestions(item, 'input');
-
-        expect(dialog.pathSuggestions).toEqual(['siteTable.area_ha']);
+        expect(dialog.getPaths(item, 'input')?.has('siteTable.area_ha')).toBeTrue();
         expect(dialog.inputSchemaFieldMap.get('siteTable').type).toBe('string');
     });
 
@@ -202,18 +198,16 @@ describe('MathEditorDialogComponent Table column fields', () => {
         dialog.outputSchemaFieldMap = dialog.createFieldMap(outputSchema.getDeepFields(), new Map());
         dialog.inputSchemaFieldMap = new Map();
         dialog.fieldWarnings = new Map();
-        dialog.pathSuggestions = [];
-        dialog.activePathItem = null;
         const item: any = { id: 'out-1', field: '', schema: '#schema', update: () => undefined };
 
         dialog.onPathChange(item, 'siteTable.area_ha', 'output');
 
-        expect(dialog.pathSuggestions).toEqual([]);
+        expect(dialog.getPaths(item, 'output').has('siteTable.area_ha')).toBeFalse();
         expect(dialog.fieldWarnings.get('out-1')).toBeTrue();
 
         dialog.onPathChange(item, 'siteTable', 'output');
 
-        expect(dialog.pathSuggestions).toEqual(['siteTable']);
+        expect(dialog.getPaths(item, 'output').has('siteTable')).toBeTrue();
         expect(dialog.fieldWarnings.get('out-1')).toBeFalse();
     });
 
@@ -322,8 +316,6 @@ describe('MathEditorDialogComponent Table outputs', () => {
         dialog.inputSchemaFieldMap = new Map();
         dialog.schemaFieldMap = new Map();
         dialog.fieldWarnings = new Map();
-        dialog.pathSuggestions = [];
-        dialog.activePathItem = null;
         dialog.maxTableRows = 1000;
         dialog.maxTableRowsPerAdd = 20;
         dialog.tableRowsToAdd = {};
@@ -369,7 +361,7 @@ describe('MathEditorDialogComponent Table outputs', () => {
         const item = output();
         dialog.onPathChange(item, 'results', 'output');
 
-        dialog.selectPathSuggestion(item, 'total', 'output');
+        dialog.onPathChange(item, 'total', 'output');
 
         expect(item.isTable).toBeFalse();
         expect(item.rows).toBeNull();
@@ -407,10 +399,10 @@ describe('MathEditorDialogComponent Table outputs', () => {
         dialog.onPathChange(item, 'results', 'output');
         item.rows![0].co2 = 'c';
 
-        dialog.selectPathSuggestion(item, 'total', 'output');
+        dialog.onPathChange(item, 'total', 'output');
         expect(item.rows).toBeNull();
 
-        dialog.selectPathSuggestion(item, 'results', 'output');
+        dialog.onPathChange(item, 'results', 'output');
         expect(item.rows).toEqual([{ year: '', co2: 'c' }]);
     });
 
@@ -569,11 +561,11 @@ describe('MathEditorDialogComponent Table outputs', () => {
         dialog.onPathChange(item, 'results', 'output');
         item.rows![0].year = 'y';
 
-        dialog.selectPathSuggestion(item, 'nested.results', 'output');
+        dialog.onPathChange(item, 'nested.results', 'output');
         expect(item.tables).toEqual([[{ year: 'y' }]]);
         expect(item.rows).toBeNull();
 
-        dialog.selectPathSuggestion(item, 'results', 'output');
+        dialog.onPathChange(item, 'results', 'output');
         expect(item.rows).toEqual([{ year: 'y', co2: '' }]);
         expect(item.tables).toBeNull();
     });
@@ -586,12 +578,12 @@ describe('MathEditorDialogComponent Table outputs', () => {
         item.tables![0][0].year = 'a';
         item.tables![1][0].year = 'b';
 
-        dialog.selectPathSuggestion(item, 'results', 'output');
+        dialog.onPathChange(item, 'results', 'output');
         expect(item.rows).toEqual([{ year: 'a', co2: '' }]);
         expect(item.tables).toBeNull();
         item.rows![0].year = 'c';
 
-        dialog.selectPathSuggestion(item, 'nested.results', 'output');
+        dialog.onPathChange(item, 'nested.results', 'output');
         expect(item.tables).toEqual([[{ year: 'c' }], [{ year: 'b' }]]);
     });
 
@@ -602,7 +594,7 @@ describe('MathEditorDialogComponent Table outputs', () => {
         dialog.addTable(item);
         item.tables![1][0].year = 'b';
 
-        dialog.selectPathSuggestion(item, 'results', 'output');
+        dialog.onPathChange(item, 'results', 'output');
         dialog.onPathChange(item, 'total', 'output');
         expect(item.isTable).toBeFalse();
 
@@ -716,13 +708,13 @@ describe('MathEditorDialogComponent Table outputs', () => {
         dialog.setTableColumnsMode(item, true);
         item.columns!.year = 'years';
 
-        dialog.selectPathSuggestion(item, 'nested.results', 'output');
+        dialog.onPathChange(item, 'nested.results', 'output');
         expect(item.columns).toEqual({ year: 'years' });
         expect(item.tableList).toBeTrue();
         expect(item.isTableList).toBeTrue();
         expect(item.tables).toBeNull();
 
-        dialog.selectPathSuggestion(item, 'results', 'output');
+        dialog.onPathChange(item, 'results', 'output');
         expect(item.columns).toEqual({ year: 'years', co2: '' });
         expect(item.tableList).toBeFalse();
         expect(item.tables).toBeNull();
@@ -757,7 +749,7 @@ describe('MathEditorDialogComponent Table outputs', () => {
         item.columns!.year = 'years';
         item.columns!.co2 = 'c';
 
-        dialog.selectPathSuggestion(item, 'group.results', 'output');
+        dialog.onPathChange(item, 'group.results', 'output');
 
         expect(item.columns).toEqual({ year: 'years' });
     });

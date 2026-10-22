@@ -417,6 +417,42 @@
 <ng-template #linkField let-item let-label="label">
   <div class="sec">
     <label class="sec-label">{{ label }}</label>
+    @if (item.link?.type === 'schema' && hasLinkSchema(item.link)) {
+      <div class="link-path-row">
+        <p-select
+          class="guardian-dropdown link-schema"
+          [options]="schemas"
+          optionLabel="name"
+          optionValue="iri"
+          [ngModel]="item.link.entityId"
+          (ngModelChange)="onLinkSchemaChange(item, $event)"
+          [disabled]="readonly"
+          [filter]="schemas.length > 8"
+          filterBy="name"
+          appendTo="body"
+          panelStyleClass="guardian-dropdown-panel">
+        </p-select>
+        <schema-path-input
+          class="link-path"
+          [value]="item.link.item"
+          [paths]="getLinkPaths(item.link)"
+          [readonly]="readonly"
+          [browse]="!readonly"
+          [required]="true"
+          placeholder="Field path"
+          (valueChange)="onLinkPathChange(item, $event)"
+          (browseClick)="onLink(item)">
+        </schema-path-input>
+        @if (!readonly) {
+          <button type="button" class="icon-btn small" title="Remove link" (click)="deleteLink(item, $event)">
+            <i class="pi pi-times"></i>
+          </button>
+        }
+      </div>
+      @if (!selectedLinkMissing && getFieldName(item.link)) {
+        <div class="link-path-hint">{{ getFieldName(item.link) }}</div>
+      }
+    } @else {
     <div class="input-link" [class.ro]="readonly" [class.missing]="selectedLinkMissing" (click)="onLink(item)">
       @if (item.link) {
         @if (selectedLinkMissing) {
@@ -442,38 +478,101 @@
         }
       }
     </div>
+    }
   </div>
 </ng-template>
 
+<ng-template #relOption let-option>
+  <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
+    <span><ng-container [ngTemplateOutlet]="segments" [ngTemplateOutletContext]="{ $implicit: relationshipSegments(option.name || 'N/A') }"></ng-container></span>
+    @if (option.description) {
+      <span style="font-size: 12px; opacity: 0.65; white-space: normal;"><ng-container [ngTemplateOutlet]="segments" [ngTemplateOutletContext]="{ $implicit: relationshipSegments(option.description) }"></ng-container></span>
+    }
+  </div>
+</ng-template>
+
+
 <ng-template #relationships let-item>
   <div class="sec">
-    <label class="sec-label">Relationships</label>
-    <p-multiSelect
-      [(ngModel)]="item.relationships"
-      (ngModelChange)="markDirty()"
-      [options]="config.all"
-      class="guardian-multiselect relationships-multiselect"
-      appendTo="body"
-      optionLabel="name"
-      optionValue="uuid"
-      panelStyleClass="guardian-multiselect-panel"
-      [readonly]="readonly">
-      <ng-template let-value pTemplate="selectedItems">
-        @for (option of value; track option) {
-          <div class="multiselect-selected-value">
-            {{ option.name || 'N/A' }}
-          </div>
-        }
-      </ng-template>
-      <ng-template let-option pTemplate="item">
-        <div class="multiselect-option-value">
-          <span>{{ option.name || 'N/A' }}</span>
-          @if (option.description) {
-            <span> - {{ option.description }}</span>
+    <label class="sec-label">
+      Relationships
+      <span class="sec-hint">The "Where" table on forms follows this order.</span>
+    </label>
+    @if (!relationshipsEdit) {
+      <div class="rel-compact">
+        <div class="rel-tags">
+          @for (uuid of item.relationships; track uuid; let i = $index) {
+            <span class="rel-tag"><span class="rel-num">{{ i + 1 }}</span>{{ relationshipName(uuid) }}</span>
+          } @empty {
+            <span class="placeholder">No relationships</span>
           }
         </div>
-      </ng-template>
-    </p-multiSelect>
+        @if (!readonly) {
+          <button type="button" class="link-btn" (click)="relationshipsEdit = true">
+            <i class="pi pi-pencil"></i> Edit
+          </button>
+        }
+      </div>
+    } @else {
+      <div class="rel-list"
+        cdkDropList
+        [cdkDropListData]="item.relationships"
+        (cdkDropListDropped)="dropRelationship(item, $event)">
+        @for (uuid of item.relationships; track uuid; let i = $index; let last = $last) {
+          <div class="rel-row" cdkDrag cdkDragLockAxis="y">
+            <span cdkDragHandle class="rel-grip"><i class="pi pi-bars"></i></span>
+            <span class="rel-num">{{ i + 1 }}</span>
+            <p-select
+              class="guardian-dropdown rel-select"
+              [options]="relationshipOptions(item, uuid)"
+              optionLabel="name"
+              optionValue="uuid"
+              [ngModel]="uuid"
+              (ngModelChange)="replaceRelationship(item, i, $event)"
+              [filter]="true"
+              filterBy="name,description"
+              (onFilter)="relationshipFilter = $event.filter || ''"
+              (onHide)="relationshipFilter = ''"
+              appendTo="body"
+              panelStyleClass="guardian-dropdown-panel formula-relationship-panel">
+              <ng-template let-option pTemplate="item">
+                <ng-container [ngTemplateOutlet]="relOption" [ngTemplateOutletContext]="{ $implicit: option }"></ng-container>
+              </ng-template>
+            </p-select>
+            <button type="button" class="icon-btn small" title="Move up" [disabled]="i === 0" (click)="moveRelationship(item, i, i - 1)">
+              <i class="pi pi-chevron-up"></i>
+            </button>
+            <button type="button" class="icon-btn small" title="Move down" [disabled]="last" (click)="moveRelationship(item, i, i + 1)">
+              <i class="pi pi-chevron-down"></i>
+            </button>
+            <button type="button" class="icon-btn small" title="Remove" (click)="removeRelationship(item, i)">
+              <i class="pi pi-times"></i>
+            </button>
+          </div>
+        }
+      </div>
+      <div class="rel-actions">
+        <p-select
+          #relAdd
+          class="guardian-dropdown rel-add"
+          [options]="relationshipOptions(item)"
+          optionLabel="name"
+          optionValue="uuid"
+          (onChange)="$event.value && addRelationship(item, $event.value, relAdd)"
+          placeholder="Add relationship…"
+          [filter]="true"
+          filterBy="name,description"
+          (onFilter)="relationshipFilter = $event.filter || ''"
+          (onHide)="relationshipFilter = ''"
+          appendTo="body"
+          panelStyleClass="guardian-dropdown-panel formula-relationship-panel">
+          <ng-template let-option pTemplate="item">
+            <ng-container [ngTemplateOutlet]="relOption" [ngTemplateOutletContext]="{ $implicit: option }"></ng-container>
+          </ng-template>
+        </p-select>
+        <button type="button" class="link-btn" (click)="relationshipsEdit = false">Done</button>
+      </div>
+    }
   </div>
 </ng-template>
 

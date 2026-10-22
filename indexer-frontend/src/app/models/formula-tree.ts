@@ -305,7 +305,10 @@ export class FormulaItem {
 
     public setRelationship(items: FormulaItem[]) {
         if (Array.isArray(this._relationships)) {
-            this._relationshipItems = items.filter((e) => this._relationships?.includes(e.uuid));
+            const byUuid = new Map(items.map((e) => [e.uuid, e]));
+            this._relationshipItems = this._relationships
+                .map((uuid) => byUuid.get(uuid))
+                .filter((e): e is FormulaItem => !!e);
         } else {
             this._relationshipItems = [];
         }

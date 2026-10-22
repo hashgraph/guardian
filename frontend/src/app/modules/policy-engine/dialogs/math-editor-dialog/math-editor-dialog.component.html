@@ -14,38 +14,14 @@
 </div>
 <div class="dialog-body">
   <ng-template #pathPicker let-item="item" let-mode="mode">
-    <div class="path-input-wrapper">
-      <input
-        type="text"
-        pInputText
-        class="path-input"
-        [ngModel]="item.field"
-        (ngModelChange)="onPathChange(item, $event, mode)"
-        (keyup)="onPathKeyup($event)"
-        (blur)="onPathBlur(item)"
-        placeholder="Path"
-        [readOnly]="readonly"
-      />
-      @if (!readonly) {
-        <button
-          class="guardian-icon-button path-pick-btn"
-          (click)="mode === 'output' ? onOutputLink(item) : onInputLink(item)"
-          title="Browse schema fields">
-          <svg-icon
-            class="icon-btn svg-icon"
-            src="/assets/images/icons/16/search.svg"
-            svgClass="icon-color-primary">
-          </svg-icon>
-        </button>
-      }
-      @if (activePathItem === item && pathSuggestions.length) {
-        <div class="path-suggestions">
-          @for (s of pathSuggestions; track s) {
-            <div class="path-suggestion-item" (mousedown)="selectPathSuggestion(item, s, mode)">{{s}}</div>
-          }
-        </div>
-      }
-    </div>
+    <schema-path-input
+      [value]="item.field"
+      [paths]="getPaths(item, mode)"
+      [showWarning]="false"
+      [readonly]="readonly"
+      (valueChange)="onPathChange(item, $event, mode)"
+      (browseClick)="mode === 'output' ? onOutputLink(item) : onInputLink(item)">
+    </schema-path-input>
     @if (fieldWarnings.get(item.id)) {
       <div class="path-unknown-warning">Path not found in schema</div>
     }
