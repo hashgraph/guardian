@@ -2,6 +2,7 @@ import { DatabaseServer } from '@guardian/common/database-modules/database-serve
 import { ApplicationState } from '@guardian/common/helpers/application-state';
 import { COMMON_CONNECTION_CONFIG } from '@guardian/common/helpers/db-helper';
 import { Environment } from '@guardian/common/helpers/environment';
+import { applyNetworkOverrides } from '@guardian/common/helpers/network-overrides';
 import { GenerateTLSOptionsNats } from '@guardian/common/helpers/generate-tls-options';
 import { Migration } from '@guardian/common/helpers/migration';
 import { mongoForLoggingInitialization } from '@guardian/common/helpers/mongo-logging-initialization';
@@ -65,9 +66,17 @@ Promise.all([
 
     Environment.setLocalNodeProtocol(process.env.LOCALNODE_PROTOCOL);
     Environment.setLocalNodeAddress(process.env.LOCALNODE_ADDRESS);
-    Environment.setNetwork(process.env.HEDERA_NET);
-
     const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
+
+    await applyNetworkOverrides(process.env, async (variableName, error) => {
+        await logger.warn(
+            `${variableName} field in settings: ${error.message}`,
+            ['TOPIC_LISTENER_SERVICE'],
+            null
+        );
+        console.warn(error);
+    });
+    Environment.setNetwork(process.env.HEDERA_NET);
 
     const state = new ApplicationState();
     await state

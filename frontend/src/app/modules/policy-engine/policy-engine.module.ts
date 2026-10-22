@@ -161,6 +161,8 @@ import { DataTransformationConfigComponent } from './policy-configuration/blocks
 import { ExternalPolicyComponent } from './external-policies/external-policies.component';
 import { SearchExternalPolicyDialog } from './dialogs/search-external-policy-dialog/search-external-policy-dialog.component';
 import { PolicyRequestsComponent } from './requests/requests.component';
+import { RequestDetailsDialog } from './requests/request-details-dialog/request-details-dialog.component';
+import { RequestConfirmDialog } from './requests/request-confirm-dialog/request-confirm-dialog.component';
 import { TestCodeDialog } from './dialogs/test-code-dialog/test-code-dialog.component';
 import { ProjectDataExportComponent } from './project-data-export/project-data-export.component';
 import { MintRequestsComponent } from './policy-viewer/mint-requests/mint-requests.component';
@@ -319,6 +321,8 @@ import { ManageSchemaTemplatesDialog } from './dialogs/manage-schema-templates-d
         MintRequestsComponent,
         ExternalPolicyComponent,
         PolicyRequestsComponent,
+        RequestDetailsDialog,
+        RequestConfirmDialog,
         SearchExternalPolicyDialog,
         TestCodeDialog,
         SearchToolDialog,

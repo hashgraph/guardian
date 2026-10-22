@@ -1,13 +1,11 @@
 name: E2E Tests
 run-name: E2E Tests · ${{ github.event_name == 'schedule' && 'all' || (inputs.tags || 'smoke') }}
-
 on:
   schedule:
-    - cron: '0 6 * * 1,3,5,0'
+    - cron: '0 3 * * *' # Run at 03:00 UTC every day (nightly)
   push:
-    branches-ignore:
-      - 'dependabot/**'
     paths-ignore:
+      - '.github/**'
       - 'docs/**'
       - '**/*.md'
   workflow_dispatch:
@@ -16,25 +14,25 @@ on:
         type: string
         description: Tags for test scope(s) (smoke, accounts, policies, all, ...)
         default: "smoke"
-      sr_balance:
-        type: number
-        description: INITIAL_STANDARD_REGISTRY_BALANCE in HBAR (max 500. 50 suggested for smoke, 500 for full e2e)
-        default: 50
+      solo_version:
+        type: string
+        description: Solo release that deploys the local Hiero network (empty uses the workflow default)
+        default: ""
 
 permissions:
   contents: read
   checks: write        # required by publish-unit-test-result-action
 
 concurrency:
-  group: e2e-tests-${{ github.ref }}
+  group: e2e-tests-${{ github.event_name }}-${{ github.ref }}
   # Superseded pushes are pointless; a nightly or a hand-triggered run is not.
   cancel-in-progress: ${{ github.event_name == 'push' }}
 
 jobs:
   buildAndTest:
     name: Build and Test
-    runs-on: hg-guard-lin-md
-    timeout-minutes: 240
+    runs-on: hg-guard-lin-lg
+    timeout-minutes: 120
     env:
       # .yarnrc.yml does not set enableGlobalCache and Yarn 4 defaults it to true,
       # which puts the cache in ~/.yarn/berry/cache. Forcing it off keeps the cache in
@@ -47,6 +45,9 @@ jobs:
       MIN_PASSWORD_LENGTH: 4
       PASSWORD_COMPLEXITY: easy
       NODE_VERSION: "24.22.1"
+      # Solo release for scheduled and push runs; workflow_dispatch can override it. Keep it in
+      # step with SOLO_VERSION in e2e-tests/scripts/solo-network.mjs.
+      SOLO_VERSION: "0.94.0"
       # How many worker-service processes to run; the readiness gate expects exactly
       # this many WORKERS_SERVICE connections on NATS.
       WORKER_COUNT: 5
@@ -114,96 +115,49 @@ jobs:
 
     steps:
       - name: Harden-Runner
-        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
         with:
           egress-policy: audit
 
       # Runs before the checkout on purpose: it only reads the event payload and the
-      # inputs, so a bad balance fails the run in seconds instead of after the build.
+      # inputs, so the run configuration is settled before anything is built.
       - name: Resolve run parameters
         id: params
         shell: bash
         env:
           EVENT: ${{ github.event_name }}
           IN_TAGS: ${{ inputs.tags }}
-          IN_BALANCE: ${{ inputs.sr_balance }}
         run: |
           set -euo pipefail
 
           case "$EVENT" in
-            schedule)          TAGS="all";               BALANCE=500 ;;
-            push)              TAGS="smoke";             BALANCE=50  ;;
-            workflow_dispatch) TAGS="${IN_TAGS:-smoke}"; BALANCE="${IN_BALANCE:-50}" ;;
-            *)                 TAGS="${IN_TAGS:-smoke}"; BALANCE=50  ;;
+            schedule) TAGS="all" ;;
+            push)     TAGS="smoke" ;;
+            *)        TAGS="${IN_TAGS:-smoke}" ;;
           esac
-
-          # guardian-service hands this straight to Hedera's AccountCreateTransaction
-          # (guardian-service/src/api/demo.service.ts:45) and neither it nor
-          # worker-service/src/api/helpers/hedera-sdk-helper.ts:894 imposes a maximum,
-          # so the ceiling has to be enforced here or a typo drains the CI operator
-          # account.
-          if ! [[ "$BALANCE" =~ ^[0-9]+$ ]] || (( BALANCE < 1 || BALANCE > 500 )); then
-            echo "::error::INITIAL_STANDARD_REGISTRY_BALANCE must be an integer between 1 and 500 (got '$BALANCE')"
-            exit 1
-          fi
 
           {
             echo "tags=$TAGS"
-            echo "sr_balance=$BALANCE"
-            echo "report_name=Guardian e2e Report - $TAGS - ${GITHUB_SHA:0:8}"
+            echo "report_name=Guardian e2e test report - $TAGS - ${GITHUB_SHA:0:8}"
           } >> "$GITHUB_OUTPUT"
-
-      - name: Print run configuration
-        shell: bash
-        env:
-          TAGS: ${{ steps.params.outputs.tags }}
-          SR_BALANCE: ${{ steps.params.outputs.sr_balance }}
-          REPORT_NAME: ${{ steps.params.outputs.report_name }}
-          INITIAL_BALANCE: 20
-          IPFS_TIMEOUT: 720
-          ACCESS_TOKEN_UPDATE_INTERVAL: 600000
-          # Everything below goes through env rather than being interpolated into the
-          # script: a branch named `$(...)` would otherwise be command-substituted
-          # inside the double-quoted echoes.
-          EVENT_NAME: ${{ github.event_name }}
-          REF_NAME: ${{ github.ref_name }}
-          COMMIT_SHA: ${{ github.sha }}
-          ACTOR: ${{ github.actor }}
-          RUNNER_LABEL: ${{ runner.name }}
-          RUNNER_PLATFORM: ${{ runner.os }}/${{ runner.arch }}
-        run: |
-          set -euo pipefail
-          # Only non-secret job parameters are printed here. OPERATOR_*, JWT_*,
-          # SERVICE_JWT_*, MGS* and IPFS_STORAGE_API_KEY stay confined to the `env:` of
-          # the individual steps that need them.
-          {
-            echo "## e2e run configuration"
-            echo
-            echo "| Parameter | Value |"
-            echo "|---|---|"
-            echo "| Trigger | \`${EVENT_NAME}\` |"
-            echo "| Ref | \`${REF_NAME}\` |"
-            echo "| Commit | \`${COMMIT_SHA}\` |"
-            echo "| Actor | \`${ACTOR}\` |"
-            echo "| Runner | \`${RUNNER_LABEL}\` (\`${RUNNER_PLATFORM}\`) |"
-            echo "| CYPRESS_grepTags | \`${TAGS}\` |"
-            echo "| INITIAL_STANDARD_REGISTRY_BALANCE | \`${SR_BALANCE}\` |"
-            echo "| INITIAL_BALANCE | \`${INITIAL_BALANCE}\` |"
-            echo "| MIN_PASSWORD_LENGTH | \`${MIN_PASSWORD_LENGTH}\` |"
-            echo "| PASSWORD_COMPLEXITY | \`${PASSWORD_COMPLEXITY}\` |"
-            echo "| NODE_VERSION | \`${NODE_VERSION}\` |"
-            echo "| WORKER_COUNT | \`${WORKER_COUNT}\` |"
-            echo "| IPFS_PROVIDER | \`local\` |"
-            echo "| IPFS_TIMEOUT | \`${IPFS_TIMEOUT}\` |"
-            echo "| ACCESS_TOKEN_UPDATE_INTERVAL | \`${ACCESS_TOKEN_UPDATE_INTERVAL}\` |"
-            echo "| Report name | \`${REPORT_NAME}\` |"
-            echo
-          } | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Checkout Guardian code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1
+
+      # A throwaway local network per run: no HBAR spent, no testnet dependency, an empty
+      # ledger every time. The ports are the action's defaults (consensus node 35211, mirror
+      # REST 38081); Guardian reaches them through the OVERRIDE_* variables below, not the
+      # 50211/5551 its `localnode` mode hardcodes.
+      - name: Start local Hiero network
+        id: hedera
+        uses: hiero-ledger/hiero-solo-action@c982fe02b37db2a25a6a5e61139d9fe5d0917cff # v0.26.0
+        with:
+          installMirrorNode: true
+          soloVersion: ${{ inputs.solo_version || env.SOLO_VERSION }}
+          nodeVersion: ${{ env.NODE_VERSION }}
+          hbarAmount: 50000000
 
       # `cache:` is deliberately not set. It accepts a single package manager (so npm
       # and yarn cannot both be enabled), and for Yarn Berry it shells out to
@@ -276,7 +230,7 @@ jobs:
       - name: Install Guardian dependencies
         run: yarn install --immutable
 
-      - name: Install e2e tests dependencies
+      - name: Install tests dependencies
         working-directory: e2e-tests
         run: npm ci --prefer-offline --no-audit --fund=false
 
@@ -339,6 +293,41 @@ jobs:
           timeout 180 bash -c 'until curl -fsS --max-time 5 http://127.0.0.1:8080/ipfs/bafkqaaa >/dev/null; do sleep 2; done' \
             || { echo "::error::IPFS gateway (:8080) is not answering"; exit 1; }
 
+          wait_tcp 127.0.0.1 35211 "Hiero consensus node"
+
+          echo "Checking the Hiero mirror node REST API on :38081 ..."
+          timeout 180 bash -c 'until curl -fsS --max-time 5 http://127.0.0.1:38081/api/v1/accounts >/dev/null; do sleep 2; done' \
+            || { echo "::error::Hiero mirror node REST API (:38081) is not answering"; exit 1; }
+
+      # guardian-service deploys its contracts from files on the ledger, and a fresh local
+      # network holds none, so the bytecode is uploaded from this commit's own contracts.
+      - name: Load contracts cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            contracts/node_modules
+            contracts/artifacts
+            contracts/cache
+          key: ${{ runner.os }}-contracts-${{ env.NODE_VERSION }}-${{ hashFiles('contracts/package.json', 'contracts/hardhat.config.ts', 'contracts/src/**') }}
+
+      - name: Compile contracts
+        working-directory: contracts
+        env:
+          # hardhat.config.ts reads it at load time, `compile` never connects to it.
+          RPC_URL: http://localhost:7546
+        run: |
+          npm install --no-audit --fund=false
+          npx hardhat compile
+
+      - name: Upload contract bytecode
+        id: bytecode
+        env:
+          OPERATOR_ID: ${{ steps.hedera.outputs.accountId }}
+          OPERATOR_KEY: ${{ steps.hedera.outputs.privateKey }}
+          OVERRIDE_NETWORK_CONFIGURATION: "true"
+          OVERRIDE_HEDERA_CONSENSUS_NODES: '{"127.0.0.1:35211":"0.0.3"}'
+        run: node .github/scripts/upload-contract-bytecode.mjs
+
       # No `sleep` anywhere: each tier waits until its services have actually opened
       # their named NATS connection, and every process gets its own log file so a boot
       # failure is diagnosable after the fact.
@@ -350,8 +339,21 @@ jobs:
           GUARDIAN_LOG_DIR: ${{ runner.temp }}/guardian-logs
           CI: true
           NODE_OPTIONS: "--openssl-legacy-provider"
-          OPERATOR_ID: ${{ secrets.CI_HEDERA_ACCOUNT }}
-          OPERATOR_KEY: ${{ secrets.CI_HEDERA_PRIV_KEY }}
+          OPERATOR_ID: ${{ steps.hedera.outputs.accountId }}
+          OPERATOR_KEY: ${{ steps.hedera.outputs.privateKey }}
+          HEDERA_NET: localnode
+          PREUSED_HEDERA_NET: localnode
+          LOCALNODE_ADDRESS: 127.0.0.1
+          LOCALNODE_PROTOCOL: http
+          OVERRIDE_NETWORK_CONFIGURATION: "true"
+          OVERRIDE_HEDERA_CONSENSUS_NODES: '{"127.0.0.1:35211":"0.0.3"}'
+          OVERRIDE_HEDERA_MIRROR_NODES: '["http://127.0.0.1:38081"]'
+          # Empty, so Guardian creates its own initialization topic on the local network.
+          INITIALIZATION_TOPIC_ID: ""
+          WIPE_CONTRACT_FILE_ID: ${{ steps.bytecode.outputs.wipe }}
+          RETIRE_CONTRACT_FILE_ID: ${{ steps.bytecode.outputs.retire }}
+          RETIRE_SINGLE_FILE_ID: ${{ steps.bytecode.outputs.retireSingle }}
+          RETIRE_DOUBLE_FILE_ID: ${{ steps.bytecode.outputs.retireDouble }}
           JWT_PRIVATE_KEY: ${{ secrets.CI_JWT_PRIVATE_KEY }}
           JWT_PUBLIC_KEY: ${{ secrets.CI_JWT_PUBLIC_KEY }}
           SERVICE_JWT_PUBLIC_KEY_ALL: ${{ secrets.CI_JWT_PUBLIC_KEY }}
@@ -361,8 +363,10 @@ jobs:
           IPFS_PUBLIC_GATEWAY: http://127.0.0.1:8080/ipfs/{cid}
           IPFS_TIMEOUT: 720
           ACCESS_TOKEN_UPDATE_INTERVAL: 600000
-          INITIAL_BALANCE: 20
-          INITIAL_STANDARD_REGISTRY_BALANCE: ${{ steps.params.outputs.sr_balance }}
+          # HBAR is free on the local network, and token creation alone costs about $1 (8 HBAR at
+          # Solo's 12 cents), so the testnet-era 20 HBAR left accounts short.
+          INITIAL_BALANCE: 10000
+          INITIAL_STANDARD_REGISTRY_BALANCE: 100000
         run: |
           set -euo pipefail
           mkdir -p "$GUARDIAN_LOG_DIR"
@@ -413,8 +417,9 @@ jobs:
           CYPRESS_BROWSER: electron
           # /dev/shm is 64 MB in this container, well under what Chromium expects
           ELECTRON_EXTRA_LAUNCH_ARGS: --disable-dev-shm-usage
-          CYPRESS_operatorId: ${{ secrets.CI_HEDERA_ACCOUNT }}
-          CYPRESS_operatorKey: ${{ secrets.CI_HEDERA_PRIV_KEY }}
+          CYPRESS_hederaNet: localnode
+          CYPRESS_operatorId: ${{ steps.hedera.outputs.accountId }}
+          CYPRESS_operatorKey: ${{ steps.hedera.outputs.privateKey }}
           CYPRESS_ipfsStorageApiKey: ${{ secrets.IPFS_STORAGE_API_KEY }}
           CYPRESS_MGSAdmin: ${{ secrets.MGS_TENANT_NAME }}
           CYPRESS_MGSIndexerAPIToken: ${{ secrets.MGSIndexerAPIToken }}
@@ -452,21 +457,72 @@ jobs:
             e2e-tests/cypress/reports \
             "$GUARDIAN_LOG_DIR"
 
-      - name: Publish e2e summary
+      - name: Print test results
+        uses: step-security/publish-unit-test-result-action@8cf946dca1a299ebf36dff640273fda13717050a # v2.24.0
+        if: always()
+        with:
+          files: e2e-tests/cypress/test_results/**/*.xml
+          check_name: Test results
+          report_individual_runs: true
+          comment_mode: 'off'
+
+      - name: Print test details
         if: always()
         working-directory: e2e-tests
         env:
           CYPRESS_grepTags: ${{ steps.params.outputs.tags }}
         run: node scripts/report-summary.mjs
 
-      - name: Publish API Test Results
-        uses: step-security/publish-unit-test-result-action@8cf946dca1a299ebf36dff640273fda13717050a # v2.24.0
+      - name: Print run configuration
+        shell: bash
+        env:
+          TAGS: ${{ steps.params.outputs.tags }}
+          SR_BALANCE: 100000
+          SOLO_RELEASE: ${{ inputs.solo_version || env.SOLO_VERSION }}
+          REPORT_NAME: ${{ steps.params.outputs.report_name }}
+          INITIAL_BALANCE: 10000
+          IPFS_TIMEOUT: 720
+          ACCESS_TOKEN_UPDATE_INTERVAL: 600000
+          # Everything below goes through env rather than being interpolated into the
+          # script: a branch named `$(...)` would otherwise be command-substituted
+          # inside the double-quoted echoes.
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          COMMIT_SHA: ${{ github.sha }}
+          ACTOR: ${{ github.actor }}
+          RUNNER_LABEL: ${{ runner.name }}
+          RUNNER_PLATFORM: ${{ runner.os }}/${{ runner.arch }}
+          HEDERA_NET: localnode
+          SOLO_OPERATOR_ID: ${{ steps.hedera.outputs.accountId }}
         if: always()
-        with:
-          files: e2e-tests/cypress/test_results/**/*.xml
-          check_name: e2e Test Results
-          report_individual_runs: true
-          comment_mode: 'off'
+        run: |
+          set -euo pipefail
+          # Only non-secret job parameters are printed here. OPERATOR_*, JWT_*,
+          # SERVICE_JWT_*, MGS* and IPFS_STORAGE_API_KEY stay confined to the `env:` of
+          # the individual steps that need them.
+          {
+            echo "## Workflow run configuration"
+            echo
+            echo "| Parameter | Value |"
+            echo "|---|---|"
+            echo "| Report name | \`${REPORT_NAME}\` |"
+            echo "| Trigger | \`${EVENT_NAME}\` |"
+            echo "| Ref | \`${REF_NAME}\` |"
+            echo "| Commit | \`${COMMIT_SHA}\` |"
+            echo "| HEDERA_NET | \`${HEDERA_NET}\` (Solo \`${SOLO_RELEASE}\`) |"
+            echo "| Solo operator account | \`${SOLO_OPERATOR_ID}\` |"
+            echo "| CYPRESS_grepTags | \`${TAGS}\` |"
+            echo "| INITIAL_STANDARD_REGISTRY_BALANCE | \`${SR_BALANCE}\` |"
+            echo "| INITIAL_BALANCE | \`${INITIAL_BALANCE}\` |"
+            echo "| MIN_PASSWORD_LENGTH | \`${MIN_PASSWORD_LENGTH}\` |"
+            echo "| PASSWORD_COMPLEXITY | \`${PASSWORD_COMPLEXITY}\` |"
+            echo "| NODE_VERSION | \`${NODE_VERSION}\` |"
+            echo "| WORKER_COUNT | \`${WORKER_COUNT}\` |"
+            echo "| IPFS_PROVIDER | \`local\` |"
+            echo "| IPFS_TIMEOUT | \`${IPFS_TIMEOUT}\` |"
+            echo "| ACCESS_TOKEN_UPDATE_INTERVAL | \`${ACCESS_TOKEN_UPDATE_INTERVAL}\` |"
+            echo
+          } | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Upload tests results
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -500,5 +556,14 @@ jobs:
         with:
           name: guardian-logs-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/guardian-logs/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Upload Solo logs
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: failure()
+        with:
+          name: solo-logs-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ~/.solo/logs
           if-no-files-found: ignore
           retention-days: 14

@@ -38,6 +38,7 @@ export class NewHeaderComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     public policyRequests = 0;
     public newPolicyRequests = 0;
+    public hasRemotePolicies = false;
 
     private commonLinksDisabled: boolean = false;
     private balanceType: string;
@@ -121,7 +122,7 @@ export class NewHeaderComponent implements OnInit, OnDestroy, AfterViewChecked {
 
         this.policyRequestsSubscription.add(
             this.webSocketService.requestSubscribe((message => {
-                this.updateRemotePolicyRequests();
+                this.updateRemotePolicyRequests(false);
             }))
         );
     }
@@ -206,7 +207,7 @@ export class NewHeaderComponent implements OnInit, OnDestroy, AfterViewChecked {
                 this.applyContainerLayout();
             }
             this.syncActiveGroups();
-            this.updateRemotePolicyRequests();
+            this.updateRemotePolicyRequests(true);
             this.applyBranding();
 
         }, () => {
@@ -350,8 +351,16 @@ export class NewHeaderComponent implements OnInit, OnDestroy, AfterViewChecked {
         }
     }
 
-    private updateRemotePolicyRequests() {
+    /**
+     * @param checkPolicies look up whether the user has remote policies while none were found:
+     * done on navigation, not on every request event, so a user without remote policies
+     * is not asked for the list each time
+     */
+    private updateRemotePolicyRequests(checkPolicies: boolean) {
         if (!this.isLogin) {
+            this.hasRemotePolicies = false;
+            this.policyRequests = 0;
+            this.newPolicyRequests = 0;
             return;
         }
         this.externalPoliciesService.getActionRequestsCount().subscribe((response) => {
@@ -359,6 +368,11 @@ export class NewHeaderComponent implements OnInit, OnDestroy, AfterViewChecked {
                 this.newPolicyRequests = response.body.requestsCount;
                 this.policyRequests = response.body.total;
             }
-        })
+        });
+        if (checkPolicies && !this.hasRemotePolicies && this.user.POLICIES_EXTERNAL_POLICY_READ) {
+            this.externalPoliciesService.getPolicyRequests(0, 1).subscribe((response) => {
+                this.hasRemotePolicies = this.externalPoliciesService.parsePage(response).count > 0;
+            });
+        }
     }
 }

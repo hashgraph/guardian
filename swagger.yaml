@@ -44850,16 +44850,32 @@ paths:
         - name: status
           required: false
           in: query
-          description: Status
+          description: Status, or several statuses separated by a comma
           schema:
             example: NEW
             type: string
         - name: type
           required: false
           in: query
-          description: Type
+          description: Type, or several types separated by a comma
           schema:
-            example: ACTION
+            example: ACTION,REMOTE_ACTION
+            type: string
+        - name: sortField
+          required: false
+          in: query
+          description: >-
+            Field to sort by (createDate, status, type, documentType, topicId,
+            blockTag, policyId)
+          schema:
+            example: createDate
+            type: string
+        - name: sortDirection
+          required: false
+          in: query
+          description: Sort direction (asc or desc)
+          schema:
+            example: desc
             type: string
       responses:
         '200':
@@ -44959,22 +44975,6 @@ paths:
           schema:
             example: '1773670900.819264517'
             type: string
-      requestBody:
-        required: true
-        description: Object that contains a configuration.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PolicyRequestDTO'
-            examples:
-              approveRequest:
-                summary: Approve a remote policy request
-                value:
-                  uuid: 9db028d2-03ad-4d49-a178-cf4b67f8c147
-                  type: ACTION
-                  messageId: '1773670900.819264517'
-                  status: NEW
-                  document: {}
       responses:
         '200':
           description: Successful operation.
@@ -45083,22 +45083,6 @@ paths:
           schema:
             example: '1773670900.819264517'
             type: string
-      requestBody:
-        required: true
-        description: Object that contains a configuration.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PolicyRequestDTO'
-            examples:
-              rejectRequest:
-                summary: Reject a remote policy request
-                value:
-                  uuid: 9db028d2-03ad-4d49-a178-cf4b67f8c147
-                  type: ACTION
-                  messageId: '1773670900.819264517'
-                  status: NEW
-                  document: {}
       responses:
         '200':
           description: Successful operation.
@@ -45207,22 +45191,6 @@ paths:
           schema:
             example: '1773670900.819264517'
             type: string
-      requestBody:
-        required: true
-        description: Object that contains a configuration.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PolicyRequestDTO'
-            examples:
-              cancelRequest:
-                summary: Cancel a remote policy request
-                value:
-                  uuid: 9db028d2-03ad-4d49-a178-cf4b67f8c147
-                  type: ACTION
-                  messageId: '1773670900.819264517'
-                  status: NEW
-                  document: {}
       responses:
         '200':
           description: Successful operation.
@@ -45331,22 +45299,6 @@ paths:
           schema:
             example: '1773670900.819264517'
             type: string
-      requestBody:
-        required: true
-        description: Object that contains a configuration.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PolicyRequestDTO'
-            examples:
-              reloadRequest:
-                summary: Reload a remote policy request
-                value:
-                  uuid: 9db028d2-03ad-4d49-a178-cf4b67f8c147
-                  type: ACTION
-                  messageId: '1773670900.819264517'
-                  status: NEW
-                  document: {}
       responses:
         '200':
           description: Successful operation.
@@ -45470,6 +45422,8 @@ paths:
                   value:
                     requestsCount: 0
                     actionsCount: 0
+                    failedCount: 0
+                    threadsCount: 0
                     delayCount: 0
                     total: 0
         '401':
@@ -62188,11 +62142,19 @@ components:
       properties:
         requestsCount:
           type: number
-          description: Number of new requests
+          description: Number of requests waiting for the user (per thread)
           example: 0
         actionsCount:
           type: number
-          description: Number of new actions
+          description: Number of actions waiting for the remote policy (per thread)
+          example: 0
+        failedCount:
+          type: number
+          description: Number of failed threads
+          example: 0
+        threadsCount:
+          type: number
+          description: Number of threads, as the grid lists them
           example: 0
         delayCount:
           type: number
@@ -62205,6 +62167,8 @@ components:
       required:
         - requestsCount
         - actionsCount
+        - failedCount
+        - threadsCount
         - delayCount
         - total
     PolicyLabelDTO:

@@ -4,13 +4,20 @@
     "description": "This a place for quardian e2e automation test suite",
     "main": "index.js",
     "scripts": {
-        "test": "npx cypress run",
-        "e2e": "npx cypress run",
-        "ui-only-headed": "npx cypress run --headed --env \"grepTags=ui,grepFilterSpecs=true\"",
-        "ui-only": "npx cypress run --env \"grepTags=ui,grepFilterSpecs=true\"",
-        "test-tag": "./run-test-by-tag.sh",
         "api-tests": "npx cypress run --env \"grepTags=all,grepFilterSpecs=true\" --spec \"cypress/e2e/api-tests/**/*.cy.js\" --browser chrome",
-        "smoke-pull": "npx cypress run --env \"grepTags=smoke,grepFilterSpecs=true\" --spec \"cypress/e2e/api-tests/**/*.cy.js\" --browser chrome"
+        "e2e": "npx cypress run",
+        "guardian:down": "scripts/local-guardian.sh down",
+        "guardian:test": "scripts/local-guardian.sh test",
+        "guardian:test:smoke": "scripts/local-guardian.sh smoke",
+        "guardian:up": "scripts/local-guardian.sh up",
+        "solo:up": "node scripts/solo-network.mjs up",
+        "solo:down": "node scripts/solo-network.mjs down",
+        "test": "npx cypress run",
+        "test:scripts": "node --test \"scripts/*.test.mjs\"",
+        "test:smoke": "npx cypress run --env \"grepTags=smoke,grepFilterSpecs=true\" --spec \"cypress/e2e/api-tests/**/*.cy.js\" --browser chrome",
+        "test:tag": "./run-test-by-tag.sh",
+        "ui-only-headed": "npx cypress run --headed --env \"grepTags=ui,grepFilterSpecs=true\"",
+        "ui-only": "npx cypress run --env \"grepTags=ui,grepFilterSpecs=true\""
     },
     "keywords": [
         "qa",
