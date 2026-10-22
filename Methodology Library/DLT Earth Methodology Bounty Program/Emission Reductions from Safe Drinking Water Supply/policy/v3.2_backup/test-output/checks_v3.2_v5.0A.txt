@@ -1,0 +1,10 @@
+# v3.2 v5.0A (policy/v3.2_backup/VMR0015_Safe_Drinking_Water_dMRV_v3.2_VCS-v5.0A_with_integrity_test.policy)
+wiring.py:
+PROBLEMS 0
+reach.py:
+VMR0015_Safe_Drinking_Water_dMRV_v3.2_VCS-v5.0A_wi | blocks 1 | warnings (properties.stopPropagation rule) 185 | (top-level stopPropagation) 199
+formulas_check.mjs:
+pp_err_calculation_pd_vcs_ex_ante: 18 functions, 18 built | 14 formula variables | context valid
+pp_err_calculation_mr_vcs_ex_post: 19 functions, 19 built | 14 formula variables | context valid
+audit/blocks_audit.py:
+blocks=219 events=36 schemas=492 problems=0

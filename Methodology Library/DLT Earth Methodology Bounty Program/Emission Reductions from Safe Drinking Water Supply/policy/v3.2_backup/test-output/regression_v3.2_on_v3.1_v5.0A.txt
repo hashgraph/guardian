@@ -1,0 +1,99 @@
+engine: guardian-math-model
+PASS  PD ex-ante annual ER: engine 1666.620262475  hand 1666.620262475  (sample value 1666.620262475)
+PASS  reference sample (4 zones)                                                     MR engine    1556.947181  hand    1556.947181
+PASS  E. coli failures 12% in zone 1 -> zone 1 not credited, its PE share still dedu MR engine    1064.861383  hand    1064.861383
+PASS  E. coli failures 40% in zones 1 and 2 -> over 10% of the project, nothing cred MR engine       0.000000  hand       0.000000
+        flags: section S1: 40 of 95 appliances tested (42.1 %) fail the E. coli requirement, over 10 % (table 11 (c)) - section not credited | section S2: 40 of 95 appliances 
+PASS  working appliance without an E. coli result -> not passing in m, flagged       MR engine    1551.655936  hand    1551.655936
+        flags: section S1: 1 working appliance(s) of 100 checked have no E. coli result; in m they count as not providing SDW because table 11 (c) is not verified for them (co
+PASS  table 14 check failed in zone 2 -> period voided (project activity fails)      MR engine       0.000000  hand       0.000000
+        flags: Appendix 2 A2.2.1 SDW quality check (1 = all sections meet the standard) states 1 but the calculation used 0 from the methodology records; make them agree | pro
+PASS  public network supplies 739 persons in zone 1 -> excluded (table 13)           MR engine    1433.884100  hand    1433.884100
+PASS  cap: zone 3 volume 9 million L (> 5.5 L/person/day)                            MR engine    1936.221378  hand    1936.221378
+PASS  sampling 12% attained, survey year 1 -> 6% discount on zone 1                  MR engine    1527.447130  hand    1527.447130
+PASS  sampling 12% attained, survey year 3 -> zone 1 not credited until resampled (p MR engine    1064.861383  hand    1064.861383
+PASS  sample of 25 for m -> zone 1 not credited                                      MR engine    1064.861383  hand    1064.861383
+PASS  section id not in PD -> that section not credited, flagged                     MR engine    1064.861383  hand    1064.861383
+PASS  typed periodDays 300 vs dates of 365 days -> dates win, flagged                MR engine    1556.947181  hand    1556.947181
+PASS  half-year period (181 days) -> 5.5 L cap pro-rated and binding                 MR engine    1372.216806  hand    1372.216806
+PASS  VT0010 shared plant, no cogeneration (Eq.13)                                   MR engine    1555.513346  hand    1555.513346
+PASS  VT0010 shared plant with cogeneration heat (Eq.13-14)                          MR engine    1555.930159  hand    1555.930159
+PASS  Appendix 2 fNRB (MR) 0.70 vs records 0.62 -> flagged, ER unchanged             MR engine    1556.947181  hand    1556.947181
+        flags: Appendix 2 A2.2.4 fNRB states 0.7 but the calculation used 0.62 from the methodology records; make them agree
+PASS  Appendix 2 m (PD) 0.90 vs sections 0.95 -> flagged, ER unchanged               MR engine    1556.947181  hand    1556.947181
+        flags: Appendix 2 A2.2.1 m states 0.9 but the calculation used 0.95 from the methodology records; make them agree
+PASS  table 14 fails in all 4 sections -> ER 0, not negative, flagged                MR engine       0.000000  hand       0.000000
+        flags: Appendix 2 A2.2.1 SDW quality check (1 = all sections meet the standard) states 1 but the calculation used 0 from the methodology records; make them agree | pro
+PASS  fNRB typed 6.2 instead of 0.62 (MR) -> voided, value listed                    MR engine       0.000000  hand       0.000000
+        flags: registered PD section S1 fuel F1: fNRB 0.62 on the baseline fuel row differs from the fNRB determination 6.2 for Woody biomass (VMR0015 s9.2); the determination
+PASS  eta_wb typed 15 instead of 0.15 (PD) -> voided, value listed                   MR engine       0.000000  hand       0.000000
+        flags: registered PD: input values out of range - calculation voided, correct the records: A2.1.1 eta_wb = 15 (allowed above 0 to 1) PD: input values out of range - ca
+PASS  baseline fuel shares add up to 1.2 (PD) -> voided                              MR engine       0.000000  hand       0.000000
+        flags: registered PD: input values out of range - calculation voided, correct the records: section S1 fuel F1 BL_fuel = 1.2 (allowed 0 to 1); section S1: baseline fuel
+PASS  negative metered volume (MR) -> voided                                         MR engine       0.000000  hand       0.000000
+        flags: MR: input values out of range - calculation voided, correct the records: section S1 measured volume = -5 (allowed 0 or more) | Appendix 2 A2.2.1 QPW_y states 12
+PASS  applicability para 4(c) marked Not met (PD) -> methodology does not apply, voi MR engine       0.000000  hand       0.000000
+        flags: registered PD: applicability condition not met (para 4(c) replacement access) - the methodology does not apply, calculation voided PD: applicability condition n
+PASS  duplicate section id -> whole MR voided                                        MR engine       0.000000  hand       0.000000
+PASS  two baseline fuels in zone 1 (wood 0.50 + charcoal 0.35, VMR0015 s9.1 defaults MR engine    1732.519344  hand    1732.519344  | PD engine 1847.779765 hand 1847.779765
+PASS  fNRB option 2 (TOOL30 NRB 74 / RB 26, x 0.74) in the MR -> 0.5476 applied, fla MR engine    1396.798721  hand    1396.798721
+        flags: fNRB Woody biomass: option 2 applies TOOL30 x 0.74 because VMR0015 s9.2 still lists it. The CDM withdrew TOOL30 from 1 Jan 2026 (EB125) and AMS-III.AV v09.0 rem
+PASS  day school in zone 3: option 2.2, 1,200 pupils, 9/16 x 3 L, 190 school days (S MR engine    1246.877210  hand    1246.877210
+PASS  VT0008 N_all 10, N_diff 2 (PD) -> common practice flagged, ER unchanged        MR engine    1556.947181  hand    1556.947181
+        flags: additionality: VT0008 Step 4 common practice - F = 0.8 is above 0.2 and N_all - N_diff = 8 is above 3, so the project activity is common practice and not additi
+PASS  VT0008 benchmark: IRR 15 % without credits vs benchmark 14.15 % (PD) -> flagge MR engine    1556.947181  hand    1556.947181
+        flags: additionality: VT0008 Step 3 - project IRR without carbon revenue (15 %) meets the benchmark (14.15 %), so the investment analysis does not show additionality
+PASS  TOOL03 option A, mass unit: diesel 0.2 t, w_C 0.86 (MR, Eq.(2))                MR engine    1556.316515  hand    1556.316515
+PASS  TOOL03 option A, volume unit: 0.3 m3, w_C 0.86, rho 0.84 (MR, Eq.(3))          MR engine    1556.152541  hand    1556.152541
+PASS  TOOL03 option B: 0.2 t, NCV 43 GJ/t, EF 0.0741 t CO2/GJ (MR, Eq.(4))           MR engine    1556.309921  hand    1556.309921
+PASS  TOOL03 option A in the PD (ex-ante, Eq.(1)-(2))                                MR engine    1556.947181  hand    1556.947181  | PD engine 1665.989596 hand 1665.989596
+PASS  VT0010 PBWA: 1.5 MWh from a wheeled solar plant, TDL 3 %, EF 0 (Eq.(7)-(9))    MR engine    1557.607764  hand    1557.607764
+PASS  SEC by Eq.(4): T_i 25 C (PD switch to Eq.(4))                                  MR engine    1465.712353  hand    1465.712353  | PD engine 1568.964214 hand 1568.964214
+PASS  baseline survey rows: eta_wb 0.175 (VMR0015 fn 3 example), X_boil 10/15 -> sur MR engine    1010.540224  hand    1010.540224  | PD engine 1081.756510 hand 1081.756510
+        flags: registered PD: eta_wb typed 0.15 differs from the baseline-survey usage-weighted value 0.175 (VMR0015 s8.1 footnote 3); the survey value is used | registered PD
+PASS  Adj_LE survey value 0.92 (PD leakage record)                                   MR engine    1507.738602  hand    1507.738602  | PD engine 1613.948322 hand 1613.948322
+PASS  PD ex-ante: zone 2 option 2.1 (1 L/h x 1,460 h x 750 units), zone 3 option 2.2 MR engine    1556.947181  hand    1556.947181  | PD engine 1379.743916 hand 1379.743916
+PASS  MR zone 2 option 2.1: five devices, q_i x t_hours (Eq.(2))                     MR engine    1134.078346  hand    1134.078346
+PASS  P_y missing in zone 4 (MR) -> cap 0, section earns nothing, flagged            MR engine    1272.382414  hand    1272.382414
+        flags: section S4: population served P_y is missing or zero, so the 5.5 L/person/day cap (AMS-III.AV para 18) is 0 and the section earns nothing; enter P_y | Appendix 
+PASS  no functionality checks in zone 2 (MR) -> m = 0, flagged                       MR engine    1133.206633  hand    1133.206633
+        flags: section S2: no functionality checks recorded, so m = 0 (AMS-III.AV table 11) and the section earns nothing | Appendix 2 A2.2.1 m states 0.93 but the calculation
+PASS  monitoring period ends after the crediting period (MR) -> flagged, ER unchange MR engine    1556.947181  hand    1556.947181
+        flags: days in the monitoring period: 365 were typed but the period dates 2031-07-01 to 2032-06-30 give 366 days (both dates included); the policy used 366 days | MR f
+PASS  fNRB option 2 with no TOOL30 data (MR) -> fNRB 0 for that fuel, flagged (no fa MR engine     185.510092  hand     185.510092
+        flags: fNRB Woody biomass: the determination (Option 2 - TOOL30 calculated value x (1 - 0.26)) has no value for its own option (Option 1: UNFCCC value, Option 2: TOOL3
+PASS  fNRB option 1 with the applied value empty (PD) -> UNFCCC value 0.62 used      MR engine    1556.947181  hand    1556.947181  | PD engine 1666.620262 hand 1666.620262
+PASS  PD project emissions above baseline (grid load 100,000 MWh) -> ex-ante ER 0, n MR engine    1556.947181  hand    1556.947181  | PD engine 0.000000 hand 0.000000
+        flags: PD: project emissions 45360 t CO2e/yr exceed baseline emissions 1667.944774475 t CO2e/yr, so the estimate is negative (-43692.055225525); the ex-ante ER is repo
+PASS  fuel-row fNRB 0.70 vs fNRB determination 0.62 (PD) -> determination used, flag MR engine    1556.947181  hand    1556.947181  | PD engine 1666.620262 hand 1666.620262
+        flags: registered PD section S1 fuel F1: fNRB 0.7 on the baseline fuel row differs from the fNRB determination 0.62 for Woody biomass (VMR0015 s9.2); the determination
+PASS  survey rows per section: zone 1 eta 0.10 / X_boil 0.4, zone 2 eta 0.35 / X_boi MR engine     832.576295  hand     832.576295  | PD engine 886.653559 hand 886.653559
+PASS  interactive effects: 48 of 384 baseline households (PD) -> BE x 0.875 in the P MR engine    1362.163220  hand    1362.163220  | PD engine 1458.127166 hand 1458.127166
+        flags: MR: 12.5 % of surveyed households report an interactive effect with improved thermal energy technologies; baseline emissions are reduced by that share (VMR0015 
+PASS  interactive effects: 40 of 400 project-survey households (MR) -> BE x 0.9      MR engine    1401.120012  hand    1401.120012
+        flags: MR: 10 % of surveyed households report an interactive effect with improved thermal energy technologies; baseline emissions are reduced by that share (VMR0015 s9
+PASS  QPW option 1, continuous sample: 75 of 750 meters, 300,000 L -> x 750/75 (AMS- MR engine    1571.858872  hand    1571.858872
+        flags: section S3: QPW_y comes from a metering sample, but no sampling record for QPW_y is given (AMS-III.AV table 10: sample size per the CDM sampling standard) | App
+PASS  QPW option 1, representative period: 75 meters x 60 days, 54,000 L -> x 750 x  MR engine    1607.274138  hand    1607.274138
+PASS  QPW option 1, a full-count record and a sample record in one section -> sectio MR engine    1199.066601  hand    1199.066601
+        flags: section S3: option 1 records mix sampling bases (all appliances, continuous sample, representative-period sample); only one basis per section is allowed, so the
+PASS  table 13: public network supplies 739 persons in zone 1 from 1 July 2027 -> ex MR engine    1494.909902  hand    1494.909902
+PASS  TOOL03 per-fuel table: back-up generator (VT0010 D2) option B + pump option A  MR engine    1555.515281  hand    1555.515281
+PASS  TOOL03 per-fuel table in the PD (ex-ante)                                      MR engine    1556.947181  hand    1556.947181  | PD engine 1665.188362 hand 1665.188362
+PASS  VT0010 per-load and per-plant tables: two loads (one with PBWA), one shared pl MR engine    1556.363710  hand    1556.363710
+PASS  Adj_LE default option with 0.90 typed (PD) -> 0.95 applied, flagged (VMR0015 s MR engine    1556.947181  hand    1556.947181  | PD engine 1666.620262 hand 1666.620262
+        flags: Adj_LE: the default option is selected but 0.9 is entered; the default 0.95 is applied (VMR0015 s8.3) Adj_LE: the default option is selected but 0.9 is entered;
+FAIL  v3.2 fNRB option 3: applied 0.70 vs TOOL33 0.62 (MR) -> TOOL33 0.62 used, flag MR engine    1733.906806  hand    1556.947181
+        flags: registered PD section S1 fuel F1: fNRB 0.62 on the baseline fuel row differs from the fNRB determination 0.7 for Woody biomass (VMR0015 s9.2); the determination
+FAIL  v3.2 fNRB option 1: applied 0.70 vs UNFCCC 0.62 (PD) -> UNFCCC 0.62 used, flag MR engine    1556.947181  hand    1556.947181  | PD engine 1856.034523 hand 1666.620262
+        flags: PD section S1 fuel F1: fNRB 0.62 on the baseline fuel row differs from the fNRB determination 0.7 for Woody biomass (VMR0015 s9.2); the determination is used | 
+FAIL  v3.2 fNRB option 1: UNFCCC value typed 62 (a percentage) (MR) -> voided, value MR engine  137329.219078  hand       0.000000
+        flags: registered PD section S1 fuel F1: fNRB 0.62 on the baseline fuel row differs from the fNRB determination 62 for Woody biomass (VMR0015 s9.2); the determination 
+FAIL  v3.2 fNRB option 3 with only the applied value (MR) -> applied 0.62 used, flag MR engine    1556.947181  hand    1556.947181
+FAIL  v3.2 fNRB option 2: applied 0.70 vs TOOL30 x 0.74 (MR) -> computed 0.444 used, MR engine    1167.636008  hand    1167.636008
+        flags: fNRB Woody biomass: option 2 applies TOOL30 x 0.74 because VMR0015 s9.2 still lists it. The CDM withdrew TOOL30 from 1 Jan 2026 (EB125) and AMS-III.AV v09.0 rem
+PASS  EC_PE,B typed without EG_PBWA (MR) -> not used, whole load as grid electricity MR engine    1556.910893  hand    1556.910893
+        flags: VT0010: EC_PE,B is entered without EG_PBWA; Eq.(9) needs EG_PBWA, so the whole load is taken as grid electricity (Scenario A)
+PASS  PD: TOOL19 selected with ex-ante ER > 20 000 t -> flagged (s7)                 PD engine   21681.957556  hand   21681.957556
+
+60/65 passed
