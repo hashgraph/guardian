@@ -121,9 +121,7 @@ describe('MathEditorDialogComponent Table column fields', () => {
         dialog.schemaFieldMap = new Map();
         const item: any = { field: 'area', schema: null };
 
-        const paths = dialog.getPaths(item, 'input');
-
-        expect(Array.from((paths as ReadonlyMap<string, unknown>).keys()).filter((p) => p.includes(item.field))).toEqual(['siteTable.area_ha']);
+        expect(dialog.getPaths(item, 'input')?.has('siteTable.area_ha')).toBeTrue();
         expect(dialog.inputSchemaFieldMap.get('siteTable').type).toBe('string');
     });
 

@@ -553,12 +553,12 @@
       </div>
       <div class="rel-actions">
         <p-select
+          #relAdd
           class="guardian-dropdown rel-add"
           [options]="relationshipOptions(item)"
           optionLabel="name"
           optionValue="uuid"
-          [ngModel]="null"
-          (ngModelChange)="addRelationship(item, $event)"
+          (onChange)="$event.value && addRelationship(item, $event.value, relAdd)"
           placeholder="Add relationship…"
           [filter]="true"
           filterBy="name,description"

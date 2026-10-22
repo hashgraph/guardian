@@ -6,6 +6,7 @@ import { ProfileService } from 'src/app/services/profile.service';
 import { FormulasService } from 'src/app/services/formulas.service';
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { DialogService } from 'primeng/dynamicdialog';
+import { Select } from 'primeng/select';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MathLiveComponent } from '../../common/mathlive/mathlive.component';
 import { LinkDialog } from '../dialogs/link-dialog/link-dialog.component';
@@ -801,11 +802,13 @@ export class FormulaConfigurationComponent implements OnInit {
         this.markDirty();
     }
 
-    public addRelationship(item: IFormulaItem, uuid: string) {
+    public addRelationship(item: IFormulaItem, uuid: string, select?: Select) {
         if (this.readonly || !uuid || item.relationships?.includes(uuid)) {
             return;
         }
         item.relationships = [...(item.relationships || []), uuid];
+        // the dropdown keeps the picked value and ignores picking it again after a removal
+        select?.clear();
         this.markDirty();
     }
 
