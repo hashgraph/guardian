@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { FormulaFiles, FormulaItem, FormulasTree, SchemaItem } from '../../models/formula-tree';
+import { FormulaFiles, FormulaItem, FormulaItemLink, FormulasTree, SchemaItem } from '../../models/formula-tree';
 import { TreeListData, TreeListItem, TreeListView } from '../../models/tree-list';
 import { MathLiveComponent } from '@components/math-live/math-live.component';
 import { TabViewModule } from 'primeng/tabview';
@@ -60,8 +60,8 @@ export class FormulasViewDialog {
         this.ref.close(null);
     }
 
-    public onLink(current: FormulaItem) {
-        this.selectItem(current.linkItem);
+    public onLink(link: FormulaItemLink) {
+        this.selectItem(link.linkItem);
     }
 
     public onRelationship(relationship: FormulaItem) {

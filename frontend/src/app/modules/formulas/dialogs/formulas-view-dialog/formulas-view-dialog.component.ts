@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { FormulaFiles, FormulaItem, FormulasTree, IFormulaConditionContext, SchemaItem } from '../../models/formula-tree';
+import { FormulaFiles, FormulaItem, FormulaItemLink, FormulasTree, IFormulaConditionContext, SchemaItem } from '../../models/formula-tree';
 import { filterRootItems, FormulasViewOrigin } from './formula-view-items';
 import { sourceRows } from '../../models/formula-meta';
 import { TreeListData, TreeListItem, TreeListView } from 'src/app/modules/common/tree-graph/tree-list';
@@ -85,8 +85,8 @@ export class FormulasViewDialog {
         this.ref.close(null);
     }
 
-    public onLink(current: FormulaItem) {
-        this.selectItem(current.linkItem);
+    public onLink(link: FormulaItemLink) {
+        this.selectItem(link.linkItem);
     }
 
     public onRelationship(relationship: FormulaItem) {

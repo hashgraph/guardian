@@ -28,7 +28,7 @@ describe('SchemaFieldFormulas', () => {
             parsePage: () => ({ page: [], count: 0 }),
         };
         const model: any = new SchemaFieldFormulas(
-            formulasService, {} as any, {} as any, {} as any, () => {}, () => ''
+            formulasService, {} as any, {} as any, () => {}, () => ''
         );
         model.policy = { id: 'p1', name: 'Policy' };
         model.canEdit = true;
@@ -70,6 +70,29 @@ describe('SchemaFieldFormulas', () => {
             expect(model.hasPending).toBeFalse();
             done();
         });
+    });
+
+    it('adds a link to an item that is already linked, and unlinks only that link', (done) => {
+        const { model, updates } = create();
+        const s = scope(['risks'], 'G7');
+        model.assign(s, 'd1|v1');
+        model.save().subscribe(() => {
+            const item = updates[0].config.formulas[0];
+            expect(item.links).toEqual([
+                { type: 'schema', entityId: '#root', item: 'risks.G6' },
+                { type: 'schema', entityId: '#root', item: 'risks.G7' }
+            ]);
+            expect(item.link).toEqual(item.links[0]);
+            done();
+        });
+    });
+
+    it('counts an item with two links to different fields on each of them', () => {
+        const { model } = create();
+        const schema: any = { id: 's1', iri: '#root' };
+        model.assign(scope(['risks'], 'G7'), 'd1|v1');
+        expect(model.count(schema, ['risks'], 'G6')).toBe(1);
+        expect(model.count(schema, ['risks'], 'G7')).toBe(1);
     });
 
     it('counts the formulas of a field, pending changes included', () => {

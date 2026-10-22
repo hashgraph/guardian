@@ -1,6 +1,7 @@
 import { moveItemInArray } from '@angular/cdk/drag-drop';
-import { IFormulaItem, FormulaItemType, GenerateUUIDv4, IFormulaConfig, IFormulaFile, SchemaHelper } from '@guardian/interfaces';
+import { IFormulaItem, IFormulaLink, FormulaItemType, GenerateUUIDv4, IFormulaConfig, IFormulaFile, SchemaHelper } from '@guardian/interfaces';
 import { sourceRows } from './formula-meta';
+import { getItemLinks, setItemLinks } from './field-bindings';
 
 /**
  * Shown instead of the link label when the linked schema or field does not exist.
@@ -37,6 +38,12 @@ export interface IFormulaRowMeta {
     subText: string;
     /** true when the item has no summary at all (no link) */
     noLink: boolean;
+    /** links of the item that are not shown in the summary line */
+    moreLinks: number;
+    /** number of links of the item */
+    linkCount: number;
+    /** number of links with a display condition */
+    conditionCount: number;
     /** true when the linked schema or field was not found */
     missingLink: boolean;
     /** the match that is not visible on the row, only while searching */
@@ -128,7 +135,7 @@ export class Formulas {
     /** row data by item uuid */
     public meta: Map<string, IFormulaRowMeta>;
     /** the provider of link labels, set by the component */
-    public labelFn: ((item: IFormulaItem) => IFormulaLinkLabel | null) | null;
+    public labelFn: ((link: IFormulaLink) => IFormulaLinkLabel) | null;
 
     constructor() {
         this.items = [];
@@ -162,16 +169,16 @@ export class Formulas {
             return item;
         } else if (type === FormulaItemType.Variable) {
             item.value = '';
-            item.link = null;
+            setItemLinks(item, []);
             return item;
         } else if (type === FormulaItemType.Formula) {
             item.value = '';
-            item.link = null;
+            setItemLinks(item, []);
             item.relationships = [];
             return item;
         } else if (type === FormulaItemType.Text) {
             item.value = '';
-            item.link = null;
+            setItemLinks(item, []);
             item.relationships = [];
             return item;
         } else {
@@ -255,15 +262,15 @@ export class Formulas {
         const data: IFormulaItem[] = [];
         const meta = new Map<string, IFormulaRowMeta>();
         for (const item of this.items) {
-            const link = this.getLinkLabel(item);
-            const parts = this.getParts(item, link);
+            const labels = this.getLinkLabels(item);
+            const parts = this.getParts(item, labels);
             if (!this.isMatch(parts)) {
                 continue;
             }
             counts[item.type]++;
             if (this.filterMap.get(item.type)) {
                 data.push(item);
-                meta.set(item.uuid, this.getMeta(item, parts, link));
+                meta.set(item.uuid, this.getMeta(item, parts, labels));
             }
         }
         this.counts = counts;
@@ -280,7 +287,7 @@ export class Formulas {
         };
     }
 
-    private getParts(item: IFormulaItem, link: IFormulaLinkLabel | null): ISearchPart[] {
+    private getParts(item: IFormulaItem, labels: IFormulaLinkLabel[]): ISearchPart[] {
         const parts: ISearchPart[] = [];
         const add = (label: string, raw: any) => {
             raw = String(raw ?? '');
@@ -296,10 +303,12 @@ export class Formulas {
         } else if (item.type === FormulaItemType.Formula) {
             add('Formula', latexToPlain(item.value));
         }
-        if (link?.missing) {
-            add('Link', MISSING_LINK_TEXT);
-        } else if (link) {
-            add('Link', `${link.entity}: ${link.field}`);
+        for (const link of labels) {
+            if (link.missing) {
+                add('Link', MISSING_LINK_TEXT);
+            } else {
+                add('Link', `${link.entity}: ${link.field}`);
+            }
         }
         for (const label of this.getConditionLabels(item)) {
             add('Shown if', label);
@@ -309,25 +318,28 @@ export class Formulas {
         return parts;
     }
 
-    private getLinkLabel(item: IFormulaItem): IFormulaLinkLabel | null {
-        if (!item.link || !this.labelFn) {
-            return null;
+    private getLinkLabels(item: IFormulaItem): IFormulaLinkLabel[] {
+        const labelFn = this.labelFn;
+        if (!labelFn) {
+            return [];
         }
-        return this.labelFn(item);
+        return getItemLinks(item).map((link) => labelFn(link));
     }
 
     private getConditionLabels(item: IFormulaItem): string[] {
-        const condition: any = item.link?.condition;
-        if (!condition) {
-            return [];
-        }
-        const rows: any[] = SchemaHelper.getConditionTriggerPredicates(condition);
         const result: string[] = [];
-        for (const row of rows) {
-            const field = row?.field;
-            const name = field?.description || field?.title || field?.name || '';
-            const operator = row?.comparator === 'contains' ? 'contains' : '=';
-            result.push(`${name} ${operator} ${row?.fieldValue ?? ''}`.trim());
+        for (const link of getItemLinks(item)) {
+            const condition: any = link.type === 'schema' ? link.condition : null;
+            if (!condition) {
+                continue;
+            }
+            const rows: any[] = SchemaHelper.getConditionTriggerPredicates(condition);
+            for (const row of rows) {
+                const field = row?.field;
+                const name = field?.description || field?.title || field?.name || '';
+                const operator = row?.comparator === 'contains' ? 'contains' : '=';
+                result.push(`${name} ${operator} ${row?.fieldValue ?? ''}`.trim());
+            }
         }
         return result;
     }
@@ -336,8 +348,10 @@ export class Formulas {
         return this.terms.every((term) => parts.some((part) => part.lower.includes(term)));
     }
 
-    private getMeta(item: IFormulaItem, parts: ISearchPart[], link: IFormulaLinkLabel | null): IFormulaRowMeta {
+    private getMeta(item: IFormulaItem, parts: ISearchPart[], labels: IFormulaLinkLabel[]): IFormulaRowMeta {
         const terms = this.terms;
+        const link = labels[0] || null;
+        const links = getItemLinks(item);
         let entity: IFormulaSegment[] | null = null;
         let sub: IFormulaSegment[] = [];
         let subText = '';
@@ -372,7 +386,18 @@ export class Formulas {
                 hit = { label: part.label, text, segments: highlightSegments(text, terms) };
             }
         }
-        return { entity, sub, subText, noLink, missingLink, hit };
+        const conditionCount = links.filter((e) => e.type === 'schema' && !!e.condition).length;
+        return {
+            entity,
+            sub,
+            subText,
+            noLink,
+            missingLink,
+            moreLinks: Math.max(0, links.length - 1),
+            linkCount: links.length,
+            conditionCount,
+            hit
+        };
     }
 
     public fromData(config: IFormulaConfig) {
@@ -391,10 +416,16 @@ export class Formulas {
     }
 
     private _fromItemJson(item: IFormulaItem): IFormulaItem {
+        if (item.type !== FormulaItemType.Constant) {
+            setItemLinks(item, getItemLinks(item));
+        }
         return item;
     }
 
     private _toItemJson(item: IFormulaItem): IFormulaItem {
+        if (item.type !== FormulaItemType.Constant) {
+            setItemLinks(item, getItemLinks(item));
+        }
         return item;
     }
 

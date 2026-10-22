@@ -73,6 +73,20 @@ describe('FormulaImportExport.getSchemaIds', () => {
         assert.deepEqual(Array.from(ids).sort(), ['#s1', '#s2']);
     });
 
+    it('collects the schemas of all links of an item', () => {
+        const ids = FormulaImportExport.getSchemaIds({
+            formulas: [{
+                link: { type: 'schema', entityId: '#s1' },
+                links: [
+                    { type: 'schema', entityId: '#s1' },
+                    { type: 'schema', entityId: '#s3' },
+                    { type: 'formula', entityId: '#f' }
+                ]
+            }]
+        });
+        assert.deepEqual(Array.from(ids).sort(), ['#s1', '#s3']);
+    });
+
     it('returns an empty set for missing config or formulas', () => {
         assert.equal(FormulaImportExport.getSchemaIds(undefined).size, 0);
         assert.equal(FormulaImportExport.getSchemaIds({ formulas: 'bad' }).size, 0);
@@ -90,6 +104,22 @@ describe('FormulaImportExport.replaceIds', () => {
         const result = FormulaImportExport.replaceIds(data, 'old', 'new');
         assert.equal(result.formulas[0].link.entityId, 'new');
         assert.equal(result.formulas[1].link.entityId, 'other');
+    });
+
+    it('replaces the entity id in every link of an item', () => {
+        const data = {
+            formulas: [{
+                link: { type: 'schema', entityId: 'old' },
+                links: [
+                    { type: 'schema', entityId: 'old' },
+                    { type: 'schema', entityId: 'other' },
+                    { type: 'schema', entityId: 'old' }
+                ]
+            }]
+        };
+        const result = FormulaImportExport.replaceIds(data, 'old', 'new');
+        assert.equal(result.formulas[0].link.entityId, 'new');
+        assert.deepEqual(result.formulas[0].links.map((e) => e.entityId), ['new', 'other', 'new']);
     });
 
     it('passes through null data and non-array formulas', () => {
