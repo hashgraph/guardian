@@ -322,7 +322,7 @@ function assign(u, actionTag, doc, vvb) {
 }
 
 // ---------- the run ----------
-process.on('uncaughtException', (e) => { try { fs.writeFileSync(path.join(path.dirname(new URL(import.meta.url).pathname), 'sim_log.txt'), LOG.join('\n') + '\n'); } catch (x) {} console.log('FAIL  the run stopped: ' + e.message); console.log('\n1+ FAILED'); process.exit(1); });
+process.on('uncaughtException', (e) => { try { fs.writeFileSync(new URL('sim_log.txt', import.meta.url), LOG.join('\n') + '\n'); } catch (x) {} console.log('FAIL  the run stopped: ' + e.message); console.log('\n1+ FAILED'); process.exit(1); });
 const sample = (f) => JSON.parse(fs.readFileSync(path.join(SAMPLES, f), 'utf8')).document;
 const results = []; let failures = 0;
 function expect(name, fn, want) {   // want: 'ok' or a substring of the expected error
@@ -474,5 +474,5 @@ check('the rejected VVB sees no PD, MR or ERR (nothing is assigned to it)', !sou
 console.log('\nDocuments stored: ' + DB.length + ' | schemas validated on every form submission and every calculation');
 console.log(failures ? `\n${failures} FAILED` : '\nALL PASSED');
 if (process.env.SIMDEBUG) for (const d of DB) console.log('   DB', d.label, '|', d.option.status, '| owner', d.owner, '| assignedTo', d.assignedTo || '', '| type', d.type || '');
-fs.writeFileSync(path.join(path.dirname(new URL(import.meta.url).pathname), 'sim_log.txt'), LOG.join('\n') + '\n');
+fs.writeFileSync(new URL('sim_log.txt', import.meta.url), LOG.join('\n') + '\n');
 process.exit(failures ? 1 : 0);
