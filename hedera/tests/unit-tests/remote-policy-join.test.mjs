@@ -16,6 +16,7 @@ import {
     verifyRemoteUserProof,
 } from '../../dist/remote-user-proof.js';
 import { CommonDidDocument } from '../../dist/vcjs/did/common-did-document.js';
+import { HederaDid } from '../../dist/vcjs/did/hedera-did.js';
 import { HederaEd25519Method } from '../../dist/vcjs/did/components/hedera-ed25519-method.js';
 
 /*
@@ -23,8 +24,12 @@ import { HederaEd25519Method } from '../../dist/vcjs/did/components/hedera-ed255
  * request signed with the user's DID key. The request carries the user's message key
  * for the policy, sealed to the DID key of the policy owner.
  */
-async function didWithKeys(did) {
-    const method = await HederaEd25519Method.generate(did, PrivateKey.generateED25519());
+const keys = new Map();
+async function didWithKeys(did, key) {
+    // a DID is the hash of its key; passing a DID with another key makes a forgery
+    key = key || keys.get(did) || PrivateKey.generateED25519();
+    did = did || (await HederaDid.generate('testnet', key, '0.0.5')).toString();
+    const method = await HederaEd25519Method.generate(did, key);
     const document = CommonDidDocument.from({
         '@context': 'https://www.w3.org/ns/did/v1',
         id: did,
@@ -36,8 +41,12 @@ async function didWithKeys(did) {
     return { document, published };
 }
 
-const USER = 'did:hedera:testnet:user_0.0.5';
-const OWNER = 'did:hedera:testnet:owner_0.0.7';
+const USER_KEY = PrivateKey.generateED25519();
+const OWNER_KEY = PrivateKey.generateED25519();
+const USER = (await HederaDid.generate('testnet', USER_KEY, '0.0.5')).toString();
+const OWNER = (await HederaDid.generate('testnet', OWNER_KEY, '0.0.7')).toString();
+keys.set(USER, USER_KEY);
+keys.set(OWNER, OWNER_KEY);
 const POLICY = '1706823227.586179534';
 const MESSAGE_KEY = PrivateKey.generate().toString();
 
@@ -66,7 +75,7 @@ describe('@unit remote policy join', function () {
 
         it('does not open with another key', async () => {
             const { published } = await didWithKeys(OWNER);
-            const { document: other } = await didWithKeys(OWNER);
+            const { document: other } = await didWithKeys(OWNER, PrivateKey.generateED25519());
             const context = remoteJoinContext(USER, POLICY);
 
             const box = sealToDidKey(MESSAGE_KEY, getDidEd25519PublicKey(published), context);
@@ -104,7 +113,7 @@ describe('@unit remote policy join', function () {
 
         it('rejects a join signed by another key for the same DID', async () => {
             const user = await didWithKeys(USER);
-            const forged = await didWithKeys(USER);
+            const forged = await didWithKeys(USER, PrivateKey.generateED25519());
             const owner = await didWithKeys(OWNER);
 
             const join = createRemoteJoinDocument(forged.document, owner.published, '0.0.100', '0.0.5', POLICY, MESSAGE_KEY);
