@@ -6,6 +6,8 @@ import { HederaEd25519Method } from './vcjs/did/components/hedera-ed25519-method
 import { DIDMessage } from './message/did-message.js';
 import { MessageServer } from './message/message-server.js';
 import { MessageType } from './message/message-type.js';
+import { getDidEd25519PublicKey } from './remote-user-proof.js';
+import { Hashing } from '@guardian/common/helpers/hashing';
 
 /**
  * Check that a DID document has the verification methods Guardian needs, without private keys
@@ -23,6 +25,54 @@ export async function validateDidWithoutKeys(json: string | any): Promise<Common
         }
     }
     return document;
+}
+
+/**
+ * The DID topic could not be read (mirror node or IPFS unavailable): the same request can succeed later
+ */
+export class DidTopicReadError extends Error {
+    public readonly transient = true;
+}
+
+/**
+ * Identifier and topic of a Hedera DID, both the current (`...:ID_0.0.1`) and the old (`...:ID;hedera:net:tid=0.0.1`) form
+ * @param did
+ */
+export function parseDid(did: string): { identifier: string, topicId: string | null } {
+    const [main, ...parameters] = String(did).split(';');
+    const parts = main.split(':');
+    if (parts.length !== 4 || parts[0] !== 'did' || parts[1] !== 'hedera') {
+        throw new Error('Invalid DID.');
+    }
+    const [identifier, topic] = parts[3].split('_');
+    let topicId: string | null = topic || null;
+    for (const parameter of parameters) {
+        const match = /(?:^|:)tid=([^:;]+)$/.exec(parameter);
+        if (match) {
+            topicId = match[1];
+        }
+    }
+    return { identifier, topicId };
+}
+
+/**
+ * Check that a DID document belongs to its DID: the identifier of a Hedera DID is the hash of
+ * its root key, and the DID names the topic its documents are posted to. The document is
+ * read from a topic and an account the sender names, so without this anyone could publish
+ * a document with their own key under another user's DID.
+ * @param did
+ * @param document
+ * @param topicId - the topic the document was read from
+ */
+export function assertDidBoundToRootKey(did: string, document: CommonDidDocument, topicId: string): void {
+    const { identifier, topicId: didTopicId } = parseDid(did);
+    if (document.getDid() !== did || !didTopicId || didTopicId !== topicId) {
+        throw new Error('DID document does not belong to the DID.');
+    }
+    const publicKey = getDidEd25519PublicKey(document);
+    if (!publicKey || Hashing.base58.encode(Hashing.sha256.digest(publicKey)) !== identifier) {
+        throw new Error('DID document key does not match the DID.');
+    }
 }
 
 /**
@@ -50,15 +100,21 @@ async function loadPublishedDidDocument(
             type: MessageType.DIDDocument
         });
     } catch (error) {
-        throw new Error(`Unable to read the DID topic ${topicId}, try again later: ${error?.message || error}`);
+        throw new DidTopicReadError(`Unable to read the DID topic ${topicId}, try again later: ${error?.message || error}`);
     }
     const matching = messages.filter((message) => message.did === did && accept(message));
     const published = earliest ? matching[0] : matching.pop();
     if (!published) {
         throw new Error(`DID document is not published by the Hedera account.`);
     }
-    await MessageServer.loadDocument(published, null, { userId });
-    return await validateDidWithoutKeys(published.getDocument());
+    try {
+        await MessageServer.loadDocument(published, null, { userId });
+    } catch (error) {
+        throw new DidTopicReadError(`Unable to load the DID document, try again later: ${error?.message || error}`);
+    }
+    const document = await validateDidWithoutKeys(published.getDocument());
+    assertDidBoundToRootKey(did, document, topicId);
+    return document;
 }
 
 /**
@@ -120,7 +176,7 @@ export async function resolveOwnerDidDocument(
         });
         submitKey = info?.submitKey || null;
     } catch (error) {
-        throw new Error(`Unable to read the DID topic ${topicId}, try again later: ${error?.message || error}`);
+        throw new DidTopicReadError(`Unable to read the DID topic ${topicId}, try again later: ${error?.message || error}`);
     }
     if (submitKey) {
         // DID documents are never updated, and other users of the instance holding the
