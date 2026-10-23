@@ -1,4 +1,4 @@
-import { Environment } from './environment.js';
+import { Environment } from '../hedera-modules/environment.js';
 
 /**
  * Receives the name of the variable holding invalid JSON and the parse error

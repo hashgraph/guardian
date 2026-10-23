@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { Environment } from '../../../dist/helpers/environment.js';
+import { Environment } from '../../../dist/hedera-modules/environment.js';
 import { applyNetworkOverrides } from '../../../dist/helpers/network-overrides.js';
 
 const reset = () => {
