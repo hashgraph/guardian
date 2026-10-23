@@ -466,6 +466,9 @@ export class FieldForm {
 
         for (const item of controls) {
             item.visibility = this.checkConditionValue(item);
+            if (item.control && this.form.get(item.name) === item.control) {
+                this.form.removeControl(item.name, { emitEvent: false });
+            }
             if (item.control && item.visibility) {
                 this.form.addControl(item.name, item.control, { emitEvent: false });
             }
