@@ -646,3 +646,11 @@
     gap: 8px;
     margin-bottom: 12px;
 }
+
+.calculation-preview-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: auto;
+    color: var(--guardian-font-color);
+}

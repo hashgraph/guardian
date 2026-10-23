@@ -77,6 +77,23 @@
               styleClass="guardian-dropdown"
             ></p-select>
           }
+          @if (previewOptions.length > 1) {
+            <p-select
+              [options]="previewOptions"
+              [(ngModel)]="selectedPreviewIndex"
+              (onChange)="onPreviewDocumentChange($event)"
+              class="guardian-dropdown preview-document-dropdown"
+              panelStyleClass="guardian-dropdown-panel"
+              [appendTo]="'body'"
+              >
+              <ng-template pTemplate="selectedItem" let-item>
+                <div class="guardian-dropdown-selected" [truncateTooltip]="item?.label" tooltipPosition="bottom">
+                  <span class="guardian-dropdown-label">Document</span>
+                  <span class="guardian-dropdown-item">{{ item?.label }}</span>
+                </div>
+              </ng-template>
+            </p-select>
+          }
         </div>
       </div>
     }

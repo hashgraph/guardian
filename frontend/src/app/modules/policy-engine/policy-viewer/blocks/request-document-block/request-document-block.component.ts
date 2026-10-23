@@ -27,6 +27,8 @@ import { RelayerAccountsService } from 'src/app/services/relayer-accounts.servic
 import { AttachedFile } from 'src/app/modules/common/policy-comments/attached-file';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { PolicyTestAutomationService } from '../../policy-test-automation/policy-test-automation.service';
+import { CalculationPreviewService, ICalculationPreviewResult } from 'src/app/services/calculation-preview.service';
+import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 
 interface IRequestDocumentData {
     readonly: boolean;
@@ -124,6 +126,8 @@ export class RequestDocumentBlockComponent
     public evidenceText: string = '';
     public evidenceFiles: AttachedFile[] = [];
     private _evidenceFileMap = new WeakMap<AttachedFile, File>();
+    public previewMode: boolean = false;
+    public previewRequiredFields: string[] | null = null;
 
     public get isEvidenceUploading(): boolean {
         return this.evidenceFiles.some(f => !f.loaded && !f.error);
@@ -160,6 +164,7 @@ export class RequestDocumentBlockComponent
         private policyTest: PolicyTestAutomationService,
         private schemaService: SchemaService,
         private formulasService: FormulasService,
+        private calculationPreview: CalculationPreviewService,
     ) {
         super(policyEngineService, profile, wsService);
         this.dataForm = this.fb.group({});
@@ -425,6 +430,10 @@ export class RequestDocumentBlockComponent
             return;
         }
         if (this.dataForm.valid || draft) {
+            if (this.previewMode && !draft) {
+                await this.runPreview(false);
+                return;
+            }
             if (this.enableAdditionalData && this.isStep(0)) {
                 this.setStep(1);
             } else if (this.enableAdditionalData && this.isStep(1) && this.relayerAccount) {
@@ -437,6 +446,61 @@ export class RequestDocumentBlockComponent
                 await this.onSubmit(draft);
             }
         }
+    }
+
+    public async onPreviewModeChange(enabled: boolean): Promise<void> {
+        this.previewMode = enabled;
+        if (!enabled) {
+            this.previewRequiredFields = null;
+            return;
+        }
+        this.setStep(0);
+        await this.runPreview(true);
+    }
+
+    private async runPreview(previewFields: boolean): Promise<void> {
+        this.loading = true;
+        try {
+            const result = await this.calculationPreview.run(
+                this.policyId,
+                this.id,
+                this.dataForm.getRawValue(),
+                this.ref,
+                previewFields
+            );
+            if (!this.previewMode) {
+                return;
+            }
+            this.previewRequiredFields = this.calculationPreview.updateRequiredFields(this.previewRequiredFields, result);
+            if (!previewFields) {
+                this.showPreviewResult(result);
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            this.loading = false;
+        }
+    }
+
+    private showPreviewResult(result: ICalculationPreviewResult): void {
+        this.calculationPreview.showErrors(result);
+        const documents = this.calculationPreview.getViewerDocuments(result);
+        if (!documents.length) {
+            return;
+        }
+        this.dialogService.open(VCViewerDialog, {
+            showHeader: false,
+            width: '90%',
+            styleClass: 'guardian-dialog',
+            data: {
+                title: 'Calculation preview',
+                type: 'VC',
+                viewDocument: true,
+                dryRun: !!this.dryRun,
+                document: documents[0].document,
+                previewDocuments: documents
+            }
+        });
     }
 
     private getRelayerAccount() {

@@ -17,6 +17,14 @@
           <h1 mat-dialog-title>{{ title }}</h1>
         }
         <div class="draft-file-actions">
+          <div class="calculation-preview-toggle">
+            <p-toggleswitch
+              inputId="calculationPreview_{{ id }}"
+              [ngModel]="previewMode"
+              (onChange)="onPreviewModeChange($event.checked)">
+            </p-toggleswitch>
+            <label for="calculationPreview_{{ id }}">Calculation preview</label>
+          </div>
           <request-draft-file-actions
             [schema]="schema"
             [policyId]="policyId"
@@ -108,12 +116,13 @@
               [preset]="presetDocument"
               [private-fields]="hideFields"
               [readonly-fields]="presetReadonlyFields"
-              [submitText]="submitText"
+              [submitText]="previewMode ? 'Preview' : submitText"
               [rules]="rulesResults"
               [formulas]="formulas"
               [paginationHidden]="false"
               [saveShown]="false"
               [isFormForRequestBlock]="true"
+              [requiredFields]="previewRequiredFields"
               (form)="initForm($event)"
               (buttons)="onChangeButtons($event)"
               (saveBtnEvent)="handleSaveBtnEvent($event)"

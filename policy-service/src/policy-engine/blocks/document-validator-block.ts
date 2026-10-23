@@ -748,7 +748,7 @@ export class DocumentValidatorBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyValidatorBlock>(this);
         ref.log(`runAction`);
 
-        const error = await ref.run(event);
+        const error = event.actionStatus?.preview ? null : await ref.run(event);
         if (error) {
             throw new BlockActionError(error.message, ref.blockType, ref.uuid, error.data);
         }

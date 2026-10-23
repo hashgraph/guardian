@@ -45,6 +45,7 @@ import { PolicyActionsService } from './actions-service.js';
 import { PolicyActionsUtils } from './policy-actions/utils.js';
 import { PolicyUtils } from './helpers/utils.js';
 import { RecordActionStep } from './record-action-step.js';
+import { PreviewScope } from './helpers/preview.js';
 
 /**
  * Policy tag helper
@@ -261,6 +262,9 @@ export class PolicyComponentsUtils {
      * Block error function
      */
     public static async BlockErrorFn(blockType: string, message: any, user: PolicyUser, data?: any) {
+        if (PreviewScope.current()) {
+            return;
+        }
         errorBlockEvent(blockType, message, user, data);
     };
     /**
@@ -273,6 +277,9 @@ export class PolicyComponentsUtils {
      * External Event function
      */
     public static async ExternalEventFn(event: ExternalEvent<any>) {
+        if (PreviewScope.current()) {
+            return;
+        }
         externalBlockEvent(event);
     };
 
@@ -1564,6 +1571,9 @@ export class PolicyComponentsUtils {
      * @param policyId
      */
     public static backup(policyId: string) {
+        if (PreviewScope.current()) {
+            return;
+        }
         if (PolicyComponentsUtils.BackupControllers.has(policyId)) {
             PolicyComponentsUtils.BackupControllers.get(policyId).backup();
         }

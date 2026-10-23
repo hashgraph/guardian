@@ -70,6 +70,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     @Input() lastSavedAt?: Date;
     @Input() isEditMode: boolean = false;
     @Input() formulas: FormulasTree | null = null;
+    @Input() requiredFields: string[] | null = null;
 
     @Output('form') form = new EventEmitter<UntypedFormGroup>();
     @Output('change') change = new EventEmitter<Schema | null>();
@@ -138,13 +139,17 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             this.buildFormulaModel();
         }
         this.loading = true;
+        if (changes.requiredFields && !changes.requiredFields.firstChange && this.model) {
+            this.presetDocument = this.group.getRawValue();
+        }
         if (
             changes.schema ||
             changes.fields ||
             changes.hide ||
             changes.readonly ||
             changes.conditions ||
-            changes.presetDocument
+            changes.presetDocument ||
+            changes.requiredFields
         ) {
             setTimeout(() => {
                 this.buildFields();
@@ -191,6 +196,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             schema: this.schema,
             fields: this.fields,
             conditions: this.conditions,
+            requiredFields: this.requiredFields,
         });
         this.model.build();
         this.navFields = [...(this.model.controls || [])];

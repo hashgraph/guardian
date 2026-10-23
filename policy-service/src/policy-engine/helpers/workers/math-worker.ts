@@ -1,12 +1,14 @@
 import { workerData, parentPort } from 'node:worker_threads';
 import { Code, DocumentMap, MathEngine, setDocumentValueByPath } from '../math-model/index.js';
 import { buildTableHelper } from '../table-field-core.js';
+import { PreviewReadTracker } from './preview-read-tracker.js';
 
 /**
  * Execute function
  */
 function execute(): void {
-    const { expression, user, documents, schema, copy, tablesPack } = workerData;
+    const { expression, user, documents, schema, copy, tablesPack, withScope, trackReads } = workerData;
+    const tracker = trackReads ? new PreviewReadTracker() : null;
     const group = MathEngine.from(expression);
     if (!group) {
         throw new Error('Invalid block config');
@@ -50,20 +52,42 @@ function execute(): void {
     //Code
     const code = Code.from(expression);
     if (code) {
+        const tracked = tracker ? tracker.track(document, null) : document;
         code.setContext({
             ...context,
-            document,
-            result,
+            document: tracked,
+            getField: tracker
+                ? (path: string) => tracker.trackField(context.getField(path), path)
+                : context.getField,
+            result: copy ? tracked : result,
             user,
             table: buildTableHelper(tablesPack)
         });
-        result = code.run();
+        try {
+            result = code.run();
+        } catch (error) {
+            if (!tracker) {
+                throw error;
+            }
+            parentPort.postMessage({
+                type: 'error',
+                error: error instanceof Error ? error.message : String(error),
+                reads: tracker.take()
+            });
+            return;
+        }
     }
 
+    const plain = tracker ? tracker.unwrap(result) : result;
+    const reads = tracker ? tracker.take() : undefined;
+    const writes = tracker ? tracker.takeWrites() : undefined;
     parentPort.postMessage({
         type: 'done',
-        result,
-        warnings: groupContext.getWarnings()
+        result: plain,
+        warnings: groupContext.getWarnings(),
+        scope: withScope ? context.scope : undefined,
+        reads,
+        writes: copy && plain === document ? writes : undefined
     });
 }
 

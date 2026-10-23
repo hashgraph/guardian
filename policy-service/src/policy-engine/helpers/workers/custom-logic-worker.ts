@@ -3,6 +3,7 @@ import * as mathjs from 'mathjs';
 import * as formulajs from '@formulajs/formulajs'
 import { buildTableHelper } from '../table-field-core.js';
 import * as vm from 'node:vm';
+import { PreviewReadTracker } from './preview-read-tracker.js';
 
 /**
  * Execute user-supplied JavaScript in a sandboxed V8 context.
@@ -18,13 +19,22 @@ import * as vm from 'node:vm';
  */
 function execute(): void {
     const done = (result: any, final: boolean = true) => {
-        parentPort.postMessage({ type: 'done', result, final });
+        const plain = tracker ? tracker.unwrap(result) : result;
+        parentPort.postMessage({
+            type: 'done',
+            result: plain,
+            final,
+            reads: tracker ? tracker.take() : undefined,
+            writes: tracker ? tracker.takeWrites() : undefined,
+            sources: tracker ? tracker.findSources(plain) : undefined
+        });
     }
     const debug = (message: any) => {
         parentPort.postMessage({ type: 'debug', message });
     }
 
-    const { execFunc, user, documents, artifacts, sources, tablesPack } = workerData;
+    const { execFunc, user, documents, artifacts, sources, tablesPack, trackReads, schemas } = workerData;
+    const tracker = trackReads ? new PreviewReadTracker() : null;
 
     // Create sandbox with only the documented API surface
     // Object.create(null) prevents prototype chain escapes
@@ -32,7 +42,7 @@ function execute(): void {
     sandbox.done = done;
     sandbox.debug = debug;
     sandbox.user = user;
-    sandbox.documents = documents;
+    sandbox.documents = tracker ? tracker.trackPolicyDocuments(documents, schemas) : documents;
     sandbox.mathjs = mathjs;
     sandbox.artifacts = artifacts;
     sandbox.formulajs = formulajs;
@@ -74,7 +84,11 @@ function execute(): void {
         // and left the workflow step parked on this non-UI block with no diagnostics.
         const message = (error as Error)?.message ?? String(error);
         parentPort.postMessage({ type: 'debug', message: `Sandbox error: ${message}` });
-        parentPort.postMessage({ type: 'error', error: `Custom logic error: ${message}` });
+        parentPort.postMessage({
+            type: 'error',
+            error: `Custom logic error: ${message}`,
+            reads: tracker ? tracker.take() : undefined
+        });
     }
 }
 
