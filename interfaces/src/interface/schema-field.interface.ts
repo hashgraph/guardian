@@ -160,6 +160,15 @@ export interface SchemaField {
     hidden?: boolean;
 
     /**
+     * True when this field was added to a condition's then/else branch by selecting an
+     * already-existing schema field, rather than created through the condition editor.
+     * Its position in the schema's own field order is authoritative - renderers that
+     * anchor condition fields next to their trigger (e.g. the live form's field order)
+     * must leave it where the author placed it instead of regrouping it.
+     */
+    conditionUserOrdered?: boolean;
+
+    /**
      * Examples data
      */
     examples?: any[];
