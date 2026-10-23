@@ -135,11 +135,6 @@ export class FormulaImportExport {
     }
 
     /**
-     * Replace Ids
-     *
-     * @param data config
-     */
-    /**
      * Distinct link objects of an item: `links` and the mirrored `link`.
      * Items saved before `links` existed have `link` only.
      */
@@ -158,6 +153,11 @@ export class FormulaImportExport {
         return Array.from(result);
     }
 
+    /**
+     * Replace Ids
+     *
+     * @param data config
+     */
     public static replaceIds(data: IFormulaConfig, oldId: string, newId: string): IFormulaConfig {
         if (data) {
             const formulas = data.formulas;

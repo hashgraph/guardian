@@ -415,10 +415,6 @@ export class FormulaItem {
         return this._itemLinks[0]?.linkItem ?? null;
     }
 
-    public get _linkItem(): FormulaItem | SchemaItem | null {
-        return this.linkItem;
-    }
-
     public get linkEntityName() {
         return this._itemLinks[0]?.linkEntityName ?? null;
     }

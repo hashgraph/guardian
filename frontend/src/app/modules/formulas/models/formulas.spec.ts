@@ -336,6 +336,7 @@ describe('Formulas multiple links', () => {
         model.getItem('many')!.links![2].item = 'gone';
         model.setQuery('not found');
         expect(model.data.map((e) => e.uuid)).toEqual(['many']);
+        expect(model.meta.get('many')!.missingLink).toBe(true);
     });
 
     it('should create items with an empty list of links', () => {

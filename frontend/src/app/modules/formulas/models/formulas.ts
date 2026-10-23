@@ -363,8 +363,8 @@ export class Formulas {
             sub = highlightSegments(subText, terms);
             visible = ['Name', 'Value', 'Description'];
         } else {
+            missingLink = labels.some((e) => e.missing);
             if (link?.missing) {
-                missingLink = true;
                 subText = MISSING_LINK_TEXT;
                 sub = highlightSegments(subText, terms);
             } else if (link) {

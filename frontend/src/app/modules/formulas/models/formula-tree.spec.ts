@@ -26,7 +26,7 @@ describe('FormulaTree', () => {
         }]);
         const item: any = source.get('item-2');
         item.setFormulas([target, source]);
-        expect(item._linkItem?.uuid).toBe('item-1');
+        expect(item.linkItem?.uuid).toBe('item-1');
     });
 });
 
