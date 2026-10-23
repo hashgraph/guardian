@@ -124,7 +124,7 @@ function isTemplateFieldLocked(schemaConfig: ISchemaTemplateSchemaConfig, field:
     return getFieldConfig(schemaConfig, field)?.locked !== false;
 }
 
-const FIELD_HASH_IGNORED_KEYS = new Set(['path', 'fullPath', 'fullType', 'arrayLvl', 'errors', 'order']);
+const FIELD_HASH_IGNORED_KEYS = new Set(['path', 'fullPath', 'fullType', 'arrayLvl', 'errors', 'order', 'conditionUserOrdered']);
 
 function fieldComparableHash(field: SchemaField): string {
     const clone = SchemaHelper.cloneSchemaRuntimeValue(field, FIELD_HASH_IGNORED_KEYS);

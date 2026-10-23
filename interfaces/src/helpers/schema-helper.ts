@@ -2166,10 +2166,11 @@ export class SchemaHelper {
     }
 
     /**
-     * Parses a field's raw comment/$comment string and strips orderPosition. A field's
-     * position in schema.fields is cosmetic (drag-reorder, condition selection, legacy
-     * normalization) and must not count as a change when hashing a field for content-only
-     * comparison, e.g. template field lock checks.
+     * Parses a field's raw comment/$comment string and strips orderPosition and
+     * conditionUserOrdered. A field's position in schema.fields (and the flag marking it as
+     * user-ordered) is cosmetic (drag-reorder, condition selection, legacy normalization)
+     * and must not count as a change when hashing a field for content-only comparison,
+     * e.g. template field lock checks.
      * @param comment
      */
     public static cleanCommentForHash(comment: unknown): any {
@@ -2178,6 +2179,7 @@ export class SchemaHelper {
         }
         const parsed = SchemaHelper.parseFieldComment(comment);
         delete parsed.orderPosition;
+        delete parsed.conditionUserOrdered;
         return parsed;
     }
 
