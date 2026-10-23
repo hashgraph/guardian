@@ -9,20 +9,20 @@ cd e2e-tests
 npm run solo:up              # the network, once
 npm run guardian:up          # MongoDB, NATS, Valkey and Kubo containers, then every Guardian service
 npm run guardian:test:smoke  # only the tests tagged smoke
+```
 
+**NOTE: Behind a TLS-intercepting proxy (for example Zscaler) image pulls inside the kind node fail with `x509: certificate signed by unknown authority`**. Set `SOLO_EXTRA_CA_CERT` to the PEM bundle of the proxy CA and `solo:up` installs it in the node before Solo creates any pod:
+
+```bash
+SOLO_EXTRA_CA_CERT=/path/to/proxy-ca.pem npm run solo:up
+```
+
+```
 # Other commands
 npm run guardian:test        # the whole suite
 npm run guardian:test -- cypress/e2e/api-tests/001_demo/getRandomKey.cy.js   # a single spec
 npm run guardian:test -- 'cypress/e2e/api-tests/010_tokens/*.cy.js' cypress/e2e/api-tests/001_demo/getRandomKey.cy.js   # several specs or globs
 npm run guardian:down        # stops the services and removes the containers
-```
-
-NOTE: Behind a TLS-intercepting proxy (for example Zscaler) image pulls inside the kind node fail with
-`x509: certificate signed by unknown authority`. Set `SOLO_EXTRA_CA_CERT` to the PEM bundle of the
-proxy CA and `solo:up` installs it in the node before Solo creates any pod:
-
-```bash
-SOLO_EXTRA_CA_CERT=/path/to/proxy-ca.pem npm run solo:up
 ```
 
 ## Running tests manually
