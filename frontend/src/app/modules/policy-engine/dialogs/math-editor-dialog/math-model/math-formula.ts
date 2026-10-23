@@ -213,11 +213,11 @@ export class MathFormula {
             }
             const ce = createComputeEngine();
             let body = text;
-            let p = ce.parse(body, { canonical: false });
+            let p = ce.parse(body, { form: 'raw' });
             if (!p.isValid) {
                 const repaired = splitNameGroups(text);
                 if (repaired !== text) {
-                    const retry = ce.parse(repaired, { canonical: false });
+                    const retry = ce.parse(repaired, { form: 'raw' });
                     if (retry.isValid) {
                         body = repaired;
                         p = retry;
