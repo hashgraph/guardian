@@ -214,7 +214,8 @@ function parseJson(json: any): any {
         if (json[0] === 'Rational' && typeof json[1] === 'number' && typeof json[2] === 'number') {
             return json[1] / json[2];
         }
-        return json;
+        //Symbolic or unevaluated expression, not a value
+        return undefined;
     }
     if (json && typeof json === 'object') {
         if (typeof json.num === 'string') {
@@ -223,7 +224,7 @@ function parseJson(json: any): any {
         if (typeof json.str === 'string') {
             return json.str;
         }
-        return json;
+        return undefined;
     }
     if (typeof json === 'string') {
         if (json.length >= 2 && json.startsWith('\'') && json.endsWith('\'')) {
