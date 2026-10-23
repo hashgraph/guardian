@@ -64,10 +64,21 @@
                 <div class="link-block" [class.link-block--multi]="linkRows.length > 1">
                   @if (linkRows.length > 1) {
                     <div class="link-block-title">
-                      {{ row.schema ?? 'Missing link' }}@if (row.path) { · {{ row.path }} }
+                      {{ row.label ?? row.schema ?? 'Missing link' }}@if (row.path) { · {{ row.path }} }
                     </div>
                   }
-                  @if (!row.hasValue) {
+                  @if (row.kind === 'missing') {
+                    <div class="node-details-section">
+                      <div class="section-value link-missing">
+                        <i class="pi pi-exclamation-triangle"></i> {{ missingLinkText }}
+                      </div>
+                    </div>
+                  } @else if (row.kind === 'formula') {
+                    <div class="node-details-section">
+                      <div class="section-label">Linked formula</div>
+                      <div class="section-value">{{ row.label }}</div>
+                    </div>
+                  } @else if (!row.hasValue) {
                     <div class="node-details-section">
                       <div class="section-label">Value</div>
                       <div class="section-value link-no-value">No value in this document</div>

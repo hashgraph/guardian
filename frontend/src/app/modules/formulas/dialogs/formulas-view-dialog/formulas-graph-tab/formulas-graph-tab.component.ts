@@ -9,6 +9,7 @@ import {
     FormulaItemLink,
     SchemaItem,
 } from '../../../models/formula-tree';
+import { MISSING_LINK_TEXT } from '../../../models/formulas';
 import {TreeGraphComponent} from 'src/app/modules/common/tree-graph/tree-graph.component';
 import {TreeNode} from 'src/app/modules/common/tree-graph/tree-node';
 import {TreeSource} from 'src/app/modules/common/tree-graph/tree-source';
@@ -27,6 +28,8 @@ interface GraphNodeData {
 }
 
 interface LinkRow {
+    kind: 'field' | 'formula' | 'missing';
+    label: string | null;
     schema: string | null;
     parents: string[];
     path: string | null;
@@ -63,6 +66,7 @@ export class FormulasGraphTabComponent implements OnChanges {
     private treeGraph: TreeGraphComponent | null = null;
     public selectedNode: GraphNode | null = null;
     public title: string | null = null
+    public readonly missingLinkText = MISSING_LINK_TEXT;
     public linkRows: LinkRow[] = [];
     public itemType: string | null = null;
     public itemValue: any = null;
@@ -324,15 +328,34 @@ export class FormulasGraphTabComponent implements OnChanges {
         this.linkRows = this.buildLinkRows(payload);
     }
 
+    private linkKind(link: FormulaItemLink): LinkRow['kind'] {
+        const linkItem: any = link.linkItem;
+        if (link.formulaLink) {
+            return linkItem ? 'formula' : 'missing';
+        }
+        return linkItem?._field ? 'field' : 'missing';
+    }
+
+    private linkStatus(link: FormulaItemLink): ValueStatus | null {
+        const linkItem: any = link.linkItem;
+        if (this.linkKind(link) !== 'field') {
+            return null;
+        }
+        return this.calcValueStatus(linkItem.value, linkItem._field.default, linkItem._field.suggest);
+    }
+
     private buildLinkRows(payload: any): LinkRow[] {
         const links: FormulaItemLink[] = payload?.links ?? [];
         return links.map((link) => {
             const linkItem: any = link.linkItem;
-            if (!linkItem?._field) {
+            const kind = this.linkKind(link);
+            if (kind !== 'field') {
                 return {
-                    schema: link.linkEntityName ?? null,
+                    kind,
+                    label: kind === 'formula' ? `${link.linkEntityName ?? ''}: ${link.linkItemName ?? ''}` : null,
+                    schema: null,
                     parents: [],
-                    path: link.linkItemName ?? null,
+                    path: null,
                     description: null,
                     value: null,
                     type: null,
@@ -345,6 +368,8 @@ export class FormulasGraphTabComponent implements OnChanges {
             const chain = this.buildSchemaNamesChain(linkItem._schema, linkItem._path);
             const schema = chain.pop() ?? null;
             return {
+                kind,
+                label: null,
                 schema,
                 parents: chain,
                 path: linkItem._path ?? null,
@@ -382,9 +407,10 @@ export class FormulasGraphTabComponent implements OnChanges {
             return 'status-none';
         }
 
-        const rows = this.buildLinkRows(payload);
-        const row = rows.find((e) => e.hasValue) ?? rows.find((e) => e.status);
-        return this.statusClass(row?.status ?? null);
+        const links: FormulaItemLink[] = payload.links ?? [];
+        const link = links.find((e) => this.linkKind(e) === 'field' && (e.linkItem as any).value !== undefined)
+            ?? links.find((e) => this.linkKind(e) === 'field');
+        return this.statusClass(link ? this.linkStatus(link) : null);
     }
 
     public formatValueForJson(value: any): any {
