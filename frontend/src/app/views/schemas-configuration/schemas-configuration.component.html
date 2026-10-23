@@ -2354,7 +2354,7 @@
                                 </div>
                                 <div class="sc-cond-te-body">
                                     @for (f of (cond.thenFields || []); track f.name) {
-                                        <div class="sc-cond-te-item">
+                                        <div class="sc-cond-te-item" [class.sc-cond-te-item--active]="selectedField === f">
                                             <i class="pi {{ getFieldIcon(f) }}"></i>
                                             <span class="sc-cond-te-label" [title]="f.name"
                                                 (click)="selectField(f)">{{ f.description || f.title || f.name }}</span>
@@ -2432,7 +2432,7 @@
                                 </div>
                                 <div class="sc-cond-te-body">
                                     @for (f of (cond.elseFields || []); track f.name) {
-                                        <div class="sc-cond-te-item">
+                                        <div class="sc-cond-te-item" [class.sc-cond-te-item--active]="selectedField === f">
                                             <i class="pi {{ getFieldIcon(f) }}"></i>
                                             <span class="sc-cond-te-label" [title]="f.name"
                                                 (click)="selectField(f)">{{ f.description || f.title || f.name }}</span>
