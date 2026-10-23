@@ -867,7 +867,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             formulasService,
             policyEngineService,
             profileService,
-            dialogService,
             (action, error) => this.reportError(action, error),
             (link) => this.describeFormulaLink(link)
         );

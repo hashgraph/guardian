@@ -12,7 +12,7 @@ import { MathLiveComponent } from '../../common/mathlive/mathlive.component';
 import { LinkDialog } from '../dialogs/link-dialog/link-dialog.component';
 import { Formulas, IFormulaSegment, MISSING_LINK_TEXT, highlightSegments } from '../models/formulas';
 import { FORMULA_TYPES, SOURCE_FIELDS, formulaTypeIcon, formulaTypeName } from '../models/formula-meta';
-import { moveLink } from '../models/field-bindings';
+import { getItemLinks, moveLink, setItemLinks } from '../models/field-bindings';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { ConditionFieldGroup } from '../../common/condition-if-editor/condition-if-editor.component';
 import { FormulaFilesDialog } from '../dialogs/formula-files-dialog/formula-files-dialog.component';
@@ -98,8 +98,6 @@ export class FormulaConfigurationComponent implements OnInit {
     }
 
     public dirty: boolean = false;
-    /** the schema link of the selected item points to a schema or field that does not exist */
-    public selectedLinkMissing: boolean = false;
     public readonly missingLinkText = MISSING_LINK_TEXT;
 
     public overviewForm = new FormGroup({
@@ -124,16 +122,11 @@ export class FormulaConfigurationComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.config.labelFn = (item: IFormulaItem) => {
-            if (!item.link) {
-                return null;
-            }
-            return {
-                entity: this.getEntityName(item.link),
-                field: this.getFieldName(item.link),
-                missing: this.isLinkMissing(item.link)
-            };
-        };
+        this.config.labelFn = (link: IFormulaLink) => ({
+            entity: this.getEntityName(link),
+            field: this.getFieldName(link),
+            missing: this.isLinkMissing(link)
+        });
         this.subscription.add(
             this.search$.pipe(debounceTime(150)).subscribe((value) => {
                 this.applyQuery(value);
@@ -519,7 +512,6 @@ export class FormulaConfigurationComponent implements OnInit {
     private refreshSelection() {
         const selected = this.selected;
         this.selectedList = selected ? [selected] : [];
-        this.selectedLinkMissing = !!selected?.link && this.isLinkMissing(selected.link);
         const sameType = selected ? this.config.all.filter((e) => e.type === selected.type) : [];
         this.typeTotal = sameType.length;
         this.typePosition = selected ? sameType.indexOf(selected) + 1 : 0;
@@ -558,17 +550,36 @@ export class FormulaConfigurationComponent implements OnInit {
         });
     }
 
-    public onLink(item: IFormulaItem) {
+    public getLinks(item: IFormulaItem): IFormulaLink[] {
+        return getItemLinks(item);
+    }
+
+    private replaceLink(item: IFormulaItem, index: number, link: IFormulaLink | null) {
+        const links = [...getItemLinks(item)];
+        if (link) {
+            links[index] = link;
+        } else {
+            links.splice(index, 1);
+        }
+        setItemLinks(item, links);
+    }
+
+    /**
+     * Opens the Set Link dialog: for the link at `index`, or for a new link when `index` is not set.
+     */
+    public onLink(item: IFormulaItem, index?: number) {
         if (this.readonly) {
             return;
         }
+        const isNew = index === undefined;
+        const current = isNew ? null : getItemLinks(item)[index];
         const dialogRef = this.dialogService.open(LinkDialog, {
             showHeader: false,
             width: '90%',
             styleClass: 'guardian-dialog',
             focusOnShow: false,
             data: {
-                link: item.link,
+                link: current,
                 schemas: this.schemas,
                 formulas: [
                     this.item,
@@ -577,17 +588,52 @@ export class FormulaConfigurationComponent implements OnInit {
             },
         })!;
         dialogRef.onClose.subscribe((result: IFormulaLink | null) => {
-            if (result) {
-                // keeps the display condition only when the link still points at the same schema
-                if (result.type === 'schema') {
-                    item.link = moveLink(item.link, { schemaIri: result.entityId, fieldPath: result.item });
-                } else {
-                    delete result.condition;
-                    item.link = result;
-                }
-                this.markDirty();
+            if (!result) {
+                return;
             }
+            let link: IFormulaLink;
+            if (result.type === 'schema') {
+                // keeps the display condition only when the link still points at the same schema
+                link = moveLink(current, { schemaIri: result.entityId, fieldPath: result.item });
+            } else {
+                delete result.condition;
+                link = result;
+            }
+            const links = getItemLinks(item);
+            const position = isNew ? links.length : index;
+            this.replaceLink(item, position, link);
+            this.linkOpen.set(this.linkKey(item, position), true);
+            this.markDirty();
         });
+    }
+
+    // ── Rows of the links ────────────────────────────────────────────────────
+
+    /** rows opened or closed by the user, the others follow `isLinkOpen` defaults */
+    private linkOpen = new Map<string, boolean>();
+
+    private linkKey(item: IFormulaItem, index: number): string {
+        return `${item.uuid}:${index}`;
+    }
+
+    /**
+     * The first link and the links that need attention are open by default.
+     */
+    public isLinkOpen(item: IFormulaItem, index: number): boolean {
+        const value = this.linkOpen.get(this.linkKey(item, index));
+        if (value !== undefined) {
+            return value;
+        }
+        const link = getItemLinks(item)[index];
+        return index === 0 || (!!link && this.isLinkMissing(link));
+    }
+
+    public toggleLinkOpen(item: IFormulaItem, index: number) {
+        this.linkOpen.set(this.linkKey(item, index), !this.isLinkOpen(item, index));
+    }
+
+    public hasLinkCondition(link: IFormulaLink): boolean {
+        return link.type === 'schema' && !!link.condition;
     }
 
     // ── Display condition of a schema link ───────────────────────────────────
@@ -682,25 +728,34 @@ export class FormulaConfigurationComponent implements OnInit {
         return null;
     }
 
-    public toggleLinkCondition(item: IFormulaItem, on: boolean): void {
-        if (this.readonly || !item.link) {
+    public toggleLinkCondition(item: IFormulaItem, index: number, on: boolean): void {
+        const link = getItemLinks(item)[index];
+        if (this.readonly || !link) {
             return;
         }
         if (!on) {
-            delete item.link.condition;
+            delete link.condition;
             this.markDirty();
             return;
         }
-        const first = this.getLinkFirstEntry(item.link)();
+        const first = this.getLinkFirstEntry(link)();
         if (!first) {
             return;
         }
-        item.link.condition = {
+        link.condition = {
             field: first.field,
             fieldValue: '',
             ...(first.fieldPath.length > 1 ? { fieldPath: first.fieldPath } : {})
         };
         this.markDirty();
+    }
+
+    public setLinkCondition(item: IFormulaItem, index: number, condition: any): void {
+        const link = getItemLinks(item)[index];
+        if (link) {
+            link.condition = condition;
+            this.markDirty();
+        }
     }
 
     public hasLinkSchema(link: IFormulaLink): boolean {
@@ -714,22 +769,23 @@ export class FormulaConfigurationComponent implements OnInit {
     /**
      * The display condition is cleared, its paths belong to the previous schema.
      */
-    public onLinkSchemaChange(item: IFormulaItem, schemaIri: string) {
+    public onLinkSchemaChange(item: IFormulaItem, index: number, schemaIri: string) {
         if (this.readonly) {
             return;
         }
-        item.link = moveLink(item.link, { schemaIri, fieldPath: '' });
+        this.replaceLink(item, index, moveLink(getItemLinks(item)[index], { schemaIri, fieldPath: '' }));
         this.markDirty();
     }
 
     /**
      * The display condition is kept, the schema is the same.
      */
-    public onLinkPathChange(item: IFormulaItem, path: string) {
-        if (this.readonly || item.link?.type !== 'schema') {
+    public onLinkPathChange(item: IFormulaItem, index: number, path: string) {
+        const link = getItemLinks(item)[index];
+        if (this.readonly || link?.type !== 'schema') {
             return;
         }
-        item.link = moveLink(item.link, { schemaIri: item.link.entityId, fieldPath: path });
+        this.replaceLink(item, index, moveLink(link, { schemaIri: link.entityId, fieldPath: path }));
         this.markDirty();
     }
 
@@ -767,13 +823,18 @@ export class FormulaConfigurationComponent implements OnInit {
         return '';
     }
 
-    public deleteLink(item: IFormulaItem, $event: any) {
+    public deleteLink(item: IFormulaItem, index: number, $event: any) {
         if (this.readonly) {
             return;
         }
         $event.preventDefault();
         $event.stopPropagation();
-        item.link = null;
+        this.replaceLink(item, index, null);
+        for (const key of Array.from(this.linkOpen.keys())) {
+            if (key.startsWith(`${item.uuid}:`)) {
+                this.linkOpen.delete(key);
+            }
+        }
         this.markDirty();
     }
 

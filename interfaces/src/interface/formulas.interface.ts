@@ -32,7 +32,14 @@ export interface IFormulaItem {
     description: string;
     type: FormulaItemType;
     value?: any;
+    /**
+     * First link. Kept equal to `links[0]` for readers that know only one link.
+     */
     link?: IFormulaLink | null;
+    /**
+     * All links of the item. When missing, the item has `link` only.
+     */
+    links?: IFormulaLink[];
     relationships?: string[];
     source?: IFormulaSource | null;
 }

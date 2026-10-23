@@ -59,60 +59,129 @@
                   </div>
                 </div>
               }
-              <!-- VALUE (value + status) -->
-              @if (fieldValue !== null && fieldValue !== undefined || valueStatus === 'Missing') {
-                <div
-                  class="node-details-section"
-                  >
-                  <div class="section-label">Value</div>
-                  @if (fieldType !== 'object' && fieldType !== 'array') {
-                    <div
-                      class="section-value"
-                      >
-                      {{ fieldValue }}
-                      @if (valueStatus && valueStatus !== 'Not null') {
-                        <span
-                          class="value-status-chip"
-                          [ngClass]="selectedNode ? getNodeStatusClass(selectedNode) : null"
-                          >
-                          {{ valueStatus }}
-                        </span>
-                      }
+              <!-- LINKED FIELDS (one block per link) -->
+              @for (row of linkRows; track $index) {
+                <div class="link-block" [class.link-block--multi]="linkRows.length > 1">
+                  @if (linkRows.length > 1) {
+                    <div class="link-block-title">
+                      {{ row.label ?? row.schema ?? 'Missing link' }}@if (row.path) { · {{ row.path }} }
+                    </div>
+                  }
+                  @if (row.kind === 'missing') {
+                    <div class="node-details-section">
+                      <div class="section-value link-missing">
+                        <i class="pi pi-exclamation-triangle"></i> {{ missingLinkText }}
+                      </div>
+                    </div>
+                  } @else if (row.kind === 'formula') {
+                    <div class="node-details-section">
+                      <div class="section-label">Linked formula</div>
+                      <div class="section-value">{{ row.label }}</div>
+                    </div>
+                  } @else if (!row.hasValue) {
+                    <div class="node-details-section">
+                      <div class="section-label">Value</div>
+                      <div class="section-value link-no-value">No value in this document</div>
                     </div>
                   } @else {
-                    <div class="section-value">
-                      <pre
-                        class="value-json"
-                        [attr.data-expanded]="isJsonExpanded"
-                      >{{ formatValueForJson(fieldValue) | json }}</pre>
-                      <div class="json-toggle" (click)="toggleJsonExpanded()">
-                        <span class="json-toggle-label">
-                          {{ isJsonExpanded ? 'Show less' : 'Show more' }}
-                        </span>
-                        <i
-                          class="pi"
-                          [ngClass]="isJsonExpanded ? 'pi-chevron-up' : 'pi-chevron-down'"
-                        ></i>
-                      </div>
-                      @if (valueStatus && valueStatus !== 'Not null') {
-                        <span
-                          class="value-status-chip"
-                          [ngClass]="selectedNode ? getNodeStatusClass(selectedNode) : null"
-                          >
-                          {{ valueStatus }}
-                        </span>
+                    <div class="node-details-section">
+                      <div class="section-label">Value</div>
+                      @if (row.type !== 'object' && row.type !== 'array') {
+                        <div class="section-value">
+                          {{ row.value }}
+                          @if (row.status && row.status !== 'Not null') {
+                            <span class="value-status-chip" [ngClass]="statusClass(row.status)">
+                              {{ row.status }}
+                            </span>
+                          }
+                        </div>
+                      } @else {
+                        <div class="section-value">
+                          <pre
+                            class="value-json"
+                            [attr.data-expanded]="row.jsonExpanded"
+                          >{{ formatValueForJson(row.value) | json }}</pre>
+                          <div class="json-toggle" (click)="row.jsonExpanded = !row.jsonExpanded">
+                            <span class="json-toggle-label">
+                              {{ row.jsonExpanded ? 'Show less' : 'Show more' }}
+                            </span>
+                            <i
+                              class="pi"
+                              [ngClass]="row.jsonExpanded ? 'pi-chevron-up' : 'pi-chevron-down'"
+                            ></i>
+                          </div>
+                          @if (row.status && row.status !== 'Not null') {
+                            <span class="value-status-chip" [ngClass]="statusClass(row.status)">
+                              {{ row.status }}
+                            </span>
+                          }
+                        </div>
                       }
                     </div>
                   }
-                </div>
-              }
-              <!-- FIELD DESCRIPTION IN DOCUMENT -->
-              @if (fieldDescription) {
-                <div class="node-details-section">
-                  <div class="section-label">Field description</div>
-                  <div class="section-value">
-                    {{ fieldDescription }}
-                  </div>
+                  @if (row.description) {
+                    <div class="node-details-section">
+                      <div class="section-label">Field description</div>
+                      <div class="section-value">
+                        {{ row.description }}
+                      </div>
+                    </div>
+                  }
+                  @if (row.schema) {
+                    <div class="node-details-section">
+                      <div class="section-label">Schema</div>
+                      <div class="section-value">
+                        {{ row.schema }}
+                      </div>
+                    </div>
+                  }
+                  @if (row.parents.length) {
+                    <div class="node-details-section">
+                      <div class="section-label">Parent schemas</div>
+                      <ul class="section-list">
+                        @for (doc of row.parents; track doc) {
+                          <li>
+                            {{ doc }}
+                          </li>
+                        }
+                      </ul>
+                    </div>
+                  }
+                  @if (row.type || row.path) {
+                    <div class="technical-section">
+                      <div class="technical-header" (click)="row.technical = !row.technical">
+                        <div class="technical-title">
+                          Technical details
+                        </div>
+                        <div class="technical-icon">
+                          <i
+                            class="pi"
+                            [ngClass]="row.technical ? 'pi-chevron-up' : 'pi-chevron-down'"
+                          ></i>
+                        </div>
+                      </div>
+                      @if (row.technical) {
+                        <div class="technical-content">
+                          @if (row.type) {
+                            <div class="node-details-section">
+                              <div class="section-label">Field value type</div>
+                              <div class="section-value">
+                                {{ row.type }}
+                              </div>
+                            </div>
+                          }
+                          @if (row.path) {
+                            <div class="node-details-section">
+                              <div class="section-label">Field path</div>
+                              <div class="section-value">
+                                {{ row.path }}
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      }
+                    </div>
+                  }
                 </div>
               }
               <!-- FORMULA -->
@@ -160,66 +229,6 @@
                   <div class="section-value">
                     {{ nodeDescription }}
                   </div>
-                </div>
-              }
-              <!-- SCHEMA NAME -->
-              @if (nodeDocument) {
-                <div class="node-details-section">
-                  <div class="section-label">Schema</div>
-                  <div class="section-value">
-                    {{ nodeDocument }}
-                  </div>
-                </div>
-              }
-              <!-- PARENT SCHEMAS -->
-              @if (parentDocuments.length) {
-                <div class="node-details-section">
-                  <div class="section-label">Parent schemas</div>
-                  <ul class="section-list">
-                    @for (doc of parentDocuments; track doc) {
-                      <li>
-                        {{ doc }}
-                      </li>
-                    }
-                  </ul>
-                </div>
-              }
-              <!-- TECHNICAL DETAILS SECTION -->
-              @if (fieldType || fieldPath) {
-                <div class="technical-section">
-                  <div class="technical-header" (click)="toggleTechnicalDetails()">
-                    <div class="technical-title">
-                      Technical details
-                    </div>
-                    <div class="technical-icon">
-                      <i
-                        class="pi"
-                        [ngClass]="showTechnicalDetails ? 'pi-chevron-up' : 'pi-chevron-down'"
-                      ></i>
-                    </div>
-                  </div>
-                  @if (showTechnicalDetails) {
-                    <div class="technical-content">
-                      <!-- FIELD VALUE TYPE -->
-                      @if (fieldType) {
-                        <div class="node-details-section">
-                          <div class="section-label">Field value type</div>
-                          <div class="section-value">
-                            {{ fieldType }}
-                          </div>
-                        </div>
-                      }
-                      <!-- FIELD PATH -->
-                      @if (fieldPath) {
-                        <div class="node-details-section">
-                          <div class="section-label">Field path</div>
-                          <div class="section-value">
-                            {{ fieldPath }}
-                          </div>
-                        </div>
-                      }
-                    </div>
-                  }
                 </div>
               }
             </div>
