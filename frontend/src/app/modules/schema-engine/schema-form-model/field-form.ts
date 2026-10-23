@@ -466,11 +466,14 @@ export class FieldForm {
 
         for (const item of controls) {
             item.visibility = this.checkConditionValue(item);
-            if (item.control && this.form.get(item.name) === item.control) {
-                this.form.removeControl(item.name, { emitEvent: false });
-            }
-            if (item.control && item.visibility) {
+            if (!item.control) { continue; }
+            if (item.visibility) {
+                // No-op for a control buildFields already added, which keeps its schema position.
                 this.form.addControl(item.name, item.control, { emitEvent: false });
+            } else if (this.form.get(item.name) === item.control) {
+                // A hidden conditionUserOrdered field reuses the control buildFields added, so it
+                // must be taken out here or its validators and value would still apply.
+                this.form.removeControl(item.name, { emitEvent: false });
             }
         }
 

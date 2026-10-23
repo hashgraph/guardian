@@ -4629,8 +4629,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return result;
     }
 
-    // Combined picker: root-level fields of this schema (selected as plain then/else members)
-    // plus the existing nested sub-schema field groups (selected as cross-schema targets).
+    // Cached per condition: the template reads the picker several times per change-detection pass.
     private condPickerCache = new WeakMap<SchemaCondition, {
         schema: Schema | null;
         schemas: Schema[];
@@ -4641,6 +4640,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         result: { label: string; items: { pathStr: string; label: string; isBlock?: boolean; disabled?: boolean }[] }[];
     }>();
 
+    // Combined picker: root-level fields of this schema (selected as plain then/else members)
+    // plus the existing nested sub-schema field groups (selected as cross-schema targets).
     public getCondFieldPickerOptions(cond: SchemaCondition): { label: string; items: { pathStr: string; label: string; isBlock?: boolean; disabled?: boolean }[] }[] {
         const schema = this.currentContextSchema;
         const cross = this.getCrossTargetPSelectGroups();
