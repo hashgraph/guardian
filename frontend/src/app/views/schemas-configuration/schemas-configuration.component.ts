@@ -4631,10 +4631,37 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     // Combined picker: root-level fields of this schema (selected as plain then/else members)
     // plus the existing nested sub-schema field groups (selected as cross-schema targets).
+    private condPickerCache = new WeakMap<SchemaCondition, {
+        schema: Schema | null;
+        schemas: Schema[];
+        fields: SchemaField[] | undefined;
+        fieldCount: number;
+        version: number;
+        cross: unknown;
+        result: { label: string; items: { pathStr: string; label: string; isBlock?: boolean; disabled?: boolean }[] }[];
+    }>();
+
     public getCondFieldPickerOptions(cond: SchemaCondition): { label: string; items: { pathStr: string; label: string; isBlock?: boolean; disabled?: boolean }[] }[] {
+        const schema = this.currentContextSchema;
+        const cross = this.getCrossTargetPSelectGroups();
+        const hit = this.condPickerCache.get(cond);
+        if (hit
+            && hit.schema === schema
+            && hit.schemas === this.schemas
+            && hit.fields === schema?.fields
+            && hit.fieldCount === (schema?.fields?.length ?? 0)
+            && hit.version === this.schemaEditVersion
+            && hit.cross === cross) {
+            return hit.result;
+        }
         const rootItems = this.getSelectableThenElseFields(cond);
         const groups = rootItems.length ? [{ label: 'This schema', items: rootItems }] : [];
-        return [...groups, ...this.getCrossTargetPSelectGroups()];
+        const result = [...groups, ...cross];
+        this.condPickerCache.set(cond, {
+            schema, schemas: this.schemas, fields: schema?.fields, fieldCount: schema?.fields?.length ?? 0,
+            version: this.schemaEditVersion, cross, result,
+        });
+        return result;
     }
 
     public onCondThenRefChange(cond: SchemaCondition, ci: number, pathStr: string): void {
