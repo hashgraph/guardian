@@ -1,6 +1,6 @@
 import { BeforeCreate, Entity, Property } from '@mikro-orm/core';
 import { BaseEntity } from '../models/base-entity.js';
-import { ExternalPolicyStatus, ExternalPolicyType } from '@guardian/interfaces';
+import { ExternalPolicyStatus, ExternalPolicyType, RemoteJoinStatus } from '@guardian/interfaces';
 
 /**
  * External policy
@@ -84,6 +84,30 @@ export class ExternalPolicy extends BaseEntity {
      */
     @Property({ nullable: true })
     type?: ExternalPolicyType;
+
+    /**
+     * Status of the join request sent to the Main instance
+     */
+    @Property({ nullable: true })
+    joinStatus?: RemoteJoinStatus;
+
+    /**
+     * Join request message id
+     */
+    @Property({ nullable: true })
+    joinMessageId?: string;
+
+    /**
+     * Reply message id
+     */
+    @Property({ nullable: true })
+    joinReplyMessageId?: string;
+
+    /**
+     * Why the join request could not be sent
+     */
+    @Property({ nullable: true })
+    joinError?: string;
 
     /**
      * Set defaults

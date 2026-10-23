@@ -8,6 +8,7 @@ import {
     PolicyAvailability,
     PolicyHelper,
     PolicyStatus,
+    RemotePolicyInvite,
     Schema,
     SchemaHelper,
     TagType,
@@ -52,6 +53,8 @@ import { Popover as OverlayPanel } from 'primeng/popover';
 import { takeUntil } from 'rxjs/operators';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { DB_NAME, STORES_NAME } from 'src/app/constants';
+import { RemoteParticipantsDialog } from '../dialogs/remote-participants-dialog/remote-participants-dialog.component';
+import { PolicyInviteDialog } from '../dialogs/policy-invite-dialog/policy-invite-dialog.component';
 import { UserPolicyDialog } from '../dialogs/user-policy-dialog/user-policy-dialog.component';
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { confirmDryRun } from '../dialogs/dry-run-dialog/dry-run-dialog.component';
@@ -310,6 +313,7 @@ export class PoliciesComponent implements OnInit {
         },
     ];
     public tab: 'local' | 'remote' | 'disconnected' = 'local';
+    private pendingInvite: string | null = null;
     public tabIndex: number = 0;
 
     private filteredPolicies: any[] = [];
@@ -678,6 +682,19 @@ export class PoliciesComponent implements OnInit {
                         icon: 'group',
                         color: 'primary-color',
                         click: () => this.userPolicyManage(policy)
+                    }),
+                    new MenuButton({
+                        visible: this.user.PERMISSIONS_ROLE_MANAGE &&
+                            policy.availability === 'public' &&
+                            (
+                                policy.status === PolicyStatus.PUBLISH ||
+                                policy.status === PolicyStatus.DISCONTINUED
+                            ),
+                        disabled: false,
+                        tooltip: 'Remote participants',
+                        icon: 'group',
+                        color: 'primary-color',
+                        click: () => this.remoteParticipants(policy)
                     })
                 ]
             }, {
@@ -785,9 +802,29 @@ export class PoliciesComponent implements OnInit {
                 this.tab = this.getTab(this.route.snapshot.queryParams['tab']);
             })
         );
+        this.pendingInvite = RemotePolicyInvite.decode(
+            this.route.snapshot.queryParams[RemotePolicyInvite.QUERY_PARAM]
+        );
         this.loading = true;
         this.loadPolicy();
         this.handleTagsUpdate();
+    }
+
+    private openPendingInvite() {
+        if (!this.pendingInvite) {
+            return;
+        }
+        const messageId = this.pendingInvite;
+        this.pendingInvite = null;
+        this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { [RemotePolicyInvite.QUERY_PARAM]: null },
+            queryParamsHandling: 'merge',
+            replaceUrl: true
+        });
+        if (this.user.POLICIES_EXTERNAL_POLICY_CREATE) {
+            this.importExternalPolicy(messageId);
+        }
     }
 
     private getTab(tabName: string): 'local' | 'remote' | 'disconnected' {
@@ -924,6 +961,7 @@ export class PoliciesComponent implements OnInit {
                     }
                 }
 
+                this.openPendingInvite();
                 this.loadPolicyTags(this.policies);
             }, (e) => {
                 this.loading = false;
@@ -2025,11 +2063,12 @@ export class PoliciesComponent implements OnInit {
     //     this.router.navigate(['/external-policies']);
     // }
 
-    public importExternalPolicy() {
+    public importExternalPolicy(messageId?: string) {
         const dialogRef = this.dialogService.open(SearchExternalPolicyDialog, {
             showHeader: false,
             width: '720px',
             styleClass: 'guardian-dialog',
+            data: { messageId },
         })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result: any | null) => {
             if (result) {
@@ -2044,6 +2083,34 @@ export class PoliciesComponent implements OnInit {
 
     public onCopyMessage(row: any): void {
         this.handleCopyToClipboard(row.messageId)
+    }
+
+    public onCopyInvite(row: any): void {
+        this.handleCopyToClipboard(RemotePolicyInvite.encode(row.messageId));
+    }
+
+    public onShowInviteQr(row: any): void {
+        this.dialogService.open(PolicyInviteDialog, {
+            showHeader: false,
+            width: '480px',
+            styleClass: 'guardian-dialog',
+            data: {
+                policy: row,
+                invite: RemotePolicyInvite.encode(row.messageId)
+            },
+        });
+    }
+
+    public remoteParticipants(policy?: any) {
+        this.policySubMenu?.hide();
+        this.dialogService.open(RemoteParticipantsDialog, {
+            showHeader: false,
+            width: '90%',
+            styleClass: 'guardian-dialog',
+            data: {
+                policy
+            },
+        });
     }
 
     private handleCopyToClipboard(text: string): void {

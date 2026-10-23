@@ -212,7 +212,8 @@ export class PolicyDataImportExport {
             JSON.stringify(
                 users.map((item) => {
                     return {
-                        username: item.username,
+                        // a remote user has no username
+                        username: item.username || item.did,
                         did: item.did,
                         hederaAccountId: item.hederaAccountId,
                         hederaAccountKey: this._isDryRun

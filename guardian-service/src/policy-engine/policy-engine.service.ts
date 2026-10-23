@@ -4604,7 +4604,7 @@ export class PolicyEngineService {
                     const users = new Map<string, any>();
                     for (const group of groups) {
                         const item = users.get(group.did) || {
-                            label: group.username,
+                            label: group.username || group.did,
                             value: group.did,
                             roles: [],
                             type: 'user',
@@ -5293,7 +5293,7 @@ export class PolicyEngineService {
                     const users = new Map<string, any>();
                     for (const group of groups) {
                         const item = users.get(group.did) || {
-                            label: group.username,
+                            label: group.username || group.did,
                             value: group.did,
                             roles: [],
                             type: 'user',
