@@ -55,8 +55,8 @@ export function getDocumentValueByPath(doc: any, path: string): any {
     }
 }
 
-//Return complete lists instead of a truncated preview
-export const EVALUATE_OPTIONS = { materialization: Number.MAX_SAFE_INTEGER };
+//Return complete lists instead of a truncated preview, with a finite cap so infinite collections (e.g. Range(1, oo)) cannot exhaust the heap
+export const EVALUATE_OPTIONS = { materialization: 1000000 };
 
 //Exact results (rationals, radicals) are converted to floating point numbers
 export function evaluateNumeric(expression: any): any {
