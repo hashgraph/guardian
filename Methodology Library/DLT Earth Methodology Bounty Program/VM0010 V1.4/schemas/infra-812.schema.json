@@ -1,0 +1,79 @@
+{
+    "name": "VM0010 Section 8.1.2 Infrastructure Biomass",
+    "description": "Slice-scoped output of logic/calculate-infra-812.js. Carries Equation (7) C_notHB,INF,j,i|BSL only, in tC per hectare.",
+    "entity": "VC",
+    "system": false,
+    "sourceVersion": "1.0.0",
+    "document": {
+        "$id": "#infra-812",
+        "title": "VM0010 Section 8.1.2 Infrastructure Biomass",
+        "type": "object",
+        "required": ["@context", "type", "credentialSubject"],
+        "properties": {
+            "@context": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "type": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "credentialSubject": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "$ref": "#infra-812-subject" }
+            }
+        },
+        "defs": {
+            "infra-812-subject": {
+                "type": "object",
+                "required": ["ref", "year", "rows", "totalCNotHbInfTCo2eHa"],
+                "properties": {
+                    "ref": { "type": "string", "title": "Project ID" },
+                    "year": { "type": "integer", "title": "Monitoring Year" },
+                    "rows": {
+                        "type": "array",
+                        "title": "Per Species and Stratum Results",
+                        "minItems": 1,
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "species",
+                                "stratum",
+                                "vNotExInfJiBsl",
+                                "bcefR",
+                                "cfJ",
+                                "cNotHbInfJiBsl"
+                            ],
+                            "properties": {
+                                "species": { "type": "integer", "title": "j (Tree Species)", "minimum": 1, "maximum": 3 },
+                                "stratum": { "type": "integer", "title": "i (Stratum)", "minimum": 1, "maximum": 3 },
+                                "vNotExInfJiBsl": {
+                                    "type": "number",
+                                    "title": "V_notEX,INF,j,i|BSL (m3/ha)",
+                                    "description": "Input. Section 9.1 Data / Parameter row exists; set by the timber harvest plan.",
+                                    "minimum": 0
+                                },
+                                "bcefR": {
+                                    "type": "number",
+                                    "title": "BCEF_R (t.d.m/m3)",
+                                    "description": "Input. Biomass conversion and expansion factor applicable to wood removals in the project area, per the Equation (7) Where-block on p. 23. Section 9.1 Data / Parameter row exists (p. 67). Positive multiplier; not capped at 1.",
+                                    "exclusiveMinimum": 0
+                                },
+                                "cfJ": {
+                                    "type": "number",
+                                    "title": "CF_j (tC/t.d.m)",
+                                    "description": "Input. Section 9.1 Data / Parameter row exists.",
+                                    "exclusiveMinimum": 0,
+                                    "maximum": 1
+                                },
+                                "cNotHbInfJiBsl": {
+                                    "type": "number",
+                                    "title": "C_notHB,INF,j,i|BSL (tC/ha) - Equation 7"
+                                }
+                            }
+                        }
+                    },
+                    "totalCNotHbInfTCo2eHa": {
+                        "type": "number",
+                        "title": "Sum of C_notHB,INF,j,i|BSL across all rows (tC/ha)"
+                    }
+                }
+            }
+        }
+    }
+}
