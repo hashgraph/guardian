@@ -15,7 +15,7 @@
 #    api-reference-indexer) via GitBook Site redirects (.gitbook.yaml cannot
 #    target an external domain)
 #
-# 864 entries below, grouped by source path prefix for scanning;
+# 865 entries below, grouped by source path prefix for scanning;
 # alphabetical within each group. Last updated 2026-09-24 -- pre-emptively
 # retargeted 24 entries whose current target is being moved/renamed/deleted
 # by GitBook change request #484 (Schema Section restructuring), plus added
@@ -844,7 +844,7 @@ redirects:
   guardian/standard-registry/schemas/deleting-schema: guardian/workspace/schemas/delete-schema.md
   guardian/standard-registry/schemas/demo-on-how-to-create-policy-from-a-standard: methodology-digitalization/methodology-digitization-handbook.md
   guardian/standard-registry/schemas/example-data/adding-example-data-using-ui: guardian/workspace/schemas/example-data.md
-  guardian/standard-registry/schemas/how-to-handle-large-location-files: guardian/workspace/schemas/large-geospatial-files.md
+  guardian/standard-registry/schemas/how-to-handle-large-location-files: guardian/workspace/schemas/schema-fields-reference/geojson-field.md
   guardian/standard-registry/schemas/importing-schema-using-ui: guardian/workspace/schemas/import-schema.md
   guardian/standard-registry/schemas/property-glossary: guardian/workspace/schemas/property-glossary.md
   guardian/standard-registry/schemas/schema-apis-for-asynchronous-execution/deletes-the-schema-with-the-provided-schema-id: guardian/workspace/schemas.md
@@ -931,8 +931,9 @@ redirects:
   guardian/workspace/schemas/deleting-schema: guardian/workspace/schemas/delete-schema.md
   guardian/workspace/schemas/geo-fields: guardian/workspace/schemas/schema-fields-reference/geo-fields.md
   guardian/workspace/schemas/geo-fields/configure-geo-fields: guardian/workspace/schemas/schema-fields-reference/geo-fields/configure-geo-fields.md
-  guardian/workspace/schemas/how-to-handle-large-location-files: guardian/workspace/schemas/large-geospatial-files.md
+  guardian/workspace/schemas/how-to-handle-large-location-files: guardian/workspace/schemas/schema-fields-reference/geojson-field.md
   guardian/workspace/schemas/importing-schema-using-ui: guardian/workspace/schemas/import-schema.md
+  guardian/workspace/schemas/large-geospatial-files: guardian/workspace/schemas/schema-fields-reference/geojson-field.md
   guardian/workspace/schemas/repeatable-field-links: guardian/workspace/schemas/schema-fields-reference/repeatable-field-links.md
   guardian/workspace/schemas/repeatable-field-links/set-up-repeatable-field-links: guardian/workspace/schemas/schema-fields-reference/repeatable-field-links/set-up-repeatable-field-links.md
   guardian/workspace/schemas/rich-text-fields: guardian/workspace/schemas/schema-fields-reference/rich-text-fields.md
