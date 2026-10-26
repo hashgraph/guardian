@@ -51,6 +51,7 @@ import {
 } from '../helpers/import-helpers/index.js'
 import { validateSchemaDependencies } from '../helpers/import-helpers/schema/schema-dependency-validator.js';
 import { validateSchemaFieldKeys } from '../helpers/import-helpers/schema/schema-field-key-validator.js';
+import { validateFormulaLinksAfterImport, validateFormulaLinksForReplace } from '../helpers/import-helpers/schema/schema-formula-validator.js';
 import { PolicyEngine } from '../policy-engine/policy-engine.js';
 import { getPageOptions } from './helpers/index.js';
 import { readFile } from 'node:fs/promises';
@@ -561,6 +562,29 @@ async function resolveTemplateSchemaContext(item: ISchema, owner: IOwner): Promi
     }
     if (!template.topicId || item.topicId !== template.topicId) {
         throw new Error('Invalid schema template topic.');
+    }
+}
+
+/**
+ * Formula links broken by the imported schemas, empty when the check fails
+ */
+async function getFormulaWarnings(
+    logger: PinoLogger,
+    category: SchemaCategory,
+    policyId: string | undefined,
+    topicId: string,
+    schemasMap: { newIRI?: string }[] | undefined,
+    userId: string | undefined,
+): Promise<any[]> {
+    if (category !== SchemaCategory.POLICY || !policyId) {
+        return [];
+    }
+    try {
+        const iris = (schemasMap || []).map((item) => item.newIRI).filter((iri) => !!iri);
+        return await validateFormulaLinksAfterImport(policyId, topicId, iris);
+    } catch (error) {
+        await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+        return [];
     }
 }
 
@@ -2294,10 +2318,13 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     }
                 }
 
+                const formulaWarnings = await getFormulaWarnings(logger, category, target?.id, topicId, schemasMap?.schemasMap, owner?.id);
+
                 notifier.result({
                     ...schemasMap,
                     policyId: category === SchemaCategory.POLICY ? target?.id : null,
-                    validation
+                    validation,
+                    formulaWarnings
                 });
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -2401,10 +2428,13 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     }
                 }
 
+                const formulaWarnings = await getFormulaWarnings(logger, category, target?.id, topicId, result?.schemasMap, owner?.id);
+
                 notifier.result({
                     ...result,
                     policyId: category === SchemaCategory.POLICY ? target?.id : null,
-                    validation
+                    validation,
+                    formulaWarnings
                 });
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -3079,10 +3109,13 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 }
                 notifier.complete();
 
+                const formulaWarnings = await getFormulaWarnings(logger, category, target?.id, topicId, result?.schemasMap, owner?.id);
+
                 notifier.result({
                     schemas: xlsxResult.schemas,
                     policyId: category === SchemaCategory.POLICY ? target.id : null,
                     validation,
+                    formulaWarnings,
                     errors: result.errors
                 });
             }, async (error) => {
@@ -3133,11 +3166,12 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
     ApiResponse(MessageAPI.SCHEMA_IMPORT_CHECK_FOR_DUBLICATES,
         async (msg: {
             schemaNames: string[];
+            schemas?: ISchema[];
             owner?: IOwner;
             policyId?: string;
         }) => {
             try {
-                const { schemaNames, policyId } = msg;
+                const { schemaNames, policyId, schemas } = msg;
                 if (!schemaNames?.length) {
                     throw new Error('files in body is empty');
                 }
@@ -3155,8 +3189,18 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     }
                 }, {}) : []
 
+                let formulaWarnings = [];
+                if (schemasCanBeReplaced.length && schemas?.length) {
+                    try {
+                        formulaWarnings = await validateFormulaLinksForReplace(policyId, schemasCanBeReplaced, schemas);
+                    } catch (error) {
+                        await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                    }
+                }
+
                 return new MessageResponse({
                     schemasCanBeReplaced,
+                    formulaWarnings,
                 });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);

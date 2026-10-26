@@ -1265,7 +1265,8 @@ export class SchemaConfigComponent implements OnInit {
                 this.loading = true;
                 this.schemaService.checkForDublicates({
                     policyId: result.topicId,
-                    schemaNames: schemas.map(({ name }: { name: string }) => name)
+                    schemaNames: schemas.map(({ name }: { name: string }) => name),
+                    schemas: schemas.map(({ name, document }: { name: string, document: any }) => ({ name, document }))
                 }).subscribe(
                     (res) => {
                         this.loading = false;
@@ -1275,12 +1276,14 @@ export class SchemaConfigComponent implements OnInit {
                                     data,
                                     ...result,
                                     schemasCanBeReplaced: res.schemasCanBeReplaced,
+                                    formulaWarnings: res.formulaWarnings,
                                 });
                             } else if (type == 'file') {
                                 this.importFromFileReplace({
                                     data,
                                     ...result,
                                     schemasCanBeReplaced: res.schemasCanBeReplaced,
+                                    formulaWarnings: res.formulaWarnings,
                                 });
                             } else if (type == 'xlsx') {
                                 this.importExcelReplace({
@@ -1288,6 +1291,7 @@ export class SchemaConfigComponent implements OnInit {
                                     data,
                                     ...result,
                                     schemasCanBeReplaced: res.schemasCanBeReplaced,
+                                    formulaWarnings: res.formulaWarnings,
                                 });
                             }
                         } else {
@@ -1309,7 +1313,7 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     private importFromMessageReplace(result: any) {
-        const { data, schemasCanBeReplaced } = result;
+        const { data, schemasCanBeReplaced, formulaWarnings } = result;
         const dialogRef = this.dialogService.open(ReplaceSchemasDialogComponent, {
             header: 'Schemas for replace',
             width: '90%',
@@ -1318,6 +1322,7 @@ export class SchemaConfigComponent implements OnInit {
             data: {
                 title: 'Schemas for replace',
                 schemasCanBeReplaced,
+                formulaWarnings,
             },
         })!;
         dialogRef.onClose.subscribe(async (resultWithSchemasForReplace) => {
@@ -1328,7 +1333,7 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     private importFromFileReplace(result: any) {
-        const { data, schemasCanBeReplaced } = result;
+        const { data, schemasCanBeReplaced, formulaWarnings } = result;
         const dialogRef = this.dialogService.open(ReplaceSchemasDialogComponent, {
             header: 'Schemas for replace',
             width: '90%',
@@ -1337,6 +1342,7 @@ export class SchemaConfigComponent implements OnInit {
             data: {
                 title: 'Schemas for replace',
                 schemasCanBeReplaced,
+                formulaWarnings,
             },
         })!;
         dialogRef.onClose.subscribe(async (resultWithSchemasForReplace) => {
@@ -1347,7 +1353,7 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     private importExcelReplace(result: any) {
-        const { data, schemasCanBeReplaced } = result;
+        const { data, schemasCanBeReplaced, formulaWarnings } = result;
         const dialogRef = this.dialogService.open(ReplaceSchemasDialogComponent, {
             header: 'Schemas for replace',
             width: '90%',
@@ -1356,6 +1362,7 @@ export class SchemaConfigComponent implements OnInit {
             data: {
                 title: 'Schemas for replace',
                 schemasCanBeReplaced,
+                formulaWarnings,
             },
         })!;
         dialogRef.onClose.subscribe(async (resultWithSchemasForReplace) => {
