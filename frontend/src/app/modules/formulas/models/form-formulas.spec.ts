@@ -169,3 +169,78 @@ describe('FormulasTree filtering', () => {
         expect(tree.get(SCHEMA, 'field1', { data: {} }).length).toBe(0);
     });
 });
+
+
+describe('FormFormulas with several links', () => {
+    function multi(uuid: string, links: { path: string, condition?: any }[]): any {
+        return {
+            uuid,
+            name: uuid,
+            description: '',
+            type: FormulaItemType.Formula,
+            value: 'x=1',
+            links: links.map((e) => ({
+                type: 'schema',
+                entityId: SCHEMA,
+                item: e.path,
+                ...(e.condition ? { condition: e.condition } : {})
+            })),
+            relationships: []
+        };
+    }
+
+    function build(items: any[]): FormFormulas {
+        return new FormFormulas(buildTree([formula('f', items)]), SCHEMA);
+    }
+
+    it('reads an item saved with link only', () => {
+        const forms = build([item('old', 'a')]);
+        forms.setData({});
+        expect(forms.get(`${SCHEMA}/a`).map((e) => e.uuid)).toEqual(['old']);
+    });
+
+    it('shows the item on every field it links to', () => {
+        const forms = build([multi('m', [{ path: 'a' }, { path: 'b' }])]);
+        forms.setData({});
+        expect(forms.get(`${SCHEMA}/a`).map((e) => e.uuid)).toEqual(['m']);
+        expect(forms.get(`${SCHEMA}/b`).map((e) => e.uuid)).toEqual(['m']);
+    });
+
+    it('applies the condition of a link only to its own field', () => {
+        const forms = build([multi('m', [{ path: 'a', condition: pred('kind', 'x') }, { path: 'b' }])]);
+        forms.setData({ kind: 'y' });
+        expect(forms.get(`${SCHEMA}/a`)).toEqual([]);
+        expect(forms.get(`${SCHEMA}/b`).map((e) => e.uuid)).toEqual(['m']);
+        forms.setData({ kind: 'x' });
+        expect(forms.get(`${SCHEMA}/a`).map((e) => e.uuid)).toEqual(['m']);
+    });
+
+    it('shows the item when any link to the field passes', () => {
+        const forms = build([multi('m', [
+            { path: 'a', condition: pred('kind', 'x') },
+            { path: 'a', condition: pred('kind', 'y') }
+        ])]);
+        forms.setData({ kind: 'y' });
+        expect(forms.get(`${SCHEMA}/a`).map((e) => e.uuid)).toEqual(['m']);
+        forms.setData({ kind: 'z' });
+        expect(forms.get(`${SCHEMA}/a`)).toEqual([]);
+    });
+
+    it('lists the item once for two links to one field', () => {
+        const forms = build([multi('m', [{ path: 'a' }, { path: 'a' }])]);
+        forms.setData({});
+        expect(forms.get(`${SCHEMA}/a`).length).toBe(1);
+    });
+
+    it('detects the conditions per field', () => {
+        const forms = build([multi('m', [{ path: 'a', condition: pred('kind', 'x') }, { path: 'b' }])]);
+        expect(forms.hasConditions).toBe(true);
+        expect(build([multi('m', [{ path: 'a' }, { path: 'b' }])]).hasConditions).toBe(false);
+    });
+
+    it('omits a field from getFields when none of its links passes', () => {
+        const tree = buildTree([formula('f', [multi('m', [{ path: 'a', condition: pred('kind', 'x') }, { path: 'b' }])])]);
+        const keys = Object.keys(tree.getFields(SCHEMA, { data: { kind: 'y' }, anyEntry: true }));
+        expect(keys).toEqual([`${SCHEMA}/b`]);
+    });
+});

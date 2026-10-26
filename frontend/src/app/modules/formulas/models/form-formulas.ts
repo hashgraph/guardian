@@ -26,7 +26,7 @@ export class FormFormulas {
      */
     public get hasConditions(): boolean {
         return Object.values(this.fields).some((field) =>
-            this.tree.get(field.schema, field.path).some((item) => !!item.condition)
+            this.tree.get(field.schema, field.path).some((item) => item.hasConditionOn(field.schema, field.path))
         );
     }
 
