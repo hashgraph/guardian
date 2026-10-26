@@ -341,8 +341,8 @@ class Resolver {
         if (node.type === 'CallExpression' && node.callee.type === 'Identifier' && node.callee.name === 'getField') {
             const argument = node.arguments[0];
             if (argument?.type === 'Literal' && typeof argument.value === 'string') {
-                const keys = argument.value.split('.').filter((part: string) => part && !/^\d+$/.test(part));
-                return this.join(new Set([this.prefix]), keys);
+                const fieldKeys = argument.value.split('.').filter((part: string) => part && !/^\d+$/.test(part));
+                return this.join(new Set([this.prefix]), fieldKeys);
             }
         }
         if (node.type === 'LogicalExpression' && (node.operator === '||' || node.operator === '??')) {
