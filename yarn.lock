@@ -12496,7 +12496,7 @@ __metadata:
     nodemon: "npm:3.1.14"
     reflect-metadata: "npm:0.2.2"
     rxjs: "npm:7.8.2"
-    tsc-alias: "npm:1.9.7"
+    tsc-alias: "npm:1.9.9"
     tslint: "npm:^6.1.3"
     typescript: "npm:^5.8.3"
   languageName: unknown
@@ -14130,7 +14130,7 @@ __metadata:
     nodemon: "npm:3.1.14"
     reflect-metadata: "npm:0.2.2"
     rxjs: "npm:7.8.2"
-    tsc-alias: "npm:1.9.7"
+    tsc-alias: "npm:1.9.9"
     tslint: "npm:^6.1.3"
     typescript: "npm:^5.8.3"
   languageName: unknown
@@ -14263,9 +14263,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tsc-alias@npm:1.9.7":
-  version: 1.9.7
-  resolution: "tsc-alias@npm:1.9.7"
+"tsc-alias@npm:1.9.9":
+  version: 1.9.9
+  resolution: "tsc-alias@npm:1.9.9"
   dependencies:
     chokidar: "npm:^3.5.3"
     commander: "npm:^9.0.0"
@@ -14276,7 +14276,7 @@ __metadata:
     plimit-lit: "npm:^1.2.6"
   bin:
     tsc-alias: dist/bin/index.js
-  checksum: 10c0/df5af15db97e21d1152f3a47896264d68404fab196a2014d9746da3e35600d09c12affa13fad42d571f9cc0eba8e491549d5ad20aa87990a2caad606db418ce9
+  checksum: 10c0/525d256bdea8923cba6b403faf1c04ffd7d0e729eb0c5a2a4fa16ba58dc5770a10f78b315da22ab558769d08c9d119f879b4b1a8281fecff88b0b10d30d95e22
   languageName: node
   linkType: hard
 
@@ -15109,7 +15109,7 @@ __metadata:
     nodemon: "npm:3.1.14"
     reflect-metadata: "npm:0.2.2"
     rxjs: "npm:7.8.2"
-    tsc-alias: "npm:1.9.7"
+    tsc-alias: "npm:1.9.9"
     tslint: "npm:^6.1.3"
     typescript: "npm:^5.8.3"
   languageName: unknown
