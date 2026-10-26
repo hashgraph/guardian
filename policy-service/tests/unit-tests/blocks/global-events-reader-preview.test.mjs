@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import esmock from 'esmock';
 import { GlobalEventsReaderStream } from '@guardian/common/entity/global-events-reader-stream';
 import { BlockCache } from '@guardian/common/entity/block-cache';
-import { createInMemoryDatabaseHelper } from '../../../../common/tests/helpers/in-memory-database-helper.mjs';
+import { createInMemoryDatabaseHelper } from '../helpers/in-memory-database-helper.mjs';
 import GlobalEventsReaderBlock from '../../../dist/policy-engine/blocks/global-events-reader-block.js';
 import { createPreviewDatabaseServer } from '../../../dist/policy-engine/helpers/preview-database.js';
 import { PolicyLink } from '../../../dist/policy-engine/interfaces/policy-event.js';

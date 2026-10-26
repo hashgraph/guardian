@@ -23,7 +23,7 @@ describe('CalculationPreviewService', () => {
                 Reflect.set(root, 'table', 'inline');
             }
         });
-        toast = jasmine.createSpyObj<ToastService>('ToastService', ['error']);
+        toast = jasmine.createSpyObj<ToastService>('ToastService', ['error', 'warn']);
         TestBed.configureTestingModule({
             providers: [
                 CalculationPreviewService,
@@ -253,6 +253,28 @@ describe('CalculationPreviewService', () => {
             incomplete: [{ blockType: 'customLogicBlock', reason: 'the operator $elemMatch' }],
         });
         expect(service.getViewerDocuments(preview)).toEqual([]);
+    });
+
+    it('warns once without the technical message when field discovery stopped on an error', () => {
+        service.showDiscoveryWarning(normalizePreviewResult({
+            errors: [{ message: 'Calculation returned a non-finite number', blockType: 'mathBlock', errorData: null }],
+        }));
+        expect(toast.warn.calls.allArgs()).toEqual([
+            ['Could not determine every field the calculation needs. Fill in the marked fields and run Preview again.', 'Calculation preview'],
+        ]);
+        expect(toast.error).not.toHaveBeenCalled();
+    });
+
+    it('warns when field discovery returned an incomplete result', () => {
+        service.showDiscoveryWarning(normalizePreviewResult({
+            incomplete: [{ blockType: 'customLogicBlock', reason: 'the operator $elemMatch' }],
+        }));
+        expect(toast.warn).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not warn when field discovery finished cleanly', () => {
+        service.showDiscoveryWarning(normalizePreviewResult({ fields: ['amount'], missingFields: ['amount'] }));
+        expect(toast.warn).not.toHaveBeenCalled();
     });
 
     it('shows every block error as the normal block error toast', () => {

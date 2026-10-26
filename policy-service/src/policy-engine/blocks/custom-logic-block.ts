@@ -274,7 +274,7 @@ export class CustomLogicBlock {
                 const scriptWrites: { path: string; document: number | null }[] = [];
                 const scriptSources = new Map<unknown, number>();
                 const done = async (result: any | any[], final: boolean) => {
-                    if (actionStatus?.preview) {
+                    if (actionStatus?.preview && !actionStatus.getPreviewSource()?.discovery) {
                         assertPreviewCalculationResult(result);
                     }
                     if (!result) {

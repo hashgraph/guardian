@@ -20,6 +20,7 @@ import {
     calculatePreviewAutoFields,
     collectPreviewHiddenPaths,
     collectPreviewNullPaths,
+    collectPreviewUnavailablePaths,
     collectPreviewPaths,
     fillPreviewPlaceholders,
 } from '../helpers/preview.js';
@@ -419,6 +420,7 @@ export class RequestVcDocumentBlock {
         );
 
         if (actionStatus?.preview) {
+            const unavailable = collectPreviewUnavailablePaths(this._schema.fields, this._schema.conditions, document);
             const previewFields = Reflect.get(data, 'previewFields') === true;
             if (previewFields) {
                 fillPreviewPlaceholders(this._schema.fields, document);
@@ -433,6 +435,7 @@ export class RequestVcDocumentBlock {
                 dependencies,
                 hidden: collectPreviewHiddenPaths(this._schema.fields),
                 nulls: collectPreviewNullPaths(this._schema.fields),
+                unavailable,
                 discovery: previewFields
             });
             for (const path of Object.keys(dependencies)) {

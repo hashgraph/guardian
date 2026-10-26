@@ -376,7 +376,13 @@ describe('@unit preview helpers', function () {
             calls.length = 0;
             for (const [target, key, value] of [
                 [PolicyUtils, 'checkAccountBalance', async (_ref, account) => { calls.push(['balance', account]); return true; }],
-                [Users.prototype, 'getUserRelayerAccount', async (_did, account) => { calls.push(['find', account]); return { account }; }],
+                [Users.prototype, 'getUserRelayerAccount', async (_did, account) => {
+                    calls.push(['find', account]);
+                    if (account === '0.0.5' || account === '0.0.77') {
+                        return { account };
+                    }
+                    throw new Error('Relayer account not found.');
+                }],
                 [Users.prototype, 'createRelayerAccount', async () => { calls.push(['create']); return { account: '0.0.77' }; }]
             ]) {
                 originals.push([target, key, target[key]]);
@@ -411,12 +417,82 @@ describe('@unit preview helpers', function () {
             assert.deepEqual(calls, []);
         });
 
+        it('resolves a new temporary account in later document processing without stored account reads', async () => {
+            const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
+            await PreviewScope.run(step, async () => {
+                const data = { relayerAccount: { name: 'new' } };
+                await PolicyComponentsUtils._checkRelayerAccount(block, user, data, true);
+                const document = { owner: user.did, relayerAccount: data.relayerAccount };
+                assert.equal(await PolicyUtils.getDocumentRelayerAccount(block, document, user.userId), data.relayerAccount);
+                assert.match(data.relayerAccount, /^0\.0\.\d+$/);
+            });
+            assert.deepEqual(calls, []);
+        });
+
+        it('does not resolve a temporary account for another document owner', async () => {
+            const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
+            await PreviewScope.run(step, async () => {
+                const data = { relayerAccount: { name: 'new' } };
+                await PolicyComponentsUtils._checkRelayerAccount(block, user, data, true);
+                await assert.rejects(PolicyUtils.getDocumentRelayerAccount(block,
+                    { owner: 'did:other', relayerAccount: data.relayerAccount }, user.userId), /Relayer account not found/);
+                assert.deepEqual(calls, [['find', data.relayerAccount]]);
+            });
+        });
+
+        it('keeps simultaneous previews isolated even for the same owner', async () => {
+            const accounts = [];
+            let release;
+            const ready = new Promise((resolve) => { release = resolve; });
+            await Promise.all([0, 1].map((index) => {
+                const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
+                return PreviewScope.run(step, async () => {
+                    const data = { relayerAccount: { name: 'new' } };
+                    await PolicyComponentsUtils._checkRelayerAccount(block, user, data, true);
+                    accounts[index] = data.relayerAccount;
+                    if (accounts.filter(Boolean).length === 2) {
+                        release();
+                    }
+                    await ready;
+                    assert.equal(await PolicyUtils.getUserRelayerAccount(block, user.did, accounts[index], user.userId), accounts[index]);
+                    await assert.rejects(PolicyUtils.getUserRelayerAccount(block, user.did, accounts[1 - index], user.userId), /Relayer account not found/);
+                });
+            }));
+            assert.notEqual(accounts[0], accounts[1]);
+            assert.equal(calls.length, 2);
+        });
+
+        it('does not expose a temporary account after failure or in the next preview', async () => {
+            let account;
+            const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
+            await assert.rejects(PreviewScope.run(step, async () => {
+                const data = { relayerAccount: { name: 'new' } };
+                await PolicyComponentsUtils._checkRelayerAccount(block, user, data, true);
+                account = data.relayerAccount;
+                throw new Error('calculation failed');
+            }), /calculation failed/);
+            await assert.rejects(PolicyUtils.getUserRelayerAccount(block, user.did, account, user.userId), /Relayer account not found/);
+            const next = new RecordActionStep(() => {}, 0, true, true, undefined, true);
+            await PreviewScope.run(next, () => assert.rejects(
+                PolicyUtils.getUserRelayerAccount(block, user.did, account, user.userId), /Relayer account not found/));
+            assert.deepEqual(calls, [['find', account], ['find', account]]);
+        });
+
+        it('does not treat an unknown Hedera-format account as a temporary account', async () => {
+            const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
+            await PreviewScope.run(step, () => assert.rejects(
+                PolicyUtils.getUserRelayerAccount(block, user.did, '0.0.123456', user.userId), /Relayer account not found/));
+            assert.deepEqual(calls, [['find', '0.0.123456']]);
+        });
+
         it('still checks the balance and creates a new account outside a preview', async () => {
             const config = { name: 'new' };
             const data = { relayerAccount: config };
             assert.equal(await PolicyComponentsUtils._checkRelayerAccount(block, user, data), undefined);
             assert.deepEqual(calls, [['balance', config], ['create']]);
             assert.equal(data.relayerAccount, '0.0.77');
+            assert.equal(await PolicyUtils.getUserRelayerAccount(block, user.did, data.relayerAccount, user.userId), '0.0.77');
+            assert.deepEqual(calls, [['balance', config], ['create'], ['find', '0.0.77']]);
         });
     });
 });

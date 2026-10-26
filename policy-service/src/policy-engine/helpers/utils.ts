@@ -26,6 +26,7 @@ import { AnyBlockType, IPolicyDocument } from '../policy-engine.interface.js';
 import { IHederaCredentials, IRelayerAccount, PolicyUser, UserCredentials } from '../policy-user.js';
 import { guardianVersion } from '../../version.js';
 import { buildTableHelper } from '../helpers/table-field-core.js';
+import { isPreviewRelayerAccount } from './preview.js';
 
 export enum QueryType {
     eq = 'equal',
@@ -1297,6 +1298,9 @@ export class PolicyUtils {
             const userFull = await ref.components.getVirtualUser(did);
             return userFull?.hederaAccountId;
         } else {
+            if (relayerAccount && isPreviewRelayerAccount(did, relayerAccount)) {
+                return relayerAccount;
+            }
             const config = await PolicyUtils.users.getUserRelayerAccount(did, relayerAccount, userId);
             return config?.account;
         }

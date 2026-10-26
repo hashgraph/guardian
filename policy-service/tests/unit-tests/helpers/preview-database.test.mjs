@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import esmock from 'esmock';
 import { ObjectId } from '@mikro-orm/mongodb';
-import { createInMemoryDatabaseHelper } from '../../../../common/tests/helpers/in-memory-database-helper.mjs';
+import { createInMemoryDatabaseHelper } from './in-memory-database-helper.mjs';
 import { RecordActionStep } from '../../../dist/policy-engine/record-action-step.js';
 import { PreviewScope } from '../../../dist/policy-engine/helpers/preview.js';
 import {

@@ -50,6 +50,7 @@ export interface IPreviewSource {
     dependencies: Record<string, string[]>;
     hidden?: string[];
     nulls?: string[];
+    unavailable?: string[];
     discovery?: boolean;
 }
 

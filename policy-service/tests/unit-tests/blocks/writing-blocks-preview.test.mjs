@@ -1,7 +1,7 @@
 import { createPreviewDocument } from '../helpers/preview-document-fixture.mjs';
 import assert from 'node:assert/strict';
 import esmock from 'esmock';
-import { createInMemoryDatabaseHelper } from '../../../../common/tests/helpers/in-memory-database-helper.mjs';
+import { createInMemoryDatabaseHelper } from '../helpers/in-memory-database-helper.mjs';
 import { GlobalEventsWriterStream } from '@guardian/common/entity/global-events-writer-stream';
 import { NotificationHelper } from '@guardian/common/notification/notification-helper';
 import { Users } from '@guardian/common/helpers/users';

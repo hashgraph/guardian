@@ -5,7 +5,7 @@ import { AggregateVC } from '@guardian/common/entity/aggregate-documents';
 import { AggregateBlock } from '../../../dist/policy-engine/blocks/aggregate-block.js';
 import { MultiSignBlock } from '../../../dist/policy-engine/blocks/multi-sign-block.js';
 import { TokenConfirmationBlock } from '../../../dist/policy-engine/blocks/token-confirmation-block.js';
-import { createInMemoryDatabaseHelper } from '../../../../common/tests/helpers/in-memory-database-helper.mjs';
+import { createInMemoryDatabaseHelper } from '../helpers/in-memory-database-helper.mjs';
 import { createPreviewDatabaseServer } from '../../../dist/policy-engine/helpers/preview-database.js';
 import { PolicyUtils } from '../../../dist/policy-engine/helpers/utils.js';
 import { createPreviewDocument } from '../helpers/preview-document-fixture.mjs';

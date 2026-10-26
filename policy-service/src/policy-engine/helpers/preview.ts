@@ -1,6 +1,6 @@
 import { compileFunction } from 'node:vm';
 import { AsyncLocalStorage } from 'node:async_hooks';
-import { LocationType, SchemaField, } from '@guardian/interfaces';
+import { LocationType, SchemaCondition, SchemaField, SchemaHelper, } from '@guardian/interfaces';
 import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
 import { Message } from '@guardian/hedera/message/message';
 import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/policy-event-type.js';
@@ -62,12 +62,29 @@ export class PreviewScope {
 }
 
 const previewMessages = new WeakMap<RecordActionStep, Message[]>();
+const previewRelayerAccounts = new WeakMap<RecordActionStep, Map<string, string>>();
 
 let lastPreviewEntity = 0;
 
 export function createPreviewEntityId(): string {
     lastPreviewEntity = Math.max(Date.now() * 1000, lastPreviewEntity + 1);
     return `0.0.${lastPreviewEntity}`;
+}
+
+export function createPreviewRelayerAccount(owner: string): string {
+    const account = createPreviewEntityId();
+    const actionStatus = PreviewScope.current();
+    if (actionStatus?.preview) {
+        const accounts = previewRelayerAccounts.get(actionStatus) || new Map<string, string>();
+        accounts.set(account, owner);
+        previewRelayerAccounts.set(actionStatus, accounts);
+    }
+    return account;
+}
+
+export function isPreviewRelayerAccount(owner: string, account: string): boolean {
+    const actionStatus = PreviewScope.current();
+    return !!actionStatus?.preview && previewRelayerAccounts.get(actionStatus)?.get(account) === owner;
 }
 
 export function registerPreviewMessage<T extends Message>(actionStatus: RecordActionStep, message: T, topicId: string | null | undefined): T {
@@ -295,6 +312,61 @@ export function collectPreviewNullPaths(fields: SchemaField[] | undefined, prefi
         : field.isRef ? collectPreviewNullPaths(field.fields, `${prefix}${field.name}.`) : []);
 }
 
+export function collectPreviewUnavailablePaths(
+    fields: SchemaField[] | undefined,
+    conditions: SchemaCondition[] | undefined,
+    document: unknown,
+    prefix: string = ''
+): string[] {
+    const unavailable = new Set<string>();
+    const evaluate = (condition: SchemaCondition) => SchemaHelper.evaluateIfCondition(condition.ifCondition, document);
+    const revealMap = SchemaHelper.buildRevealMap(conditions || []);
+    for (const condition of conditions || []) {
+        const reachable = SchemaHelper.isConditionReachable(condition, revealMap, evaluate);
+        const matches = reachable && evaluate(condition);
+        const active = new Set((reachable ? matches ? condition.thenFields : condition.elseFields : []).map((field) => field.name));
+        for (const field of [...condition.thenFields, ...condition.elseFields]) {
+            if (!active.has(field.name)) {
+                unavailable.add(`${prefix}${field.name}`);
+            }
+        }
+        for (const branch of ['then', 'else']) {
+            const targets = branch === 'then' ? condition.thenTargets : condition.elseTargets;
+            for (const target of targets || []) {
+                for (const path of expandPreviewPath(document, target.fieldPath, [])) {
+                    const entries: Record<string, number> = {};
+                    const parts = path.split('.');
+                    for (const [index, part] of parts.entries()) {
+                        if (/^\d+$/.test(part)) {
+                            entries[normalizePreviewPath(parts.slice(0, index).join('.'))] = Number(part);
+                        }
+                    }
+                    const test = (item: SchemaCondition) => SchemaHelper.evaluateIfCondition(
+                        item.ifCondition, document, SchemaHelper.valuesEqual, { entries }
+                    );
+                    if (!SchemaHelper.isConditionReachable(condition, revealMap, test) || test(condition) !== (branch === 'then')) {
+                        unavailable.add(`${prefix}${path}`);
+                    }
+                }
+            }
+        }
+    }
+    for (const field of fields || []) {
+        if (!field.isRef) {
+            continue;
+        }
+        const value = document && typeof document === 'object' ? Reflect.get(document, field.name) : undefined;
+        const entries = field.isArray ? Array.isArray(value) ? value : [] : [value];
+        for (const [index, entry] of entries.entries()) {
+            const path = `${prefix}${field.name}.${field.isArray ? index + '.' : ''}`;
+            for (const unavailablePath of collectPreviewUnavailablePaths(field.fields, field.conditions, entry, path)) {
+                unavailable.add(unavailablePath);
+            }
+        }
+    }
+    return [...unavailable].sort();
+}
+
 export function calculatePreviewAutoFields(
     fields: SchemaField[] | undefined,
     document: unknown,
@@ -348,7 +420,9 @@ export function calculatePreviewAutoFields(
                 tracker.configure(body);
                 return compileFunction(body, [name], { filename: PREVIEW_SCRIPT_FILE });
             }));
-            assertPreviewCalculationResult(result);
+            if (!discovery) {
+                assertPreviewCalculationResult(result);
+            }
             if (result === undefined) {
                 Reflect.deleteProperty(document, field.name);
             } else {
@@ -531,7 +605,7 @@ export function resolvePreviewFields(
     };
     const result = new Set<string>();
     const visit = (path: string, seen: Set<string>) => {
-        if (source.nulls?.includes(path)) {
+        if (source.nulls?.includes(path) || isPreviewUnavailablePath(source, path)) {
             return;
         }
         const fieldDependencies = source.dependencies[path];
@@ -565,8 +639,12 @@ export function resolvePreviewFields(
         }
     }
     const sorted = [...result].sort();
-    const fields = sorted.filter((path) => !sorted.some((other) => other.startsWith(`${path}.`)));
-    const missingFields = fields.filter((path) => isMissingPreviewValue(source.document, path));
+    const fields = sorted.filter((path) => !sorted.some((other) => other.startsWith(`${path}.`)))
+        .filter((path) => {
+            const candidates = expandPreviewPath(source.document, path.split('.'), []);
+            return !candidates.length || candidates.some((candidate) => !isPreviewUnavailablePath(source, candidate));
+        });
+    const missingFields = fields.filter((path) => getMissingPreviewPaths(source, path).length > 0);
     return { fields, missingFields };
 }
 
@@ -582,6 +660,23 @@ export function assertPreviewCalculationResult(value: unknown, seen: WeakSet<obj
     }
 }
 
+function isPreviewUnavailablePath(source: IPreviewSource, path: string): boolean {
+    return (source.unavailable || []).some((blocked) => path === blocked || path.startsWith(`${blocked}.`));
+}
+
+function getMissingPreviewPaths(source: IPreviewSource, path: string): string[] {
+    return expandPreviewPath(source.document, path.split('.'), []).filter((candidate) => {
+        if (isPreviewUnavailablePath(source, candidate)) {
+            return false;
+        }
+        let current = source.document;
+        for (const part of candidate.split('.')) {
+            current = current && typeof current === 'object' ? Reflect.get(current, part) : undefined;
+        }
+        return isEmptyPreviewValue(current);
+    });
+}
+
 function previewMissingPaths(source: IPreviewSource, reads: IPreviewRead[]): string[] {
     const missing = new Set<string>();
     for (const read of reads) {
@@ -592,14 +687,8 @@ function previewMissingPaths(source: IPreviewSource, reads: IPreviewRead[]): str
         const resolved = resolvePreviewFields(source, [{ schema: read.schema, path: normalized }], false);
         for (const path of resolved.fields) {
             const indexed = normalized === path ? read.path : path;
-            for (const candidate of expandPreviewPath(source.document, indexed.split('.'), [])) {
-                let current = source.document;
-                for (const part of candidate.split('.')) {
-                    current = current && typeof current === 'object' ? Reflect.get(current, part) : undefined;
-                }
-                if (isEmptyPreviewValue(current)) {
-                    missing.add(candidate);
-                }
+            for (const candidate of getMissingPreviewPaths(source, indexed)) {
+                missing.add(candidate);
             }
         }
     }

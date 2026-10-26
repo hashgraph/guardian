@@ -491,7 +491,9 @@ export class RequestDocumentBlockComponent
             }
             this.previewRequiredFields = this.calculationPreview.updateRequiredFields(this.previewRequiredFields, result);
             this.previewMissingFields = [];
-            if (!previewFields) {
+            if (previewFields) {
+                this.calculationPreview.showDiscoveryWarning(result);
+            } else {
                 this.showPreviewResult(result);
             }
         } catch (error) {

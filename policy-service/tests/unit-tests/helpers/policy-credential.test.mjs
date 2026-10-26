@@ -5,7 +5,7 @@ import { PolicyUtils } from '../../../dist/policy-engine/helpers/utils.js';
 import { RecordActionStep } from '../../../dist/policy-engine/record-action-step.js';
 import esmock from 'esmock';
 import { DidDocumentStatus, LocationType, TopicType } from '@guardian/interfaces';
-import { createInMemoryDatabaseHelper } from '../../../../common/tests/helpers/in-memory-database-helper.mjs';
+import { createInMemoryDatabaseHelper } from './in-memory-database-helper.mjs';
 import { createPreviewDatabaseServer } from '../../../dist/policy-engine/helpers/preview-database.js';
 import { ComponentsService } from '../../../dist/policy-engine/helpers/components-service.js';
 import { GenerateDID } from '../../../dist/policy-engine/policy-actions/generate-did.js';

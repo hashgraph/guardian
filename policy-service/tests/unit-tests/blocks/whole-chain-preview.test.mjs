@@ -5,7 +5,7 @@ import { createPreviewDocument } from '../helpers/preview-document-fixture.mjs';
 import assert from 'node:assert/strict';
 import esmock from 'esmock';
 import { ObjectId } from '@mikro-orm/mongodb';
-import { createInMemoryDatabaseHelper } from '../../../../common/tests/helpers/in-memory-database-helper.mjs';
+import { createInMemoryDatabaseHelper } from '../helpers/in-memory-database-helper.mjs';
 import { PolicyUtils } from '../../../dist/policy-engine/helpers/utils.js';
 import { PolicyActionsUtils } from '../../../dist/policy-engine/policy-actions/utils.js';
 import { PolicyComponentsUtils } from '../../../dist/policy-engine/policy-components-utils.js';

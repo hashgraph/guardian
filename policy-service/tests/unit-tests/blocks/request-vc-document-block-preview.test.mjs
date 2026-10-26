@@ -232,6 +232,7 @@ describe('@unit RequestVcDocumentBlock preview', () => {
             dependencies: { total: ['amount', 'rate'] },
             hidden: [],
             nulls: [],
+            unavailable: [],
             discovery: true
         });
     });
@@ -363,6 +364,91 @@ describe('@unit RequestVcDocumentBlock preview', () => {
         assert.deepEqual(step.getErrors().map((error) => error.message), ['Invalid expression: total']);
         assert.deepEqual(events.map((event) => event[0]), ['RunEvent', 'ReleaseEvent', 'RefreshEvent']);
     });
+    for (const discovery of [false, true]) {
+        for (const table of [false, true]) {
+            it(`never requires a conditionally forbidden configured input table=${table} discovery=${discovery}`, async () => {
+                const { block } = mk();
+                const mode = { name: 'mode', type: 'string', isRef: false, isArray: false };
+                const rate = { name: 'rate', type: 'number', isRef: false, isArray: false };
+                const input = table ? { name: 'rows', type: '#row', isRef: true, isArray: true,
+                    context: { type: 'Row', context: ['ctx://row'] }, fields: [rate] } : rate;
+                block._schema = { ...formSchema(), fields: [mode, input], conditions: [
+                    { ifCondition: { field: mode, fieldValue: 'enabled' }, thenFields: [input], elseFields: [] }
+                ] };
+                const response = await runPreview(block, makeUser(), { document: { mode: 'disabled' }, previewFields: discovery },
+                    async (target, user, data, step) => {
+                        const item = await target.setData(user, data, null, step);
+                        step.addPreviewRead('#S', table ? 'rows.rate' : 'rate');
+                        return new MessageResponse(item);
+                    });
+                assert.ok(response instanceof MessageResponse);
+                assert.deepEqual(response.body.fields, []);
+                assert.deepEqual(response.body.missingFields, []);
+                assert.deepEqual(response.body.errors, []);
+            });
+        }
+    }
+
+    for (const value of [undefined, 0]) {
+        it(`keeps an allowed configured scalar input required with value=${value}`, async () => {
+            const { block } = mk();
+            const mode = { name: 'mode', type: 'string', isRef: false, isArray: false };
+            const rate = { name: 'rate', type: 'number', isRef: false, isArray: false };
+            block._schema = { ...formSchema(), fields: [mode, rate], conditions: [
+                { ifCondition: { field: mode, fieldValue: 'enabled' }, thenFields: [rate], elseFields: [] }
+            ] };
+            const document = { mode: 'enabled', ...(value === undefined ? {} : { rate: value }) };
+            const response = await runPreview(block, makeUser(), { document }, async (target, user, data, step) => {
+                const item = await target.setData(user, data, null, step);
+                step.addPreviewRead('#S', 'rate');
+                return new MessageResponse(item);
+            });
+            if (value === undefined) {
+                assert.ok(response instanceof MessageError);
+                assert.equal(response.code, 422);
+                assert.deepEqual(response.data.missingFields, ['rate']);
+            } else {
+                assert.ok(response instanceof MessageResponse);
+                assert.deepEqual(response.body.fields, ['rate']);
+                assert.deepEqual(response.body.missingFields, []);
+            }
+        });
+    }
+
+    it('reports only the allowed empty table row in its indexed 422', async () => {
+        const { block } = mk();
+        const mode = { name: 'mode', type: 'string', isRef: false, isArray: false };
+        const rate = { name: 'rate', type: 'number', isRef: false, isArray: false };
+        const condition = { ifCondition: { field: mode, fieldValue: 'enabled' }, thenFields: [rate], elseFields: [] };
+        const rows = { name: 'rows', type: '#row', isRef: true, isArray: true,
+            context: { type: 'Row', context: ['ctx://row'] }, fields: [mode, rate], conditions: [condition] };
+        block._schema = { ...formSchema(), fields: [rows] };
+        const response = await runPreview(block, makeUser(), { document: { rows: [{ mode: 'disabled' }, { mode: 'enabled' }] } },
+            async (target, user, data, step) => {
+                const item = await target.setData(user, data, null, step);
+                step.addPreviewRead('#S', 'rows.rate');
+                return new MessageResponse(item);
+            });
+        assert.ok(response instanceof MessageError);
+        assert.equal(response.code, 422);
+        assert.deepEqual(response.data.missingFields, ['rows.1.rate']);
+    });
+
+    it('keeps a calculation exception when a forbidden input is omitted', async () => {
+        const { block } = mk();
+        const mode = { name: 'mode', type: 'string', isRef: false, isArray: false };
+        const rate = { name: 'rate', type: 'number', isRef: false, isArray: false };
+        block._schema = { ...formSchema(), fields: [mode, rate], conditions: [
+            { ifCondition: { field: mode, fieldValue: 'enabled' }, thenFields: [rate], elseFields: [] }
+        ] };
+        await assert.rejects(() => runPreview(block, makeUser(), { document: { mode: 'disabled' } },
+            async (target, user, data, step) => {
+                await target.setData(user, data, null, step);
+                step.addPreviewRead('#S', 'rate');
+                throw new Error('calculation failed');
+            }), /calculation failed/);
+    });
+
     afterEach(() => releaseCredentials());
 
 });

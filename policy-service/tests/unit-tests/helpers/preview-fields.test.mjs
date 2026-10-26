@@ -3,7 +3,7 @@ import { findPreviewScriptFields } from '../../../dist/policy-engine/helpers/pre
 import assert from 'node:assert/strict';
 import { types } from 'node:util';
 import { PolicyUtils } from '../../../dist/policy-engine/helpers/utils.js';
-import { assertPreviewCalculationResult, calculatePreviewAutoFields, collectPreviewNullPaths, collectPreviewPaths, fillPreviewPlaceholders, getMathPreviewOutputPaths, getMathPreviewReads, getPreviewChangedPaths, getPreviewComputed, getPreviewSubject, isMissingPreviewValue, isPreviewComputedRead, isPreviewOutputRead, isPreviewPathCovered, normalizePreviewPath, resolvePreviewFields, setPreviewComputed } from '../../../dist/policy-engine/helpers/preview.js';
+import { assertPreviewCalculationResult, calculatePreviewAutoFields, collectPreviewNullPaths, collectPreviewUnavailablePaths, collectPreviewPaths, fillPreviewPlaceholders, getMathPreviewOutputPaths, getMathPreviewReads, getPreviewChangedPaths, getPreviewComputed, getPreviewSubject, isMissingPreviewValue, isPreviewComputedRead, isPreviewOutputRead, isPreviewPathCovered, normalizePreviewPath, resolvePreviewFields, setPreviewComputed } from '../../../dist/policy-engine/helpers/preview.js';
 
 const field = (name, type, extra = {}) => ({ name, type, isRef: false, isArray: false, ...extra });
 
@@ -236,7 +236,7 @@ describe('@unit preview fields', () => {
             assert.equal(doc.total, 5);
             assert.deepEqual(resolvePreviewFields({ schema: '#S', document: { amount: 5, items: [] },
                 paths: collectPreviewPaths(fields), dependencies }, []),
-                { fields: ['amount', 'items.value'], missingFields: ['items.value'] });
+                { fields: ['amount', 'items.value'], missingFields: [] });
         });
 
         it('uses the same fields in real preview as in discovery and keeps the ordinary value', async () => {
@@ -285,10 +285,10 @@ describe('@unit preview fields', () => {
             const dependencies = {};
             const errors = [];
             calculatePreviewAutoFields(autoFields, doc, dependencies, errors, '', true);
-            assert.equal('total' in doc, false);
-            assert.equal('double' in doc.items[0], false);
+            assert.ok(Number.isNaN(doc.total));
+            assert.ok(Number.isNaN(doc.items[0].double));
             assert.deepEqual(dependencies, { total: ['amount', 'rate'], 'items.double': ['items.value'] });
-            assert.deepEqual(errors, ['Invalid expression: total', 'Invalid expression: items.double']);
+            assert.deepEqual(errors, []);
             errors.length = 0;
             const real = { amount: 2, rate: 3, items: [{}] };
             calculatePreviewAutoFields(autoFields, real, {}, errors);
@@ -643,7 +643,7 @@ describe('@unit null preview fields', () => {
     it('still requires a numeric column with the same leaf name as a null heading', () => {
         const reads = ['section.unit', 'rows.1.unit'].map(path => ({ schema: '#S', path }));
         assert.deepEqual(resolvePreviewFields(source({ rows: [{ unit: 0 }, {}] }), reads),
-            { fields: ['rows.unit'], missingFields: [] });
+            { fields: ['rows.unit'], missingFields: ['rows.unit'] });
         assert.deepEqual(resolvePreviewFields(source({ rows: [{}] }), reads),
             { fields: ['rows.unit'], missingFields: ['rows.unit'] });
     });
@@ -659,5 +659,81 @@ describe('@unit null preview fields', () => {
         input.paths.push('total');
         assert.deepEqual(resolvePreviewFields(input, [{ schema: '#S', path: 'total' }]),
             { fields: ['amount'], missingFields: [] });
+    });
+});
+
+describe('@unit preview form condition priority', () => {
+    const mode = field('mode', 'string');
+    const rate = field('rate', 'number');
+    const rows = field('rows', '#row', { isRef: true, isArray: true, fields: [rate] });
+    const condition = { ifCondition: { field: mode, fieldValue: 'enabled' }, thenFields: [rate], elseFields: [] };
+    const source = (document, fields, conditions) => ({ schema: '#S', document,
+        paths: collectPreviewPaths(fields), dependencies: {},
+        unavailable: collectPreviewUnavailablePaths(fields, conditions, document) });
+    const reads = [{ schema: '#S', path: 'rate' }];
+
+    it('never requires a scalar field hidden by its condition', () => {
+        assert.deepEqual(resolvePreviewFields(source({ mode: 'disabled' }, [mode, rate], [condition]), reads),
+            { fields: [], missingFields: [] });
+    });
+
+    it('still requires an allowed configured input and accepts zero', () => {
+        assert.deepEqual(resolvePreviewFields(source({ mode: 'enabled' }, [mode, rate], [condition]), reads),
+            { fields: ['rate'], missingFields: ['rate'] });
+        assert.deepEqual(resolvePreviewFields(source({ mode: 'enabled', rate: 0 }, [mode, rate], [condition]), reads),
+            { fields: ['rate'], missingFields: [] });
+    });
+
+    it('uses shared reachability when the predicate itself was never revealed', () => {
+        const parent = { ifCondition: { field: field('show', 'boolean'), fieldValue: true }, thenFields: [mode], elseFields: [] };
+        assert.deepEqual(resolvePreviewFields(source({ show: false, mode: 'enabled' }, [mode, rate], [parent, condition]), reads),
+            { fields: [], missingFields: [] });
+    });
+
+    it('keeps a field allowed when both branches reveal it', () => {
+        assert.deepEqual(resolvePreviewFields(source({ mode: 'disabled' }, [mode, rate], [{ ...condition, elseFields: [rate] }]), reads),
+            { fields: ['rate'], missingFields: ['rate'] });
+    });
+
+    it('excludes every child of a forbidden cross-schema section', () => {
+        const section = field('section', '#section', { isRef: true, fields: [rows] });
+        const cross = { ...condition, thenFields: [], thenTargets: [{ field: rows, fieldPath: ['section', 'rows'] }] };
+        assert.deepEqual(resolvePreviewFields(source({ mode: 'disabled', section: {} }, [mode, section], [cross]),
+            [{ schema: '#S', path: 'section.rows.rate' }]), { fields: [], missingFields: [] });
+    });
+
+    it('evaluates nested sub-schema conditions against their own data', () => {
+        const section = field('section', '#section', { isRef: true, fields: [mode, rate], conditions: [condition] });
+        const current = source({ section: { mode: 'disabled' } }, [section], []);
+        assert.deepEqual(current.unavailable, ['section.rate']);
+        assert.deepEqual(resolvePreviewFields(current, [{ schema: '#S', path: 'section.rate' }]), { fields: [], missingFields: [] });
+    });
+
+    it('keeps permitted rows required when another row disables the same field', () => {
+        const table = { ...rows, fields: [mode, rate], conditions: [condition] };
+        const current = source({ rows: [{ mode: 'disabled' }, { mode: 'enabled' }] }, [table], []);
+        assert.deepEqual(current.unavailable, ['rows.0.rate']);
+        assert.deepEqual(resolvePreviewFields(current, [{ schema: '#S', path: 'rows.rate' }]),
+            { fields: ['rows.rate'], missingFields: ['rows.rate'] });
+    });
+
+    it('scopes cross-schema predicates to the matching table row', () => {
+        const cross = { ifCondition: { field: mode, fieldPath: ['rows', 'mode'], fieldValue: 'enabled' },
+            thenFields: [], elseFields: [], thenTargets: [{ field: rate, fieldPath: ['rows', 'rate'] }] };
+        const current = source({ rows: [{ mode: 'disabled' }, { mode: 'enabled', rate: 0 }] }, [{ ...rows, fields: [mode, rate] }], [cross]);
+        assert.deepEqual(current.unavailable, ['rows.0.rate']);
+        assert.deepEqual(resolvePreviewFields(current, [{ schema: '#S', path: 'rows.rate' }]),
+            { fields: ['rows.rate'], missingFields: [] });
+    });
+
+    it('does not return empty-table hints that disagree with indexed input validation', () => {
+        assert.deepEqual(resolvePreviewFields(source({ rows: [] }, [rows], []), [{ schema: '#S', path: 'rows.rate' }]),
+            { fields: ['rows.rate'], missingFields: [] });
+    });
+
+    it('does not expand dependencies of a forbidden autocalculated field', () => {
+        const current = source({ mode: 'disabled' }, [mode, rate, field('amount', 'number')], [condition]);
+        current.dependencies.rate = ['amount'];
+        assert.deepEqual(resolvePreviewFields(current, []), { fields: [], missingFields: [] });
     });
 });

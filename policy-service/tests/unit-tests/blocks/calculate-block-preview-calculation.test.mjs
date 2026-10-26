@@ -117,6 +117,16 @@ describe('@unit calculateContainerBlock preview calculation', () => {
         }
     });
 
+    it('lets field discovery continue past NaN from an empty placeholder', async () => {
+        const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
+        step.setPreviewSource({ schema: '#in', document: {}, paths: ['amount'], dependencies: {}, discovery: true });
+        const ref = { ...refWith(), getAddons: () => [{ ...addon, async run(scope) {
+            return { ...scope, b: scope.a * 2 };
+        } }] };
+        await PreviewScope.run(step, () => block().calculate({}, ref, { schema: '#in' }, 'uid', makeUser()));
+        assert.equal(step.getPreviewCalculations().length, 1);
+    });
+
     it('records nothing outside a preview', async () => {
         let asked = 0;
         const counting = { ...addon, async getOptions() { asked++; return {}; } };

@@ -118,7 +118,7 @@ export class CalculateContainerBlock {
         for (const addon of addons) {
             scope = await addon.run(scope, docOwner);
         }
-        if (actionStatus) {
+        if (actionStatus && !actionStatus.getPreviewSource()?.discovery) {
             assertPreviewCalculationResult(scope);
         }
         const newJson: any = {};

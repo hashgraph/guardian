@@ -3,7 +3,7 @@ import esmock from 'esmock';
 import { PinoLogger } from '@guardian/common/helpers/pino-logger';
 import { Workers } from '@guardian/common/helpers/workers';
 import { WorkerTaskType } from '@guardian/interfaces';
-import { createInMemoryDatabaseHelper } from '../../../../common/tests/helpers/in-memory-database-helper.mjs';
+import { createInMemoryDatabaseHelper } from '../helpers/in-memory-database-helper.mjs';
 import { TokenActionBlock } from '../../../dist/policy-engine/blocks/token-action-block.js';
 import { PolicyUtils } from '../../../dist/policy-engine/helpers/utils.js';
 import { PolicyComponentsUtils } from '../../../dist/policy-engine/policy-components-utils.js';

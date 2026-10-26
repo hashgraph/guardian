@@ -2,7 +2,7 @@ import { installCredentialPreparation } from '../helpers/credential-preparation-
 import { createPreviewCredential, createPreviewDocument } from '../helpers/preview-document-fixture.mjs';
 import assert from 'node:assert/strict';
 import esmock from 'esmock';
-import { createInMemoryDatabaseHelper } from '../../../../common/tests/helpers/in-memory-database-helper.mjs';
+import { createInMemoryDatabaseHelper } from '../helpers/in-memory-database-helper.mjs';
 import { MessageServer } from '@guardian/hedera/message/message-server';
 import { VCMessage } from '@guardian/hedera/message/vc-message';
 import { MessageAction } from '@guardian/hedera/message/message-action';

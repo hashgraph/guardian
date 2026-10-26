@@ -8,6 +8,7 @@ import { PolicyComponentsUtils } from '../../../dist/policy-engine/policy-compon
 import { PolicyUtils } from '../../../dist/policy-engine/helpers/utils.js';
 import { fillPreviewPlaceholders, getPreviewComputed, getPreviewDocumentSchema, PreviewScope, resolvePreviewFields, setPreviewComputed } from '../../../dist/policy-engine/helpers/preview.js';
 import { RecordActionStep } from '../../../dist/policy-engine/record-action-step.js';
+import { Users } from '@guardian/common/helpers/users';
 
 const schemaFields = ['amount', 'temp', 'final', 'rate', 'total'];
 
@@ -159,6 +160,48 @@ describe('@unit mathBlock preview chain with real workers', function () {
         const { block } = makeBlock(CustomLogicBlock, { options, componentsOverrides: { generateUUID: async () => 'urn:uuid:custom-output' } });
         return PreviewScope.run(step, () => block.execute({ data: document }, makeUser(), async () => {}, 'uid', step));
     };
+
+    it('carries a newly requested temporary relayer through real Math and Custom Logic workers', async () => {
+        const saved = {
+            find: Users.prototype.getUserRelayerAccount,
+            create: Users.prototype.createRelayerAccount,
+            balance: PolicyUtils.checkAccountBalance
+        };
+        const calls = [];
+        Users.prototype.getUserRelayerAccount = async () => {
+            calls.push('find');
+            throw new Error('Relayer account not found.');
+        };
+        Users.prototype.createRelayerAccount = async () => { calls.push('create'); throw new Error('must not create'); };
+        PolicyUtils.checkAccountBalance = async () => { calls.push('balance'); throw new Error('must not query balance'); };
+        PolicyUtils.getDocumentRelayerAccount = orig.getDocumentRelayerAccount;
+        try {
+            const step = previewStep(['amount', 'temp', 'final']);
+            const output = await PreviewScope.run(step, async () => {
+                const user = makeUser();
+                const request = { relayerAccount: { name: 'new' } };
+                const form = { blockType: 'requestVcDocumentBlock', dryRun: null };
+                await PolicyComponentsUtils._checkRelayerAccount(form, user, request, true);
+                const [account] = await PolicyUtils.getRelayerAccountAndOwner(form, user, request.relayerAccount, null, false);
+                const document = { ...formDocument(), relayerAccount: account };
+                const math = await runMath(step, mathRef('math', expression('amount', 'temp')), document);
+                assert.equal(math.relayerAccount, account);
+                assert.equal(subject(math).temp, 3);
+                const script = await runScript(step, math, {
+                    outputSchema: '#S',
+                    expression: 'const doc = documents[0].document.credentialSubject[0]; done({ final: doc.temp + 1 });'
+                });
+                assert.equal(script.relayerAccount, account);
+                return script;
+            });
+            assert.equal(subject(output).final, 4);
+            assert.deepEqual(calls, []);
+        } finally {
+            Users.prototype.getUserRelayerAccount = saved.find;
+            Users.prototype.createRelayerAccount = saved.create;
+            PolicyUtils.checkAccountBalance = saved.balance;
+        }
+    });
 
     it('does not ask the user for a field a Custom Logic script computed', async () => {
         const step = previewStep(['amount', 'temp', 'final']);
@@ -544,6 +587,68 @@ describe('@unit mathBlock preview chain with real workers', function () {
         assert.equal(subject(result).final, 7);
         assert.deepEqual(resolved(filled), { fields: [], missingFields: [] });
     });
+    const discoveryStep = (paths) => {
+        const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
+        step.setPreviewSource({ schema: '#S', document: {}, paths, dependencies: {}, discovery: true });
+        return step;
+    };
+
+    it('keeps discovering fields after a Math block divides by an empty placeholder', async () => {
+        const paths = ['amount', 'rate', 'temp', 'total', 'final'];
+        const divide = code('result.temp = document.amount / document.rate;');
+        const multiply = code('result.final = document.temp * document.total;');
+
+        const discovery = discoveryStep(paths);
+        const first = await runMath(discovery, mathRef('divide', divide), withValues({ amount: 0, rate: 0, total: 0 }));
+        await runMath(discovery, mathRef('multiply', multiply), first);
+        assert.deepEqual(resolved(discovery), {
+            fields: ['amount', 'rate', 'total'],
+            missingFields: ['amount', 'rate', 'total']
+        });
+
+        const real = previewStep(paths, { amount: 0, rate: 0, total: 0 });
+        await assert.rejects(runMath(real, mathRef('divide', divide), withValues({ amount: 0, rate: 0, total: 0 })), /non-finite/);
+    });
+
+    it('lets a Switch after a Math block with an empty placeholder report its condition fields', async () => {
+        const rawSwitch = Object.getPrototypeOf(SwitchBlock.prototype).runAction;
+        const step = discoveryStep(['amount', 'rate', 'temp', 'total']);
+        const math = await runMath(step, mathRef('divide', code('result.temp = document.amount / document.rate;')), withValues({ amount: 0, rate: 0, total: 0 }));
+        const { block } = makeBlock(SwitchBlock, {
+            options: {
+                executionFlow: 'firstTrue',
+                conditions: [{ type: 'equal', value: 'temp > total', tag: 'high' }, { type: 'unconditional', tag: 'low' }]
+            }
+        });
+        const fired = [];
+        block.triggerEvents = async (type) => { fired.push(type); };
+        const external = PolicyComponentsUtils.ExternalEventFn;
+        PolicyComponentsUtils.ExternalEventFn = () => {};
+        try {
+            await PreviewScope.run(step, () => rawSwitch.call(block, { user: makeUser(), data: { data: math }, actionStatus: step }));
+        } finally {
+            PolicyComponentsUtils.ExternalEventFn = external;
+        }
+        assert.ok(fired.includes('low'));
+        assert.deepEqual(resolved(step), {
+            fields: ['amount', 'rate', 'total'],
+            missingFields: ['amount', 'rate', 'total']
+        });
+    });
+
+    it('keeps discovering fields after a script divides by an empty placeholder', async () => {
+        const options = {
+            outputSchema: '#S',
+            expression: 'const doc = documents[0].document.credentialSubject[0]; done({ final: doc.amount / doc.rate });'
+        };
+        const discovery = discoveryStep(['amount', 'rate', 'final']);
+        await runScript(discovery, withValues({ amount: 0, rate: 0 }), options);
+        assert.deepEqual(resolved(discovery).fields, ['amount', 'rate']);
+
+        const real = previewStep(['amount', 'rate', 'final'], { amount: 0, rate: 0 });
+        await assert.rejects(runScript(real, withValues({ amount: 0, rate: 0 }), options), /non-finite/);
+    });
+
     afterEach(() => releaseCredentials());
 
 });

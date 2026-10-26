@@ -15,9 +15,11 @@ describe('request document preview wiring', () => {
     const preview = (results: Promise<unknown>[]) => {
         const calls: { previewFields: boolean; ref: unknown }[] = [];
         const errors: unknown[] = [];
+        const warnings: unknown[] = [];
         return {
             calls,
             errors,
+            warnings,
             service: {
                 run: (_policyId: string, _blockId: string, _value: unknown, ref: unknown, previewFields: boolean) => {
                     calls.push({ previewFields, ref });
@@ -32,6 +34,11 @@ describe('request document preview wiring', () => {
                     document: item.document.document,
                 })),
                 showErrors: (result: any) => errors.push(...result.errors),
+                showDiscoveryWarning: (result: any) => {
+                    if (result.errors.length || result.incomplete.length) {
+                        warnings.push(result);
+                    }
+                },
             },
         };
     };
@@ -68,7 +75,7 @@ describe('request document preview wiring', () => {
         component.loading = false;
         component.previewMode = false;
         component.previewRequiredFields = null;
-        return { component, calls: fake.calls, errors: fake.errors, uploads, dialogs };
+        return { component, calls: fake.calls, errors: fake.errors, warnings: fake.warnings, uploads, dialogs };
     };
 
     it('asks the backend for the calculation fields when the toggle is switched on', async () => {
@@ -180,7 +187,7 @@ describe('request document preview wiring', () => {
         component.loading = false;
         component.previewMode = false;
         component.previewRequiredFields = null;
-        return { component, calls: fake.calls, dialogs };
+        return { component, calls: fake.calls, errors: fake.errors, warnings: fake.warnings, dialogs };
     };
 
     const pageParent = () => {
@@ -233,6 +240,27 @@ describe('request document preview wiring', () => {
                 expect(dialogs.length).toBe(discovery ? 0 : 1);
             });
         }
+
+        it(`warns calmly in the ${kind} when field discovery stopped on an error`, async () => {
+            const state = kind === 'page'
+                ? page([Promise.resolve(response(['amount'], ['amount'], [], [scriptError]))])
+                : dialog([Promise.resolve(response(['amount'], ['amount'], [], [scriptError]))], pageParent());
+            await state.component.onPreviewModeChange(true);
+            expect(state.component.previewRequiredFields).toEqual(['amount']);
+            expect(state.warnings.length).toBe(1);
+            expect(state.errors).toEqual([]);
+            expect(state.dialogs.length).toBe(0);
+            expect(state.component.loading).toBeFalse();
+        });
+
+        it(`shows no discovery warning in the ${kind} when field discovery finished cleanly`, async () => {
+            const state = kind === 'page'
+                ? page([Promise.resolve(response(['amount'], ['amount']))])
+                : dialog([Promise.resolve(response(['amount'], ['amount']))], pageParent());
+            await state.component.onPreviewModeChange(true);
+            expect(state.warnings).toEqual([]);
+            expect(state.errors).toEqual([]);
+        });
 
         it(`updates missing fields in the ${kind} after API rejection and opens no result`, async () => {
             const failure = new HttpErrorResponse({ status: 422, error: { data: {

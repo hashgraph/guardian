@@ -272,9 +272,13 @@ export class MathBlock {
             if (workerResult.error) {
                 throw new Error(workerResult.error);
             }
-            assertPreviewCalculationResult(workerResult.result);
+            if (!previewSource?.discovery) {
+                assertPreviewCalculationResult(workerResult.result);
+            }
             const calculation = buildMathPreviewCalculation(ref.tag, options.expression, workerResult.scope ?? {}, workerResult.result);
-            assertPreviewCalculationResult(calculation.values);
+            if (!previewSource?.discovery) {
+                assertPreviewCalculationResult(calculation.values);
+            }
             actionStatus.addPreviewCalculation(calculation);
             setPreviewComputed(workerResult.result, (workerResult.writes ?? []).map((write) => write.path));
         }

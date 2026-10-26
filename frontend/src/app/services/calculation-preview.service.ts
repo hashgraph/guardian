@@ -238,6 +238,15 @@ export class CalculationPreviewService {
         return typeof csv === 'string' ? new TextEncoder().encode(csv).length : 0;
     }
 
+    public showDiscoveryWarning(result: ICalculationPreviewResult): void {
+        if (result.errors.length || result.incomplete.length) {
+            this.toastService.warn(
+                'Could not determine every field the calculation needs. Fill in the marked fields and run Preview again.',
+                'Calculation preview'
+            );
+        }
+    }
+
     public showErrors(result: ICalculationPreviewResult): void {
         for (const error of result.errors) {
             this.toastService.error(error.message, error.blockType || '', { blockErrorData: error.errorData || undefined });

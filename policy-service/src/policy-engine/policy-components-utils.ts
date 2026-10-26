@@ -45,7 +45,7 @@ import { PolicyActionsService } from './actions-service.js';
 import { PolicyActionsUtils } from './policy-actions/utils.js';
 import { PolicyUtils } from './helpers/utils.js';
 import { RecordActionStep } from './record-action-step.js';
-import { createPreviewEntityId, PreviewScope } from './helpers/preview.js';
+import { createPreviewRelayerAccount, PreviewScope } from './helpers/preview.js';
 
 /**
  * Policy tag helper
@@ -1726,7 +1726,7 @@ export class PolicyComponentsUtils {
         if (typeof relayerAccountConfig === 'string') {
             relayerAccount = await (new Users()).getUserRelayerAccount(user.did, relayerAccountConfig, user.userId);
         } else if (preview) {
-            relayerAccount = { account: createPreviewEntityId() };
+            relayerAccount = { account: createPreviewRelayerAccount(user.did) };
         } else {
             relayerAccount = await (new Users()).createRelayerAccount({ did: user.did, id: user.userId }, relayerAccountConfig, user.userId);
         }
