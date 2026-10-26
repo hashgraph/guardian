@@ -1,7 +1,7 @@
 import { Component, ElementRef, EventEmitter, Inject, Input, OnDestroy, OnInit, Output, SimpleChanges, ViewChild, } from '@angular/core';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { forkJoin, Subscription } from 'rxjs';
-import { IStatus, StatusType, TaskAction, UserRole, } from '@guardian/interfaces';
+import { IStatus, StatusType, TaskAction, UserRole, LogMessage, } from '@guardian/interfaces';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TasksService } from 'src/app/services/tasks.service';
 import { ToastService } from 'src/app/services/toast.service';
@@ -605,7 +605,12 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             this.toastService.error(
                 msg,
                 'Policy validation found errors after schema import',
-                { sticky: true, logMessage: msg }
+                {
+                    sticky: true,
+                    logMessage: policyId
+                        ? `${LogMessage.POLICY_IMPORT_VALIDATION_FAILED} (policy ${policyId})`
+                        : LogMessage.POLICY_IMPORT_VALIDATION_FAILED
+                }
             );
             if (policyId && validation.errors) {
                 this._configurationErrors.set(policyId, validation.errors);

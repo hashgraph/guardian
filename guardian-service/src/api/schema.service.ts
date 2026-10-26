@@ -2298,15 +2298,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 let validation = null;
                 if (category === SchemaCategory.POLICY && target) {
                     await PolicyImportExportHelper.updatePolicyComponents(target, logger, owner?.id);
-                    try {
-                        const policyValidation = await new PolicyEngine(logger).validateModel(target.id);
-                        validation = {
-                            isValid: !policyValidation.blocks.some((block) => !block.isValid),
-                            errors: policyValidation
-                        };
-                    } catch (error) {
-                        await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
-                    }
+                    validation = await PolicyImportExportHelper.validatePolicyAfterImport(new PolicyEngine(logger), target.id, logger, owner?.id);
                 }
 
                 const formulaWarnings = await getFormulaWarnings(logger, category, target?.id, topicId, schemasMap?.schemasMap, owner?.id);
@@ -2408,15 +2400,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 let validation = null;
                 if (category === SchemaCategory.POLICY && target) {
                     await PolicyImportExportHelper.updatePolicyComponents(target, logger, owner?.id);
-                    try {
-                        const policyValidation = await new PolicyEngine(logger).validateModel(target.id);
-                        validation = {
-                            isValid: !policyValidation.blocks.some((block) => !block.isValid),
-                            errors: policyValidation
-                        };
-                    } catch (error) {
-                        await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
-                    }
+                    validation = await PolicyImportExportHelper.validatePolicyAfterImport(new PolicyEngine(logger), target.id, logger, owner?.id);
                 }
 
                 const formulaWarnings = await getFormulaWarnings(logger, category, target?.id, topicId, result?.schemasMap, owner?.id);
@@ -2986,15 +2970,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     await DatabaseServer.updateTool(target);
                 } else if (category === SchemaCategory.POLICY) {
                     await PolicyImportExportHelper.updatePolicyComponents(target, logger, owner?.id);
-                    try {
-                        const policyValidation = await new PolicyEngine(logger).validateModel(target.id);
-                        validation = {
-                            isValid: !policyValidation.blocks.some((block) => !block.isValid),
-                            errors: policyValidation
-                        };
-                    } catch (error) {
-                        await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
-                    }
+                    validation = await PolicyImportExportHelper.validatePolicyAfterImport(new PolicyEngine(logger), target.id, logger, owner?.id);
                 }
 
                 return new MessageResponse({
@@ -3088,15 +3064,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     await DatabaseServer.updateTool(target);
                 } else if (category === SchemaCategory.POLICY) {
                     await PolicyImportExportHelper.updatePolicyComponents(target, logger, owner?.id);
-                    try {
-                        const policyValidation = await new PolicyEngine(logger).validateModel(target.id);
-                        validation = {
-                            isValid: !policyValidation.blocks.some((block) => !block.isValid),
-                            errors: policyValidation
-                        };
-                    } catch (error) {
-                        await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
-                    }
+                    validation = await PolicyImportExportHelper.validatePolicyAfterImport(new PolicyEngine(logger), target.id, logger, owner?.id);
                 }
                 notifier.complete();
 
