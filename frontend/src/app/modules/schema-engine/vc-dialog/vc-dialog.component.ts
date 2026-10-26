@@ -58,6 +58,10 @@ export class VCViewerDialog {
     public versionOptions: { label: string; value: number }[] = [];
     public selectedVersionIndex: number = 0;
 
+    public previewDocuments: { label: string; document: any }[] = [];
+    public previewOptions: { label: string; value: number }[] = [];
+    public selectedPreviewIndex: number = 0;
+
     public isLargeSize: boolean = true;
     @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
 
@@ -100,7 +104,8 @@ export class VCViewerDialog {
             getByUser,
             additionalOptions = [],
             additionalOptionsData,
-            canExport
+            canExport,
+            previewDocuments
         } = this.dialogConfig.data;
 
         this.policyId = row?.policyId;
@@ -142,6 +147,8 @@ export class VCViewerDialog {
         this.schema = schema;
         this.viewDocumentOptions = [...this.viewDocumentOptions, ...additionalOptions];
         this.additionalOptionsData = additionalOptionsData;
+        this.previewDocuments = Array.isArray(previewDocuments) ? previewDocuments : [];
+        this.previewOptions = this.previewDocuments.map((item, index) => ({ label: item.label, value: index }));
 
         this.loadAllVersionVcDocuments();
         this.getSubSchemes(schemaId, topicId, category);
@@ -252,6 +259,13 @@ export class VCViewerDialog {
         this.selectedVersionIndex = event.value;
         this.selectVcDocument(
             this.allVcDocs[this.selectedVersionIndex].document
+        );
+    }
+
+    public onPreviewDocumentChange(event: any) {
+        this.selectedPreviewIndex = event.value;
+        this.selectVcDocument(
+            this.previewDocuments[this.selectedPreviewIndex].document
         );
     }
 

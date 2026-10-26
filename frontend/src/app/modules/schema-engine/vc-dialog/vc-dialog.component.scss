@@ -179,4 +179,17 @@
             color: var(--guardian-primary-color);
         }
     }
+
+    .preview-document-dropdown.p-select {
+        margin-right: 16px;
+        max-width: 320px;
+
+        .guardian-dropdown-selected .guardian-dropdown-label {
+            color: var(--color-grey-6);
+        }
+
+        .guardian-dropdown-selected .guardian-dropdown-item {
+            color: var(--guardian-font-color);
+        }
+    }
 }

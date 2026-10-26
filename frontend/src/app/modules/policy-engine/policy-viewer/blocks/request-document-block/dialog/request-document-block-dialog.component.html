@@ -26,6 +26,16 @@
       <span>Fill with test data</span>
     </button>
   }
+  @if (previewAvailable) {
+    <div class="calculation-preview-toggle">
+      <p-toggleswitch
+        inputId="calculationPreview_{{ id }}"
+        [ngModel]="previewMode"
+        (onChange)="onPreviewModeChange($event.checked)">
+      </p-toggleswitch>
+      <label for="calculationPreview_{{ id }}">Calculation preview</label>
+    </div>
+  }
   <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
     <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
   </div>
@@ -82,6 +92,8 @@
               [rules]="rulesResults"
               [formulas]="formulas"
               [isFormForRequestBlock]="true"
+              [requiredFields]="previewRequiredFields"
+              [previewMissingFields]="previewMissingFields"
               [saveShown]="!edit || draft"
               [comesFromDialog]="true"
               [showButtons]="false"

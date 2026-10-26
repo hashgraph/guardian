@@ -21,6 +21,8 @@ import { IPFSService } from 'src/app/services/ipfs.service';
 import { FormulasService } from 'src/app/services/formulas.service';
 import { FormulasTree } from 'src/app/modules/formulas/models/formula-tree';
 import { PolicyTestAutomationService } from '../../../policy-test-automation/policy-test-automation.service';
+import { CalculationPreviewService, ICalculationPreviewResult } from 'src/app/services/calculation-preview.service';
+import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 
 @Component({
     selector: 'request-document-block-dialog',
@@ -66,6 +68,14 @@ export class RequestDocumentBlockDialog {
     public currentRelayerAccount: string;
     public relayerAccounts: any[] = [];
     public remoteWarning: boolean = false;
+    public previewMode: boolean = false;
+    public previewRequiredFields: string[] | null = null;
+    public previewMissingFields: string[] = [];
+    private previewPreferenceLoaded: boolean = false;
+
+    public get previewAvailable(): boolean {
+        return this.parent instanceof RequestDocumentBlockComponent;
+    }
 
     public enableAdditionalData: boolean = false;
     public evidenceText: string = '';
@@ -122,6 +132,7 @@ export class RequestDocumentBlockDialog {
         private ipfsService: IPFSService,
         private policyTest: PolicyTestAutomationService,
         private formulasService: FormulasService,
+        private calculationPreview: CalculationPreviewService,
     ) {
         this.parent = this.config.data;
         this.dataForm = this.fb.group({});
@@ -136,7 +147,7 @@ export class RequestDocumentBlockDialog {
         this.loading = true;
         this.loadRules();
         this.loadFormulas();
-        this.initForm(this.dataForm);
+        this.initForm(this.dataForm, false);
         this.sub = interval(this.AUTOSAVE_INTERVAL).subscribe(async () => {
             const data = this.dataForm.getRawValue();
             const savedData = await this.storage.load(this.autosaveId);
@@ -156,7 +167,7 @@ export class RequestDocumentBlockDialog {
         this.sub?.unsubscribe();
     }
 
-    public initForm($event: any) {
+    public initForm($event: any, restorePreview: boolean = true) {
         this.dataForm = $event;
         this.dataForm.valueChanges
             .pipe(takeUntil(this.destroy$))
@@ -165,6 +176,9 @@ export class RequestDocumentBlockDialog {
                 this.validate();
                 this.dataSaved = false;
             });
+        if (restorePreview) {
+            this.restorePreviewMode();
+        }
     }
 
     private loadRules() {
@@ -373,6 +387,10 @@ export class RequestDocumentBlockDialog {
             return;
         }
         if (this.dataForm.valid || draft) {
+            if (this.previewMode && !draft) {
+                await this.runPreview(false);
+                return;
+            }
             if (this.enableAdditionalData && this.isStep(0)) {
                 this.setStep(1);
             } else if (this.enableAdditionalData && this.isStep(1) && this.relayerAccount) {
@@ -385,6 +403,80 @@ export class RequestDocumentBlockDialog {
                 await this.onSubmit(draft);
             }
         }
+    }
+
+    private restorePreviewMode(): void {
+        if (this.previewPreferenceLoaded || this.disabled || !this.previewAvailable || !this.schema || !this.parent?.user?.id || !this.policyId || !this.id) {
+            return;
+        }
+        this.previewPreferenceLoaded = true;
+        if (this.calculationPreview.loadMode(this.parent?.user?.id, this.policyId, this.id)) {
+            void this.onPreviewModeChange(true);
+        }
+    }
+
+    public async onPreviewModeChange(enabled: boolean): Promise<void> {
+        this.previewPreferenceLoaded = true;
+        this.calculationPreview.saveMode(this.parent?.user?.id, this.policyId, this.id, enabled);
+        this.previewMode = enabled;
+        if (!enabled) {
+            this.previewRequiredFields = null;
+            this.previewMissingFields = [];
+            return;
+        }
+        this.setStep(0);
+        await this.runPreview(true);
+    }
+
+    private async runPreview(previewFields: boolean): Promise<void> {
+        this.loading = true;
+        try {
+            const result = await this.calculationPreview.run(
+                this.policyId,
+                this.id,
+                this.dataForm.getRawValue(),
+                this.docRef,
+                previewFields
+            );
+            if (!this.previewMode) {
+                return;
+            }
+            this.previewRequiredFields = this.calculationPreview.updateRequiredFields(this.previewRequiredFields, result);
+            this.previewMissingFields = [];
+            if (!previewFields) {
+                this.showPreviewResult(result);
+            }
+        } catch (error) {
+            const validation = this.calculationPreview.getInputValidation(error);
+            if (this.previewMode && validation) {
+                this.previewRequiredFields = this.calculationPreview.updateRequiredFields(this.previewRequiredFields, validation);
+                this.previewMissingFields = [...validation.missingFields];
+            }
+            console.error(error);
+        } finally {
+            this.loading = false;
+        }
+    }
+
+    private showPreviewResult(result: ICalculationPreviewResult): void {
+        this.calculationPreview.showErrors(result);
+        const documents = this.calculationPreview.getViewerDocuments(result);
+        if (!documents.length) {
+            return;
+        }
+        this.dialogService.open(VCViewerDialog, {
+            showHeader: false,
+            width: '90%',
+            styleClass: 'guardian-dialog',
+            data: {
+                title: 'Calculation preview',
+                type: 'VC',
+                viewDocument: true,
+                dryRun: !!this.dryRun,
+                document: documents[0].document,
+                previewDocuments: documents
+            }
+        });
     }
 
     public showUnsavedChangesDialog() {
@@ -445,6 +537,9 @@ export class RequestDocumentBlockDialog {
 
     public getButtonName(item: any) {
         if (item.id === 'submit') {
+            if (this.previewMode) {
+                return 'Preview';
+            }
             if (this.enableAdditionalData && this.isStep(0)) {
                 return 'Add Evidence Attachments';
             } else if (this.relayerAccount && (this.isStep(this.enableAdditionalData ? 1 : 0))) {

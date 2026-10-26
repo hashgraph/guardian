@@ -117,7 +117,33 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
     }
 
     public get hasData(): boolean {
-        return !!this.fileId || !!this.cid;
+        return !!this.fileId || !!this.cid || this.inlineCsv !== null;
+    }
+
+    public get inlineCsv(): string | null {
+        if (this.fileId || this.cid) {
+            return null;
+        }
+        return this.getInlineCsvFromValue(this.value);
+    }
+
+    private getInlineCsvFromValue(input: unknown): string | null {
+        if (typeof input === 'string') {
+            const trimmed = input.trim();
+            if (!trimmed.startsWith('{')) {
+                return null;
+            }
+            try {
+                return this.getInlineCsvFromValue(JSON.parse(trimmed));
+            } catch {
+                return null;
+            }
+        }
+        if (input && typeof input === 'object' && Reflect.get(input, 'type') === 'table') {
+            const csv = Reflect.get(input, 'csv');
+            return typeof csv === 'string' ? csv : null;
+        }
+        return null;
     }
 
     public get previewHeaderKeysLimited(): string[] {
@@ -320,6 +346,12 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
     }
 
     ngOnChanges(): void {
+        const inlineCsv = this.inlineCsv;
+        if (inlineCsv !== null) {
+            this.loadError = undefined;
+            this.previewCSV(inlineCsv);
+            return;
+        }
         (async () => {
             await this.ensureIdbStores();
             await this.initPreview();
@@ -378,7 +410,8 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
 
     public async openDialog(): Promise<void> {
         const idbId = this.fileId || this.cid;
-        if (!idbId || this.isLoading) {
+        const inlineCsv = this.inlineCsv;
+        if ((!idbId && inlineCsv === null) || this.isLoading) {
             return;
         }
 
@@ -387,9 +420,9 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
         this.mark();
 
         try {
-            let cached = await this.getFromIdb(idbId);
+            let cached = idbId ? await this.getFromIdb(idbId) : null;
 
-             if (!cached) {
+             if (!cached && idbId) {
                 if(this.fileId) {
                     await this.restoreDataByFileId(idbId);
                 } else {
@@ -398,11 +431,11 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
                 cached = await this.getFromIdb(idbId);
             }
 
-            if (!cached) {
+            if (!cached && inlineCsv === null) {
                 throw new Error('No cached file');
             }
 
-            const csvText = await this.gzip.gunzipToText(cached.gz);
+            const csvText = cached ? await this.gzip.gunzipToText(cached.gz) : (inlineCsv ?? '');
 
             const unzippedBytes = this.utf8Size(csvText);
 
@@ -452,8 +485,9 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
 
     public downloadCsv(): void {
         const idbId = this.fileId || this.cid;
+        const inlineCsv = this.inlineCsv;
 
-        if (!idbId || this.isDownloading) {
+        if ((!idbId && inlineCsv === null) || this.isDownloading) {
             return;
         }
 
@@ -461,9 +495,9 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
         this.mark();
 
         (async () => {
-            let cached = await this.getFromIdb(idbId);
+            let cached = idbId ? await this.getFromIdb(idbId) : null;
 
-            if (!cached) {
+            if (!cached && idbId) {
                 if(this.fileId) {
                     await this.restoreDataByFileId(idbId);
                 } else {
@@ -472,11 +506,11 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
                 cached = await this.getFromIdb(idbId);
             }
 
-            if (!cached) {
+            if (!cached && inlineCsv === null) {
                 throw new Error('No cached file');
             }
 
-            const csvText = await this.gzip.gunzipToText(cached.gz);
+            const csvText = cached ? await this.gzip.gunzipToText(cached.gz) : (inlineCsv ?? '');
 
             const outBlob = new Blob([csvText], { type: 'text/csv;charset=utf-8' });
             const objectUrl = URL.createObjectURL(outBlob);

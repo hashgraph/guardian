@@ -342,3 +342,12 @@ form {
         letter-spacing: 0%;
     }
 }
+
+.dialog-header .calculation-preview-toggle {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    color: var(--guardian-font-color);
+}
