@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { PreviewReadTracker } from '../../../dist/policy-engine/helpers/workers/preview-read-tracker.js';
 
 describe('@unit PreviewReadTracker', () => {
@@ -198,5 +199,18 @@ describe('@unit PreviewReadTracker', () => {
         const tracker = new PreviewReadTracker();
         tracker.add('#S', '');
         assert.deepEqual(tracker.take(), []);
+    });
+
+    it('loads the inspector only when coverage starts', () => {
+        const module = new URL('../../../dist/policy-engine/helpers/workers/preview-read-tracker.js', import.meta.url).href;
+        const output = execFileSync(process.execPath, ['--input-type=module', '-e', [
+            `const { PreviewReadTracker } = await import(${JSON.stringify(module)});`,
+            "const loaded = () => process.moduleLoadList.includes('NativeModule inspector');",
+            'const tracker = new PreviewReadTracker();',
+            'const before = loaded();',
+            'tracker.startCoverage();',
+            'console.log(JSON.stringify([before, loaded()]));'
+        ].join('\n')], { encoding: 'utf8' });
+        assert.deepEqual(JSON.parse(output), [false, true]);
     });
 });

@@ -1,4 +1,6 @@
 import { parse } from 'acorn';
+import { isAccessorNode, isAssignmentNode, isConditionalNode, isConstantNode, isFunctionAssignmentNode, isFunctionNode, isOperatorNode, isParenthesisNode, isSymbolNode, parse as parseFormula } from 'mathjs';
+import type { FunctionAssignmentNode, MathNode } from 'mathjs';
 import type { IPreviewReadRecord, IPreviewReadSite } from './workers/preview-read-tracker.js';
 
 type Node = { type: string; start: number; end: number; [key: string]: any };
@@ -89,7 +91,10 @@ function usageOf(node: Node, parents: Map<Node, Node | null>): Usage {
         case 'UnaryExpression':
             return parent.operator === 'typeof' ? 'check' : parent.operator === 'delete' ? 'write' : 'use';
         case 'LogicalExpression':
-            return parent.left === current && parent.operator !== '&&' ? 'check' : 'use';
+            if (parent.operator === '&&') {
+                return 'use';
+            }
+            return parent.left === current || usageOf(parent, parents) === 'check' ? 'check' : 'use';
         case 'BinaryExpression':
             return ['==', '===', '!=', '!=='].includes(parent.operator) && isNothing(parent.left === current ? parent.right : parent.left)
                 ? 'check' : 'use';
@@ -231,7 +236,11 @@ function collect(source: string, expression: boolean): IScript {
     }
     const text = (node: Node) => source.slice(node.start, node.end);
     const byNode = new Map(script.occurrences.map((occurrence) => [occurrence.node, occurrence]));
+    const ors = [...parents.keys()].filter((node) => node.type === 'LogicalExpression' && node.operator === '||');
     const guards = (test: Node, value: string): boolean => {
+        if (ors.some((node) => node.start >= test.start && node.end <= test.end)) {
+            return false;
+        }
         const bare = test.type === 'UnaryExpression' && test.operator === '!' ? test.argument : test;
         if (byNode.has(bare) && text(bare) === value) {
             byNode.get(bare).usage = 'check';
@@ -246,7 +255,7 @@ function collect(source: string, expression: boolean): IScript {
         const value = text(occurrence.node);
         for (let child = occurrence.node, parent = parents.get(child); parent; child = parent, parent = parents.get(parent)) {
             const test = (parent.type === 'IfStatement' || parent.type === 'ConditionalExpression') && parent.test !== child ? parent.test
-                : parent.type === 'LogicalExpression' && parent.right === child ? parent.left : null;
+                : parent.type === 'LogicalExpression' && parent.operator === '&&' && parent.right === child ? parent.left : null;
             if (test && guards(test, value)) {
                 occurrence.usage = 'check';
                 break;
@@ -261,14 +270,16 @@ class Resolver {
     private readonly prefix: string;
     private readonly expression: boolean;
     private readonly roots: string[];
+    private readonly known: Set<string>;
     private readonly learned = new Map<Node, Set<string>>();
     private readonly cache = new Map<Node, Set<string>>();
 
-    constructor(script: IScript, prefix: string, expression: boolean, roots: string[]) {
+    constructor(script: IScript, prefix: string, expression: boolean, roots: string[], known: Set<string>) {
         this.script = script;
-        this.prefix = prefix;
+        this.prefix = prefix.replace(/\.$/, '');
         this.expression = expression;
         this.roots = roots;
+        this.known = known;
     }
 
     public declaration(identifier: Node): Node | null {
@@ -332,8 +343,11 @@ class Resolver {
             prefixes = this.resolve(declaration, seen);
         } else if (base && FOREIGN.has(base.name)) {
             prefixes = new Set([OTHER]);
+        } else if (base && this.expression) {
+            const field = [this.prefix, base.name].filter(Boolean).join('.');
+            prefixes = new Set([[...this.known].some((path) => path === field || path.startsWith(`${field}.`)) ? field : this.prefix]);
         } else {
-            prefixes = base && (this.expression || this.roots.includes(base.name)) ? new Set([this.prefix]) : new Set<string>();
+            prefixes = base && this.roots.includes(base.name) ? new Set([this.prefix]) : new Set<string>();
         }
         if (subject >= 0) {
             return prefixes.size === 1 && prefixes.has(OTHER) ? prefixes : this.join(new Set([this.prefix]), keys.slice(subject + 1));
@@ -406,8 +420,12 @@ export function findPreviewScriptFields(
     paths: string[],
     expression: boolean = false,
     prefix: string = '',
-    roots: string[] = []
+    roots: string[] = [],
+    language: 'javascript' | 'mathjs' = 'javascript'
 ): IPreviewReadRecord[] {
+    if (language === 'mathjs') {
+        return findPreviewFormulaFields(source, sites, schema, paths);
+    }
     let script: IScript;
     try {
         script = collect(source, expression);
@@ -415,6 +433,7 @@ export function findPreviewScriptFields(
         return sites.map(({ schema: readSchema, path, fullPath }) => ({ schema: readSchema, path, fullPath }));
     }
     const known = new Set(paths);
+    const sections = new Set(paths.map((path) => path.split('.').slice(0, -1).join('.')).filter(Boolean));
     const byKey = new Map<string, string[]>();
     for (const path of paths) {
         const key = path.split('.').pop() || '';
@@ -425,7 +444,7 @@ export function findPreviewScriptFields(
     for (const occurrence of script.occurrences) {
         bySite.set(occurrence.start, [...(bySite.get(occurrence.start) || []), occurrence]);
     }
-    const resolver = new Resolver(script, prefix, expression, roots);
+    const resolver = new Resolver(script, prefix, expression, roots, known);
     const named = new Set<string>();
     const evidence = new Set<string>();
     const siteOf = (read: IPreviewReadSite) => {
@@ -447,7 +466,7 @@ export function findPreviewScriptFields(
             return [];
         }
         const exact = [...resolved].filter((path) => known.has(path));
-        if (exact.length) {
+        if (exact.length || resolved.size) {
             return exact;
         }
         const id = occurrence.keys.join('.');
@@ -489,7 +508,7 @@ export function findPreviewScriptFields(
         usedKeys.add(occurrence.key);
         matches.forEach((path) => usedPaths.add(path));
         if (within(occurrence.start, reachable)) {
-            matches.forEach((path) => add({ schema, path }));
+            matches.filter((path) => !sections.has(path)).forEach((path) => add({ schema, path }));
         }
     }
     for (const read of sites) {
@@ -502,4 +521,155 @@ export function findPreviewScriptFields(
         }
     }
     return [...result.values()];
+}
+
+function findPreviewFormulaFields(
+    source: string,
+    sites: IPreviewReadSite[],
+    schema: string | null,
+    paths: string[]
+): IPreviewReadRecord[] {
+    const known = new Set(paths);
+    const result = new Map<string, IPreviewReadRecord>();
+    const add = (read: IPreviewReadRecord) => {
+        if (known.has(read.path) && (read.schema === null || read.schema === schema)) {
+            result.set(`${read.schema ?? ''}\u0000${read.fullPath ?? read.path}`, read);
+        }
+    };
+    sites.forEach(({ schema: readSchema, path, fullPath }) => add({ schema: readSchema, path, fullPath }));
+    let root: MathNode;
+    try {
+        root = parseFormula(source);
+    } catch {
+        return [...result.values()];
+    }
+    const functions = new Map<string, FunctionAssignmentNode>();
+    root.traverse((node) => {
+        if (isFunctionAssignmentNode(node)) {
+            functions.set(node.name, node);
+        }
+    });
+    const append = (bases: Set<string>, keys: (string | null)[]): Set<string> => {
+        let current = bases;
+        for (const key of keys) {
+            current = new Set([...current].flatMap((base) => key === null
+                ? paths.filter((path) => path.startsWith(`${base}.`)).map((path) => `${base}.${path.slice(base.length + 1).split('.')[0]}`)
+                : [key ? `${base}.${key}` : base]));
+        }
+        return current;
+    };
+    const uncertain = new WeakSet<Set<string>>();
+    const mergeBindings = (target: Map<string, Set<string>>, left: Map<string, Set<string>>, right: Map<string, Set<string>>) => {
+        for (const name of new Set([...left.keys(), ...right.keys()])) {
+            const first = left.get(name);
+            const second = right.get(name);
+            const merged = new Set([...(first ?? [name]), ...(second ?? [name])]);
+            if (first && uncertain.has(first) || second && uncertain.has(second)) uncertain.add(merged);
+            target.set(name, merged);
+        }
+    };
+    const isWritten = (path: string, written: Set<string>) => [...written].some((value) => path === value || path.startsWith(`${value}.`));
+    const visit = (
+        node: MathNode,
+        parameters: Map<string, Set<string>>,
+        seen: Set<MathNode>,
+        written: Set<string>,
+        recordWrites: boolean = true
+    ): Set<string> => {
+        if (seen.has(node)) {
+            return new Set();
+        }
+        const active = new Set([...seen, node]);
+        let uncertainResult = false;
+        const child = (value: MathNode) => {
+            const result = visit(value, parameters, active, written, recordWrites);
+            uncertainResult ||= uncertain.has(result);
+            return result;
+        };
+        let origins = new Set<string>();
+        if (isParenthesisNode(node)) {
+            origins = child(node.content);
+        } else if (isSymbolNode(node)) {
+            origins = parameters.get(node.name) ?? new Set([node.name]);
+        } else if (isAccessorNode(node)) {
+            const bases = child(node.object);
+            const keys = node.index.dimensions.map((dimension): string | null => {
+                let value = dimension;
+                while (isParenthesisNode(value)) {
+                    value = value.content;
+                }
+                if (isConstantNode(value)) {
+                    return typeof value.value === 'string' ? value.value : '';
+                }
+                child(dimension);
+                return null;
+            });
+            origins = append(bases, keys);
+            uncertainResult ||= keys.some((key) => key === null || key === '');
+        } else if (isConditionalNode(node)) {
+            child(node.condition);
+            const leftBindings = new Map(parameters);
+            const rightBindings = new Map(parameters);
+            const leftWrites = new Set(written);
+            const rightWrites = new Set(written);
+            const left = visit(node.trueExpr, leftBindings, active, leftWrites, recordWrites);
+            const right = visit(node.falseExpr, rightBindings, active, rightWrites, recordWrites);
+            origins = new Set([...left, ...right]);
+            uncertainResult ||= uncertain.has(left) || uncertain.has(right);
+            mergeBindings(parameters, leftBindings, rightBindings);
+            leftWrites.forEach((path) => { if (rightWrites.has(path)) written.add(path); });
+        } else if (isOperatorNode(node) && (node.fn === 'and' || node.fn === 'or')) {
+            for (const [index, argument] of node.args.entries()) {
+                if (index === 0) {
+                    child(argument).forEach((path) => origins.add(path));
+                } else {
+                    const before = new Map(parameters);
+                    const optional = new Map(parameters);
+                    const result = visit(argument, optional, active, new Set(written), recordWrites);
+                    result.forEach((path) => origins.add(path));
+                    uncertainResult ||= uncertain.has(result);
+                    mergeBindings(parameters, before, optional);
+                }
+            }
+        } else if (isAssignmentNode(node)) {
+            origins = child(node.value);
+            if (!node.index && isSymbolNode(node.object)) {
+                parameters.set(node.object.name, origins);
+                if (recordWrites) written.add(node.object.name);
+            } else if (node.index) {
+                const bases = child(node.object);
+                const keys = node.index.dimensions.map((dimension): string | null => {
+                    child(dimension);
+                    let value = dimension;
+                    while (isParenthesisNode(value)) value = value.content;
+                    return isConstantNode(value) && typeof value.value === 'string' && !/^\d+$/.test(value.value) ? value.value : null;
+                });
+                if (recordWrites && !uncertain.has(bases) && keys.every((key) => key !== null)) {
+                    append(bases, keys).forEach((path) => written.add(path));
+                }
+            }
+        } else if (isFunctionAssignmentNode(node)) {
+            return origins;
+        } else if (isFunctionNode(node)) {
+            uncertainResult = true;
+            const args = node.args.map(child);
+            const definition = isSymbolNode(node.fn) ? functions.get(node.fn.name) : undefined;
+            if (definition) {
+                const bound = new Map(parameters);
+                definition.params.forEach((name, index) => bound.set(name, args[index] || new Set()));
+                origins = visit(definition.expr, bound, active, new Set(written), false);
+            } else {
+                origins = new Set(args.flatMap((value) => [...value]));
+            }
+        } else {
+            node.forEach((value) => child(value).forEach((path) => origins.add(path)));
+        }
+        const inputs = new Set([...origins].filter((path) => !isWritten(path, written)));
+        if (uncertainResult || uncertain.has(origins)) uncertain.add(inputs);
+        inputs.forEach((path) => add({ schema, path }));
+        return inputs;
+    };
+    visit(root, new Map(), new Set(), new Set());
+    const reads = [...result.values()];
+    return reads.filter((read) => !reads.some((other) => other.schema === read.schema && other.path.startsWith(`${read.path}.`)));
 }

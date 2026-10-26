@@ -1,7 +1,9 @@
+import { PreviewReadTracker } from '../../../dist/policy-engine/helpers/workers/preview-read-tracker.js';
+import { findPreviewScriptFields } from '../../../dist/policy-engine/helpers/preview-script-fields.js';
 import assert from 'node:assert/strict';
 import { types } from 'node:util';
 import { PolicyUtils } from '../../../dist/policy-engine/helpers/utils.js';
-import { assertPreviewCalculationResult, calculatePreviewAutoFields, collectPreviewPaths, fillPreviewPlaceholders, findScriptFieldReads, getMathPreviewOutputPaths, getMathPreviewReads, getPreviewChangedPaths, getPreviewComputed, getPreviewSubject, isMissingPreviewValue, isPreviewComputedRead, isPreviewOutputRead, isPreviewPathCovered, normalizePreviewPath, resolvePreviewFields, setPreviewComputed } from '../../../dist/policy-engine/helpers/preview.js';
+import { assertPreviewCalculationResult, calculatePreviewAutoFields, collectPreviewPaths, fillPreviewPlaceholders, getMathPreviewOutputPaths, getMathPreviewReads, getPreviewChangedPaths, getPreviewComputed, getPreviewSubject, isMissingPreviewValue, isPreviewComputedRead, isPreviewOutputRead, isPreviewPathCovered, normalizePreviewPath, resolvePreviewFields, setPreviewComputed } from '../../../dist/policy-engine/helpers/preview.js';
 
 const field = (name, type, extra = {}) => ({ name, type, isRef: false, isArray: false, ...extra });
 
@@ -496,20 +498,62 @@ describe('@unit preview fields', () => {
         });
     });
 
-    describe('findScriptFieldReads', () => {
-        const source = { schema: '#S', document: {}, paths: ['amount', 'location', 'location.lat', 'rate'], dependencies: {} };
+    describe('runtime mathjs reads through the shared tracker', () => {
+        it('evaluates once and merges the actual full path with the other branch', () => {
+            const formula = '(flag ? owner : buyer).name';
+            const paths = ['flag', 'owner', 'owner.name', 'buyer', 'buyer.name'];
+            const tracker = new PreviewReadTracker();
+            tracker.configure(formula);
+            let calls = 0;
+            const document = { flag: true, owner: { get name() { calls++; return 'Ivan'; } }, buyer: { name: '' } };
+            const value = PolicyUtils.evaluateCustomFormula(formula, tracker.track(document, '#S'));
+            assert.equal(value, 'Ivan');
+            assert.ok(calls > 0);
+            const sites = tracker.takeSites();
+            assert.ok(sites.some((read) => read.path === 'owner.name'));
+            const reads = findPreviewScriptFields(formula, sites, [], '#S', paths, false, '', [], 'mathjs');
+            assert.deepEqual([...new Set(reads.map((read) => read.path))].sort(), ['buyer.name', 'flag', 'owner.name']);
+        });
 
-        it('finds form fields named in the script as whole words', () => {
-            const script = "total = doc['amount'] * doc['location']['lat']\nrated = 1";
-            assert.deepEqual(findScriptFieldReads(script, source), [
-                { schema: '#S', path: 'amount' },
-                { schema: '#S', path: 'location' },
-                { schema: '#S', path: 'location.lat' }
+        it('retains an indexed runtime address together with the schema path', () => {
+            const formula = '(rows[2]).name';
+            const tracker = new PreviewReadTracker();
+            tracker.configure(formula);
+            const scope = tracker.track({ rows: [{ name: 'first' }, { name: '' }] }, '#S');
+            assert.equal(PolicyUtils.evaluateCustomFormula(formula, scope), '');
+            const reads = findPreviewScriptFields(formula, tracker.takeSites(), [], '#S', ['rows', 'rows.name'], false, '', [], 'mathjs');
+            assert.ok(reads.some((read) => read.fullPath === 'rows.1.name'));
+        });
+    });
+
+    describe('mathjs through findPreviewScriptFields', () => {
+        const findFormulaFieldReads = (formula, source) => source
+            ? findPreviewScriptFields(formula, [], [], source.schema, source.paths, false, '', [], 'mathjs')
+            : [];
+        const source = { schema: '#S', document: {}, paths: ['amount', 'owner', 'owner.name', 'buyer', 'buyer.name', 'rows', 'rows.value'], dependencies: {} };
+
+        it('finds the fields a condition refers to by their full path', () => {
+            assert.deepEqual(findFormulaFieldReads('owner.name == "x" and amount > 2', source), [
+                { schema: '#S', path: 'owner.name' },
+                { schema: '#S', path: 'amount' }
             ]);
         });
 
-        it('returns nothing without a form source', () => {
-            assert.deepEqual(findScriptFieldReads('amount', null), []);
+        it('does not take a field of another section with the same last name', () => {
+            assert.deepEqual(findFormulaFieldReads('owner.name == "Ivan"', source).map((read) => read.path), ['owner.name']);
+        });
+
+        it('does not take a field name written inside quotes', () => {
+            assert.deepEqual(findFormulaFieldReads('owner.name == "amount"', source).map((read) => read.path), ['owner.name']);
+        });
+
+        it('leaves array indexes out of the path', () => {
+            assert.deepEqual(findFormulaFieldReads('rows[1].value > 0', source).map((read) => read.path), ['rows.value']);
+        });
+
+        it('returns nothing without a form source or for a formula that cannot be parsed', () => {
+            assert.deepEqual(findFormulaFieldReads('amount', null), []);
+            assert.deepEqual(findFormulaFieldReads('amount ==', source), []);
         });
     });
 

@@ -156,7 +156,7 @@ describe('@unit writing blocks in a preview', () => {
             });
             const { block } = makeBlock(SplitBlock, {
                 options: { threshold: '10', sourceField: 'document.credentialSubject.0.amount' },
-                components: makeComponents({ databaseServer: server })
+                components: makeComponents({ databaseServer: server, generateUUID: async () => 'urn:uuid:chunk' })
             });
             Object.defineProperty(block, 'vcHelper', {
                 value: { issueVerifiableCredential: async () => { throw new Error('must not sign in a preview'); } }
@@ -173,6 +173,59 @@ describe('@unit writing blocks in a preview', () => {
             assert.deepEqual(chunks, [[4, 6]]);
             assert.deepEqual(residue.map((item) => item.value), [3]);
             assert.deepEqual(db.records(SplitDocuments).map((item) => item.value), [4]);
+        });
+
+        const splitBlock = () => {
+            let next = 0;
+            const { block } = makeBlock(SplitBlock, {
+                options: { threshold: '10', sourceField: 'document.credentialSubject.0.amount' },
+                components: makeComponents({ databaseServer: wrappedServer(), generateUUID: async () => `urn:uuid:chunk-${++next}` })
+            });
+            Object.defineProperty(block, 'vcHelper', {
+                value: {
+                    issueVerifiableCredential: async (vc, didDocument, signatureType, options) => {
+                        vc.setId(options.uuid);
+                        vc.setProof({ type: 'Ed25519Signature2018' });
+                        return vc;
+                    }
+                }
+            });
+            const credential = vcDocument({ amount: 25 });
+            credential.id = 'urn:uuid:original';
+            return { block, document: { policyId: 'policy-1', owner: 'did:user', document: credential } };
+        };
+
+        it('gives every preview chunk a fresh ID and an issuance date and leaves it unsigned', async () => {
+            patch(PolicyUtils, {
+                getUserCredentials: async () => ({ loadDidDocument: async () => { throw new Error('must not load a signing key in a preview'); } })
+            });
+            const { block, document } = splitBlock();
+            const events = captureEvents(block);
+            const step = previewStep();
+            await inPreview(step, () => block.runAction({ user: makeUser(), data: { data: document }, actionStatus: step }));
+            assert.deepEqual(step.getErrors(), []);
+            const chunks = events.filter((event) => event.type === 'RunEvent').flatMap((event) => event.data.data.map((item) => item.document));
+            assert.deepEqual(chunks.map((item) => item.credentialSubject[0].amount), [10, 10]);
+            assert.deepEqual(chunks.map((item) => item.id), ['urn:uuid:chunk-1', 'urn:uuid:chunk-2']);
+            assert.ok(chunks.every((item) => item.issuanceDate && !item.proof));
+        });
+
+        it('prepares a preview chunk like an ordinary chunk apart from the signature', async () => {
+            const root = { loadDidDocument: async () => ({}) };
+            const prepare = async (preview) => {
+                const { block, document } = splitBlock();
+                const make = async () => [
+                    await block.createNewDoc(block, root, document, 10, 1, 3, 25, 10, 'uid', null, makeUser()),
+                    await block.createNewDoc(block, root, document, 10, 2, 3, 25, 10, 'uid', null, makeUser())
+                ];
+                return preview ? await inPreview(previewStep(), make) : await make();
+            };
+            const preview = await prepare(true);
+            const ordinary = await prepare(false);
+            assert.deepEqual(preview.map((item) => item.document.id), ordinary.map((item) => item.document.id));
+            assert.equal(new Set(preview.map((item) => item.document.id)).size, 2);
+            assert.ok(preview.every((item) => !item.document.proof));
+            assert.ok(ordinary.every((item) => item.document.proof));
         });
     });
 

@@ -21,7 +21,6 @@ import { collectTablesPack, hydrateTablesInObject, loadFileTextById } from '../h
 import { RecordActionStep } from '../record-action-step.js';
 import { buildSandboxWorkerEnv } from '../helpers/workers/sandbox-worker-env.js';
 import {
-    findScriptFieldReads,
     assertPreviewCalculationResult,
     getPreviewChangedPaths,
     getPreviewComputed,
@@ -393,14 +392,6 @@ export class CustomLogicBlock {
                     }
                 };
                 if (options.selectedScriptLanguage === ScriptLanguageOption.PYTHON) {
-                    if (actionStatus?.preview) {
-                        for (const read of findScriptFieldReads(`${execCode}${expression}`, previewSource)) {
-                            scriptReads.add(normalizePreviewPath(read.path));
-                            if (!isPreviewComputedRead(documents, read.schema, read.path)) {
-                                actionStatus.addPreviewRead(read.schema, read.path);
-                            }
-                        }
-                    }
                     const pythonWorkerData = {
                         execFunc: `${execCode}${expression}`,
                         user,

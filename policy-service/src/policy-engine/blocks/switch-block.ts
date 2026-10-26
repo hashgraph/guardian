@@ -8,7 +8,10 @@ import { PolicyUser } from '../policy-user.js';
 import { IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { LocationType } from '@guardian/interfaces';
-import { findScriptFieldReads, getPreviewDocumentSchema, isPreviewComputedRead } from '../helpers/preview.js';
+import { getPreviewDocumentSchema, isPreviewComputedRead } from '../helpers/preview.js';
+import { findPreviewScriptFields } from '../helpers/preview-script-fields.js';
+import { PreviewReadTracker } from '../helpers/workers/preview-read-tracker.js';
+import type { IPreviewReadSite } from '../helpers/workers/preview-read-tracker.js';
 
 /**
  * Switch block
@@ -190,15 +193,28 @@ export class SwitchBlock {
             const schema = getPreviewDocumentSchema(doc);
             return schema === null || schema === previewSource?.schema;
         });
-        if (previewSource && formSchema) {
-            for (const condition of conditions) {
-                for (const read of findScriptFieldReads(String(condition.value || ''), previewSource)) {
-                    if (unknownSchema || !isPreviewComputedRead(docs, read.schema, read.path)) {
-                        event.actionStatus.addPreviewRead(read.schema, read.path);
-                    }
+        const recordReads = (formula: string, sites: IPreviewReadSite[] = []) => {
+            for (const read of findPreviewScriptFields(formula, sites, [], previewSource.schema, previewSource.paths, false, '', [], 'mathjs')) {
+                if (unknownSchema || !isPreviewComputedRead(docs, read.schema, read.path)) {
+                    event.actionStatus.addPreviewRead(read.schema, read.fullPath ?? read.path);
                 }
             }
+        };
+        if (previewSource && formSchema) {
+            for (const condition of conditions) {
+                recordReads(String(condition.value || ''));
+            }
         }
+        const evaluateFormula = (formula: string) => {
+            if (!previewSource || !formSchema) {
+                return PolicyUtils.evaluateCustomFormula(formula, scope);
+            }
+            const tracker = new PreviewReadTracker();
+            tracker.configure(formula);
+            const result = PolicyUtils.evaluateCustomFormula(formula, tracker.track(scope, previewSource.schema));
+            recordReads(formula, tracker.takeSites());
+            return result;
+        };
         const tags: string[] = [];
         for (const condition of conditions) {
             const type = condition.type as string;
@@ -209,7 +225,7 @@ export class SwitchBlock {
             let result = false;
             if (type === 'equal') {
                 if (scope) {
-                    const formulaResult = PolicyUtils.evaluateCustomFormula(value, scope);
+                    const formulaResult = evaluateFormula(value);
                     if (formulaResult === 'Incorrect formula') {
                         ref.error(`expression: ${result}, ${JSON.stringify(scope)}`);
                         result = false;
@@ -221,7 +237,7 @@ export class SwitchBlock {
                 }
             } else if (type === 'not_equal') {
                 if (scope) {
-                    const formulaResult = PolicyUtils.evaluateCustomFormula(value, scope);
+                    const formulaResult = evaluateFormula(value);
                     if (formulaResult === 'Incorrect formula') {
                         ref.error(`expression: ${result}, ${JSON.stringify(scope)}`);
                         result = false;

@@ -1,4 +1,5 @@
-import { Session } from 'node:inspector';
+import { createRequire } from 'node:module';
+import type { Session } from 'node:inspector';
 
 export interface IPreviewReadRecord {
     schema: string | null;
@@ -34,6 +35,8 @@ export class PreviewReadTracker {
     private readonly listed = new WeakSet<object>();
     private lines: number[] | null = null;
     private session: Session | null = null;
+    private executed: Uint8Array | null = null;
+    private readonly uncovered = new Map<string, [number, number]>();
 
     public configure(source: string): void {
         this.lines = [0];
@@ -43,29 +46,49 @@ export class PreviewReadTracker {
     }
 
     public startCoverage(): void {
-        this.session = new Session();
+        const inspector: typeof import('node:inspector') = createRequire(import.meta.url)('node:inspector');
+        this.session = new inspector.Session();
         this.session.connect();
         this.session.post('Profiler.enable');
         this.session.post('Profiler.startPreciseCoverage', { callCount: true, detailed: true });
     }
 
     public takeUnexecuted(): [number, number][] {
-        const ranges: [number, number][] = [];
+        const result = new Map<string, [number, number]>();
         this.session?.post('Profiler.takePreciseCoverage', (error, coverage) => {
-            for (const script of error ? [] : coverage.result) {
-                if (script.url !== PREVIEW_SCRIPT_FILE) {
-                    continue;
+            const ranges = (error ? [] : coverage.result)
+                .filter((script) => script.url === PREVIEW_SCRIPT_FILE)
+                .flatMap((script) => script.functions.flatMap((item) => item.ranges))
+                .sort((a, b) => a.startOffset - b.startOffset || b.endOffset - a.endOffset);
+            const size = ranges.reduce((max, range) => Math.max(max, range.endOffset), this.executed?.length ?? 0);
+            const executed = new Uint8Array(size);
+            executed.set(this.executed ?? []);
+            const run = new Uint8Array(size);
+            for (const range of ranges) {
+                run.fill(range.count > 0 ? 1 : 0, range.startOffset, range.endOffset);
+                if (range.count === 0) {
+                    this.uncovered.set(`${range.startOffset}:${range.endOffset}`, [range.startOffset, range.endOffset]);
                 }
-                for (const item of script.functions) {
-                    for (const range of item.ranges) {
-                        if (range.count === 0) {
-                            ranges.push([range.startOffset, range.endOffset]);
-                        }
+            }
+            run.forEach((value, index) => {
+                executed[index] |= value;
+            });
+            this.executed = executed;
+            for (const [start, end] of this.uncovered.values()) {
+                for (let index = start; index < end;) {
+                    if (executed[index]) {
+                        index++;
+                        continue;
                     }
+                    const from = index;
+                    while (index < end && !executed[index]) {
+                        index++;
+                    }
+                    result.set(`${from}:${index}`, [from, index]);
                 }
             }
         });
-        return ranges;
+        return [...result.values()];
     }
 
     public site(): number {

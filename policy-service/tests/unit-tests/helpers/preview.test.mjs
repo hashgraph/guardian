@@ -2,8 +2,11 @@ import assert from 'node:assert/strict';
 import { ComponentsService } from '../../../dist/policy-engine/helpers/components-service.js';
 import { LocationType } from '@guardian/interfaces';
 import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
-import { PREVIEW_SKIPPED_INPUTS, PreviewScope, isPreviewInputAllowed, isPreviewResultOutput, runPreview } from '../../../dist/policy-engine/helpers/preview.js';
+import { PREVIEW_SKIPPED_INPUTS, PreviewScope, buildPreviewResponse, isPreviewInputAllowed, isPreviewResultOutput, runPreview } from '../../../dist/policy-engine/helpers/preview.js';
 import { RecordActionStep } from '../../../dist/policy-engine/record-action-step.js';
+import { PolicyComponentsUtils } from '../../../dist/policy-engine/policy-components-utils.js';
+import { PolicyUtils } from '../../../dist/policy-engine/helpers/utils.js';
+import { Users } from '@guardian/common/helpers/users';
 
 const user = { did: 'did:user', group: 'group-1', userId: 'u-1' };
 const ref = { policyId: 'policy-1', tag: 'form' };
@@ -121,7 +124,7 @@ describe('@unit preview helpers', function () {
             assert.equal(res.code, 422);
         });
 
-        it('runs the form inside the preview scope without relayer account or draft', async () => {
+        it('runs the form inside the preview scope with the selected relayer account and without a draft', async () => {
             let seen = null;
             const body = { document: { a: 1 }, preview: true, draft: true, draftId: 'd-1', relayerAccount: '0.0.5' };
             const res = await runPreview(formBlock(), user, body, async (block, previewUser, data, step) => {
@@ -132,7 +135,7 @@ describe('@unit preview helpers', function () {
             assert.equal(seen.scoped, seen.step);
             assert.equal(seen.step.preview, true);
             assert.equal(seen.step.syncActions, true);
-            assert.equal(seen.data.relayerAccount, null);
+            assert.equal(seen.data.relayerAccount, '0.0.5');
             assert.equal(seen.data.draft, false);
             assert.equal(seen.data.draftId, null);
             assert.deepEqual(seen.data.document, { a: 1 });
@@ -303,6 +306,117 @@ describe('@unit preview helpers', function () {
                 () => runPreview(formBlock(), user, {}, async () => { throw new Error('form failed'); }),
                 /form failed/
             );
+        });
+    });
+
+    describe('viewer documents after an empty downstream result', () => {
+        const step = () => new RecordActionStep(() => {}, 0, true, true, undefined, true);
+        const vc = (id, total, tag = 'math') => ({
+            tag,
+            document: { id, type: ['VerifiableCredential'], credentialSubject: [{ total }] }
+        });
+
+        it('returns the calculated VC when a later block finishes without a document', () => {
+            const action = step();
+            const input = vc('urn:uuid:input', 1, 'form');
+            const calculated = vc('urn:uuid:calculated', 42);
+            action.saveResult({ data: input });
+            action.saveResult({ data: calculated });
+            action.saveResult({ data: null });
+            const response = buildPreviewResponse(action, {});
+            assert.deepEqual(response.documents.map((item) => item.document), [input, calculated]);
+            assert.equal(firstSubject(response.documents[1].document).total, 42);
+            assert.deepEqual(action.getPreviewDocuments(), []);
+        });
+
+        it('keeps the latest saved version of each VC without duplicates', () => {
+            const action = step();
+            const calculated = vc('urn:uuid:calculated', 42);
+            const saved = { ...calculated, tag: 'save', id: 'database-row', owner: 'did:user' };
+            action.saveResult({ data: calculated });
+            action.saveResult({ data: saved });
+            const response = buildPreviewResponse(action, {});
+            assert.deepEqual(response.documents, [{ source: 'save', target: null, blockType: null, document: saved }]);
+        });
+
+        it('retains separate VCs from a batch and ignores empty or non-VC steps', () => {
+            const action = step();
+            const batch = [vc('urn:uuid:a', 10), vc('urn:uuid:b', 20)];
+            for (const value of [null, { data: null }, { data: 0 }, { data: { document: 'text' } }, { data: batch }]) {
+                action.saveResult(value);
+            }
+            assert.deepEqual(buildPreviewResponse(action, {}).documents.map((item) => item.document), batch);
+        });
+
+        it('does not add history duplicates when terminal documents already exist', () => {
+            const action = step();
+            const document = vc('urn:uuid:final', 42);
+            action.saveResult({ data: document });
+            action.addPreviewDocument('math', { tag: 'wait', blockType: 'buttonBlock' }, { data: document });
+            assert.deepEqual(buildPreviewResponse(action, {}).documents, action.getPreviewDocuments());
+            assert.equal(buildPreviewResponse(action, {}).documents.length, 1);
+        });
+
+        it('deduplicates credentials without an envelope ID and creates no synthetic VC', () => {
+            const action = step();
+            const document = { document: { credentialSubject: [{ total: 42 }] } };
+            action.saveResult({ data: document });
+            action.saveResult({ data: document });
+            assert.equal(buildPreviewResponse(action, {}).documents.length, 1);
+            assert.deepEqual(buildPreviewResponse(step(), {}).documents, []);
+        });
+    });
+
+    describe('relayer account in a preview', () => {
+        const block = formBlock({ dryRun: null });
+        const calls = [];
+        const originals = [];
+
+        beforeEach(() => {
+            calls.length = 0;
+            for (const [target, key, value] of [
+                [PolicyUtils, 'checkAccountBalance', async (_ref, account) => { calls.push(['balance', account]); return true; }],
+                [Users.prototype, 'getUserRelayerAccount', async (_did, account) => { calls.push(['find', account]); return { account }; }],
+                [Users.prototype, 'createRelayerAccount', async () => { calls.push(['create']); return { account: '0.0.77' }; }]
+            ]) {
+                originals.push([target, key, target[key]]);
+                target[key] = value;
+            }
+        });
+
+        afterEach(() => {
+            while (originals.length) {
+                const [target, key, value] = originals.pop();
+                target[key] = value;
+            }
+        });
+
+        it('puts a selected account into the document as an ordinary submission does, without a balance query', async () => {
+            const ordinary = { relayerAccount: '0.0.5' };
+            const preview = { relayerAccount: '0.0.5' };
+            assert.equal(await PolicyComponentsUtils._checkRelayerAccount(block, user, ordinary), undefined);
+            assert.deepEqual(calls.splice(0), [['balance', '0.0.5'], ['find', '0.0.5']]);
+            assert.equal(await PolicyComponentsUtils._checkRelayerAccount(block, user, preview, true), undefined);
+            assert.deepEqual(calls, [['find', '0.0.5']]);
+            const [ordinaryAccount] = await PolicyUtils.getRelayerAccountAndOwner(block, user, ordinary.relayerAccount, null, false);
+            const [previewAccount] = await PolicyUtils.getRelayerAccountAndOwner(block, user, preview.relayerAccount, null, false);
+            assert.equal(previewAccount, '0.0.5');
+            assert.equal(previewAccount, ordinaryAccount);
+        });
+
+        it('uses a temporary account number for a new account and creates nothing in a preview', async () => {
+            const data = { relayerAccount: { name: 'new' } };
+            assert.equal(await PolicyComponentsUtils._checkRelayerAccount(block, user, data, true), undefined);
+            assert.match(data.relayerAccount, /^0\.0\.\d+$/);
+            assert.deepEqual(calls, []);
+        });
+
+        it('still checks the balance and creates a new account outside a preview', async () => {
+            const config = { name: 'new' };
+            const data = { relayerAccount: config };
+            assert.equal(await PolicyComponentsUtils._checkRelayerAccount(block, user, data), undefined);
+            assert.deepEqual(calls, [['balance', config], ['create']]);
+            assert.equal(data.relayerAccount, '0.0.77');
         });
     });
 });

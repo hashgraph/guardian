@@ -1,3 +1,4 @@
+import { PreviewReadTracker } from '../../../dist/policy-engine/helpers/workers/preview-read-tracker.js';
 import { createPreviewDocument } from '../helpers/preview-document-fixture.mjs';
 import assert from 'node:assert/strict';
 import { ButtonBlock } from '../../../dist/policy-engine/blocks/button-block.js';
@@ -262,6 +263,54 @@ describe('@unit basic block runAction in preview', () => {
     it('still moves the step outside a preview', async () => {
         assert.deepEqual(await run(new RecordActionStep(() => {})), ['changed']);
     });
+});
+
+describe('@unit switch condition fields in preview', () => {
+    const origGetRef = PolicyComponentsUtils.GetBlockRef;
+    const origExternal = PolicyComponentsUtils.ExternalEventFn;
+    const origTrack = PreviewReadTracker.prototype.track;
+    let tracked = 0;
+
+    beforeEach(() => {
+        tracked = 0;
+        PreviewReadTracker.prototype.track = function (...args) { tracked++; return origTrack.apply(this, args); };
+    });
+
+    afterEach(() => { PreviewReadTracker.prototype.track = origTrack; });
+
+    after(() => {
+        PolicyComponentsUtils.GetBlockRef = origGetRef;
+        PolicyComponentsUtils.ExternalEventFn = origExternal;
+    });
+
+    for (const formula of ['owner.name == "Ivan"', '(owner).name == "Ivan"', 'owner[("name")] == "Ivan"']) {
+    it(`records the full field path for ${formula}`, async () => {
+        const taken = [];
+        const block = Object.create(SwitchBlock.prototype);
+        Object.defineProperty(block, 'policyInstance', { value: { status: 'PUBLISH' } });
+        Object.defineProperty(block, 'parent', { value: { changeStep: async () => {} } });
+        PolicyComponentsUtils.GetBlockRef = () => ({
+            uuid: 'sw-uuid',
+            policyId: 'p1',
+            blockType: 'switchBlock',
+            async getOptions() {
+                return { executionFlow: 'allTrue', conditions: [{ type: 'equal', value: formula, tag: 'ivan', actor: '' }] };
+            },
+            async triggerEvents(tag) { taken.push(tag); },
+            log() {},
+            error() {},
+            backup() {},
+        });
+        PolicyComponentsUtils.ExternalEventFn = () => {};
+        const step = previewStep();
+        step.setPreviewSource({ schema: '#S', document: {}, paths: ['owner', 'owner.name', 'buyer', 'buyer.name'], dependencies: {} });
+        const document = createPreviewDocument({ policyId: 'p1', tag: 'form' }, null, { owner: { name: 'Ivan' }, buyer: {} }, '#S', 'did:user', null);
+        await decoratedRunAction.call(block, { user: { id: 'u', userId: 'uid' }, data: { data: document }, actionStatus: step });
+        assert.deepEqual(step.getPreviewReads(), [{ schema: '#S', path: 'owner.name' }]);
+        assert.ok(taken.includes('ivan'));
+        assert.ok(tracked > 0);
+    });
+    }
 });
 
 describe('@unit basic block screen updates and debug records in preview', () => {

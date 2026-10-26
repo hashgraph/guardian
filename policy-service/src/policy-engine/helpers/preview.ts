@@ -7,7 +7,7 @@ import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/polic
 import { IPolicyEvent } from '../interfaces/policy-event.js';
 import { IPolicyInterfaceBlock } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
-import { IPreviewCalculation, IPreviewRead, IPreviewSource, RecordActionStep } from '../record-action-step.js';
+import { IPreviewCalculation, IPreviewDocument, IPreviewRead, IPreviewSource, RecordActionStep } from '../record-action-step.js';
 import { PolicyUtils } from './utils.js';
 import { getDocumentValueByPath, MathEngine, MathItemType } from './math-model/index.js';
 import { PREVIEW_SCRIPT_FILE, PreviewReadTracker } from './workers/preview-read-tracker.js';
@@ -504,19 +504,6 @@ export function getPreviewChangedPaths(
     return paths;
 }
 
-export function findScriptFieldReads(script: string, source: IPreviewSource | null): IPreviewRead[] {
-    if (!source || !script) {
-        return [];
-    }
-    return source.paths
-        .filter((path) => {
-            const name = path.split('.').pop() || '';
-            const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            return !!name && new RegExp(`(^|[^A-Za-z0-9_])${escaped}([^A-Za-z0-9_]|$)`).test(script);
-        })
-        .map((path) => ({ schema: source.schema, path }));
-}
-
 export function resolvePreviewFields(
     source: IPreviewSource | null,
     reads: IPreviewRead[],
@@ -629,11 +616,33 @@ export function getPreviewInputError(actionStatus: RecordActionStep): MessageErr
 
 export function buildPreviewResponse(actionStatus: RecordActionStep, input: unknown) {
     const { fields, missingFields } = resolvePreviewFields(actionStatus.getPreviewSource(), actionStatus.getPreviewReads());
+    let documents = actionStatus.getPreviewDocuments();
+    if (!documents.length) {
+        const recorded = new Map<string, IPreviewDocument>();
+        for (const step of actionStatus.getResults()) {
+            const data = step && typeof step === 'object' ? Reflect.get(step, 'data') : null;
+            for (const item of Array.isArray(data) ? data : [data]) {
+                const credential = item && typeof item === 'object' ? Reflect.get(item, 'document') : null;
+                if (!credential || typeof credential !== 'object' || !Reflect.has(credential, 'credentialSubject')) {
+                    continue;
+                }
+                const id = Reflect.get(credential, 'id');
+                const tag = Reflect.get(item, 'tag');
+                recorded.set(typeof id === 'string' ? id : JSON.stringify(credential), {
+                    source: typeof tag === 'string' ? tag : null,
+                    target: null,
+                    blockType: null,
+                    document: item
+                });
+            }
+        }
+        documents = [...recorded.values()];
+    }
     return {
         trackingId: actionStatus.id,
         preview: true,
         input,
-        documents: actionStatus.getPreviewDocuments(),
+        documents,
         calculations: actionStatus.getPreviewCalculations(),
         fields,
         missingFields,
@@ -672,7 +681,7 @@ export async function runPreview(
         complete = resolve;
     });
     const actionStatus = new RecordActionStep(() => complete(), 0, true, true, undefined, true);
-    const previewData = { ...data, draft: false, draftId: null, relayerAccount: null };
+    const previewData = { ...data, draft: false, draftId: null };
 
     let response: MessageResponse<any> | MessageError<any>;
     try {
