@@ -590,7 +590,12 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             this.toastService.error(
                 msg,
                 'Policy validation found errors after schema import',
-                { sticky: true, logMessage: LogMessage.POLICY_IMPORT_VALIDATION_FAILED }
+                {
+                    sticky: true,
+                    logMessage: policyId
+                        ? `${LogMessage.POLICY_IMPORT_VALIDATION_FAILED} (policy ${policyId})`
+                        : LogMessage.POLICY_IMPORT_VALIDATION_FAILED
+                }
             );
             if (policyId && validation.errors) {
                 this._configurationErrors.set(policyId, validation.errors);
