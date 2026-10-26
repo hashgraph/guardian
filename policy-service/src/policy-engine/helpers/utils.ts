@@ -2077,9 +2077,9 @@ export class PolicyUtils {
         }
     }
 
-    private static autoCalculateField(field: SchemaField, document: any): any {
+    public static autoCalculateField(field: SchemaField, document: any, compile: (name: string, body: string) => Function = Function): any {
         try {
-            const func = Function('table', `with (this) { return ${field.expression} }`);
+            const func = compile('table', `with (this) { return ${field.expression} }`);
 
             const table = buildTableHelper();
 
