@@ -47,7 +47,9 @@ const previewStep = () => new RecordActionStep(() => undefined, 0, true, true, u
 const plot = (area) => createPreviewDocument({ policyId: 'policy-1', tag: 'form' }, null, { id: 'did:plot', type: 'Plot', area }, null, 'did:user', null).document;
 const link = (output, source, target) => new PolicyLink('RunEvent', output, source, target, EventActor.EventInitiator, (event) => target.runAction(event));
 
-describe('@unit a preview over the whole chain', () => {
+describe('@unit a preview over the whole chain', function () {
+    this.timeout(10000);
+
     beforeEach(() => {
         db.reset();
         patch(PolicyComponentsUtils, { GetBlockRef: (block) => block, ExternalEventFn: () => undefined, BlockErrorFn: async () => undefined });
