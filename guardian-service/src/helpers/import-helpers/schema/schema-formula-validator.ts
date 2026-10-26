@@ -1,6 +1,6 @@
-import { DatabaseServer } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
 import { ISchema, Schema, SchemaCategory, SchemaFieldPredicate, SchemaHelper } from '@guardian/interfaces';
-import { PinoLogger } from '@guardian/common';
 
 /**
  * Formula link that points to a schema field which does not exist
