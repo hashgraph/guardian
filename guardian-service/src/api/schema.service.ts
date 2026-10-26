@@ -125,8 +125,13 @@ function isTemplateFieldLocked(schemaConfig: ISchemaTemplateSchemaConfig, field:
     return getFieldConfig(schemaConfig, field)?.locked !== false;
 }
 
+const FIELD_HASH_IGNORED_KEYS = new Set(['path', 'fullPath', 'fullType', 'arrayLvl', 'errors', 'order', 'conditionUserOrdered']);
+
 function fieldComparableHash(field: SchemaField): string {
-    return SchemaHelper.stableStringify(SchemaHelper.cloneSchemaRuntimeValue(field));
+    const clone = SchemaHelper.cloneSchemaRuntimeValue(field, FIELD_HASH_IGNORED_KEYS);
+    clone.comment = SchemaHelper.cleanCommentForHash(clone.comment);
+    clone.$comment = SchemaHelper.cleanCommentForHash(clone.$comment);
+    return SchemaHelper.stableStringify(clone);
 }
 
 function getConfigForTemplateSchema(
@@ -1241,10 +1246,15 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                             }
                         }
 
+                        // `links` when present, otherwise the single `link` of older items
+                        const itemLinks = (item: any): any[] => Array.isArray(item?.links)
+                            ? item.links.filter((l: any) => !!l)
+                            : (item?.link ? [item.link] : []);
+
                         const formulaReferencesSchema = (f: any): boolean => {
                             const items = f.config?.formulas || [];
                             return items.some((item: any) =>
-                                item.link && item.link.type === 'schema' && iriToAlias.has(item.link.entityId)
+                                itemLinks(item).some((link: any) => link.type === 'schema' && iriToAlias.has(link.entityId))
                             );
                         };
 
@@ -1265,11 +1275,13 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                                     if (relevantFormulaUuids.has(f.uuid)) {
                                         const items1 = f.config?.formulas || [];
                                         for (const item of items1) {
-                                            if (item.link && item.link.type === 'formula' && !relevantFormulaUuids.has(item.link.entityId)) {
-                                                const dep = formulaByUuid.get(item.link.entityId);
-                                                if (dep) {
-                                                    relevantFormulaUuids.add(dep.uuid);
-                                                    changed = true;
+                                            for (const link of itemLinks(item)) {
+                                                if (link.type === 'formula' && !relevantFormulaUuids.has(link.entityId)) {
+                                                    const dep = formulaByUuid.get(link.entityId);
+                                                    if (dep) {
+                                                        relevantFormulaUuids.add(dep.uuid);
+                                                        changed = true;
+                                                    }
                                                 }
                                             }
                                         }
@@ -1277,7 +1289,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                                     }
                                     const items = f.config?.formulas || [];
                                     const linksToRelevant = items.some((item: any) =>
-                                        item.link && item.link.type === 'formula' && relevantFormulaUuids.has(item.link.entityId)
+                                        itemLinks(item).some((link: any) => link.type === 'formula' && relevantFormulaUuids.has(link.entityId))
                                     );
                                     if (linksToRelevant) {
                                         relevantFormulaUuids.add(f.uuid);
@@ -1337,30 +1349,32 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                                 }
 
                                 const isInput = item.type === 'variable';
-                                if (item.link && item.link.type === 'schema') {
-                                    const resolved = await resolveFieldPath(item.link.entityId, item.link.item, isDirect);
-                                    if (resolved) {
-                                        if (isInput) {
-                                            formulaLinks.push(
-                                                `${resolved.alias}::${resolved.field} --> ${compAlias}`
-                                            );
-                                        } else {
-                                            formulaLinks.push(
-                                                `${compAlias} --> ${resolved.alias}::${resolved.field}`
-                                            );
+                                for (const link of itemLinks(item)) {
+                                    if (link.type === 'schema') {
+                                        const resolved = await resolveFieldPath(link.entityId, link.item, isDirect);
+                                        if (resolved) {
+                                            if (isInput) {
+                                                formulaLinks.push(
+                                                    `${resolved.alias}::${resolved.field} --> ${compAlias}`
+                                                );
+                                            } else {
+                                                formulaLinks.push(
+                                                    `${compAlias} --> ${resolved.alias}::${resolved.field}`
+                                                );
+                                            }
                                         }
-                                    }
-                                } else if (item.link && item.link.type === 'formula') {
-                                    const targetAlias = resolveFormulaLink(item.link);
-                                    if (targetAlias) {
-                                        if (isInput) {
-                                            formulaLinks.push(
-                                                `${targetAlias} --> ${compAlias}`
-                                            );
-                                        } else {
-                                            formulaLinks.push(
-                                                `${compAlias} --> ${targetAlias}`
-                                            );
+                                    } else if (link.type === 'formula') {
+                                        const targetAlias = resolveFormulaLink(link);
+                                        if (targetAlias) {
+                                            if (isInput) {
+                                                formulaLinks.push(
+                                                    `${targetAlias} --> ${compAlias}`
+                                                );
+                                            } else {
+                                                formulaLinks.push(
+                                                    `${compAlias} --> ${targetAlias}`
+                                                );
+                                            }
                                         }
                                     }
                                 }

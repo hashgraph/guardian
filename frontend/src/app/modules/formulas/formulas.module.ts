@@ -12,7 +12,6 @@ import { ButtonModule } from 'primeng/button';
 import { TabsModule } from 'primeng/tabs';
 import { CheckboxModule } from 'primeng/checkbox';
 import { RadioButtonModule } from 'primeng/radiobutton';
-import { MultiSelectModule } from 'primeng/multiselect';
 import { PopoverModule } from 'primeng/popover';
 import { Textarea as InputTextareaModule } from 'primeng/textarea';
 import { DragDropModule } from 'primeng/dragdrop';
@@ -64,7 +63,6 @@ import { FormulasGraphTabComponent } from "./dialogs/formulas-view-dialog/formul
         TabsModule,
         CheckboxModule,
         RadioButtonModule,
-        MultiSelectModule,
         PopoverModule,
         DragDropModule,
         TreeModule,

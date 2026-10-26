@@ -1,9 +1,6 @@
 name: Component Tests
-
 on:
   push:
-    branches-ignore:
-      - 'dependabot/**'
     paths-ignore:
       - '.github/**'
       - 'docs/**'
@@ -15,7 +12,7 @@ permissions:
   checks: write        # required by publish-unit-test-result-action
 
 concurrency:
-  group: e2e-tests-${{ github.event_name }}-${{ github.ref }}
+  group: component-tests-${{ github.event_name }}-${{ github.ref }}
   # Superseded pushes are pointless; a nightly or a hand-triggered run is not.
   cancel-in-progress: ${{ github.event_name == 'push' }}
 

@@ -135,13 +135,22 @@ export class FormulaImportExport {
     }
 
     /**
-     * Get links of the item: `link` mirrors `links[0]`, they can be separate objects
-     *
-     * @param item formula item
+     * Distinct link objects of an item: `links` and the mirrored `link`.
+     * Items saved before `links` existed have `link` only.
      */
-    private static getItemLinks(item: any): any[] {
-        const links = Array.isArray(item?.links) ? item.links : [];
-        return [item?.link, ...links].filter((link) => !!link);
+    private static getLinkObjects(item: any): any[] {
+        const result = new Set<any>();
+        if (item?.link) {
+            result.add(item.link);
+        }
+        if (Array.isArray(item?.links)) {
+            for (const link of item.links) {
+                if (link) {
+                    result.add(link);
+                }
+            }
+        }
+        return Array.from(result);
     }
 
     /**
@@ -154,7 +163,7 @@ export class FormulaImportExport {
             const formulas = data.formulas;
             if (Array.isArray(formulas)) {
                 for (const component of formulas) {
-                    for (const link of FormulaImportExport.getItemLinks(component)) {
+                    for (const link of FormulaImportExport.getLinkObjects(component)) {
                         if (link.entityId === oldId) {
                             link.entityId = newId;
                         }
@@ -171,7 +180,7 @@ export class FormulaImportExport {
             const formulas = data.formulas;
             if (Array.isArray(formulas)) {
                 for (const component of formulas) {
-                    for (const link of FormulaImportExport.getItemLinks(component)) {
+                    for (const link of FormulaImportExport.getLinkObjects(component)) {
                         if (link.type === 'schema') {
                             ids.add(link.entityId)
                         }
@@ -204,9 +213,9 @@ export class FormulaImportExport {
             const formulas = config.formulas;
             if (Array.isArray(formulas)) {
                 for (const component of formulas) {
-                    if (component.link && component.link.type === 'schema') {
-                        if (idMap.has(component.link.entityId)) {
-                            component.link.entityId = idMap.get(component.link.entityId);
+                    for (const link of FormulaImportExport.getLinkObjects(component)) {
+                        if (link.type === 'schema' && idMap.has(link.entityId)) {
+                            link.entityId = idMap.get(link.entityId);
                         }
                     }
                 }
