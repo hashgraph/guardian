@@ -260,7 +260,7 @@ export class PolicyActionsUtils {
                     status: DidDocumentStatus.CREATE,
                     messageId: message.getId(),
                     topicId: topic.topicId,
-                    verificationMethods: Object.fromEntries(document.getPrivateKeys().map(({ type, id }) => [type, id]))
+                    verificationMethods: Object.fromEntries(document.getPrivateKeys().map(({ type: methodType, id }) => [methodType, id]))
                 });
                 return document.getDid();
             }

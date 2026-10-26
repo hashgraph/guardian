@@ -1,6 +1,5 @@
 import { parse } from 'acorn';
-import { isAccessorNode, isAssignmentNode, isConditionalNode, isConstantNode, isFunctionAssignmentNode, isFunctionNode, isOperatorNode, isParenthesisNode, isSymbolNode, parse as parseFormula } from 'mathjs';
-import type { FunctionAssignmentNode, MathNode } from 'mathjs';
+import { isAccessorNode, isAssignmentNode, isConditionalNode, isConstantNode, isFunctionAssignmentNode, isFunctionNode, isOperatorNode, isParenthesisNode, isSymbolNode, parse as parseFormula, type FunctionAssignmentNode, type MathNode } from 'mathjs';
 import type { IPreviewReadRecord, IPreviewReadSite } from './workers/preview-read-tracker.js';
 
 type Node = { type: string; start: number; end: number; [key: string]: any };
@@ -253,13 +252,17 @@ function collect(source: string, expression: boolean): IScript {
             continue;
         }
         const value = text(occurrence.node);
-        for (let child = occurrence.node, parent = parents.get(child); parent; child = parent, parent = parents.get(parent)) {
+        let child = occurrence.node;
+        let parent = parents.get(child);
+        while (parent) {
             const test = (parent.type === 'IfStatement' || parent.type === 'ConditionalExpression') && parent.test !== child ? parent.test
                 : parent.type === 'LogicalExpression' && parent.operator === '&&' && parent.right === child ? parent.left : null;
             if (test && guards(test, value)) {
                 occurrence.usage = 'check';
                 break;
             }
+            child = parent;
+            parent = parents.get(parent);
         }
     }
     return script;
@@ -371,8 +374,8 @@ class Resolver {
             const owner = this.script.parents.get(declaration);
             const index = owner?.params.indexOf(declaration) ?? -1;
             const name = owner ? functionName(owner, this.script.parents.get(owner) ?? null) : null;
-            for (const call of name ? this.script.calls.get(name) || [] : []) {
-                this.value(call.arguments[index], seen).forEach((path) => result.add(path));
+            for (const ownerCall of name ? this.script.calls.get(name) || [] : []) {
+                this.value(ownerCall.arguments[index], seen).forEach((path) => result.add(path));
             }
             const call = owner ? this.script.parents.get(owner) : null;
             if (call?.type === 'CallExpression' && call.arguments.includes(owner) && call.callee.type === 'MemberExpression'
@@ -564,7 +567,9 @@ function findPreviewFormulaFields(
             const first = left.get(name);
             const second = right.get(name);
             const merged = new Set([...(first ?? [name]), ...(second ?? [name])]);
-            if (first && uncertain.has(first) || second && uncertain.has(second)) uncertain.add(merged);
+            if (first && uncertain.has(first) || second && uncertain.has(second)) {
+                uncertain.add(merged);
+            }
             target.set(name, merged);
         }
     };
@@ -582,9 +587,9 @@ function findPreviewFormulaFields(
         const active = new Set([...seen, node]);
         let uncertainResult = false;
         const child = (value: MathNode) => {
-            const result = visit(value, parameters, active, written, recordWrites);
-            uncertainResult ||= uncertain.has(result);
-            return result;
+            const childResult = visit(value, parameters, active, written, recordWrites);
+            uncertainResult ||= uncertain.has(childResult);
+            return childResult;
         };
         let origins = new Set<string>();
         if (isParenthesisNode(node)) {
@@ -617,7 +622,11 @@ function findPreviewFormulaFields(
             origins = new Set([...left, ...right]);
             uncertainResult ||= uncertain.has(left) || uncertain.has(right);
             mergeBindings(parameters, leftBindings, rightBindings);
-            leftWrites.forEach((path) => { if (rightWrites.has(path)) written.add(path); });
+            leftWrites.forEach((path) => {
+                if (rightWrites.has(path)) {
+                    written.add(path);
+                }
+            });
         } else if (isOperatorNode(node) && (node.fn === 'and' || node.fn === 'or')) {
             for (const [index, argument] of node.args.entries()) {
                 if (index === 0) {
@@ -625,9 +634,9 @@ function findPreviewFormulaFields(
                 } else {
                     const before = new Map(parameters);
                     const optional = new Map(parameters);
-                    const result = visit(argument, optional, active, new Set(written), recordWrites);
-                    result.forEach((path) => origins.add(path));
-                    uncertainResult ||= uncertain.has(result);
+                    const argumentResult = visit(argument, optional, active, new Set(written), recordWrites);
+                    argumentResult.forEach((path) => origins.add(path));
+                    uncertainResult ||= uncertain.has(argumentResult);
                     mergeBindings(parameters, before, optional);
                 }
             }
@@ -635,13 +644,17 @@ function findPreviewFormulaFields(
             origins = child(node.value);
             if (!node.index && isSymbolNode(node.object)) {
                 parameters.set(node.object.name, origins);
-                if (recordWrites) written.add(node.object.name);
+                if (recordWrites) {
+                    written.add(node.object.name);
+                }
             } else if (node.index) {
                 const bases = child(node.object);
                 const keys = node.index.dimensions.map((dimension): string | null => {
                     child(dimension);
                     let value = dimension;
-                    while (isParenthesisNode(value)) value = value.content;
+                    while (isParenthesisNode(value)) {
+                        value = value.content;
+                    }
                     return isConstantNode(value) && typeof value.value === 'string' && !/^\d+$/.test(value.value) ? value.value : null;
                 });
                 if (recordWrites && !uncertain.has(bases) && keys.every((key) => key !== null)) {
@@ -665,7 +678,9 @@ function findPreviewFormulaFields(
             node.forEach((value) => child(value).forEach((path) => origins.add(path)));
         }
         const inputs = new Set([...origins].filter((path) => !isWritten(path, written)));
-        if (uncertainResult || uncertain.has(origins)) uncertain.add(inputs);
+        if (uncertainResult || uncertain.has(origins)) {
+            uncertain.add(inputs);
+        }
         inputs.forEach((path) => add({ schema, path }));
         return inputs;
     };

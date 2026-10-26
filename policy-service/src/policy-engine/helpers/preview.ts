@@ -576,15 +576,21 @@ export function assertPreviewCalculationResult(value: unknown, seen: WeakSet<obj
 function previewMissingPaths(source: IPreviewSource, reads: IPreviewRead[]): string[] {
     const missing = new Set<string>();
     for (const read of reads) {
-        if (read.schema && read.schema !== source.schema) continue;
+        if (read.schema && read.schema !== source.schema) {
+            continue;
+        }
         const normalized = normalizePreviewPath(read.path);
         const resolved = resolvePreviewFields(source, [{ schema: read.schema, path: normalized }], false);
         for (const path of resolved.fields) {
             const indexed = normalized === path ? read.path : path;
             for (const candidate of expandPreviewPath(source.document, indexed.split('.'), [])) {
                 let current = source.document;
-                for (const part of candidate.split('.')) current = current && typeof current === 'object' ? Reflect.get(current, part) : undefined;
-                if (isEmptyPreviewValue(current)) missing.add(candidate);
+                for (const part of candidate.split('.')) {
+                    current = current && typeof current === 'object' ? Reflect.get(current, part) : undefined;
+                }
+                if (isEmptyPreviewValue(current)) {
+                    missing.add(candidate);
+                }
             }
         }
     }
@@ -688,9 +694,9 @@ export async function runPreview(
         response = await PreviewScope.run(actionStatus, () => setBlockData(block, user, previewData, actionStatus));
     } catch (error) {
         actionStatus.cancel();
-        const inputError = getPreviewInputError(actionStatus);
-        if (inputError) {
-            return inputError;
+        const previewInputError = getPreviewInputError(actionStatus);
+        if (previewInputError) {
+            return previewInputError;
         }
         throw error;
     }

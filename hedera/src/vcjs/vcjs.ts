@@ -1180,7 +1180,6 @@ export class VCJS {
         return await this.issueVerifiableCredential(vc, didDocument, signatureType, documentOptions);
     }
 
-
     protected buildCredential(
         subject: ICredentialSubject,
         issuer: string,

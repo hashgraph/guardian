@@ -1,4 +1,3 @@
-import { PreviewScope } from '../helpers/preview.js';
 import { findPreviewScriptFields } from '../helpers/preview-script-fields.js';
 import { Worker } from 'node:worker_threads';
 import path from 'node:path';
@@ -21,6 +20,7 @@ import { collectTablesPack, hydrateTablesInObject, loadFileTextById } from '../h
 import { RecordActionStep } from '../record-action-step.js';
 import { buildSandboxWorkerEnv } from '../helpers/workers/sandbox-worker-env.js';
 import {
+    PreviewScope,
     assertPreviewCalculationResult,
     getPreviewChangedPaths,
     getPreviewComputed,

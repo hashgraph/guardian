@@ -71,7 +71,7 @@ export class PreviewReadTracker {
                 }
             }
             run.forEach((value, index) => {
-                executed[index] |= value;
+                executed[index] = Math.max(executed[index], value);
             });
             this.executed = executed;
             for (const [start, end] of this.uncovered.values()) {
@@ -98,7 +98,7 @@ export class PreviewReadTracker {
         const limit = Error.stackTraceLimit;
         const prepare = Error.prepareStackTrace;
         Error.stackTraceLimit = 3;
-        Error.prepareStackTrace = (_error, frames) => frames;
+        Error.prepareStackTrace = (_error, stackFrames) => stackFrames;
         const holder: { stack?: unknown } = {};
         Error.captureStackTrace(holder);
         const frames = holder.stack;

@@ -10,8 +10,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
 import { LocationType } from '@guardian/interfaces';
 import { getPreviewDocumentSchema, isPreviewComputedRead } from '../helpers/preview.js';
 import { findPreviewScriptFields } from '../helpers/preview-script-fields.js';
-import { PreviewReadTracker } from '../helpers/workers/preview-read-tracker.js';
-import type { IPreviewReadSite } from '../helpers/workers/preview-read-tracker.js';
+import { PreviewReadTracker, type IPreviewReadSite } from '../helpers/workers/preview-read-tracker.js';
 
 /**
  * Switch block
