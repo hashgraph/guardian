@@ -23,6 +23,7 @@ import { DocumentType } from '../interfaces/document.type.js';
 import { FilterQuery } from '@mikro-orm/core';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
 import { PolicyUser } from '@policy-engine/policy-user.js';
+import { PreviewScope } from '../helpers/preview.js';
 
 /**
  * Document Operations
@@ -537,7 +538,9 @@ export class SendToGuardianBlock {
         } else if (type === DocumentType.VerifiableCredential) {
             const vc = VcDocument.fromJsonTree(document.document);
             const vcMessage = new VCMessage(MessageAction.CreateVC);
-            vcMessage.setDocument(vc);
+            if (!PreviewScope.current()) {
+                vcMessage.setDocument(vc);
+            }
             vcMessage.setDocumentStatus(document.option?.status || DocumentStatus.NEW);
             vcMessage.setRelationships(document.relationships);
             vcMessage.setTag(ref);

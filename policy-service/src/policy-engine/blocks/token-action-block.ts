@@ -12,6 +12,8 @@ import { LocationType, OrgRolePermission } from '@guardian/interfaces';
 import { Token } from '@guardian/common/entity/token';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
 import { checkOrgTokenPermission } from '../helpers/org-utils.js';
+import { PreviewScope } from '../helpers/preview.js';
+import { applyPreviewTokenAction } from '../helpers/preview-token.js';
 
 const IDEMPOTENT_ERROR_MAP: Partial<Record<string, string[]>> = {
     grantKyc: ['Token already granted kyc'],
@@ -150,9 +152,16 @@ export class TokenActionBlock {
             throw new BlockActionError('Hedera Account not found.', ref.blockType, ref.uuid);
         }
 
+        const preview = !!PreviewScope.current();
         switch (options.action) {
             case 'associate': {
                 await checkOrgTokenPermission(ref, event.user, relayerAccount, OrgRolePermission.TOKEN_ASSOCIATE, userId);
+                if (preview) {
+                    const credentials = await PolicyUtils.getUserCredentials(ref, userDID, userId);
+                    const account = await credentials.loadRelayerAccount(ref, relayerAccount, userId);
+                    await applyPreviewTokenAction(ref, token, account.hederaAccountId, options.action, userId);
+                    break;
+                }
                 await PolicyActionsUtils.associateToken({
                     ref,
                     token,
@@ -164,6 +173,12 @@ export class TokenActionBlock {
             }
             case 'dissociate': {
                 await checkOrgTokenPermission(ref, event.user, relayerAccount, OrgRolePermission.TOKEN_DISSOCIATE, userId);
+                if (preview) {
+                    const credentials = await PolicyUtils.getUserCredentials(ref, userDID, userId);
+                    const account = await credentials.loadRelayerAccount(ref, relayerAccount, userId);
+                    await applyPreviewTokenAction(ref, token, account.hederaAccountId, options.action, userId);
+                    break;
+                }
                 await PolicyActionsUtils.dissociateToken({
                     ref,
                     token,
@@ -177,22 +192,31 @@ export class TokenActionBlock {
                 const account = PolicyUtils.createHederaCredentials(relayerAccount);
                 const policyOwner = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
                 const ownerCredentials = await policyOwner.loadHederaCredentials(ref, userId);
-                await PolicyUtils.freeze(ref, token, account, ownerCredentials, userId);
+                if (preview) {
+                    await applyPreviewTokenAction(ref, token, account.hederaAccountId, 'freeze', userId);
+                } else {
+                    await PolicyUtils.freeze(ref, token, account, ownerCredentials, userId);
+                }
                 break;
             }
             case 'unfreeze': {
                 const account = PolicyUtils.createHederaCredentials(relayerAccount);
                 const policyOwner = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
                 const ownerCredentials = await policyOwner.loadHederaCredentials(ref, userId);
-                await PolicyUtils.unfreeze(ref, token, account, ownerCredentials, userId);
+                if (preview) {
+                    await applyPreviewTokenAction(ref, token, account.hederaAccountId, 'unfreeze', userId);
+                } else {
+                    await PolicyUtils.unfreeze(ref, token, account, ownerCredentials, userId);
+                }
                 break;
             }
             case 'grantKyc': {
                 const account = PolicyUtils.createHederaCredentials(relayerAccount);
                 const policyOwner = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
                 const ownerCredentials = await policyOwner.loadHederaCredentials(ref, userId);
-                await runIdempotent(ref, 'grantKyc', () =>
-                    PolicyUtils.grantKyc(ref, token, account, ownerCredentials, userId)
+                await runIdempotent(ref, 'grantKyc', () => preview
+                    ? applyPreviewTokenAction(ref, token, account.hederaAccountId, 'grantKyc', userId)
+                    : PolicyUtils.grantKyc(ref, token, account, ownerCredentials, userId)
                 );
 
                 break;
@@ -201,7 +225,11 @@ export class TokenActionBlock {
                 const account = PolicyUtils.createHederaCredentials(relayerAccount);
                 const policyOwner = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
                 const ownerCredentials = await policyOwner.loadHederaCredentials(ref, userId);
-                await PolicyUtils.revokeKyc(ref, token, account, ownerCredentials, userId);
+                if (preview) {
+                    await applyPreviewTokenAction(ref, token, account.hederaAccountId, 'revokeKyc', userId);
+                } else {
+                    await PolicyUtils.revokeKyc(ref, token, account, ownerCredentials, userId);
+                }
                 break;
             }
             default:

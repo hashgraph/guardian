@@ -1,3 +1,4 @@
+import { recordPreviewWait } from '../helpers/preview.js';
 import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
 import { AggregateVC } from '@guardian/common/entity/aggregate-documents';
 import { VcDocument } from '@guardian/hedera/vcjs/vc-document';
@@ -318,6 +319,7 @@ export class AggregateBlock {
             }));
         }
         ref.backup();
+        return result === true;
     }
 
     /**
@@ -372,14 +374,18 @@ export class AggregateBlock {
         if (Array.isArray(docs)) {
             for (const doc of docs) {
                 await this.saveDocuments(ref, doc);
-                if (aggregateType === 'cumulative') {
-                    await this.tickAggregate(ref, doc, event?.user?.userId, event.actionStatus);
+                const continued = aggregateType === 'cumulative'
+                    && await this.tickAggregate(ref, doc, event?.user?.userId, event.actionStatus);
+                if (!continued) {
+                    recordPreviewWait({ ...event, data: { data: doc } }, ref);
                 }
             }
         } else {
             await this.saveDocuments(ref, docs);
-            if (aggregateType === 'cumulative') {
-                await this.tickAggregate(ref, docs, event?.user?.userId, event.actionStatus);
+            const continued = aggregateType === 'cumulative'
+                && await this.tickAggregate(ref, docs, event?.user?.userId, event.actionStatus);
+            if (!continued) {
+                recordPreviewWait(event, ref);
             }
         }
 

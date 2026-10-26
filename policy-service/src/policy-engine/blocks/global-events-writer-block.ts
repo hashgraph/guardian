@@ -14,6 +14,7 @@ import { TopicConfig } from '@guardian/hedera/topic';
 import { TopicHelper } from '@guardian/hedera/topic-helper';
 import { TopicId } from '@hiero-ledger/sdk';
 import { CacheState } from './../interfaces/index.js'
+import { PreviewScope } from '../helpers/preview.js';
 
 type SetDataStreamPayload = {
     topicId?: string;
@@ -259,6 +260,9 @@ export class GlobalEventsWriterBlock {
         try {
             const userCredentials = await PolicyUtils.getUserCredentials(ref, user.did, user.userId);
             const hederaAccount = await userCredentials.loadRelayerAccount(ref, user.hederaAccountId, user.userId);
+            if (PreviewScope.current()) {
+                return;
+            }
             const topic = new TopicConfig({ topicId: globalTopicId }, null, null);
             const messageServer = new MessageServer({
                 operatorId: hederaAccount.hederaAccountId,
