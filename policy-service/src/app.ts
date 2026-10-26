@@ -21,6 +21,7 @@ import { MongoDriver } from '@mikro-orm/mongodb';
 import { DEFAULT_MONGO } from '#constants';
 import { BlockTreeGenerator } from './policy-engine/block-tree-generator.js';
 import { warmupPyodideCache } from './policy-engine/helpers/workers/pyodide-warmup.js';
+import { isPythonSandboxDisabled } from './policy-engine/helpers/workers/python-sandbox-mode.js';
 
 export const obj = {};
 
@@ -40,7 +41,9 @@ function requirePositiveIntEnv(name: string): number {
     return n;
 }
 
-requirePositiveIntEnv('PYTHON_SANDBOX_TIMEOUT_MS');
+if (!isPythonSandboxDisabled()) {
+    requirePositiveIntEnv('PYTHON_SANDBOX_TIMEOUT_MS');
+}
 requirePositiveIntEnv('DRY_RUN_BLOCK_TIMEOUT_MS');
 
 Promise.all([

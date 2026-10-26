@@ -18,6 +18,7 @@ import { BlockActionError } from '../errors/index.js';
 import { collectTablesPack, hydrateTablesInObject, loadFileTextById } from '../helpers/table-field.js';
 import { RecordActionStep } from '../record-action-step.js';
 import { buildSandboxWorkerEnv } from '../helpers/workers/sandbox-worker-env.js';
+import { isPythonSandboxDisabled, PYTHON_DISABLED_MESSAGE } from '../helpers/workers/python-sandbox-mode.js';
 
 const filename = fileURLToPath(import.meta.url);
 
@@ -329,6 +330,12 @@ export class CustomLogicBlock {
 
                 const expression = options.expression || '';
                 if (options.selectedScriptLanguage === ScriptLanguageOption.PYTHON) {
+                    if (isPythonSandboxDisabled()) {
+                        try { disposeTables(); } catch { /* */ }
+                        safeReject(new Error(PYTHON_DISABLED_MESSAGE));
+                        return;
+                    }
+
                     const pythonWorkerData = {
                         execFunc: `${execCode}${expression}`,
                         user,
