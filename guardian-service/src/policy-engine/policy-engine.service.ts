@@ -2035,16 +2035,7 @@ export class PolicyEngineService {
                     }
 
                     notifier.startStep(STEP_VALIDATE_POLICY);
-                    let validation = null;
-                    try {
-                        const policyValidation = await this.policyEngine.validateModel(result.policy.id);
-                        validation = {
-                            isValid: !policyValidation.blocks.some((block) => !block.isValid),
-                            errors: policyValidation
-                        };
-                    } catch (error) {
-                        await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
-                    }
+                    const validation = await PolicyImportExportHelper.validatePolicyAfterImport(this.policyEngine, result.policy.id, logger, owner?.id);
                     notifier.completeStep(STEP_VALIDATE_POLICY);
 
                     notifier.result({
@@ -2249,16 +2240,7 @@ export class PolicyEngineService {
                         }
 
                         notifier.startStep(STEP_VALIDATE_POLICY);
-                        let validation = null;
-                        try {
-                            const policyValidation = await this.policyEngine.validateModel(result.policy.id);
-                            validation = {
-                                isValid: !policyValidation.blocks.some((block) => !block.isValid),
-                                errors: policyValidation
-                            };
-                        } catch (error) {
-                            await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
-                        }
+                        const validation = await PolicyImportExportHelper.validatePolicyAfterImport(this.policyEngine, result.policy.id, logger, owner?.id);
                         notifier.completeStep(STEP_VALIDATE_POLICY);
 
                         notifier.complete();
@@ -2359,16 +2341,7 @@ export class PolicyEngineService {
                         await this.policyEngine.updateSchemaId(policy, schemaMap);
                     }
                     await PolicyImportExportHelper.updatePolicyComponents(policy, logger, owner?.id);
-                    let validation = null;
-                    try {
-                        const policyValidation = await this.policyEngine.validateModel(policy.id);
-                        validation = {
-                            isValid: !policyValidation.blocks.some((block) => !block.isValid),
-                            errors: policyValidation
-                        };
-                    } catch (error) {
-                        await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
-                    }
+                    const validation = await PolicyImportExportHelper.validatePolicyAfterImport(this.policyEngine, policy.id, logger, owner?.id);
                     return new MessageResponse({
                         policyId: policy.id,
                         validation,
@@ -2454,16 +2427,7 @@ export class PolicyEngineService {
                     notifier.completeStep(STEP_IMPORT_SCHEMAS);
 
                     notifier.startStep(STEP_VALIDATE_POLICY);
-                    let validation = null;
-                    try {
-                        const policyValidation = await this.policyEngine.validateModel(policy.id);
-                        validation = {
-                            isValid: !policyValidation.blocks.some((block) => !block.isValid),
-                            errors: policyValidation
-                        };
-                    } catch (error) {
-                        await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
-                    }
+                    const validation = await PolicyImportExportHelper.validatePolicyAfterImport(this.policyEngine, policy.id, logger, owner?.id);
                     notifier.completeStep(STEP_VALIDATE_POLICY);
                     notifier.complete();
 

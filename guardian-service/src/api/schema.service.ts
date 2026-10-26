@@ -29,8 +29,7 @@ import {
     SchemaStatus,
     TopicType,
     IwaVersion,
-    resolveIwaVersion,
-    LogMessage
+    resolveIwaVersion
 } from '@guardian/interfaces';
 import {
     checkForCircularDependency,
@@ -64,40 +63,6 @@ export class SchemaService { }
 
 interface TemplateSchemaValidationContext {
     schemaConfig: ISchemaTemplateSchemaConfig;
-}
-
-/**
- * Validate policy after schema import and log failures
- */
-async function validatePolicyAfterImport(
-    policyId: string,
-    logger: PinoLogger,
-    userId?: string
-): Promise<{ isValid: boolean, errors: any } | null> {
-    try {
-        const policyValidation = await new PolicyEngine(logger).validateModel(policyId);
-        const validation = {
-            isValid: !policyValidation.blocks.some((block) => !block.isValid),
-            errors: policyValidation
-        };
-        if (!validation.isValid) {
-            const details = policyValidation.blocks
-                .filter((block) => !block.isValid)
-                .flatMap((block) => (block.errors || [])
-                    .filter((error) => !!error)
-                    .map((error) => block.id ? `${block.id}: ${error}` : String(error)))
-                .join('\n');
-            await logger.warn(
-                `${LogMessage.POLICY_IMPORT_VALIDATION_FAILED} (policy ${policyId})\n${details}`,
-                ['GUARDIAN_SERVICE'],
-                userId
-            );
-        }
-        return validation;
-    } catch (error) {
-        await logger.error(error, ['GUARDIAN_SERVICE'], userId);
-        return null;
-    }
 }
 
 function getSchemaFields(schema: ISchema): SchemaField[] {
@@ -2332,7 +2297,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 let validation = null;
                 if (category === SchemaCategory.POLICY && target) {
                     await PolicyImportExportHelper.updatePolicyComponents(target, logger, owner?.id);
-                    validation = await validatePolicyAfterImport(target.id, logger, owner?.id);
+                    validation = await PolicyImportExportHelper.validatePolicyAfterImport(new PolicyEngine(logger), target.id, logger, owner?.id);
                 }
 
                 notifier.result({
@@ -2431,7 +2396,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 let validation = null;
                 if (category === SchemaCategory.POLICY && target) {
                     await PolicyImportExportHelper.updatePolicyComponents(target, logger, owner?.id);
-                    validation = await validatePolicyAfterImport(target.id, logger, owner?.id);
+                    validation = await PolicyImportExportHelper.validatePolicyAfterImport(new PolicyEngine(logger), target.id, logger, owner?.id);
                 }
 
                 notifier.result({
@@ -2998,7 +2963,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     await DatabaseServer.updateTool(target);
                 } else if (category === SchemaCategory.POLICY) {
                     await PolicyImportExportHelper.updatePolicyComponents(target, logger, owner?.id);
-                    validation = await validatePolicyAfterImport(target.id, logger, owner?.id);
+                    validation = await PolicyImportExportHelper.validatePolicyAfterImport(new PolicyEngine(logger), target.id, logger, owner?.id);
                 }
 
                 return new MessageResponse({
@@ -3092,7 +3057,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     await DatabaseServer.updateTool(target);
                 } else if (category === SchemaCategory.POLICY) {
                     await PolicyImportExportHelper.updatePolicyComponents(target, logger, owner?.id);
-                    validation = await validatePolicyAfterImport(target.id, logger, owner?.id);
+                    validation = await PolicyImportExportHelper.validatePolicyAfterImport(new PolicyEngine(logger), target.id, logger, owner?.id);
                 }
                 notifier.complete();
 
