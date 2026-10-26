@@ -400,23 +400,23 @@ export class SchemaImport {
             if (checkForCircularDependency(file)) {
                 throw new Error(`There is circular dependency in schema: ${file.iri}`);
             }
-            let dependencyError: string | null = null;
+            let validationMessage: string | null = null;
             try {
                 validateSchemaFieldKeys(file);
             } catch (keyError) {
-                dependencyError = keyError instanceof Error ? keyError.message : String(keyError);
+                validationMessage = keyError instanceof Error ? keyError.message : String(keyError);
                 this.warnings.push({
                     type: 'schema',
                     uuid: file.uuid,
                     name: file.name,
-                    error: dependencyError
+                    error: validationMessage
                 });
             }
-            if (!dependencyError) {
+            if (!validationMessage) {
                 try {
                     validateSchemaDependencies(file);
                 } catch (validationError) {
-                    dependencyError = validationError instanceof Error
+                    validationMessage = validationError instanceof Error
                         ? validationError.message
                         : String(validationError);
                 }
@@ -424,12 +424,12 @@ export class SchemaImport {
 
             const schemaObject = DatabaseServer.createSchema(file);
             const errors = SchemaHelper.checkErrors(file as Schema);
-            if (dependencyError) {
+            if (validationMessage) {
                 errors.push({
                     target: {
                         type: 'schema'
                     },
-                    message: dependencyError
+                    message: validationMessage
                 });
             }
             SchemaHelper.updateIRI(schemaObject);
@@ -468,10 +468,10 @@ export class SchemaImport {
                 row.description = schemaObject.description;
                 row.entity = schemaObject.entity;
                 row.document = schemaObject.document;
-                row.status = dependencyError
+                row.status = validationMessage
                     ? SchemaStatus.ERROR
                     : SchemaStatus.DRAFT;
-                row.errors = dependencyError ? errors : [];
+                row.errors = validationMessage ? errors : [];
                 SchemaHelper.setVersion(row, newVersion, previousVersion);
                 SchemaHelper.updateIRI(row);
                 await DatabaseServer.updateSchema(row.id, row);

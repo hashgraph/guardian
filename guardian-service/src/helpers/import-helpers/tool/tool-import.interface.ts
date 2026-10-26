@@ -22,6 +22,10 @@ export interface ImportToolResult {
      * Errors
      */
     errors: any[];
+    /**
+     * Warnings
+     */
+    warnings?: any[];
 }
 
 /**
