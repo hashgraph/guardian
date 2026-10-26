@@ -338,6 +338,16 @@ class Resolver {
         if (!node) {
             return new Set<string>();
         }
+        if (node.type === 'CallExpression' && node.callee.type === 'Identifier' && node.callee.name === 'getField') {
+            const argument = node.arguments[0];
+            if (argument?.type === 'Literal' && typeof argument.value === 'string') {
+                const keys = argument.value.split('.').filter((part: string) => part && !/^\d+$/.test(part));
+                return this.join(new Set([this.prefix]), keys);
+            }
+        }
+        if (node.type === 'LogicalExpression' && (node.operator === '||' || node.operator === '??')) {
+            return new Set([...this.value(node.left, seen), ...this.value(node.right, seen)]);
+        }
         const { keys, base } = chainOf(node);
         const subject = keys.lastIndexOf('credentialSubject');
         const declaration = base ? this.declaration(base) : null;

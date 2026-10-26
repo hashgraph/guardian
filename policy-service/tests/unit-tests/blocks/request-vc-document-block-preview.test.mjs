@@ -147,6 +147,75 @@ describe('@unit RequestVcDocumentBlock preview', () => {
         ? item.document.credentialSubject[0]
         : item.document.credentialSubject;
 
+    for (const discovery of [false, true]) {
+        it(`never requires VM0051 display headings in preview mode discovery=${discovery}`, async () => {
+            const { block } = mk();
+            block._schema = formSchema();
+            block._schema.fields.push({ name: 'quantification', isRef: true, isArray: false, context: { type: 'Quantification', context: ['ctx://quantification'] }, fields: [
+                { name: 'baselineEmission', type: 'null', isRef: false, isArray: false },
+                { name: 'projectEmission', type: 'null', isRef: false, isArray: false }
+            ] });
+            const response = await runPreview(block, makeUser(), { document: { amount: 5, rate: 2 }, previewFields: discovery },
+                async (target, user, data, step) => {
+                    const item = await target.setData(user, data, null, step);
+                    step.addPreviewRead('#S', 'quantification.baselineEmission');
+                    step.addPreviewRead('#S', 'quantification.projectEmission');
+                    return new MessageResponse(item);
+                });
+            assert.ok(response instanceof MessageResponse);
+            assert.deepEqual(response.body.fields, ['amount', 'rate']);
+            assert.deepEqual(response.body.missingFields, []);
+            assert.deepEqual(response.body.errors, []);
+        });
+    }
+
+    it('rejects a missing numeric table column while ignoring null headings with the same name', async () => {
+        const { block } = mk();
+        block._schema = formSchema();
+        block._schema.fields.push({ name: 'unit', type: 'null', isRef: false, isArray: false },
+            { name: 'rows', isRef: true, isArray: true, context: { type: 'Row', context: ['ctx://row'] }, fields: [{ name: 'unit', type: 'number', isRef: false, isArray: false }] });
+        const response = await runPreview(block, makeUser(), { document: { amount: 5, rate: 2, rows: [{ unit: 1 }, {}] } },
+            async (target, user, data, step) => {
+                const item = await target.setData(user, data, null, step);
+                step.addPreviewRead('#S', 'unit');
+                step.addPreviewRead('#S', 'rows.1.unit');
+                return new MessageResponse(item);
+            });
+        assert.ok(response instanceof MessageError);
+        assert.equal(response.code, 422);
+        assert.deepEqual(response.data.fields, ['amount', 'rate', 'rows.unit']);
+        assert.deepEqual(response.data.missingFields, ['rows.1.unit']);
+    });
+
+    it('does not hide a calculation exception when the only empty read is a null heading', async () => {
+        const { block } = mk();
+        block._schema = formSchema();
+        block._schema.fields.push({ name: 'unit', type: 'null', isRef: false, isArray: false });
+        await assert.rejects(() => runPreview(block, makeUser(), { document: { amount: 5, rate: 2 } },
+            async (target, user, data, step) => {
+                await target.setData(user, data, null, step);
+                step.addPreviewRead('#S', 'unit');
+                throw new Error('calculation failed');
+            }), /calculation failed/);
+    });
+
+    it('keeps ordinary document preparation on its existing calculation path', async () => {
+        const { block } = mk();
+        block._schema = formSchema();
+        block._schema.fields.push({ name: 'unit', type: 'null', isRef: false, isArray: false });
+        const document = { amount: 5, rate: 2, unit: null };
+        let calls = 0;
+        patch(PolicyUtils, { setAutoCalculateFields: (schema, input) => {
+            calls++;
+            assert.equal(schema, block._schema);
+            input.total = input.amount * input.rate;
+        } });
+        const prepared = await block.prepareDocument({ document });
+        assert.equal(calls, 1);
+        assert.equal(prepared, document);
+        assert.deepEqual(prepared, { amount: 5, rate: 2, total: 10, unit: null });
+    });
+
     it('fills empty fields and records the form source when field discovery is asked', async () => {
         const { block } = mk();
         block._schema = formSchema();
@@ -162,6 +231,7 @@ describe('@unit RequestVcDocumentBlock preview', () => {
             paths: ['amount', 'rate', 'total'],
             dependencies: { total: ['amount', 'rate'] },
             hidden: [],
+            nulls: [],
             discovery: true
         });
     });

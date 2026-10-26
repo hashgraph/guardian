@@ -289,6 +289,12 @@ export function collectPreviewHiddenPaths(fields: SchemaField[] | undefined, pre
         : field.isRef ? collectPreviewHiddenPaths(field.fields, `${prefix}${field.name}.`) : []);
 }
 
+export function collectPreviewNullPaths(fields: SchemaField[] | undefined, prefix: string = ''): string[] {
+    return (fields || []).flatMap((field) => field.type === 'null'
+        ? [`${prefix}${field.name}`]
+        : field.isRef ? collectPreviewNullPaths(field.fields, `${prefix}${field.name}.`) : []);
+}
+
 export function calculatePreviewAutoFields(
     fields: SchemaField[] | undefined,
     document: unknown,
@@ -525,6 +531,9 @@ export function resolvePreviewFields(
     };
     const result = new Set<string>();
     const visit = (path: string, seen: Set<string>) => {
+        if (source.nulls?.includes(path)) {
+            return;
+        }
         const fieldDependencies = source.dependencies[path];
         if (!fieldDependencies) {
             result.add(path);

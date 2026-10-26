@@ -19,6 +19,7 @@ import { GeospatialFileValidator } from '../helpers/geospatial-file-validator.js
 import {
     calculatePreviewAutoFields,
     collectPreviewHiddenPaths,
+    collectPreviewNullPaths,
     collectPreviewPaths,
     fillPreviewPlaceholders,
 } from '../helpers/preview.js';
@@ -431,6 +432,7 @@ export class RequestVcDocumentBlock {
                 paths: collectPreviewPaths(this._schema.fields),
                 dependencies,
                 hidden: collectPreviewHiddenPaths(this._schema.fields),
+                nulls: collectPreviewNullPaths(this._schema.fields),
                 discovery: previewFields
             });
             for (const path of Object.keys(dependencies)) {

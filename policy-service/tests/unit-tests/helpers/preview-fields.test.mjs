@@ -3,7 +3,7 @@ import { findPreviewScriptFields } from '../../../dist/policy-engine/helpers/pre
 import assert from 'node:assert/strict';
 import { types } from 'node:util';
 import { PolicyUtils } from '../../../dist/policy-engine/helpers/utils.js';
-import { assertPreviewCalculationResult, calculatePreviewAutoFields, collectPreviewPaths, fillPreviewPlaceholders, getMathPreviewOutputPaths, getMathPreviewReads, getPreviewChangedPaths, getPreviewComputed, getPreviewSubject, isMissingPreviewValue, isPreviewComputedRead, isPreviewOutputRead, isPreviewPathCovered, normalizePreviewPath, resolvePreviewFields, setPreviewComputed } from '../../../dist/policy-engine/helpers/preview.js';
+import { assertPreviewCalculationResult, calculatePreviewAutoFields, collectPreviewNullPaths, collectPreviewPaths, fillPreviewPlaceholders, getMathPreviewOutputPaths, getMathPreviewReads, getPreviewChangedPaths, getPreviewComputed, getPreviewSubject, isMissingPreviewValue, isPreviewComputedRead, isPreviewOutputRead, isPreviewPathCovered, normalizePreviewPath, resolvePreviewFields, setPreviewComputed } from '../../../dist/policy-engine/helpers/preview.js';
 
 const field = (name, type, extra = {}) => ({ name, type, isRef: false, isArray: false, ...extra });
 
@@ -618,5 +618,46 @@ describe('@unit preview fields', () => {
         it('returns empty lists without a form source', () => {
             assert.deepEqual(resolvePreviewFields(null, [{ schema: '#S', path: 'amount' }]), { fields: [], missingFields: [] });
         });
+    });
+});
+
+describe('@unit null preview fields', () => {
+    const fields = [field('title', 'null'), field('amount', 'number'),
+        { name: 'section', isRef: true, fields: [field('unit', 'null'), field('value', 'number')] },
+        { name: 'rows', isRef: true, isArray: true, fields: [field('heading', 'null'), field('unit', 'number')] }];
+    const source = (document = {}) => ({ schema: '#S', document, paths: collectPreviewPaths(fields),
+        nulls: collectPreviewNullPaths(fields), dependencies: {} });
+
+    it('collects display-only paths in nested schemas and tables without removing known paths', () => {
+        assert.deepEqual(collectPreviewNullPaths(fields), ['title', 'section.unit', 'rows.heading']);
+        assert.deepEqual(collectPreviewNullPaths(fields, 'input.'), ['input.title', 'input.section.unit', 'input.rows.heading']);
+        assert.ok(collectPreviewPaths(fields).includes('section.unit'));
+        assert.deepEqual(collectPreviewNullPaths(undefined), []);
+    });
+
+    it('excludes null headings without replacing a read with its parent section', () => {
+        const reads = ['title', 'section.unit', 'rows.0.heading'].map(path => ({ schema: '#S', path }));
+        assert.deepEqual(resolvePreviewFields(source(), reads), { fields: [], missingFields: [] });
+    });
+
+    it('still requires a numeric column with the same leaf name as a null heading', () => {
+        const reads = ['section.unit', 'rows.1.unit'].map(path => ({ schema: '#S', path }));
+        assert.deepEqual(resolvePreviewFields(source({ rows: [{ unit: 0 }, {}] }), reads),
+            { fields: ['rows.unit'], missingFields: [] });
+        assert.deepEqual(resolvePreviewFields(source({ rows: [{}] }), reads),
+            { fields: ['rows.unit'], missingFields: ['rows.unit'] });
+    });
+
+    it('keeps an explicitly read section required after discarding its null child', () => {
+        const reads = ['section', 'section.unit'].map(path => ({ schema: '#S', path }));
+        assert.deepEqual(resolvePreviewFields(source(), reads), { fields: ['section'], missingFields: ['section'] });
+    });
+
+    it('excludes a null dependency while retaining real autocalculate dependencies', () => {
+        const input = source({ amount: 0 });
+        input.dependencies.total = ['amount', 'title'];
+        input.paths.push('total');
+        assert.deepEqual(resolvePreviewFields(input, [{ schema: '#S', path: 'total' }]),
+            { fields: ['amount'], missingFields: [] });
     });
 });

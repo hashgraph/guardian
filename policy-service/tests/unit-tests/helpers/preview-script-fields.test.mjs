@@ -245,3 +245,63 @@ describe('@unit mathjs hybrid field discovery', () => {
         assert.deepEqual(fields('owner.name', reads), ['owner.name']);
     });
 });
+
+describe('@unit getField path bindings', () => {
+    const formPaths = ['t', 't.rows', 't.rows.unit', 't.rows.deltat', 't.rows.BWPwoodyABputdt',
+        't.unit', 'ccb', 'ccb.rows', 'ccb.rows.unit', 'ccb.rows.deltat', 'ccb.rows.BWPwoodyABputdt'];
+    const fields = (source, known = formPaths) => findPreviewScriptFields(source, [], [[0, source.length]],
+        '#S', known, false, '', ['document', 'result']).map(read => read.path).sort();
+
+    for (const [name, value] of [
+        ['direct assignment', "getField('t.rows')"],
+        ['empty-array fallback', "getField('t.rows') || []"],
+        ['nullish empty-array fallback', "getField('t.rows') ?? []"],
+        ['indexed getter path', "getField('t.rows.0') || []"]
+    ]) {
+        it(`keeps the table origin through ${name}`, () => {
+            const source = `const rows = ${value}; if (false) result.total = rows[0].unit;`;
+            assert.deepEqual(fields(source), ['t.rows.unit']);
+        });
+    }
+
+    it('keeps an inactive BWP loop on its own unit, deltat and BWPwoodyABputdt columns', () => {
+        const source = "const rows = getField('t.rows') || []; for (let p = 0; p < rows.length; p++) { result.row = { pu: rows[p].unit, t_x: rows[p].deltat, stock: rows[p].BWPwoodyABputdt }; }";
+        assert.deepEqual(fields(source), ['t.rows.BWPwoodyABputdt', 't.rows.deltat', 't.rows.unit']);
+    });
+
+    it('propagates a getter origin through an alias and an iterator parameter', () => {
+        const source = "const rows = getField('t.rows') || []; const copy = rows; copy.forEach(row => { result.unit = row.unit; });";
+        assert.deepEqual(fields(source), ['t.rows.unit']);
+    });
+
+    it('keeps both known getter origins when either fallback can supply the table', () => {
+        const source = "const rows = getField('t.rows') || getField('ccb.rows') || []; result.unit = rows[0].unit;";
+        assert.deepEqual(fields(source), ['ccb.rows.unit', 't.rows.unit']);
+    });
+
+    it('does not fall back to a same-named field when the getter path is outside the form', () => {
+        const source = "const rows = getField('calculated.rows') || []; result.unit = rows[0].unit;";
+        assert.deepEqual(fields(source), []);
+    });
+
+    for (const census of [false, true]) {
+        it(`keeps runtime and inactive BWP reads precise for census=${census}`, () => {
+            const script = "const rows = getField('t.rows') || []; let total = 0; if (document.census) { for (let p = 0; p < rows.length; p++) total += rows[p].unit + rows[p].deltat + rows[p].BWPwoodyABputdt; } done(total);";
+            const tracker = new PreviewReadTracker();
+            tracker.configure(script);
+            tracker.startCoverage();
+            const document = tracker.track({ census, t: { rows: census ? [{ unit: 1, deltat: 2, BWPwoodyABputdt: 3 }] : [], unit: null }, ccb: { rows: [], unit: null } }, '#S');
+            let unexecuted = [];
+            runInNewContext(script, {
+                document,
+                getField: path => path.split('.').reduce((value, key) => value?.[key], document),
+                done() { unexecuted = tracker.takeUnexecuted(); }
+            }, { filename: PREVIEW_SCRIPT_FILE });
+            const reads = findPreviewScriptFields(script, tracker.takeSites(), unexecuted, '#S', ['census', ...formPaths], false, '', ['document', 'result']);
+            const actual = reads.map(read => read.path);
+            for (const path of ['t.rows.unit', 't.rows.deltat', 't.rows.BWPwoodyABputdt']) assert.ok(actual.includes(path), path);
+            assert.ok(!actual.includes('t.unit'));
+            assert.ok(!actual.some(path => path.startsWith('ccb.')));
+        });
+    }
+});
