@@ -82,6 +82,7 @@ import {
     getSchemaCategory, ImportMode, ImportPolicyOptions, importSubTools, PolicyImportExportHelper, previewToolByMessage,
     readSchemaTemplateXlsx, SchemaImportExportHelper
 } from '../helpers/import-helpers/index.js';
+import { getFormulaWarnings } from '../helpers/import-helpers/schema/schema-formula-validator.js';
 import { PolicyCommentsUtils } from './policy-comments-utils.js';
 import { getRemoteRequestDocument, getRemoteRequests, getRemoteRequestsCount } from './helpers/remote-requests.js';
 import { PersistStepPayload, RecordPersistService } from './helpers/record-persist.service.js';
@@ -2450,6 +2451,7 @@ export class PolicyEngineService {
                     if (schemaMap.size) {
                         await this.policyEngine.updateSchemaId(policy, schemaMap);
                     }
+                    const formulaWarnings = await getFormulaWarnings(logger, category, policy.id, policy.topicId, result.schemasMap, owner?.id);
                     await PolicyImportExportHelper.updatePolicyComponents(policy, logger, owner?.id);
                     notifier.completeStep(STEP_IMPORT_SCHEMAS);
 
@@ -2470,6 +2472,7 @@ export class PolicyEngineService {
                     notifier.result({
                         policyId: policy.id,
                         validation,
+                        formulaWarnings,
                         errors: result.errors
                     });
                 }, async (error) => {

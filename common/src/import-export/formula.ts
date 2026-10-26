@@ -135,6 +135,16 @@ export class FormulaImportExport {
     }
 
     /**
+     * Get links of the item: `link` mirrors `links[0]`, they can be separate objects
+     *
+     * @param item formula item
+     */
+    private static getItemLinks(item: any): any[] {
+        const links = Array.isArray(item?.links) ? item.links : [];
+        return [item?.link, ...links].filter((link) => !!link);
+    }
+
+    /**
      * Replace Ids
      *
      * @param data config
@@ -144,8 +154,10 @@ export class FormulaImportExport {
             const formulas = data.formulas;
             if (Array.isArray(formulas)) {
                 for (const component of formulas) {
-                    if (component.link && component.link.entityId === oldId) {
-                        component.link.entityId = newId;
+                    for (const link of FormulaImportExport.getItemLinks(component)) {
+                        if (link.entityId === oldId) {
+                            link.entityId = newId;
+                        }
                     }
                 }
             }
@@ -159,9 +171,10 @@ export class FormulaImportExport {
             const formulas = data.formulas;
             if (Array.isArray(formulas)) {
                 for (const component of formulas) {
-                    const link = component.link;
-                    if (link && link.type === 'schema') {
-                        ids.add(link.entityId)
+                    for (const link of FormulaImportExport.getItemLinks(component)) {
+                        if (link.type === 'schema') {
+                            ids.add(link.entityId)
+                        }
                     }
                 }
             }

@@ -1,12 +1,12 @@
 import { DatabaseServer } from '@guardian/common';
-import { ISchema, Schema, SchemaHelper } from '@guardian/interfaces';
+import { ISchema, Schema, SchemaCategory, SchemaFieldPredicate, SchemaHelper } from '@guardian/interfaces';
+import { PinoLogger } from '@guardian/common';
 
 /**
  * Formula link that points to a schema field which does not exist
  */
 export interface IFormulaLinkWarning {
     text: string;
-    schemaIri: string;
     path: string;
 }
 
@@ -38,11 +38,11 @@ function getLinks(item: any): any[] {
     return item?.link ? [item.link] : [];
 }
 
-function getPredicatePath(predicate: any): string {
+function getPredicatePath(predicate: SchemaFieldPredicate): string {
     if (Array.isArray(predicate?.fieldPath) && predicate.fieldPath.length) {
         return predicate.fieldPath.join('.');
     }
-    return predicate?.field?.fullPath || predicate?.field?.path || predicate?.field?.name || '';
+    return predicate?.field?.name || '';
 }
 
 /**
@@ -88,7 +88,6 @@ export function findBrokenFormulaLinks(
                     }
                     result.push({
                         text: `Formula "${formula.name}", item "${item.name}": ${kind} "${path}" will no longer exist in the schema.`,
-                        schemaIri: link.entityId,
                         path
                     });
                 }
@@ -115,25 +114,20 @@ export async function validateFormulaLinksForReplace(
         return [];
     }
     const incomingByName = new Map((incoming || []).map((schema) => [schema?.name, schema]));
-    const baseline: SchemaFieldPaths = new Map();
-    const schemas: SchemaFieldPaths = new Map();
-    const idByIri = new Map<string, string>();
+    const result: ISchemaFormulaWarnings[] = [];
     for (const existing of replaceable) {
         const next = incomingByName.get(existing.name);
         if (!next?.document || !existing.iri) {
             continue;
         }
-        baseline.set(existing.iri, getSchemaFieldPaths(existing));
-        schemas.set(existing.iri, getSchemaFieldPaths(next));
-        idByIri.set(existing.iri, existing.id);
+        const baseline: SchemaFieldPaths = new Map([[existing.iri, getSchemaFieldPaths(existing)]]);
+        const schemas: SchemaFieldPaths = new Map([[existing.iri, getSchemaFieldPaths(next)]]);
+        const warnings = findBrokenFormulaLinks(formulas, schemas, baseline);
+        if (warnings.length) {
+            result.push({ schemaId: existing.id, warnings });
+        }
     }
-    const grouped = new Map<string, IFormulaLinkWarning[]>();
-    for (const warning of findBrokenFormulaLinks(formulas, schemas, baseline)) {
-        const list = grouped.get(warning.schemaIri) || [];
-        list.push(warning);
-        grouped.set(warning.schemaIri, list);
-    }
-    return Array.from(grouped, ([iri, warnings]) => ({ schemaId: idByIri.get(iri), warnings }));
+    return result;
 }
 
 /**
@@ -142,7 +136,7 @@ export async function validateFormulaLinksForReplace(
  * @param topicId policy topic
  * @param iris imported schema IRIs
  */
-export async function validateFormulaLinksAfterImport(
+async function validateFormulaLinksAfterImport(
     policyId: string,
     topicId: string,
     iris: string[]
@@ -162,4 +156,27 @@ export async function validateFormulaLinksAfterImport(
         schemas.set(row.iri, getSchemaFieldPaths(row));
     }
     return findBrokenFormulaLinks(formulas, schemas);
+}
+
+/**
+ * List formula links that the imported schemas break, empty when the check fails
+ */
+export async function getFormulaWarnings(
+    logger: PinoLogger,
+    category: SchemaCategory,
+    policyId: string | undefined,
+    topicId: string,
+    schemasMap: { newIRI?: string }[] | undefined,
+    userId: string | undefined,
+): Promise<IFormulaLinkWarning[]> {
+    if (category !== SchemaCategory.POLICY || !policyId) {
+        return [];
+    }
+    try {
+        const iris = (schemasMap || []).map((item) => item.newIRI).filter((iri) => !!iri);
+        return await validateFormulaLinksAfterImport(policyId, topicId, iris);
+    } catch (error) {
+        await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+        return [];
+    }
 }

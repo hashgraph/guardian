@@ -51,7 +51,7 @@ import {
 } from '../helpers/import-helpers/index.js'
 import { validateSchemaDependencies } from '../helpers/import-helpers/schema/schema-dependency-validator.js';
 import { validateSchemaFieldKeys } from '../helpers/import-helpers/schema/schema-field-key-validator.js';
-import { validateFormulaLinksAfterImport, validateFormulaLinksForReplace } from '../helpers/import-helpers/schema/schema-formula-validator.js';
+import { getFormulaWarnings, validateFormulaLinksForReplace } from '../helpers/import-helpers/schema/schema-formula-validator.js';
 import { PolicyEngine } from '../policy-engine/policy-engine.js';
 import { getPageOptions } from './helpers/index.js';
 import { readFile } from 'node:fs/promises';
@@ -562,29 +562,6 @@ async function resolveTemplateSchemaContext(item: ISchema, owner: IOwner): Promi
     }
     if (!template.topicId || item.topicId !== template.topicId) {
         throw new Error('Invalid schema template topic.');
-    }
-}
-
-/**
- * Formula links broken by the imported schemas, empty when the check fails
- */
-async function getFormulaWarnings(
-    logger: PinoLogger,
-    category: SchemaCategory,
-    policyId: string | undefined,
-    topicId: string,
-    schemasMap: { newIRI?: string }[] | undefined,
-    userId: string | undefined,
-): Promise<any[]> {
-    if (category !== SchemaCategory.POLICY || !policyId) {
-        return [];
-    }
-    try {
-        const iris = (schemasMap || []).map((item) => item.newIRI).filter((iri) => !!iri);
-        return await validateFormulaLinksAfterImport(policyId, topicId, iris);
-    } catch (error) {
-        await logger.error(error, ['GUARDIAN_SERVICE'], userId);
-        return [];
     }
 }
 

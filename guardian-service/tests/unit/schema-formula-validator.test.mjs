@@ -105,3 +105,14 @@ describe('getSchemaFieldPaths', () => {
         assert.ok(paths.has('b.c'));
     });
 });
+
+describe('condition field path', () => {
+    it('uses the field name when the predicate has no fieldPath', () => {
+        const items = [{
+            name: 'I',
+            link: { type: 'schema', entityId: IRI, item: 'a', condition: { field: { name: 'x', fullPath: '#iri/x' }, fieldValue: 1 } }
+        }];
+        const res = findBrokenFormulaLinks(formula(items), schemas('a'));
+        assert.deepEqual(res.map((r) => r.path), ['x']);
+    });
+});

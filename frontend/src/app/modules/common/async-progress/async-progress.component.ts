@@ -266,6 +266,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 break;
             case TaskAction.IMPORT_POLICY_FILE:
             case TaskAction.IMPORT_POLICY_MESSAGE:
+                this.reportFormulaWarnings(result);
                 if (this.reportImportValidationResult(result)) {
                     break;
                 }
