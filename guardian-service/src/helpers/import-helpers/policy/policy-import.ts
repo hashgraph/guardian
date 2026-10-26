@@ -1241,7 +1241,12 @@ export class PolicyImport {
                 ['GUARDIAN_SERVICE'], userId
             );
         }
-        return { policy: row, errors, artifactErrors: this.artifactErrors };
+        return {
+            policy: row,
+            errors,
+            artifactErrors: this.artifactErrors,
+            warnings: this.schemasResult?.warnings || []
+        };
     }
 
     private async copyPolicyRecords(policy: Policy, logger: PinoLogger, copySchemas: Schema[]): Promise<void> {

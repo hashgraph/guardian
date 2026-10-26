@@ -44,6 +44,7 @@ export class SchemaImport {
     private readonly externalSchemas: Map<string, string>;
     private readonly validatedSchemas: Map<string, Schema>;
     private readonly errors: ImportSchemaError[];
+    private readonly warnings: ImportSchemaError[];
 
     private root: IRootConfig;
     private topicHelper: TopicHelper;
@@ -62,6 +63,7 @@ export class SchemaImport {
         this.validatedSchemas.set('#GeoJSON', geoJson as any as Schema);
         this.validatedSchemas.set('#SentinelHUB', sentinelHub as any as Schema);
         this.errors = [];
+        this.warnings = [];
     }
 
     public addExternalSchemas(externalSchemas: { name: string, iri: string }[]): void {
@@ -398,14 +400,26 @@ export class SchemaImport {
             if (checkForCircularDependency(file)) {
                 throw new Error(`There is circular dependency in schema: ${file.iri}`);
             }
-            validateSchemaFieldKeys(file);
             let dependencyError: string | null = null;
             try {
-                validateSchemaDependencies(file);
-            } catch (validationError) {
-                dependencyError = validationError instanceof Error
-                    ? validationError.message
-                    : String(validationError);
+                validateSchemaFieldKeys(file);
+            } catch (keyError) {
+                dependencyError = keyError instanceof Error ? keyError.message : String(keyError);
+                this.warnings.push({
+                    type: 'schema',
+                    uuid: file.uuid,
+                    name: file.name,
+                    error: dependencyError
+                });
+            }
+            if (!dependencyError) {
+                try {
+                    validateSchemaDependencies(file);
+                } catch (validationError) {
+                    dependencyError = validationError instanceof Error
+                        ? validationError.message
+                        : String(validationError);
+                }
             }
 
             const schemaObject = DatabaseServer.createSchema(file);
@@ -632,7 +646,8 @@ export class SchemaImport {
 
         return {
             schemasMap: this.schemasMapping,
-            errors: this.errors
+            errors: this.errors,
+            warnings: this.warnings
         };
     }
 
@@ -693,7 +708,8 @@ export class SchemaImport {
 
         return {
             schemasMap: this.schemasMapping,
-            errors: this.errors
+            errors: this.errors,
+            warnings: this.warnings
         };
     }
 
@@ -779,7 +795,8 @@ export class SchemaImport {
 
         return {
             schemasMap: this.schemasMapping,
-            errors: this.errors
+            errors: this.errors,
+            warnings: this.warnings
         };
     }
 }
