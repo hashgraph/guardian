@@ -1176,17 +1176,28 @@ export class VCJS {
         signatureType: SignatureType,
         documentOptions?: IDocumentOptions
     ): Promise<VcDocument> {
+        const vc = this.buildCredential(subject, didDocument.getDid(), signatureType, documentOptions);
+        return await this.issueVerifiableCredential(vc, didDocument, signatureType, documentOptions);
+    }
+
+
+    protected buildCredential(
+        subject: ICredentialSubject,
+        issuer: string,
+        signatureType: SignatureType,
+        documentOptions?: IDocumentOptions
+    ): VcDocument {
         const vcSubject = VcSubject.create(subject);
         const vc = new VcDocument(signatureType);
         vc.addCredentialSubject(vcSubject);
         vc.addContexts(subject['@context']);
         vc.addContexts(this.schemaContext);
         if (documentOptions && documentOptions.group) {
-            vc.setIssuer(new Issuer(didDocument.getDid(), documentOptions.group.groupId));
+            vc.setIssuer(new Issuer(issuer, documentOptions.group.groupId));
             vc.addType(documentOptions.group.type);
             vc.addContext(documentOptions.group.context);
         } else {
-            vc.setIssuer(new Issuer(didDocument.getDid()));
+            vc.setIssuer(new Issuer(issuer));
         }
         if (documentOptions?.evidenceContext) {
             vc.addContext(documentOptions.evidenceContext);
@@ -1196,7 +1207,20 @@ export class VCJS {
                 vc.addEvidence(entry);
             }
         }
-        return await this.issueVerifiableCredential(vc, didDocument, signatureType, documentOptions);
+        return vc;
+    }
+
+    public async createUnsignedCredential(
+        subject: ICredentialSubject,
+        issuer: string,
+        signatureType: SignatureType,
+        documentOptions?: IDocumentOptions
+    ): Promise<VcDocument> {
+        const vc = this.buildCredential(subject, issuer, signatureType, documentOptions);
+        vc.setId(this.generateUUID(documentOptions));
+        vc.setIssuanceDate(TimestampUtils.now());
+        vc.setProof(null);
+        return vc;
     }
 
     /**
@@ -1240,9 +1264,19 @@ export class VCJS {
     ): Promise<VpDocument> {
         const id: string = this.generateUUID(documentOptions);
         const suite = await this.createSuiteByMethod(didDocument, SignatureType.Ed25519Signature2018) as Ed25519Signature2018;
+        const vp = this.buildPresentation(vcs, id);
+        return await this.issuePresentation(vp, suite, this.loader);
+    }
+
+    protected buildPresentation(vcs: VcDocument[], id: string): VpDocument {
         const vp = new VpDocument();
         vp.setId(id);
         vp.addVerifiableCredentials(vcs);
-        return await this.issuePresentation(vp, suite, this.loader);
+        return vp;
     }
+
+    public async createUnsignedPresentation(vcs: VcDocument[], documentOptions?: IDocumentOptions): Promise<VpDocument> {
+        return this.buildPresentation(vcs, this.generateUUID(documentOptions));
+    }
+
 }
