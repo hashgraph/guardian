@@ -1,3 +1,4 @@
+import { PolicyCredential } from '../helpers/policy-credential.js';
 import { IVC, LocationType, SchemaHelper } from '@guardian/interfaces';
 import { ActionCallback, CalculateBlock } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
@@ -14,6 +15,15 @@ import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { RecordActionStep } from '../record-action-step.js';
+import {
+    buildCalculatePreviewCalculation,
+    getPreviewDocumentSchema,
+    assertPreviewCalculationResult,
+    isPreviewComputedRead,
+    PreviewScope,
+    setPreviewComputed,
+    setPreviewDocumentSchema
+} from '../helpers/preview.js';
 
 interface IMetadata {
     owner: PolicyUser;
@@ -103,8 +113,13 @@ export class CalculateContainerBlock {
             }
         }
         const addons = ref.getAddons();
+        const inputScope = { ...scope };
+        const actionStatus = PreviewScope.current();
         for (const addon of addons) {
             scope = await addon.run(scope, docOwner);
+        }
+        if (actionStatus) {
+            assertPreviewCalculationResult(scope);
         }
         const newJson: any = {};
         if (options.outputFields) {
@@ -113,6 +128,18 @@ export class CalculateContainerBlock {
                     newJson[field.name] = scope[field.value];
                 }
             }
+        }
+        if (actionStatus) {
+            const formulas: Record<string, unknown> = {};
+            for (const addon of addons) {
+                const addonOptions = await addon.getOptions(docOwner);
+                for (const equation of addonOptions.equations || []) {
+                    formulas[equation.variable] = equation.formula;
+                }
+            }
+            actionStatus.addPreviewCalculation(
+                buildCalculatePreviewCalculation(ref.tag, options.inputFields, options.outputFields, formulas, inputScope, scope, newJson)
+            );
         }
         return newJson;
     }
@@ -141,6 +168,18 @@ export class CalculateContainerBlock {
             throw new BlockActionError('Invalid VC', ref.blockType, ref.uuid);
         }
 
+        if (actionStatus?.preview) {
+            const readDocuments = Array.isArray(contextDocuments) ? contextDocuments : [contextDocuments];
+            for (const readDocument of readDocuments) {
+                for (const field of options.inputFields || []) {
+                    const readSchema = getPreviewDocumentSchema(readDocument);
+                    if (!isPreviewComputedRead(readDocument, readSchema, field.name)) {
+                        actionStatus.addPreviewRead(readSchema, field.name);
+                    }
+                }
+            }
+        }
+
         // <-- aggregate
         let json: any | any[];
         if (isArray) {
@@ -157,12 +196,20 @@ export class CalculateContainerBlock {
         // -->
 
         const newJson = await this.calculate(json, ref, contextDocuments, userId, user);
+        let item: IPolicyDocument;
         if (options.unsigned) {
-            return await this.createUnsignedDocument(newJson, ref, actionStatus?.id);
+            item = await this.createUnsignedDocument(newJson, ref, actionStatus?.id);
         } else {
             const metadata = await this.aggregateMetadata(contextDocuments, ref, userId, user);
-            return await this.createDocument(newJson, metadata, ref, userId, actionStatus?.id, user);
+            item = await this.createDocument(newJson, metadata, ref, userId, actionStatus?.id, user);
         }
+        if (actionStatus?.preview) {
+            setPreviewComputed(item, (options.outputFields || []).map((field) => field.name));
+            if (options.unsigned) {
+                setPreviewDocumentSchema(item, options.outputSchema);
+            }
+        }
+        return item;
     }
 
     /**
@@ -272,7 +319,8 @@ export class CalculateContainerBlock {
         const uuid = await ref.components.generateUUID(actionStatusId);
         const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
         const didDocument = await policyOwnerCred.loadDidDocument(ref, userId);
-        const newVC = await VCHelper.createVerifiableCredential(
+        const newVC = await PolicyCredential.createVC(
+            VCHelper,
             vcSubject,
             didDocument,
             null,

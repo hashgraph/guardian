@@ -1,4 +1,6 @@
-import { ArtifactType, LocationType, Schema, SchemaHelper } from '@guardian/interfaces';
+import { findPreviewScriptFields } from '../helpers/preview-script-fields.js';
+import { PolicyCredential } from '../helpers/policy-credential.js';
+import { ArtifactType, GenerateUUIDv4, LocationType, Schema, SchemaHelper } from '@guardian/interfaces';
 import { ActionCallback, CalculateBlock } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
@@ -31,10 +33,26 @@ import {
 } from '../helpers/table-field.js';
 import {
     buildCompactTableJson,
+    buildPreviewTableJson,
     buildTableOutputCsv,
     gzipTableCsv,
     isTableOutputValue
 } from '../helpers/table-output.js';
+import {
+    buildMathPreviewCalculation,
+    getMathPreviewOutputPaths,
+    getMathPreviewReads,
+    assertPreviewCalculationResult,
+    getPreviewChangedPaths,
+    getPreviewComputed,
+    getPreviewDocumentSchema,
+    isPreviewComputedRead,
+    isPreviewOutputRead,
+    PreviewScope,
+    setPreviewComputed,
+    setPreviewDocumentSchema
+} from '../helpers/preview.js';
+import { IPreviewReadRecord, IPreviewReadSite } from '../helpers/workers/preview-read-tracker.js';
 
 const filename = fileURLToPath(import.meta.url);
 
@@ -51,6 +69,12 @@ interface IMetadata {
 interface IMathWorkerResult {
     result: IPolicyDocument;
     warnings: string[];
+    scope?: Record<string, unknown>;
+    body?: string;
+    sites?: IPreviewReadSite[];
+    unexecuted?: [number, number][];
+    writes?: IPreviewReadRecord[];
+    error?: string;
 }
 
 interface IStoredTable {
@@ -114,7 +138,9 @@ export class MathBlock {
         documents: any,
         schema: Schema,
         tablesPack: Record<string, { rows: any[]; columnKeys: string[] }>,
-        copy: boolean
+        copy: boolean,
+        withScope: boolean,
+        trackReads: boolean
     }): Promise<IMathWorkerResult> {
         return new Promise<IMathWorkerResult>(async (resolve, reject) => {
             const workerFile = path.join(path.dirname(filename), '..', 'helpers', 'workers', 'math-worker.js');
@@ -142,7 +168,22 @@ export class MathBlock {
                         cleanup();
                         resolve({
                             result: data.result,
-                            warnings: Array.isArray(data.warnings) ? data.warnings : []
+                            warnings: Array.isArray(data.warnings) ? data.warnings : [],
+                            scope: data.scope,
+                            body: data.body,
+                            sites: data.sites,
+                            unexecuted: data.unexecuted,
+                            writes: Array.isArray(data.writes) ? data.writes : undefined
+                        })
+                    } else if (data?.type === 'error') {
+                        cleanup();
+                        resolve({
+                            result: null,
+                            warnings: [],
+                            body: data.body,
+                            sites: data.sites,
+                            unexecuted: data.unexecuted,
+                            error: String(data.error)
                         })
                     }
                 } catch (error) {
@@ -163,7 +204,9 @@ export class MathBlock {
     private async calculate(
         ref: IPolicyCalculateBlock,
         documents: DocumentMap,
-        user: PolicyUser
+        user: PolicyUser,
+        currentSchema: string | null = null,
+        source: IPolicyDocument | null = null
     ): Promise<any> {
         const options = await ref.getOptions(user);
         const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema);
@@ -188,6 +231,15 @@ export class MathBlock {
         const tablesPack = collectTablesPack(tableDocuments);
 
         // Run
+        const copy = !options.outputSchema || options.outputSchema === options.inputSchema;
+        const actionStatus = PreviewScope.current();
+        if (actionStatus) {
+            for (const read of getMathPreviewReads(options.expression, currentSchema)) {
+                if (!isPreviewComputedRead(source, read.schema, read.path)) {
+                    actionStatus.addPreviewRead(read.schema, read.path);
+                }
+            }
+        }
         const workerResult = await this.createWorker({
             expression: options.expression,
             documents: workerDocuments,
@@ -195,11 +247,36 @@ export class MathBlock {
             user,
             schema,
             tablesPack,
-            copy: !options.outputSchema || options.outputSchema === options.inputSchema
-        })
+            copy,
+            withScope: !!actionStatus,
+            trackReads: !!actionStatus
+        });
 
         for (const warning of workerResult.warnings) {
             ref.warn(warning);
+        }
+
+        if (actionStatus) {
+            const previewSource = actionStatus.getPreviewSource();
+            const outputPaths = copy ? getMathPreviewOutputPaths(options.expression) : [];
+            const paths = previewSource && previewSource.schema === currentSchema ? previewSource.paths : [];
+            const fields = workerResult.body && workerResult.sites
+                ? findPreviewScriptFields(workerResult.body, workerResult.sites, workerResult.unexecuted ?? [], currentSchema, paths, false, '', ['document', 'result'])
+                : [];
+            for (const read of fields) {
+                const readSchema = read.schema ?? currentSchema;
+                if (!isPreviewOutputRead(read.path, outputPaths) && !isPreviewComputedRead(source, readSchema, read.path)) {
+                    actionStatus.addPreviewRead(readSchema, read.fullPath ?? read.path);
+                }
+            }
+            if (workerResult.error) {
+                throw new Error(workerResult.error);
+            }
+            assertPreviewCalculationResult(workerResult.result);
+            const calculation = buildMathPreviewCalculation(ref.tag, options.expression, workerResult.scope ?? {}, workerResult.result);
+            assertPreviewCalculationResult(calculation.values);
+            actionStatus.addPreviewCalculation(calculation);
+            setPreviewComputed(workerResult.result, (workerResult.writes ?? []).map((write) => write.path));
         }
 
         return workerResult.result;
@@ -212,6 +289,7 @@ export class MathBlock {
      * @param userId
      * @param storedTables
      * @param user
+     * @param preview
      * @private
      */
     private async storeResultTables(
@@ -219,7 +297,8 @@ export class MathBlock {
         json: any,
         userId: string | null,
         storedTables: IStoredTable[],
-        user?: PolicyUser
+        user?: PolicyUser,
+        preview: boolean = false
     ): Promise<void> {
         const options = await ref.getOptions(user);
         const engine = MathEngine.from(options.expression);
@@ -255,7 +334,9 @@ export class MathBlock {
 
             const values: unknown[] = [];
             for (const table of tables) {
-                if (isTableOutputValue(table)) {
+                if (isTableOutputValue(table) && preview) {
+                    values.push(buildPreviewTableJson(`preview-${GenerateUUIDv4()}`, buildTableOutputCsv(columns, table.rows), columns));
+                } else if (isTableOutputValue(table)) {
                     values.push(await this.storeResultTable(ref, table.rows, columns, userId, storedTables));
                 } else {
                     values.push(table);
@@ -342,7 +423,8 @@ export class MathBlock {
         userId: string | null,
         recordActionId: string | null = null,
         user?: PolicyUser,
-        storedTables: IStoredTable[] = []
+        storedTables: IStoredTable[] = [],
+        preview: boolean = false
     ): Promise<IPolicyDocument> {
         if (!documents) {
             throw new BlockActionError('Invalid VC', ref.blockType, ref.uuid);
@@ -362,14 +444,29 @@ export class MathBlock {
         map.addDocument(this.getCredentialSubject(contextDocument));
         map.addRelationships(contextRelationships.map((d) => this.getCredentialSubject(d)));
 
-        const newJson = await this.calculate(ref, map, docOwner);
-        await this.storeResultTables(ref, newJson, userId, storedTables, user);
+        const currentSchema = getPreviewDocumentSchema(contextDocument);
+        const newJson = await this.calculate(ref, map, docOwner, currentSchema, contextDocument);
+        await this.storeResultTables(ref, newJson, userId, storedTables, user, preview);
+        let item: IPolicyDocument;
         if (options.unsigned) {
-            return await this.createUnsignedDocument(newJson, ref, recordActionId);
+            item = await this.createUnsignedDocument(newJson, ref, recordActionId);
         } else {
             const metadata = await this.aggregateMetadata(contextDocument, ref, userId);
-            return await this.createDocument(newJson, metadata, ref, userId, recordActionId, user);
+            item = await this.createDocument(newJson, metadata, ref, userId, recordActionId, user);
         }
+        if (preview) {
+            const copy = !options.outputSchema || options.outputSchema === options.inputSchema;
+            setPreviewComputed(item, [
+                ...(copy ? getPreviewComputed(contextDocument) : []),
+                ...getMathPreviewOutputPaths(options.expression),
+                ...getPreviewComputed(newJson),
+                ...getPreviewChangedPaths(copy ? map.getCurrent() : {}, newJson)
+            ]);
+            if (options.unsigned) {
+                setPreviewDocumentSchema(item, copy ? currentSchema : options.outputSchema);
+            }
+        }
+        return item;
     }
 
     /**
@@ -487,7 +584,8 @@ export class MathBlock {
         const uuid = await ref.components.generateUUID();
         const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
         const didDocument = await policyOwnerCred.loadDidDocument(ref, userId);
-        const newVC = await VCHelper.createVerifiableCredential(
+        const newVC = await PolicyCredential.createVC(
+            VCHelper,
             vcSubject,
             didDocument,
             null,
@@ -542,12 +640,12 @@ export class MathBlock {
             if (Array.isArray(event.data.data)) {
                 const result: IPolicyDocument[] = [];
                 for (const doc of event.data.data) {
-                    const newVC = await this.process(doc, ref, event?.user?.userId, event.actionStatus?.id ?? null, event.user, storedTables);
+                    const newVC = await this.process(doc, ref, event?.user?.userId, event.actionStatus?.id ?? null, event.user, storedTables, !!event.actionStatus?.preview);
                     result.push(newVC)
                 }
                 event.data.data = result;
             } else {
-                event.data.data = await this.process(event.data.data, ref, event?.user?.userId, event.actionStatus?.id ?? null, event.user, storedTables);
+                event.data.data = await this.process(event.data.data, ref, event?.user?.userId, event.actionStatus?.id ?? null, event.user, storedTables, !!event.actionStatus?.preview);
             }
         } catch (error) {
             await this.deleteResultTables(ref, storedTables);

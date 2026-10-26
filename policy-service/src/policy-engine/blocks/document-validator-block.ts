@@ -11,6 +11,7 @@ import { FilterQuery } from '@mikro-orm/core';
 import { VcDocument } from '@guardian/common/entity/vc-document';
 import { VpDocument } from '@guardian/common/entity/vp-document';
 import { resolveOrgMemberDids } from '../helpers/org-utils.js';
+import { getPreviewDocumentSchema, isPreviewComputedRead, toPreviewFormPath } from '../helpers/preview.js';
 import { BlockErrorType, IBlockErrorData, IDocumentValidatorBlockError, LocationType, Schema, SchemaCondition, SchemaField, SchemaHelper } from '@guardian/interfaces';
 
 /**
@@ -732,6 +733,50 @@ export class DocumentValidatorBlock {
     }
 
     /**
+     * Records form fields read by validator conditions and source filters during preview.
+     */
+    private async addPreviewReads(ref: IPolicyValidatorBlock, event: IPolicyEvent<IPolicyEventState>): Promise<void> {
+        const options = await ref.getOptions(event.user);
+        const paths: unknown[] = [];
+        for (const condition of options.conditions || []) {
+            paths.push(condition.field);
+            if (condition.valueSource === 'document') {
+                paths.push(condition.value);
+            }
+        }
+        for (const sourceValidation of options.sourceValidations || []) {
+            for (const filter of sourceValidation.filters || []) {
+                if (filter.typeValue === 'variable') {
+                    paths.push(filter.value);
+                }
+            }
+            for (const condition of sourceValidation.conditions || []) {
+                if (condition.fieldSource === 'document') {
+                    paths.push(condition.field);
+                }
+                if (condition.valueSource === 'document') {
+                    paths.push(condition.value);
+                }
+            }
+        }
+        const source = event.actionStatus.getPreviewSource();
+        const data = event.data?.data;
+        const documents = (Array.isArray(data) ? data : [data]).filter((document) => !!document);
+        for (const document of documents) {
+            const schema = getPreviewDocumentSchema(document);
+            if (schema !== null && schema !== source?.schema) {
+                continue;
+            }
+            for (const path of paths) {
+                const field = toPreviewFormPath(path);
+                if (field && !isPreviewComputedRead(document, schema, field)) {
+                    event.actionStatus.addPreviewRead(schema, field);
+                }
+            }
+        }
+    }
+
+    /**
      * Run block action
      * @event PolicyEventType.Run
      * @param {IPolicyEvent} event
@@ -748,8 +793,11 @@ export class DocumentValidatorBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyValidatorBlock>(this);
         ref.log(`runAction`);
 
+        if (event.actionStatus?.preview) {
+            await this.addPreviewReads(ref, event);
+        }
         const error = await ref.run(event);
-        if (error) {
+        if (error && !event.actionStatus?.getPreviewSource()?.discovery) {
             throw new BlockActionError(error.message, ref.blockType, ref.uuid, error.data);
         }
         // event.actionStatus.saveResult(event.data);
