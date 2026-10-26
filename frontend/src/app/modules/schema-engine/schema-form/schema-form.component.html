@@ -24,6 +24,7 @@
                         item.default && !item.isPreset && !item.control.dirty
                     "
                   [attr.field-path]="item?.path"
+                  [attr.preview-field-id]="item.id"
                   >
                   @if (ifRequiredField(item)) {
                     <span class="required-field"
@@ -604,6 +605,7 @@
                             !item.control.dirty
                         "
                       [attr.field-path]="item?.path"
+                  [attr.preview-field-id]="item.id"
                       >
                       @if (ifRequiredField(item)) {
                         <span
@@ -677,6 +679,7 @@
                         class="form-field-array-item-container"
                         [attr.required]="item.required"
                         [attr.index]="listItem.index"
+                        [attr.preview-field-id]="listItem.id"
                         [formGroup]="item.control"
                         >
                         <div class="form-field-array-item">
@@ -1020,6 +1023,7 @@
                                         !item.control.dirty
                                     "
                                     [attr.field-path]="item?.path"
+                  [attr.preview-field-id]="item.id"
                                     >
                                     @if (ifRequiredField(item)) {
                                       <span
@@ -1214,6 +1218,7 @@
                                         !item.control.dirty
                                     "
                                         [attr.field-path]="item?.path"
+                  [attr.preview-field-id]="item.id"
                                         >
                                         @if (ifRequiredField(item)) {
                                           <span
@@ -1285,6 +1290,7 @@
                                             <div
                                               class="accordion-container form-field-array-item-container"
                                               [attr.index]="listItem.index"
+                        [attr.preview-field-id]="listItem.id"
                                               [attr.required]="item.required"
                                               >
                                               <p-accordion

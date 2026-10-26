@@ -1,5 +1,5 @@
 import { UntypedFormGroup } from '@angular/forms';
-import { Schema } from '@guardian/interfaces';
+import { ISchemaDocument, Schema, SchemaDataTypes } from '@guardian/interfaces';
 import { FieldForm, IFieldControl, IFieldIndexControl } from './field-form';
 
 const link = {
@@ -496,5 +496,116 @@ describe('FieldForm — conditions that cannot be reached', () => {
         expect(visibleNames(form)).toEqual(['A', 'Y']);
         answer(form, 'A', '7');
         expect(visibleNames(form)).toEqual(['A', 'X']);
+    });
+});
+
+describe('FieldForm — required fields from a list', () => {
+    const numberField = (name: string): ISchemaDocument => ({ type: SchemaDataTypes.number, title: name, description: name });
+
+    const calcDocument: ISchemaDocument = {
+        $id: '#calc&1.0.0',
+        $comment: JSON.stringify({ '@id': 'ctx:#calc&1.0.0', term: 'calc&1.0.0' }),
+        title: 'Calc',
+        description: 'Calc',
+        type: SchemaDataTypes.object,
+        properties: {
+            amount: numberField('amount'),
+            rate: numberField('rate'),
+            note: { type: SchemaDataTypes.string, title: 'note', description: 'note' },
+            location: { $ref: '#loc' },
+        },
+        required: ['amount', 'rate', 'note', 'location'],
+        $defs: {
+            '#loc': {
+                $id: '#loc',
+                title: 'loc',
+                description: 'loc',
+                type: SchemaDataTypes.object,
+                properties: { lat: numberField('lat'), lon: numberField('lon') },
+                required: ['lat', 'lon'],
+            },
+        },
+    };
+
+    const buildCalcForm = (requiredFields?: string[] | null): FieldForm => {
+        const schema = new Schema({ iri: '#calc&1.0.0', document: calcDocument });
+        const form = new FieldForm(new UntypedFormGroup({}));
+        form.setData(requiredFields === undefined ? { schema } : { schema, requiredFields });
+        form.build();
+        return form;
+    };
+
+    const isRequiredEmpty = (item: IFieldControl<any>): boolean => !!item.control?.errors?.['required'];
+
+    it('keeps the schema rule without a list', () => {
+        const form = buildCalcForm();
+        expect(controlOf(form, 'amount').required).toBeTrue();
+        expect(controlOf(form, 'rate').required).toBeTrue();
+        expect(controlOf(form, 'note').required).toBeTrue();
+        expect(isRequiredEmpty(controlOf(form, 'note'))).toBeTrue();
+    });
+
+    it('keeps the schema rule when the list is null', () => {
+        const form = buildCalcForm(null);
+        expect(controlOf(form, 'rate').required).toBeTrue();
+    });
+
+    it('requires only the listed fields', () => {
+        const form = buildCalcForm(['amount']);
+        expect(controlOf(form, 'amount').required).toBeTrue();
+        expect(isRequiredEmpty(controlOf(form, 'amount'))).toBeTrue();
+        expect(controlOf(form, 'rate').required).toBeFalse();
+        expect(isRequiredEmpty(controlOf(form, 'rate'))).toBeFalse();
+        expect(controlOf(form, 'note').required).toBeFalse();
+        expect(isRequiredEmpty(controlOf(form, 'note'))).toBeFalse();
+    });
+
+    it('opens a sub-schema that holds a listed field and requires only that field inside it', () => {
+        const form = buildCalcForm(['location.lat']);
+        const location = controlOf(form, 'location');
+        expect(location.required).toBeTrue();
+        expect(location.displayRequired).toBeTrue();
+        const inner: FieldForm = location.model;
+        expect(controlOf(inner, 'lat').required).toBeTrue();
+        expect(isRequiredEmpty(controlOf(inner, 'lat'))).toBeTrue();
+        expect(controlOf(inner, 'lon').required).toBeFalse();
+    });
+
+    it('does not create a sub-schema that holds no listed field', () => {
+        const form = buildCalcForm(['amount']);
+        const location = controlOf(form, 'location');
+        expect(location.required).toBeFalse();
+        expect(location.displayRequired).toBeFalse();
+        expect(location.model).toBeNull();
+    });
+
+    for (const isArray of [false, true]) {
+        it(`keeps a parent optional when its only listed input is hidden, array=${isArray}`, () => {
+            const document = structuredClone(calcDocument);
+            if (isArray && document.properties) {
+                document.properties['location'] = { type: SchemaDataTypes.array, items: { $ref: '#loc' } };
+            }
+            const schema = new Schema({ iri: '#calc&1.0.0', document });
+            const location = schema.fields.find(field => field.name === 'location');
+            const lat = location?.fields?.find(field => field.name === 'lat');
+            if (!lat) throw new Error('Missing fixture field');
+            lat.hidden = true;
+            const form = new FieldForm(new UntypedFormGroup({}));
+            form.setData({ schema, requiredFields: ['location.lat'] });
+            form.build();
+            expect(controlOf(form, 'location').required).toBeFalse();
+            expect(controlOf(form, 'location').displayRequired).toBeFalsy();
+            expect(form.form.valid).toBeTrue();
+            form.destroy();
+        });
+    }
+
+    it('makes the form valid once the listed fields are filled', () => {
+        const form = buildCalcForm(['amount']);
+        form.form.updateValueAndValidity();
+        expect(form.form.valid).toBeFalse();
+        controlOf(form, 'amount').control.setValue(3);
+        form.form.updateValueAndValidity();
+        expect(form.form.valid).toBeTrue();
     });
 });

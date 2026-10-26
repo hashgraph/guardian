@@ -1,3 +1,13 @@
+@if (previewMissingFields.length) {
+  <div role="alert" class="preview-missing-fields">
+    <p>Fill in these fields to calculate the preview:</p>
+    <ul>
+      @for (path of previewMissingFields; track path) {
+        <li><button type="button" (click)="focusPreviewField(path)">{{ previewFieldLocation(path) }}</button></li>
+      }
+    </ul>
+  </div>
+}
 <div class="schema-form-root" #contentContainer>
   @if (model && hasNavigation && navCollapsed) {
     <div class="nav-collapse-rail">

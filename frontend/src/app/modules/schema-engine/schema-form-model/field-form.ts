@@ -99,6 +99,7 @@ export class FieldForm {
     private privateFields: { [x: string]: boolean; };
     private readonlyFields: { name: string }[];
     private preset: any = null;
+    private requiredFields: Set<string> | null = null;
 
     public controls: IFieldControl<any>[] | null;
     private fieldControls: IFieldControl<any>[] | null;
@@ -167,6 +168,7 @@ export class FieldForm {
         privateFields?: { [x: string]: boolean; };
         readonlyFields?: any;
         ownParentControlledFields?: Set<string>;
+        requiredFields?: string[] | null;
     }) {
         if (data.privateFields) {
             this.privateFields = data.privateFields;
@@ -185,6 +187,9 @@ export class FieldForm {
         }
         if (data.preset) {
             this.preset = data.preset;
+        }
+        if (data.requiredFields !== undefined) {
+            this.requiredFields = data.requiredFields ? new Set<string>(data.requiredFields) : null;
         }
         if (data.ownParentControlledFields) {
             this.ownParentControlledFields = new Set<string>();
@@ -1161,6 +1166,27 @@ export class FieldForm {
         };
     }
 
+    private isFieldRequired(field: SchemaField): boolean {
+        const requiredFields = this.rootForm.requiredFields;
+        if (!requiredFields) {
+            return !!field.required;
+        }
+        if (field.hidden || field.autocalculate) {
+            return false;
+        }
+        const path = field.path || field.name;
+        if (requiredFields.has(path)) {
+            return true;
+        }
+        const prefix = `${path}.`;
+        for (const requiredPath of requiredFields) {
+            if (requiredPath.startsWith(prefix)) {
+                return field.fields?.length ? field.fields.some(child => this.isFieldRequired(child)) : true;
+            }
+        }
+        return false;
+    }
+
     private createFieldControl(field: SchemaField, preset?: any): IFieldControl<any> {
         const comment = this.getComment(field);
         const item: IFieldControl<any> = {
@@ -1178,6 +1204,7 @@ export class FieldForm {
             model: null
         };
         item.visibility = !item.hide && !item.hidden && !item.autocalculate;
+        item.required = this.isFieldRequired(field);
         item.preset = field.default;
         if (preset) {
             item.isPreset = true;
@@ -1201,8 +1228,8 @@ export class FieldForm {
         // ifSubSchema
         if (!field.isArray && field.isRef) {
             item.fields = field.fields;
-            item.displayRequired = item.fields?.some((refField: any) => refField.required);
-            if (field.required || item.preset) {
+            item.displayRequired = item.fields?.some((refField: any) => this.isFieldRequired(refField));
+            if (item.required || item.preset) {
                 item.control = this.createSubSchemaControl(item);
                 item.model = this.createSubForm(
                     item.customType,
@@ -1233,7 +1260,7 @@ export class FieldForm {
                     item.control.push(listItem.control, { emitEvent: false, onlySelf: true });
                 }
                 // this.form.updateValueAndValidity();
-            } else if (field.required) {
+            } else if (item.required) {
                 const listItem = this.createListControl(item);
                 item.list.push(listItem);
                 item.control.push(listItem.control, { emitEvent: false, onlySelf: true });
@@ -1256,7 +1283,7 @@ export class FieldForm {
                     item.control.push(listItem.control, { emitEvent: false, onlySelf: true });
                 }
                 // this.form.updateValueAndValidity();
-            } else if (field.required) {
+            } else if (item.required) {
                 const listItem = this.createListControl(item); //todo
                 item.list.push(listItem);
                 item.control.push(listItem.control, { emitEvent: false, onlySelf: true });

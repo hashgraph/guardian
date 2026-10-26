@@ -70,6 +70,9 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     @Input() lastSavedAt?: Date;
     @Input() isEditMode: boolean = false;
     @Input() formulas: FormulasTree | null = null;
+    @Input() requiredFields: string[] | null = null;
+    @Input() previewMissingFields: string[] = [];
+    private previewFocusTimer: ReturnType<typeof setTimeout> | null = null;
 
     @Output('form') form = new EventEmitter<UntypedFormGroup>();
     @Output('change') change = new EventEmitter<Schema | null>();
@@ -138,18 +141,24 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             this.buildFormulaModel();
         }
         this.loading = true;
+        if (changes.previewMissingFields && !changes.requiredFields) this.schedulePreviewFocus();
+        if (changes.requiredFields && !changes.requiredFields.firstChange && this.model) {
+            this.presetDocument = this.group.getRawValue();
+        }
         if (
             changes.schema ||
             changes.fields ||
             changes.hide ||
             changes.readonly ||
             changes.conditions ||
-            changes.presetDocument
+            changes.presetDocument ||
+            changes.requiredFields
         ) {
             setTimeout(() => {
                 this.buildFields();
                 setTimeout(() => {
                     this.loading = false;
+                    this.schedulePreviewFocus();
                 }, 0);
             }, 0);
         } else {
@@ -158,6 +167,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     }
 
     ngOnDestroy() {
+        if (this.previewFocusTimer !== null) clearTimeout(this.previewFocusTimer);
         this.formulaSub?.unsubscribe();
         if (this.model) {
             this.model.destroy();
@@ -191,6 +201,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             schema: this.schema,
             fields: this.fields,
             conditions: this.conditions,
+            requiredFields: this.requiredFields,
         });
         this.model.build();
         this.navFields = [...(this.model.controls || [])];
@@ -252,6 +263,55 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     public toggleNav(): void {
         this.navCollapsed = !this.navCollapsed;
         this.changeDetectorRef.detectChanges();
+    }
+
+    public previewFieldLocation(path: string): string {
+        let fields = this.fields || this.schema?.fields || [];
+        const title = this.schema?.document?.title || this.schema?.name;
+        const titles: string[] = title ? [title] : [];
+        for (const part of path.split('.')) {
+            if (/^\d+$/.test(part)) { titles.push(`row ${Number(part) + 1}`); continue; }
+            const field = fields.find(item => item.name === part);
+            titles.push(field?.title || field?.description || part);
+            fields = field?.fields || [];
+        }
+        return titles.join(' › ');
+    }
+
+    private schedulePreviewFocus(): void {
+        if (this.previewFocusTimer !== null) clearTimeout(this.previewFocusTimer);
+        if (!this.previewMissingFields.length) return;
+        this.previewFocusTimer = setTimeout(() => {
+            this.previewFocusTimer = null;
+            this.focusPreviewField(this.previewMissingFields[0]);
+        }, 0);
+    }
+
+    public focusPreviewField(path: string): void {
+        const parts = path.split('.');
+        let controls = this.model?.controls || [];
+        let targetId: string | undefined;
+        const first = controls.findIndex(item => item.name === parts[0]);
+        if (first >= 0 && this.childForm) this.childForm.isShown[first] = true;
+        for (let index = 0; index < parts.length; index++) {
+            const field = controls.find(item => item.name === parts[index]);
+            if (!field) break;
+            field.open = true;
+            targetId = field.id;
+            if (field.isArray && /^\d+$/.test(parts[index + 1] || '')) {
+                const row = field.list?.[Number(parts[++index])];
+                if (!row) break;
+                row.open = true;
+                targetId = row.id;
+                controls = row.model?.controls || [];
+            } else controls = field.model?.controls || [];
+        }
+        this.changeDetectorRef.detectChanges();
+        const container: HTMLElement | undefined = this.contentContainerRef?.nativeElement;
+        const target = Array.from(container?.querySelectorAll<HTMLElement>('[preview-field-id]') || [])
+            .find(element => element.getAttribute('preview-field-id') === targetId);
+        target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        target?.querySelector<HTMLElement>('input,select,textarea,button,[tabindex]')?.focus({ preventScroll: true });
     }
 
     public onNavSelectEvent(link: string) {
