@@ -222,3 +222,24 @@ describe('FormulaImportExport.generateByPolicy', () => {
         assert.equal(formula.config.formulas[0].name, 'g1');
     });
 });
+
+describe('FormulaImportExport links array', () => {
+    it('replaces ids in link and links', () => {
+        const data = {
+            formulas: [{
+                link: { type: 'schema', entityId: 'old' },
+                links: [{ type: 'schema', entityId: 'old' }, { type: 'schema', entityId: 'other' }]
+            }]
+        };
+        FormulaImportExport.replaceIds(data, 'old', 'new');
+        assert.equal(data.formulas[0].link.entityId, 'new');
+        assert.deepEqual(data.formulas[0].links.map((l) => l.entityId), ['new', 'other']);
+    });
+
+    it('collects schema ids from links', () => {
+        const ids = FormulaImportExport.getSchemaIds({
+            formulas: [{ links: [{ type: 'schema', entityId: '#a' }, { type: 'formula', entityId: '#f' }] }]
+        });
+        assert.deepEqual(Array.from(ids), ['#a']);
+    });
+});

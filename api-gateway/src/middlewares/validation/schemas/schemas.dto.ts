@@ -463,6 +463,18 @@ export class SchemaImportDuplicatesRequestDTO {
     })
     @IsArray()
     schemaNames: string[];
+
+    @ApiProperty({
+        type: 'array',
+        items: {
+            type: 'object'
+        },
+        required: false,
+        description: 'Schemas from the imported package. When set, the response also lists formula links that replacing the existing schemas would break.'
+    })
+    @IsOptional()
+    @IsArray()
+    schemas?: any[];
 }
 
 export class SystemSchemaDTO {

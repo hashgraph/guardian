@@ -13,6 +13,7 @@ import {
     resolveIwaVersion,
 } from '@guardian/interfaces';
 import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { FormulaImportExport } from '@guardian/common/import-export/formula';
 import { PinoLogger } from '@guardian/common/helpers/pino-logger';
 import { replaceValueRecursive } from '@guardian/common/helpers/utils';
 import { SchemaConverterUtils } from '@guardian/common/helpers/schema-converter-utils';
@@ -352,6 +353,29 @@ export class SchemaImport {
         }
     }
 
+    /**
+     * A replaced schema gets a new IRI, point the formulas of the policy to it
+     * @param iris previous IRI to new IRI
+     */
+    private async relinkFormulas(iris: Map<string, string>): Promise<void> {
+        const policy = await DatabaseServer.getPolicy({ topicId: this.topicId });
+        if (!policy) {
+            return;
+        }
+        const formulas = await DatabaseServer.getFormulas({ policyId: policy.id });
+        for (const formula of formulas) {
+            const before = FormulaImportExport.getSchemaIds(formula.config);
+            const links = Array.from(iris.keys()).filter((iri) => before.has(iri));
+            if (!links.length) {
+                continue;
+            }
+            for (const iri of links) {
+                FormulaImportExport.replaceIds(formula.config, iri, iris.get(iri));
+            }
+            await DatabaseServer.updateFormula(formula);
+        }
+    }
+
     private async saveSchemas(
         schemas: ISchema[],
         step: INotificationStep,
@@ -461,6 +485,7 @@ export class SchemaImport {
         }
 
         if (updatedSchemasIriMap.size > 0) {
+            await this.relinkFormulas(updatedSchemasIriMap);
             const schemasForRewrite = await DatabaseServer.getSchemas({ topicId: this.topicId });
             for (const savedSchema of schemasForRewrite) {
                 let needsUpdate = false;

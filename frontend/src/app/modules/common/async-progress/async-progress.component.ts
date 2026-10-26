@@ -266,6 +266,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 break;
             case TaskAction.IMPORT_POLICY_FILE:
             case TaskAction.IMPORT_POLICY_MESSAGE:
+                this.reportFormulaWarnings(result);
                 if (this.reportImportValidationResult(result)) {
                     break;
                 }
@@ -466,6 +467,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.IMPORT_SCHEMA_FILE:
             case TaskAction.IMPORT_SCHEMA_MESSAGE:
                 this.reportSchemaErrors(result, this.action === TaskAction.DELETE_SCHEMAS ? 'deleted' : 'imported');
+                this.reportFormulaWarnings(result);
                 if (this.reportImportValidationResult(result)) {
                     break;
                 }
@@ -577,6 +579,19 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 }, 500);
                 break;
         }
+    }
+
+    private reportFormulaWarnings(result: any): void {
+        const warnings = result?.formulaWarnings;
+        if (!Array.isArray(warnings) || !warnings.length) {
+            return;
+        }
+        const msg = warnings.map((warning: any) => warning.text).join('\n');
+        this.toastService.warn(
+            msg,
+            'Formula links are invalid after schema import',
+            { sticky: true, logMessage: msg }
+        );
     }
 
     private reportImportValidationResult(result: any): boolean {

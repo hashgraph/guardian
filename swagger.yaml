@@ -59889,6 +59889,13 @@ components:
           example:
             - Project Details
             - Date Range
+        schemas:
+          type: array
+          items:
+            type: object
+          description: >-
+            Schemas from the imported package. When set, the response also lists
+            formula links that replacing the existing schemas would break.
       required:
         - policyId
         - schemaNames
