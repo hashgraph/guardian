@@ -153,7 +153,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public previewMounted = false;
     public previewKey = 0;
     public previewSchemaRef: Schema | null = null;
-    private previewBuiltFor: { schema: Schema | null; version: number } = { schema: null, version: -1 };
+    private previewBuiltFor: { schema: Schema | null; version: number; path: string } = { schema: null, version: -1, path: '' };
     public richTextPresetTarget: 'default' | 'suggest' | 'test' | null = null;
     @ViewChild('richTextPresetEditor') public richTextPresetEditor?: RichTextEditorComponent;
 
@@ -5186,7 +5186,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     private isPreviewStale(): boolean {
         return this.previewBuiltFor.schema !== this.currentContextSchema
-            || this.previewBuiltFor.version !== this.schemaEditVersion;
+            || this.previewBuiltFor.version !== this.schemaEditVersion
+            || this.previewBuiltFor.path !== this.fieldFormulaPrefix.join('.');
     }
 
     /** the saved formulas of the schema, so the preview shows them like the request form */
@@ -5206,7 +5207,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     private rebuildPreview(): void {
         const schema = this.currentContextSchema;
-        this.previewBuiltFor = { schema, version: this.schemaEditVersion };
+        this.previewBuiltFor = { schema, version: this.schemaEditVersion, path: this.fieldFormulaPrefix.join('.') };
         this.previewSchemaRef = schema;
         this.previewFormulaLinkScope = this.isDrilling && this.selectedSchema?.iri
             ? { schema: this.selectedSchema.iri, prefix: this.fieldFormulaPrefix }

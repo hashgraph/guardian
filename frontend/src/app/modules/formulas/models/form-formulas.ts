@@ -19,6 +19,7 @@ export class FormFormulas {
     public readonly fields: Record<string, { tree: FormulasTree; schema: string; path: string }>;
 
     private data: any = null;
+    private readonly prefix: string[];
     private cache = new Map<string, FormulaItem[]>();
 
     constructor(
@@ -27,6 +28,7 @@ export class FormFormulas {
         private equalsFn?: (a: any, b: any) => boolean,
         linkScope?: IFormulaLinkScope | null
     ) {
+        this.prefix = linkScope?.schema ? linkScope.prefix : [];
         this.fields = linkScope?.schema
             ? FormFormulas.scopedFields(tree, schemaIri, linkScope)
             : tree.getFields(schemaIri);
@@ -61,8 +63,12 @@ export class FormFormulas {
         );
     }
 
+    /**
+     * Condition paths are stored from the document schema, so the data of a drilled-into
+     * sub-schema form is wrapped under the drill path.
+     */
     public setData(raw: any): void {
-        this.data = raw;
+        this.data = this.prefix.reduceRight((value, name) => ({ [name]: value }), raw);
         this.cache.clear();
     }
 
@@ -82,6 +88,15 @@ export class FormFormulas {
     }
 
     public context(entries?: Record<string, number> | null): IFormulaConditionContext {
-        return { data: this.data, entries, anyEntry: true, equalsFn: this.equalsFn };
+        return { data: this.data, entries: this.scopeEntries(entries), anyEntry: true, equalsFn: this.equalsFn };
+    }
+
+    /** Array entry keys are paths in the form, the conditions read them from the document. */
+    private scopeEntries(entries?: Record<string, number> | null): Record<string, number> | null | undefined {
+        if (!entries || !this.prefix.length) {
+            return entries;
+        }
+        const head = this.prefix.join('.');
+        return Object.fromEntries(Object.entries(entries).map(([key, index]) => [`${head}.${key}`, index]));
     }
 }
