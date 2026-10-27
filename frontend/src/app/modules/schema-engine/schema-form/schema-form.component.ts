@@ -1031,6 +1031,37 @@ export class SchemaFormComponent implements OnInit {
         }
     }
 
+    public focusFirstInvalid(): void {
+        const controls = this.formModel?.controls;
+        if (!controls) {
+            return;
+        }
+        const findInvalid = (items: IFieldControl<any>[] | undefined | null): IFieldControl<any> | undefined => {
+            if (!items || !Array.isArray(items)) {
+                return undefined;
+            }
+            for (const field of items) {
+                if (!field.control || field.control.valid || field.control.disabled) {
+                    continue;
+                }
+                const nested = (field as any).model?.controls;
+                return findInvalid(nested) || field;
+            }
+            return undefined;
+        };
+        const topIndex = controls.findIndex((field) => findInvalid([field]));
+        if (topIndex === -1) {
+            return;
+        }
+        for (let i = 0; i < controls.length && !this.isShown[topIndex] && this.currentIndex !== 0; i++) {
+            this.getPrevShownFields(controls);
+        }
+        const invalid = findInvalid([controls[topIndex]]);
+        if (invalid?.id) {
+            this.openField(invalid.id);
+        }
+    }
+
     private findAndOpen(controls: IFieldControl<any>[] | undefined | null, target: string): boolean {
         if (!controls || !Array.isArray(controls)) return false;
 

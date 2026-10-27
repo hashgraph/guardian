@@ -268,6 +268,10 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         }
     }
 
+    public focusFirstInvalid(): void {
+        this.childForm?.focusFirstInvalid();
+    }
+
     public onNavHasItemsEvent(hasItems: boolean): void {
         this.hasNavigation = hasItems;
         this.changeDetectorRef.detectChanges();
