@@ -99,12 +99,22 @@ describe('Table.setDefault with tool=true', () => {
 
     it('places field headers on sequential columns from start', () => {
         assert.equal(t.getCol(Dictionary.REQUIRED_FIELD), 2);
-        assert.equal(t.getCol(Dictionary.FIELD_TYPE), 3);
-        assert.equal(t.getCol(Dictionary.PARAMETER), 4);
+        assert.equal(t.getCol(Dictionary.KEY), 3);
+        assert.equal(t.getCol(Dictionary.FIELD_TYPE), 4);
+        assert.equal(t.getCol(Dictionary.PARAMETER), 5);
     });
 
-    it('places IWA Property after Key, the last field column', () => {
-        assert.equal(t.getCol(Dictionary.IWA_PROPERTY), t.getCol(Dictionary.KEY) + 1);
+    it('places Key in the second column, matching the schema editor', () => {
+        assert.equal(t.getCol(Dictionary.KEY), t.getCol(Dictionary.REQUIRED_FIELD) + 1);
+    });
+
+    it('places Updatable and Private after IWA Property', () => {
+        assert.equal(t.getCol(Dictionary.UPDATABLE), t.getCol(Dictionary.IWA_PROPERTY) + 1);
+        assert.equal(t.getCol(Dictionary.PRIVATE), t.getCol(Dictionary.UPDATABLE) + 1);
+    });
+
+    it('still resolves the legacy "Field Type" header to the Type column', () => {
+        assert.isTrue(t.isFieldHeader('Field Type'));
     });
 
     it('hasCol returns true for placed field headers', () => {

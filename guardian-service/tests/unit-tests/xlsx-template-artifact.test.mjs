@@ -150,3 +150,33 @@ describe('Schema template artifact', () => {
         assert.ok(String(readme.getValue(2, row + 1)).startsWith('An "IWA Property" path'));
     });
 });
+
+describe('Schema template artifact column layout', () => {
+    it('matches the export layout: Key second, Type header, Updatable and Private last', async () => {
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.readFile(TEMPLATE);
+        const sheet = workbook.getWorksheet('Schema name');
+        const headers = [];
+        sheet.getRow(6).eachCell((cell) => headers.push(String(cell.value)));
+        assert.deepEqual(headers, [
+            'Required Field', 'Key', 'Type', 'Parameter', 'Visibility', 'Description',
+            'Allow Multiple Answers', 'Test Value', 'Default Value', 'Suggest Value',
+            'IWA Property', 'Updatable Field', 'Private Field'
+        ]);
+    });
+
+    it('documents every field column in the README, in the same order', async () => {
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.readFile(TEMPLATE);
+        const readme = workbook.getWorksheet('README');
+        const names = [];
+        for (let row = 21; row <= 33; row++) {
+            names.push(String(readme.getCell(row, 1).value));
+        }
+        assert.deepEqual(names, [
+            'Required Field', 'Key', 'Type', 'Parameter', 'Visibility', 'Description',
+            'Allow Multiple Answers', 'Test Value', 'Default Value', 'Suggest Value',
+            'IWA Property', 'Updatable Field', 'Private Field'
+        ]);
+    });
+});
