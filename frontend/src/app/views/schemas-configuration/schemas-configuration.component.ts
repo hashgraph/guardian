@@ -3570,6 +3570,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const fields = subSchema?.fields ?? field.fields ?? [];
         if (subSchema && !fields.length) { this.hydrateSubSchemaFields(subSchema); }
         this.drillEntering = true;
+        this.resetCanvasScroll();
         this.activeDrillTab = 'fields';
         this.drillStack = [
             ...this.drillStack,
@@ -3592,6 +3593,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
     }
 
+    private resetCanvasScroll(): void {
+        const body = this._elRef.nativeElement.querySelector('.sc-canvas-body');
+        if (body) { body.scrollTop = 0; }
+    }
+
     public drillTo(index: number): void {
         const previousContext = this.currentContextSchema;
         this.drillStack = this.drillStack.slice(0, index + 1);
@@ -3605,6 +3611,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public drillBack(): void {
+        this.resetCanvasScroll();
         const previousContext = this.currentContextSchema;
         this.drillStack = this.drillStack.slice(0, -1);
         this.persistSuggestionsForContext(previousContext);
@@ -3618,6 +3625,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public drillClose(): void {
+        this.resetCanvasScroll();
         const previousContext = this.currentContextSchema;
         this.drillStack = [];
         this.persistSuggestionsForContext(previousContext);
