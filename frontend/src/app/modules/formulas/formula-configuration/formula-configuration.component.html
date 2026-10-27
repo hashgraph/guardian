@@ -71,7 +71,7 @@
       <span class="files-count">{{ config.files.length }}</span>
     </div>
     @if (!readonly) {
-      <div (click)="onSave()" class="top-toolbar-btn top-toolbar-btn--primary" title="Save">
+      <div (click)="onSave()" class="top-toolbar-btn top-toolbar-btn--primary" [class.is-disabled]="!dirty || loading" title="Save">
         <i class="pi pi-save"></i>
         <span>Save</span>
       </div>
@@ -486,9 +486,15 @@
               <div class="input-link" [class.ro]="readonly" [class.missing]="isLinkMissing(link)" (click)="onLink(item, i)">
                 @if (isLinkMissing(link)) {
                   <i class="pi pi-exclamation-triangle link-warn"></i>
-                  <span class="link-field link-field--missing"
-                    [truncateTooltip]="missingLinkText"
-                    tooltipPosition="bottom">{{ missingLinkText }}</span>
+                  <div class="link-missing">
+                    <span class="link-field link-field--missing"
+                      [truncateTooltip]="'Schema “' + link.entityId + '” was not found in this policy'"
+                      tooltipPosition="bottom">Schema “{{ link.entityId }}” was not found in this policy</span>
+                    <span class="link-missing-field">
+                      <span class="link-missing-label">Previously linked field:</span>
+                      <span class="link-missing-path">{{ link.item }}</span>
+                    </span>
+                  </div>
                 } @else {
                   <span class="link-ent">{{ getEntityName(link) }}:</span>
                   <span class="link-field"
