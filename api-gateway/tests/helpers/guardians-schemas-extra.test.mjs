@@ -360,7 +360,7 @@ describe('@unit Guardians schemas extra', () => {
         it('getSchemasDublicates with names and owner but no policyId', async () => {
             const { g, calls } = make();
             await g.getSchemasDublicates(['n1'], owner);
-            assert.deepEqual(calls[0], [MessageAPI.SCHEMA_IMPORT_CHECK_FOR_DUBLICATES, { schemaNames: ['n1'], owner, policyId: undefined }]);
+            assert.deepEqual(calls[0], [MessageAPI.SCHEMA_IMPORT_CHECK_FOR_DUBLICATES, { schemaNames: ['n1'], schemas: undefined, owner, policyId: undefined }]);
         });
 
         it('createSchema returns broker response', async () => {

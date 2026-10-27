@@ -2076,7 +2076,7 @@ export class SchemaApi {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
 
-            return await guardians.getSchemasDublicates(body.schemaNames, owner, body.policyId);
+            return await guardians.getSchemasDublicates(body.schemaNames, owner, body.policyId, body.schemas);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

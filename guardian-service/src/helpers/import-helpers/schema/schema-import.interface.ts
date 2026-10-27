@@ -72,6 +72,10 @@ export interface ImportSchemaResult {
      * Errors
      */
     errors: ImportSchemaError[];
+    /**
+     * Warnings
+     */
+    warnings?: ImportSchemaError[];
 }
 
 export interface ImportSchemaOptions  {

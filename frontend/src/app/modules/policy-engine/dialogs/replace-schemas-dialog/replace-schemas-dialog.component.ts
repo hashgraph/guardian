@@ -24,6 +24,7 @@ export interface SchemaOption {
 export class ReplaceSchemasDialogComponent implements OnDestroy {
   title = 'Select Schemas';
   schemas: Schema[] = [];
+  formulaWarnings = new Map<string, string[]>();
   checks = new FormArray<FormControl<boolean>>([]);
   master = new FormControl<boolean>(false, { nonNullable: true });
   public isLargeSize: boolean = true;
@@ -38,9 +39,14 @@ export class ReplaceSchemasDialogComponent implements OnDestroy {
   ) {
     this.title = this.config.data?.title || this.title;
     this.schemas = Array.isArray(this.config.data?.schemasCanBeReplaced) ? this.config.data.schemasCanBeReplaced : [];
+    for (const item of this.config.data?.formulaWarnings || []) {
+      this.formulaWarnings.set(item.schemaId, (item.warnings || []).map((warning: any) => warning.text));
+    }
     this.buildChecks();
     this.wireUpMasterSync();
   }
+
+  selectedWarningCount = 0;
 
   ngOnDestroy() {
     this.subs.unsubscribe();
@@ -64,6 +70,7 @@ export class ReplaceSchemasDialogComponent implements OnDestroy {
 
     this.subs.add(
       this.checks.valueChanges.subscribe(values => {
+        this.selectedWarningCount = this.selectedIds.reduce((count, id) => count + (this.formulaWarnings.get(id)?.length || 0), 0);
         const allSelected = values.length > 0 && values.every(v => !!v);
         if (this.master.value !== allSelected) {
           this.master.setValue(allSelected, { emitEvent: false });

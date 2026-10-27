@@ -236,31 +236,31 @@
 }
 
 .tree-node.status-none {
-    border-color: #d0d4dc;
+    border-color: var(--guardian-grey-color-3, #d0d4dc);
     background-color: var(--guardian-background, #ffffff);
 }
 
 .tree-node.status-missing,
 .value-status-chip.status-missing {
     border-color: #e53935;
-    background-color: #ffebee;
+    background-color: var(--guardian-failure-background, #ffebee);
 }
 
 .tree-node.status-default,
 .value-status-chip.status-default {
     border-color: #fdd835;
-    background-color: #fffde7;
+    background-color: var(--guardian-warning-background, #fffde7);
 }
 
 .tree-node.status-as-suggested,
 .value-status-chip.status-as-suggested{
     border-color: #fb8c00;
-    background-color: #fff3e0;
+    background-color: var(--guardian-warning-background, #fff3e0);
 }
 
 .tree-node.status-notNull {
     border-color: #43a047;
-    background-color: #e8f5e9;
+    background-color: var(--guardian-success-background, #e8f5e9);
 }
 
 :host ::ng-deep math-field {
@@ -273,7 +273,7 @@
     padding: 4px 10px;
     border-radius: 8px;
 
-    background: #edf1f7;
+    background: var(--guardian-grey-color, #edf1f7);
     color: var(--guardian-font-color, #23252e);
 
     font-size: 11px;
@@ -319,8 +319,8 @@
 .value-json {
     margin: 0;
     padding: 8px 12px;
-    background: #f7f9fc;
-    border: 1px solid #d0d4dc;
+    background: var(--guardian-grey-background, #f7f9fc);
+    border: 1px solid var(--guardian-grey-color-3, #d0d4dc);
     border-radius: 8px;
 
     font-family: Menlo, Monaco, Consolas, 'Courier New', monospace;
@@ -352,4 +352,25 @@
         font-size: 11px;
         margin-left: 4px;
     }
+}
+
+.link-block--multi {
+    border-top: 1px solid var(--guardian-border-color, #e1e7ef);
+    padding-top: 8px;
+    margin-top: 8px;
+}
+
+.link-block-title {
+    font-weight: 600;
+    margin-bottom: 6px;
+    word-break: break-word;
+}
+
+.link-no-value {
+    font-style: italic;
+    opacity: 0.7;
+}
+
+.link-missing {
+    color: var(--color-accent-yellow-1, #DA9B22);
 }

@@ -1,7 +1,7 @@
 import { Component, ElementRef, EventEmitter, Inject, Input, OnDestroy, OnInit, Output, SimpleChanges, ViewChild, } from '@angular/core';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { forkJoin, Subscription } from 'rxjs';
-import { IStatus, StatusType, TaskAction, UserRole, } from '@guardian/interfaces';
+import { IStatus, StatusType, TaskAction, UserRole, LogMessage, } from '@guardian/interfaces';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TasksService } from 'src/app/services/tasks.service';
 import { ToastService } from 'src/app/services/toast.service';
@@ -266,6 +266,8 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 break;
             case TaskAction.IMPORT_POLICY_FILE:
             case TaskAction.IMPORT_POLICY_MESSAGE:
+                this.reportFormulaWarnings(result);
+                this.reportImportWarnings(result);
                 if (this.reportImportValidationResult(result)) {
                     break;
                 }
@@ -288,6 +290,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 break;
             case TaskAction.IMPORT_TOOL_FILE:
             case TaskAction.IMPORT_TOOL_MESSAGE:
+                this.reportImportWarnings(result);
                 if (this.redir) {
                     setTimeout(() => {
                         this.router.navigate(['tool-configuration'], {
@@ -466,6 +469,8 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.IMPORT_SCHEMA_FILE:
             case TaskAction.IMPORT_SCHEMA_MESSAGE:
                 this.reportSchemaErrors(result, this.action === TaskAction.DELETE_SCHEMAS ? 'deleted' : 'imported');
+                this.reportFormulaWarnings(result);
+                this.reportImportWarnings(result);
                 if (this.reportImportValidationResult(result)) {
                     break;
                 }
@@ -579,6 +584,19 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
         }
     }
 
+    private reportFormulaWarnings(result: any): void {
+        const warnings = result?.formulaWarnings;
+        if (!Array.isArray(warnings) || !warnings.length) {
+            return;
+        }
+        const msg = warnings.map((warning: any) => warning.text).join('\n');
+        this.toastService.warn(
+            msg,
+            'Formula links are invalid after schema import',
+            { sticky: true, logMessage: msg }
+        );
+    }
+
     private reportImportValidationResult(result: any): boolean {
         const validation = result?.validation;
         if (!validation) {
@@ -590,7 +608,12 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             this.toastService.error(
                 msg,
                 'Policy validation found errors after schema import',
-                { sticky: true, logMessage: msg }
+                {
+                    sticky: true,
+                    logMessage: policyId
+                        ? `${LogMessage.POLICY_IMPORT_VALIDATION_FAILED} (policy ${policyId})`
+                        : LogMessage.POLICY_IMPORT_VALIDATION_FAILED
+                }
             );
             if (policyId && validation.errors) {
                 this._configurationErrors.set(policyId, validation.errors);
@@ -690,6 +713,30 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
         this.toastService.warn(
             msg,
             errors.length === 1 ? `1 schema was not ${verb}` : `${errors.length} schemas were not ${verb}`,
+            { sticky: true, logMessage: msg }
+        );
+    }
+
+    /**
+     * Non-fatal import issues (e.g. schemas imported with invalid field keys). The
+     * import succeeded, so these are shown as a warning.
+     * @param result task result
+     */
+    private reportImportWarnings(result: any): void {
+        const warnings = result?.warnings;
+        if (!Array.isArray(warnings) || !warnings.length) {
+            return;
+        }
+        const text = warnings
+            .map((e: any) => (e?.name ? `${e.name}: ${e.error}` : e?.error))
+            .filter((line: any) => !!line)
+            .join('\n');
+        const msg = text || 'Some schemas were imported with issues.';
+        this.toastService.warn(
+            msg,
+            warnings.length === 1
+                ? '1 schema was imported with issues'
+                : `${warnings.length} schemas were imported with issues`,
             { sticky: true, logMessage: msg }
         );
     }

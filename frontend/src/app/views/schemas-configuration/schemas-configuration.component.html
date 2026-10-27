@@ -491,7 +491,7 @@
                 } @else {
 
                     <!-- ── BUILDER ── (kept mounted and hidden on the Preview tab) -->
-                    <div class="sc-editor" [class.sc-editor--hidden]="activeTab !== 'builder'">
+                    <div class="sc-editor" [class.sc-editor--hidden]="activeTab !== 'builder' || isDrilling">
 
                         <!-- ── Root schema properties panel ── -->
                         <div class="sc-schema-props" [class.sc-schema-props--locked]="selectedSchemaSettingsLocked">
@@ -772,6 +772,7 @@
                                         [schema]="pSchema"
                                         [preset]="previewPreset"
                                         [formulas]="previewFormulas"
+                                        [formulaLinkScope]="previewFormulaLinkScope"
                                         [private-fields]="{}"
                                         [readonly-fields]="previewReadonlyFields"
                                         [example]="previewPill !== 'submitter'"
@@ -1817,7 +1818,14 @@
                                     }
                                     @if (isFieldConditional(field)) {
                                         <span class="sc-badge sc-badge--cond">
-                                            <i class="pi pi-code"></i>Condition
+                                            <i class="pi pi-code"></i>Condition trigger
+                                        </span>
+                                    }
+                                    @if (isFieldConditionOwned(field)) {
+                                        <span class="sc-badge sc-badge--cond-member"
+                                            pTooltip="Shown only when the condition it belongs to matches"
+                                            tooltipPosition="top">
+                                            <i class="pi pi-eye"></i>Conditional field
                                         </span>
                                     }
                                     @let formulaCount = getFieldFormulaCount(field);
@@ -2347,44 +2355,24 @@
                                 </div>
                                 <div class="sc-cond-te-body">
                                     @for (f of (cond.thenFields || []); track f.name) {
-                                        <div class="sc-field-card sc-cond-field-card"
-                                            [class.active]="selectedField === f"
-                                            title="Click to configure field"
-                                            (click)="selectField(f)">
-                                            <div class="sc-field-type-icon">
-                                                <i class="pi {{ getFieldIcon(f) }}"></i>
-                                            </div>
-                                            <div class="sc-field-info">
-                                                <span class="sc-field-key">{{ f.description || f.title || f.name }}</span>
-                                                <span class="sc-field-desc">{{ f.name }}</span>
-                                                <div class="sc-field-meta-row">
-                                                    <span class="sc-badge sc-badge--type">{{ getFieldTypeBadge(f) }}</span>
-                                                    @if (f.required) {
-                                                        <span class="sc-badge sc-badge--req">Required</span>
-                                                    }
-                                                    @if (f.isArray) {
-                                                        <span class="sc-badge sc-badge--arr">Array</span>
-                                                    }
-                                                </div>
-                                            </div>
-                                            <div class="sc-field-card-actions">
-                                                @if (canEnterSubSchema(f)) {
-                                                    <button class="sc-subschema-enter-btn"
-                                                        [title]="isTemplateConfigMode ? 'Open sub-schema settings' : 'Enter sub-schema'"
-                                                        (click)="isTemplateConfigMode ? enterTemplateSubSchema(f, $event) : enterSubSchema(f, $event)">
-                                                        <i class="pi pi-arrow-right"></i>Enter
-                                                    </button>
-                                                }
-                                                @if (!isTemplateConfigMode && !isTemplateFieldLocked(f)) {
-                                                    <button class="sc-icon-btn sc-icon-btn--danger" title="Remove" (click)="removeThenField(cond, f); $event.stopPropagation()">
-                                                        <i class="pi pi-trash"></i>
-                                                    </button>
-                                                }
-                                            </div>
+                                        <div class="sc-cond-te-item" [class.sc-cond-te-item--active]="selectedField === f">
+                                            <i class="pi {{ getFieldIcon(f) }}"></i>
+                                            <span class="sc-cond-te-label" [title]="f.name"
+                                                (click)="selectField(f)">{{ f.description || f.title || f.name }}</span>
+                                            @if (canEnterSubSchema(f)) {
+                                                <button class="sc-subschema-enter-btn"
+                                                    [title]="isTemplateConfigMode ? 'Open sub-schema settings' : 'Enter sub-schema'"
+                                                    (click)="isTemplateConfigMode ? enterTemplateSubSchema(f, $event) : enterSubSchema(f, $event)">
+                                                    <i class="pi pi-arrow-right"></i>Enter
+                                                </button>
+                                            }
                                             @if (isTemplateFieldLocked(f)) {
-                                                <span class="st-field-lock" pTooltip="Field editing is locked" tooltipPosition="top">
-                                                    <i class="pi pi-lock"></i>
-                                                </span>
+                                                <i class="pi pi-lock" pTooltip="Field editing is locked" tooltipPosition="top"></i>
+                                            }
+                                            @if (!isTemplateConfigMode && !isTemplateFieldLocked(f)) {
+                                                <button class="sc-cond-te-del" [disabled]="isConditionLocked(cond)" (click)="removeThenField(cond, f)">
+                                                    <i class="pi pi-times"></i>
+                                                </button>
                                             }
                                         </div>
                                     }
@@ -2404,24 +2392,22 @@
                                         </div>
                                     }
                                     <div class="sc-cond-te-add-row">
-                                        <button class="sc-cond-te-add-btn" [disabled]="!canAddFieldToSelectedSchema || isConditionLocked(cond)" (click)="addThenField(cond)">
-                                            <i class="pi pi-plus"></i>New field
-                                        </button>
                                         <p-select
                                             class="sc-cond-te-ref-sel guardian-dropdown"
                                             panelStyleClass="guardian-dropdown-panel width-825 sc-cond-panel"
-                                            [options]="getCrossTargetPSelectGroups()"
+                                            [options]="getCondFieldPickerOptions(cond)"
                                             [group]="true"
                                             optionLabel="label"
                                             optionValue="pathStr"
+                                            optionDisabled="disabled"
                                             [filter]="true"
                                             filterBy="label,fullLabel,pathStr"
                                             [resetFilterOnHide]="true"
                                             [virtualScroll]="true"
                                             [virtualScrollItemSize]="38"
                                             appendTo="body"
-                                            [placeholder]="getCrossTargetPSelectGroups().length ? 'Ref field' : '(no sub-schema fields)'"
-                                            [disabled]="!getCrossTargetPSelectGroups().length || isConditionLocked(cond)"
+                                            [placeholder]="getCondFieldPickerOptions(cond).length ? 'Select field…' : '(no selectable fields)'"
+                                            [disabled]="!getCondFieldPickerOptions(cond).length || isConditionLocked(cond)"
                                             [(ngModel)]="condThenRefVal[ci]"
                                             (onChange)="onCondThenRefChange(cond, ci, $event.value)">
                                             <ng-template pTemplate="group" let-group>
@@ -2434,7 +2420,9 @@
                                                 </span>
                                             </ng-template>
                                             <ng-template pTemplate="item" let-option>
-                                                <span class="sc-cond-opt-row">
+                                                <span class="sc-cond-opt-row"
+                                                    [pTooltip]="option.disabled ? 'Already used in another condition' : undefined"
+                                                    tooltipPosition="top">
                                                     <span class="sc-cond-opt-label"
                                                         [pTooltip]="option.isBlock ? option.fullLabel + ' – Sub-schema' : option.fullLabel" tooltipPosition="top" tooltipStyleClass="sc-cond-tooltip" [tooltipOptions]="{showDelay: 300}">{{ option.label }}</span>
                                                     @if (option.isBlock) {
@@ -2454,44 +2442,24 @@
                                 </div>
                                 <div class="sc-cond-te-body">
                                     @for (f of (cond.elseFields || []); track f.name) {
-                                        <div class="sc-field-card sc-cond-field-card"
-                                            [class.active]="selectedField === f"
-                                            title="Click to configure field"
-                                            (click)="selectField(f)">
-                                            <div class="sc-field-type-icon">
-                                                <i class="pi {{ getFieldIcon(f) }}"></i>
-                                            </div>
-                                            <div class="sc-field-info">
-                                                <span class="sc-field-key">{{ f.description || f.title || f.name }}</span>
-                                                <span class="sc-field-desc">{{ f.name }}</span>
-                                                <div class="sc-field-meta-row">
-                                                    <span class="sc-badge sc-badge--type">{{ getFieldTypeBadge(f) }}</span>
-                                                    @if (f.required) {
-                                                        <span class="sc-badge sc-badge--req">Required</span>
-                                                    }
-                                                    @if (f.isArray) {
-                                                        <span class="sc-badge sc-badge--arr">Array</span>
-                                                    }
-                                                </div>
-                                            </div>
-                                            <div class="sc-field-card-actions">
-                                                @if (canEnterSubSchema(f)) {
-                                                    <button class="sc-subschema-enter-btn"
-                                                        [title]="isTemplateConfigMode ? 'Open sub-schema settings' : 'Enter sub-schema'"
-                                                        (click)="isTemplateConfigMode ? enterTemplateSubSchema(f, $event) : enterSubSchema(f, $event)">
-                                                        <i class="pi pi-arrow-right"></i>Enter
-                                                    </button>
-                                                }
-                                                @if (!isTemplateConfigMode && !isTemplateFieldLocked(f)) {
-                                                    <button class="sc-icon-btn sc-icon-btn--danger" title="Remove" (click)="removeElseField(cond, f); $event.stopPropagation()">
-                                                        <i class="pi pi-trash"></i>
-                                                    </button>
-                                                }
-                                            </div>
+                                        <div class="sc-cond-te-item" [class.sc-cond-te-item--active]="selectedField === f">
+                                            <i class="pi {{ getFieldIcon(f) }}"></i>
+                                            <span class="sc-cond-te-label" [title]="f.name"
+                                                (click)="selectField(f)">{{ f.description || f.title || f.name }}</span>
+                                            @if (canEnterSubSchema(f)) {
+                                                <button class="sc-subschema-enter-btn"
+                                                    [title]="isTemplateConfigMode ? 'Open sub-schema settings' : 'Enter sub-schema'"
+                                                    (click)="isTemplateConfigMode ? enterTemplateSubSchema(f, $event) : enterSubSchema(f, $event)">
+                                                    <i class="pi pi-arrow-right"></i>Enter
+                                                </button>
+                                            }
                                             @if (isTemplateFieldLocked(f)) {
-                                                <span class="st-field-lock" pTooltip="Field editing is locked" tooltipPosition="top">
-                                                    <i class="pi pi-lock"></i>
-                                                </span>
+                                                <i class="pi pi-lock" pTooltip="Field editing is locked" tooltipPosition="top"></i>
+                                            }
+                                            @if (!isTemplateConfigMode && !isTemplateFieldLocked(f)) {
+                                                <button class="sc-cond-te-del" [disabled]="isConditionLocked(cond)" (click)="removeElseField(cond, f)">
+                                                    <i class="pi pi-times"></i>
+                                                </button>
                                             }
                                         </div>
                                     }
@@ -2511,24 +2479,22 @@
                                         </div>
                                     }
                                     <div class="sc-cond-te-add-row">
-                                        <button class="sc-cond-te-add-btn" [disabled]="!canAddFieldToSelectedSchema || isConditionLocked(cond)" (click)="addElseField(cond)">
-                                            <i class="pi pi-plus"></i>New field
-                                        </button>
                                         <p-select
                                             class="sc-cond-te-ref-sel guardian-dropdown"
                                             panelStyleClass="guardian-dropdown-panel width-825 sc-cond-panel"
-                                            [options]="getCrossTargetPSelectGroups()"
+                                            [options]="getCondFieldPickerOptions(cond)"
                                             [group]="true"
                                             optionLabel="label"
                                             optionValue="pathStr"
+                                            optionDisabled="disabled"
                                             [filter]="true"
                                             filterBy="label,fullLabel,pathStr"
                                             [resetFilterOnHide]="true"
                                             [virtualScroll]="true"
                                             [virtualScrollItemSize]="38"
                                             appendTo="body"
-                                            [placeholder]="getCrossTargetPSelectGroups().length ? 'Ref field' : '(no sub-schema fields)'"
-                                            [disabled]="!getCrossTargetPSelectGroups().length || isConditionLocked(cond)"
+                                            [placeholder]="getCondFieldPickerOptions(cond).length ? 'Select field…' : '(no selectable fields)'"
+                                            [disabled]="!getCondFieldPickerOptions(cond).length || isConditionLocked(cond)"
                                             [(ngModel)]="condElseRefVal[ci]"
                                             (onChange)="onCondElseRefChange(cond, ci, $event.value)">
                                             <ng-template pTemplate="group" let-group>
@@ -2541,7 +2507,9 @@
                                                 </span>
                                             </ng-template>
                                             <ng-template pTemplate="item" let-option>
-                                                <span class="sc-cond-opt-row">
+                                                <span class="sc-cond-opt-row"
+                                                    [pTooltip]="option.disabled ? 'Already used in another condition' : undefined"
+                                                    tooltipPosition="top">
                                                     <span class="sc-cond-opt-label"
                                                         [pTooltip]="option.isBlock ? option.fullLabel + ' – Sub-schema' : option.fullLabel" tooltipPosition="top" tooltipStyleClass="sc-cond-tooltip" [tooltipOptions]="{showDelay: 300}">{{ option.label }}</span>
                                                     @if (option.isBlock) {

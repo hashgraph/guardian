@@ -36,6 +36,10 @@ export interface ImportPolicyResult {
      * supplementary, so a dropped one must not report the whole import as failed.
      */
     artifactErrors?: ImportPolicyError[]
+    /**
+     * Non-fatal issues (e.g. schemas imported with invalid field keys)
+     */
+    warnings?: ImportPolicyError[]
 }
 
 export interface ImportTestResult {
