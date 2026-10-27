@@ -4827,7 +4827,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.condElseRefVal = rekey(this.condElseRefVal);
         const cond = schema.conditions?.[index];
         schema.conditions = (schema.conditions ?? []).filter((_, i) => i !== index);
-        // the branch fields stay in the schema as ordinary fields
         const owned = this.conditionOwnedFieldNames;
         for (const f of [...(cond?.thenFields ?? []), ...(cond?.elseFields ?? [])]) {
             if (!owned.has(f.name)) { f.conditionUserOrdered = false; }

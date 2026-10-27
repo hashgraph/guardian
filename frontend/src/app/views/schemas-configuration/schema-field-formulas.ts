@@ -134,7 +134,7 @@ export class SchemaFieldFormulas {
     }
 
     public get hasPending(): boolean {
-        return this.pending.length > 0;
+        return this.pending.some((p) => !this.isNoopMove(p));
     }
 
     /**
@@ -348,7 +348,6 @@ export class SchemaFieldFormulas {
         if (row.pending) {
             this.pending = this.pending.filter((p) => !this.isPendingOp(p, row.itemUuid, target, false));
         } else {
-            // the saved path is fixed now, so a later rename of the key doesn't retarget the unbind
             const moved = this.pending.find((p) => p.type === 'move' && p.scope.field === scope.field && p.itemUuid === row.itemUuid &&
                 p.fieldPath === p.basePath);
             const fieldPath = moved?.fieldPath || target.fieldPath;
@@ -359,17 +358,29 @@ export class SchemaFieldFormulas {
     }
 
     public release(scope: IFieldScope): void {
-        const links = this.savedLinks(scope);
-        if (!links) {
+        const moves = this.pending.filter((p) => p.type === 'move' && p.scope.field === scope.field);
+        const saved = this.savedLinks(scope);
+        if (!saved && !moves.length) {
             return;
         }
-        this.pending = this.pending.filter((p) => p.scope.field !== scope.field || !isAssignment(p));
-        for (const { formula, item, path } of links) {
+        const links = saved || [];
+        this.pending = this.pending.filter((p) => p.scope.field !== scope.field || (!isAssignment(p) && p.type !== 'move'));
+        const unbinds = [
+            ...moves.map((p) => ({ formulaId: p.formulaId, itemUuid: p.itemUuid, path: p.fieldPath! })),
+            ...links.map(({ formula, item, path }) => ({ formulaId: String(formula.id), itemUuid: item.uuid, path }))
+        ];
+        const done = new Set<string>();
+        for (const { formulaId, itemUuid, path } of unbinds) {
+            const key = `${formulaId}|${itemUuid}|${path}`;
+            if (done.has(key)) {
+                continue;
+            }
+            done.add(key);
             this.pending.push({
                 type: 'unbind',
                 policyId: this.policy.id,
-                formulaId: String(formula.id),
-                itemUuid: item.uuid,
+                formulaId,
+                itemUuid,
                 scope: this.copyScope(scope),
                 fieldPath: path
             });
@@ -377,10 +388,6 @@ export class SchemaFieldFormulas {
         this.version++;
     }
 
-    /**
-     * Call before the key of the field changes, so the saved links follow the new key.
-     * The old key is taken once; later changes of the key only move the links again.
-     */
     public rename(scope: IFieldScope): void {
         this.version++;
         if (this.pending.some((p) => p.type === 'move' && p.scope.field === scope.field)) {
@@ -404,11 +411,6 @@ export class SchemaFieldFormulas {
         }
     }
 
-    /**
-     * Saved links of editable formulas to the field and to the fields inside it, or null
-     * when formulas can't be changed for this schema. A published schema is saved as a new
-     * version with a new iri, so its saved links are left on the old version.
-     */
     private savedLinks(scope: IFieldScope): { formula: IFormula; item: IFormulaItem; path: string }[] | null {
         const iri = String(scope.schema.iri || '');
         if (!this.policy || !this.canEdit || !iri || !this.formulas.has(this.policy.id) ||
@@ -537,7 +539,7 @@ export class SchemaFieldFormulas {
      */
     public save(): Observable<boolean> {
         // a field deleted after its formulas were assigned has nothing to link to
-        this.pending = this.pending.filter((p) => !isAssignment(p) || p.scope.fields.includes(p.scope.field));
+        this.pending = this.pending.filter((p) => !this.isNoopMove(p) && (!isAssignment(p) || p.scope.fields.includes(p.scope.field)));
         const batch = [...this.pending];
         if (!batch.length) {
             return of(true);
@@ -649,6 +651,11 @@ export class SchemaFieldFormulas {
             return { ...target, fieldPath: target.fieldPath + p.fieldPath!.slice(p.basePath!.length) };
         }
         return p.fieldPath ? { ...target, fieldPath: p.fieldPath } : target;
+    }
+
+    /** a move back to the saved key */
+    private isNoopMove(p: IPendingBinding): boolean {
+        return p.type === 'move' && this.targetOf(p).fieldPath === p.fieldPath;
     }
 
     private copyScope(scope: IFieldScope): IFieldScope {

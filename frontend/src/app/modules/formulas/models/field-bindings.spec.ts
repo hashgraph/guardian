@@ -141,6 +141,34 @@ describe('field-bindings', () => {
             expect(links[0].condition).toBe(CONDITION);
         });
 
+        it('keeps the existing link when a moved link lands on its path', () => {
+            const existing = { type: 'schema', entityId: '#s1', item: 'z', condition: 'other' } as any;
+            const config = createConfig();
+            config.formulas![1].links = [...getItemLinks(config.formulas![1]), existing];
+            const { config: result } = applyFieldBindingOps(config, [
+                { type: 'move', formulaId: 'd1', itemUuid: 'v1', target: { schemaIri: '#s1', fieldPath: 'z' }, from: 'a' }
+            ]);
+            expect(getItemLinks(result.formulas![1])).toEqual([existing]);
+        });
+
+        it('does not touch duplicate links on other paths', () => {
+            const dup = { type: 'schema', entityId: '#s1', item: 'q' } as any;
+            const config = createConfig();
+            config.formulas![1].links = [...getItemLinks(config.formulas![1]), dup, { ...dup }];
+            const { config: result } = applyFieldBindingOps(config, [
+                { type: 'move', formulaId: 'd1', itemUuid: 'v1', target: { schemaIri: '#s1', fieldPath: 'z' }, from: 'a' }
+            ]);
+            expect(getItemLinks(result.formulas![1]).filter((l) => l.item === 'q').length).toBe(2);
+        });
+
+        it('does not rewrite an item that has no link on the old path', () => {
+            const config = createConfig();
+            const { config: result } = applyFieldBindingOps(config, [
+                { type: 'move', formulaId: 'd1', itemUuid: 'f1', target: { schemaIri: '#s1', fieldPath: 'z' }, from: 'a' }
+            ]);
+            expect(result.formulas![2]).toBe(config.formulas![2]);
+        });
+
         it('leaves the link as is when the path does not change', () => {
             const { config } = applyFieldBindingOps(createConfig(), [
                 { type: 'move', formulaId: 'd1', itemUuid: 'v1', target: A, from: 'a' }

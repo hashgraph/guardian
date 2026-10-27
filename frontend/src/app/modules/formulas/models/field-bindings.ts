@@ -158,9 +158,27 @@ export function applyFieldBindingOps(
                 formulas[index] = withLinks(item, [...links, moveLink(null, op.target)]);
             }
         } else if (op.type === 'move') {
-            const moved = links.map((link) => isLinkedTo(link, { ...op.target, fieldPath: op.from }) ? moveLink(link, op.target) : link);
-            const unique = moved.filter((link, i) => moved.findIndex((other) => isSameLink(other, link)) === i);
-            formulas[index] = withLinks(item, unique);
+            if (op.from === op.target.fieldPath) {
+                continue;
+            }
+            const from = { ...op.target, fieldPath: op.from };
+            if (!links.some((link) => isLinkedTo(link, from))) {
+                continue;
+            }
+            const kept: IFormulaLink[] = [];
+            for (const link of links) {
+                if (!isLinkedTo(link, from)) {
+                    kept.push(link);
+                    continue;
+                }
+                const next = moveLink(link, op.target);
+                const taken = links.some((other) => !isLinkedTo(other, from) && isSameLink(other, next)) ||
+                    kept.some((other) => isSameLink(other, next));
+                if (!taken) {
+                    kept.push(next);
+                }
+            }
+            formulas[index] = withLinks(item, kept);
         } else if (links.some((link) => isLinkedTo(link, op.target))) {
             formulas[index] = withLinks(item, links.filter((link) => !isLinkedTo(link, op.target)));
         }

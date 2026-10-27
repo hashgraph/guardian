@@ -178,6 +178,41 @@ describe('SchemaFieldFormulas', () => {
             });
         });
 
+        it('unbinds the saved key when a renamed field is deleted', (done) => {
+            const { model, updates } = create();
+            const s = savedScope();
+            model.rename(s);
+            s.field.name = 'G9';
+            model.release(s);
+            model.save().subscribe(() => {
+                expect(updates[0].config.formulas[0].link).toBeNull();
+                done();
+            });
+        });
+
+        it('has no pending change after the key is typed back to the saved one', () => {
+            const { model } = create();
+            const s = savedScope();
+            model.rename(s);
+            s.field.name = 'G9';
+            expect(model.hasPending).toBeTrue();
+            s.field.name = 'G6';
+            expect(model.hasPending).toBeFalse();
+        });
+
+        it('writes nothing when the key is typed back to the saved one', (done) => {
+            const { model, updates } = create();
+            const s = savedScope();
+            model.rename(s);
+            s.field.name = 'G9';
+            s.field.name = 'G6';
+            model.save().subscribe((ok: boolean) => {
+                expect(ok).toBeTrue();
+                expect(updates.length).toBe(0);
+                done();
+            });
+        });
+
         it('queues nothing when the schema has no saved links', () => {
             const { model } = create();
             model.rename(savedScope('G7'));

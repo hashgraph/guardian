@@ -593,7 +593,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 prepareSchemaTemplateMetadata(item);
                 const created = await createSchemaAndArtifacts(item.category, item, owner, NewNotifier.empty());
                 const list = await DatabaseServer.getSchemas({ owner: owner.owner }, { limit: 100 });
-                const schemas = [created, ...list.filter(s => s.id !== created.id)];
+                const schemas = list.some(s => s.id === created.id) ? list : [...list, created];
                 return new MessageResponse(schemas);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
