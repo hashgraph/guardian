@@ -264,6 +264,9 @@ export class FormulaConfigurationComponent implements OnInit {
     }
 
     public onSave() {
+        if (!this.dirty || this.loading) {
+            return;
+        }
         this.relationshipsEdit = false;
         this.loading = true;
         this.formulasService

@@ -887,6 +887,38 @@ app-condition-if-editor ::ng-deep .p-select-label {
             font-size: 13px;
             color: var(--color-accent-yellow-1, #DA9B22);
         }
+
+        .link-missing {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        .link-missing-field {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+            font-size: 13px;
+            color: var(--guardian-font-color, #23252E);
+        }
+
+        .link-missing-label {
+            flex-shrink: 0;
+        }
+
+        .link-missing-path {
+            min-width: 0;
+            padding: 1px 6px;
+            border-radius: 4px;
+            color: var(--guardian-font-color, #23252E);
+            background: color-mix(in srgb, var(--color-accent-yellow-1, #DA9B22) 14%, transparent);
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
     }
 
     .always-shown {
