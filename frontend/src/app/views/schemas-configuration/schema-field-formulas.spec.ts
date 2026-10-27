@@ -136,4 +136,78 @@ describe('SchemaFieldFormulas', () => {
         model.newDocument = 'd1';
         expect(model.canCreate).toBeTrue();
     });
+    describe('renames and deletes', () => {
+        function savedScope(name: string = 'G6', status: string = 'DRAFT'): IFieldScope {
+            const field: any = { name };
+            const schema: any = { id: 's1', iri: '#root', status, fields: [] };
+            return { schema, field, prefix: ['risks'], fields: [field] };
+        }
+
+        it('queues no unbind when the field only has a pending bind', () => {
+            const { model } = create();
+            const s = savedScope('G7');
+            model.assign(s, 'd1|f1');
+            model.release(s);
+            expect(model.hasPending).toBeFalse();
+        });
+
+        it('unbinds the saved link when the field is deleted', (done) => {
+            const { model, updates } = create();
+            model.release(savedScope());
+            model.save().subscribe(() => {
+                expect(updates[0].config.formulas[0].link).toBeNull();
+                done();
+            });
+        });
+
+        it('queues nothing for a published schema', () => {
+            const { model } = create();
+            model.release(savedScope('G6', 'PUBLISHED'));
+            model.rename(savedScope('G6', 'PUBLISHED'));
+            expect(model.hasPending).toBeFalse();
+        });
+
+        it('moves the saved link to the new key', (done) => {
+            const { model, updates } = create();
+            const s = savedScope();
+            model.rename(s);
+            s.field.name = 'G9';
+            model.save().subscribe(() => {
+                expect(updates[0].config.formulas[0].link).toEqual({ type: 'schema', entityId: '#root', item: 'risks.G9' });
+                done();
+            });
+        });
+
+        it('queues nothing when the schema has no saved links', () => {
+            const { model } = create();
+            model.rename(savedScope('G7'));
+            expect(model.hasPending).toBeFalse();
+        });
+
+        it('keeps the unbind on the saved key when the key is renamed afterwards', (done) => {
+            const { model, updates } = create();
+            const s = savedScope();
+            const row = model.view(s, true, false).rows[0];
+            model.unbind(s, row);
+            model.rename(s);
+            s.field.name = 'G9';
+            model.save().subscribe(() => {
+                expect(updates[0].config.formulas[0].link).toBeNull();
+                done();
+            });
+        });
+
+        it('unbinds the saved key when the key was renamed before the unbind', (done) => {
+            const { model, updates } = create();
+            const s = savedScope();
+            model.rename(s);
+            s.field.name = 'G9';
+            const row = model.view(s, true, false).rows[0];
+            model.unbind(s, row);
+            model.save().subscribe(() => {
+                expect(updates[0].config.formulas[0].link).toBeNull();
+                done();
+            });
+        });
+    });
 });

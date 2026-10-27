@@ -28,6 +28,7 @@ export interface IFieldTarget {
 export type FieldBindingOp =
     { type: 'bind'; formulaId: string; itemUuid: string; target: IFieldTarget } |
     { type: 'unbind'; formulaId: string; itemUuid: string; target: IFieldTarget } |
+    { type: 'move'; formulaId: string; itemUuid: string; target: IFieldTarget; from: string } |
     { type: 'create'; formulaId: string; item: IFormulaItem; target: IFieldTarget };
 
 /**
@@ -114,6 +115,10 @@ export function createStubItem(name: string, uuid: string = GenerateUUIDv4()): I
     };
 }
 
+function isSameLink(a: IFormulaLink, b: IFormulaLink): boolean {
+    return a.type === b.type && a.entityId === b.entityId && a.item === b.item;
+}
+
 function withLinks(item: IFormulaItem, links: IFormulaLink[]): IFormulaItem {
     const copy: IFormulaItem = { ...item };
     setItemLinks(copy, links);
@@ -152,6 +157,10 @@ export function applyFieldBindingOps(
             if (!links.some((link) => isLinkedTo(link, op.target))) {
                 formulas[index] = withLinks(item, [...links, moveLink(null, op.target)]);
             }
+        } else if (op.type === 'move') {
+            const moved = links.map((link) => isLinkedTo(link, { ...op.target, fieldPath: op.from }) ? moveLink(link, op.target) : link);
+            const unique = moved.filter((link, i) => moved.findIndex((other) => isSameLink(other, link)) === i);
+            formulas[index] = withLinks(item, unique);
         } else if (links.some((link) => isLinkedTo(link, op.target))) {
             formulas[index] = withLinks(item, links.filter((link) => !isLinkedTo(link, op.target)));
         }

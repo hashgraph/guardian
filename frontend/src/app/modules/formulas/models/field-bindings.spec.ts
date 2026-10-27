@@ -131,6 +131,23 @@ describe('field-bindings', () => {
             expect(config.formulas![1].link).toEqual({ type: 'schema', entityId: '#s1', item: 'b' });
         });
 
+        it('moves a link to the new path and keeps its condition', () => {
+            const { config } = applyFieldBindingOps(createConfig(), [
+                { type: 'move', formulaId: 'd1', itemUuid: 'v1', target: { schemaIri: '#s1', fieldPath: 'z' }, from: 'a' }
+            ]);
+            const links = getItemLinks(config.formulas![1]);
+            expect(links.length).toBe(1);
+            expect(links[0].item).toBe('z');
+            expect(links[0].condition).toBe(CONDITION);
+        });
+
+        it('leaves the link as is when the path does not change', () => {
+            const { config } = applyFieldBindingOps(createConfig(), [
+                { type: 'move', formulaId: 'd1', itemUuid: 'v1', target: A, from: 'a' }
+            ]);
+            expect(getItemLinks(config.formulas![1])[0].item).toBe('a');
+        });
+
         it('unbinds only while the item is still on the field', () => {
             const { config } = applyFieldBindingOps(createConfig(), [
                 { type: 'unbind', formulaId: 'd1', itemUuid: 'v1', target: A },

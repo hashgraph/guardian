@@ -1,6 +1,6 @@
 import { EMPTY, Observable, forkJoin, of } from 'rxjs';
 import { catchError, expand, map, reduce, shareReplay, switchMap } from 'rxjs/operators';
-import { EntityStatus, IFormula, IFormulaItem, IFormulaLink, Schema, SchemaField, UserPermissions } from '@guardian/interfaces';
+import { EntityStatus, IFormula, IFormulaItem, IFormulaLink, Schema, SchemaField, SchemaStatus, UserPermissions } from '@guardian/interfaces';
 import { FormulasService } from 'src/app/services/formulas.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -76,12 +76,18 @@ export interface IFieldScope {
 }
 
 interface IPendingBinding {
-    type: 'bind' | 'unbind' | 'create';
+    type: 'bind' | 'unbind' | 'create' | 'move';
     policyId: string;
     formulaId: string;
     itemUuid: string;
     item?: IFormulaItem;
     scope: IFieldScope;
+    fieldPath?: string;
+    basePath?: string;
+}
+
+function isAssignment(p: IPendingBinding): boolean {
+    return p.type === 'bind' || p.type === 'create';
 }
 
 const HIDDEN: IFieldFormulasView = { state: 'hidden', rows: [], groups: [], documents: [] };
@@ -342,9 +348,91 @@ export class SchemaFieldFormulas {
         if (row.pending) {
             this.pending = this.pending.filter((p) => !this.isPendingOp(p, row.itemUuid, target, false));
         } else {
-            this.pending.push({ type: 'unbind', policyId: this.policy.id, formulaId: row.formulaId, itemUuid: row.itemUuid, scope: this.copyScope(scope) });
+            // the saved path is fixed now, so a later rename of the key doesn't retarget the unbind
+            const moved = this.pending.find((p) => p.type === 'move' && p.scope.field === scope.field && p.itemUuid === row.itemUuid &&
+                p.fieldPath === p.basePath);
+            const fieldPath = moved?.fieldPath || target.fieldPath;
+            this.pending = this.pending.filter((p) => p !== moved);
+            this.pending.push({ type: 'unbind', policyId: this.policy.id, formulaId: row.formulaId, itemUuid: row.itemUuid, scope: this.copyScope(scope), fieldPath });
         }
         this.version++;
+    }
+
+    public release(scope: IFieldScope): void {
+        const links = this.savedLinks(scope);
+        if (!links) {
+            return;
+        }
+        this.pending = this.pending.filter((p) => p.scope.field !== scope.field || !isAssignment(p));
+        for (const { formula, item, path } of links) {
+            this.pending.push({
+                type: 'unbind',
+                policyId: this.policy.id,
+                formulaId: String(formula.id),
+                itemUuid: item.uuid,
+                scope: this.copyScope(scope),
+                fieldPath: path
+            });
+        }
+        this.version++;
+    }
+
+    /**
+     * Call before the key of the field changes, so the saved links follow the new key.
+     * The old key is taken once; later changes of the key only move the links again.
+     */
+    public rename(scope: IFieldScope): void {
+        this.version++;
+        if (this.pending.some((p) => p.type === 'move' && p.scope.field === scope.field)) {
+            return;
+        }
+        const links = this.savedLinks(scope);
+        if (!links?.length) {
+            return;
+        }
+        const basePath = buildFieldPath(scope.prefix, scope.field.name);
+        for (const { formula, item, path } of links) {
+            this.pending.push({
+                type: 'move',
+                policyId: this.policy.id,
+                formulaId: String(formula.id),
+                itemUuid: item.uuid,
+                scope: this.copyScope(scope),
+                fieldPath: path,
+                basePath
+            });
+        }
+    }
+
+    /**
+     * Saved links of editable formulas to the field and to the fields inside it, or null
+     * when formulas can't be changed for this schema. A published schema is saved as a new
+     * version with a new iri, so its saved links are left on the old version.
+     */
+    private savedLinks(scope: IFieldScope): { formula: IFormula; item: IFormulaItem; path: string }[] | null {
+        const iri = String(scope.schema.iri || '');
+        if (!this.policy || !this.canEdit || !iri || !this.formulas.has(this.policy.id) ||
+            scope.schema.status === SchemaStatus.PUBLISHED) {
+            return null;
+        }
+        const base = buildFieldPath(scope.prefix, scope.field.name);
+        const result: { formula: IFormula; item: IFormulaItem; path: string }[] = [];
+        for (const formula of this.formulas.get(this.policy.id) || []) {
+            if (formula.id === NEW_FORMULA_DOCUMENT || !isEditableFormula(formula)) {
+                continue;
+            }
+            for (const item of formula.config?.formulas || []) {
+                if (!item || !BINDABLE_ITEM_TYPES.has(item.type)) {
+                    continue;
+                }
+                const paths = new Set(getItemLinks(item)
+                    .filter((link) => link.type === 'schema' && link.entityId === iri &&
+                        (link.item === base || link.item?.startsWith(base + '.')))
+                    .map((link) => link.item));
+                paths.forEach((path) => result.push({ formula, item, path }));
+            }
+        }
+        return result;
     }
 
     /**
@@ -449,7 +537,7 @@ export class SchemaFieldFormulas {
      */
     public save(): Observable<boolean> {
         // a field deleted after its formulas were assigned has nothing to link to
-        this.pending = this.pending.filter((p) => p.scope.fields.includes(p.scope.field));
+        this.pending = this.pending.filter((p) => !isAssignment(p) || p.scope.fields.includes(p.scope.field));
         const batch = [...this.pending];
         if (!batch.length) {
             return of(true);
@@ -532,7 +620,10 @@ export class SchemaFieldFormulas {
     }
 
     private toOp(p: IPendingBinding): FieldBindingOp {
-        const target = this.target(p.scope);
+        const target = this.targetOf(p);
+        if (p.type === 'move') {
+            return { type: 'move', formulaId: p.formulaId, itemUuid: p.itemUuid, target, from: p.fieldPath! };
+        }
         if (p.type === 'create') {
             return { type: 'create', formulaId: p.formulaId, item: p.item!, target };
         }
@@ -551,19 +642,27 @@ export class SchemaFieldFormulas {
         };
     }
 
+    private targetOf(p: IPendingBinding): IFieldTarget {
+        const target = this.target(p.scope);
+        if (p.type === 'move') {
+            return { ...target, fieldPath: target.fieldPath + p.fieldPath!.slice(p.basePath!.length) };
+        }
+        return p.fieldPath ? { ...target, fieldPath: p.fieldPath } : target;
+    }
+
     private copyScope(scope: IFieldScope): IFieldScope {
         return { ...scope, prefix: [...scope.prefix] };
     }
 
     /** a pending unbind (`unbind` true) or a pending bind/create of the item on the field */
     private isPendingOp(p: IPendingBinding, itemUuid: string, target: IFieldTarget, unbind: boolean): boolean {
-        return (p.type === 'unbind') === unbind &&
+        return (unbind ? p.type === 'unbind' : isAssignment(p)) &&
             p.itemUuid === itemUuid &&
             this.sameTarget(p, target);
     }
 
     private sameTarget(p: IPendingBinding, target: IFieldTarget): boolean {
-        const own = this.target(p.scope);
+        const own = this.targetOf(p);
         return own.schemaIri === target.schemaIri && own.fieldPath === target.fieldPath;
     }
 

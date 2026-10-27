@@ -100,6 +100,40 @@ describe('SchemasConfigurationComponent', () => {
         return component;
     }
 
+    describe('removing a condition', () => {
+        it('keeps the branch fields in the schema as ordinary fields', () => {
+            const a: any = { name: 'a', conditionUserOrdered: true };
+            const b: any = { name: 'b', conditionUserOrdered: true };
+            const schema: any = {
+                fields: [a, b],
+                conditions: [{ thenFields: [a], elseFields: [b] }],
+            };
+            const component = createComponent({ selectedSchema: schema });
+            component.markDirty = () => {};
+            component.condThenRefVal = {};
+            component.condElseRefVal = {};
+            component.removeConditionAt(0);
+            expect(schema.conditions).toEqual([]);
+            expect(schema.fields).toEqual([a, b]);
+            expect(a.conditionUserOrdered).toBeFalse();
+            expect(b.conditionUserOrdered).toBeFalse();
+        });
+
+        it('keeps the ordering flag of a field still owned by another condition', () => {
+            const a: any = { name: 'a', conditionUserOrdered: true };
+            const schema: any = {
+                fields: [a],
+                conditions: [{ thenFields: [a] }, { elseFields: [a] }],
+            };
+            const component = createComponent({ selectedSchema: schema });
+            component.markDirty = () => {};
+            component.condThenRefVal = {};
+            component.condElseRefVal = {};
+            component.removeConditionAt(0);
+            expect(a.conditionUserOrdered).toBeTrue();
+        });
+    });
+
     describe('Rich Text preset dialog', () => {
         it('opens the requested preset and routes its value back to the selected field', () => {
             const component = createComponent();

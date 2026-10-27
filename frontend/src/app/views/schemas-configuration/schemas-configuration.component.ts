@@ -2154,6 +2154,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     if (savedId) {
                         s.id = savedId;
                         (s as any)._id = savedId;
+                        if (saved?.iri) { s.iri = saved.iri; }
                         const dirtyKey = `new:${s.uuid}`;
                         this.newSchemaKeys.delete(dirtyKey);
                         this.dirtySchemaIds.delete(dirtyKey);
@@ -2263,6 +2264,22 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             return null;
         }
         return { schema, field, prefix: this.fieldFormulaPrefix, fields };
+    }
+
+    private formulaScopeOf(field: SchemaField): IFieldScope | null {
+        const schema = this.selectedSchema;
+        if (!this.fieldFormulas || !schema || this.isTemplateMode || schema.entity === SchemaEntity.NONE) {
+            return null;
+        }
+        const fields = this.isDrilling ? this.drillCurrentFields : schema.fields;
+        return { schema, field, prefix: this.fieldFormulaPrefix, fields };
+    }
+
+    private releaseFieldFormulas(field: SchemaField): void {
+        const scope = this.formulaScopeOf(field);
+        if (scope) {
+            this.fieldFormulas.release(scope);
+        }
     }
 
     /** the selected field scope when its formulas can be changed, else null */
@@ -2429,6 +2446,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const idx = this.selectedSchema.fields.indexOf(field);
         if (idx !== -1) {
             this.removeGeoDependenciesByField(field, this.selectedSchema.fields);
+            this.releaseFieldFormulas(field);
             this.selectedSchema.fields.splice(idx, 1);
             if (this.selectedField === field) {
                 this.selectedField = null;
@@ -3065,6 +3083,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
         const oldName = this.selectedField.name;
         this.invalidateFieldSuggestion(oldName);
+        const scope = this.formulaScopeOf(this.selectedField);
+        if (scope) {
+            this.fieldFormulas.rename(scope);
+        }
         this.selectedField.name = name;
         for (const candidate of this.currentFieldScope) {
             if (candidate.dependency?.kind === 'geo' && candidate.dependency.on === oldName) {
@@ -3660,6 +3682,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const idx = this.drillCurrentFields.indexOf(field);
         if (idx !== -1) {
             this.removeGeoDependenciesByField(field, this.drillCurrentFields);
+            this.releaseFieldFormulas(field);
             this.drillCurrentFields.splice(idx, 1);
             if (this.selectedField === field) { this.selectedField = null; }
             this.markDirty();
@@ -4803,20 +4826,12 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.condThenRefVal = rekey(this.condThenRefVal);
         this.condElseRefVal = rekey(this.condElseRefVal);
         const cond = schema.conditions?.[index];
-        if (cond) {
-            const toRemove = new Set([
-                ...(cond.thenFields ?? []).map(f => f.name),
-                ...(cond.elseFields ?? []).map(f => f.name),
-            ]);
-            if (toRemove.size) {
-                // H2: splice in-place to preserve drillStack reference
-                for (let i = schema.fields.length - 1; i >= 0; i--) {
-                    if (toRemove.has(schema.fields[i].name)) { schema.fields.splice(i, 1); }
-                }
-                if (toRemove.has(this.selectedField?.name ?? '')) { this.selectedField = null; }
-            }
-        }
         schema.conditions = (schema.conditions ?? []).filter((_, i) => i !== index);
+        // the branch fields stay in the schema as ordinary fields
+        const owned = this.conditionOwnedFieldNames;
+        for (const f of [...(cond?.thenFields ?? []), ...(cond?.elseFields ?? [])]) {
+            if (!owned.has(f.name)) { f.conditionUserOrdered = false; }
+        }
         this.markDirty();
     }
 
