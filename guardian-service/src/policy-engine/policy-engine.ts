@@ -63,6 +63,7 @@ import {
     publishSystemSchemasPackage
 } from '../helpers/import-helpers/index.js';
 import { PolicyConverterUtils } from '../helpers/import-helpers/policy/policy-converter-utils.js';
+import { validateSchemaFieldKeys } from '../helpers/import-helpers/schema/schema-field-key-validator.js';
 import { ISerializedErrors } from './policy-validation-results-container.js';
 import { PolicyServiceChannelsContainer } from '../helpers/policy-service-channels-container.js';
 import { createHederaToken } from '../api/token.service.js';
@@ -1341,6 +1342,7 @@ export class PolicyEngine extends NatsService {
             const schemaStep = notifier.addStep(`${schema.name || '-'}`, 1, true);
             schemaStep.start();
 
+            validateSchemaFieldKeys(schema);
             schema.context = generateSchemaContext(schema);
             SchemaHelper.updateIRI(schema);
             updatedSchemas.push(schema);

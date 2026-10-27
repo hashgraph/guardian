@@ -1154,7 +1154,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     throw new Error('file in body is empty');
                 }
                 const preview = await ToolImportExport.parseZipFile(Buffer.from(zip.data));
-                const { tool, errors } = await importToolByFile(owner, preview, metadata, notifier, owner.id);
+                const { tool, errors, warnings } = await importToolByFile(owner, preview, metadata, notifier, owner.id);
                 if (errors?.length) {
                     const message = importToolErrors(errors);
                     notifier.fail(message);
@@ -1162,7 +1162,8 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                 } else {
                     notifier.result({
                         toolId: tool.id,
-                        errors: []
+                        errors: [],
+                        warnings
                     });
                 }
             }, async (error) => {

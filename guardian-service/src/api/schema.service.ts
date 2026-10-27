@@ -2976,7 +2976,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 return new MessageResponse({
                     schemas: xlsxResult.schemas,
                     validation,
-                    errors: result.errors
+                    errors: result.errors,
+                    warnings: result.warnings
                 });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -3075,7 +3076,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     policyId: category === SchemaCategory.POLICY ? target.id : null,
                     validation,
                     formulaWarnings,
-                    errors: result.errors
+                    errors: result.errors,
+                    warnings: result.warnings
                 });
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);

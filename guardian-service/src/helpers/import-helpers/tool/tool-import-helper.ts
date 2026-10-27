@@ -605,7 +605,8 @@ export async function importToolByFile(
 
     return {
         tool: item,
-        errors
+        errors,
+        warnings: schemasResult.warnings || []
     };
 }
 

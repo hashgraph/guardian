@@ -2042,7 +2042,8 @@ export class PolicyEngineService {
                     notifier.result({
                         policyId: result.policy.id,
                         validation,
-                        errors: result.errors
+                        errors: result.errors,
+                        warnings: result.warnings
                     });
 
                     if (originalTracking && result.policy) {
@@ -2248,7 +2249,8 @@ export class PolicyEngineService {
                         notifier.result({
                             policyId: result.policy.id,
                             validation,
-                            errors: result.errors
+                            errors: result.errors,
+                            warnings: result.warnings
                         });
 
                         if (originalTracking && result.policy) {
@@ -2346,7 +2348,8 @@ export class PolicyEngineService {
                     return new MessageResponse({
                         policyId: policy.id,
                         validation,
-                        errors: result.errors
+                        errors: result.errors,
+                        warnings: result.warnings
                     });
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -2437,7 +2440,8 @@ export class PolicyEngineService {
                         policyId: policy.id,
                         validation,
                         formulaWarnings,
-                        errors: result.errors
+                        errors: result.errors,
+                        warnings: result.warnings
                     });
                 }, async (error) => {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
