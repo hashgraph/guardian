@@ -1022,17 +1022,6 @@
                                 [(ngModel)]="selectedField.description"
                                 (ngModelChange)="markDirty(); invalidateSelectedFieldSuggestion()" />
                         </div>
-                        @if (selectedFieldIsString) {
-                            <div class="sc-rp-group">
-                                <label class="sc-rp-label">Pattern</label>
-                                <input
-                                    class="sc-rp-input"
-                                    type="text"
-                                    placeholder="e.g. [0-9]+"
-                                    [(ngModel)]="selectedField.pattern"
-                                    (ngModelChange)="markDirty()" />
-                            </div>
-                        }
                         <div class="sc-rp-group">
                             <div class="sc-rp-label">Type</div>
                             <div class="sc-type-grid">
@@ -1050,8 +1039,29 @@
                             </div>
                         </div>
 
+                        <div class="sc-rp-divider"></div>
+                        <div class="sc-rp-label">Parameter</div>
+                        @if (!selectedFieldHasParameterControl) {
+                            <div class="sc-rp-group">
+                                <input
+                                    class="sc-rp-input"
+                                    type="text"
+                                    disabled
+                                    [placeholder]="selectedFieldParameterPointer" />
+                            </div>
+                        }
+                        @if (selectedFieldIsString) {
+                            <div class="sc-rp-group">
+                                <label class="sc-rp-label">Pattern</label>
+                                <input
+                                    class="sc-rp-input"
+                                    type="text"
+                                    placeholder="e.g. [0-9]+"
+                                    [(ngModel)]="selectedField.pattern"
+                                    (ngModelChange)="markDirty()" />
+                            </div>
+                        }
                         @if (selectedFieldHasGeoAncestors || selectedField.dependency) {
-                            <div class="sc-rp-divider"></div>
                             <div class="sc-rp-group">
                                 <label class="sc-rp-label">Depends on</label>
                                 <p-select
@@ -1078,9 +1088,7 @@
                                 }
                             </div>
                         }
-
                         @if (selectedFieldIsEnum) {
-                            <div class="sc-rp-divider"></div>
                             <div class="sc-rp-group">
                                 <label class="sc-rp-label">Enum name</label>
                                 <input
@@ -1112,6 +1120,18 @@
                                 }
                             </div>
                         }
+                        @if (selectedFieldIsUnit) {
+                            <div class="sc-rp-group">
+                                <label class="sc-rp-label">Unit</label>
+                                <input
+                                    class="sc-rp-input"
+                                    type="text"
+                                    placeholder="e.g. tCO₂e, ha, m³"
+                                    [(ngModel)]="selectedField.unit"
+                                    (ngModelChange)="markDirty()" />
+                            </div>
+                        }
+
 
                         @if (selectedFieldIsGeoJson) {
                             <div class="sc-rp-divider"></div>
@@ -1189,18 +1209,6 @@
                             </button>
                         }
 
-                        @if (selectedFieldIsUnit) {
-                            <div class="sc-rp-divider"></div>
-                            <div class="sc-rp-group">
-                                <label class="sc-rp-label">Unit</label>
-                                <input
-                                    class="sc-rp-input"
-                                    type="text"
-                                    placeholder="e.g. tCO₂e, ha, m³"
-                                    [(ngModel)]="selectedField.unit"
-                                    (ngModelChange)="markDirty()" />
-                            </div>
-                        }
 
                         @if (getFieldCurrentType(selectedField) === 'sub-schema') {
                             <div class="sc-rp-divider"></div>
@@ -1417,7 +1425,7 @@
                             }
                         }
 
-                        @if (selectedFieldCanBeArray || selectedFieldCanBeUpdatable) {
+                        @if (selectedFieldCanBeArray || selectedFieldCanBeUpdatable || selectedFieldCanBePrivate) {
                             <div class="sc-rp-divider"></div>
                             <div class="sc-rp-label">Other</div>
                             <div class="sc-check-list">
@@ -1440,6 +1448,17 @@
                                         <div class="sc-check-desc">
                                             <strong>Updatable field</strong>
                                             <span>Value can be updated after submission</span>
+                                        </div>
+                                    </div>
+                                }
+                                @if (selectedFieldCanBePrivate) {
+                                    <div class="sc-check-item" (click)="toggleBehaviour('isPrivate')">
+                                        <p-checkbox class="guardian-checkbox checkbox-24" [binary]="true"
+                                                    style="pointer-events:none"
+                                                    [ngModel]="selectedField.isPrivate"></p-checkbox>
+                                        <div class="sc-check-desc">
+                                            <strong>Private field</strong>
+                                            <span>Value is stored encrypted</span>
                                         </div>
                                     </div>
                                 }

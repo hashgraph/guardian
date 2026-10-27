@@ -2616,7 +2616,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.markDirty();
     }
 
-    public toggleBehaviour(key: 'isArray' | 'isUpdatable' | 'readOnly'): void {
+    public toggleBehaviour(key: 'isArray' | 'isUpdatable' | 'isPrivate' | 'readOnly'): void {
         if (!this.selectedField) { return; }
         (this.selectedField as any)[key] = !(this.selectedField as any)[key];
         this.markDirty();
@@ -2689,6 +2689,26 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 this.markDirty();
             }
         });
+    }
+
+    /** Private applies to Encrypted VC schemas only. */
+    public get selectedFieldCanBePrivate(): boolean {
+        return !!this.selectedField && this.selectedSchema?.entity === SchemaEntity.EVC;
+    }
+
+    /** True when a Parameter control (pattern, depends on, enum name, unit) applies to the field. */
+    public get selectedFieldHasParameterControl(): boolean {
+        return this.selectedFieldIsString
+            || this.selectedFieldIsEnum
+            || this.selectedFieldIsUnit
+            || !!(this.selectedFieldHasGeoAncestors || (this.selectedField as any)?.dependency);
+    }
+
+    /** Hint shown when no Parameter control applies; expression and table columns are edited in their own sections. */
+    public get selectedFieldParameterPointer(): string {
+        if ((this.selectedField as any)?.autocalculate) { return 'Set in Expression below'; }
+        if (this.selectedFieldIsTable) { return 'Set in Table columns below'; }
+        return 'Not used by this field type';
     }
 
     public get selectedFieldIsEnum(): boolean {
