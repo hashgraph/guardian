@@ -630,9 +630,9 @@ export class XlsxToJson {
     private static readonly NON_UPDATABLE_TYPES = new Set(['Help Text', 'Prefix', 'Postfix', 'Sub-Schema']);
 
     /**
-     * Reads Updatable and Private with the same rules as the schema editor:
-     * Updatable is not available for display-only and sub-schema types,
-     * Private only for top-level fields of an Encrypted VC schema.
+     * Applies the schema editor rules to field flags:
+     * auto calculated fields are single valued, Updatable is not available for display-only
+     * and sub-schema types, Private only for top-level fields of an Encrypted VC schema.
      */
     private static readFieldFlags(
         worksheet: Worksheet,
@@ -655,6 +655,12 @@ export class XlsxToJson {
                 col: table.getCol(header)
             }, field);
         };
+
+        const autocalculated = field.autocalculate || fieldType?.name === 'Auto-Calculate';
+        if (autocalculated && field.isArray) {
+            field.isArray = false;
+            ignored(Dictionary.ALLOW_MULTIPLE_ANSWERS, 'an auto calculated field holds a single value');
+        }
 
         if (table.hasCol(Dictionary.UPDATABLE)) {
             const updatable = xlsxToBoolean(worksheet.getValue<string>(table.getCol(Dictionary.UPDATABLE), row));

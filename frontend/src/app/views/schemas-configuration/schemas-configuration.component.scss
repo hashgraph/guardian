@@ -3940,9 +3940,9 @@
 
 // ── Required-mode radio list ─────────────────────────────────────────────────
 .sc-radio-list {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 12px;
     margin-bottom: 4px;
 }
 
@@ -3963,10 +3963,6 @@
 }
 
 // ── Expression editor row ────────────────────────────────────────────────────
-.sc-rp-group--expr {
-    margin-top: 8px;
-}
-
 .sc-expr-row {
     display: flex;
     gap: 6px;
@@ -4125,7 +4121,6 @@
     flex: 1;
     cursor: default;
     color: var(--guardian-font-color-secondary, #848FA9) !important;
-    font-size: 11px !important;
 }
 
 .sc-btn-expr {

@@ -194,4 +194,12 @@ describe('Updatable and Private follow the editor rules on import', () => {
         assert.equal(top.fields[0].isPrivate, undefined);
         assert.ok(errors.some(e => e.type === 'warning' && /Private Field/.test(e.text)));
     });
+
+    it('ignores Allow Multiple Answers on an auto calculated field and warns', async () => {
+        const { result, errors } = await roundTrip(SchemaEntity.VC, [
+            field('n', { type: 'number', autocalculate: true, expression: 'a + b', isArray: true }),
+        ]);
+        assert.equal(result.fields.find(f => f.name === 'n').isArray, false);
+        assert.ok(errors.some(e => e.type === 'warning' && /Allow Multiple Answers/.test(e.text)));
+    });
 });

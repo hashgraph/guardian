@@ -720,6 +720,12 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     private static readonly NON_UPDATABLE_TYPES = new Set(['helptext', 'prefix', 'postfix', 'sub-schema']);
     private static readonly NON_ARRAY_TYPES = new Set(['boolean', 'helptext']);
+    // Auto Calculate is unavailable for types whose XLSX Parameter cell already holds another value
+    // (enum name, table columns, text style, unit, sub-schema name, geo parent) and for geographic types.
+    // A String with a pattern is blocked too, see autocalcBlockReason.
+    private static readonly NON_AUTOCALC_TYPES = new Set([
+        'enum', 'table', 'helptext', 'prefix', 'postfix', 'sub-schema', 'continent', 'country', 'state'
+    ]);
 
     public readonly geoJsonOptions = ['Point', 'Polygon', 'LineString', 'MultiPoint', 'MultiPolygon', 'MultiLineString'];
 
@@ -1399,6 +1405,21 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             } else if (allFields.filter(f => f !== field && f.name === field.name).length > 0) {
                 errors.push('Key must be unique within the schema');
             }
+        }
+
+        if (field.autocalculate && field.isArray) {
+            errors.push('Auto Calculate cannot allow multiple answers');
+        }
+
+        if (field.required && this.getFieldCurrentType(field) === 'helptext') {
+            errors.push('Help Text cannot be required');
+        }
+
+        const autocalcBlocked = field.autocalculate ? this.autocalcBlockReason(field) : null;
+        if (field.autocalculate && autocalcBlocked) {
+            errors.push(autocalcBlocked);
+        } else if (field.autocalculate && !field.expression?.trim()) {
+            errors.push('Auto Calculate requires an expression');
         }
 
         if ((field as any).customType === 'enum' && (!Array.isArray(field.enum) || field.enum.length === 0)) {
@@ -2630,13 +2651,41 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return 'none';
     }
 
+    private autocalcBlockReason(field: SchemaField): string | null {
+        if (SchemasConfigurationComponent.NON_AUTOCALC_TYPES.has(this.getFieldCurrentType(field))) {
+            return 'Auto Calculate is not available for this type';
+        }
+        if (field.pattern) {
+            return 'Auto Calculate cannot be used with a pattern';
+        }
+        return null;
+    }
+
+    private fieldSupportsAutocalc(field: SchemaField): boolean {
+        return !this.autocalcBlockReason(field);
+    }
+
+    /** Help Text is display only: it has no Required / Visibility choice unless it was saved with a wrong one. */
+    public get selectedFieldShowsRequiredModes(): boolean {
+        const field = this.selectedField as any;
+        return !!field && (!this.selectedFieldIsHelpText || !!field.required || !!field.autocalculate);
+    }
+
+    /** Required / Visibility options of the selected field, without Auto Calculate where it is not supported. */
+    public get selectedFieldRequiredModes(): { label: string; value: string }[] {
+        const supported = !this.selectedField || this.fieldSupportsAutocalc(this.selectedField);
+        return this.requiredModeOptions.filter(opt =>
+            (supported || opt.value !== 'autocalculate')
+            && !(this.selectedFieldIsHelpText && opt.value === 'required'));
+    }
+
     public setFieldRequiredMode(mode: string): void {
         if (!this.selectedField) { return; }
         const f = this.selectedField as any;
         f.required      = mode === 'required';
         f.hidden        = mode === 'hidden';
         f.autocalculate = mode === 'autocalculate';
-        if (mode !== 'autocalculate') { f.expression = ''; }
+        if (mode !== 'autocalculate') { f.expression = ''; } else { f.isArray = false; }
         this.markDirty();
     }
 
@@ -2715,19 +2764,22 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return !!this.selectedField && !this.isDrilling && this.selectedSchema?.entity === SchemaEntity.EVC;
     }
 
-    /** True when a Parameter control (pattern, depends on, enum name, unit) applies to the field. */
-    public get selectedFieldHasParameterControl(): boolean {
-        return this.selectedFieldIsString
+    /**
+     * True when the field type has no Parameter value at all. Otherwise the control that edits it
+     * carries the label "Parameter: <name>".
+     */
+    public get selectedFieldParameterUnused(): boolean {
+        const field = this.selectedField as any;
+        if (!field) { return false; }
+        return !(this.selectedFieldIsString
             || this.selectedFieldIsEnum
             || this.selectedFieldIsUnit
-            || !!(this.selectedFieldHasGeoAncestors || (this.selectedField as any)?.dependency);
-    }
-
-    /** Hint shown when no Parameter control applies; expression and table columns are edited in their own sections. */
-    public get selectedFieldParameterPointer(): string {
-        if ((this.selectedField as any)?.autocalculate) { return 'Set in Expression below'; }
-        if (this.selectedFieldIsTable) { return 'Set in Table columns below'; }
-        return 'Not used by this field type';
+            || this.selectedFieldIsTable
+            || this.selectedFieldIsHelpText
+            || field.autocalculate
+            || field.dependency
+            || this.selectedFieldHasGeoAncestors
+            || this.getFieldCurrentType(field) === 'sub-schema');
     }
 
     public get selectedFieldIsEnum(): boolean {
@@ -3182,6 +3234,14 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (ft.key === 'enum') { f.enum = []; }
         if (ft.key === 'table') { f.tableColumns = [{ name: '', key: '' }]; }
         if (SchemasConfigurationComponent.NON_UPDATABLE_TYPES.has(ft.key)) { f.isUpdatable = false; }
+        if (SchemasConfigurationComponent.NON_AUTOCALC_TYPES.has(ft.key)) {
+            f.autocalculate = false;
+            f.expression = '';
+        }
+        if (ft.key === 'helptext') {
+            f.required = false;
+            f.hidden = false;
+        }
         f.default = null;
         f.suggest = null;
         f.examples = undefined;

@@ -2292,4 +2292,146 @@ describe('SchemasConfigurationComponent', () => {
             expect(schema.fields[0].isPrivate).toBe(true);
         });
     });
+
+    describe('Parameter label', () => {
+        function unused(typeKey: string, extra: any = {}): boolean {
+            const component = createComponent();
+            component.selectedField = makeField(extra);
+            component.getFieldCurrentType = () => typeKey;
+            Object.defineProperty(component, 'selectedFieldHasGeoAncestors', { value: false });
+            return component.selectedFieldParameterUnused;
+        }
+
+        it('is unused for plain types', () => {
+            expect(unused('number')).toBe(true);
+            expect(unused('boolean')).toBe(true);
+        });
+
+        it('is used by types whose value lives in a labelled control', () => {
+            for (const key of ['string', 'prefix', 'postfix', 'table', 'helptext', 'sub-schema']) {
+                expect(unused(key)).toBe(false);
+            }
+            expect(unused('number', { autocalculate: true })).toBe(false);
+            expect(unused('number', { dependency: { on: 'x', kind: 'geo' } })).toBe(false);
+            expect(unused('string', { customType: 'enum' })).toBe(false);
+        });
+    });
+
+    describe('Auto Calculate validation', () => {
+        it('reports an empty expression and clears once it is set', () => {
+            const component = createComponent();
+            component.getFieldCurrentType = () => 'number';
+            const field = makeField({ autocalculate: true });
+            field.expression = '  ';
+            expect(component.getFieldErrors(field, [field])).toContain('Auto Calculate requires an expression');
+            field.expression = 'a + b';
+            expect(component.getFieldErrors(field, [field])).not.toContain('Auto Calculate requires an expression');
+        });
+    });
+
+    describe('Auto Calculate on geographic types', () => {
+        function component(typeKey: string): any {
+            const c = createComponent();
+            c.selectedField = makeField();
+            c.getFieldCurrentType = () => typeKey;
+            c.markDirty = () => {};
+            c.requiredModeOptions = [
+                { label: 'None', value: 'none' },
+                { label: 'Hidden', value: 'hidden' },
+                { label: 'Required', value: 'required' },
+                { label: 'Auto Calculate', value: 'autocalculate' },
+            ];
+            return c;
+        }
+
+        it('hides the option for every type that uses Parameter, and for geographic types', () => {
+            for (const key of ['enum', 'table', 'helptext', 'prefix', 'postfix', 'sub-schema', 'continent', 'country', 'state']) {
+                const values = component(key).selectedFieldRequiredModes.map((o: any) => o.value);
+                expect(values).not.toContain('autocalculate');
+            }
+        });
+
+        it('keeps the option for number', () => {
+            const values = component('number').selectedFieldRequiredModes.map((o: any) => o.value);
+            expect(values).toContain('autocalculate');
+        });
+
+        it('reports an error for an already auto calculated geographic field', () => {
+            const c = component('country');
+            const field = makeField({ autocalculate: true });
+            field.expression = 'a';
+            expect(c.getFieldErrors(field, [field])).toContain('Auto Calculate is not available for this type');
+        });
+    });
+
+    describe('Auto Calculate and multiple answers', () => {
+        it('clears the array flag when Auto Calculate is selected', () => {
+            const component = createComponent();
+            component.markDirty = () => {};
+            component.selectedField = makeField({ isArray: true });
+            component.setFieldRequiredMode('autocalculate');
+            expect(component.selectedField.isArray).toBe(false);
+        });
+
+        it('reports an already saved auto calculated array field', () => {
+            const component = createComponent();
+            component.getFieldCurrentType = () => 'number';
+            const field = makeField({ autocalculate: true, isArray: true });
+            field.expression = 'a';
+            expect(component.getFieldErrors(field, [field])).toContain('Auto Calculate cannot allow multiple answers');
+        });
+    });
+
+    describe('Auto Calculate with a pattern and Help Text rules', () => {
+        function component(typeKey: string): any {
+            const c = createComponent();
+            c.getFieldCurrentType = () => typeKey;
+            c.markDirty = () => {};
+            c.requiredModeOptions = [
+                { label: 'None', value: 'none' },
+                { label: 'Hidden', value: 'hidden' },
+                { label: 'Required', value: 'required' },
+                { label: 'Auto Calculate', value: 'autocalculate' },
+            ];
+            return c;
+        }
+
+        it('reports Auto Calculate on a string with a pattern', () => {
+            const c = component('string');
+            const field = makeField({ autocalculate: true });
+            field.expression = 'a';
+            field.pattern = '^[0-9]+$';
+            expect(c.getFieldErrors(field, [field])).toContain('Auto Calculate cannot be used with a pattern');
+        });
+
+        it('hides Required / Visibility for Help Text', () => {
+            const c = component('helptext');
+            c.selectedField = makeField();
+            expect(c.selectedFieldShowsRequiredModes).toBe(false);
+        });
+
+        it('keeps Required / Visibility visible for a Help Text saved as required, without Required as a choice', () => {
+            const c = component('helptext');
+            c.selectedField = makeField({ required: true });
+            expect(c.selectedFieldShowsRequiredModes).toBe(true);
+            expect(c.selectedFieldRequiredModes.map((o: any) => o.value)).toEqual(['none', 'hidden']);
+            expect(c.getFieldErrors(c.selectedField, [c.selectedField])).toContain('Help Text cannot be required');
+        });
+
+        it('resets required, hidden and auto calculate when a field becomes Help Text', () => {
+            const c = component('string');
+            const field = makeField({ required: true, hidden: true, autocalculate: true });
+            field.expression = 'a';
+            c.selectedField = field;
+            const ft = FIELD_TYPES_UI.find((t: any) => t.key === 'helptext') as any;
+            if (ft) {
+                c.fieldTypes = FIELD_TYPES_UI;
+                c._rebuildRefPreset = () => {};
+                c.changeFieldType(ft);
+                expect(field.required).toBe(false);
+                expect(field.hidden).toBe(false);
+                expect(field.autocalculate).toBe(false);
+            }
+        });
+    });
 });
