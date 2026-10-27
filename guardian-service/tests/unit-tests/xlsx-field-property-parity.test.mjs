@@ -170,3 +170,28 @@ describe('Legacy header labels', () => {
         assert.equal(imported.isUpdatable, true);
     });
 });
+
+describe('Updatable and Private follow the editor rules on import', () => {
+    it('ignores Updatable on a Help Text field and warns', async () => {
+        const { result, errors } = await roundTrip(SchemaEntity.VC, [
+            field('h', { type: 'null', isUpdatable: true }),
+            field('s', { isUpdatable: true, order: 2 }),
+        ]);
+        assert.equal(result.fields.find(f => f.name === 'h').isUpdatable, false);
+        assert.equal(result.fields.find(f => f.name === 's').isUpdatable, true);
+        assert.ok(errors.some(e => e.type === 'warning' && /Updatable Field/.test(e.text)));
+    });
+
+    it('ignores Private on fields inside a sub-schema and warns', async () => {
+        const child = field('child', { isPrivate: true, order: 1, path: '#Parity:child' });
+        const sub = field('sub', {
+            type: '#InlineParitySub', customType: 'subSchema', isRef: true,
+            fields: [child], conditions: [], isPrivate: true, order: 1
+        });
+        const { result, errors } = await roundTrip(SchemaEntity.EVC, [sub]);
+        const top = result.fields.find(f => f.name === 'sub');
+        assert.equal(top.isPrivate, true);
+        assert.equal(top.fields[0].isPrivate, undefined);
+        assert.ok(errors.some(e => e.type === 'warning' && /Private Field/.test(e.text)));
+    });
+});

@@ -468,7 +468,8 @@ export class XlsxToJson {
                     table,
                     row,
                     xlsxResult,
-                    schema.entity
+                    schema.entity,
+                    groupIndex > 0
                 );
                 if (field) {
                     allFields.set(field.title, field);
@@ -626,12 +627,70 @@ export class XlsxToJson {
         }
     }
 
+    private static readonly NON_UPDATABLE_TYPES = new Set(['Help Text', 'Prefix', 'Postfix', 'Sub-Schema']);
+
+    /**
+     * Reads Updatable and Private with the same rules as the schema editor:
+     * Updatable is not available for display-only and sub-schema types,
+     * Private only for top-level fields of an Encrypted VC schema.
+     */
+    private static readFieldFlags(
+        worksheet: Worksheet,
+        table: Table,
+        field: SchemaField,
+        fieldType: IFieldTypes | null,
+        row: number,
+        xlsxResult: XlsxResult,
+        entity: SchemaEntity | undefined,
+        nested: boolean
+    ): void {
+        const ignored = (header: Dictionary, reason: string) => {
+            xlsxResult.addError({
+                type: 'warning',
+                text: `"${header}" is not available here and is ignored.`,
+                message: `Sheet "${worksheet.name}", row ${row}: "${header}" is ignored because ${reason}.`,
+                worksheet: worksheet.name,
+                cell: worksheet.getPath(table.getCol(header), row),
+                row,
+                col: table.getCol(header)
+            }, field);
+        };
+
+        if (table.hasCol(Dictionary.UPDATABLE)) {
+            const updatable = xlsxToBoolean(worksheet.getValue<string>(table.getCol(Dictionary.UPDATABLE), row));
+            const unsupported = fieldType
+                ? XlsxToJson.NON_UPDATABLE_TYPES.has(fieldType.name)
+                : !!field.isRef;
+            if (updatable && unsupported) {
+                ignored(Dictionary.UPDATABLE, 'the field type cannot be updated');
+            } else {
+                field.isUpdatable = updatable;
+            }
+        }
+
+        if (table.hasCol(Dictionary.PRIVATE)) {
+            const isPrivate = xlsxToBoolean(worksheet.getValue<string>(table.getCol(Dictionary.PRIVATE), row));
+            if (entity !== SchemaEntity.EVC) {
+                if (isPrivate) {
+                    ignored(Dictionary.PRIVATE, 'the schema type is not "Encrypted Verifiable Credential"');
+                }
+            } else if (nested) {
+                if (isPrivate) {
+                    ignored(Dictionary.PRIVATE, 'it is only available for top-level fields');
+                }
+            } else {
+                field.isPrivate = isPrivate;
+            }
+        }
+    }
+
     private static readField(
         worksheet: Worksheet,
         table: Table,
         row: number,
         xlsxResult: XlsxResult,
-        entity?: SchemaEntity
+        entity?: SchemaEntity,
+        nested: boolean = false
     ): SchemaField {
         if (worksheet.empty(table.start.c, table.end.c, row)) {
             return null;
@@ -679,27 +738,6 @@ export class XlsxToJson {
                 field.property = trimmedProperty || null;
             }
 
-            if (table.hasCol(Dictionary.UPDATABLE)) {
-                field.isUpdatable = xlsxToBoolean(worksheet.getValue<string>(table.getCol(Dictionary.UPDATABLE), row));
-            }
-            if (table.hasCol(Dictionary.PRIVATE)) {
-                const rawPrivate = worksheet.getValue<string>(table.getCol(Dictionary.PRIVATE), row);
-                if (entity === SchemaEntity.EVC) {
-                    field.isPrivate = xlsxToBoolean(rawPrivate);
-                } else if (xlsxToBoolean(rawPrivate)) {
-                    xlsxResult.addError({
-                        type: 'warning',
-                        text: `"${Dictionary.PRIVATE}" is only available for the Encrypted Verifiable Credential schema type.`,
-                        message: `Sheet "${worksheet.name}", row ${row}: "${Dictionary.PRIVATE}" is ignored because the schema type is not `
-                            + `"Encrypted Verifiable Credential".`,
-                        worksheet: worksheet.name,
-                        cell: worksheet.getPath(table.getCol(Dictionary.PRIVATE), row),
-                        row,
-                        col: table.getCol(Dictionary.PRIVATE)
-                    }, field);
-                }
-            }
-
             let typeError = false;
             const fieldType = FieldTypes.findByName(type);
             if (fieldType) {
@@ -741,6 +779,8 @@ export class XlsxToJson {
                     col: table.getCol(Dictionary.FIELD_TYPE),
                 }, field);
             }
+
+            XlsxToJson.readFieldFlags(worksheet, table, field, fieldType, row, xlsxResult, entity, nested);
 
             if (!typeError && !XlsxToJson.isAutoCalculate(type, field)) {
                 let parseType = (val: any) => val;
