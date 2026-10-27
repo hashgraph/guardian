@@ -491,7 +491,7 @@
                 } @else {
 
                     <!-- ── BUILDER ── (kept mounted and hidden on the Preview tab) -->
-                    <div class="sc-editor" [class.sc-editor--hidden]="activeTab !== 'builder'">
+                    <div class="sc-editor" [class.sc-editor--hidden]="activeTab !== 'builder' || isDrilling">
 
                         <!-- ── Root schema properties panel ── -->
                         <div class="sc-schema-props" [class.sc-schema-props--locked]="selectedSchemaSettingsLocked">
