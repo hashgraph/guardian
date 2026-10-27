@@ -1053,8 +1053,14 @@ export class SchemaFormComponent implements OnInit {
         if (topIndex === -1) {
             return;
         }
-        for (let i = 0; i < controls.length && !this.isShown[topIndex] && this.currentIndex !== 0; i++) {
-            this.getPrevShownFields(controls);
+        if (!this.isShown[topIndex]) {
+            // Previous does not retrace the pages Next shows, so restart from the first page.
+            this.isShown = new Array(controls.length).fill(false);
+            this.currentIndex = 0;
+            this.updatePages();
+            for (let i = 0; i < controls.length && !this.isShown[topIndex] && !this.isShown[controls.length - 1]; i++) {
+                this.getNextShownFields(controls);
+            }
         }
         const invalid = findInvalid([controls[topIndex]]);
         if (invalid?.id) {

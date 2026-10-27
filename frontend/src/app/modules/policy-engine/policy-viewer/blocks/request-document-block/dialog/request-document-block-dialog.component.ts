@@ -373,6 +373,7 @@ export class RequestDocumentBlockDialog {
     }
 
     private reportInvalid() {
+        this.setStep(0);
         this.toastService.error('Please fix the highlighted fields before continuing');
         this.formRoot?.focusFirstInvalid();
     }
