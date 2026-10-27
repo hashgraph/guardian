@@ -203,3 +203,27 @@ describe('Updatable and Private follow the editor rules on import', () => {
         assert.ok(errors.some(e => e.type === 'warning' && /Allow Multiple Answers/.test(e.text)));
     });
 });
+
+describe('Schema sheet detection', () => {
+    const isSchema = (...args) => XlsxToJson['isSchema'](...args);
+
+    function sheetWith(cells) {
+        const workbook = new Workbook();
+        const worksheet = workbook.createWorksheet('Probe');
+        cells.forEach(([value, col, row]) => worksheet.setValue(value, col, row));
+        worksheet.setValue('end', 12, 12);
+        return worksheet;
+    }
+
+    it('does not treat a lone Type cell as a schema sheet', () => {
+        assert.equal(isSchema(sheetWith([['Type', 1, 1], ['Other', 2, 1]])), false);
+    });
+
+    it('detects the current header row', () => {
+        assert.equal(isSchema(sheetWith([['Required Field', 1, 2], ['Key', 2, 2], ['Type', 3, 2]])), true);
+    });
+
+    it('detects the legacy Field Type header row', () => {
+        assert.equal(isSchema(sheetWith([['Required Field', 1, 2], ['Field Type', 2, 2]])), true);
+    });
+});

@@ -165,12 +165,13 @@ export class XlsxToJson {
         const startRow = range.s.r;
         const endCol = Math.min(range.e.c, startCol + 10);
         const endRow = Math.min(range.e.r, startRow + 10);
-        for (let c = startCol; c < endCol; c++) {
-            for (let r = startRow; r < endRow; r++) {
-                const title = worksheet.getValue<string>(c, r);
-                if (resolveFieldHeader(title) === Dictionary.FIELD_TYPE) {
-                    return true;
-                }
+        for (let r = startRow; r < endRow; r++) {
+            const headers = new Set<Dictionary | null>();
+            for (let c = startCol; c < endCol; c++) {
+                headers.add(resolveFieldHeader(worksheet.getValue<string>(c, r)));
+            }
+            if (headers.has(Dictionary.FIELD_TYPE) && headers.has(Dictionary.REQUIRED_FIELD)) {
+                return true;
             }
         }
         return false;
