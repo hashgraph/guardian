@@ -49,13 +49,15 @@ function geoText(value: any): string {
 
 export enum Dictionary {
     REQUIRED_FIELD = 'Required Field',
-    FIELD_TYPE = 'Field Type',
+    FIELD_TYPE = 'Type',
     PARAMETER = 'Parameter',
     QUESTION = 'Description',
     ALLOW_MULTIPLE_ANSWERS = 'Allow Multiple Answers',
     ANSWER = 'Test Value',
     KEY = 'Key',
     IWA_PROPERTY = 'IWA Property',
+    UPDATABLE = 'Updatable Field',
+    PRIVATE = 'Private Field',
     AUTO_CALCULATE = 'Auto-Calculate',
     SUB_SCHEMA = 'Sub-Schema',
     SCHEMA_NAME = 'Schema',
@@ -74,6 +76,31 @@ export enum Dictionary {
     README_SHEET = 'README',
     DEFAULT = 'Default Value',
     SUGGEST = 'Suggest Value',
+}
+
+/**
+ * Old column label to current label. Import accepts both, export writes the current one.
+ * Register a renamed column here.
+ */
+export const LEGACY_FIELD_HEADERS: ReadonlyMap<string, Dictionary> = new Map([
+    ['Field Type', Dictionary.FIELD_TYPE],
+    ['Question', Dictionary.QUESTION],
+    ['Answer', Dictionary.ANSWER],
+    ['Default', Dictionary.DEFAULT],
+    ['Suggest', Dictionary.SUGGEST],
+]);
+
+/** Same for the schema header block. */
+export const LEGACY_SCHEMA_HEADERS: ReadonlyMap<string, Dictionary> = new Map([
+    ['Description', Dictionary.SCHEMA_DESCRIPTION],
+]);
+
+/** Current or legacy label to current label, null if not a field column. */
+export function resolveFieldHeader(label: string): Dictionary | null {
+    if (LEGACY_FIELD_HEADERS.has(label)) {
+        return LEGACY_FIELD_HEADERS.get(label);
+    }
+    return Object.values(Dictionary).includes(label as Dictionary) ? label as Dictionary : null;
 }
 
 export class FieldTypes {
