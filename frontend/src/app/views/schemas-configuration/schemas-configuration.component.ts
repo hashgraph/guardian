@@ -28,6 +28,7 @@ import { FormulasService } from 'src/app/services/formulas.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { FormulasTree } from 'src/app/modules/formulas/models/formula-tree';
+import { IFormulaLinkScope } from 'src/app/modules/formulas/models/form-formulas';
 import { IFieldFormulaRow, IFieldFormulasView, IFieldScope, SchemaFieldFormulas } from './schema-field-formulas';
 
 export interface DrillEntry {
@@ -147,10 +148,12 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public previewPreset: any = null;
     public previewReadonlyFields: any = null;
     public previewFormulas: FormulasTree | null = null;
+    /** where the links of the previewed sub-schema's fields are stored (root schema + drill path) */
+    public previewFormulaLinkScope: IFormulaLinkScope | null = null;
     public previewMounted = false;
     public previewKey = 0;
     public previewSchemaRef: Schema | null = null;
-    private previewBuiltFor: { schema: Schema | null; version: number } = { schema: null, version: -1 };
+    private previewBuiltFor: { schema: Schema | null; version: number; path: string } = { schema: null, version: -1, path: '' };
     public richTextPresetTarget: 'default' | 'suggest' | 'test' | null = null;
     @ViewChild('richTextPresetEditor') public richTextPresetEditor?: RichTextEditorComponent;
 
@@ -5191,19 +5194,20 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     private isPreviewStale(): boolean {
         return this.previewBuiltFor.schema !== this.currentContextSchema
-            || this.previewBuiltFor.version !== this.schemaEditVersion;
+            || this.previewBuiltFor.version !== this.schemaEditVersion
+            || this.previewBuiltFor.path !== this.fieldFormulaPrefix.join('.');
     }
 
     /** the saved formulas of the schema, so the preview shows them like the request form */
     private loadPreviewFormulas(): void {
-        const iri = this.currentContextSchema?.iri;
+        const iri = this.selectedSchema?.iri;
         if (this.activeTab !== 'preview' || !this.fieldFormulas || this.isTemplateMode) {
             return;
         }
         this.fieldFormulas.previewTree(iri)
             .pipe(takeUntil(this.destroy$))
             .subscribe((tree) => {
-                if (this.currentContextSchema?.iri === iri) {
+                if (this.selectedSchema?.iri === iri) {
                     this.previewFormulas = tree;
                 }
             });
@@ -5211,8 +5215,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     private rebuildPreview(): void {
         const schema = this.currentContextSchema;
-        this.previewBuiltFor = { schema, version: this.schemaEditVersion };
+        this.previewBuiltFor = { schema, version: this.schemaEditVersion, path: this.fieldFormulaPrefix.join('.') };
         this.previewSchemaRef = schema;
+        this.previewFormulaLinkScope = this.isDrilling && this.selectedSchema?.iri
+            ? { schema: this.selectedSchema.iri, prefix: this.fieldFormulaPrefix }
+            : null;
         this.previewKey++;
         if (!schema || this.previewPill === 'submitter') {
             this.previewPreset = null;

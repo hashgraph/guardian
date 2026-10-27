@@ -244,3 +244,51 @@ describe('FormFormulas with several links', () => {
         expect(keys).toEqual([`${SCHEMA}/b`]);
     });
 });
+
+describe('FormFormulas of a drilled-into sub-schema', () => {
+    const SUB = '#sub-schema';
+    const tree = () => buildTree([formula('f', [
+        item('a', 'nested.summary'),
+        item('b', 'nested.deep.value'),
+        item('c', 'other.summary')
+    ])]);
+
+    it('resolves links stored under the document schema by the drill path', () => {
+        const model = new FormFormulas(tree(), SUB, undefined, { schema: SCHEMA, prefix: ['nested'] });
+        expect(model.get(`${SUB}/summary`).map((i) => i.uuid)).toEqual(['a']);
+        expect(model.get(`${SUB}/deep.value`).map((i) => i.uuid)).toEqual(['b']);
+    });
+
+    it('ignores links of other branches and the document schema paths', () => {
+        const model = new FormFormulas(tree(), SUB, undefined, { schema: SCHEMA, prefix: ['nested'] });
+        expect(model.get(`${SUB}/other.summary`)).toEqual([]);
+        expect(model.get(`${SCHEMA}/nested.summary`)).toEqual([]);
+    });
+
+    it('keeps the plain lookup without a link scope', () => {
+        const model = new FormFormulas(tree(), SCHEMA);
+        expect(model.get(`${SCHEMA}/nested.summary`).map((i) => i.uuid)).toEqual(['a']);
+    });
+
+    it('evaluates display conditions against the document, not the sub-form', () => {
+        const conditional = buildTree([formula('f', [
+            item('a', 'nested.summary', pred('flag', 'on', ['nested', 'flag'])),
+            item('b', 'nested.summary', pred('flag', 'on'))
+        ])]);
+        const model = new FormFormulas(conditional, SUB, undefined, { schema: SCHEMA, prefix: ['nested'] });
+        model.setData({ flag: 'off' });
+        expect(model.get(`${SUB}/summary`)).toEqual([]);
+        model.setData({ flag: 'on' });
+        expect(model.get(`${SUB}/summary`).map((i) => i.uuid)).toEqual(['a']);
+    });
+
+    it('prefixes array entry keys with the drill path', () => {
+        const conditional = buildTree([formula('f', [
+            item('a', 'nested.row.value', pred('kind', 'x', ['nested', 'row', 'kind']))
+        ])]);
+        const model = new FormFormulas(conditional, SUB, undefined, { schema: SCHEMA, prefix: ['nested'] });
+        model.setData({ row: [{ kind: 'y' }, { kind: 'x' }] });
+        expect(model.get(`${SUB}/row.value`, { row: 0 })).toEqual([]);
+        expect(model.get(`${SUB}/row.value`, { row: 1 }).map((i) => i.uuid)).toEqual(['a']);
+    });
+});
