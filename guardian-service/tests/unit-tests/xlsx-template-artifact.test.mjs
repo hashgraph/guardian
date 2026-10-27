@@ -179,4 +179,23 @@ describe('Schema template artifact column layout', () => {
             'IWA Property', 'Updatable Field', 'Private Field'
         ]);
     });
+
+    it('shows No in the Updatable and Private example cells, like Allow Multiple Answers', async () => {
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.readFile(TEMPLATE);
+        const sheet = workbook.getWorksheet('Schema name');
+        for (let row = 7; row <= 46; row++) {
+            assert.equal(sheet.getCell(row, 12).value, 'No', `Updatable Field, row ${row}`);
+            assert.equal(sheet.getCell(row, 13).value, 'No', `Private Field, row ${row}`);
+        }
+    });
+
+    it('adds two numeric rows in the Auto-Calculate example', async () => {
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.readFile(TEMPLATE);
+        const sheet = workbook.getWorksheet('Schema name');
+        assert.equal(sheet.getCell('D34').value, 'H8 + H9');
+        assert.equal(typeof sheet.getCell('H8').value, 'number');
+        assert.equal(typeof sheet.getCell('H9').value, 'number');
+    });
 });
