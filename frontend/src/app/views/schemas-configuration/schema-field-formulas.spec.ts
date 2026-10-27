@@ -209,5 +209,50 @@ describe('SchemaFieldFormulas', () => {
                 done();
             });
         });
+        it('keeps the link on the old key when the new key is already used by another field', (done) => {
+            const { model, updates } = create();
+            const s = savedScope();
+            s.fields.push({ name: 'G9' } as any);
+            model.rename(s);
+            s.field.name = 'G9';
+            model.save().subscribe(() => {
+                expect(updates[0].config.formulas[0].link).toEqual({ type: 'schema', entityId: '#root', item: 'risks.G6' });
+                done();
+            });
+        });
+
+        describe('fields inside a sub-schema field', () => {
+            function nestedDoc(): IFormula {
+                const doc = createDoc();
+                (doc.config as any).formulas[0].link = { type: 'schema', entityId: '#root', item: 'risks.G6.child' };
+                return doc;
+            }
+
+            it('moves the links inside the field to the new key', (done) => {
+                const { model, updates } = create(nestedDoc());
+                const s = savedScope();
+                model.rename(s);
+                s.field.name = 'G9';
+                model.save().subscribe(() => {
+                    expect(updates[0].config.formulas[0].link).toEqual({ type: 'schema', entityId: '#root', item: 'risks.G9.child' });
+                    done();
+                });
+            });
+
+            it('unbinds the links inside the field when it is deleted', (done) => {
+                const { model, updates } = create(nestedDoc());
+                model.release(savedScope());
+                model.save().subscribe(() => {
+                    expect(updates[0].config.formulas[0].link).toBeNull();
+                    done();
+                });
+            });
+
+            it('leaves the links of a field with a similar key alone', () => {
+                const { model } = create(nestedDoc());
+                model.release(savedScope('G'));
+                expect(model.hasPending).toBeFalse();
+            });
+        });
     });
 });

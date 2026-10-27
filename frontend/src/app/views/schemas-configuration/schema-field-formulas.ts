@@ -622,7 +622,8 @@ export class SchemaFieldFormulas {
     private toOp(p: IPendingBinding): FieldBindingOp {
         const target = this.targetOf(p);
         if (p.type === 'move') {
-            return { type: 'move', formulaId: p.formulaId, itemUuid: p.itemUuid, target, from: p.fieldPath! };
+            const taken = p.scope.fields.some((f) => f !== p.scope.field && f.name === p.scope.field.name);
+            return { type: 'move', formulaId: p.formulaId, itemUuid: p.itemUuid, target: taken ? { ...target, fieldPath: p.fieldPath! } : target, from: p.fieldPath! };
         }
         if (p.type === 'create') {
             return { type: 'create', formulaId: p.formulaId, item: p.item!, target };
