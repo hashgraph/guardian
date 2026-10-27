@@ -1,3 +1,7 @@
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { DialogService } from 'primeng/dynamicdialog';
+import { TableModule } from 'primeng/table';
 import { SchemaFormViewComponent } from './schema-form-view.component';
 import { IPFSService } from 'src/app/services/ipfs.service';
 
@@ -196,6 +200,67 @@ describe('SchemaFormViewComponent', () => {
 
             expect(event.defaultPrevented).toBeFalse();
             expect(openSpy).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('tables in a calculation preview', () => {
+        const table = {
+            name: 'rows',
+            description: 'Rows',
+            type: '#Row',
+            isArray: true,
+            isRef: true,
+            fullPath: 'rows',
+            fields: [{ name: 'value', description: 'Value', type: 'string', isArray: false, isRef: false, fullPath: 'rows.value' }]
+        } as any;
+        const values = { rows: Array.from({ length: 30 }, (_, index) => ({ value: `row ${index}` })) };
+
+        const render = (preview: boolean) => {
+            TestBed.resetTestingModule();
+            TestBed.configureTestingModule({
+                declarations: [SchemaFormViewComponent],
+                imports: [TableModule],
+                providers: [
+                    { provide: IPFSService, useValue: ipfs },
+                    { provide: DialogService, useValue: dialogService },
+                ],
+                schemas: [NO_ERRORS_SCHEMA],
+            });
+            const fixture = TestBed.createComponent(SchemaFormViewComponent);
+            fixture.componentRef.setInput('private-fields', {});
+            fixture.componentRef.setInput('values', values);
+            fixture.componentRef.setInput('fields', [table]);
+            fixture.componentRef.setInput('preview', preview);
+            fixture.detectChanges();
+            return fixture;
+        };
+
+        it('builds the rows once and shows them 25 per page', () => {
+            const fixture = render(true);
+            const view = fixture.componentInstance;
+            const item = view.fields![0];
+            expect(view.getTableRows(item)).toBe(view.getTableRows(item));
+            expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(25);
+            expect(fixture.nativeElement.querySelector('.p-paginator')).not.toBeNull();
+        });
+
+        it('builds the rows again for another list', () => {
+            const fixture = render(true);
+            const view = fixture.componentInstance;
+            const item = view.fields![0];
+            const rows = view.getTableRows(item);
+            item.list = values.rows.slice(0, 2) as any;
+            expect(view.getTableRows(item)).not.toBe(rows);
+            expect(view.getTableRows(item).length).toBe(2);
+        });
+
+        it('keeps the ordinary view unchanged', () => {
+            const fixture = render(false);
+            const view = fixture.componentInstance;
+            const item = view.fields![0];
+            expect(view.getTableRows(item)).not.toBe(view.getTableRows(item));
+            expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(30);
+            expect(fixture.nativeElement.querySelector('.p-paginator')).toBeNull();
         });
     });
 });

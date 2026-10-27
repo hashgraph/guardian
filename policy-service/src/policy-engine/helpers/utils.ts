@@ -26,7 +26,7 @@ import { AnyBlockType, IPolicyDocument } from '../policy-engine.interface.js';
 import { IHederaCredentials, IRelayerAccount, PolicyUser, UserCredentials } from '../policy-user.js';
 import { guardianVersion } from '../../version.js';
 import { buildTableHelper } from '../helpers/table-field-core.js';
-import { isPreviewRelayerAccount } from './preview.js';
+import { isPreviewRelayerAccount, PreviewScope, getPreviewComputed, getPreviewDocumentSchema, setPreviewComputed, setPreviewDocumentSchema } from './preview.js';
 
 export enum QueryType {
     eq = 'equal',
@@ -1722,6 +1722,10 @@ export class PolicyUtils {
         clone.policyId = ref.policyId;
         if (document.document) {
             clone.document = JSON.parse(JSON.stringify(document.document));
+        }
+        if (PreviewScope.current()?.preview) {
+            setPreviewDocumentSchema(clone, getPreviewDocumentSchema(document));
+            setPreviewComputed(clone, getPreviewComputed(document));
         }
         return clone as VcDocumentCollection;
     }

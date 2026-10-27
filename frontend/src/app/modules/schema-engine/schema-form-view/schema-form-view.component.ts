@@ -64,6 +64,7 @@ export class SchemaFormViewComponent implements OnInit {
     @Input('discussion-view') discussionView: boolean = false;
     @Input() link?: string | undefined;
     @Input() accordionLink?: string | undefined;
+    @Input() preview: boolean = false;
 
     @Output('discussion-action') discussionActionEvent = new EventEmitter<any>();
     @Output('onAccordionSelect') onAccordionSelect = new EventEmitter<{path: string, isOpen: boolean}>();
@@ -73,6 +74,7 @@ export class SchemaFormViewComponent implements OnInit {
     // Resolved images by link; null marks a link that failed to resolve.
     private imgCache = new Map<string, string | null>();
     private imgRequests = new Map<string, Promise<string | null>>();
+    private tableRows = new WeakMap<IFieldControl, { list: IFieldIndexControl[]; rows: any[] }>();
 
     constructor(
         private ipfs: IPFSService,
@@ -767,6 +769,19 @@ export class SchemaFormViewComponent implements OnInit {
             return item.fields?.filter(f => f.type !== 'null' && !this.hide[f.name] && !f.hidden);
         }
         return item.fields?.filter(f => f.type !== 'null' && !f.hidden);
+    }
+
+    public getTableRows(item: IFieldControl): any[] {
+        if (!this.preview) {
+            return this.getTableHRowFields(item);
+        }
+        const cached = this.tableRows.get(item);
+        if (cached?.list === item.list) {
+            return cached.rows;
+        }
+        const rows = this.getTableHRowFields(item);
+        this.tableRows.set(item, { list: item.list, rows });
+        return rows;
     }
 
    public getTableHRowFields(item: IFieldControl): any[] {

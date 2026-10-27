@@ -4,16 +4,20 @@ import assert from 'node:assert/strict';
 import esmock from 'esmock';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { MessageServer } from '@guardian/hedera/message/message-server';
+import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
 import { createInMemoryDatabaseHelper } from '../helpers/in-memory-database-helper.mjs';
 import { PolicyUtils } from '../../../dist/policy-engine/helpers/utils.js';
 import { PolicyActionsUtils } from '../../../dist/policy-engine/policy-actions/utils.js';
 import { PolicyComponentsUtils } from '../../../dist/policy-engine/policy-components-utils.js';
 import { RecordActionStep } from '../../../dist/policy-engine/record-action-step.js';
-import { PreviewScope, createPreviewMessageId, getPreviewComputed, getPreviewDocumentSchema, setPreviewComputed, setPreviewDocumentSchema } from '../../../dist/policy-engine/helpers/preview.js';
+import { PreviewScope, createPreviewMessageId, getPreviewComputed, getPreviewDocumentSchema, runPreview, setPreviewComputed, setPreviewDocumentSchema } from '../../../dist/policy-engine/helpers/preview.js';
 import { createPreviewDatabaseServer } from '../../../dist/policy-engine/helpers/preview-database.js';
 import { SendToGuardianBlock } from '../../../dist/policy-engine/blocks/send-to-guardian-block.js';
 import { ReassigningBlock } from '../../../dist/policy-engine/blocks/reassigning.block.js';
 import { RequestVcDocumentBlock } from '../../../dist/policy-engine/blocks/request-vc-document-block.js';
+import { AggregateBlock } from '../../../dist/policy-engine/blocks/aggregate-block.js';
+import { DocumentsSourceAddon } from '../../../dist/policy-engine/blocks/documents-source-addon.js';
+import { CustomLogicBlock } from '../../../dist/policy-engine/blocks/custom-logic-block.js';
 import { makeBlock, makeComponents, makeUser, restoreHarness } from './_block-exec-harness.mjs';
 
 const db = createInMemoryDatabaseHelper();
@@ -82,6 +86,7 @@ describe('@unit save, reassign and request edit in a preview', () => {
             events = [];
             block.triggerEvents = async (type, user, data) => { events.push({ type, data }); };
             patch(PolicyUtils, {
+                getDocumentOwner: async () => makeUser(),
                 getBlockTags: async () => [],
                 getDocumentRelayerAccount: async () => '0.0.1',
                 getUserByIssuer: async () => ({ hederaAccountId: '0.0.1', roleMessage: null }),
@@ -112,6 +117,76 @@ describe('@unit save, reassign and request edit in a preview', () => {
             assert.deepEqual(db.records(VcDocument).map((item) => [item.id, item.edited]), [[ID_OLD, false]]);
             assert.equal(db.calls.some(([name]) => name === 'save' || name === 'update'), false);
         });
+
+        it('keeps the preview marks of each saved document on the document it passes on', async () => {
+            const step = previewStep();
+            const marked = setPreviewComputed(setPreviewDocumentSchema({ policyId: 'policy-1', owner: 'did:user',
+                document: vcJson({ area: 7, temp: 8 }) }, '#S'), ['temp']);
+            const plain = { policyId: 'policy-1', owner: 'did:user', document: vcJson({ area: 9 }) };
+            await PreviewScope.run(step, () => block.runAction({ user: makeUser(), data: { data: [marked, plain] }, actionStatus: step }));
+            assert.deepEqual(step.getErrors(), []);
+            const passed = events.find((event) => event.type === 'RunEvent').data.data;
+            assert.deepEqual(passed.map((item) => item.document.credentialSubject[0].area), [7, 9]);
+            assert.deepEqual(passed.map((item) => getPreviewComputed(item)), [['temp'], []]);
+            assert.equal(getPreviewDocumentSchema(passed[0]), '#S');
+        });
+
+        for (const route of ['direct', 'source', 'aggregate']) {
+          for (const missing of [false, true]) {
+            it(`retains computed inputs through ${route} after Save, missing real input=${missing}`, async function () {
+            this.timeout(20000);
+            const components = makeComponents({ databaseServer: server });
+            const script = (calculation) => makeBlock(CustomLogicBlock, { components, options: { unsigned: true, passOriginal: true,
+                expression: `const doc=documents[0].document.credentialSubject[0];${calculation}done(documents[0]);` } }).block;
+            const response = await runPreview({ blockType: 'requestVcDocumentBlock' }, makeUser(), {}, async (_block, user, _data, step) => {
+                step.setPreviewSource({ schema: '#S', document: { amount: 5 }, paths: ['amount', 'temp', 'rate', 'total'], dependencies: {} });
+                const first = script('doc.temp=doc.amount+1;');
+                const save = makeBlock(SendToGuardianBlock, { components, options: { dataSource: 'database', skipSaveState: true } }).block;
+                const last = script(missing ? 'doc.total=doc.temp*doc.rate;' : 'doc.total=doc.temp*2;');
+                const source = makeBlock(DocumentsSourceAddon, { components, options: { dataType: 'vc-documents', schema: '#S', filters: [] } }).block;
+                const aggregate = makeBlock(AggregateBlock, { uuid: 'aggregate-1', components, options: { aggregateType: 'cumulative', condition: 'true', expressions: [], disableUserGrouping: true, groupByFields: [] } }).block;
+                aggregate.triggerEvents = async (type, _user, state) => {
+                    if (type === 'RunEvent') await last.runAction({ user, data: state, actionStatus: step });
+                };
+                first.triggerEvents = async (type, _user, state) => {
+                    if (type === 'RunEvent') {
+                        await save.runAction({ user, data: state, actionStatus: step });
+                    }
+                };
+                save.triggerEvents = async (type, _user, state) => {
+                    if (type === 'RunEvent') {
+                        if (route === 'source') {
+                            const reread = await source.getFromSource(user, null);
+                            await last.runAction({ user, data: { data: reread }, actionStatus: step });
+                        } else {
+                            await (route === 'aggregate' ? aggregate : last).runAction({ user, data: state, actionStatus: step });
+                        }
+                    }
+                };
+                last.triggerEvents = async (type, _user, state) => {
+                    if (type === 'RunEvent') {
+                        step.addPreviewDocument('last', null, state);
+                    }
+                };
+                const input = createPreviewDocument({ policyId: 'policy-1', tag: 'form' }, null,
+                    { id: 'did:subject', type: 'Plot', amount: 5 }, null, 'did:user', null);
+                input.schema = '#S';
+                await first.runAction({ user, data: { data: input }, actionStatus: step });
+                return new MessageResponse({});
+            });
+            if (missing) {
+                assert.ok(response instanceof MessageError);
+                assert.equal(response.code, 422);
+                assert.deepEqual(response.data.missingFields, ['rate']);
+                return;
+            }
+            assert.ok(response instanceof MessageResponse);
+            assert.deepEqual(response.body.fields, ['amount']);
+            assert.deepEqual(response.body.missingFields, []);
+            assert.equal(response.body.documents[0].document.document.credentialSubject[0].total, 12);
+            });
+          }
+        }
     });
 
     describe('reassigning block', () => {

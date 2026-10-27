@@ -98,7 +98,22 @@
       </div>
     }
     <div class="view-dialog-content">
-      @if (viewDocument === true) {
+      @if (previewDocuments.length > 0 && (isVcDocument || isVpDocument)) {
+        @if (!loading) {
+          <app-document-view
+            [hidden]="viewDocument !== true"
+            [policyId]="policyId"
+            [documentId]="documentId"
+            [schemaId]="schemaId"
+            [document]="document"
+            [dryRun]="dryRun"
+            [getByUser]="getByUser"
+            [schema]="schema"
+            [type]="type"
+            [preview]="true"
+          [dialogContext]="'viewer'"></app-document-view>
+        }
+      } @else if (viewDocument === true) {
         @if (!loading) {
           <app-document-view
             [policyId]="policyId"

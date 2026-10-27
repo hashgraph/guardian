@@ -276,9 +276,6 @@ export class MathBlock {
                 assertPreviewCalculationResult(workerResult.result);
             }
             const calculation = buildMathPreviewCalculation(ref.tag, options.expression, workerResult.scope ?? {}, workerResult.result);
-            if (!previewSource?.discovery) {
-                assertPreviewCalculationResult(calculation.values);
-            }
             actionStatus.addPreviewCalculation(calculation);
             setPreviewComputed(workerResult.result, (workerResult.writes ?? []).map((write) => write.path));
         }

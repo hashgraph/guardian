@@ -149,6 +149,9 @@ export class VCViewerDialog {
         this.additionalOptionsData = additionalOptionsData;
         this.previewDocuments = Array.isArray(previewDocuments) ? previewDocuments : [];
         this.previewOptions = this.previewDocuments.map((item, index) => ({ label: item.label, value: index }));
+        if (this.previewDocuments.length) {
+            this.setPreviewFileSize();
+        }
 
         this.loadAllVersionVcDocuments();
         this.getSubSchemes(schemaId, topicId, category);
@@ -267,6 +270,11 @@ export class VCViewerDialog {
         this.selectVcDocument(
             this.previewDocuments[this.selectedPreviewIndex].document
         );
+        this.setPreviewFileSize();
+    }
+
+    private setPreviewFileSize() {
+        this.fileSize = Math.round(new Blob([this.json]).size / (1024 * 1024));
     }
 
     private selectVcDocument(document: any) {

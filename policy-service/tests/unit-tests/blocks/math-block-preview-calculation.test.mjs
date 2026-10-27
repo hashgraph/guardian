@@ -95,6 +95,23 @@ describe('@unit mathBlock preview calculation', () => {
         }
     });
 
+    it('keeps a finite result when a formula the outputs do not use is NaN', async () => {
+        const { block, map } = setup([]);
+        block.createWorker = async () => ({ result: { total: 4 }, warnings: [], scope: { a: 2, b: 4, c: NaN } });
+        const unused = {
+            ...expression,
+            formulas: [...expression.formulas, { type: 'variable', name: 'c', body: 'a\\cdot0', description: '', params: [], relationships: [] }]
+        };
+        const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
+        step.setPreviewSource({ schema: '#in', document: { amount: 2 }, paths: ['amount'], dependencies: {} });
+        const result = await PreviewScope.run(step, () => block.calculate(refWith({ expression: unused }), map, makeUser(), '#in'));
+        assert.deepEqual(result, { total: 4 });
+        const [calculation] = step.getPreviewCalculations();
+        assert.equal(calculation.values.length, 2);
+        assert.ok(Number.isNaN(calculation.values[1].value));
+        assert.equal(getPreviewInputError(step), null);
+    });
+
     it('allows incomplete discovery and values supplied by an earlier block', async () => {
         for (const discovery of [true, false]) {
             const { block, map, sent } = setup([]);
@@ -130,6 +147,43 @@ describe('@unit mathBlock preview calculation', () => {
                 assert.equal(preview.total, text.includes('reduce') ? 0 : 4);
                 assert.equal(getPreviewInputError(step), null);
             }
+        }
+    });
+
+    it('requires a getter path only where a call reads it without a fallback with the real Math worker', async function () {
+        this.timeout(30000);
+        for (const [text, missing] of [
+            ["result.projectTitle = getField('projectTitle') || '';", null],
+            ["const key = 'ra' + 'te'; result.rate = getField(key) ?? 0;", null],
+            ["const optional = getField('rate') || 0; const key = 'ra' + 'te'; result.value = getField(key);", ['rate']],
+            ["const optional = getField('rate') || 0; const read = getField; result.value = read('rate');", ['rate']],
+            ["const optional = getField('rate') || 0; function read(key) { return getField(key); } result.value = read('rate');", ['rate']]
+        ]) {
+            const { block } = setup();
+            delete block.createWorker;
+            const map = new DocumentMap();
+            map.addDocument({ schema: '#in', document: { amount: 2 } });
+            const ref = refWith({ expression: { variables: [], formulas: [], outputs: [], code: `${text}\nresult.total = document.amount * 2;` } });
+            const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
+            step.setPreviewSource({ schema: '#in', document: { amount: 2 }, paths: ['amount', 'rate', 'projectTitle'], dependencies: {} });
+            await PreviewScope.run(step, () => block.calculate(ref, map, makeUser(), '#in'));
+            assert.deepEqual(getPreviewInputError(step)?.data.missingFields ?? null, missing, text);
+        }
+    });
+
+    it('keeps a direct getter read required after every JavaScript line break with the real Math worker', async function () {
+        this.timeout(30000);
+        for (const separator of ['\n', '\r\n', '\r', '\u2028', '\u2029']) {
+            const { block } = setup();
+            delete block.createWorker;
+            const map = new DocumentMap();
+            map.addDocument({ schema: '#in', document: { amount: 2 } });
+            const text = `const key = 'ra' + 'te';${separator}const b = getField(key);\nif(false) getField('rate') || 0;\nresult.value = b;\nresult.total = document.amount * 2;`;
+            const ref = refWith({ expression: { variables: [], formulas: [], outputs: [], code: text } });
+            const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
+            step.setPreviewSource({ schema: '#in', document: { amount: 2 }, paths: ['amount', 'rate'], dependencies: {} });
+            await PreviewScope.run(step, () => block.calculate(ref, map, makeUser(), '#in'));
+            assert.deepEqual(getPreviewInputError(step)?.data.missingFields ?? null, ['rate'], JSON.stringify(separator));
         }
     });
 

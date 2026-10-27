@@ -304,4 +304,51 @@ describe('@unit getField path bindings', () => {
             assert.ok(!actual.some(path => path.startsWith('ccb.')));
         });
     }
+
+    const getterReads = (script) => {
+        const tracker = new PreviewReadTracker();
+        tracker.configure(script);
+        tracker.startCoverage();
+        const document = tracker.track({ amount: 2, loc: { lat: 1 } }, '#S');
+        runInNewContext(script, {
+            document,
+            result: {},
+            getField: path => tracker.trackField(path.split('.').reduce((value, key) => value?.[key], document), path)
+        }, { filename: PREVIEW_SCRIPT_FILE });
+        return [...new Set(findPreviewScriptFields(script, tracker.takeSites(), tracker.takeUnexecuted(), '#S', ['amount', 'projectTitle', 'type', 'rate', 'loc', 'loc.lat'],
+            false, '', ['document', 'result']).map(read => read.path))].sort();
+    };
+
+    for (const [name, script] of [
+        ['a fallback on another line', "const projectTitle = getField('projectTitle')\n    || '';\nresult.projectTitle = projectTitle;"],
+        ['a nullish fallback', "result.rate = getField('rate') ?? 1;"],
+        ['a chain of getter fallbacks', "result.type = getField('type') || getField('rate') || '';"],
+        ['a typeof check', "result.rate = typeof getField('rate') === 'number' ? 1 : 0;"],
+        ['a computed path with a fallback', "const key = 'ra' + 'te'; result.rate = getField(key) || 0;"],
+        ['an aliased getter with a fallback', "const read = getField; result.rate = read('rate') ?? 0;"],
+        ['an optional call with a fallback', "result.rate = getField?.('rate') || 0;"],
+        ['two fallbacks of the same path', "const a = getField('rate') || 1; const b = getField('ra' + 'te') ?? 2; result.rate = a + b;"]
+    ]) {
+        it(`does not require a getter read only through ${name}`, () => {
+            assert.deepEqual(getterReads(`${script}\nresult.total = document.amount * 2;`), ['amount']);
+        });
+    }
+
+    for (const [name, script, expected] of [
+        ['a direct use', "result.total = getField('rate') * 2;", ['rate']],
+        ['a direct copy', "result.projectTitle = getField('projectTitle');", ['projectTitle']],
+        ['a fallback and a direct use of the same path', "const a = getField('rate') || 1; result.total = getField('rate') * a;", ['rate']],
+        ['a nested read through the getter', "result.total = getField('loc').lat * 2;", ['loc', 'loc.lat']],
+        ['a computed getter path', "const key = 'ra' + 'te'; result.value = getField(key);", ['rate']],
+        ['a fallback and a direct read through a computed path', "const a = getField('rate') || 0; const key = 'ra' + 'te'; result.value = getField(key);", ['rate']],
+        ['a fallback and a direct read through an aliased getter', "const a = getField('rate') || 0; const read = getField; result.value = read('rate');", ['rate']],
+        ['a fallback and a direct read through a wrapper', "const a = getField('rate') || 0; function read(key) { return getField(key); } result.value = read('rate');", ['rate']],
+        ['a wrapper with a fallback outside it', "function read(key) { return getField(key); } result.rate = read('rate') || 0;", ['rate']],
+        ['a getter passed to an array method', "result.values = ['rate'].map(getField);", ['rate']],
+        ['a fallback title next to a computed date path', "const prefix = 'loc'; const projectTitle = getField('projectTitle') || '';\nresult.lat = getField(prefix + '.lat');\nresult.projectTitle = projectTitle;", ['loc.lat']]
+    ]) {
+        it(`still requires a getter read through ${name}`, () => {
+            assert.deepEqual(getterReads(script), expected);
+        });
+    }
 });

@@ -23,7 +23,7 @@ import { DocumentType } from '../interfaces/document.type.js';
 import { FilterQuery } from '@mikro-orm/core';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
 import { PolicyUser } from '@policy-engine/policy-user.js';
-import { PreviewScope } from '../helpers/preview.js';
+import { PreviewScope, getPreviewComputed, getPreviewDocumentSchema, setPreviewComputed, setPreviewDocumentSchema } from '../helpers/preview.js';
 
 /**
  * Document Operations
@@ -644,6 +644,19 @@ export class SendToGuardianBlock {
     }
 
     /**
+     * Keep preview origins
+     * @param source
+     * @param result
+     */
+    private keepPreviewOrigins(source: IPolicyDocument, result: IPolicyDocument): IPolicyDocument {
+        if (PreviewScope.current()?.preview) {
+            setPreviewDocumentSchema(result, getPreviewDocumentSchema(source));
+            setPreviewComputed(result, getPreviewComputed(source));
+        }
+        return result;
+    }
+
+    /**
      * Run block action
      * @event PolicyEventType.Run
      * @param {IPolicyEvent} event
@@ -669,12 +682,12 @@ export class SendToGuardianBlock {
             for (const doc of docs) {
                 PolicyUtils.setDocumentTags(doc, tags);
                 const newDoc = await this.documentSender(doc, event?.user?.userId, event.user);
-                newDocs.push(newDoc);
+                newDocs.push(this.keepPreviewOrigins(doc, newDoc));
             }
             event.data.data = newDocs;
         } else {
             PolicyUtils.setDocumentTags(docs, tags);
-            event.data.data = await this.documentSender(docs, event?.user?.userId, event.user);
+            event.data.data = this.keepPreviewOrigins(docs, await this.documentSender(docs, event?.user?.userId, event.user));
         }
 
         const olds: IPolicyDocument | IPolicyDocument[] = event.data.old;

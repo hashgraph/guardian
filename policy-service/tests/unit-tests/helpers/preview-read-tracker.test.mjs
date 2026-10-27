@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { PreviewReadTracker } from '../../../dist/policy-engine/helpers/workers/preview-read-tracker.js';
+import { runInNewContext } from 'node:vm';
+import { PREVIEW_SCRIPT_FILE, PreviewReadTracker } from '../../../dist/policy-engine/helpers/workers/preview-read-tracker.js';
 
 describe('@unit PreviewReadTracker', () => {
     it('records nested reads with dotted paths', () => {
@@ -97,6 +98,17 @@ describe('@unit PreviewReadTracker', () => {
         assert.deepEqual(tracker.take().map((read) => read.path), ['amount', 'rate']);
     });
 
+    it('still knows a value the script wrote after its writes were reported', () => {
+        const tracker = new PreviewReadTracker();
+        const doc = tracker.track({ amount: 2 }, '#S');
+        doc.temp = doc.amount + 1;
+        assert.deepEqual(tracker.takeWrites().map((write) => write.path), ['temp']);
+        assert.deepEqual(tracker.take().map((read) => read.path), ['amount']);
+        doc.total = doc.temp * doc.rate;
+        assert.deepEqual(tracker.take().map((read) => read.path), ['rate']);
+        assert.deepEqual(tracker.takeWrites().map((write) => write.path), ['total']);
+    });
+
     it('keeps the read of a group the script walked through to write into it', () => {
         const tracker = new PreviewReadTracker();
         const doc = tracker.track({ location: {}, items: [{}, {}] }, '#S');
@@ -143,6 +155,31 @@ describe('@unit PreviewReadTracker', () => {
         assert.deepEqual(tracker.take().map((read) => read.path), ['location', 'location.lng', 'amount']);
         assert.deepEqual(tracker.takeWrites(), [{ schema: null, path: 'location.lat', document: null }]);
     });
+
+    it('records the script place of every field getter call', () => {
+        const script = "const a = getField('rate') || 0;\nconst key = 'rate';\nconst b = getField(key);\n['rate'].map(getField);";
+        const tracker = new PreviewReadTracker();
+        tracker.configure(script);
+        runInNewContext(script, { getField: path => tracker.trackField(1, path) }, { filename: PREVIEW_SCRIPT_FILE });
+        assert.deepEqual(tracker.takeSites().map((read) => [read.path, read.site, read.call]), [
+            ['rate', -2, script.indexOf("getField('rate')")],
+            ['rate', -2, script.indexOf('getField(key)')],
+            ['rate', -2, -1]
+        ]);
+    });
+
+    for (const separator of ['\n', '\r\n', '\r', '\u2028', '\u2029']) {
+        it(`maps a getter call to its script place after the line break ${JSON.stringify(separator)}`, () => {
+            const script = `const a = 1;${separator}const b = getField('rate');${separator}${separator}const c = getField('bonus');`;
+            const tracker = new PreviewReadTracker();
+            tracker.configure(script);
+            runInNewContext(script, { getField: path => tracker.trackField(1, path) }, { filename: PREVIEW_SCRIPT_FILE });
+            assert.deepEqual(tracker.takeSites().map((read) => [read.path, read.call]), [
+                ['rate', script.indexOf("getField('rate')")],
+                ['bonus', script.indexOf("getField('bonus')")]
+            ]);
+        });
+    }
 
     it('uses the given schema for a policy document that has none', () => {
         const tracker = new PreviewReadTracker();

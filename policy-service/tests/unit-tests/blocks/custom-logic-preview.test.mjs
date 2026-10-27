@@ -306,6 +306,34 @@ describe('@unit customLogicBlock preview', () => {
         assert.equal(response.body, null);
     });
 
+    it('keeps a value written before an intermediate done out of the inputs, but still requires a new input', async function () {
+        this.timeout(20000);
+        const run = (calculation) => runPreview({ blockType: 'requestVcDocumentBlock' }, makeUser(), {}, async (_block, user, _data, step) => {
+            step.setPreviewSource({ schema: '#S', document: { amount: 5 },
+                paths: ['amount', 'rate', 'temp', 'total'], dependencies: {} });
+            const { block } = makeBlock(CustomLogicBlock, { options: { unsigned: true, passOriginal: true,
+                expression: 'const doc=documents[0].document.credentialSubject[0];doc.temp=doc.amount+1;done(documents[0],false);'
+                    + calculation + 'done(documents[0]);' } });
+            block.triggerEvents = async (type, _user, state) => {
+                if (type === 'RunEvent') {
+                    step.addPreviewDocument('script', null, state);
+                }
+            };
+            await block.runAction({ user, actionStatus: step,
+                data: { data: { schema: '#S', document: { credentialSubject: [{ amount: 5 }] } } } });
+            return new MessageResponse({});
+        });
+        const written = await run('doc.total=doc.temp*2;');
+        assert.ok(written instanceof MessageResponse);
+        assert.deepEqual(written.body.fields, ['amount']);
+        assert.deepEqual(written.body.missingFields, []);
+        assert.equal(written.body.documents.at(-1).document.document.credentialSubject[0].total, 12);
+        const input = await run('doc.total=doc.temp*doc.rate;');
+        assert.ok(input instanceof MessageError);
+        assert.equal(input.code, 422);
+        assert.deepEqual(input.data.missingFields, ['rate']);
+    });
+
     it('retains ordinary worker output without preview observations', async function () {
         this.timeout(20000);
         const external = PolicyComponentsUtils.ExternalEventFn;

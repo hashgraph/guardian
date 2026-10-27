@@ -3,7 +3,7 @@ import esmock from 'esmock';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { createInMemoryDatabaseHelper } from './in-memory-database-helper.mjs';
 import { RecordActionStep } from '../../../dist/policy-engine/record-action-step.js';
-import { PreviewScope } from '../../../dist/policy-engine/helpers/preview.js';
+import { PreviewScope, getPreviewComputed, getPreviewDocumentSchema, setPreviewComputed, setPreviewDocumentSchema } from '../../../dist/policy-engine/helpers/preview.js';
 import {
     PreviewIncompleteError,
     createPreviewDatabaseServer,
@@ -68,6 +68,62 @@ describe('@unit preview database wrapper', () => {
         assert.equal(db.records(VcDocument).length, 3);
         assert.equal(db.calls.filter(([name]) => name === 'save').length, 0);
         assert.deepEqual(found.map((item) => item.document.credentialSubject[0].area), [10, 20, 5]);
+    });
+
+    for (const dryRunId of [null, 'dry-1']) {
+        it(`retains origins through create, insert, find and findOne for ${dryRunId}`, async () => {
+            const local = createPreviewDatabaseServer(new DatabaseServer(dryRunId), dryRunId);
+            await inPreview(previewStep(), async () => {
+                const row = setPreviewComputed(setPreviewDocumentSchema({ policyId, owner: 'did:new',
+                    document: { credentialSubject: [{ temp: 6 }] } }, '#S'), ['temp']);
+                const saved = await local.saveVC(row);
+                const found = await local.getVcDocument({ _id: saved._id });
+                const listed = await local.getVcDocuments({ owner: 'did:new' });
+                for (const item of [saved, found, ...listed]) {
+                    assert.deepEqual(getPreviewComputed(item), ['temp']);
+                    assert.equal(getPreviewDocumentSchema(item), '#S');
+                    assert.equal(Object.hasOwn(item, 'schema'), false);
+                }
+                assert.notEqual(saved, found);
+                assert.equal(JSON.stringify(saved).includes('computed'), false);
+            });
+            assert.equal(db.calls.some(([name]) => name === 'save' || name === 'update'), false);
+        });
+    }
+
+    it('retains origins on metadata updates and replaces them with the current document origins', async () => {
+        await inPreview(previewStep(), async () => {
+            const saved = await server.saveVC(setPreviewComputed({ policyId, owner: 'did:new',
+                document: { credentialSubject: [{ temp: 6 }] } }, ['temp']));
+            await server.update(VcDocument, { _id: saved._id }, { owner: 'did:changed' });
+            const changed = await server.getVcDocument({ _id: saved._id });
+            assert.deepEqual(getPreviewComputed(changed), ['temp']);
+            await server.updateVC(setPreviewComputed({ ...changed,
+                document: { credentialSubject: [{ total: 12 }] } }, ['total']));
+            const updated = await server.getVcDocument({ _id: saved._id });
+            assert.deepEqual(getPreviewComputed(updated), ['total']);
+            await server.updateVC({ ...updated, document: { credentialSubject: [{ total: 13 }] } });
+            assert.deepEqual(getPreviewComputed(await server.getVcDocument({ _id: saved._id })), []);
+        });
+    });
+
+    it('keeps origins local to the record and preview and never persists them', async () => {
+        const first = previewStep();
+        const second = previewStep();
+        await Promise.all([
+            inPreview(first, async () => {
+                const row = await server.getVcDocument({ _id: new ObjectId(ID_A) });
+                await server.updateVC(setPreviewComputed(row, ['area']));
+                await new Promise(resolve => setTimeout(resolve, 5));
+                assert.deepEqual(getPreviewComputed(await server.getVcDocument({ _id: new ObjectId(ID_A) })), ['area']);
+                assert.deepEqual(getPreviewComputed(await server.getVcDocument({ _id: new ObjectId(ID_B) })), []);
+            }),
+            inPreview(second, async () => {
+                assert.deepEqual(getPreviewComputed(await server.getVcDocument({ _id: new ObjectId(ID_A) })), []);
+            })
+        ]);
+        assert.deepEqual(getPreviewComputed(await server.getVcDocument({ _id: new ObjectId(ID_A) })), []);
+        assert.equal(db.calls.some(([name]) => name === 'save' || name === 'update'), false);
     });
 
     it('goes through the wrapper for calls a DatabaseServer method makes to itself', async () => {

@@ -118,9 +118,6 @@ export class CalculateContainerBlock {
         for (const addon of addons) {
             scope = await addon.run(scope, docOwner);
         }
-        if (actionStatus && !actionStatus.getPreviewSource()?.discovery) {
-            assertPreviewCalculationResult(scope);
-        }
         const newJson: any = {};
         if (options.outputFields) {
             for (const field of options.outputFields) {
@@ -128,6 +125,9 @@ export class CalculateContainerBlock {
                     newJson[field.name] = scope[field.value];
                 }
             }
+        }
+        if (actionStatus && !actionStatus.getPreviewSource()?.discovery) {
+            assertPreviewCalculationResult(newJson);
         }
         if (actionStatus) {
             const formulas: Record<string, unknown> = {};

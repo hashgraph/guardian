@@ -145,7 +145,8 @@ export class BlockTreeGenerator extends NatsService {
                 block,
                 userFull,
                 data,
-                (target, user, previewData, actionStatus) => PolicyComponentsUtils.blockSetData(target, user, previewData, actionStatus)
+                (target, user, previewData, actionStatus) => PolicyComponentsUtils.blockSetData(target, user, previewData, actionStatus),
+                !!history
             );
         }
 

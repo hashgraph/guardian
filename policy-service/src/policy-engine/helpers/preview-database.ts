@@ -5,7 +5,7 @@ import { GlobalEventsWriterStream } from '@guardian/common/entity/global-events-
 import { ObjectId } from '@mikro-orm/mongodb';
 import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import { RecordActionStep } from '../record-action-step.js';
-import { PreviewScope } from './preview.js';
+import { PreviewScope, getPreviewComputed, getPreviewDocumentSchema, setPreviewComputed, setPreviewDocumentSchema } from './preview.js';
 import {
     PreviewQueryUnsupportedError,
     buildPreviewDocumentCache,
@@ -129,6 +129,11 @@ function clonePreviewValue(value: unknown): unknown {
     return result;
 }
 
+function copyPreviewOrigins<T>(source: unknown, result: T): T {
+    setPreviewDocumentSchema(result, getPreviewDocumentSchema(source));
+    return setPreviewComputed(result, getPreviewComputed(source));
+}
+
 function toRecord(value: unknown): Record<string, unknown> {
     const record = clonePreviewValue(value);
     if (!isRecordObject(record)) {
@@ -137,7 +142,7 @@ function toRecord(value: unknown): Record<string, unknown> {
     if (record._id !== undefined && record._id !== null) {
         record.id = String(record._id);
     }
-    return record;
+    return copyPreviewOrigins(value, record);
 }
 
 function getRecordId(value: unknown): string | null {
@@ -472,6 +477,7 @@ class PreviewDatabase {
         const key = String(current._id);
         record._id = current._id;
         record.id = key;
+        copyPreviewOrigins(isRecordObject(item) && 'document' in item ? item : existing, record);
         this.put(entityClass, key, record, true);
         return toRecord(record);
     }
@@ -550,7 +556,7 @@ export function createPreviewDatabaseServer(target: DatabaseServer, dryRunId: st
             if (typeof property !== 'string' || typeof value !== 'function') {
                 return value;
             }
-            const intercepted = property === 'getVirtualHederaAccountInfo' || READ_METHODS.has(property) || WRITE_METHODS.has(property) || STREAM_METHODS.has(property);
+            const intercepted = property === 'create' || property === 'getVirtualHederaAccountInfo' || READ_METHODS.has(property) || WRITE_METHODS.has(property) || STREAM_METHODS.has(property);
             if (!intercepted && !BLOCKED_METHODS.has(property)) {
                 return value;
             }
@@ -558,6 +564,9 @@ export function createPreviewDatabaseServer(target: DatabaseServer, dryRunId: st
                 const actionStatus = getActivePreview();
                 if (!actionStatus) {
                     return Reflect.apply(value, receiver, args);
+                }
+                if (property === 'create') {
+                    return copyPreviewOrigins(args[1], Reflect.apply(value, receiver, args));
                 }
                 if (property === 'getVirtualHederaAccountInfo') {
                     const cached = getPreviewTokenAccount(actionStatus, String(args[0]));

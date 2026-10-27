@@ -164,6 +164,19 @@ describe('@unit preview helpers', function () {
             assert.deepEqual(res.body.documents.map((item) => item.document), [{ late: true }]);
         });
 
+        it('keeps the step history inside and sends it only when the caller asks for it', async () => {
+            const run = (history) => runPreview(formBlock(), user, {}, async (block, previewUser, data, step) => {
+                step.saveResult({ data: { tag: 'math', document: { id: 'vc-1', credentialSubject: [{ total: 2 }] } } });
+                return new MessageResponse({});
+            }, history);
+            const quiet = await run(undefined);
+            assert.deepEqual(quiet.body.steps, []);
+            assert.deepEqual(quiet.body.documents.map((item) => item.document.document.id), ['vc-1']);
+            const full = await run(true);
+            assert.equal(full.body.steps.length, 1);
+            assert.deepEqual(full.body.documents, quiet.body.documents);
+        });
+
         it('returns the error of the form block unchanged', async () => {
             const error = new MessageError('boom', 500);
             const res = await runPreview(formBlock(), user, {}, async () => error);

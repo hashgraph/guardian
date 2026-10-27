@@ -15,6 +15,7 @@ export interface IPreviewReadSite extends IPreviewReadRecord {
     site: number;
     listed: boolean;
     nested?: boolean;
+    call?: number;
 }
 
 export const PREVIEW_SCRIPT_FILE = 'calculation-preview.js';
@@ -29,6 +30,7 @@ export class PreviewReadTracker {
     private readonly reads = new Map<string, IPreviewReadRecord>();
     private readonly sites = new Map<string, IPreviewReadSite>();
     private readonly writes = new Map<string, IPreviewWriteRecord>();
+    private readonly written = new Set<string>();
     private readonly proxies = new WeakMap<object, unknown>();
     private readonly targets = new WeakMap<object, object>();
     private readonly sources = new WeakMap<object, number>();
@@ -40,8 +42,9 @@ export class PreviewReadTracker {
 
     public configure(source: string): void {
         this.lines = [0];
-        for (let index = source.indexOf('\n'); index >= 0; index = source.indexOf('\n', index + 1)) {
-            this.lines.push(index + 1);
+        const breaks = /\r\n|[\n\r\u2028\u2029]/g;
+        for (let match = breaks.exec(source); match; match = breaks.exec(source)) {
+            this.lines.push(match.index + match[0].length);
         }
     }
 
@@ -91,20 +94,20 @@ export class PreviewReadTracker {
         return [...result.values()];
     }
 
-    public site(): number {
+    public site(depth: number = 2): number {
         if (!this.lines) {
             return -1;
         }
         const limit = Error.stackTraceLimit;
         const prepare = Error.prepareStackTrace;
-        Error.stackTraceLimit = 3;
+        Error.stackTraceLimit = depth + 1;
         Error.prepareStackTrace = (_error, stackFrames) => stackFrames;
         const holder: { stack?: unknown } = {};
         Error.captureStackTrace(holder);
         const frames = holder.stack;
         Error.stackTraceLimit = limit;
         Error.prepareStackTrace = prepare;
-        const caller = Array.isArray(frames) ? frames[2] : undefined;
+        const caller = Array.isArray(frames) ? frames[depth] : undefined;
         return caller?.getFileName() === PREVIEW_SCRIPT_FILE
             ? (this.lines[(caller.getLineNumber() ?? 1) - 1] ?? 0) + (caller.getColumnNumber() ?? 1) - 1
             : -1;
@@ -117,7 +120,8 @@ export class PreviewReadTracker {
         document: number | null = null,
         site: number = -1,
         listed: boolean = false,
-        nested: boolean = false
+        nested: boolean = false,
+        call?: number
     ): void {
         if (!path || this.isWritten(schema, writePath, document)) {
             return;
@@ -126,9 +130,11 @@ export class PreviewReadTracker {
         if (!this.reads.has(key)) {
             this.reads.set(key, this.lines ? { schema, path, fullPath: writePath } : { schema, path });
         }
-        const siteKey = `${key}\u0000${site}\u0000${listed}`;
+        const siteKey = `${key}\u0000${site}\u0000${listed}\u0000${call ?? ''}`;
         if (this.lines && !this.sites.has(siteKey)) {
-            this.sites.set(siteKey, { schema, path, fullPath: writePath, site, listed, nested });
+            this.sites.set(siteKey, call === undefined
+                ? { schema, path, fullPath: writePath, site, listed, nested }
+                : { schema, path, fullPath: writePath, site, listed, nested, call });
         }
     }
 
@@ -146,11 +152,12 @@ export class PreviewReadTracker {
 
     private isWritten(schema: string | null, path: string, document: number | null): boolean {
         const parts = path.split('.');
-        return parts.some((_part, index) => this.writes.has(`${schema ?? ''}\u0000${parts.slice(0, index + 1).join('.')}\u0000${document ?? ''}`));
+        return parts.some((_part, index) => this.written.has(`${schema ?? ''}\u0000${parts.slice(0, index + 1).join('.')}\u0000${document ?? ''}`));
     }
 
     public addWrite(schema: string | null, path: string, document: number | null = null): void {
         const key = `${schema ?? ''}\u0000${path}\u0000${document ?? ''}`;
+        this.written.add(key);
         if (!this.writes.has(key)) {
             this.writes.set(key, { schema, path, document });
         }
@@ -214,7 +221,7 @@ export class PreviewReadTracker {
     }
 
     public trackField(value: unknown, path: string): unknown {
-        this.add(null, withoutIndexes(path), path, null, PREVIEW_EXPLICIT_SITE);
+        this.add(null, withoutIndexes(path), path, null, PREVIEW_EXPLICIT_SITE, false, false, this.lines ? this.site(3) : undefined);
         return this.track(value, null, withoutIndexes(path), path);
     }
 

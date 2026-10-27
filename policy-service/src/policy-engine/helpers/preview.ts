@@ -718,7 +718,7 @@ export function getPreviewInputError(actionStatus: RecordActionStep): MessageErr
     });
 }
 
-export function buildPreviewResponse(actionStatus: RecordActionStep, input: unknown) {
+export function buildPreviewResponse(actionStatus: RecordActionStep, input: unknown, history: boolean = false) {
     const { fields, missingFields } = resolvePreviewFields(actionStatus.getPreviewSource(), actionStatus.getPreviewReads());
     let documents = actionStatus.getPreviewDocuments();
     if (!documents.length) {
@@ -750,7 +750,7 @@ export function buildPreviewResponse(actionStatus: RecordActionStep, input: unkn
         calculations: actionStatus.getPreviewCalculations(),
         fields,
         missingFields,
-        steps: actionStatus.getResults(),
+        steps: history ? actionStatus.getResults() : [],
         errors: actionStatus.getErrors().map((error) => ({
             message: error.message,
             blockType: error.blockType ?? null,
@@ -771,7 +771,8 @@ export async function runPreview(
     block: IPolicyInterfaceBlock,
     user: PolicyUser,
     data: any,
-    setBlockData: PreviewSetBlockData
+    setBlockData: PreviewSetBlockData,
+    history: boolean = false
 ): Promise<MessageResponse<any> | MessageError<any>> {
     if (block.blockType !== 'requestVcDocumentBlock') {
         return new MessageError('Preview is available only for a Request document block', 422);
@@ -811,5 +812,5 @@ export async function runPreview(
     if (inputError) {
         return inputError;
     }
-    return new MessageResponse(buildPreviewResponse(actionStatus, response.body), response.code);
+    return new MessageResponse(buildPreviewResponse(actionStatus, response.body, history), response.code);
 }

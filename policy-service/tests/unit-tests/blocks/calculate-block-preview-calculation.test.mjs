@@ -100,20 +100,43 @@ describe('@unit calculateContainerBlock preview calculation', () => {
         assert.deepEqual(calculation.outputs, [{ name: 'b', path: 'total', value: null }]);
     });
 
-    it('keeps an addon default and rejects NaN from an unhandled input without recording a calculation', async () => {
+    it('keeps an addon default and drops a NaN output the same way the ordinary run does', async () => {
         for (const defaults of [true, false]) {
             const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
             step.setPreviewSource({ schema: '#in', document: {}, paths: ['amount'], dependencies: {} });
             const ref = { ...refWith(), getAddons: () => [{ ...addon, async run(scope) {
                 return { ...scope, b: defaults ? (scope.a || 0) * 2 : scope.a * 2 };
             } }] };
-            const calculate = () => PreviewScope.run(step, () => block().calculate({}, ref, { schema: '#in' }, 'uid', makeUser()));
-            if (defaults) {
-                assert.deepEqual(await calculate(), {});
-            } else {
-                await assert.rejects(calculate(), /non-finite/);
-                assert.deepEqual(step.getPreviewCalculations(), []);
-            }
+            const preview = await PreviewScope.run(step, () => block().calculate({}, ref, { schema: '#in' }, 'uid', makeUser()));
+            assert.deepEqual(preview, {});
+            assert.deepEqual(preview, await block().calculate({}, ref, { schema: '#in' }, 'uid', makeUser()));
+            assert.equal(step.getPreviewCalculations().length, 1);
+        }
+    });
+
+    it('keeps a finite output when an equation the outputs do not use is NaN', async () => {
+        const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
+        step.setPreviewSource({ schema: '#in', document: { amount: 3 }, paths: ['amount'], dependencies: {} });
+        const ref = { ...refWith(), getAddons: () => [{ ...addon, async run(scope) {
+            return { ...scope, b: scope.a * 2, unused: 0 / 0 };
+        } }] };
+        const result = await PreviewScope.run(step, () => block().calculate({ amount: 3 }, ref, { schema: '#in' }, 'uid', makeUser()));
+        assert.deepEqual(result, { total: 6 });
+        assert.equal(step.getPreviewCalculations().length, 1);
+    });
+
+    it('rejects a non-finite output the document would keep without recording a calculation', async () => {
+        for (const value of [Infinity, { rows: [NaN] }]) {
+            const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
+            step.setPreviewSource({ schema: '#in', document: { amount: 3 }, paths: ['amount'], dependencies: {} });
+            const ref = { ...refWith(), getAddons: () => [{ ...addon, async run(scope) {
+                return { ...scope, b: value };
+            } }] };
+            await assert.rejects(
+                PreviewScope.run(step, () => block().calculate({ amount: 3 }, ref, { schema: '#in' }, 'uid', makeUser())),
+                /non-finite/
+            );
+            assert.deepEqual(step.getPreviewCalculations(), []);
         }
     });
 

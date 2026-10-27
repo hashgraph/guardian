@@ -524,9 +524,24 @@ export function findPreviewScriptFields(
             matches.filter((path) => !sections.has(path)).forEach((path) => add({ schema, path }));
         }
     }
+    const callers = new Map<number, Node>();
+    for (const node of script.parents.keys()) {
+        if (node.type === 'CallExpression') {
+            if (node.callee.type === 'Identifier') {
+                callers.set(node.callee.start, node);
+            } else if (node.callee.type === 'MemberExpression' && !node.callee.computed) {
+                callers.set(node.callee.property.start, node);
+            }
+            callers.set(source.indexOf('(', node.callee.end), node);
+        }
+    }
+    const explicit = (read: IPreviewReadSite) => {
+        const call = read.call === undefined ? undefined : callers.get(read.call);
+        return !call || usageOf(call, script.parents) !== 'check';
+    };
     for (const read of sites) {
         const occurrence = siteOf(read);
-        const required = read.site === -2 || (occurrence
+        const required = read.site === -2 ? explicit(read) : (occurrence
             ? occurrence.usage === 'use' || occurrence.usage === 'path' && !read.nested
             : own(read) ? usedPaths.has(read.path) : usedKeys.has(read.path.split('.').pop() || ''));
         if (required) {

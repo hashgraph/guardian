@@ -19,6 +19,7 @@ async function createGenerator() {
                 isAvailableSetData: async () => null,
                 blockSetData: async (...args) => {
                     calls.push(args);
+                    args[3]?.saveResult({ data: { tag: 'form' } });
                     return new MessageResponse(true);
                 },
                 GetBlockByUUID: () => ({ uuid: 'block-1', tag: 'block', blockType: 'requestVcDocumentBlock', policyId: 'policy-1' }),
@@ -68,4 +69,21 @@ describe('@unit BlockTreeGenerator – timeout for a remote policy', function ()
             assert.isUndefined(calls[1][5], 'no timeout - wait as before');
         });
     }
+});
+
+describe('@unit BlockTreeGenerator – preview step history', function () {
+    this.timeout(60000);
+
+    it('sends the preview steps only when the caller asks for the history, like an ordinary submit', async () => {
+        const { generator, handlers } = await createGenerator();
+        await generator.initPolicyEvents('policy-1', {}, {});
+        const handler = handlers.get(PolicyEvents.SET_BLOCK_DATA);
+        const run = (preview, history) => handler({
+            user: {}, blockId: 'block', policyId: 'policy-1', data: { preview, document: {} }, syncEvents: true, history
+        });
+        assert.deepEqual((await run(true, undefined)).body.steps, []);
+        assert.deepEqual((await run(true, true)).body.steps, [{ data: { tag: 'form' } }]);
+        assert.deepEqual((await run(false, undefined)).body.steps, []);
+        assert.deepEqual((await run(false, true)).body.steps, [{ data: { tag: 'form' } }]);
+    });
 });

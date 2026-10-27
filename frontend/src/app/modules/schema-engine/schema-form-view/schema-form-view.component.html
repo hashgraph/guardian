@@ -281,6 +281,7 @@
                                             [formulas]="formulas"
                                             [link]="item.link"
                                             [accordionLink]="item.accordionLink"
+                                            [preview]="preview"
                                             [discussion]="discussionData"
                                             [discussion-view]="discussionView"
                                             [discussion-action]="discussionAction"
@@ -298,7 +299,10 @@
 
             <!-- array of objects as table -->
             <div *ngIf="canDrawTable(item)">
-                <p-table [value]="getTableHRowFields(item) || []">
+                <p-table
+                    [value]="getTableRows(item) || []"
+                    [paginator]="preview && item.list.length > 25"
+                    [rows]="preview ? 25 : undefined">
                     <ng-template pTemplate="header">
                         <tr [attr.accordiontabid]="item.fullPath">
                             <th style="width: 3rem">#</th>
@@ -467,6 +471,7 @@
                                             [formulas]="formulas"
                                             [link]="item.link"
                                             [accordionLink]="item.accordionLink"
+                                            [preview]="preview"
                                             [discussion]="discussionData"
                                             [discussion-view]="discussionView"
                                             [discussion-action]="discussionAction"
