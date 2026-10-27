@@ -812,6 +812,10 @@ export class FormulaConfigurationComponent implements OnInit {
         return !this.schemasMap.has(link.entityId) || !this.schemasFieldMap.has(`${link.entityId}.${link.item}`);
     }
 
+    public getMissingSchemaText(link: IFormulaLink): string {
+        return `Schema “${link.entityId}” was not found in this policy`;
+    }
+
     public getFieldName(link: IFormulaLink): string {
         if (link.type === 'schema') {
             return this.schemasFieldMap.get(`${link.entityId}.${link.item}`) || '';

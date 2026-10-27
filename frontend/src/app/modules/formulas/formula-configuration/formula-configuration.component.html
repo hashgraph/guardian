@@ -488,8 +488,8 @@
                   <i class="pi pi-exclamation-triangle link-warn"></i>
                   <div class="link-missing">
                     <span class="link-field link-field--missing"
-                      [truncateTooltip]="'Schema “' + link.entityId + '” was not found in this policy'"
-                      tooltipPosition="bottom">Schema “{{ link.entityId }}” was not found in this policy</span>
+                      [truncateTooltip]="getMissingSchemaText(link)"
+                      tooltipPosition="bottom">{{ getMissingSchemaText(link) }}</span>
                     <span class="link-missing-field">
                       <span class="link-missing-label">Previously linked field:</span>
                       <span class="link-missing-path">{{ link.item }}</span>
