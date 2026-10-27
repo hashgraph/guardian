@@ -244,3 +244,29 @@ describe('FormFormulas with several links', () => {
         expect(keys).toEqual([`${SCHEMA}/b`]);
     });
 });
+
+describe('FormFormulas of a drilled-into sub-schema', () => {
+    const SUB = '#sub-schema';
+    const tree = () => buildTree([formula('f', [
+        item('a', 'nested.summary'),
+        item('b', 'nested.deep.value'),
+        item('c', 'other.summary')
+    ])]);
+
+    it('resolves links stored under the document schema by the drill path', () => {
+        const model = new FormFormulas(tree(), SUB, undefined, { schema: SCHEMA, prefix: ['nested'] });
+        expect(model.get(`${SUB}/summary`).map((i) => i.uuid)).toEqual(['a']);
+        expect(model.get(`${SUB}/deep.value`).map((i) => i.uuid)).toEqual(['b']);
+    });
+
+    it('ignores links of other branches and the document schema paths', () => {
+        const model = new FormFormulas(tree(), SUB, undefined, { schema: SCHEMA, prefix: ['nested'] });
+        expect(model.get(`${SUB}/other.summary`)).toEqual([]);
+        expect(model.get(`${SCHEMA}/nested.summary`)).toEqual([]);
+    });
+
+    it('keeps the plain lookup without a link scope', () => {
+        const model = new FormFormulas(tree(), SCHEMA);
+        expect(model.get(`${SCHEMA}/nested.summary`).map((i) => i.uuid)).toEqual(['a']);
+    });
+});

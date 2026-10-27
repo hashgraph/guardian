@@ -3,6 +3,15 @@ import { FormulaItem, FormulasTree, IFormulaConditionContext } from './formula-t
 const EMPTY: FormulaItem[] = [];
 
 /**
+ * Where the links of a form's fields are stored when the form shows a sub-schema:
+ * links are saved against the document schema and the path from it.
+ */
+export interface IFormulaLinkScope {
+    schema: string;
+    prefix: string[];
+}
+
+/**
  * Formulas of a request form: filters formula items by their display condition
  * against the current form values. Results are memoized until the data changes.
  */
@@ -15,9 +24,31 @@ export class FormFormulas {
     constructor(
         public readonly tree: FormulasTree,
         public readonly schemaIri: string,
-        private equalsFn?: (a: any, b: any) => boolean
+        private equalsFn?: (a: any, b: any) => boolean,
+        linkScope?: IFormulaLinkScope | null
     ) {
-        this.fields = tree.getFields(schemaIri);
+        this.fields = linkScope?.schema
+            ? FormFormulas.scopedFields(tree, schemaIri, linkScope)
+            : tree.getFields(schemaIri);
+    }
+
+    /**
+     * Fields of the sub-schema keyed by its own IRI, resolved from the links stored
+     * against the document schema under the drilled-into path.
+     */
+    private static scopedFields(
+        tree: FormulasTree,
+        schemaIri: string,
+        linkScope: IFormulaLinkScope
+    ): Record<string, { tree: FormulasTree; schema: string; path: string }> {
+        const head = linkScope.prefix.length ? `${linkScope.prefix.join('.')}.` : '';
+        const result: Record<string, { tree: FormulasTree; schema: string; path: string }> = {};
+        for (const field of Object.values<any>(tree.getFields(linkScope.schema))) {
+            if (field.path.startsWith(head)) {
+                result[`${schemaIri}/${field.path.slice(head.length)}`] = field;
+            }
+        }
+        return result;
     }
 
     /**

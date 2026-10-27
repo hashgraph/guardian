@@ -5,7 +5,7 @@ import { Schema, SchemaField, SchemaRuleValidateResult } from '@guardian/interfa
 import { equalsLoosely, FieldForm, IFieldControl } from '../schema-form-model/field-form';
 import { Subscription } from 'rxjs';
 import { FormulasTree } from 'src/app/modules/formulas/models/formula-tree';
-import { FormFormulas } from 'src/app/modules/formulas/models/form-formulas';
+import { FormFormulas, IFormulaLinkScope } from 'src/app/modules/formulas/models/form-formulas';
 import { SchemaFormNavigationComponent } from '../schema-form-navigation/schema-form-navigation.component';
 
 /**
@@ -70,6 +70,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     @Input() lastSavedAt?: Date;
     @Input() isEditMode: boolean = false;
     @Input() formulas: FormulasTree | null = null;
+    @Input() formulaLinkScope: IFormulaLinkScope | null = null;
 
     @Output('form') form = new EventEmitter<UntypedFormGroup>();
     @Output('change') change = new EventEmitter<Schema | null>();
@@ -206,7 +207,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             this.formulaModel = null;
             return;
         }
-        const formulaModel = new FormFormulas(this.formulas, this.schema.iri, equalsLoosely);
+        const formulaModel = new FormFormulas(this.formulas, this.schema.iri, equalsLoosely, this.formulaLinkScope);
         formulaModel.setData(this.group.getRawValue());
         if (formulaModel.hasConditions) {
             this.formulaSub = this.group.valueChanges.subscribe(() => {

@@ -28,6 +28,7 @@ import { FormulasService } from 'src/app/services/formulas.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { FormulasTree } from 'src/app/modules/formulas/models/formula-tree';
+import { IFormulaLinkScope } from 'src/app/modules/formulas/models/form-formulas';
 import { IFieldFormulaRow, IFieldFormulasView, IFieldScope, SchemaFieldFormulas } from './schema-field-formulas';
 
 export interface DrillEntry {
@@ -147,6 +148,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public previewPreset: any = null;
     public previewReadonlyFields: any = null;
     public previewFormulas: FormulasTree | null = null;
+    /** where the links of the previewed sub-schema's fields are stored (root schema + drill path) */
+    public previewFormulaLinkScope: IFormulaLinkScope | null = null;
     public previewMounted = false;
     public previewKey = 0;
     public previewSchemaRef: Schema | null = null;
@@ -5188,14 +5191,14 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     /** the saved formulas of the schema, so the preview shows them like the request form */
     private loadPreviewFormulas(): void {
-        const iri = this.currentContextSchema?.iri;
+        const iri = this.selectedSchema?.iri;
         if (this.activeTab !== 'preview' || !this.fieldFormulas || this.isTemplateMode) {
             return;
         }
         this.fieldFormulas.previewTree(iri)
             .pipe(takeUntil(this.destroy$))
             .subscribe((tree) => {
-                if (this.currentContextSchema?.iri === iri) {
+                if (this.selectedSchema?.iri === iri) {
                     this.previewFormulas = tree;
                 }
             });
@@ -5205,6 +5208,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const schema = this.currentContextSchema;
         this.previewBuiltFor = { schema, version: this.schemaEditVersion };
         this.previewSchemaRef = schema;
+        this.previewFormulaLinkScope = this.isDrilling && this.selectedSchema?.iri
+            ? { schema: this.selectedSchema.iri, prefix: this.fieldFormulaPrefix }
+            : null;
         this.previewKey++;
         if (!schema || this.previewPill === 'submitter') {
             this.previewPreset = null;
