@@ -76,7 +76,8 @@ All schemas created for importing into Guardian must follow the design of the te
 {% endhint %}
 
 * _**Required Field**_ - this field must be filled our (Yes/No)
-* _**Field Type**_ – type of the data matching that of Schema concepts in Guardian
+* _**Key**_ – Optional field key used in policy logic, formulas, JSON-LD context terms. Field keys must be unique within a schema and must not contain spaces or reserved characters (".", ":")
+* _**Type**_ – type of the data matching that of Schema concepts in Guardian
   * Enum
   * Number
   * Integer
@@ -96,6 +97,9 @@ All schemas created for importing into Guardian must follow the design of the te
   * Prefix
   * Postfix
   * HederaAccount
+  * Continent
+  * Country
+  * State/Province
   * Auto-Calculate
   * **Sub-schema name** – the name of the embedded schema (or the name of the tag in the spreadsheet)
 * _**Parameter**_ – additional field for information relevant for some data types
@@ -104,12 +108,18 @@ All schemas created for importing into Guardian must follow the design of the te
   * Help Text – text style
   * Prefix – symbol
   * Postfix – symbol
+  * Auto-Calculate – math expression
+  * Table – JSON array of columns
+  * Country – optional key of its parent Continent field
+  * State/Province – optional key of its parent Country field
+  * For Country and State/Province the editor shows this value as **Depends on**
 * _**Visibility**_ – determines the visibility of the field for user
   * No – always hidden
   * EXACT({FieldName},{Value}) – only shown when the condition is true
   * NOT(EXACT({FieldName},{Value})) – only shown when the condition is not true
 * _**Description**_ – Description of the field. This is the text which users would see when filling out the form in Guardian.
-* _**Key**_ – Optional field key used in generated schemas, JSON-LD context terms, formulas, and policy logic. Field keys must be unique within a schema and must not contain spaces or reserved characters. Do not use a dot (`.`), because Guardian reserves it as a path separator, or a colon (`:`), because JSON-LD reserves.
+* _**Updatable Field**_ _(optional)_ – Yes/No. Whether the value can be updated after submission (the **Updatable field** property in the schema editor).
+* _**Private Field**_ _(optional)_ – Yes/No. Only for the **Encrypted Verifiable Credential** schema type: flags the individual field as encrypted (the **Private field** property in the schema editor). On other schema types the value is ignored and a warning is reported.
 * _**Allow Multiple Answers**_ – Determines if the data is an array or a single item (Yes/No)
 * _**Test Value**_ – example of the valid data
 * _**IWA Property**_ _(optional)_ – the IWA dMRV specification property path this field maps to (e.g. `ActivityImpactModule.country`). Offered as a dropdown populated from the hidden **IWA Properties** reference sheet, filtered to the schema's **IWA Version**. Leave blank for fields with no IWA equivalent. A path that isn't in the current version's property list still imports. Guardian keeps the value and reports a warning.
@@ -134,7 +144,7 @@ Use the corresponding menu option : **Export schemas to Excel** in the Manage Po
 
 For math expressions in Excel schema documents to be recognised by Guardian the following is required
 
-1\. **‘Field Type’** value set to **“Auto-Calculate”**
+1\. **‘Type’** value set to **“Auto-Calculate”**
 
 <figure><img src="../../../.gitbook/assets/image (466).png" alt=""><figcaption></figcaption></figure>
 
@@ -230,23 +240,23 @@ The following rules are enforced by the import engine. When a rule is violated t
 
 ### Schema sheet
 
-| Rule                                   | What triggers it                                                                                          | How to fix                                                                        |
-| -------------------------------------- | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Schema name must not be empty          | Cell A1 of the schema sheet is blank                                                                      | Enter the schema name in cell A1                                                  |
-| Column headers must match the template | A required column header (e.g. `Field Type`, `Required Field`) is missing or misspelled in the header row | Compare the header row against the downloaded template and correct any mismatches |
+| Rule                                   | What triggers it                                                                                    | How to fix                                                                        |
+|----------------------------------------|-----------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|
+| Schema name must not be empty          | Cell A1 of the schema sheet is blank                                                                | Enter the schema name in cell A1                                                  |
+| Column headers must match the template | A required column header (e.g. `Type`, `Required Field`) is missing or misspelled in the header row | Compare the header row against the downloaded template and correct any mismatches |
 
 ### Field rows
 
-| Rule                                     | What triggers it                                        | How to fix                                                                                                                                                                                                                                                  |
-| ---------------------------------------- | ------------------------------------------------------- |-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Field Type must not be empty             | The `Field Type` cell for a row is blank                | Set a valid type: `Number`, `Integer`, `String`, `Boolean`, `Date`, `Time`, `DateTime`, `Duration`, `URL`, `URI`, `Email`, `Image`, `File`, `Pattern`, `Help Text`, `GeoJSON`, `HederaAccount`, `Prefix`, `Postfix`, `Auto-Calculate`, `Enum`, `Sub-Schema` |
-| `Help Text` cannot be required           | A `Help Text` field has `Required Field` = Yes          | Set `Required Field` to No for all Help Text fields                                                                                                                                                                                                         |
-| `Auto-Calculate` must have an expression | An `Auto-Calculate` field has an empty `Parameter` cell | Enter a math expression referencing other field cells (e.g. `G6 + G7`) in the `Parameter` column                                                                                                                                                            |
-| Field key cannot contain dots            | The `Key` column value contains a `.` character         | Rename the field key. Dots are reserved as path separators and cannot be used in Guardian schema field keys                                                                                                                                                 |
-| Field key cannot contain colons          | The `Key` column value contains a `:` character         | Rename the field key. Colons are reserved by JSON-LD and cannot be used in Guardian schema field keys                                                                                                                                                       |
-| Field keys must be unique per schema     | Two fields on the same sheet share the same key value   | Rename one of the fields in the `Key` column so every key is unique within the sheet                                                                                                                                                                        |
-| Unknown IWA property                     | An `IWA Property` cell contains a path that isn't in the property list for the schema's `IWA Version` | Pick a value from the dropdown, or leave it if the path is intentionally custom. The value is imported either way. |
-| Unrecognized IWA Version                 | The `IWA Version` cell contains a value other than `V1`, `V3`, `1.0.0` or `3.0.0` | Set the cell to `V1` or `V3` using the dropdown. An unrecognized value falls back to `V1`. |
+| Rule                                     | What triggers it                                                                                      | How to fix                                                                                                                                                                                                                                                  |
+|------------------------------------------|-------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Field Type must not be empty             | The `Type` cell for a row is blank                                                                    | Set a valid type: `Number`, `Integer`, `String`, `Boolean`, `Date`, `Time`, `DateTime`, `Duration`, `URL`, `URI`, `Email`, `Image`, `File`, `Pattern`, `Help Text`, `GeoJSON`, `HederaAccount`, `Prefix`, `Postfix`, `Auto-Calculate`, `Enum`, `Sub-Schema` |
+| `Help Text` cannot be required           | A `Help Text` field has `Required Field` = Yes                                                        | Set `Required Field` to No for all Help Text fields                                                                                                                                                                                                         |
+| `Auto-Calculate` must have an expression | An `Auto-Calculate` field has an empty `Parameter` cell                                               | Enter a math expression referencing other field cells (e.g. `H6 + H7`, using the **Test Value** column letter of your sheet) in the `Parameter` column                                                                                                      |
+| Field key cannot contain dots            | The `Key` column value contains a `.` character                                                       | Rename the field key. Dots are reserved as path separators and cannot be used in Guardian schema field keys                                                                                                                                                 |
+| Field key cannot contain colons          | The `Key` column value contains a `:` character                                                       | Rename the field key. Colons are reserved by JSON-LD and cannot be used in Guardian schema field keys                                                                                                                                                       |
+| Field keys must be unique per schema     | Two fields on the same sheet share the same key value                                                 | Rename one of the fields in the `Key` column so every key is unique within the sheet                                                                                                                                                                        |
+| Unknown IWA property                     | An `IWA Property` cell contains a path that isn't in the property list for the schema's `IWA Version` | Pick a value from the dropdown, or leave it if the path is intentionally custom. The value is imported either way.                                                                                                                                          |
+| Unrecognized IWA Version                 | The `IWA Version` cell contains a value other than `V1`, `V3`, `1.0.0` or `3.0.0`                     | Set the cell to `V1` or `V3` using the dropdown. An unrecognized value falls back to `V1`.                                                                                                                                                                  |
 
 ### Visibility column
 
