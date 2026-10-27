@@ -388,7 +388,7 @@ export class JsonToXlsx {
             .setValue(booleanToXlsx(!!field.isUpdatable));
         worksheet
             .getCell(table.getCol(Dictionary.PRIVATE), row)
-            .setValue(booleanToXlsx(field.isPrivate));
+            .setValue(booleanToXlsx(!!field.isPrivate));
 
         const iwaPropertyCell = worksheet
             .getCell(table.getCol(Dictionary.IWA_PROPERTY), row)

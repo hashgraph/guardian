@@ -227,3 +227,27 @@ describe('Schema sheet detection', () => {
         assert.equal(isSchema(sheetWith([['Required Field', 1, 2], ['Field Type', 2, 2]])), true);
     });
 });
+
+describe('Updatable and Private cells', () => {
+    it('are always Yes or No, like Allow Multiple Answers', async () => {
+        const workbook = new Workbook();
+        const worksheet = workbook.createWorksheet('Parity');
+        const schema = {
+            name: 'Parity', description: 'd', entity: SchemaEntity.EVC, iwaVersion: IwaVersion.V1, conditions: [],
+            fields: [
+                field('unset', { isUpdatable: undefined, isPrivate: undefined, order: 1 }),
+                field('set', { isUpdatable: true, isPrivate: true, order: 2 }),
+            ]
+        };
+        JsonToXlsx.writeSchema(worksheet, schema, null, new Map(), new Map(), new Map());
+        const table = new Table({ c: 1, r: 1 });
+        table.setDefault(false);
+        const row = (n) => [
+            worksheet.getValue(table.getCol(Dictionary.UPDATABLE), n),
+            worksheet.getValue(table.getCol(Dictionary.PRIVATE), n),
+            worksheet.getValue(table.getCol(Dictionary.ALLOW_MULTIPLE_ANSWERS), n)
+        ];
+        assert.deepEqual(row(7), ['No', 'No', 'No']);
+        assert.deepEqual(row(8), ['Yes', 'Yes', 'No']);
+    });
+});
