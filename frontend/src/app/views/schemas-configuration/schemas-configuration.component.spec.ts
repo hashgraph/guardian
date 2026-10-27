@@ -2244,4 +2244,52 @@ describe('SchemasConfigurationComponent', () => {
             expect(field.fullPath).toBe('#root/field_1');
         });
     });
+
+    describe('Private flag on entity change', () => {
+        function schemaWithPrivateFields(entity: string): any {
+            const child = makeField({ name: 'child' });
+            child.isPrivate = true;
+            const parent = makeField({ name: 'parent' });
+            parent.isPrivate = true;
+            parent.fields = [child];
+            const inCondition = makeField({ name: 'cond' });
+            inCondition.isPrivate = true;
+            const schema = makeSchema({ entity, fields: [parent] });
+            schema.conditions = [{ thenFields: [inCondition], elseFields: [] }];
+            return schema;
+        }
+
+        it('clears every field flag when the schema leaves Encrypted VC', () => {
+            const component = createComponent();
+            component.markDirty = () => {};
+            const schema = schemaWithPrivateFields('EVC');
+            schema.entity = 'VC';
+            component.onSchemaEntityChange(schema);
+            expect(schema.fields[0].isPrivate).toBeUndefined();
+            expect(schema.fields[0].fields[0].isPrivate).toBeUndefined();
+            expect(schema.conditions[0].thenFields[0].isPrivate).toBeUndefined();
+        });
+
+        it('offers Private for top-level fields of an Encrypted VC schema only', () => {
+            const schema = makeSchema({ entity: 'EVC' });
+            const component = createComponent({ selectedSchema: schema });
+            component.selectedField = makeField();
+            expect(component.selectedFieldCanBePrivate).toBe(true);
+
+            component.drillStack = [{ fieldName: 'sub', schemaIri: '#sub', fields: [] }];
+            expect(component.selectedFieldCanBePrivate).toBe(false);
+
+            component.drillStack = [];
+            schema.entity = 'VC';
+            expect(component.selectedFieldCanBePrivate).toBe(false);
+        });
+
+        it('keeps the flags while the schema stays Encrypted VC', () => {
+            const component = createComponent();
+            component.markDirty = () => {};
+            const schema = schemaWithPrivateFields('EVC');
+            component.onSchemaEntityChange(schema);
+            expect(schema.fields[0].isPrivate).toBe(true);
+        });
+    });
 });

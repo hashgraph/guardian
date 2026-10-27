@@ -2131,6 +2131,7 @@
     &--hidden { background: var(--guardian-grey-background, #F9FAFC); border-color: var(--guardian-border-color, #E1E7EF); color: var(--guardian-font-color-secondary, #848FA9); }
     &--auto { background: var(--guardian-warning-background, #FFF6E3); border-color: color-mix(in srgb, var(--color-primary, #4169E2) 10%, transparent); color: var(--color-primary, #4169E2); }
     &--upd    { background: var(--guardian-success-background, #EEFBF0); border-color: color-mix(in srgb, var(--color-accent-green-1, #19BE47) 20%, transparent); color: color-mix(in srgb, var(--color-accent-green-1, #19BE47) 82%, #000); }
+    &--priv { background: var(--guardian-info-background, #E9F1FF); border-color: color-mix(in srgb, var(--color-accent-blue-1, #2D6CDF) 25%, transparent); color: color-mix(in srgb, var(--color-accent-blue-1, #2D6CDF) 82%, #000); }
 }
 
 .sc-drill-back-bar {
@@ -2257,6 +2258,7 @@
     &--hidden { background: var(--guardian-grey-background, #F9FAFC); color: var(--guardian-font-color-secondary, #848FA9); }
     &--auto { background: var(--guardian-primary-background, #E1E7FA); color: color-mix(in srgb, var(--color-primary, #4169E2) 82%, #000); }
     &--upd { background: var(--guardian-success-background, #EEFBF0); color: color-mix(in srgb, var(--color-accent-green-1, #19BE47) 82%, #000); }
+    &--priv { background: var(--guardian-info-background, #E9F1FF); color: color-mix(in srgb, var(--color-accent-blue-1, #2D6CDF) 82%, #000); }
     &--formula {
         background: var(--formula-function-background, #fbd9ef);
         color: color-mix(in srgb, var(--formula-function-color, #E50299) 82%, #000);

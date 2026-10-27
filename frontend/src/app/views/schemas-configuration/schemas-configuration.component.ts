@@ -2691,9 +2691,28 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         });
     }
 
-    /** Private applies to Encrypted VC schemas only. */
+    /** Private exists only on Encrypted VC schemas, so leaving that type clears every field's flag. */
+    public onSchemaEntityChange(schema: Schema | null): void {
+        if (schema && schema.entity !== SchemaEntity.EVC) {
+            this.clearPrivateFlags(schema.fields);
+            for (const condition of schema.conditions ?? []) {
+                this.clearPrivateFlags(condition.thenFields);
+                this.clearPrivateFlags(condition.elseFields);
+            }
+        }
+        this.markDirty();
+    }
+
+    private clearPrivateFlags(fields?: SchemaField[]): void {
+        for (const field of fields ?? []) {
+            field.isPrivate = undefined;
+            this.clearPrivateFlags(field.fields);
+        }
+    }
+
+    /** Private applies to top-level fields of an Encrypted VC schema, not to sub-schema fields. */
     public get selectedFieldCanBePrivate(): boolean {
-        return !!this.selectedField && this.selectedSchema?.entity === SchemaEntity.EVC;
+        return !!this.selectedField && !this.isDrilling && this.selectedSchema?.entity === SchemaEntity.EVC;
     }
 
     /** True when a Parameter control (pattern, depends on, enum name, unit) applies to the field. */

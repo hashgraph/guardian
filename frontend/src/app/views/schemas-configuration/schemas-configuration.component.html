@@ -632,7 +632,7 @@
                                                   optionValue="value"
                                                   appendTo="body"
                                                   [(ngModel)]="selectedSchema.entity"
-                                                  (ngModelChange)="markDirty()">
+                                                  (ngModelChange)="onSchemaEntityChange(selectedSchema)">
                                         </p-select>
                                     </div>
                                     <div class="sc-schema-props-field">
@@ -846,7 +846,7 @@
                                                       optionValue="value"
                                                       appendTo="body"
                                                       [(ngModel)]="ds.entity"
-                                                      (ngModelChange)="markDirty()">
+                                                      (ngModelChange)="onSchemaEntityChange(ds)">
                                             </p-select>
                                         </div>
                                         <div class="sc-schema-props-field">
@@ -1834,6 +1834,9 @@
                                     }
                                     @if (field.isUpdatable) {
                                         <span class="sc-badge sc-badge--upd">Updatable</span>
+                                    }
+                                    @if (field.isPrivate) {
+                                        <span class="sc-badge sc-badge--priv">Private</span>
                                     }
                                     @if (isFieldConditional(field)) {
                                         <span class="sc-badge sc-badge--cond">
