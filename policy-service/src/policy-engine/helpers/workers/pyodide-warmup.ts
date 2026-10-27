@@ -1,10 +1,16 @@
 import { PYTHON_PACKAGES } from './python-packages.js';
+import { isPythonSandboxDisabled } from './python-sandbox-mode.js';
 
 /**
  * Pre-cache Pyodide packages at startup so Worker Threads
  * don't need to download them on first execution.
  */
 export async function warmupPyodideCache(): Promise<void> {
+    if (isPythonSandboxDisabled()) {
+        console.log('[pyodide-warmup] Skipping — Python custom logic disabled');
+        return;
+    }
+
     if (process.env.PYTHON_SANDBOX_MODE === 'docker') {
         console.log('[pyodide-warmup] Skipping — Docker mode enabled');
         return;
