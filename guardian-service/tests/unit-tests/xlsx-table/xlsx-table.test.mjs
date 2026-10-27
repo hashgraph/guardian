@@ -97,20 +97,19 @@ describe('Table.setDefault with tool=true', () => {
         assert.equal(t.getRow(Dictionary.SCHEMA_TOOL_ID), 11);
     });
 
-    it('places field headers on sequential columns from start', () => {
-        assert.equal(t.getCol(Dictionary.REQUIRED_FIELD), 2);
-        assert.equal(t.getCol(Dictionary.KEY), 3);
-        assert.equal(t.getCol(Dictionary.FIELD_TYPE), 4);
-        assert.equal(t.getCol(Dictionary.PARAMETER), 5);
+    it('places field headers on sequential columns in the schema editor order', () => {
+        const order = [
+            Dictionary.KEY, Dictionary.QUESTION, Dictionary.FIELD_TYPE, Dictionary.REQUIRED_FIELD,
+            Dictionary.VISIBILITY, Dictionary.PARAMETER, Dictionary.ALLOW_MULTIPLE_ANSWERS,
+            Dictionary.UPDATABLE, Dictionary.PRIVATE, Dictionary.DEFAULT, Dictionary.SUGGEST,
+            Dictionary.ANSWER, Dictionary.IWA_PROPERTY
+        ];
+        order.forEach((name, i) => assert.equal(t.getCol(name), 2 + i, name));
     });
 
-    it('places Key in the second column, matching the schema editor', () => {
-        assert.equal(t.getCol(Dictionary.KEY), t.getCol(Dictionary.REQUIRED_FIELD) + 1);
-    });
-
-    it('places Updatable and Private after IWA Property', () => {
-        assert.equal(t.getCol(Dictionary.UPDATABLE), t.getCol(Dictionary.IWA_PROPERTY) + 1);
-        assert.equal(t.getCol(Dictionary.PRIVATE), t.getCol(Dictionary.UPDATABLE) + 1);
+    it('writes the header cells in the same order as the columns', () => {
+        const columns = Array.from(t.fieldHeaders).map(h => h.column);
+        assert.deepEqual(columns, [...columns].sort((x, y) => x - y));
     });
 
     it('still resolves the legacy "Field Type" header to the Type column', () => {

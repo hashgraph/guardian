@@ -175,23 +175,23 @@ export class Table {
         }
 
         this._fieldHeaders = new Map<string, TableHeader>();
-        this._fieldHeaders.set(Dictionary.REQUIRED_FIELD,
-            new TableHeader(Dictionary.REQUIRED_FIELD, true)
-                .setStyle(this.fieldHeadersStyle)
-                .setWidth(20)
-        );
         this._fieldHeaders.set(Dictionary.KEY,
             new TableHeader(Dictionary.KEY, false)
                 .setStyle(this.fieldHeadersStyle)
                 .setWidth(50)
+        );
+        this._fieldHeaders.set(Dictionary.QUESTION,
+            new TableHeader(Dictionary.QUESTION, true)
+                .setStyle(this.fieldHeadersStyle)
+                .setWidth(70)
         );
         this._fieldHeaders.set(Dictionary.FIELD_TYPE,
             new TableHeader(Dictionary.FIELD_TYPE, true)
                 .setStyle(this.fieldHeadersStyle)
                 .setWidth(40)
         );
-        this._fieldHeaders.set(Dictionary.PARAMETER,
-            new TableHeader(Dictionary.PARAMETER, true)
+        this._fieldHeaders.set(Dictionary.REQUIRED_FIELD,
+            new TableHeader(Dictionary.REQUIRED_FIELD, true)
                 .setStyle(this.fieldHeadersStyle)
                 .setWidth(20)
         );
@@ -200,20 +200,25 @@ export class Table {
                 .setStyle(this.fieldHeadersStyle)
                 .setWidth(20)
         );
-        this._fieldHeaders.set(Dictionary.QUESTION,
-            new TableHeader(Dictionary.QUESTION, true)
+        this._fieldHeaders.set(Dictionary.PARAMETER,
+            new TableHeader(Dictionary.PARAMETER, true)
                 .setStyle(this.fieldHeadersStyle)
-                .setWidth(70)
+                .setWidth(40)
         );
         this._fieldHeaders.set(Dictionary.ALLOW_MULTIPLE_ANSWERS,
             new TableHeader(Dictionary.ALLOW_MULTIPLE_ANSWERS, true)
                 .setStyle(this.fieldHeadersStyle)
                 .setWidth(30)
         );
-        this._fieldHeaders.set(Dictionary.ANSWER,
-            new TableHeader(Dictionary.ANSWER, true)
+        this._fieldHeaders.set(Dictionary.UPDATABLE,
+            new TableHeader(Dictionary.UPDATABLE, false)
                 .setStyle(this.fieldHeadersStyle)
-                .setWidth(50)
+                .setWidth(20)
+        );
+        this._fieldHeaders.set(Dictionary.PRIVATE,
+            new TableHeader(Dictionary.PRIVATE, false)
+                .setStyle(this.fieldHeadersStyle)
+                .setWidth(20)
         );
         this._fieldHeaders.set(Dictionary.DEFAULT,
             new TableHeader(Dictionary.DEFAULT, false)
@@ -225,20 +230,15 @@ export class Table {
                 .setStyle(this.fieldHeadersStyle)
                 .setWidth(50)
         );
+        this._fieldHeaders.set(Dictionary.ANSWER,
+            new TableHeader(Dictionary.ANSWER, true)
+                .setStyle(this.fieldHeadersStyle)
+                .setWidth(50)
+        );
         this._fieldHeaders.set(Dictionary.IWA_PROPERTY,
             new TableHeader(Dictionary.IWA_PROPERTY, false)
                 .setStyle(this.fieldHeadersStyle)
                 .setWidth(50)
-        );
-        this._fieldHeaders.set(Dictionary.UPDATABLE,
-            new TableHeader(Dictionary.UPDATABLE, false)
-                .setStyle(this.fieldHeadersStyle)
-                .setWidth(20)
-        );
-        this._fieldHeaders.set(Dictionary.PRIVATE,
-            new TableHeader(Dictionary.PRIVATE, false)
-                .setStyle(this.fieldHeadersStyle)
-                .setWidth(20)
         );
         // Separate from _fieldHeaders so aliases do not count as columns
         this._fieldAliases = new Map(LEGACY_FIELD_HEADERS);
@@ -327,19 +327,19 @@ export class Table {
             this._schemaHeaders.delete(Dictionary.SCHEMA_TOOL_ID);
         }
 
-        this._fieldHeaders.get(Dictionary.REQUIRED_FIELD).setPoint(col++, row);
         this._fieldHeaders.get(Dictionary.KEY).setPoint(col++, row);
-        this._fieldHeaders.get(Dictionary.FIELD_TYPE).setPoint(col++, row);
-        this._fieldHeaders.get(Dictionary.PARAMETER).setPoint(col++, row);
-        this._fieldHeaders.get(Dictionary.VISIBILITY).setPoint(col++, row);
         this._fieldHeaders.get(Dictionary.QUESTION).setPoint(col++, row);
+        this._fieldHeaders.get(Dictionary.FIELD_TYPE).setPoint(col++, row);
+        this._fieldHeaders.get(Dictionary.REQUIRED_FIELD).setPoint(col++, row);
+        this._fieldHeaders.get(Dictionary.VISIBILITY).setPoint(col++, row);
+        this._fieldHeaders.get(Dictionary.PARAMETER).setPoint(col++, row);
         this._fieldHeaders.get(Dictionary.ALLOW_MULTIPLE_ANSWERS).setPoint(col++, row);
-        this._fieldHeaders.get(Dictionary.ANSWER).setPoint(col++, row);
-        this._fieldHeaders.get(Dictionary.DEFAULT).setPoint(col++, row);
-        this._fieldHeaders.get(Dictionary.SUGGEST).setPoint(col++, row);
-        this._fieldHeaders.get(Dictionary.IWA_PROPERTY).setPoint(col++, row);
         this._fieldHeaders.get(Dictionary.UPDATABLE).setPoint(col++, row);
         this._fieldHeaders.get(Dictionary.PRIVATE).setPoint(col++, row);
+        this._fieldHeaders.get(Dictionary.DEFAULT).setPoint(col++, row);
+        this._fieldHeaders.get(Dictionary.SUGGEST).setPoint(col++, row);
+        this._fieldHeaders.get(Dictionary.ANSWER).setPoint(col++, row);
+        this._fieldHeaders.get(Dictionary.IWA_PROPERTY).setPoint(col++, row);
 
         this.end = {
             c: this.start.c + this._fieldHeaders.size,
