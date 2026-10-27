@@ -1,5 +1,5 @@
 import ExcelJS, { Border } from 'exceljs';
-import { Dictionary } from './dictionary.js';
+import { Dictionary, LEGACY_FIELD_HEADERS, LEGACY_SCHEMA_HEADERS } from './dictionary.js';
 import { IPoint } from './workbook.js';
 import { TableHeader } from './table-header.js';
 
@@ -180,6 +180,11 @@ export class Table {
                 .setStyle(this.fieldHeadersStyle)
                 .setWidth(20)
         );
+        this._fieldHeaders.set(Dictionary.KEY,
+            new TableHeader(Dictionary.KEY, false)
+                .setStyle(this.fieldHeadersStyle)
+                .setWidth(50)
+        );
         this._fieldHeaders.set(Dictionary.FIELD_TYPE,
             new TableHeader(Dictionary.FIELD_TYPE, true)
                 .setStyle(this.fieldHeadersStyle)
@@ -220,23 +225,23 @@ export class Table {
                 .setStyle(this.fieldHeadersStyle)
                 .setWidth(50)
         );
-        this._fieldHeaders.set(Dictionary.KEY,
-            new TableHeader(Dictionary.KEY, false)
-                .setStyle(this.fieldHeadersStyle)
-                .setWidth(50)
-        );
         this._fieldHeaders.set(Dictionary.IWA_PROPERTY,
             new TableHeader(Dictionary.IWA_PROPERTY, false)
                 .setStyle(this.fieldHeadersStyle)
                 .setWidth(50)
         );
-        // Backward-compat aliases (separate map so they don't inflate _fieldHeaders.size)
-        this._fieldAliases = new Map([
-            ['Question', Dictionary.QUESTION],
-            ['Answer',   Dictionary.ANSWER],
-            ['Default',  Dictionary.DEFAULT],
-            ['Suggest',  Dictionary.SUGGEST],
-        ]);
+        this._fieldHeaders.set(Dictionary.UPDATABLE,
+            new TableHeader(Dictionary.UPDATABLE, false)
+                .setStyle(this.fieldHeadersStyle)
+                .setWidth(20)
+        );
+        this._fieldHeaders.set(Dictionary.PRIVATE,
+            new TableHeader(Dictionary.PRIVATE, false)
+                .setStyle(this.fieldHeadersStyle)
+                .setWidth(20)
+        );
+        // Separate from _fieldHeaders so aliases do not count as columns
+        this._fieldAliases = new Map(LEGACY_FIELD_HEADERS);
 
         this._schemaHeaders = new Map<string, TableHeader>();
         this._schemaHeaders.set(Dictionary.SCHEMA_NAME,
@@ -247,10 +252,7 @@ export class Table {
             new TableHeader(Dictionary.SCHEMA_DESCRIPTION, false)
                 .setStyle(this.schemaHeadersStyle)
         );
-        // Backward-compat aliases (separate map so they don't inflate _schemaHeaders.size)
-        this._schemaAliases = new Map([
-            ['Description', Dictionary.SCHEMA_DESCRIPTION],
-        ]);
+        this._schemaAliases = new Map(LEGACY_SCHEMA_HEADERS);
         this._schemaHeaders.set(Dictionary.SCHEMA_TYPE,
             new TableHeader(Dictionary.SCHEMA_TYPE, false)
                 .setStyle(this.schemaHeadersStyle)
@@ -284,13 +286,13 @@ export class Table {
         return this._schemaHeaders.values();
     }
 
-    public hasCol(name: Dictionary): boolean {
-        const header = this._fieldHeaders.get(name);
+    public hasCol(name: Dictionary | string): boolean {
+        const header = this._fieldHeaders.get(this._fieldAliases.get(name) ?? name);
         return !!header && header.column !== -1;
     }
 
-    public getCol(name: Dictionary): number {
-        return this._fieldHeaders.get(name).column;
+    public getCol(name: Dictionary | string): number {
+        return this._fieldHeaders.get(this._fieldAliases.get(name) ?? name).column;
     }
 
     public getRow(name: Dictionary): number {
@@ -326,6 +328,7 @@ export class Table {
         }
 
         this._fieldHeaders.get(Dictionary.REQUIRED_FIELD).setPoint(col++, row);
+        this._fieldHeaders.get(Dictionary.KEY).setPoint(col++, row);
         this._fieldHeaders.get(Dictionary.FIELD_TYPE).setPoint(col++, row);
         this._fieldHeaders.get(Dictionary.PARAMETER).setPoint(col++, row);
         this._fieldHeaders.get(Dictionary.VISIBILITY).setPoint(col++, row);
@@ -334,8 +337,9 @@ export class Table {
         this._fieldHeaders.get(Dictionary.ANSWER).setPoint(col++, row);
         this._fieldHeaders.get(Dictionary.DEFAULT).setPoint(col++, row);
         this._fieldHeaders.get(Dictionary.SUGGEST).setPoint(col++, row);
-        this._fieldHeaders.get(Dictionary.KEY).setPoint(col++, row);
         this._fieldHeaders.get(Dictionary.IWA_PROPERTY).setPoint(col++, row);
+        this._fieldHeaders.get(Dictionary.UPDATABLE).setPoint(col++, row);
+        this._fieldHeaders.get(Dictionary.PRIVATE).setPoint(col++, row);
 
         this.end = {
             c: this.start.c + this._fieldHeaders.size,

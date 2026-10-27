@@ -1,5 +1,5 @@
 import { Range, Workbook, Worksheet } from './models/workbook.js';
-import { Dictionary, FieldTypes, IFieldTypes } from './models/dictionary.js';
+import { Dictionary, FieldTypes, IFieldTypes, resolveFieldHeader } from './models/dictionary.js';
 import { xlsxToBoolean, xlsxToEntity, xlsxToFont, xlsxToPresetArray, xlsxToPresetValue, xlsxToUnit, xlsxToVisibility } from './models/value-converters.js';
 import { Table } from './models/table.js';
 import * as mathjs from 'mathjs';
@@ -168,7 +168,7 @@ export class XlsxToJson {
         for (let c = startCol; c < endCol; c++) {
             for (let r = startRow; r < endRow; r++) {
                 const title = worksheet.getValue<string>(c, r);
-                if (title === Dictionary.FIELD_TYPE) {
+                if (resolveFieldHeader(title) === Dictionary.FIELD_TYPE) {
                     return true;
                 }
             }
@@ -467,7 +467,8 @@ export class XlsxToJson {
                     worksheet,
                     table,
                     row,
-                    xlsxResult
+                    xlsxResult,
+                    schema.entity
                 );
                 if (field) {
                     allFields.set(field.title, field);
@@ -629,7 +630,8 @@ export class XlsxToJson {
         worksheet: Worksheet,
         table: Table,
         row: number,
-        xlsxResult: XlsxResult
+        xlsxResult: XlsxResult,
+        entity?: SchemaEntity
     ): SchemaField {
         if (worksheet.empty(table.start.c, table.end.c, row)) {
             return null;
@@ -675,6 +677,27 @@ export class XlsxToJson {
                     ? ''
                     : String(rawProperty).trim();
                 field.property = trimmedProperty || null;
+            }
+
+            if (table.hasCol(Dictionary.UPDATABLE)) {
+                field.isUpdatable = xlsxToBoolean(worksheet.getValue<string>(table.getCol(Dictionary.UPDATABLE), row));
+            }
+            if (table.hasCol(Dictionary.PRIVATE)) {
+                const rawPrivate = worksheet.getValue<string>(table.getCol(Dictionary.PRIVATE), row);
+                if (entity === SchemaEntity.EVC) {
+                    field.isPrivate = xlsxToBoolean(rawPrivate);
+                } else if (xlsxToBoolean(rawPrivate)) {
+                    xlsxResult.addError({
+                        type: 'warning',
+                        text: `"${Dictionary.PRIVATE}" is only available for the Encrypted Verifiable Credential schema type.`,
+                        message: `Sheet "${worksheet.name}", row ${row}: "${Dictionary.PRIVATE}" is ignored because the schema type is not `
+                            + `"Encrypted Verifiable Credential".`,
+                        worksheet: worksheet.name,
+                        cell: worksheet.getPath(table.getCol(Dictionary.PRIVATE), row),
+                        row,
+                        col: table.getCol(Dictionary.PRIVATE)
+                    }, field);
+                }
             }
 
             let typeError = false;

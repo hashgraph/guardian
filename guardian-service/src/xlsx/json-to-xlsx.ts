@@ -383,6 +383,13 @@ export class JsonToXlsx {
             .getCell(table.getCol(Dictionary.KEY), row)
             .setValue(stringToXlsx(field.name));
 
+        worksheet
+            .getCell(table.getCol(Dictionary.UPDATABLE), row)
+            .setValue(booleanToXlsx(!!field.isUpdatable));
+        worksheet
+            .getCell(table.getCol(Dictionary.PRIVATE), row)
+            .setValue(booleanToXlsx(field.isPrivate));
+
         const iwaPropertyCell = worksheet
             .getCell(table.getCol(Dictionary.IWA_PROPERTY), row)
             .setValue(stringToXlsx(field.property));

@@ -4,6 +4,7 @@ export * from './generate-uuid-v4.js';
 export * from './model-helper.js';
 export * from './remove-object-properties.js';
 export * from './schema-helper.js';
+export * from './schema-field-properties.js';
 export * from './sort-objects-array.js';
 export * from './geojson-schema/index.js';
 export * from './generate-document.js';
