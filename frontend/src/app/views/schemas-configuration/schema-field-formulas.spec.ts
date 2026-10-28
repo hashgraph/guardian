@@ -1,4 +1,4 @@
-import { of } from 'rxjs';
+import { NEVER, of } from 'rxjs';
 import { EntityStatus, FormulaItemType, IFormula } from '@guardian/interfaces';
 import { IFieldScope, SchemaFieldFormulas } from './schema-field-formulas';
 
@@ -48,6 +48,34 @@ describe('SchemaFieldFormulas', () => {
         expect(view.state).toBe('ready');
         expect(view.rows.map((r: any) => r.itemUuid)).toEqual(['v1']);
         expect(model.view(scope([]), true, false).rows).toEqual([]);
+    });
+
+    it('builds the preview tree from the loaded formulas, including pending assignments', () => {
+        const { model } = create();
+        const tree = model.previewTree([]);
+        expect(tree.getFields('#root')['#root/risks.G6']).toBeDefined();
+        expect(tree.getFields('#root')['#root/G7']).toBeUndefined();
+
+        model.assign(scope([], 'G7'), 'd1|f1');
+        expect(model.previewTree([]).getFields('#root')['#root/G7']).toBeDefined();
+    });
+
+    it('keeps the saved link in the preview tree while the formulas reload', (done) => {
+        const { model } = create();
+        model.formulasService.getFormulas = () => NEVER;
+        model.assign(scope([], 'G7'), 'd1|f1');
+
+        model.save().subscribe(() => {
+            expect(model.hasPending).toBeFalse();
+            expect(model.previewTree([]).getFields('#root')['#root/G7']).toBeDefined();
+            done();
+        });
+    });
+
+    it('has no preview tree before the formulas are loaded', () => {
+        const { model } = create();
+        model.formulas.clear();
+        expect(model.previewTree([])).toBeNull();
     });
 
     it('shows only a hint for a sub-schema opened directly', () => {

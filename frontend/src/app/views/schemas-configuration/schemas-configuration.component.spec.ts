@@ -2212,4 +2212,36 @@ describe('SchemasConfigurationComponent', () => {
             expect(component.savedSignatures.has('b')).toBeTrue();
         });
     });
+
+    describe('field paths for the preview', () => {
+        it('gives new and renamed fields the path the formula links use', () => {
+            const added: any = makeField({ name: 'field_2' });
+            const nested: any = makeField({ name: 'inner' });
+            const group: any = makeField({ name: 'group', fields: [nested] });
+            const component = createComponent();
+
+            component.refreshFieldPaths([added, group], '', '#root/');
+
+            expect(added.path).toBe('field_2');
+            expect(added.fullPath).toBe('#root/field_2');
+            expect(nested.path).toBe('group.inner');
+            expect(nested.fullPath).toBe('#root/group.inner');
+
+            added.name = 'renamed';
+            component.refreshFieldPaths([added, group], '', '#root/');
+            expect(added.fullPath).toBe('#root/renamed');
+        });
+
+        it('sets them for the submitter view too, which builds no preset', () => {
+            const field: any = makeField({ name: 'field_1' });
+            const schema: any = makeSchema({ id: 'a', iri: '#root', fields: [field] });
+            const component = createComponent({ schemas: [schema], selectedSchema: schema });
+            component.rebuildPreview = SchemasConfigurationComponent.prototype['rebuildPreview'];
+            component.previewPill = 'submitter';
+
+            component.rebuildPreview();
+
+            expect(field.fullPath).toBe('#root/field_1');
+        });
+    });
 });

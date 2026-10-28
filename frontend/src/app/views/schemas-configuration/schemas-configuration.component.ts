@@ -5222,19 +5222,12 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             || this.previewBuiltFor.path !== this.fieldFormulaPrefix.join('.');
     }
 
-    /** the saved formulas of the schema, so the preview shows them like the request form */
+    /** the formulas of the policy, so the preview shows them like the request form */
     private loadPreviewFormulas(): void {
-        const iri = this.selectedSchema?.iri;
         if (this.activeTab !== 'preview' || !this.fieldFormulas || this.isTemplateMode) {
             return;
         }
-        this.fieldFormulas.previewTree(iri)
-            .pipe(takeUntil(this.destroy$))
-            .subscribe((tree) => {
-                if (this.selectedSchema?.iri === iri) {
-                    this.previewFormulas = tree;
-                }
-            });
+        this.previewFormulas = this.fieldFormulas.previewTree(this.schemas);
     }
 
     private rebuildPreview(): void {
@@ -5245,6 +5238,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             ? { schema: this.selectedSchema.iri, prefix: this.fieldFormulaPrefix }
             : null;
         this.previewKey++;
+        if (schema) {
+            this.refreshFieldPaths(schema.fields, '', `${schema.iri}/`);
+        }
         if (!schema || this.previewPill === 'submitter') {
             this.previewPreset = null;
             this.previewReadonlyFields = null;
@@ -5252,6 +5248,16 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
         this.previewPreset = DocumentGenerator.generateDocument(schema);
         this.previewReadonlyFields = schema.fields;
+    }
+
+    private refreshFieldPaths(fields: SchemaField[] | undefined, path: string, fullPath: string): void {
+        for (const field of fields ?? []) {
+            field.path = path + field.name;
+            field.fullPath = fullPath + field.name;
+            if (Array.isArray(field.fields)) {
+                this.refreshFieldPaths(field.fields, `${field.path}.`, `${field.fullPath}.`);
+            }
+        }
     }
 
     public onExport(): void {
