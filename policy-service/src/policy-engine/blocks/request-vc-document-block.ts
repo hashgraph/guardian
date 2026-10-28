@@ -23,6 +23,7 @@ import {
     collectPreviewUnavailablePaths,
     collectPreviewPaths,
     fillPreviewPlaceholders,
+    removePreviewEmptyValues,
 } from '../helpers/preview.js';
 
 /**
@@ -412,6 +413,9 @@ export class RequestVcDocumentBlock {
             throw new BlockActionError('Invalid document.', ref.blockType, ref.uuid);
         }
 
+        if (actionStatus?.preview) {
+            removePreviewEmptyValues(document);
+        }
         const source = actionStatus?.preview ? structuredClone(document) : null;
 
         const disposeTables = await hydrateTablesInObject(

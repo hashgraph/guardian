@@ -143,11 +143,11 @@ export class CalculationPreviewService {
     }
 
     public updateRequiredFields(current: string[] | null, result: Pick<ICalculationPreviewResult, 'fields' | 'missingFields'>): string[] {
-        const merged = [...new Set([...(current || []), ...result.fields, ...result.missingFields].map(path => path.split('.').filter(part => !/^\d+$/.test(part)).join('.')))].sort();
-        if (current && current.length === merged.length && current.every((path, index) => path === merged[index])) {
+        const latest = [...new Set([...result.fields, ...result.missingFields].map(path => path.split('.').filter(part => !/^\d+$/.test(part)).join('.')))].sort();
+        if (current && current.length === latest.length && current.every((path, index) => path === latest[index])) {
             return current;
         }
-        return merged;
+        return latest;
     }
 
     public getViewerDocuments(result: ICalculationPreviewResult): ICalculationPreviewViewerDocument[] {

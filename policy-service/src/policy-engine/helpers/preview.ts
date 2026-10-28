@@ -398,7 +398,14 @@ export function calculatePreviewAutoFields(
         }
         const path = `${prefix}${field.name}`;
         const tracker = new PreviewReadTracker();
+        const described = new Set<string>();
         const scope = new Proxy(document, {
+            getOwnPropertyDescriptor(target, key) {
+                if (typeof key === 'string') {
+                    described.add(key);
+                }
+                return Reflect.getOwnPropertyDescriptor(target, key);
+            },
             has(target, key) {
                 if (typeof key === 'string' && names.has(key) && !Reflect.has(target, key)) {
                     tracker.add(null, `${prefix}${key}`, `${fullPrefix}${key}`, null, tracker.site());
@@ -411,7 +418,7 @@ export function calculatePreviewAutoFields(
                 if (typeof key !== 'string' || !names.has(key)) {
                     return propertyValue;
                 }
-                tracker.add(null, `${prefix}${key}`, `${fullPrefix}${key}`, null, tracker.site(), false, !!propertyValue && typeof propertyValue === 'object');
+                tracker.add(null, `${prefix}${key}`, `${fullPrefix}${key}`, null, tracker.site(), described.delete(key), !!propertyValue && typeof propertyValue === 'object');
                 return tracker.track(propertyValue, null, `${prefix}${key}`, `${fullPrefix}${key}`);
             }
         });
@@ -606,6 +613,47 @@ export function throwPreviewFormulaError(block: { blockType?: string; uuid?: str
     }
 }
 
+export function removePreviewEmptyValues(data: unknown): void {
+    const isEmpty = (value: unknown) => value === '' || value === null || value === undefined;
+    const isContainer = (value: unknown): value is object => Array.isArray(value) || !!value && typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype;
+    if (Array.isArray(data)) {
+        for (let index = 0; index < data.length; index++) {
+            if (isEmpty(data[index])) {
+                data.splice(index, 1);
+                index--;
+            } else if (isContainer(data[index])) {
+                removePreviewEmptyValues(data[index]);
+            }
+        }
+    } else if (isContainer(data)) {
+        for (const key of Object.keys(data)) {
+            const value = Reflect.get(data, key);
+            if (isEmpty(value)) {
+                Reflect.deleteProperty(data, key);
+            } else if (isContainer(value)) {
+                removePreviewEmptyValues(value);
+            }
+        }
+    }
+}
+
+export function trackPreviewFormulaScope(tracker: PreviewReadTracker, scope: unknown, schema: string, paths: string[]): unknown {
+    const tracked = tracker.track(scope, schema);
+    if (!tracked || typeof tracked !== 'object') {
+        return tracked;
+    }
+    const roots = new Set(paths.map((path) => path.split('.')[0]));
+    return new Proxy(tracked, {
+        has(target, key) {
+            const exists = Reflect.has(target, key);
+            if (!exists && typeof key === 'string' && roots.has(key) && !(key in mathjs) && !mathjs.Unit.isValuelessUnit(key)) {
+                tracker.add(schema, key);
+            }
+            return exists;
+        }
+    });
+}
+
 export function evaluatePreviewFormula(formula: string, scope: any, document: unknown): any {
     const actionStatus = PreviewScope.current();
     const source = actionStatus?.preview ? actionStatus.getPreviewSource() : null;
@@ -615,21 +663,8 @@ export function evaluatePreviewFormula(formula: string, scope: any, document: un
     }
     const tracker = new PreviewReadTracker();
     tracker.configure(formula);
-    const tracked = tracker.track(scope, schema);
-    if (!tracked || typeof tracked !== 'object') {
-        return PolicyUtils.evaluateFormula(formula, scope);
-    }
     const fields = new Set(source.paths);
-    const roots = new Set(source.paths.map((path) => path.split('.')[0]));
-    const result = PolicyUtils.evaluateFormula(formula, new Proxy(tracked, {
-        has(target, key) {
-            const exists = Reflect.has(target, key);
-            if (!exists && typeof key === 'string' && roots.has(key) && !(key in mathjs) && !mathjs.Unit.isValuelessUnit(key)) {
-                tracker.add(schema, key);
-            }
-            return exists;
-        }
-    }));
+    const result = PolicyUtils.evaluateFormula(formula, trackPreviewFormulaScope(tracker, scope, schema, source.paths));
     for (const read of tracker.take()) {
         const path = read.fullPath ?? read.path;
         if (fields.has(normalizePreviewPath(path)) && !isPreviewComputedRead(document, schema, path)) {

@@ -75,6 +75,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     private previewFocusTimer: ReturnType<typeof setTimeout> | null = null;
 
     @Output('form') form = new EventEmitter<UntypedFormGroup>();
+    @Output('presetApplied') presetApplied = new EventEmitter<UntypedFormGroup>();
     @Output('change') change = new EventEmitter<Schema | null>();
     @Output('destroy') destroy = new EventEmitter<void>();
     @Output('buttons') buttons = new EventEmitter<any>();
@@ -145,6 +146,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         if (changes.requiredFields && !changes.requiredFields.firstChange && this.model) {
             this.presetDocument = this.group.getRawValue();
         }
+        const presetApplied = !!changes.presetDocument && !changes.presetDocument.firstChange;
         if (
             changes.schema ||
             changes.fields ||
@@ -156,6 +158,9 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         ) {
             setTimeout(() => {
                 this.buildFields();
+                if (presetApplied) {
+                    this.presetApplied.emit(this.group);
+                }
                 setTimeout(() => {
                     this.loading = false;
                     this.schedulePreviewFocus();

@@ -238,18 +238,36 @@ describe('@unit RequestVcDocumentBlock preview', () => {
     });
 
     for (const amount of [5, 200]) {
-        it(`returns both autocalculate branch requirements during initial API discovery for amount=${amount}`, async () => {
+        it(`returns only the autocalculate branch that ran during initial API discovery for amount=${amount}`, async () => {
             const { block } = mk();
             block._schema = formSchema();
             block._schema.fields[2].expression = 'amount > 100 ? amount * rate : amount';
             const response = await runPreview(block, makeUser(), { document: { amount }, previewFields: true },
                 async (target, user, data, step) => new MessageResponse(await target.setData(user, data, null, step)));
             assert.ok(response instanceof MessageResponse);
-            assert.deepEqual(response.body.fields, ['amount', 'rate']);
-            assert.deepEqual(response.body.missingFields, ['rate']);
+            assert.deepEqual(response.body.fields, amount > 100 ? ['amount', 'rate'] : ['amount']);
+            assert.deepEqual(response.body.missingFields, amount > 100 ? ['rate'] : []);
             assert.deepEqual(response.body.errors, []);
         });
     }
+
+    it('treats an empty string or null from a direct API client as an absent field, only in Preview', async () => {
+        const { block, events } = mk();
+        block._schema = formSchema();
+        const response = await runPreview(block, makeUser(), { document: { amount: 5, rate: null, note: '' } },
+            async (target, user, data, step) => new MessageResponse(await target.setData(user, data, null, step)));
+        assert.ok(response instanceof MessageError);
+        assert.equal(response.code, 422);
+        assert.deepEqual(response.data.missingFields, ['rate']);
+        block._schema.fields[2].expression = 'amount * 2';
+        const filled = await runPreview(block, makeUser(), { document: { amount: 5, rate: null, note: '' } },
+            async (target, user, data, step) => new MessageResponse(await target.setData(user, data, null, step)));
+        assert.ok(filled instanceof MessageResponse);
+        const subject = firstSubject(events[0][2].data);
+        assert.equal('rate' in subject, false);
+        assert.equal('note' in subject, false);
+        assert.equal(subject.total, 10);
+    });
 
     it('finds a constructed-key autocalculate input once its branch runs and ignores a same-named local variable', async function () {
         this.timeout(10000);

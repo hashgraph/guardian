@@ -212,11 +212,11 @@ describe('@unit customLogicBlock preview', () => {
     });
 
     for (const amount of [5, 200]) {
-        it(`discovers inputs in both JavaScript branches with the real worker for amount=${amount}`, async function () {
+        it(`discovers only the inputs of the JavaScript branch that ran with the real worker for amount=${amount}`, async function () {
             this.timeout(20000);
             const result = await executeConditional({ amount });
-            assert.deepEqual(result.fields, ['amount', 'discount', 'rate']);
-            assert.deepEqual(result.missingFields, ['discount', 'rate']);
+            assert.deepEqual(result.fields, amount > 100 ? ['amount', 'rate'] : ['amount', 'discount']);
+            assert.deepEqual(result.missingFields, amount > 100 ? ['rate'] : ['discount']);
             assert.equal(result.documents[0].document.document.credentialSubject[0].total,
                 amount > 100 ? amount * 2 : amount - 1);
         });
@@ -244,7 +244,7 @@ describe('@unit customLogicBlock preview', () => {
         assert.equal(result.documents[0].document.document.credentialSubject[0].total, 10);
     });
 
-    it('discovers fields in executable artifacts before running their selected branch', async function () {
+    it('discovers only the fields an executable artifact read in the branch that ran', async function () {
         this.timeout(20000);
         const original = PolicyUtils.getArtifactFile;
         PolicyUtils.getArtifactFile = async (_ref, id) => {
@@ -254,8 +254,8 @@ describe('@unit customLogicBlock preview', () => {
         try {
             const result = await executeConditional({ artifacts: [{ type: ArtifactType.EXECUTABLE_CODE, uuid: 'branch-library' }],
                 expression: 'const doc = documents[0].document.credentialSubject[0]; doc.total = compute(doc); done(documents[0]);' });
-            assert.deepEqual(result.fields, ['amount', 'rate']);
-            assert.deepEqual(result.missingFields, ['rate']);
+            assert.deepEqual(result.fields, ['amount']);
+            assert.deepEqual(result.missingFields, []);
             assert.equal(result.documents[0].document.document.credentialSubject[0].total, 5);
         } finally {
             PolicyUtils.getArtifactFile = original;
@@ -275,19 +275,19 @@ describe('@unit customLogicBlock preview', () => {
         it(`keeps the conservative schema boundary for input schema ${inputSchema}`, async function () {
             this.timeout(20000);
             const result = await executeConditional({ inputSchema });
-            assert.deepEqual(result.fields, inputSchema ? [] : ['amount', 'discount', 'rate']);
+            assert.deepEqual(result.fields, inputSchema ? [] : ['amount', 'discount']);
         });
     }
 
     it('requires the same fields in real preview as in discovery', async function () {
         this.timeout(20000);
         const result = await executeConditional({ discovery: false });
-        assert.deepEqual(result.fields, ['amount', 'discount', 'rate']);
+        assert.deepEqual(result.fields, ['amount', 'discount']);
         assert.deepEqual(result.missingFields, []);
         assert.equal(result.documents[0].document.document.credentialSubject[0].total, 4);
     });
 
-    it('rejects every empty field of the calculation, including the branch that did not run', async function () {
+    it('rejects every empty field of the branch that ran and nothing from the branch that did not run', async function () {
         this.timeout(20000);
         const response = await runPreview({ blockType: 'requestVcDocumentBlock' }, makeUser(), {}, async (_block, user, _data, step) => {
             step.setPreviewSource({ schema: '#S', document: { amount: 5 },
@@ -302,7 +302,7 @@ describe('@unit customLogicBlock preview', () => {
         });
         assert.ok(response instanceof MessageError);
         assert.equal(response.code, 422);
-        assert.deepEqual(response.data.missingFields, ['discount', 'rate']);
+        assert.deepEqual(response.data.missingFields, ['discount']);
         assert.equal(response.body, null);
     });
 

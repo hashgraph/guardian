@@ -31,6 +31,7 @@
       <p-toggleswitch
         inputId="calculationPreview_{{ id }}"
         [ngModel]="previewMode"
+        [disabled]="loading"
         (onChange)="onPreviewModeChange($event.checked)">
       </p-toggleswitch>
       <label for="calculationPreview_{{ id }}">Calculation preview</label>
@@ -101,6 +102,7 @@
               submitText = "Validate & Create"
               saveText = "Save Draft"
               (form)="initForm($event)"
+              (presetApplied)="onPresetApplied()"
               (buttons)="onChangeButtons($event)"
               (cancelBtnEvent)="handleCancelBtnEvent($event, this)"
               (submitBtnEvent)="handleSubmitBtnEvent($event, this)"

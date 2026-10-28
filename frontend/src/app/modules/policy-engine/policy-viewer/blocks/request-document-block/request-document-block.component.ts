@@ -128,6 +128,7 @@ export class RequestDocumentBlockComponent
     private _evidenceFileMap = new WeakMap<AttachedFile, File>();
     public previewMode: boolean = false;
     public previewRequiredFields: string[] | null = null;
+    private previewRequest: number = 0;
     public previewMissingFields: string[] = [];
     private previewPreferenceLoaded: boolean = false;
 
@@ -216,6 +217,12 @@ export class RequestDocumentBlockComponent
             });
         if (restorePreview) {
             this.restorePreviewMode();
+        }
+    }
+
+    public onPresetApplied(): void {
+        if (this.previewMode) {
+            void this.runPreview(true);
         }
     }
 
@@ -468,6 +475,8 @@ export class RequestDocumentBlockComponent
         this.calculationPreview.saveMode(this.user?.id, this.policyId, this.id, enabled);
         this.previewMode = enabled;
         if (!enabled) {
+            this.previewRequest++;
+            this.loading = false;
             this.previewRequiredFields = null;
             this.previewMissingFields = [];
             return;
@@ -477,6 +486,9 @@ export class RequestDocumentBlockComponent
     }
 
     private async runPreview(previewFields: boolean): Promise<void> {
+        const request = ++this.previewRequest;
+        const preset = this.presetDocument;
+        const current = () => request === this.previewRequest && preset === this.presetDocument;
         this.loading = true;
         try {
             const result = await this.calculationPreview.run(
@@ -486,7 +498,7 @@ export class RequestDocumentBlockComponent
                 this.ref,
                 previewFields
             );
-            if (!this.previewMode) {
+            if (!this.previewMode || !current()) {
                 return;
             }
             this.previewRequiredFields = this.calculationPreview.updateRequiredFields(this.previewRequiredFields, result);
@@ -498,13 +510,15 @@ export class RequestDocumentBlockComponent
             }
         } catch (error) {
             const validation = this.calculationPreview.getInputValidation(error);
-            if (this.previewMode && validation) {
+            if (this.previewMode && validation && current()) {
                 this.previewRequiredFields = this.calculationPreview.updateRequiredFields(this.previewRequiredFields, validation);
                 this.previewMissingFields = [...validation.missingFields];
             }
             console.error(error);
         } finally {
-            this.loading = false;
+            if (current()) {
+                this.loading = false;
+            }
         }
     }
 

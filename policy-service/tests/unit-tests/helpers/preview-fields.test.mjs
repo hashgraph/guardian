@@ -3,7 +3,7 @@ import { findPreviewScriptFields } from '../../../dist/policy-engine/helpers/pre
 import assert from 'node:assert/strict';
 import { types } from 'node:util';
 import { PolicyUtils } from '../../../dist/policy-engine/helpers/utils.js';
-import { assertPreviewCalculationResult, calculatePreviewAutoFields, collectPreviewNullPaths, collectPreviewUnavailablePaths, collectPreviewPaths, fillPreviewPlaceholders, getMathPreviewOutputPaths, getMathPreviewReads, getPreviewChangedPaths, getPreviewComputed, getPreviewSubject, isMissingPreviewValue, isPreviewComputedRead, isPreviewOutputRead, isPreviewPathCovered, normalizePreviewPath, resolvePreviewFields, setPreviewComputed } from '../../../dist/policy-engine/helpers/preview.js';
+import { assertPreviewCalculationResult, calculatePreviewAutoFields, collectPreviewNullPaths, collectPreviewUnavailablePaths, collectPreviewPaths, fillPreviewPlaceholders, getMathPreviewOutputPaths, getMathPreviewReads, getPreviewChangedPaths, getPreviewComputed, getPreviewSubject, isMissingPreviewValue, isPreviewComputedRead, isPreviewOutputRead, isPreviewPathCovered, normalizePreviewPath, removePreviewEmptyValues, resolvePreviewFields, setPreviewComputed, trackPreviewFormulaScope } from '../../../dist/policy-engine/helpers/preview.js';
 
 const field = (name, type, extra = {}) => ({ name, type, isRef: false, isArray: false, ...extra });
 
@@ -85,7 +85,7 @@ describe('@unit preview fields', () => {
         });
 
         for (const amount of [5, 200]) {
-            it(`discovers both conditional expression branches before submission for amount=${amount}`, async () => {
+            it(`discovers only the conditional expression branch that runs before submission for amount=${amount}`, async () => {
                 const fields = [field('amount', 'number'), field('rate', 'number'), field('discount', 'number'),
                     field('unused', 'number'), field('total', 'number', { autocalculate: true,
                         expression: 'amount > 100 ? amount * rate : amount - discount' })];
@@ -97,7 +97,7 @@ describe('@unit preview fields', () => {
                 assert.deepEqual(errors, []);
                 assert.deepEqual(resolvePreviewFields({ schema: '#S', document: { amount },
                     paths: collectPreviewPaths(fields), dependencies }, []),
-                    { fields: ['amount', 'discount', 'rate'], missingFields: ['discount', 'rate'] });
+                    amount > 100 ? { fields: ['amount', 'rate'], missingFields: ['rate'] } : { fields: ['amount', 'discount'], missingFields: ['discount'] });
             });
         }
 
@@ -143,14 +143,14 @@ describe('@unit preview fields', () => {
             });
         }
 
-        it('excludes copied values from autocalculate discovery until they are used', async () => {
+        it('does not count a field an expression takes from a copy of the document', async () => {
             const fields = [field('amount', 'number'), field('unused', 'number'),
                 field('total', 'number', { autocalculate: true, expression: 'Object.assign({}, this).amount*2' })];
             const doc = { amount: 5, unused: 99 };
             const dependencies = {};
             calculatePreviewAutoFields(fields, doc, dependencies, [], '', true);
             assert.equal(doc.total, 10);
-            assert.deepEqual(dependencies.total, ['amount']);
+            assert.deepEqual(dependencies.total, []);
         });
 
         it('discovers the finite schema matches for input-dependent autocalculate keys', async () => {
@@ -164,7 +164,7 @@ describe('@unit preview fields', () => {
             assert.deepEqual(dependencies.total.sort(), ['count', 'year1', 'year2', 'year3']);
         });
 
-        for (const [expression, expectedFields, expectedTotal] of [["Object.values(this)[0]*2", [], 10], ["Object.entries(this)[0][1]*2", [], 10], ["Object.keys({...this}).length", [], 5], ["JSON.stringify(this).length", [], 58], ["(() => {const c={...this};this.rate=2;return c.rate*this.amount})()", ["amount", "rate"], 15]]) {
+        for (const [expression, expectedFields, expectedTotal] of [["Object.values(this)[0]*2", [], 10], ["Object.entries(this)[0][1]*2", [], 10], ["Object.keys({...this}).length", [], 5], ["JSON.stringify(this).length", [], 58], ["(() => {const c={...this};this.rate=2;return c.rate*this.amount})()", ["amount"], 15]]) {
             it(`requires a field read by a whole-object operation only when its name is used: ${expression}`, async () => {
                 const fields = ['amount', 'rate', 'discount', 'unused', 'kind'].map(name => field(name, 'number'));
                 fields.push(field('total', 'number', { autocalculate: true, expression }));
@@ -189,7 +189,7 @@ describe('@unit preview fields', () => {
                 const errors = [];
                 calculatePreviewAutoFields(fields, doc, dependencies, errors, '', true);
                 assert.deepEqual(errors, []);
-                assert.deepEqual(dependencies.total, ['rate']);
+                assert.deepEqual(dependencies.total, preparation ? [] : ['rate']);
                 assert.equal(doc.total, 200020);
             });
         }
@@ -225,7 +225,32 @@ describe('@unit preview fields', () => {
             assert.equal(doc.total,2097152);
         });
 
-        it('includes nested array fields from an unexecuted expression branch', async () => {
+        it('removes empty strings and nulls the way the form does and keeps zero and false', () => {
+            const value = { a: '', b: null, c: 0, d: false, e: [1, '', null, { x: '' }], f: { g: null, h: 'y' } };
+            removePreviewEmptyValues(value);
+            assert.deepEqual(value, { c: 0, d: false, e: [1, {}], f: { h: 'y' } });
+        });
+
+        it('does not count a field copied from the document by its name in an expression', async () => {
+            const fields = [field('flag', 'boolean'), field('rate', 'number'),
+                field('total', 'number', { autocalculate: true, expression: '(() => { const c = { ...this }; return c.flag ? c.rate : 1; })()' })];
+            for (const flag of [false, true]) {
+                const doc = { flag, rate: 7 };
+                const dependencies = {};
+                calculatePreviewAutoFields(fields, doc, dependencies, [], '', true);
+                assert.equal(doc.total, flag ? 7 : 1);
+                assert.ok(!(dependencies.total || []).includes('rate'));
+            }
+            const direct = [field('flag', 'boolean'), field('rate', 'number'),
+                field('total', 'number', { autocalculate: true, expression: 'flag ? rate : 1' })];
+            for (const flag of [false, true]) {
+                const dependencies = {};
+                calculatePreviewAutoFields(direct, { flag, rate: 7 }, dependencies, [], '', true);
+                assert.deepEqual(dependencies.total, flag ? ['flag', 'rate'] : ['flag']);
+            }
+        });
+
+        it('does not require nested array fields of an expression branch that did not run', async () => {
             const fields = [field('amount', 'number'),
                 { name: 'items', isRef: true, isArray: true, fields: [field('value', 'number')] },
                 field('total', 'number', { autocalculate: true,
@@ -236,10 +261,10 @@ describe('@unit preview fields', () => {
             assert.equal(doc.total, 5);
             assert.deepEqual(resolvePreviewFields({ schema: '#S', document: { amount: 5, items: [] },
                 paths: collectPreviewPaths(fields), dependencies }, []),
-                { fields: ['amount', 'items.value'], missingFields: [] });
+                { fields: ['amount'], missingFields: [] });
         });
 
-        it('uses the same fields in real preview as in discovery and keeps the ordinary value', async () => {
+        it('requires only the inputs of the branch that ran in real preview and keeps the ordinary value', async () => {
             const fields = [field('amount', 'number'), field('rate', 'number'),
                 field('total', 'number', { autocalculate: true, expression: 'amount > 100 ? amount * rate : amount' })];
             const doc = { amount: 5 };
@@ -248,7 +273,7 @@ describe('@unit preview fields', () => {
             calculatePreviewAutoFields(fields, doc, dependencies, errors);
             assert.equal(doc.total, PolicyUtils.autoCalculateField(fields[2], { amount: 5 }));
             assert.deepEqual(errors, []);
-            assert.deepEqual(dependencies.total, ['amount', 'rate']);
+            assert.deepEqual(dependencies.total, ['amount']);
         });
 
         it('keeps the ordinary expression failure on a missing input and records that input', async () => {
@@ -499,7 +524,7 @@ describe('@unit preview fields', () => {
     });
 
     describe('runtime mathjs reads through the shared tracker', () => {
-        it('evaluates once and merges the actual full path with the other branch', () => {
+        it('evaluates once and keeps only the full path of the branch that ran', () => {
             const formula = '(flag ? owner : buyer).name';
             const paths = ['flag', 'owner', 'owner.name', 'buyer', 'buyer.name'];
             const tracker = new PreviewReadTracker();
@@ -512,7 +537,7 @@ describe('@unit preview fields', () => {
             const sites = tracker.takeSites();
             assert.ok(sites.some((read) => read.path === 'owner.name'));
             const reads = findPreviewScriptFields(formula, sites, [], '#S', paths, false, '', [], 'mathjs');
-            assert.deepEqual([...new Set(reads.map((read) => read.path))].sort(), ['buyer.name', 'flag', 'owner.name']);
+            assert.deepEqual([...new Set(reads.map((read) => read.path))].sort(), ['flag', 'owner.name']);
         });
 
         it('retains an indexed runtime address together with the schema path', () => {
@@ -527,28 +552,42 @@ describe('@unit preview fields', () => {
     });
 
     describe('mathjs through findPreviewScriptFields', () => {
-        const findFormulaFieldReads = (formula, source) => source
-            ? findPreviewScriptFields(formula, [], [], source.schema, source.paths, false, '', [], 'mathjs')
-            : [];
-        const source = { schema: '#S', document: {}, paths: ['amount', 'owner', 'owner.name', 'buyer', 'buyer.name', 'rows', 'rows.value'], dependencies: {} };
+        const findFormulaFieldReads = (formula, source, scope = {}) => {
+            if (!source) {
+                return [];
+            }
+            const tracker = new PreviewReadTracker();
+            tracker.configure(formula);
+            PolicyUtils.evaluateCustomFormula(formula, trackPreviewFormulaScope(tracker, structuredClone(scope), source.schema, source.paths));
+            return findPreviewScriptFields(formula, tracker.takeSites(), [], source.schema, source.paths, false, '', [], 'mathjs')
+                .map((read) => read.path).sort();
+        };
+        const source = { schema: '#S', document: {}, paths: ['amount', 'owner', 'owner.name', 'buyer', 'buyer.name', 'rows', 'rows.value', 'sum', 'pi'], dependencies: {} };
 
-        it('finds the fields a condition refers to by their full path', () => {
-            assert.deepEqual(findFormulaFieldReads('owner.name == "x" and amount > 2', source), [
-                { schema: '#S', path: 'owner.name' },
-                { schema: '#S', path: 'amount' }
-            ]);
+        it('finds the fields a condition read by their full path', () => {
+            assert.deepEqual(findFormulaFieldReads('owner.name == "x" and amount > 2', source, { owner: { name: 'x' }, amount: 5 }), ['amount', 'owner.name']);
         });
 
         it('does not take a field of another section with the same last name', () => {
-            assert.deepEqual(findFormulaFieldReads('owner.name == "Ivan"', source).map((read) => read.path), ['owner.name']);
+            assert.deepEqual(findFormulaFieldReads('owner.name == "Ivan"', source, { owner: { name: 'Ivan' }, buyer: { name: 'x' } }), ['owner.name']);
         });
 
         it('does not take a field name written inside quotes', () => {
-            assert.deepEqual(findFormulaFieldReads('owner.name == "amount"', source).map((read) => read.path), ['owner.name']);
+            assert.deepEqual(findFormulaFieldReads('owner.name == "amount"', source, { owner: { name: 'a' }, amount: 1 }), ['owner.name']);
         });
 
         it('leaves array indexes out of the path', () => {
-            assert.deepEqual(findFormulaFieldReads('rows[1].value > 0', source).map((read) => read.path), ['rows.value']);
+            assert.deepEqual(findFormulaFieldReads('rows[1].value > 0', source, { rows: [{ value: 1 }] }), ['rows.value']);
+        });
+
+        it('finds an absent field the formula asked for and skips the part that did not run', () => {
+            assert.deepEqual(findFormulaFieldReads('amount > 2', source), ['amount']);
+            assert.deepEqual(findFormulaFieldReads('amount > 2 and owner.name == "x"', source, { amount: 1 }), ['amount']);
+        });
+
+        it('keeps mathjs built-ins that the data does not supply', () => {
+            assert.deepEqual(findFormulaFieldReads('sum([1, 2]) > pi', source), []);
+            assert.deepEqual(findFormulaFieldReads('pi > 2', source, { pi: 5 }), ['pi']);
         });
 
         it('returns nothing without a form source or for a formula that cannot be parsed', () => {

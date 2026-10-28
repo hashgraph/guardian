@@ -167,12 +167,12 @@ describe('CalculationPreviewService', () => {
         });
     });
 
-    it('applies discovery requirements and merges later response fields without clearing them', () => {
+    it('takes the requirements of the latest response and drops fields only an earlier branch needed', () => {
         expect(service.updateRequiredFields(null, result(['rate', 'amount'], ['rate'])))
             .toEqual(['amount', 'rate']);
-        expect(service.updateRequiredFields(['amount'], result(['location.lat'], ['bonus'])))
-            .toEqual(['amount', 'bonus', 'location.lat']);
-        expect(service.updateRequiredFields(['amount'], result([], []))).toEqual(['amount']);
+        expect(service.updateRequiredFields(['amount', 'rate'], result(['amount', 'fuel'], ['fuel'])))
+            .toEqual(['amount', 'fuel']);
+        expect(service.updateRequiredFields(['amount'], result([], []))).toEqual([]);
     });
 
     it('returns the same list when nothing new is needed', () => {

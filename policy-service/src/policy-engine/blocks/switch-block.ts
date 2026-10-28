@@ -8,7 +8,7 @@ import { PolicyUser } from '../policy-user.js';
 import { IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { LocationType } from '@guardian/interfaces';
-import { getPreviewDocumentSchema, isPreviewComputedRead } from '../helpers/preview.js';
+import { getPreviewDocumentSchema, isPreviewComputedRead, trackPreviewFormulaScope } from '../helpers/preview.js';
 import { findPreviewScriptFields } from '../helpers/preview-script-fields.js';
 import { PreviewReadTracker, type IPreviewReadSite } from '../helpers/workers/preview-read-tracker.js';
 
@@ -192,25 +192,20 @@ export class SwitchBlock {
             const schema = getPreviewDocumentSchema(doc);
             return schema === null || schema === previewSource?.schema;
         });
-        const recordReads = (formula: string, sites: IPreviewReadSite[] = []) => {
+        const recordReads = (formula: string, sites: IPreviewReadSite[]) => {
             for (const read of findPreviewScriptFields(formula, sites, [], previewSource.schema, previewSource.paths, false, '', [], 'mathjs')) {
                 if (unknownSchema || !isPreviewComputedRead(docs, read.schema, read.path)) {
                     event.actionStatus.addPreviewRead(read.schema, read.fullPath ?? read.path);
                 }
             }
         };
-        if (previewSource && formSchema) {
-            for (const condition of conditions) {
-                recordReads(String(condition.value || ''));
-            }
-        }
         const evaluateFormula = (formula: string) => {
             if (!previewSource || !formSchema) {
                 return PolicyUtils.evaluateCustomFormula(formula, scope);
             }
             const tracker = new PreviewReadTracker();
             tracker.configure(formula);
-            const result = PolicyUtils.evaluateCustomFormula(formula, tracker.track(scope, previewSource.schema));
+            const result = PolicyUtils.evaluateCustomFormula(formula, trackPreviewFormulaScope(tracker, scope, previewSource.schema, previewSource.paths));
             recordReads(formula, tracker.takeSites());
             return result;
         };

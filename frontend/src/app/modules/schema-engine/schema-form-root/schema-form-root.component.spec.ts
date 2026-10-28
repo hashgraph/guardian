@@ -80,6 +80,27 @@ describe('SchemaFormRootComponent — required fields', () => {
         expect(emitted.length).toBe(1);
         expect(emitted[0]).toBe(root.group);
     }));
+    it('reports new loaded values after the rebuild, but not the first values or a change of requirements', fakeAsync(() => {
+        const root = createRoot();
+        const applied: unknown[] = [];
+        const forms: unknown[] = [];
+        root.form.subscribe((group) => forms.push(group));
+        root.presetApplied.subscribe((group) => applied.push(group));
+        root.presetDocument = { amount: 1 };
+        root.ngOnChanges({ presetDocument: new SimpleChange(null, root.presetDocument, true) });
+        flush();
+        expect(applied.length).toBe(0);
+        setRequired(root, ['amount']);
+        expect(applied.length).toBe(0);
+        const loaded = { amount: 7 };
+        root.presetDocument = loaded;
+        root.ngOnChanges({ presetDocument: new SimpleChange({ amount: 1 }, loaded, false) });
+        flush();
+        expect(applied).toEqual([root.group]);
+        expect(forms[forms.length - 1]).toBe(root.group);
+        expect(root.group.get('amount')?.value).toBe(7);
+    }));
+
     it('shows field titles, parent sections and the one-based row number', fakeAsync(() => {
         const root = createRoot();
         const fields = root.schema.fields;

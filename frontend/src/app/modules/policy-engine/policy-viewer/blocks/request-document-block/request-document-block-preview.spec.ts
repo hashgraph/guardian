@@ -75,6 +75,7 @@ describe('request document preview wiring', () => {
         component.loading = false;
         component.previewMode = false;
         component.previewRequiredFields = null;
+        component.previewRequest = 0;
         return { component, calls: fake.calls, errors: fake.errors, warnings: fake.warnings, uploads, dialogs };
     };
 
@@ -172,6 +173,28 @@ describe('request document preview wiring', () => {
         expect(component.previewRequiredFields).toBeNull();
     });
 
+    const settle = () => new Promise((resolve) => setTimeout(resolve));
+
+    it('asks for the calculation fields again when the rebuilt page form reports new loaded values', async () => {
+        const { component, calls } = page([Promise.resolve(response(['amount', 'fuel'], ['fuel']))]);
+        component.previewMode = true;
+        component.previewRequiredFields = ['amount', 'rate'];
+        component.onPresetApplied();
+        await settle();
+        expect(calls).toEqual([{ previewFields: true, ref: { id: 'ref-1' } }]);
+        expect(component.previewRequiredFields).toEqual(['amount', 'fuel']);
+    });
+
+    it('does not ask for fields after loaded values when the toggle is off, and preset alone asks nothing', async () => {
+        const { component, calls } = page([]);
+        component.changeDetectorRef = { detectChanges: () => undefined };
+        component.onPresetApplied();
+        component.previewMode = true;
+        component.preset({ amount: 7 });
+        await settle();
+        expect(calls).toEqual([]);
+    });
+
     const dialog = (results: Promise<unknown>[], parent: unknown) => {
         const component = Object.create(RequestDocumentBlockDialog.prototype) as any;
         const fake = preview(results);
@@ -187,6 +210,7 @@ describe('request document preview wiring', () => {
         component.loading = false;
         component.previewMode = false;
         component.previewRequiredFields = null;
+        component.previewRequest = 0;
         return { component, calls: fake.calls, errors: fake.errors, warnings: fake.warnings, dialogs };
     };
 
@@ -210,6 +234,73 @@ describe('request document preview wiring', () => {
         expect(dialogs[0].type).toBe(VCViewerDialog);
         expect(dialogs[0].config.data.previewDocuments).toEqual([{ label: '1. save', document: { id: 'vc-1' } }]);
         expect(component.getButtonName({ id: 'submit' })).toBe('Preview');
+    });
+
+    it('asks for the calculation fields again when the rebuilt dialog form reports new loaded values', async () => {
+        const { component, calls } = dialog([Promise.resolve(response(['amount', 'fuel'], ['fuel']))], pageParent());
+        component.previewMode = true;
+        component.previewRequiredFields = ['amount', 'rate'];
+        component.onPresetApplied();
+        await settle();
+        expect(calls).toEqual([{ previewFields: true, ref: { id: 'ref-2' } }]);
+        expect(component.previewRequiredFields).toEqual(['amount', 'fuel']);
+    });
+
+    for (const kind of ['page', 'dialog']) {
+        it(`ignores an older answer after another operation cleared loading and Preview was switched off and on in the ${kind}`, async () => {
+            let answerA: (value: unknown) => void = () => undefined;
+            let answerB: (value: unknown) => void = () => undefined;
+            const results = [new Promise((resolve) => { answerA = resolve; }), new Promise((resolve) => { answerB = resolve; })];
+            const state = kind === 'page' ? page(results) : dialog(results, pageParent());
+            const { component, warnings } = state;
+            const first = component.onPreviewModeChange(true);
+            component.loading = false;
+            await component.onPreviewModeChange(false);
+            const second = component.onPreviewModeChange(true);
+            answerA(response(['rate'], ['rate'], saved, [scriptError]));
+            await first;
+            expect(component.previewRequiredFields).toBeNull();
+            expect(warnings.length).toBe(0);
+            expect(component.loading).toBeTrue();
+            answerB(response(['fuel'], ['fuel']));
+            await second;
+            expect(component.previewRequiredFields).toEqual(['fuel']);
+            expect(component.loading).toBeFalse();
+        });
+    }
+
+    it('drops an older page answer once new values are loaded, before the form is rebuilt', async () => {
+        let answerA: (value: unknown) => void = () => undefined;
+        const { component } = page([new Promise((resolve) => { answerA = resolve; }), Promise.resolve(response(['amount', 'fuel'], ['fuel']))]);
+        component.changeDetectorRef = { detectChanges: () => undefined };
+        component.previewMode = true;
+        component.previewRequiredFields = ['amount'];
+        const pending = component.runPreview(true);
+        component.preset({ amount: 9 });
+        answerA(response(['rate'], ['rate']));
+        await pending;
+        expect(component.previewRequiredFields).toEqual(['amount']);
+        expect(component.loading).toBeTrue();
+        component.onPresetApplied();
+        await settle();
+        expect(component.previewRequiredFields).toEqual(['amount', 'fuel']);
+        expect(component.loading).toBeFalse();
+    });
+
+    it('drops an older dialog answer once the page loads new values, before the form is rebuilt', async () => {
+        let answerA: (value: unknown) => void = () => undefined;
+        const parent = pageParent();
+        parent.changeDetectorRef = { detectChanges: () => undefined };
+        parent.dialog = { detectChanges: () => undefined };
+        const { component } = dialog([new Promise((resolve) => { answerA = resolve; })], parent);
+        component.previewMode = true;
+        component.previewRequiredFields = ['amount'];
+        const pending = component.runPreview(true);
+        parent.preset({ amount: 9 });
+        answerA(response(['rate'], ['rate']));
+        await pending;
+        expect(component.previewRequiredFields).toEqual(['amount']);
+        expect(component.loading).toBeTrue();
     });
 
     it('ignores a late answer in the dialog after the toggle was switched off', async () => {
@@ -296,7 +387,7 @@ describe('request document preview wiring', () => {
     }
 
     for (const kind of ['page', 'dialog']) {
-        it(`keeps discovery requirements, normal validity gating and later requirements in the ${kind}`, async () => {
+        it(`keeps discovery requirements and normal validity gating, then takes the latest requirements in the ${kind}`, async () => {
             const results = [Promise.resolve(response(['amount', 'bonus'], ['bonus'])),
                 Promise.resolve(response(['later']))];
             const state = kind === 'page' ? page(results) : dialog(results, pageParent());
@@ -318,7 +409,7 @@ describe('request document preview wiring', () => {
             expect(component.ifDisabledBtn({ id: 'submit' })).toBeFalse();
             await component.onStep();
             expect(state.calls.map((call) => call.previewFields)).toEqual([true, false]);
-            expect(component.previewRequiredFields).toEqual(['amount', 'bonus', 'later']);
+            expect(component.previewRequiredFields).toEqual(['later']);
             expect(dialogs.length).toBe(1);
         });
 

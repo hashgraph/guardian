@@ -21,6 +21,7 @@
             <p-toggleswitch
               inputId="calculationPreview_{{ id }}"
               [ngModel]="previewMode"
+              [disabled]="loading"
               (onChange)="onPreviewModeChange($event.checked)">
             </p-toggleswitch>
             <label for="calculationPreview_{{ id }}">Calculation preview</label>
@@ -125,6 +126,7 @@
               [requiredFields]="previewRequiredFields"
               [previewMissingFields]="previewMissingFields"
               (form)="initForm($event)"
+              (presetApplied)="onPresetApplied()"
               (buttons)="onChangeButtons($event)"
               (saveBtnEvent)="handleSaveBtnEvent($event)"
               (cancelBtnEvent)="onCancelPage($event)"
