@@ -1,4 +1,5 @@
 import { of, Subject, throwError } from 'rxjs';
+import { Schema } from '@guardian/interfaces';
 import { SchemasConfigurationComponent } from './schemas-configuration.component';
 import { FIELD_TYPES_UI } from 'src/app/modules/schema-engine/field-type-ui';
 
@@ -2152,6 +2153,63 @@ describe('SchemasConfigurationComponent', () => {
 
             expect(calls).toEqual([]);
             expect(component.toasts.length).toBe(1);
+        });
+    });
+
+    describe('a sidebar list copy arriving after the full schema load', () => {
+
+        function makeFullSchema(id: string): any {
+            return new Schema({
+                id, _id: id, uuid: `u-${id}`, status: 'DRAFT', topicId: 'topic-1', name: `Schema ${id}`,
+                document: {
+                    $id: `#u-${id}`, title: `Schema ${id}`, description: '', type: 'object',
+                    properties: {
+                        field_1: {
+                            title: 'field_1', description: 'd', readOnly: false, type: 'string',
+                            $comment: '{"term":"field_1","@id":"https://www.schema.org/text","orderPosition":0}'
+                        }
+                    },
+                    required: [], additionalProperties: false, $defs: {}
+                }
+            } as any);
+        }
+
+        function listItem(id: string): any {
+            return { id, _id: id, uuid: `u-${id}`, status: 'DRAFT', topicId: 'topic-1', name: `Schema ${id}` };
+        }
+
+        function loadList(component: any, ids: string[]): void {
+            component.schemaService.getSchemasByPage = () => of({
+                body: ids.map(listItem),
+                headers: { get: () => String(ids.length) }
+            });
+            component.loadSchemas('topic-1');
+        }
+
+        it('does not replace the saved baseline of the open schema', () => {
+            const full = makeFullSchema('a');
+            const component = createComponent({ schemas: [full], selectedSchema: full });
+            component.loadedSchemaId = 'a';
+            component.snapshotSchema(full);
+            const baseline = component.savedSignatures.get('a');
+
+            loadList(component, ['a']);
+
+            expect(component.savedSignatures.get('a')).toBe(baseline);
+            component.deleteField(full.fields[0], { stopPropagation: () => {} });
+            expect(full.fields.length).toBe(0);
+            expect(component.hasUnsavedChanges).toBeTrue();
+        });
+
+        it('still records a baseline for the schemas that are not open', () => {
+            const full = makeFullSchema('a');
+            const component = createComponent({ schemas: [full], selectedSchema: full });
+            component.loadedSchemaId = 'a';
+            component.snapshotSchema(full);
+
+            loadList(component, ['a', 'b']);
+
+            expect(component.savedSignatures.has('b')).toBeTrue();
         });
     });
 });

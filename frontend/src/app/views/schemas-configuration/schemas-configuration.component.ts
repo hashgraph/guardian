@@ -1198,6 +1198,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 this.schemaTemplate = appliedTemplate;
             }
             this.normalizeLegacyConditionFieldOrder(schema);
+            if (this.selectedField && !this.isDrilling) {
+                const name = this.selectedField.name;
+                this.selectedField = schema.fields?.find(f => f.name === name) ?? null;
+            }
             this.selectedSchema = schema;
             this.loadProperties(resolveIwaVersion(schema));
             this.resetArrayDependencyEditor();
@@ -4957,7 +4961,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     // server copies are the saved baseline; a locally edited
                     // selectedSchema still differs from its signature and stays dirty
                     items.forEach(schema => this.normalizeLegacyConditionFieldOrder(schema));
-                    items.forEach(schema => this.snapshotSchema(schema));
+                    items.forEach(schema => {
+                        const id = schema.id || (schema as any)._id;
+                        if (id && id === this.loadedSchemaId && this.savedSignatures.has(id)) {
+                            return;
+                        }
+                        this.snapshotSchema(schema);
+                    });
                     this.loadAppliedSchemaTemplate();
                     if (this.selectedSchema) { this.upsertInSidebar(this.selectedSchema); }
                     this.pruneDirtySchemaIds();
