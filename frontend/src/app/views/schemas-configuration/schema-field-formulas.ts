@@ -1,11 +1,9 @@
 import { EMPTY, Observable, forkJoin, of } from 'rxjs';
 import { catchError, expand, map, reduce, shareReplay, switchMap } from 'rxjs/operators';
-import { DialogService } from 'primeng/dynamicdialog';
 import { EntityStatus, IFormula, IFormulaItem, IFormulaLink, Schema, SchemaField, UserPermissions } from '@guardian/interfaces';
 import { FormulasService } from 'src/app/services/formulas.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
-import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import {
     applyFieldBindingOps,
     applyFieldBindingOpsToFormulas,
@@ -16,6 +14,7 @@ import {
     findFieldBindings,
     IFieldTarget,
     isEditableFormula,
+    getItemLinks,
     isLinkedTo,
     NEW_FORMULA_DOCUMENT
 } from 'src/app/modules/formulas/models/field-bindings';
@@ -123,7 +122,6 @@ export class SchemaFieldFormulas {
         private readonly formulasService: FormulasService,
         private readonly policyEngineService: PolicyEngineService,
         private readonly profileService: ProfileService,
-        private readonly dialogService: DialogService,
         private readonly reportError: (action: string, error: any) => void,
         private readonly describeLink: (link: IFormulaLink) => string
     ) {
@@ -273,7 +271,7 @@ export class SchemaFieldFormulas {
             }
             const items: IFieldFormulaOption[] = [];
             for (const item of formula.config?.formulas || []) {
-                if (!item || !BINDABLE_ITEM_TYPES.has(item.type) || isLinkedTo(item.link, target)) {
+                if (!item || !BINDABLE_ITEM_TYPES.has(item.type) || getItemLinks(item).some((link) => isLinkedTo(link, target))) {
                     continue;
                 }
                 items.push({
@@ -281,7 +279,7 @@ export class SchemaFieldFormulas {
                     label: item.name || 'Untitled',
                     type: item.type,
                     icon: formulaTypeIcon(item.type),
-                    linkedTo: item.link ? this.describeLink(item.link) : ''
+                    linkedTo: this.describeLinks(item)
                 });
             }
             if (items.length) {
@@ -295,8 +293,17 @@ export class SchemaFieldFormulas {
         return { state: 'ready', rows, groups, documents };
     }
 
+    private describeLinks(item: IFormulaItem): string {
+        const links = getItemLinks(item);
+        if (!links.length) {
+            return '';
+        }
+        const first = this.describeLink(links[0]);
+        return links.length > 1 ? `${first} +${links.length - 1}` : first;
+    }
+
     /**
-     * Shows the chosen item on the field. Asks first when the item is linked elsewhere.
+     * Adds a link to the field to the chosen item. The links the item already has are kept.
      */
     public assign(scope: IFieldScope, value: string | null): void {
         setTimeout(() => this.assignValue = null);
@@ -321,31 +328,7 @@ export class SchemaFieldFormulas {
             }
             this.version++;
         };
-        if (!item.link || isLinkedTo(item.link, target)) {
-            apply();
-            return;
-        }
-        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
-            showHeader: false,
-            width: '640px',
-            styleClass: 'guardian-dialog',
-            data: {
-                header: 'Move formula link',
-                text: `'${item.name || 'Untitled'}' is linked to ${this.describeLink(item.link)}. Move the link to this field?`,
-                buttons: [{
-                    name: 'Cancel',
-                    class: 'secondary'
-                }, {
-                    name: 'Move',
-                    class: 'primary'
-                }]
-            },
-        });
-        dialogRef?.onClose.subscribe((result: string) => {
-            if (result === 'Move') {
-                apply();
-            }
-        });
+        apply();
     }
 
     /**
@@ -415,9 +398,18 @@ export class SchemaFieldFormulas {
             this.countCache = new Map<string, number>();
             for (const formula of this.effectiveFormulas()) {
                 for (const item of formula.config?.formulas || []) {
-                    const link = item?.link;
-                    if (link?.type === 'schema' && link.entityId === iri && BINDABLE_ITEM_TYPES.has(item.type)) {
-                        this.countCache.set(link.item, (this.countCache.get(link.item) || 0) + 1);
+                    if (!item || !BINDABLE_ITEM_TYPES.has(item.type)) {
+                        continue;
+                    }
+                    // an item with several links to one field counts once
+                    const paths = new Set<string>();
+                    for (const link of getItemLinks(item)) {
+                        if (link.type === 'schema' && link.entityId === iri) {
+                            paths.add(link.item);
+                        }
+                    }
+                    for (const path of paths) {
+                        this.countCache.set(path, (this.countCache.get(path) || 0) + 1);
                     }
                 }
             }

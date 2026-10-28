@@ -37,6 +37,7 @@ import {
 import { collectPreviewNonFiniteNames, isPreviewFieldFailure, isPreviewFiniteResult } from '../helpers/workers/preview-copy-diagnosis.js';
 import type { IPreviewCopyDiagnosis, IPreviewCopyTarget } from '../helpers/workers/preview-copy-diagnosis.js';
 import type { IPreviewWriteRecord } from '../helpers/workers/preview-read-tracker.js';
+import { isPythonSandboxDisabled, PYTHON_DISABLED_MESSAGE } from '../helpers/workers/python-sandbox-mode.js';
 
 const filename = fileURLToPath(import.meta.url);
 
@@ -398,6 +399,12 @@ export class CustomLogicBlock {
                     }
                 };
                 if (options.selectedScriptLanguage === ScriptLanguageOption.PYTHON) {
+                    if (isPythonSandboxDisabled()) {
+                        try { disposeTables(); } catch { /* */ }
+                        safeReject(new Error(PYTHON_DISABLED_MESSAGE));
+                        return;
+                    }
+
                     const pythonWorkerData = {
                         execFunc: `${execCode}${expression}`,
                         user,

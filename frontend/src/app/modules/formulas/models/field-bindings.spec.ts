@@ -5,6 +5,7 @@ import {
     buildFieldPath,
     createStubItem,
     findFieldBindings,
+    getItemLinks,
     IFieldTarget,
     isEditableFormula,
     moveLink,
@@ -29,6 +30,20 @@ function createConfig(): IFormulaConfig {
 }
 
 describe('field-bindings', () => {
+    describe('getItemLinks', () => {
+        it('falls back to link when links is missing', () => {
+            const link: any = { type: 'schema', entityId: '#s1', item: 'a' };
+            expect(getItemLinks({ link } as any)).toEqual([link]);
+            expect(getItemLinks({ link: null } as any)).toEqual([]);
+            expect(getItemLinks(null)).toEqual([]);
+        });
+
+        it('prefers links over link', () => {
+            const links: any[] = [{ type: 'schema', entityId: '#s1', item: 'b' }];
+            expect(getItemLinks({ link: { type: 'schema', entityId: '#s1', item: 'a' }, links } as any)).toEqual(links);
+        });
+    });
+
     describe('moveLink', () => {
         it('keeps the condition on the same schema', () => {
             const link = moveLink({ type: 'schema', entityId: '#s1', item: 'a', condition: CONDITION }, B);
@@ -54,6 +69,16 @@ describe('field-bindings', () => {
             expect(findFieldBindings(formulas, OTHER)).toEqual([]);
         });
 
+        it('finds an item by any of its links', () => {
+            const config = createConfig();
+            config.formulas![2].links = [
+                { type: 'schema', entityId: '#s1', item: 'b' },
+                { type: 'schema', entityId: '#s2', item: 'a' }
+            ];
+            const formulas: IFormula[] = [{ id: 'd1', config }];
+            expect(findFieldBindings(formulas, OTHER).map((e) => e.item.uuid)).toEqual(['f1']);
+        });
+
         it('ignores constants', () => {
             const config = createConfig();
             config.formulas![0].link = { type: 'schema', entityId: '#s1', item: 'a' };
@@ -73,15 +98,37 @@ describe('field-bindings', () => {
             expect(JSON.stringify(config)).toBe(before);
         });
 
-        it('binds, moving the link and keeping the other config parts', () => {
+        it('binds, adding a link and keeping the other config parts', () => {
             const { config, skipped } = applyFieldBindingOps(createConfig(), [
                 { type: 'bind', formulaId: 'd1', itemUuid: 'v1', target: B },
                 { type: 'bind', formulaId: 'd1', itemUuid: 't1', target: OTHER },
             ]);
             expect(skipped).toEqual([]);
             expect(config.files).toEqual([{ name: 'doc.pdf' }]);
-            expect(config.formulas![1].link).toEqual({ type: 'schema', entityId: '#s1', item: 'b', condition: CONDITION });
+            expect(config.formulas![1].links).toEqual([
+                { type: 'schema', entityId: '#s1', item: 'a', condition: CONDITION },
+                { type: 'schema', entityId: '#s1', item: 'b' }
+            ]);
+            expect(config.formulas![1].link).toEqual({ type: 'schema', entityId: '#s1', item: 'a', condition: CONDITION });
+            expect(config.formulas![3].links).toEqual([{ type: 'schema', entityId: '#s2', item: 'a' }]);
             expect(config.formulas![3].link).toEqual({ type: 'schema', entityId: '#s2', item: 'a' });
+        });
+
+        it('does not link the item to the same field twice', () => {
+            const { config } = applyFieldBindingOps(createConfig(), [
+                { type: 'bind', formulaId: 'd1', itemUuid: 'v1', target: A },
+            ]);
+            expect(config.formulas![1].links).toBeUndefined();
+            expect(getItemLinks(config.formulas![1]).length).toBe(1);
+        });
+
+        it('unbinds one link and keeps the others', () => {
+            const { config } = applyFieldBindingOps(createConfig(), [
+                { type: 'bind', formulaId: 'd1', itemUuid: 'v1', target: B },
+                { type: 'unbind', formulaId: 'd1', itemUuid: 'v1', target: A },
+            ]);
+            expect(config.formulas![1].links).toEqual([{ type: 'schema', entityId: '#s1', item: 'b' }]);
+            expect(config.formulas![1].link).toEqual({ type: 'schema', entityId: '#s1', item: 'b' });
         });
 
         it('unbinds only while the item is still on the field', () => {
@@ -90,6 +137,7 @@ describe('field-bindings', () => {
                 { type: 'unbind', formulaId: 'd1', itemUuid: 'f1', target: A },
             ]);
             expect(config.formulas![1].link).toBeNull();
+            expect(config.formulas![1].links).toEqual([]);
             expect(config.formulas![2].link).toEqual({ type: 'schema', entityId: '#s1', item: 'b' });
         });
 
@@ -110,7 +158,9 @@ describe('field-bindings', () => {
             expect(config.formulas!.length).toBe(5);
             expect(config.formulas![4]).toEqual({
                 uuid: 'n1', name: 'X', description: '', type: FormulaItemType.Formula, value: '',
-                relationships: [], link: { type: 'schema', entityId: '#s1', item: 'a' }
+                relationships: [],
+                link: { type: 'schema', entityId: '#s1', item: 'a' },
+                links: [{ type: 'schema', entityId: '#s1', item: 'a' }]
             });
         });
 

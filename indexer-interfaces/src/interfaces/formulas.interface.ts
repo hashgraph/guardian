@@ -25,6 +25,7 @@ export interface IFormulaItem {
     type: FormulaItemType;
     value?: any;
     link?: IFormulaLink | null;
+    links?: IFormulaLink[];
     relationships?: string[];
     source?: IFormulaSource | null;
 }

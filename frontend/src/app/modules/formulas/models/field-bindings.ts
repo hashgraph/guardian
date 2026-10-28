@@ -48,6 +48,24 @@ export function buildFieldPath(prefix: string[], name: string): string {
 }
 
 /**
+ * Links of the item. Items saved before `links` existed have `link` only.
+ */
+export function getItemLinks(item: IFormulaItem | null | undefined): IFormulaLink[] {
+    if (Array.isArray(item?.links)) {
+        return item!.links!.filter((link) => !!link);
+    }
+    return item?.link ? [item.link] : [];
+}
+
+/**
+ * Sets the links of the item and mirrors the first one into `link` for readers that know only one link.
+ */
+export function setItemLinks(item: IFormulaItem, links: IFormulaLink[]): void {
+    item.links = links;
+    item.link = links[0] ?? null;
+}
+
+/**
  * Whether the link points to the field.
  */
 export function isLinkedTo(link: IFormulaLink | null | undefined, target: IFieldTarget): boolean {
@@ -91,8 +109,15 @@ export function createStubItem(name: string, uuid: string = GenerateUUIDv4()): I
         type: FormulaItemType.Formula,
         value: '',
         relationships: [],
-        link: null
+        link: null,
+        links: []
     };
+}
+
+function withLinks(item: IFormulaItem, links: IFormulaLink[]): IFormulaItem {
+    const copy: IFormulaItem = { ...item };
+    setItemLinks(copy, links);
+    return copy;
 }
 
 /**
@@ -110,7 +135,7 @@ export function applyFieldBindingOps(
     for (const op of ops) {
         if (op.type === 'create') {
             if (indexOf(op.item.uuid) === -1) {
-                formulas.push({ ...op.item, link: moveLink(null, op.target) });
+                formulas.push(withLinks(op.item, [moveLink(null, op.target)]));
             }
             continue;
         }
@@ -122,10 +147,13 @@ export function applyFieldBindingOps(
             continue;
         }
         const item = formulas[index];
+        const links = getItemLinks(item);
         if (op.type === 'bind') {
-            formulas[index] = { ...item, link: moveLink(item.link, op.target) };
-        } else if (isLinkedTo(item.link, op.target)) {
-            formulas[index] = { ...item, link: null };
+            if (!links.some((link) => isLinkedTo(link, op.target))) {
+                formulas[index] = withLinks(item, [...links, moveLink(null, op.target)]);
+            }
+        } else if (links.some((link) => isLinkedTo(link, op.target))) {
+            formulas[index] = withLinks(item, links.filter((link) => !isLinkedTo(link, op.target)));
         }
     }
     return { config: result, skipped };
@@ -165,7 +193,7 @@ export function findFieldBindings(formulas: IFormula[], target: IFieldTarget): I
     const result: IFieldBinding[] = [];
     for (const formula of formulas) {
         for (const item of formula.config?.formulas || []) {
-            if (item && BINDABLE_ITEM_TYPES.has(item.type) && isLinkedTo(item.link, target)) {
+            if (item && BINDABLE_ITEM_TYPES.has(item.type) && getItemLinks(item).some((link) => isLinkedTo(link, target))) {
                 result.push({ formula, item });
             }
         }

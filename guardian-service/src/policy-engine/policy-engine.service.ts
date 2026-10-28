@@ -82,6 +82,7 @@ import {
     getSchemaCategory, ImportMode, ImportPolicyOptions, importSubTools, PolicyImportExportHelper, previewToolByMessage,
     readSchemaTemplateXlsx, SchemaImportExportHelper
 } from '../helpers/import-helpers/index.js';
+import { getFormulaWarnings } from '../helpers/import-helpers/schema/schema-formula-validator.js';
 import { PolicyCommentsUtils } from './policy-comments-utils.js';
 import { getRemoteRequestDocument, getRemoteRequests, getRemoteRequestsCount } from './helpers/remote-requests.js';
 import { PersistStepPayload, RecordPersistService } from './helpers/record-persist.service.js';
@@ -2035,22 +2036,14 @@ export class PolicyEngineService {
                     }
 
                     notifier.startStep(STEP_VALIDATE_POLICY);
-                    let validation = null;
-                    try {
-                        const policyValidation = await this.policyEngine.validateModel(result.policy.id);
-                        validation = {
-                            isValid: !policyValidation.blocks.some((block) => !block.isValid),
-                            errors: policyValidation
-                        };
-                    } catch (error) {
-                        await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
-                    }
+                    const validation = await PolicyImportExportHelper.validatePolicyAfterImport(this.policyEngine, result.policy.id, logger, owner?.id);
                     notifier.completeStep(STEP_VALIDATE_POLICY);
 
                     notifier.result({
                         policyId: result.policy.id,
                         validation,
-                        errors: result.errors
+                        errors: result.errors,
+                        warnings: result.warnings
                     });
 
                     if (originalTracking && result.policy) {
@@ -2249,23 +2242,15 @@ export class PolicyEngineService {
                         }
 
                         notifier.startStep(STEP_VALIDATE_POLICY);
-                        let validation = null;
-                        try {
-                            const policyValidation = await this.policyEngine.validateModel(result.policy.id);
-                            validation = {
-                                isValid: !policyValidation.blocks.some((block) => !block.isValid),
-                                errors: policyValidation
-                            };
-                        } catch (error) {
-                            await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
-                        }
+                        const validation = await PolicyImportExportHelper.validatePolicyAfterImport(this.policyEngine, result.policy.id, logger, owner?.id);
                         notifier.completeStep(STEP_VALIDATE_POLICY);
 
                         notifier.complete();
                         notifier.result({
                             policyId: result.policy.id,
                             validation,
-                            errors: result.errors
+                            errors: result.errors,
+                            warnings: result.warnings
                         });
 
                         if (originalTracking && result.policy) {
@@ -2359,20 +2344,12 @@ export class PolicyEngineService {
                         await this.policyEngine.updateSchemaId(policy, schemaMap);
                     }
                     await PolicyImportExportHelper.updatePolicyComponents(policy, logger, owner?.id);
-                    let validation = null;
-                    try {
-                        const policyValidation = await this.policyEngine.validateModel(policy.id);
-                        validation = {
-                            isValid: !policyValidation.blocks.some((block) => !block.isValid),
-                            errors: policyValidation
-                        };
-                    } catch (error) {
-                        await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
-                    }
+                    const validation = await PolicyImportExportHelper.validatePolicyAfterImport(this.policyEngine, policy.id, logger, owner?.id);
                     return new MessageResponse({
                         policyId: policy.id,
                         validation,
-                        errors: result.errors
+                        errors: result.errors,
+                        warnings: result.warnings
                     });
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -2450,27 +2427,21 @@ export class PolicyEngineService {
                     if (schemaMap.size) {
                         await this.policyEngine.updateSchemaId(policy, schemaMap);
                     }
+                    const formulaWarnings = await getFormulaWarnings(logger, category, policy.id, policy.topicId, result.schemasMap, owner?.id);
                     await PolicyImportExportHelper.updatePolicyComponents(policy, logger, owner?.id);
                     notifier.completeStep(STEP_IMPORT_SCHEMAS);
 
                     notifier.startStep(STEP_VALIDATE_POLICY);
-                    let validation = null;
-                    try {
-                        const policyValidation = await this.policyEngine.validateModel(policy.id);
-                        validation = {
-                            isValid: !policyValidation.blocks.some((block) => !block.isValid),
-                            errors: policyValidation
-                        };
-                    } catch (error) {
-                        await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
-                    }
+                    const validation = await PolicyImportExportHelper.validatePolicyAfterImport(this.policyEngine, policy.id, logger, owner?.id);
                     notifier.completeStep(STEP_VALIDATE_POLICY);
                     notifier.complete();
 
                     notifier.result({
                         policyId: policy.id,
                         validation,
-                        errors: result.errors
+                        formulaWarnings,
+                        errors: result.errors,
+                        warnings: result.warnings
                     });
                 }, async (error) => {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);

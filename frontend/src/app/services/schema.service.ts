@@ -336,7 +336,7 @@ export class SchemaService {
         });
     }
 
-    public checkForDublicates(data: { schemaNames: string[]; policyId: string }): Observable<any> {
+    public checkForDublicates(data: { schemaNames: string[]; policyId: string; schemas?: any[] }): Observable<any> {
         return this.http.post<any>(`${this.url}/import/schemas/duplicates`, data);
     }
 

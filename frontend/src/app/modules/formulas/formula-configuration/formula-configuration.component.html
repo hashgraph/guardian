@@ -71,7 +71,7 @@
       <span class="files-count">{{ config.files.length }}</span>
     </div>
     @if (!readonly) {
-      <div (click)="onSave()" class="top-toolbar-btn top-toolbar-btn--primary" title="Save">
+      <div (click)="onSave()" class="top-toolbar-btn top-toolbar-btn--primary" [class.is-disabled]="!dirty || loading" title="Save">
         <i class="pi pi-save"></i>
         <span>Save</span>
       </div>
@@ -217,19 +217,24 @@
                 @if (meta.noLink) {
                   <div class="row-sub"><i>No link</i></div>
                 } @else {
-                  <div class="row-sub"
-                    [class.row-sub--missing]="meta.missingLink"
-                    [truncateTooltip]="meta.subText"
-                    tooltipPosition="bottom">
-                    @if (meta.missingLink) {
-                      <i class="pi pi-exclamation-triangle"></i>
+                  <div class="row-sub-line">
+                    <div class="row-sub"
+                      [class.row-sub--missing]="meta.missingLink"
+                      [truncateTooltip]="meta.subText"
+                      tooltipPosition="bottom">
+                      @if (meta.missingLink) {
+                        <i class="pi pi-exclamation-triangle"></i>
+                      }
+                      @if (meta.entity) {
+                        <span class="ent">
+                          <ng-container [ngTemplateOutlet]="segments" [ngTemplateOutletContext]="{ $implicit: meta.entity }"></ng-container>
+                        </span>
+                      }
+                      <ng-container [ngTemplateOutlet]="segments" [ngTemplateOutletContext]="{ $implicit: meta.sub }"></ng-container>
+                    </div>
+                    @if (meta.moreLinks) {
+                      <span class="row-more">+{{ meta.moreLinks }} more</span>
                     }
-                    @if (meta.entity) {
-                      <span class="ent">
-                        <ng-container [ngTemplateOutlet]="segments" [ngTemplateOutletContext]="{ $implicit: meta.entity }"></ng-container>
-                      </span>
-                    }
-                    <ng-container [ngTemplateOutlet]="segments" [ngTemplateOutletContext]="{ $implicit: meta.sub }"></ng-container>
                   </div>
                 }
                 @if (meta.hit) {
@@ -242,8 +247,15 @@
                 }
               }
             </div>
-            @if (item.link?.condition) {
-              <span class="row-flags"><i class="pi pi-filter" title="Has display condition"></i></span>
+            @if (meta && (meta.linkCount > 1 || meta.conditionCount)) {
+              <span class="row-flags">
+                @if (meta.linkCount > 1) {
+                  <span class="row-count" [title]="meta.linkCount + ' links'"><i class="pi pi-link"></i> {{ meta.linkCount }}</span>
+                }
+                @if (meta.conditionCount) {
+                  <i class="pi pi-filter" [title]="'Display condition on ' + meta.conditionCount + ' of ' + meta.linkCount + (meta.linkCount === 1 ? ' link' : ' links')"></i>
+                }
+              </span>
             }
           </div>
         }
@@ -322,8 +334,7 @@
               <ng-container [ngTemplateOutlet]="nameField" [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
             }
             @if (item.type === 'variable') {
-              <ng-container [ngTemplateOutlet]="linkField" [ngTemplateOutletContext]="{ $implicit: item, label: 'Link (Input)' }"></ng-container>
-              <ng-container [ngTemplateOutlet]="displayCondition" [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
+              <ng-container [ngTemplateOutlet]="linksField" [ngTemplateOutletContext]="{ $implicit: item, label: 'Links (Input)' }"></ng-container>
             }
             @if (item.type === 'formula') {
               <div class="sec">
@@ -337,8 +348,7 @@
                   (focus)="onKeyboardFocus($event)"
                 ></math-live>
               </div>
-              <ng-container [ngTemplateOutlet]="linkField" [ngTemplateOutletContext]="{ $implicit: item, label: 'Link (Output)' }"></ng-container>
-              <ng-container [ngTemplateOutlet]="displayCondition" [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
+              <ng-container [ngTemplateOutlet]="linksField" [ngTemplateOutletContext]="{ $implicit: item, label: 'Links (Output)' }"></ng-container>
               <ng-container [ngTemplateOutlet]="relationships" [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
             }
             @if (item.type === 'text') {
@@ -346,8 +356,7 @@
                 <label class="sec-label">Text</label>
                 <textarea [(ngModel)]="item.value" (ngModelChange)="markDirty()" pTextarea rows="3" [readonly]="readonly"></textarea>
               </div>
-              <ng-container [ngTemplateOutlet]="linkField" [ngTemplateOutletContext]="{ $implicit: item, label: 'Link (Output)' }"></ng-container>
-              <ng-container [ngTemplateOutlet]="displayCondition" [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
+              <ng-container [ngTemplateOutlet]="linksField" [ngTemplateOutletContext]="{ $implicit: item, label: 'Links (Output)' }"></ng-container>
               <ng-container [ngTemplateOutlet]="relationships" [ngTemplateOutletContext]="{ $implicit: item }"></ng-container>
             }
             @if (!readonly || hasSource(item)) {
@@ -414,70 +423,99 @@
   </div>
 </ng-template>
 
-<ng-template #linkField let-item let-label="label">
+<ng-template #linksField let-item let-label="label">
   <div class="sec">
     <label class="sec-label">{{ label }}</label>
-    @if (item.link?.type === 'schema' && hasLinkSchema(item.link)) {
-      <div class="link-path-row">
-        <p-select
-          class="guardian-dropdown link-schema"
-          [options]="schemas"
-          optionLabel="name"
-          optionValue="iri"
-          [ngModel]="item.link.entityId"
-          (ngModelChange)="onLinkSchemaChange(item, $event)"
-          [disabled]="readonly"
-          [filter]="schemas.length > 8"
-          filterBy="name"
-          appendTo="body"
-          panelStyleClass="guardian-dropdown-panel">
-        </p-select>
-        <schema-path-input
-          class="link-path"
-          [value]="item.link.item"
-          [paths]="getLinkPaths(item.link)"
-          [readonly]="readonly"
-          [browse]="!readonly"
-          [required]="true"
-          placeholder="Field path"
-          (valueChange)="onLinkPathChange(item, $event)"
-          (browseClick)="onLink(item)">
-        </schema-path-input>
-        @if (!readonly) {
-          <button type="button" class="icon-btn small" title="Remove link" (click)="deleteLink(item, $event)">
-            <i class="pi pi-times"></i>
-          </button>
+    @for (link of getLinks(item); track $index; let i = $index) {
+      <div class="link-row" [class.missing]="isLinkMissing(link)">
+        <div class="link-row-head" (click)="toggleLinkOpen(item, i)">
+          <i class="pi" [class.pi-chevron-down]="isLinkOpen(item, i)" [class.pi-chevron-right]="!isLinkOpen(item, i)"></i>
+          @if (isLinkMissing(link)) {
+            <i class="pi pi-exclamation-triangle link-warn"></i>
+            <span class="link-field link-field--missing"
+              [truncateTooltip]="missingLinkText"
+              tooltipPosition="bottom">{{ missingLinkText }}</span>
+          } @else {
+            <span class="link-ent">{{ getEntityName(link) }}:</span>
+            <span class="link-field"
+              [truncateTooltip]="getFieldName(link)"
+              tooltipPosition="bottom">{{ getFieldName(link) }}</span>
+          }
+          @if (hasLinkCondition(link)) {
+            <span class="link-tag">has condition</span>
+          }
+          @if (!readonly) {
+            <button type="button" class="icon-btn small" title="Remove link" (click)="deleteLink(item, i, $event)">
+              <i class="pi pi-times"></i>
+            </button>
+          }
+        </div>
+        @if (isLinkOpen(item, i)) {
+          <div class="link-row-body">
+            @if (link.type === 'schema' && hasLinkSchema(link)) {
+              <div class="link-path-row">
+                <p-select
+                  class="guardian-dropdown link-schema"
+                  [options]="schemas"
+                  optionLabel="name"
+                  optionValue="iri"
+                  [ngModel]="link.entityId"
+                  (ngModelChange)="onLinkSchemaChange(item, i, $event)"
+                  [disabled]="readonly"
+                  [filter]="schemas.length > 8"
+                  filterBy="name"
+                  appendTo="body"
+                  panelStyleClass="guardian-dropdown-panel">
+                </p-select>
+                <schema-path-input
+                  class="link-path"
+                  [value]="link.item"
+                  [paths]="getLinkPaths(link)"
+                  [readonly]="readonly"
+                  [browse]="!readonly"
+                  [required]="true"
+                  placeholder="Field path"
+                  (valueChange)="onLinkPathChange(item, i, $event)"
+                  (browseClick)="onLink(item, i)">
+                </schema-path-input>
+              </div>
+              @if (!isLinkMissing(link) && getFieldName(link)) {
+                <div class="link-path-hint">{{ getFieldName(link) }}</div>
+              }
+            } @else {
+              <div class="input-link" [class.ro]="readonly" [class.missing]="isLinkMissing(link)" (click)="onLink(item, i)">
+                @if (isLinkMissing(link)) {
+                  <i class="pi pi-exclamation-triangle link-warn"></i>
+                  <div class="link-missing">
+                    <span class="link-field link-field--missing"
+                      [truncateTooltip]="getMissingSchemaText(link)"
+                      tooltipPosition="bottom">{{ getMissingSchemaText(link) }}</span>
+                    <span class="link-missing-field">
+                      <span class="link-missing-label">Previously linked field:</span>
+                      <span class="link-missing-path">{{ link.item }}</span>
+                    </span>
+                  </div>
+                } @else {
+                  <span class="link-ent">{{ getEntityName(link) }}:</span>
+                  <span class="link-field"
+                    [truncateTooltip]="getFieldName(link)"
+                    tooltipPosition="bottom">{{ getFieldName(link) }}</span>
+                }
+              </div>
+            }
+            @if (link.type === 'schema') {
+              <ng-container [ngTemplateOutlet]="displayCondition" [ngTemplateOutletContext]="{ $implicit: item, index: i, link: link }"></ng-container>
+            }
+          </div>
         }
       </div>
-      @if (!selectedLinkMissing && getFieldName(item.link)) {
-        <div class="link-path-hint">{{ getFieldName(item.link) }}</div>
-      }
-    } @else {
-    <div class="input-link" [class.ro]="readonly" [class.missing]="selectedLinkMissing" (click)="onLink(item)">
-      @if (item.link) {
-        @if (selectedLinkMissing) {
-          <i class="pi pi-exclamation-triangle link-warn"></i>
-          <span class="link-field link-field--missing"
-            [truncateTooltip]="missingLinkText"
-            tooltipPosition="bottom">{{ missingLinkText }}</span>
-        } @else {
-          <span class="link-ent">{{ getEntityName(item.link) }}:</span>
-          <span class="link-field"
-            [truncateTooltip]="getFieldName(item.link)"
-            tooltipPosition="bottom">{{ getFieldName(item.link) }}</span>
-        }
-        @if (!readonly) {
-          <button type="button" class="icon-btn small" title="Remove link" (click)="deleteLink(item, $event)">
-            <i class="pi pi-times"></i>
-          </button>
-        }
-      } @else {
-        <span class="placeholder">Select a schema field or formula</span>
-        @if (!readonly) {
-          <i class="pi pi-link end"></i>
-        }
-      }
-    </div>
+    } @empty {
+      <div class="placeholder">No links</div>
+    }
+    @if (!readonly) {
+      <button type="button" class="link-btn" (click)="onLink(item)">
+        <i class="pi pi-plus"></i> Add link
+      </button>
     }
   </div>
 </ng-template>
@@ -576,40 +614,38 @@
   </div>
 </ng-template>
 
-<ng-template #displayCondition let-item>
-  @if (item.link?.type === 'schema') {
-    <div class="sec">
-      <label class="sec-label">
-        Display condition
-        <span class="sec-hint">Optional – without a condition the formula is always shown</span>
-      </label>
-      @if (!item.link.condition) {
-        @if (!readonly) {
-          <button type="button" class="link-btn" (click)="toggleLinkCondition(item, true)">
-            <i class="pi pi-plus"></i> Add display condition
-          </button>
-        } @else {
-          <div class="always-shown">Always shown</div>
-        }
+<ng-template #displayCondition let-item let-index="index" let-link="link">
+  <div class="sec">
+    <label class="sec-label">
+      Display condition for this link
+      <span class="sec-hint">Optional – without a condition the formula is always shown</span>
+    </label>
+    @if (!link.condition) {
+      @if (!readonly) {
+        <button type="button" class="link-btn" (click)="toggleLinkCondition(item, index, true)">
+          <i class="pi pi-plus"></i> Add display condition
+        </button>
       } @else {
-        <app-condition-if-editor
-          [ifCondition]="item.link.condition"
-          (ifConditionChange)="item.link.condition = $event; markDirty()"
-          [fieldGroups]="getLinkFieldGroups(item.link)"
-          [resolveField]="getLinkResolveField(item.link)"
-          [firstEntry]="getLinkFirstEntry(item.link)"
-          [disabled]="readonly"
-          fieldPanelStyleClass="guardian-dropdown-panel sc-cond-panel">
-          @if (!readonly) {
-            <button condHeaderActions type="button" class="icon-btn del cond-remove" title="Remove condition"
-              (click)="toggleLinkCondition(item, false)">
-              <i class="pi pi-trash"></i>
-            </button>
-          }
-        </app-condition-if-editor>
+        <div class="always-shown">Always shown</div>
       }
-    </div>
-  }
+    } @else {
+      <app-condition-if-editor
+        [ifCondition]="link.condition"
+        (ifConditionChange)="setLinkCondition(item, index, $event)"
+        [fieldGroups]="getLinkFieldGroups(link)"
+        [resolveField]="getLinkResolveField(link)"
+        [firstEntry]="getLinkFirstEntry(link)"
+        [disabled]="readonly"
+        fieldPanelStyleClass="guardian-dropdown-panel sc-cond-panel">
+        @if (!readonly) {
+          <button condHeaderActions type="button" class="icon-btn del cond-remove" title="Remove condition"
+            (click)="toggleLinkCondition(item, index, false)">
+            <i class="pi pi-trash"></i>
+          </button>
+        }
+      </app-condition-if-editor>
+    }
+  </div>
 </ng-template>
 
 <ng-template #segments let-list>@for (seg of list; track $index) {@if (seg.mark) {<mark>{{ seg.text }}</mark>} @else {<span>{{ seg.text }}</span>}}</ng-template>

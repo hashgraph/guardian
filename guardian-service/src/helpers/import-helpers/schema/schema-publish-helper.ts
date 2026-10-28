@@ -701,6 +701,8 @@ export async function findAndDryRunSchema(
         throw new Error('Invalid status');
     }
 
+    validateSchemaFieldKeys(item);
+
     item.context = generateSchemaContext(item);
     SchemaHelper.updateIRI(item);
     await DatabaseServer.updateSchema(item.id, item);

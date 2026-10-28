@@ -122,3 +122,32 @@
     }
   }
 }
+
+.formula-warnings {
+  padding: 6px 12px 10px 44px;
+  border-bottom: 1px solid #e1e7ef;
+}
+
+.formula-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: #b25e09;
+
+  i {
+    margin-top: 2px;
+  }
+}
+
+.formula-warning-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #b25e09;
+  background: rgba(245, 158, 11, 0.12);
+}

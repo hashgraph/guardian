@@ -28,6 +28,7 @@ import { FormulasService } from 'src/app/services/formulas.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { FormulasTree } from 'src/app/modules/formulas/models/formula-tree';
+import { IFormulaLinkScope } from 'src/app/modules/formulas/models/form-formulas';
 import { IFieldFormulaRow, IFieldFormulasView, IFieldScope, SchemaFieldFormulas } from './schema-field-formulas';
 
 export interface DrillEntry {
@@ -147,10 +148,12 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public previewPreset: any = null;
     public previewReadonlyFields: any = null;
     public previewFormulas: FormulasTree | null = null;
+    /** where the links of the previewed sub-schema's fields are stored (root schema + drill path) */
+    public previewFormulaLinkScope: IFormulaLinkScope | null = null;
     public previewMounted = false;
     public previewKey = 0;
     public previewSchemaRef: Schema | null = null;
-    private previewBuiltFor: { schema: Schema | null; version: number } = { schema: null, version: -1 };
+    private previewBuiltFor: { schema: Schema | null; version: number; path: string } = { schema: null, version: -1, path: '' };
     public richTextPresetTarget: 'default' | 'suggest' | 'test' | null = null;
     @ViewChild('richTextPresetEditor') public richTextPresetEditor?: RichTextEditorComponent;
 
@@ -867,7 +870,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             formulasService,
             policyEngineService,
             profileService,
-            dialogService,
             (action, error) => this.reportError(action, error),
             (link) => this.describeFormulaLink(link)
         );
@@ -1195,6 +1197,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             if (!this.isTemplateMode) {
                 this.schemaTemplate = appliedTemplate;
             }
+            this.normalizeLegacyConditionFieldOrder(schema);
             this.selectedSchema = schema;
             this.loadProperties(resolveIwaVersion(schema));
             this.resetArrayDependencyEditor();
@@ -3570,6 +3573,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const fields = subSchema?.fields ?? field.fields ?? [];
         if (subSchema && !fields.length) { this.hydrateSubSchemaFields(subSchema); }
         this.drillEntering = true;
+        this.resetCanvasScroll();
         this.activeDrillTab = 'fields';
         this.drillStack = [
             ...this.drillStack,
@@ -3592,6 +3596,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
     }
 
+    private resetCanvasScroll(): void {
+        const body = this._elRef.nativeElement.querySelector('.sc-canvas-body');
+        if (body) { body.scrollTop = 0; }
+    }
+
     public drillTo(index: number): void {
         const previousContext = this.currentContextSchema;
         this.drillStack = this.drillStack.slice(0, index + 1);
@@ -3605,6 +3614,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public drillBack(): void {
+        this.resetCanvasScroll();
         const previousContext = this.currentContextSchema;
         this.drillStack = this.drillStack.slice(0, -1);
         this.persistSuggestionsForContext(previousContext);
@@ -3618,6 +3628,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public drillClose(): void {
+        this.resetCanvasScroll();
         const previousContext = this.currentContextSchema;
         this.drillStack = [];
         this.persistSuggestionsForContext(previousContext);
@@ -4126,9 +4137,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public get canvasFields(): SchemaField[] {
-        const all = this.isDrilling ? this.drillCurrentFields : (this.selectedSchema?.fields ?? []);
-        const owned = this.conditionOwnedFieldNames;
-        return all.filter(f => !owned.has(f.name));
+        return this.isDrilling ? this.drillCurrentFields : (this.selectedSchema?.fields ?? []);
+    }
+
+    public isFieldConditionOwned(field: SchemaField): boolean {
+        return this.conditionOwnedFieldNames.has(field.name);
     }
 
     // Rebuilt only when the schema list itself changes; these getters run on every
@@ -4333,47 +4346,117 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     // ── THEN / ELSE fields ───────────────────────────────────────────────────
 
-    public addThenField(cond: SchemaCondition): void {
-        if (!this.canAddFieldToSelectedSchema || this.isConditionLocked(cond)) { return; }
-        const schema = this.currentContextSchema;
-        if (!schema) { return; }
-        const newField = this.buildNewField(this.defaultFieldType, schema.fields);
-        (schema.fields ??= []).push(newField);
-        (cond.thenFields ??= []).push(newField);
-        this.markDirty();
+    // Repositions legacy (unflagged) condition fields next to their trigger and flags them.
+    private normalizeLegacyConditionFieldOrder(schema: Schema | null | undefined): void {
+        const fields = schema?.fields;
+        if (!fields?.length || !schema?.conditions?.length) { return; }
+
+        for (const cond of schema.conditions) {
+            const triggerNames = this._conditionTriggerRootNames(cond);
+            if (!triggerNames.length) { continue; }
+            let triggerIdx = -1;
+            for (const name of triggerNames) {
+                const idx = fields.findIndex(f => f.name === name);
+                if (idx > triggerIdx) { triggerIdx = idx; }
+            }
+            if (triggerIdx === -1) { continue; }
+
+            const legacy = [...(cond.thenFields ?? []), ...(cond.elseFields ?? [])]
+                .filter((f, i, arr) => arr.indexOf(f) === i && !f.conditionUserOrdered);
+            if (!legacy.length) { continue; }
+
+            let insertAt = triggerIdx + 1;
+            for (const field of legacy) {
+                const curIdx = fields.findIndex(f => f.name === field.name);
+                if (curIdx === -1) { continue; }
+                fields.splice(curIdx, 1);
+                if (curIdx < insertAt) { insertAt--; }
+                fields.splice(insertAt, 0, field);
+                field.conditionUserOrdered = true;
+                insertAt++;
+            }
+        }
     }
 
-    public addElseField(cond: SchemaCondition): void {
-        if (!this.canAddFieldToSelectedSchema || this.isConditionLocked(cond)) { return; }
+    // Unlike _triggerFieldPaths, doesn't rely on this.currentContextSchema - needed since
+    // this runs on schemas that aren't necessarily the open one.
+    private _conditionTriggerRootNames(cond: SchemaCondition): string[] {
+        const ic = cond.ifCondition as any;
+        if (!ic) { return []; }
+        const rows = 'AND' in ic ? (ic.AND || []) : ('OR' in ic ? (ic.OR || []) : [ic]);
+        const names: string[] = [];
+        for (const row of rows) {
+            const path = row?.fieldPath;
+            if (Array.isArray(path) && path.length > 1) { continue; }
+            const name = (Array.isArray(path) && path.length === 1) ? path[0] : row?.field?.name;
+            if (name) { names.push(name); }
+        }
+        return names;
+    }
+
+    // Trigger field names/paths for a condition's own IF rows - excluded from its then/else
+    // picker so a field can't be made conditional on itself.
+    private _triggerFieldPaths(cond: SchemaCondition): Set<string> {
+        const paths = new Set<string>();
+        const ic = cond.ifCondition as any;
+        const rows: any[] = !ic ? [] : ('AND' in ic ? ic.AND : ('OR' in ic ? ic.OR : [ic])) ?? [];
+        for (const row of rows) {
+            const path = this.getIfRowFieldPath(row);
+            if (path) { paths.add(path); }
+        }
+        return paths;
+    }
+
+    // Root-level (non-ref) fields selectable as a then/else member of this condition: not
+    // read-only, not the condition's own trigger, not already a member of this condition.
+    // A field already owned by a DIFFERENT condition is still listed, but disabled with a
+    // tooltip - a field can only belong to one condition's then/else at a time.
+    public getSelectableThenElseFields(cond: SchemaCondition): { pathStr: string; label: string; disabled: boolean }[] {
         const schema = this.currentContextSchema;
-        if (!schema) { return; }
-        const newField = this.buildNewField(this.defaultFieldType, schema.fields);
-        (schema.fields ??= []).push(newField);
-        (cond.elseFields ??= []).push(newField);
+        if (!schema?.fields) { return []; }
+        const ownedByThis = new Set([...(cond.thenFields || []), ...(cond.elseFields || [])].map(f => f.name));
+        const owned = this.conditionOwnedFieldNames;
+        const triggers = this._triggerFieldPaths(cond);
+        return schema.fields
+            .filter(f => !f.readOnly && !f.isRef && !ownedByThis.has(f.name) && !triggers.has(f.name))
+            .map(f => ({
+                pathStr: f.name,
+                label: f.description || f.title || f.name,
+                disabled: owned.has(f.name),
+            }));
+    }
+
+    public selectThenField(cond: SchemaCondition, ci: number, fieldName: string): void {
+        if (!fieldName || this.isConditionLocked(cond)) { return; }
+        const field = this.currentContextSchema?.fields?.find(f => f.name === fieldName);
+        if (!field || this.conditionOwnedFieldNames.has(field.name)) { return; }
+        field.conditionUserOrdered = true;
+        (cond.thenFields ??= []).push(field);
         this.markDirty();
+        setTimeout(() => { this.condThenRefVal[ci] = null; });
+    }
+
+    public selectElseField(cond: SchemaCondition, ci: number, fieldName: string): void {
+        if (!fieldName || this.isConditionLocked(cond)) { return; }
+        const field = this.currentContextSchema?.fields?.find(f => f.name === fieldName);
+        if (!field || this.conditionOwnedFieldNames.has(field.name)) { return; }
+        field.conditionUserOrdered = true;
+        (cond.elseFields ??= []).push(field);
+        this.markDirty();
+        setTimeout(() => { this.condElseRefVal[ci] = null; });
     }
 
     public removeThenField(cond: SchemaCondition, field: SchemaField): void {
         if (this.isTemplateFieldLocked(field)) { return; }
         cond.thenFields = (cond.thenFields || []).filter(f => f !== field);
-        const schema = this.currentContextSchema;
-        if (schema) {
-            const idx = schema.fields.indexOf(field);
-            if (idx !== -1) { schema.fields.splice(idx, 1); }
-        }
-        if (this.selectedField === field) { this.selectedField = null; }
+        if (!this.conditionOwnedFieldNames.has(field.name)) { field.conditionUserOrdered = false; }
         this.markDirty();
     }
 
     public removeElseField(cond: SchemaCondition, field: SchemaField): void {
         if (this.isTemplateFieldLocked(field)) { return; }
         cond.elseFields = (cond.elseFields || []).filter(f => f !== field);
-        const schema = this.currentContextSchema;
-        if (schema) {
-            const idx = schema.fields.indexOf(field);
-            if (idx !== -1) { schema.fields.splice(idx, 1); }
-        }
-        if (this.selectedField === field) { this.selectedField = null; }
+        if (!this.conditionOwnedFieldNames.has(field.name)) { field.conditionUserOrdered = false; }
         this.markDirty();
     }
 
@@ -4583,16 +4666,60 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return result;
     }
 
+    // Cached per condition: the template reads the picker several times per change-detection pass.
+    private condPickerCache = new WeakMap<SchemaCondition, {
+        schema: Schema | null;
+        schemas: Schema[];
+        fields: SchemaField[] | undefined;
+        fieldCount: number;
+        version: number;
+        cross: unknown;
+        result: { label: string; items: { pathStr: string; label: string; isBlock?: boolean; disabled?: boolean }[] }[];
+    }>();
+
+    // Combined picker: root-level fields of this schema (selected as plain then/else members)
+    // plus the existing nested sub-schema field groups (selected as cross-schema targets).
+    public getCondFieldPickerOptions(cond: SchemaCondition): { label: string; items: { pathStr: string; label: string; isBlock?: boolean; disabled?: boolean }[] }[] {
+        const schema = this.currentContextSchema;
+        const cross = this.getCrossTargetPSelectGroups();
+        const hit = this.condPickerCache.get(cond);
+        if (hit
+            && hit.schema === schema
+            && hit.schemas === this.schemas
+            && hit.fields === schema?.fields
+            && hit.fieldCount === (schema?.fields?.length ?? 0)
+            && hit.version === this.schemaEditVersion
+            && hit.cross === cross) {
+            return hit.result;
+        }
+        const rootItems = this.getSelectableThenElseFields(cond);
+        const groups = rootItems.length ? [{ label: 'This schema', items: rootItems }] : [];
+        const result = [...groups, ...cross];
+        this.condPickerCache.set(cond, {
+            schema, schemas: this.schemas, fields: schema?.fields, fieldCount: schema?.fields?.length ?? 0,
+            version: this.schemaEditVersion, cross, result,
+        });
+        return result;
+    }
+
     public onCondThenRefChange(cond: SchemaCondition, ci: number, pathStr: string): void {
         if (!pathStr) { return; }
-        this.addThenTarget(cond, pathStr);
-        setTimeout(() => { this.condThenRefVal[ci] = null; });
+        if (pathStr.includes('.')) {
+            this.addThenTarget(cond, pathStr);
+            setTimeout(() => { this.condThenRefVal[ci] = null; });
+        } else {
+            this.selectThenField(cond, ci, pathStr);
+        }
     }
 
     public onCondElseRefChange(cond: SchemaCondition, ci: number, pathStr: string): void {
         if (!pathStr) { return; }
-        this.addElseTarget(cond, pathStr);
-        setTimeout(() => { this.condElseRefVal[ci] = null; });
+        if (pathStr.includes('.')) {
+            this.addElseTarget(cond, pathStr);
+            setTimeout(() => { this.condElseRefVal[ci] = null; });
+        } else {
+            this.selectElseField(cond, ci, pathStr);
+        }
     }
 
     public addThenTarget(cond: SchemaCondition, pathStr: string): void {
@@ -4815,6 +4942,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     this.schemasFetched = true;
                     // server copies are the saved baseline; a locally edited
                     // selectedSchema still differs from its signature and stays dirty
+                    items.forEach(schema => this.normalizeLegacyConditionFieldOrder(schema));
                     items.forEach(schema => this.snapshotSchema(schema));
                     this.loadAppliedSchemaTemplate();
                     if (this.selectedSchema) { this.upsertInSidebar(this.selectedSchema); }
@@ -5066,19 +5194,20 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     private isPreviewStale(): boolean {
         return this.previewBuiltFor.schema !== this.currentContextSchema
-            || this.previewBuiltFor.version !== this.schemaEditVersion;
+            || this.previewBuiltFor.version !== this.schemaEditVersion
+            || this.previewBuiltFor.path !== this.fieldFormulaPrefix.join('.');
     }
 
     /** the saved formulas of the schema, so the preview shows them like the request form */
     private loadPreviewFormulas(): void {
-        const iri = this.currentContextSchema?.iri;
+        const iri = this.selectedSchema?.iri;
         if (this.activeTab !== 'preview' || !this.fieldFormulas || this.isTemplateMode) {
             return;
         }
         this.fieldFormulas.previewTree(iri)
             .pipe(takeUntil(this.destroy$))
             .subscribe((tree) => {
-                if (this.currentContextSchema?.iri === iri) {
+                if (this.selectedSchema?.iri === iri) {
                     this.previewFormulas = tree;
                 }
             });
@@ -5086,8 +5215,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     private rebuildPreview(): void {
         const schema = this.currentContextSchema;
-        this.previewBuiltFor = { schema, version: this.schemaEditVersion };
+        this.previewBuiltFor = { schema, version: this.schemaEditVersion, path: this.fieldFormulaPrefix.join('.') };
         this.previewSchemaRef = schema;
+        this.previewFormulaLinkScope = this.isDrilling && this.selectedSchema?.iri
+            ? { schema: this.selectedSchema.iri, prefix: this.fieldFormulaPrefix }
+            : null;
         this.previewKey++;
         if (!schema || this.previewPill === 'submitter') {
             this.previewPreset = null;

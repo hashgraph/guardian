@@ -44,7 +44,7 @@ function createConfig(): IFormulaConfig {
 
 function createModel(): Formulas {
     const model = new Formulas();
-    model.labelFn = (item) => item.link ? { entity: 'Net_ERR_Calculation', field: `Field ${item.link.item}` } : null;
+    model.labelFn = (link) => ({ entity: 'Net_ERR_Calculation', field: `Field ${link.item}` });
     model.fromData(createConfig());
     return model;
 }
@@ -255,16 +255,16 @@ describe('Formulas reorder and edit', () => {
         for (const item of json.formulas || []) {
             expect('source' in item).toBe(false);
         }
-        expect(json.formulas).toEqual(createConfig().formulas);
+        // `links` is the only addition: it mirrors `link`
+        const withoutLinks = (json.formulas || []).map(({ links, ...rest }: any) => rest);
+        expect(withoutLinks).toEqual(createConfig().formulas as any);
     });
 });
 
 describe('Formulas missing links', () => {
     it('should show a warning instead of the label of a missing link', () => {
         const model = new Formulas();
-        model.labelFn = (item) => item.link
-            ? { entity: '', field: '', missing: item.link.item === 'f2' }
-            : null;
+        model.labelFn = (link) => ({ entity: '', field: '', missing: link.item === 'f2' });
         model.fromData(createConfig());
         model.update();
         expect(model.meta.get('f1')!.missingLink).toBe(true);
@@ -274,5 +274,74 @@ describe('Formulas missing links', () => {
         model.setQuery('not found');
         model.update();
         expect(model.data.map((e) => e.uuid)).toEqual(['f1']);
+    });
+});
+
+
+describe('Formulas multiple links', () => {
+    const ent = 'Project Description';
+    let model: Formulas;
+
+    beforeEach(() => {
+        const link = (item: string, condition?: any) => ({
+            type: 'schema', entityId: 's1', item, ...(condition ? { condition } : {})
+        });
+        model = new Formulas();
+        model.labelFn = (l) => ({ entity: ent, field: `Field ${l.item}`, missing: l.item === 'gone' });
+        model.fromData({
+            formulas: [
+                { uuid: 'one', type: FormulaItemType.Variable, name: 'One', value: '', description: '', link: link('a') },
+                {
+                    uuid: 'many', type: FormulaItemType.Formula, name: 'Many', value: 'x', description: '', relationships: [],
+                    links: [link('a'), link('b', { field: field('kind', 'Kind'), fieldValue: 'wet' }), link('zeta')]
+                },
+                { uuid: 'none', type: FormulaItemType.Text, name: 'None', value: '', description: '', link: null, relationships: [] }
+            ] as any,
+            files: []
+        });
+    });
+
+    it('should read a single link as a list and mirror the first link on save', () => {
+        const json = model.getJson().formulas!;
+        expect(json[0].links).toEqual([json[0].link!]);
+        expect(json[0].link).toEqual({ type: 'schema', entityId: 's1', item: 'a' });
+        expect(json[2].links).toEqual([]);
+        expect(json[2].link).toBeNull();
+        expect(json[1].link).toBe(json[1].links![0]);
+    });
+
+    it('should show the first link and the number of the others', () => {
+        const many = model.meta.get('many')!;
+        expect(many.subText).toBe(`${ent}: Field a`);
+        expect(many.moreLinks).toBe(2);
+        expect(many.linkCount).toBe(3);
+        expect(model.meta.get('one')!.moreLinks).toBe(0);
+        expect(model.meta.get('one')!.linkCount).toBe(1);
+        expect(model.meta.get('none')!.linkCount).toBe(0);
+    });
+
+    it('should count the links with a display condition', () => {
+        expect(model.meta.get('many')!.conditionCount).toBe(1);
+        expect(model.meta.get('one')!.conditionCount).toBe(0);
+    });
+
+    it('should search all links and conditions', () => {
+        model.setQuery('field zeta');
+        expect(model.data.map((e) => e.uuid)).toEqual(['many']);
+        model.setQuery('kind = wet');
+        expect(model.data.map((e) => e.uuid)).toEqual(['many']);
+    });
+
+    it('should report a missing link of any position', () => {
+        model.getItem('many')!.links![2].item = 'gone';
+        model.setQuery('not found');
+        expect(model.data.map((e) => e.uuid)).toEqual(['many']);
+        expect(model.meta.get('many')!.missingLink).toBe(true);
+    });
+
+    it('should create items with an empty list of links', () => {
+        const item = model.add(FormulaItemType.Variable);
+        expect(item.links).toEqual([]);
+        expect(item.link).toBeNull();
     });
 });
