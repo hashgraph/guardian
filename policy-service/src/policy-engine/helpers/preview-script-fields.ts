@@ -416,7 +416,9 @@ export function findPreviewScriptFields(
     try {
         script = collect(source, expression);
     } catch {
-        return sites.map(({ schema: readSchema, path, fullPath }) => ({ schema: readSchema, path, fullPath }));
+        return sites.map(({ schema: readSchema, path, fullPath, document }) => document === undefined
+            ? { schema: readSchema, path, fullPath }
+            : { schema: readSchema, path, fullPath, document });
     }
     const known = new Set(paths);
     const byKey = new Map<string, string[]>();
@@ -474,7 +476,7 @@ export function findPreviewScriptFields(
     const usedKeys = new Set<string>();
     const usedPaths = new Set<string>();
     const result = new Map<string, IPreviewReadRecord>();
-    const add = (read: IPreviewReadRecord) => result.set(`${read.schema ?? ''}\u0000${read.fullPath ?? read.path}`, read);
+    const add = (read: IPreviewReadRecord) => result.set(`${read.schema ?? ''}\u0000${read.fullPath ?? read.path}\u0000${read.document ?? ''}`, read);
     for (const occurrence of script.occurrences) {
         if (occurrence.dynamic || unexecutedAt(occurrence.start)
             || occurrence.node.type === 'Identifier' && resolver.declaration(occurrence.node)) {
@@ -513,7 +515,9 @@ export function findPreviewScriptFields(
             ? occurrence.usage === 'use' || occurrence.usage === 'path' && !read.nested
             : read.listed && expression ? false : own(read) ? usedPaths.has(read.path) : usedKeys.has(read.path.split('.').pop() || ''));
         if (required) {
-            add({ schema: read.schema, path: read.path, fullPath: read.fullPath });
+            add(read.document === undefined
+                ? { schema: read.schema, path: read.path, fullPath: read.fullPath }
+                : { schema: read.schema, path: read.path, fullPath: read.fullPath, document: read.document });
         }
     }
     return [...result.values()];

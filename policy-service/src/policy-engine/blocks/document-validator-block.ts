@@ -11,7 +11,7 @@ import { FilterQuery } from '@mikro-orm/core';
 import { VcDocument } from '@guardian/common/entity/vc-document';
 import { VpDocument } from '@guardian/common/entity/vp-document';
 import { resolveOrgMemberDids } from '../helpers/org-utils.js';
-import { getPreviewDocumentSchema, isPreviewComputedRead, toPreviewFormPath } from '../helpers/preview.js';
+import { resolvePreviewDocumentRead, toPreviewFormPath } from '../helpers/preview.js';
 import { BlockErrorType, IBlockErrorData, IDocumentValidatorBlockError, LocationType, Schema, SchemaCondition, SchemaField, SchemaHelper } from '@guardian/interfaces';
 
 /**
@@ -420,9 +420,9 @@ export class DocumentValidatorBlock {
         document: IPolicyDocument,
         user: any,
         documentSchema: Schema | null,
-        recordReads: (paths: unknown[]) => void
+        recordReads: (readDocument: IPolicyDocument, paths: unknown[]) => void
     ): Promise<{ message: string; data?: IDocumentValidatorBlockError } | null> {
-        recordReads((sourceValidation.filters || [])
+        recordReads(document, (sourceValidation.filters || [])
             .filter((sourceFilter: any) => sourceFilter.typeValue === 'variable')
             .map((sourceFilter: any) => sourceFilter.value));
         const filter = this.buildSourceFilter(sourceValidation, ref, document, user);
@@ -490,9 +490,13 @@ export class DocumentValidatorBlock {
                 if (skipLeft || skipRight) {
                     continue;
                 }
-                recordReads([
+                recordReads(document, [
                     condition.fieldSource === 'document' ? condition.field : null,
                     condition.valueSource === 'document' ? condition.value : null
+                ]);
+                recordReads(sourceDoc, [
+                    condition.fieldSource === 'source' ? condition.field : null,
+                    condition.valueSource === 'source' ? condition.value : null
                 ]);
                 const left  = this.resolveConditionSide(condition.field, condition.fieldSource, condition.type, document, [sourceDoc]);
                 const right = this.resolveConditionSide(condition.value, condition.valueSource, condition.type, document, [sourceDoc]);
@@ -576,8 +580,7 @@ export class DocumentValidatorBlock {
             return { message: 'Invalid document' };
         }
 
-        const formDocument = document;
-        const recordReads = (paths: unknown[]) => this.addPreviewReads(event, formDocument, paths);
+        const recordReads = (readDocument: IPolicyDocument, paths: unknown[]) => this.addPreviewReads(event, readDocument, paths);
         const documentRef = PolicyUtils.getDocumentRef(document);
 
         const options = await ref.getOptions(event.user);
@@ -685,7 +688,7 @@ export class DocumentValidatorBlock {
                         continue;
                     }
                 }
-                recordReads([filter.field, filter.valueSource === 'document' ? filter.value : null]);
+                recordReads(document, [filter.field, filter.valueSource === 'document' ? filter.value : null]);
                 if (!PolicyUtils.checkDocumentField(document, filter)) {
                     const actual = PolicyUtils.resolveFieldPath(document, filter.field);
                     const expected = filter.valueSource === 'document'
@@ -750,14 +753,11 @@ export class DocumentValidatorBlock {
         if (!event.actionStatus?.preview) {
             return;
         }
-        const schema = getPreviewDocumentSchema(document);
-        if (schema !== null && schema !== event.actionStatus.getPreviewSource()?.schema) {
-            return;
-        }
         for (const path of paths) {
             const field = toPreviewFormPath(path);
-            if (field && !isPreviewComputedRead(document, schema, field)) {
-                event.actionStatus.addPreviewRead(schema, field);
+            const read = field ? resolvePreviewDocumentRead(document, field) : null;
+            if (read && (read.schema === null || read.schema === event.actionStatus.getPreviewSource()?.schema)) {
+                event.actionStatus.addPreviewRead(read.schema, read.path);
             }
         }
     }

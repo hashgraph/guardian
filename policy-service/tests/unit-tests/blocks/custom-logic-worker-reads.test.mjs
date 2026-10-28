@@ -80,7 +80,7 @@ describe('@unit customLogic worker read tracking', function () {
         const script = 'const doc = documents[0].document.credentialSubject[0];\nlet total = doc.amount;\nif (total > 100) { total = doc.rate; }\ndone({ total });';
         const messages = await runWorker(script, formDocuments(), true);
         const done = messages.find((message) => message?.type === 'done');
-        assert.deepEqual(done.sites, [{ schema: '#S', path: 'amount', fullPath: 'amount', site: script.indexOf('amount'), listed: false, nested: false }]);
+        assert.deepEqual(done.sites, [{ schema: '#S', path: 'amount', fullPath: 'amount', site: script.indexOf('amount'), listed: false, nested: false, document: 0 }]);
         assert.deepEqual(done.unexecuted.map(([start, end]) => script.slice(start, end)), ['{ total = doc.rate; }']);
     });
 

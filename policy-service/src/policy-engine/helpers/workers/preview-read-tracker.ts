@@ -5,6 +5,7 @@ export interface IPreviewReadRecord {
     schema: string | null;
     path: string;
     fullPath?: string;
+    document?: number | null;
 }
 
 export interface IPreviewWriteRecord extends IPreviewReadRecord {
@@ -131,11 +132,12 @@ export class PreviewReadTracker {
         if (!this.reads.has(key)) {
             this.reads.set(key, this.lines ? { schema, path, fullPath: writePath } : { schema, path });
         }
-        const siteKey = `${key}\u0000${site}\u0000${listed}\u0000${call ?? ''}`;
+        const siteKey = `${key}\u0000${site}\u0000${listed}\u0000${call ?? ''}\u0000${document ?? ''}`;
         if (this.lines && !this.sites.has(siteKey)) {
-            this.sites.set(siteKey, call === undefined
+            const read: IPreviewReadSite = call === undefined
                 ? { schema, path, fullPath: writePath, site, listed, nested }
-                : { schema, path, fullPath: writePath, site, listed, nested, call });
+                : { schema, path, fullPath: writePath, site, listed, nested, call };
+            this.sites.set(siteKey, document === null ? read : { ...read, document });
         }
     }
 

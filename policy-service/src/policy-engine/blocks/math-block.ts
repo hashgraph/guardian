@@ -50,7 +50,9 @@ import {
     isPreviewOutputRead,
     getPreviewCopyTargets,
     isPreviewStoredDocument,
+    keepPreviewDocumentOrigins,
     recoverPreviewCopiedFields,
+    resolvePreviewDocumentRead,
     PreviewScope,
     setPreviewComputed,
     setPreviewDocumentSchema
@@ -237,7 +239,8 @@ export class MathBlock {
         documents: DocumentMap,
         user: PolicyUser,
         currentSchema: string | null = null,
-        source: IPolicyDocument | null = null
+        source: IPolicyDocument | null = null,
+        relationships: IPolicyDocument[] = []
     ): Promise<any> {
         const options = await ref.getOptions(user);
         const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema);
@@ -266,8 +269,14 @@ export class MathBlock {
         const actionStatus = PreviewScope.current();
         if (actionStatus) {
             for (const read of getMathPreviewReads(options.expression, currentSchema)) {
-                if (!isPreviewComputedRead(source, read.schema, read.path)) {
-                    actionStatus.addPreviewRead(read.schema, read.path);
+                const selected = !read.link || documents.getDocument(read.link) === documents.getCurrent()
+                    ? source
+                    : relationships.filter((item) => item.schema === read.link).pop();
+                const origin = selected
+                    ? resolvePreviewDocumentRead(selected, read.path)
+                    : !isPreviewComputedRead(source, read.schema, read.path) ? read : null;
+                if (origin) {
+                    actionStatus.addPreviewRead(origin.schema, origin.path);
                 }
             }
         }
@@ -297,8 +306,11 @@ export class MathBlock {
                 : [];
             for (const read of fields) {
                 const readSchema = read.schema ?? currentSchema;
-                if (!isPreviewOutputRead(read.path, outputPaths) && !isPreviewComputedRead(source, readSchema, read.path)) {
-                    actionStatus.addPreviewRead(readSchema, read.fullPath ?? read.path);
+                const origin = source
+                    ? resolvePreviewDocumentRead(source, read.fullPath ?? read.path)
+                    : !isPreviewComputedRead(source, readSchema, read.path) ? { schema: readSchema, path: read.fullPath ?? read.path } : null;
+                if (!isPreviewOutputRead(read.path, outputPaths) && origin) {
+                    actionStatus.addPreviewRead(origin.schema, origin.path);
                 }
             }
             const failed = workerResult.error
@@ -486,7 +498,7 @@ export class MathBlock {
         map.addRelationships(contextRelationships.map((d) => this.getCredentialSubject(d)));
 
         const currentSchema = getPreviewDocumentSchema(contextDocument);
-        const newJson = await this.calculate(ref, map, docOwner, currentSchema, contextDocument);
+        const newJson = await this.calculate(ref, map, docOwner, currentSchema, contextDocument, contextRelationships);
         await this.storeResultTables(ref, newJson, userId, storedTables, user, preview);
         let item: IPolicyDocument;
         if (options.unsigned) {
@@ -497,6 +509,9 @@ export class MathBlock {
         }
         if (preview) {
             const copy = !options.outputSchema || options.outputSchema === options.inputSchema;
+            if (copy) {
+                keepPreviewDocumentOrigins(contextDocument, item);
+            }
             setPreviewComputed(item, [
                 ...(copy ? getPreviewComputed(contextDocument) : []),
                 ...getMathPreviewOutputPaths(options.expression),

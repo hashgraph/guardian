@@ -527,7 +527,7 @@ function diagnosePreviewAutoField(
     return findPreviewScriptFields(body, sites, [], null, paths, true, prefix);
 }
 
-export function getMathPreviewReads(expression: unknown, currentSchema: string | null): IPreviewRead[] {
+export function getMathPreviewReads(expression: unknown, currentSchema: string | null): (IPreviewRead & { link: string | null })[] {
     const engine = MathEngine.from(expression);
     if (!engine) {
         return [];
@@ -536,7 +536,7 @@ export function getMathPreviewReads(expression: unknown, currentSchema: string |
     return engine.variables
         .getItems()
         .filter((link) => !!link.path)
-        .map((link) => ({ schema: link.schema || currentSchema, path: link.path }));
+        .map((link) => ({ schema: link.schema || currentSchema, path: link.path, link: link.schema || null }));
 }
 
 export function getMathPreviewOutputPaths(expression: unknown): string[] {
@@ -660,12 +660,115 @@ export function isPreviewStoredDocument(document: unknown): boolean {
     return !!actionStatus && !!document && typeof document === 'object' && !!previewStoredDocuments.get(actionStatus)?.has(document);
 }
 
+const previewExtractedDocuments = new WeakMap<RecordActionStep, WeakMap<object, { document: unknown; path: string }>>();
+
+export function markPreviewExtractedDocument<T>(document: T, source: unknown, path: string): T {
+    const actionStatus = PreviewScope.current();
+    if (actionStatus?.preview && document && typeof document === 'object') {
+        let extracted = previewExtractedDocuments.get(actionStatus);
+        if (!extracted) {
+            extracted = new WeakMap<object, { document: unknown; path: string }>();
+            previewExtractedDocuments.set(actionStatus, extracted);
+        }
+        extracted.set(document, { document: source, path });
+    }
+    return document;
+}
+
+function getPreviewExtractedOrigin(document: unknown): { document: unknown; path: string } | null {
+    const actionStatus = PreviewScope.current();
+    return actionStatus && document && typeof document === 'object'
+        ? previewExtractedDocuments.get(actionStatus)?.get(document) ?? null
+        : null;
+}
+
+export function resolvePreviewDocumentRead(document: unknown, path: string): IPreviewRead | null {
+    const schema = getPreviewDocumentSchema(document);
+    if (isPreviewStoredDocument(document) || isPreviewComputedRead(document, schema, path)) {
+        return null;
+    }
+    const origin = getPreviewExtractedOrigin(document);
+    if (origin) {
+        return resolvePreviewDocumentRead(origin.document, origin.path ? `${origin.path}.${path}` : path);
+    }
+    return { schema, path };
+}
+
+export function getPreviewDocumentPaths(document: unknown, paths: string[]): string[] {
+    const origin = getPreviewExtractedOrigin(document);
+    if (!origin) {
+        return paths;
+    }
+    const prefix = normalizePreviewPath(origin.path);
+    return getPreviewDocumentPaths(origin.document, paths)
+        .filter((path) => !prefix || path.startsWith(`${prefix}.`))
+        .map((path) => prefix ? path.slice(prefix.length + 1) : path);
+}
+
+export function evaluatePreviewSwitchFormula(formula: string, scope: any, record: (key: string, index: number | null) => void, ready?: () => void): unknown {
+    let name = 'previewReadElement';
+    while (formula.includes(name) || Object.prototype.hasOwnProperty.call(scope, name)) {
+        name += '_';
+    }
+    const values = new Map(Object.entries(scope));
+    const read = (value: any, key: string, object?: unknown) => {
+        if (object === undefined) {
+            if (values.get(key) === value) {
+                record(key, null);
+            }
+        } else if (values.get(key) !== object) {
+            record(key, NaN);
+        } else {
+            const indexes = mathjs.isMatrix(value) ? value.toArray() : value;
+            for (const index of Array.isArray(indexes) ? indexes : [indexes]) {
+                record(key, Number.isInteger(index) ? index - 1 : null);
+            }
+        }
+        return value;
+    };
+    try {
+        const visit = (node: mathjs.MathNode, parent?: mathjs.MathNode, path?: string): mathjs.MathNode => {
+            if (mathjs.isAccessorNode(node) && mathjs.isSymbolNode(node.object)
+                && values.has(node.object.name)
+                && !(node.index.dimensions.length === 1 && mathjs.isConstantNode(node.index.dimensions[0])
+                    && typeof node.index.dimensions[0].value === 'string')) {
+                const key = node.object.name;
+                const dimensions = node.index.dimensions.map((dimension, index) => index === 0
+                    ? new mathjs.FunctionNode(new mathjs.SymbolNode(name), [visit(dimension, node.index), new mathjs.ConstantNode(key), node.object])
+                    : visit(dimension, node.index));
+                return new mathjs.AccessorNode(node.object, new mathjs.IndexNode(dimensions, node.index.dotNotation));
+            }
+            if (mathjs.isSymbolNode(node) && values.has(node.name)
+                && !(parent && mathjs.isAccessorNode(parent) && path === 'object')
+                && !(parent && mathjs.isFunctionNode(parent) && path === 'fn')
+                && !(parent && mathjs.isAssignmentNode(parent) && path === 'object')) {
+                return new mathjs.FunctionNode(new mathjs.SymbolNode(name), [node, new mathjs.ConstantNode(node.name)]);
+            }
+            return node.map((child, childPath) => visit(child, node, childPath));
+        };
+        const expression = visit(mathjs.parse(formula)).toString();
+        scope[name] = read;
+        ready?.();
+        try {
+            return PolicyUtils.evaluateCustomFormula(expression, scope);
+        } finally {
+            delete scope[name];
+        }
+    } catch {
+        return PolicyUtils.evaluateCustomFormula(formula, scope);
+    }
+}
+
 export function keepPreviewDocumentOrigins<T>(source: unknown, result: T): T {
     if (PreviewScope.current()?.preview) {
         setPreviewDocumentSchema(result, getPreviewDocumentSchema(source));
         setPreviewComputed(result, getPreviewComputed(source));
         if (isPreviewStoredDocument(source)) {
             markPreviewStoredDocuments(result);
+        }
+        const origin = getPreviewExtractedOrigin(source);
+        if (origin) {
+            markPreviewExtractedDocument(result, origin.document, origin.path);
         }
     }
     return result;
@@ -674,9 +777,9 @@ export function keepPreviewDocumentOrigins<T>(source: unknown, result: T): T {
 export function addPreviewDocumentRead(document: unknown, configuredPath: unknown): void {
     const actionStatus = PreviewScope.current();
     const path = toPreviewFormPath(configuredPath);
-    const schema = getPreviewDocumentSchema(document);
-    if (actionStatus?.preview && path && schema && !isPreviewStoredDocument(document) && !isPreviewComputedRead(document, schema, path)) {
-        actionStatus.addPreviewRead(schema, path);
+    const read = actionStatus?.preview && path ? resolvePreviewDocumentRead(document, path) : null;
+    if (read?.schema) {
+        actionStatus.addPreviewRead(read.schema, read.path);
     }
 }
 
@@ -739,17 +842,20 @@ export function evaluatePreviewFormula(formula: string, scope: any, document: un
     const actionStatus = PreviewScope.current();
     const source = actionStatus?.preview ? actionStatus.getPreviewSource() : null;
     const schema = source ? getPreviewDocumentSchema(document) : null;
-    if (!source || !schema || schema !== source.schema || isPreviewStoredDocument(document)) {
+    const extracted = !!source && !!getPreviewExtractedOrigin(document);
+    if (!source || !extracted && (!schema || schema !== source.schema) || isPreviewStoredDocument(document)) {
         return PolicyUtils.evaluateFormula(formula, scope);
     }
     const tracker = new PreviewReadTracker();
     tracker.configure(formula);
-    const fields = new Set(source.paths);
-    const result = PolicyUtils.evaluateFormula(formula, trackPreviewFormulaScope(tracker, scope, schema, source.paths));
+    const paths = getPreviewDocumentPaths(document, source.paths);
+    const fields = new Set(paths);
+    const result = PolicyUtils.evaluateFormula(formula, trackPreviewFormulaScope(tracker, scope, schema, paths));
     for (const read of tracker.take()) {
         const path = read.fullPath ?? read.path;
-        if (fields.has(normalizePreviewPath(path)) && !isPreviewComputedRead(document, schema, path)) {
-            actionStatus.addPreviewRead(schema, path);
+        const origin = fields.has(normalizePreviewPath(path)) ? resolvePreviewDocumentRead(document, path) : null;
+        if (origin && origin.schema === source.schema) {
+            actionStatus.addPreviewRead(origin.schema, origin.path);
         }
     }
     return result;

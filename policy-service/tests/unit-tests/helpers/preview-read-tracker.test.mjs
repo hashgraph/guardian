@@ -89,6 +89,20 @@ describe('@unit PreviewReadTracker', () => {
         assert.deepEqual(tracker.findSources(tracker.unwrap({ ...documents[1].document.credentialSubject[0] })), [-1]);
     });
 
+    it('keeps the input document of each read site apart when the same field is read from two inputs', () => {
+        const tracker = new PreviewReadTracker();
+        tracker.configure('');
+        const documents = tracker.trackPolicyDocuments([
+            { schema: '#S', document: { credentialSubject: [{ amount: 2 }] } },
+            { schema: '#S', document: { credentialSubject: [{ amount: 3 }] } }
+        ]);
+        assert.equal(documents[0].document.credentialSubject[0].amount + documents[1].document.credentialSubject[0].amount, 5);
+        assert.deepEqual(tracker.takeSites().map((read) => [read.path, read.document]), [['amount', 0], ['amount', 1]]);
+        const doc = tracker.track({ amount: 1 }, '#S');
+        assert.equal(doc.amount, 1);
+        assert.equal('document' in tracker.takeSites()[0], false);
+    });
+
     it('does not record a read of a value the script wrote earlier, but keeps a read made before the write', () => {
         const tracker = new PreviewReadTracker();
         const doc = tracker.track({ amount: 2, rate: 3 }, '#S');

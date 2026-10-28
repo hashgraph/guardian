@@ -28,9 +28,11 @@ import {
     getPreviewSubject,
     isPreviewComputedRead,
     isPreviewStoredDocument,
+    keepPreviewDocumentOrigins,
     getPreviewCopyTargets,
     normalizePreviewPath,
     recoverPreviewCopiedFields,
+    resolvePreviewDocumentRead,
     setPreviewComputed,
     setPreviewDocumentSchema
 } from '../helpers/preview.js';
@@ -319,6 +321,9 @@ export class CustomLogicBlock {
                         }
                         const found = scriptSources.get(json) ?? -1;
                         const source = documents[found >= 0 ? found : documents.length === 1 ? 0 : -1];
+                        if (found >= 0) {
+                            keepPreviewDocumentOrigins(source, item);
+                        }
                         if (options.passOriginal) {
                             const schemas = new Set((source ? [source] : documents).map(getPreviewDocumentSchema));
                             setPreviewDocumentSchema(item, schemas.size === 1 ? [...schemas][0] : null);
@@ -398,8 +403,12 @@ export class CustomLogicBlock {
                     const form = documents.some((document) => [previewSource.schema, null].includes(getPreviewDocumentSchema(document)));
                     const fields = findPreviewScriptFields(`${execCode}${expression}`, data.sites, data.unexecuted || [], previewSource.schema, form ? previewSource.paths : []);
                     for (const read of fields) {
-                        if (!isPreviewComputedRead(documents, read.schema, read.path)) {
-                            actionStatus.addPreviewRead(read.schema, read.fullPath ?? read.path);
+                        const document = typeof read.document === 'number' ? documents[read.document] : undefined;
+                        const origin = document
+                            ? resolvePreviewDocumentRead(document, read.fullPath ?? read.path)
+                            : !isPreviewComputedRead(documents, read.schema, read.path) ? { schema: read.schema, path: read.fullPath ?? read.path } : null;
+                        if (origin) {
+                            actionStatus.addPreviewRead(origin.schema, origin.path);
                         }
                     }
                 };

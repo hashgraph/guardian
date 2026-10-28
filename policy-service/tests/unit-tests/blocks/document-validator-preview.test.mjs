@@ -4,7 +4,7 @@ import { makeBlock, makeDb, makeUser, restoreHarness } from './_block-exec-harne
 import { DocumentValidatorBlock } from '../../../dist/policy-engine/blocks/document-validator-block.js';
 import { PolicyComponentsUtils } from '../../../dist/policy-engine/policy-components-utils.js';
 import { RecordActionStep } from '../../../dist/policy-engine/record-action-step.js';
-import { setPreviewDocumentSchema } from '../../../dist/policy-engine/helpers/preview.js';
+import { markPreviewStoredDocuments, PreviewScope, setPreviewDocumentSchema } from '../../../dist/policy-engine/helpers/preview.js';
 
 describe('@unit documentValidatorBlock preview', () => {
     let orig;
@@ -78,7 +78,7 @@ describe('@unit documentValidatorBlock preview', () => {
     const realSetup = (options, sourceDocuments = []) => {
         const { block } = makeBlock(DocumentValidatorBlock, {
             options: { onErrorAction: 'no-action', ...options },
-            componentsOverrides: { databaseServer: makeDb({ getVcDocuments: async () => sourceDocuments }) }
+            componentsOverrides: { databaseServer: makeDb({ getVcDocuments: async () => markPreviewStoredDocuments(sourceDocuments) }) }
         });
         const events = [];
         block.triggerEvents = async (...args) => { events.push(args[0]); };
@@ -101,7 +101,7 @@ describe('@unit documentValidatorBlock preview', () => {
             }]
         }, [{ document: { credentialSubject: [{ cap: 10 }] } }]);
         const step = previewStep();
-        await block.runAction({ user: makeUser(), data: { data: formDocument({ amount: 2, rate: 2, projectId: 'P', limit: 5 }) }, actionStatus: step });
+        await PreviewScope.run(step, () => block.runAction({ user: makeUser(), data: { data: formDocument({ amount: 2, rate: 2, projectId: 'P', limit: 5 }) }, actionStatus: step }));
         assert.deepEqual(readPaths(step), ['amount', 'limit', 'projectId', 'rate']);
         assert.equal(events[0], 'RunEvent');
     });

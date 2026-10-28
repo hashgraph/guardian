@@ -3,7 +3,8 @@ import { findPreviewScriptFields } from '../../../dist/policy-engine/helpers/pre
 import assert from 'node:assert/strict';
 import { types } from 'node:util';
 import { PolicyUtils } from '../../../dist/policy-engine/helpers/utils.js';
-import { assertPreviewCalculationResult, calculatePreviewAutoFields, collectPreviewNullPaths, collectPreviewUnavailablePaths, collectPreviewPaths, fillPreviewPlaceholders, getMathPreviewOutputPaths, getMathPreviewReads, getPreviewChangedPaths, getPreviewComputed, getPreviewSubject, isMissingPreviewValue, isPreviewComputedRead, isPreviewOutputRead, isPreviewPathCovered, normalizePreviewPath, removePreviewEmptyValues, resolvePreviewFields, setPreviewComputed, trackPreviewFormulaScope } from '../../../dist/policy-engine/helpers/preview.js';
+import { RecordActionStep } from '../../../dist/policy-engine/record-action-step.js';
+import { assertPreviewCalculationResult, calculatePreviewAutoFields, collectPreviewNullPaths, collectPreviewUnavailablePaths, collectPreviewPaths, fillPreviewPlaceholders, getMathPreviewOutputPaths, getMathPreviewReads, getPreviewChangedPaths, getPreviewComputed, getPreviewDocumentPaths, evaluatePreviewSwitchFormula, getPreviewSubject, isMissingPreviewValue, isPreviewComputedRead, isPreviewOutputRead, isPreviewPathCovered, normalizePreviewPath, markPreviewExtractedDocument, markPreviewStoredDocuments, PreviewScope, removePreviewEmptyValues, resolvePreviewDocumentRead, resolvePreviewFields, setPreviewComputed, setPreviewDocumentSchema, trackPreviewFormulaScope } from '../../../dist/policy-engine/helpers/preview.js';
 
 const field = (name, type, extra = {}) => ({ name, type, isRef: false, isArray: false, ...extra });
 
@@ -411,13 +412,77 @@ describe('@unit preview fields', () => {
                 outputs: []
             };
             assert.deepEqual(getMathPreviewReads(expression, '#S'), [
-                { schema: '#S', path: 'amount' },
-                { schema: '#R', path: 'rate' }
+                { schema: '#S', path: 'amount', link: null },
+                { schema: '#R', path: 'rate', link: '#R' }
             ]);
         });
 
         it('returns nothing without an expression', () => {
             assert.deepEqual(getMathPreviewReads(null, '#S'), []);
+        });
+    });
+
+    describe('evaluatePreviewSwitchFormula', () => {
+        for (const formula of ['true ? amount[1] > 0 : amount[2] > 0', 'false ? amount[2] > 0 : amount[1] > 0', 'i=1; amount[i] > 0']) {
+            it(`records only executed indexes: ${formula}`, () => {
+                const reads = [];
+                const result = evaluatePreviewSwitchFormula(formula, { amount: [5, undefined] }, (key, index) => reads.push([key, index]));
+                assert.notEqual(result, 'Incorrect formula');
+                assert.deepEqual(reads, [['amount', 0]]);
+            });
+        }
+        for (const [formula, selected] of [
+            ['sum(amount[1:2])', [0, 1]],
+            ['sum(amount[[2,1,2]])', [1, 0, 1]],
+            ['sum(amount[1:end-1])', [0, 1]],
+            ['sum(amount[1:2:3])', [0, 2]]
+        ]) {
+            it(`records selected range or list elements: ${formula}`, () => {
+                const reads = [];
+                const scope = { amount: [5, 7, 9] };
+                const result = evaluatePreviewSwitchFormula(formula, scope, (key, index) => reads.push([key, index]));
+                assert.equal(result, PolicyUtils.evaluateCustomFormula(formula, { amount: [5, 7, 9] }));
+                assert.deepEqual(reads, selected.map(index => ['amount', index]));
+            });
+        }
+        it('records whole-array operations', () => {
+            const reads = [];
+            assert.equal(evaluatePreviewSwitchFormula('sum(amount)', { amount: [5, 7] }, (key, index) => reads.push([key, index])), 12);
+            assert.deepEqual(reads, [['amount', null]]);
+        });
+    });
+
+    describe('resolvePreviewDocumentRead and getPreviewDocumentPaths', () => {
+        const step = () => {
+            const actionStatus = new RecordActionStep(() => {}, 0, true, true, undefined, true);
+            actionStatus.setPreviewSource({ schema: '#P', document: {}, paths: ['section', 'section.amount', 'rows', 'rows.amount', 'other'], dependencies: {} });
+            return actionStatus;
+        };
+        const doc = (subject, schema) => setPreviewDocumentSchema({ document: { credentialSubject: [subject] } }, schema);
+
+        it('translates a read of an extracted document back to its original indexed path', async () => {
+            await PreviewScope.run(step(), async () => {
+                const parent = doc({ rows: [{}, {}] }, '#P');
+                const child = markPreviewExtractedDocument(doc({}, null), parent, 'rows.1');
+                assert.deepEqual(resolvePreviewDocumentRead(child, 'amount'), { schema: '#P', path: 'rows.1.amount' });
+                assert.deepEqual(getPreviewDocumentPaths(child, ['section.amount', 'rows', 'rows.amount', 'other']), ['amount']);
+                assert.deepEqual(getPreviewDocumentPaths(parent, ['rows.amount']), ['rows.amount']);
+            });
+        });
+
+        it('drops reads of stored records and of fields calculated on the document or before extraction', async () => {
+            await PreviewScope.run(step(), async () => {
+                assert.equal(resolvePreviewDocumentRead(markPreviewStoredDocuments(doc({}, '#P')), 'other'), null);
+                assert.equal(resolvePreviewDocumentRead(setPreviewComputed(doc({}, '#P'), ['other']), 'other'), null);
+                const parent = setPreviewComputed(doc({ section: {} }, '#P'), ['section.amount']);
+                assert.equal(resolvePreviewDocumentRead(markPreviewExtractedDocument(doc({}, null), parent, 'section'), 'amount'), null);
+                assert.deepEqual(resolvePreviewDocumentRead(doc({}, null), 'other'), { schema: null, path: 'other' });
+            });
+        });
+
+        it('leaves documents unmarked outside Preview', () => {
+            const child = markPreviewExtractedDocument(doc({}, null), doc({}, '#P'), 'section');
+            assert.deepEqual(resolvePreviewDocumentRead(child, 'amount'), { schema: null, path: 'amount' });
         });
     });
 
