@@ -48,11 +48,15 @@ import {
     getPreviewDocumentSchema,
     isPreviewComputedRead,
     isPreviewOutputRead,
+    getPreviewCopyTargets,
+    isPreviewStoredDocument,
+    recoverPreviewCopiedFields,
     PreviewScope,
     setPreviewComputed,
     setPreviewDocumentSchema
 } from '../helpers/preview.js';
-import { IPreviewReadRecord, IPreviewReadSite } from '../helpers/workers/preview-read-tracker.js';
+import { IPreviewReadRecord, IPreviewReadSite, IPreviewWriteRecord } from '../helpers/workers/preview-read-tracker.js';
+import { collectPreviewNonFiniteNames, IPreviewCopyDiagnosis, IPreviewCopyTarget, isPreviewFieldFailure, isPreviewFiniteResult } from '../helpers/workers/preview-copy-diagnosis.js';
 
 const filename = fileURLToPath(import.meta.url);
 
@@ -74,7 +78,9 @@ interface IMathWorkerResult {
     sites?: IPreviewReadSite[];
     unexecuted?: [number, number][];
     writes?: IPreviewReadRecord[];
+    enumerated?: IPreviewWriteRecord[];
     error?: string;
+    errorName?: string | null;
 }
 
 interface IStoredTable {
@@ -173,6 +179,7 @@ export class MathBlock {
                             body: data.body,
                             sites: data.sites,
                             unexecuted: data.unexecuted,
+                            enumerated: data.enumerated,
                             writes: Array.isArray(data.writes) ? data.writes : undefined
                         })
                     } else if (data?.type === 'error') {
@@ -183,7 +190,9 @@ export class MathBlock {
                             body: data.body,
                             sites: data.sites,
                             unexecuted: data.unexecuted,
-                            error: String(data.error)
+                            enumerated: data.enumerated,
+                            error: String(data.error),
+                            errorName: data.errorName ?? null
                         })
                     }
                 } catch (error) {
@@ -191,6 +200,28 @@ export class MathBlock {
                     reject(error);
                 }
             });
+        });
+    }
+
+    private diagnose(workerData: Record<string, unknown>, targets: IPreviewCopyTarget[]): Promise<IPreviewCopyDiagnosis | null> {
+        return new Promise<IPreviewCopyDiagnosis | null>((resolve) => {
+            const worker = new Worker(
+                path.join(path.dirname(filename), '..', 'helpers', 'workers', 'math-worker.js'),
+                { workerData: { ...workerData, diagnose: targets } }
+            );
+            const finish = (value: IPreviewCopyDiagnosis | null) => {
+                clearTimeout(timer);
+                worker.terminate().catch(() => undefined);
+                resolve(value);
+            };
+            const timer = setTimeout(() => finish(null), 30000);
+            worker.on('message', (message) => {
+                if (message?.type === 'diagnosis') {
+                    finish(message.diagnosis);
+                }
+            });
+            worker.on('error', () => finish(null));
+            worker.on('exit', () => finish(null));
         });
     }
 
@@ -240,7 +271,7 @@ export class MathBlock {
                 }
             }
         }
-        const workerResult = await this.createWorker({
+        const workerData = {
             expression: options.expression,
             documents: workerDocuments,
             artifacts,
@@ -250,7 +281,8 @@ export class MathBlock {
             copy,
             withScope: !!actionStatus,
             trackReads: !!actionStatus
-        });
+        };
+        const workerResult = await this.createWorker(workerData);
 
         for (const warning of workerResult.warnings) {
             ref.warn(warning);
@@ -268,6 +300,14 @@ export class MathBlock {
                 if (!isPreviewOutputRead(read.path, outputPaths) && !isPreviewComputedRead(source, readSchema, read.path)) {
                     actionStatus.addPreviewRead(readSchema, read.fullPath ?? read.path);
                 }
+            }
+            const failed = workerResult.error
+                ? isPreviewFieldFailure(workerResult.errorName, workerResult.error)
+                : !previewSource?.discovery && !isPreviewFiniteResult(workerResult.result);
+            if (failed && workerResult.body) {
+                const targets = getPreviewCopyTargets(actionStatus, workerResult.enumerated ?? [],
+                    () => source && !isPreviewStoredDocument(source) && currentSchema === previewSource?.schema ? source : null);
+                await recoverPreviewCopiedFields(actionStatus, targets, workerResult.body, (copyTargets) => this.diagnose(workerData, copyTargets), ['document', 'result'], workerResult.error ?? null, collectPreviewNonFiniteNames(workerResult.result));
             }
             if (workerResult.error) {
                 throw new Error(workerResult.error);

@@ -1,4 +1,4 @@
-import { compileFunction } from 'node:vm';
+import { compileFunction, createContext, runInContext } from 'node:vm';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import * as mathjs from 'mathjs';
 import { LocationType, SchemaCondition, SchemaField, SchemaHelper, } from '@guardian/interfaces';
@@ -11,8 +11,10 @@ import { PolicyUser } from '../policy-user.js';
 import { IPreviewCalculation, IPreviewDocument, IPreviewRead, IPreviewSource, RecordActionStep } from '../record-action-step.js';
 import { PolicyUtils } from './utils.js';
 import { getDocumentValueByPath, MathEngine, MathItemType } from './math-model/index.js';
-import { PREVIEW_SCRIPT_FILE, PreviewReadTracker } from './workers/preview-read-tracker.js';
+import { IPreviewWriteRecord, PREVIEW_SCRIPT_FILE, PreviewReadTracker } from './workers/preview-read-tracker.js';
+import { hasPreviewPresenceCheck, IPreviewCopyDiagnosis, IPreviewCopyTarget, isPreviewFieldFailure, isPreviewFiniteResult, startPreviewCopyDiagnosis } from './workers/preview-copy-diagnosis.js';
 import { findPreviewScriptFields } from './preview-script-fields.js';
+import { buildTableHelper } from './table-field-core.js';
 import { getPreviewIncomplete } from './preview-database.js';
 import { BlockActionError } from '../errors/index.js';
 
@@ -399,7 +401,21 @@ export function calculatePreviewAutoFields(
         const path = `${prefix}${field.name}`;
         const tracker = new PreviewReadTracker();
         const described = new Set<string>();
+        let listed = false;
+        let written = false;
         const scope = new Proxy(document, {
+            ownKeys(target) {
+                listed = true;
+                return Reflect.ownKeys(target);
+            },
+            set(target, key, value, receiver) {
+                written = true;
+                return Reflect.set(target, key, value, receiver);
+            },
+            deleteProperty(target, key) {
+                written = true;
+                return Reflect.deleteProperty(target, key);
+            },
             getOwnPropertyDescriptor(target, key) {
                 if (typeof key === 'string') {
                     described.add(key);
@@ -423,13 +439,24 @@ export function calculatePreviewAutoFields(
             }
         });
         let source = `(${field.expression || ''})`;
+        let failed = false;
+        let thrown: Error | null = null;
         try {
             const result = tracker.unwrap(PolicyUtils.autoCalculateField(field, scope, (name: string, body: string) => {
                 source = body;
                 tracker.configure(body);
-                return compileFunction(body, [name], { filename: PREVIEW_SCRIPT_FILE });
+                const compiled = compileFunction(body, [name], { filename: PREVIEW_SCRIPT_FILE });
+                return function (this: unknown, ...args: unknown[]) {
+                    try {
+                        return compiled.apply(this, args);
+                    } catch (error) {
+                        thrown = error && typeof error === 'object' ? error as Error : null;
+                        throw error;
+                    }
+                };
             }));
             if (!discovery) {
+                failed = !isPreviewFiniteResult(result);
                 assertPreviewCalculationResult(result);
             }
             if (result === undefined) {
@@ -440,10 +467,64 @@ export function calculatePreviewAutoFields(
         } catch (error) {
             Reflect.deleteProperty(document, field.name);
             errors.push(`Invalid expression: ${path}`);
+            failed = failed || isPreviewFieldFailure(thrown?.name, thrown?.message);
         }
         const required = findPreviewScriptFields(source, tracker.takeSites(), [], null, paths, true, prefix);
+        if (failed && listed && !discovery) {
+            const candidates = (fields || [])
+                .filter((item) => !item.autocalculate && !item.isRef && isEmptyPreviewValue(Reflect.get(document, item.name)))
+                .map((item) => item.name);
+            if (candidates.length) {
+                const found = written || tracker.takeWrites().length ? [] : diagnosePreviewAutoField(field, document, candidates, paths, prefix, fullPrefix);
+                required.push(...(found.length ? found : candidates.map((name) => ({ schema: null, path: `${prefix}${name}` }))));
+            }
+        }
         dependencies[path] = [...new Set([...(dependencies[path] || []), ...required.map((read) => read.path)])].filter((read) => read !== path);
     }
+}
+
+function diagnosePreviewAutoField(
+    field: SchemaField,
+    document: object,
+    candidates: string[],
+    paths: string[],
+    prefix: string,
+    fullPrefix: string
+): IPreviewRead[] {
+    if (hasPreviewPresenceCheck(`(${field.expression || ''})`)) {
+        return [];
+    }
+    let subject: object;
+    try {
+        subject = structuredClone(document);
+    } catch {
+        return [];
+    }
+    const context = createContext(Object.create(null));
+    const tracker = new PreviewReadTracker();
+    const body = `with (this) { return ${field.expression} }`;
+    let failed = false;
+    let finish: ((failed: boolean) => IPreviewCopyDiagnosis) | null = null;
+    try {
+        finish = startPreviewCopyDiagnosis(tracker, [{
+            objectPrototype: runInContext('Object.getPrototypeOf({})', context),
+            objectConstructor: runInContext('Object', context),
+            reflect: runInContext('Reflect', context),
+            global: runInContext('globalThis', context)
+        }], [{ schema: null, document: 0, path: '', names: candidates }], [subject]);
+        tracker.configure(body);
+        const func = compileFunction(body, ['table'], { filename: PREVIEW_SCRIPT_FILE, parsingContext: context });
+        Reflect.set(context, '__previewAutoField', () => func.apply(subject, [buildTableHelper()]));
+        failed = !isPreviewFiniteResult(runInContext('__previewAutoField()', context, { timeout: 1000 }));
+    } catch {
+        failed = true;
+    }
+    const diagnosis = finish?.(failed);
+    if (!diagnosis?.trusted || !diagnosis.failed || !diagnosis.sites.length) {
+        return [];
+    }
+    const sites = diagnosis.sites.map((site) => ({ ...site, path: `${prefix}${site.path}`, fullPath: `${fullPrefix}${site.fullPath}` }));
+    return findPreviewScriptFields(body, sites, [], null, paths, true, prefix);
 }
 
 export function getMathPreviewReads(expression: unknown, currentSchema: string | null): IPreviewRead[] {
@@ -844,6 +925,80 @@ export function getPreviewInputError(actionStatus: RecordActionStep): MessageErr
         fields: [...new Set([...fields, ...missing.map(normalizePreviewPath)])].sort(),
         missingFields: missing
     });
+}
+
+export function getPreviewCopyTargets(
+    actionStatus: RecordActionStep | undefined,
+    enumerated: IPreviewWriteRecord[],
+    documentOf: (record: IPreviewWriteRecord) => unknown
+): IPreviewCopyTarget[] {
+    const source = actionStatus?.getPreviewSource();
+    if (!source || source.discovery || !enumerated.length || getPreviewInputError(actionStatus)) {
+        return [];
+    }
+    const targets = new Map<string, IPreviewCopyTarget>();
+    for (const record of enumerated) {
+        const document = documentOf(record);
+        if (!document) {
+            continue;
+        }
+        let value = getPreviewSubject(document);
+        for (const part of record.path ? record.path.split('.') : []) {
+            value = value && typeof value === 'object' ? Reflect.get(value, part) : undefined;
+        }
+        if (!value || typeof value !== 'object' || Array.isArray(value)) {
+            continue;
+        }
+        const prefix = normalizePreviewPath(record.path);
+        const names = source.paths
+            .filter((path) => prefix ? path.startsWith(`${prefix}.`) : true)
+            .map((path) => prefix ? path.slice(prefix.length + 1) : path)
+            .filter((name) => name && !name.includes('.') && isEmptyPreviewValue(Reflect.get(value, name)))
+            .filter((name) => !isPreviewComputedRead(document, source.schema, prefix ? `${prefix}.${name}` : name));
+        if (names.length) {
+            targets.set(`${record.document ?? ''}\u0000${record.path}`, { schema: source.schema, document: record.document, path: record.path, names });
+        }
+    }
+    return [...targets.values()];
+}
+
+export async function recoverPreviewCopiedFields(
+    actionStatus: RecordActionStep | undefined,
+    targets: IPreviewCopyTarget[],
+    script: string,
+    diagnose: (targets: IPreviewCopyTarget[]) => Promise<IPreviewCopyDiagnosis | null>,
+    roots: string[] = [],
+    expected?: string | null,
+    outputs: string[] = []
+): Promise<void> {
+    const source = actionStatus?.getPreviewSource();
+    if (!source || !targets.length) {
+        return;
+    }
+    let diagnosis: IPreviewCopyDiagnosis | null = null;
+    if (!hasPreviewPresenceCheck(script)) {
+        try {
+            diagnosis = await diagnose(targets);
+        } catch {
+            diagnosis = null;
+        }
+    }
+    const same = expected === undefined || (diagnosis?.error ?? null) === expected;
+    const exact = diagnosis?.trusted && diagnosis.failed && same && diagnosis.sites.length
+        ? findPreviewScriptFields(script, diagnosis.sites, [], source.schema, source.paths, false, '', roots)
+        : [];
+    const written = new Set([
+        ...(diagnosis?.written ?? []),
+        ...outputs.filter((name) => !diagnosis?.read?.includes(name))
+    ]);
+    const fields = exact.length
+        ? exact.map((read) => read.fullPath ?? read.path)
+        : targets.flatMap((target) => target.names
+            .filter((name) => !written.has(name))
+            .map((name) => target.path ? `${target.path}.${name}` : name));
+    for (const field of fields) {
+        actionStatus.addPreviewRead(source.schema, field);
+    }
 }
 
 export function buildPreviewResponse(actionStatus: RecordActionStep, input: unknown, history: boolean = false) {

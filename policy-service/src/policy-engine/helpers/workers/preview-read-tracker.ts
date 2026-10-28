@@ -35,6 +35,7 @@ export class PreviewReadTracker {
     private readonly targets = new WeakMap<object, object>();
     private readonly sources = new WeakMap<object, number>();
     private readonly listed = new WeakSet<object>();
+    private readonly enumerated = new Map<string, IPreviewWriteRecord>();
     private lines: number[] | null = null;
     private session: Session | null = null;
     private executed: Uint8Array | null = null;
@@ -205,6 +206,7 @@ export class PreviewReadTracker {
             },
             ownKeys(target) {
                 tracker.listed.add(target);
+                tracker.enumerated.set(`${schema ?? ''}\u0000${writePrefix}\u0000${document ?? ''}`, { schema, path: writePrefix, document });
                 return Reflect.ownKeys(target);
             },
             set(target, key, newValue, receiver) {
@@ -218,6 +220,16 @@ export class PreviewReadTracker {
         this.proxies.set(value, proxy);
         this.targets.set(proxy, value);
         return proxy;
+    }
+
+    public takeEnumerated(): IPreviewWriteRecord[] {
+        const enumerated = [...this.enumerated.values()];
+        this.enumerated.clear();
+        return enumerated;
+    }
+
+    public isTracked(value: unknown): boolean {
+        return !!value && typeof value === 'object' && this.targets.has(value);
     }
 
     public trackField(value: unknown, path: string): unknown {

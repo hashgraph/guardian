@@ -27,10 +27,16 @@ import {
     getPreviewDocumentSchema,
     getPreviewSubject,
     isPreviewComputedRead,
+    isPreviewStoredDocument,
+    getPreviewCopyTargets,
     normalizePreviewPath,
+    recoverPreviewCopiedFields,
     setPreviewComputed,
     setPreviewDocumentSchema
 } from '../helpers/preview.js';
+import { collectPreviewNonFiniteNames, isPreviewFieldFailure, isPreviewFiniteResult } from '../helpers/workers/preview-copy-diagnosis.js';
+import type { IPreviewCopyDiagnosis, IPreviewCopyTarget } from '../helpers/workers/preview-copy-diagnosis.js';
+import type { IPreviewWriteRecord } from '../helpers/workers/preview-read-tracker.js';
 
 const filename = fileURLToPath(import.meta.url);
 
@@ -522,23 +528,52 @@ export class CustomLogicBlock {
                         });
                     }
                 } else {
-                    const worker = new Worker(
-                        path.join(path.dirname(filename), '..', 'helpers', 'workers', 'custom-logic-worker.js'),
-                        {
-                            workerData: {
-                                execFunc: `${execCode}${expression}`,
-                                user,
-                                artifacts,
-                                documents: context.documents,
-                                sources: context.sources,
-                                tablesPack,
-                                trackReads: !!actionStatus?.preview,
-                                schemas: actionStatus?.preview && Array.isArray(context.documents)
-                                    ? context.documents.map(getPreviewDocumentSchema)
-                                    : []
-                            },
-                            env: buildSandboxWorkerEnv()
+                    const workerFile = path.join(path.dirname(filename), '..', 'helpers', 'workers', 'custom-logic-worker.js');
+                    const workerData = {
+                        execFunc: `${execCode}${expression}`,
+                        user,
+                        artifacts,
+                        documents: context.documents,
+                        sources: context.sources,
+                        tablesPack,
+                        trackReads: !!actionStatus?.preview,
+                        schemas: actionStatus?.preview && Array.isArray(context.documents)
+                            ? context.documents.map(getPreviewDocumentSchema)
+                            : []
+                    };
+                    const enumerated: IPreviewWriteRecord[] = [];
+                    const diagnose = (targets: IPreviewCopyTarget[]) => new Promise<IPreviewCopyDiagnosis | null>((resolveDiagnosis) => {
+                        const diagnostic = new Worker(workerFile, { workerData: { ...workerData, diagnose: targets }, env: buildSandboxWorkerEnv() });
+                        const finish = (value: IPreviewCopyDiagnosis | null) => {
+                            clearTimeout(timer);
+                            diagnostic.terminate().catch(() => undefined);
+                            resolveDiagnosis(value);
+                        };
+                        const timer = setTimeout(() => finish(null), 30000);
+                        diagnostic.on('message', (message) => {
+                            if (message?.type === 'diagnosis') {
+                                finish(message.diagnosis);
+                            }
                         });
+                        diagnostic.on('error', () => finish(null));
+                        diagnostic.on('exit', () => finish(null));
+                    });
+                    let recovering = false;
+                    const fail = async (error: unknown, fieldFailure: boolean, outputs: string[] = []) => {
+                        recovering = true;
+                        if (actionStatus?.preview && fieldFailure) {
+                            const schema = actionStatus.getPreviewSource()?.schema;
+                            const forms = documents
+                                .map((document, index) => !isPreviewStoredDocument(document) && workerData.schemas[index] === schema ? index : -1)
+                                .filter((index) => index >= 0);
+                            const targets = getPreviewCopyTargets(actionStatus, enumerated, (record) => forms.length === 1 && record.document === forms[0]
+                                ? documents[forms[0]]
+                                : null);
+                            await recoverPreviewCopiedFields(actionStatus, targets, workerData.execFunc, diagnose, [], undefined, outputs);
+                        }
+                        reject(error);
+                    };
+                    const worker = new Worker(workerFile, { workerData, env: buildSandboxWorkerEnv() });
                     // Release the worker's V8 isolate; without this each invocation leaks ~30 MB.
                     const cleanup = () => {
                         worker.terminate().catch(() => {
@@ -547,13 +582,15 @@ export class CustomLogicBlock {
                     };
                     worker.on('exit', (code) => {
                         cleanup();
-                        if (code !== 0 && code !== null) {
+                        if (code !== 0 && code !== null && !recovering) {
                             reject(new Error(`Custom logic worker exited with code ${code}`));
                         }
                     });
                     worker.on('error', (error) => {
                         cleanup();
-                        reject(error);
+                        if (!recovering) {
+                            reject(error);
+                        }
                     });
                     worker.on('message', async (data) => {
                         addScriptFields(data);
@@ -565,6 +602,9 @@ export class CustomLogicBlock {
                         if (Array.isArray(data?.writes)) {
                             scriptWrites.push(...data.writes);
                         }
+                        if (Array.isArray(data?.enumerated)) {
+                            enumerated.push(...data.enumerated);
+                        }
                         if (Array.isArray(data?.sources)) {
                             const results = Array.isArray(data.result) ? data.result : [data.result];
                             results.forEach((item: unknown, index: number) => scriptSources.set(item, data.sources[index]));
@@ -573,7 +613,7 @@ export class CustomLogicBlock {
                         // surfaces it (BlockErrorFn + log) instead of silently parking the step.
                         if (data?.error) {
                             cleanup();
-                            reject(new Error(data.error));
+                            await fail(new Error(data.error), isPreviewFieldFailure(data.errorName, data.error));
                             return;
                         }
                         try {
@@ -586,7 +626,7 @@ export class CustomLogicBlock {
                             }
                         } catch (error) {
                             cleanup();
-                            reject(error);
+                            await fail(error, data?.type === 'done' && !isPreviewFiniteResult(data.result), collectPreviewNonFiniteNames(data?.result));
                         }
                     });
                 }
