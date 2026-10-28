@@ -369,6 +369,36 @@ describe('request document preview wiring', () => {
             expect(state.calls.length).toBe(1);
         });
 
+        it(`keeps the server's indexed PEt error when requirements stay unchanged in the ${kind}`, async () => {
+            const path = 'vcs_project_description.estimatedGHG.exAnteCSVArea.0.PEt';
+            const field = 'vcs_project_description.estimatedGHG.exAnteCSVArea.PEt';
+            const failure = new HttpErrorResponse({ status: 422, error: {
+                statusCode: 422,
+                message: 'Missing calculation inputs',
+                data: { preview: true, fields: [field], missingFields: [path] }
+            } });
+            const state = kind === 'page' ? page([Promise.reject(failure)]) : dialog([Promise.reject(failure)], pageParent());
+            const { component } = state;
+            const values = { vcs_project_description: { estimatedGHG: {
+                exAnteCSVArea: [{ PBt: 0.1, LKt: 2, PEt: null, UNCt: 0.05 }]
+            } } };
+            component.dataForm.getRawValue = () => values;
+            component.previewMode = true;
+            const required = [field];
+            component.previewRequiredFields = required;
+            spyOn(console, 'error');
+            await component.runPreview(false);
+            expect(component.previewMissingFields).toEqual([path]);
+            expect(component.previewRequiredFields).toBe(required);
+            expect(component.dataForm.getRawValue()).toEqual(values);
+            expect(component.loading).toBeFalse();
+            expect(state.dialogs.length).toBe(0);
+            await component.onPreviewModeChange(false);
+            expect(component.previewMissingFields).toEqual([]);
+            expect(component.previewRequiredFields).toBeNull();
+            component.destroy$.next();
+        });
+
         it(`ignores late missing-field rejection in the ${kind} after switching preview off`, async () => {
             let reject: (error: unknown) => void = () => undefined;
             const pendingResult = new Promise((_resolve, fail) => { reject = fail; });

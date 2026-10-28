@@ -142,7 +142,10 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             this.buildFormulaModel();
         }
         this.loading = true;
-        if (changes.previewMissingFields && !changes.requiredFields) this.schedulePreviewFocus();
+        if (changes.previewMissingFields && !changes.requiredFields) {
+            this.updatePreviewMissingFieldIds();
+            this.schedulePreviewFocus();
+        }
         if (changes.requiredFields && !changes.requiredFields.firstChange && this.model) {
             this.presetDocument = this.group.getRawValue();
         }
@@ -209,6 +212,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             requiredFields: this.requiredFields,
         });
         this.model.build();
+        this.updatePreviewMissingFieldIds();
         this.navFields = [...(this.model.controls || [])];
         this.group.updateValueAndValidity();
         this.buildFormulaModel();
@@ -281,6 +285,27 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             fields = field?.fields || [];
         }
         return titles.join(' › ');
+    }
+
+    public previewMissingFieldIds: string[] = [];
+
+    private updatePreviewMissingFieldIds(): void {
+        this.previewMissingFieldIds = this.previewMissingFields.flatMap(path => {
+            const parts = path.split('.');
+            let controls = this.model?.controls || [];
+            for (let index = 0; index < parts.length; index++) {
+                const field = controls.find(item => item.name === parts[index]);
+                if (!field) return [];
+                if (index === parts.length - 1) return [field.id];
+                if (field.isArray && /^\d+$/.test(parts[index + 1] || '')) {
+                    const row = field.list?.[Number(parts[++index])];
+                    controls = row?.model?.controls || [];
+                } else {
+                    controls = field.model?.controls || [];
+                }
+            }
+            return [];
+        });
     }
 
     private schedulePreviewFocus(): void {

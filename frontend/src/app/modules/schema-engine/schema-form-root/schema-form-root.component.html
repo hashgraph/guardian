@@ -54,6 +54,8 @@
       <app-schema-form
         #childForm
         [form-model]="model"
+        [previewMissingFieldIds]="previewMissingFieldIds"
+        [previewValidation]="requiredFields !== null"
         [formulas]="formulaModel"
         [private-fields]="hide"
         [readonly-fields]="readonly"

@@ -142,4 +142,35 @@ describe('SchemaFormRootComponent — required fields', () => {
         expect(focus).toHaveBeenCalledOnceWith('rate');
     }));
 
+    it('maps an indexed missing path to only that table cell and clears it with preview', fakeAsync(() => {
+        const root = createRoot();
+        const rowField: ISchemaDocument = {
+            type: SchemaDataTypes.object,
+            title: 'Area',
+            properties: { PEt: numberField('PEt'), PBt: numberField('PBt') },
+            required: ['PEt', 'PBt']
+        };
+        root.schema = new Schema({ iri: '#calc&1.0.0', document: {
+            ...calcDocument,
+            properties: { rows: { type: SchemaDataTypes.array, items: { $ref: '#row' } } },
+            $defs: { '#row': { ...rowField, $id: '#row' } },
+            required: ['rows']
+        } });
+        root.presetDocument = { rows: [{ PEt: 4, PBt: 1 }, { PBt: 2 }] };
+        root.requiredFields = ['rows.PEt', 'rows.PBt'];
+        root.previewMissingFields = ['rows.1.PEt'];
+        const focus = spyOn(root, 'focusPreviewField');
+        root.ngOnChanges({ schema: new SimpleChange(null, root.schema, false) });
+        flush();
+        const rows = root.model!.controls![0].list!;
+        const target = rows[1].model.controls.find((field: { name: string }) => field.name === 'PEt');
+        expect(root.previewMissingFieldIds).toEqual([target.id]);
+        expect(focus).toHaveBeenCalledWith('rows.1.PEt');
+        expect(root.group.getRawValue().rows).toEqual([{ PEt: 4, PBt: 1 }, { PEt: null, PBt: 2 }]);
+        root.previewMissingFields = [];
+        root.ngOnChanges({ previewMissingFields: new SimpleChange(['rows.1.PEt'], [], false) });
+        flush();
+        expect(root.previewMissingFieldIds).toEqual([]);
+    }));
+
 });

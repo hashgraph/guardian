@@ -113,6 +113,8 @@ export class SchemaFormComponent implements OnInit {
     @Input() isEditMode: boolean = false;
     @Input() formulas?: FormFormulas | null;
     @Input() formulaEntries?: Record<string, number> | null;
+    @Input() previewMissingFieldIds: string[] = [];
+    @Input() previewValidation: boolean = false;
 
     @Output() change = new EventEmitter<Schema | null>();
     @Output() destroy = new EventEmitter<void>();
@@ -456,6 +458,24 @@ export class SchemaFormComponent implements OnInit {
 
     public ifInvalidField(item: IFieldControl<any> | IFieldIndexControl<any>): boolean {
         return (item.control && !item.control.valid && !item.control.disabled);
+    }
+
+    public hasInvalidTableFields(item: IFieldControl<any>): boolean {
+        return this.isInvalidTableField(item) || (item.list || []).some(row =>
+            (this.getTableRowFields(row, item) || []).some(field => this.isInvalidTableField(field))
+        );
+    }
+
+    public isInvalidTableField(item: IFieldControl<any>): boolean {
+        return this.previewValidation
+            ? this.isPreviewMissingField(item)
+            : this.ifInvalidField(item);
+    }
+
+    public isPreviewMissingField(item: IFieldControl<any>): boolean {
+        const value = item.control?.value;
+        return this.previewMissingFieldIds.includes(item.id) && !item.control.disabled
+            && (value === undefined || value === null || value === '');
     }
 
     public ifRequiredField(item: IFieldControl<any>): boolean {

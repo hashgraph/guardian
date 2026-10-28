@@ -349,7 +349,7 @@
               }
               <!-- array of objects as table -->
               @if (canDrawTable(item)) {
-                <div>
+                <div [class.table-validation-error]="hasInvalidTableFields(item)">
                   <p-table [value]="item.list || []">
                     <ng-template pTemplate="header">
                       <tr [attr.accordiontabid]="item.id">
@@ -375,7 +375,10 @@
                         }
                         @for (itemControl of getTableRowFields(rowData, item); track itemControl) {
                           <td>
-                            <div class="table-content form-field-value">
+                            <div
+                              class="table-content form-field-value"
+                              [attr.preview-field-id]="previewMissingFieldIds.length ? itemControl.id : null"
+                              [class.preview-missing-field]="isInvalidTableField(itemControl)">
                               @if (ifRequiredField(itemControl)) {
                                 <span class="required-field">*</span>
                               }
@@ -1142,6 +1145,8 @@
                                                 <app-schema-form
                                                   [form-model]="item.model"
                                                   [formulas]="formulas"
+                                                  [previewMissingFieldIds]="previewMissingFieldIds"
+                                                  [previewValidation]="previewValidation"
                                                   [formulaEntries]="formulaEntries"
                                                   [private-fields]="hide"
                                                   [rules]="rules"
@@ -1396,6 +1401,8 @@
                                                                 listItem.model
                                                             "
                                                             [formulas]="formulas"
+                                                            [previewMissingFieldIds]="previewMissingFieldIds"
+                                                  [previewValidation]="previewValidation"
                                                             [formulaEntries]="getEntryFormulaScope(item, listItem)"
                                                                 [dryRun]="dryRun"
                                                             [policyId]="
