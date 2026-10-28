@@ -1,6 +1,6 @@
 import { PinoLogger } from '@guardian/common/helpers/pino-logger';
 import assert from 'node:assert/strict';
-import { makeBlock, makeUser, restoreHarness } from './_block-exec-harness.mjs';
+import { makeBlock, makeDb, makeUser, restoreHarness } from './_block-exec-harness.mjs';
 import { DocumentValidatorBlock } from '../../../dist/policy-engine/blocks/document-validator-block.js';
 import { PolicyComponentsUtils } from '../../../dist/policy-engine/policy-components-utils.js';
 import { RecordActionStep } from '../../../dist/policy-engine/record-action-step.js';
@@ -75,22 +75,70 @@ describe('@unit documentValidatorBlock preview', () => {
         }
     });
 
-    it('records the form fields its conditions and source checks read as fields the preview needs', async () => {
-        const { block, calls } = setup({
+    const realSetup = (options, sourceDocuments = []) => {
+        const { block } = makeBlock(DocumentValidatorBlock, {
+            options: { onErrorAction: 'no-action', ...options },
+            componentsOverrides: { databaseServer: makeDb({ getVcDocuments: async () => sourceDocuments }) }
+        });
+        const events = [];
+        block.triggerEvents = async (...args) => { events.push(args[0]); };
+        return { block, events };
+    };
+
+    const formDocument = (subject) => setPreviewDocumentSchema({ owner: 'did:user', document: { credentialSubject: [subject] } }, '#S');
+
+    const readPaths = (step) => step.getPreviewReads().map((read) => read.path).sort();
+
+    it('records the form fields its conditions and source checks read when every check runs', async () => {
+        const { block, events } = realSetup({
             conditions: [
                 { field: 'document.credentialSubject.0.amount', type: 'equal', value: 'document.credentialSubject.0.rate', valueSource: 'document' },
-                { field: 'owner', type: 'equal', value: 'did:user' }
+                { field: 'owner', type: 'equal', value: 'did:user', valueSource: 'value' }
             ],
             sourceValidations: [{
                 filters: [{ field: 'document.credentialSubject.0.ref', type: 'equal', value: 'document.credentialSubject.0.projectId', typeValue: 'variable' }],
                 conditions: [{ field: 'document.credentialSubject.0.limit', fieldSource: 'document', type: 'lte', value: 'document.credentialSubject.0.cap', valueSource: 'source' }]
             }]
-        });
-        block.run = async () => { calls.validated++; return null; };
+        }, [{ document: { credentialSubject: [{ cap: 10 }] } }]);
         const step = previewStep();
-        await block.runAction({ user: makeUser(), data: { data: setPreviewDocumentSchema({ document: {} }, '#S') }, actionStatus: step });
-        assert.deepEqual(step.getPreviewReads().map((read) => read.path).sort(), ['amount', 'limit', 'projectId', 'rate']);
-        assert.deepEqual(calls.events[0], 'RunEvent');
+        await block.runAction({ user: makeUser(), data: { data: formDocument({ amount: 2, rate: 2, projectId: 'P', limit: 5 }) }, actionStatus: step });
+        assert.deepEqual(readPaths(step), ['amount', 'limit', 'projectId', 'rate']);
+        assert.equal(events[0], 'RunEvent');
+    });
+
+    it('does not record fields of conditions after the first failing one', async () => {
+        const { block, events } = realSetup({
+            conditions: [
+                { field: 'document.credentialSubject.0.amount', type: 'equal', value: '5', valueSource: 'value' },
+                { field: 'document.credentialSubject.0.rate', type: 'equal', value: '1', valueSource: 'value' }
+            ]
+        });
+        const step = previewStep();
+        await block.runAction({ user: makeUser(), data: { data: formDocument({ amount: 3 }) }, actionStatus: step });
+        assert.deepEqual(readPaths(step), ['amount']);
+        assert.match(step.getErrors()[0].message, /amount/);
+        assert.equal(events[0], 'ErrorEvent');
+    });
+
+    it('does not record source conditions when no source document matched', async () => {
+        const { block } = realSetup({
+            sourceValidations: [{
+                filters: [{ field: 'document.credentialSubject.0.ref', type: 'equal', value: 'document.credentialSubject.0.projectId', typeValue: 'variable' }],
+                conditions: [{ field: 'document.credentialSubject.0.limit', fieldSource: 'document', type: 'lte', value: 'document.credentialSubject.0.cap', valueSource: 'source' }]
+            }]
+        });
+        const step = previewStep();
+        await block.runAction({ user: makeUser(), data: { data: formDocument({ projectId: 'P' }) }, actionStatus: step });
+        assert.deepEqual(readPaths(step), ['projectId']);
+    });
+
+    it('records nothing outside a preview', async () => {
+        const { block } = realSetup({
+            conditions: [{ field: 'document.credentialSubject.0.amount', type: 'equal', value: '5', valueSource: 'value' }]
+        });
+        const step = new RecordActionStep(() => {});
+        await block.runAction({ user: makeUser(), data: { data: formDocument({ amount: 5 }) }, actionStatus: step });
+        assert.equal(step.getPreviewReads?.().length ?? 0, 0);
     });
 
     it('passes the document on during field discovery even when a placeholder fails the check', async () => {

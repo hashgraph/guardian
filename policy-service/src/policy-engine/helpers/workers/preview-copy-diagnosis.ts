@@ -138,7 +138,7 @@ export function startPreviewCopyDiagnosis(
         define(owner, key, {
             configurable: true,
             writable: true,
-            value: function (this: unknown, ...args: unknown[]) {
+            value: function trackedNative(this: unknown, ...args: unknown[]) {
                 if ((!inspects || inspects(this, args)) && tracker.site() >= 0) {
                     trusted = false;
                 }
@@ -166,7 +166,7 @@ export function startPreviewCopyDiagnosis(
             define(realm.global, 'Proxy', {
                 configurable: true,
                 writable: true,
-                value: function (...args: unknown[]) {
+                value: function trackedProxy(...args: unknown[]) {
                     if (tracker.site() >= 0) {
                         trusted = false;
                     }

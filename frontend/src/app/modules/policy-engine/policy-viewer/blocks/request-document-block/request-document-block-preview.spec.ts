@@ -444,12 +444,16 @@ describe('request document preview wiring', () => {
         });
 
         it(`keeps ordinary validation after switching preview off in the ${kind}`, async () => {
-            const state = kind === 'page' ? page([]) : dialog([], pageParent());
-            state.component.previewMode = false;
+            const state = kind === 'page' ? page([Promise.resolve(response(['amount']))])
+                : dialog([Promise.resolve(response(['amount']))], pageParent());
+            await state.component.onPreviewModeChange(true);
+            expect(state.component.previewRequiredFields).toEqual(['amount']);
+            await state.component.onPreviewModeChange(false);
+            expect(state.component.previewRequiredFields).toBeNull();
             state.component.dataForm.valid = false;
             expect(state.component.ifDisabledBtn({ id: 'submit' })).toBeTrue();
             await state.component.onStep();
-            expect(state.calls.length).toBe(0);
+            expect(state.calls.length).toBe(1);
             expect(state.dialogs.length).toBe(0);
         });
     }

@@ -34,8 +34,13 @@ import {
     setPreviewComputed,
     setPreviewDocumentSchema
 } from '../helpers/preview.js';
-import { collectPreviewNonFiniteNames, isPreviewFieldFailure, isPreviewFiniteResult } from '../helpers/workers/preview-copy-diagnosis.js';
-import type { IPreviewCopyDiagnosis, IPreviewCopyTarget } from '../helpers/workers/preview-copy-diagnosis.js';
+import {
+    collectPreviewNonFiniteNames,
+    IPreviewCopyDiagnosis,
+    IPreviewCopyTarget,
+    isPreviewFieldFailure,
+    isPreviewFiniteResult
+} from '../helpers/workers/preview-copy-diagnosis.js';
 import type { IPreviewWriteRecord } from '../helpers/workers/preview-read-tracker.js';
 import { isPythonSandboxDisabled, PYTHON_DISABLED_MESSAGE } from '../helpers/workers/python-sandbox-mode.js';
 

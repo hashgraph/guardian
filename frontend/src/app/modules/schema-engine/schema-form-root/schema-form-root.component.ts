@@ -147,8 +147,10 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             this.updatePreviewMissingFieldIds();
             this.schedulePreviewFocus();
         }
+        let keepDirty = false;
         if (changes.requiredFields && !changes.requiredFields.firstChange && this.model) {
-            this.presetDocument = this.group.getRawValue();
+            keepDirty = this.group.dirty;
+            this.presetDocument = this.withoutEmptyCollections(this.group.getRawValue());
         }
         const presetApplied = !!changes.presetDocument && !changes.presetDocument.firstChange;
         if (
@@ -162,6 +164,9 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         ) {
             setTimeout(() => {
                 this.buildFields();
+                if (keepDirty) {
+                    this.group.markAsDirty();
+                }
                 if (presetApplied) {
                     this.presetApplied.emit(this.group);
                 }
@@ -268,6 +273,40 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         this.presetDocument = data;
         this.buildFields();
         this.changeDetectorRef.detectChanges();
+    }
+
+    private isPlainObject(value: unknown): value is Record<string, unknown> {
+        return value !== null && typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype;
+    }
+
+    private hasNoValue(value: unknown): boolean {
+        if (value === null || value === undefined || value === '') {
+            return true;
+        }
+        if (Array.isArray(value)) {
+            return value.every((entry) => this.hasNoValue(entry));
+        }
+        if (this.isPlainObject(value)) {
+            return Object.values(value).every((entry) => this.hasNoValue(entry));
+        }
+        return false;
+    }
+
+    private withoutEmptyCollections(value: unknown): unknown {
+        if (Array.isArray(value)) {
+            return value.map((entry) => this.withoutEmptyCollections(entry));
+        }
+        if (!this.isPlainObject(value)) {
+            return value;
+        }
+        const result: Record<string, unknown> = {};
+        for (const [key, entry] of Object.entries(value)) {
+            if ((Array.isArray(entry) || this.isPlainObject(entry)) && this.hasNoValue(entry)) {
+                continue;
+            }
+            result[key] = this.withoutEmptyCollections(entry);
+        }
+        return result;
     }
 
     public toggleNav(): void {

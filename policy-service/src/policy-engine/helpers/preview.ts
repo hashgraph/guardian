@@ -408,9 +408,9 @@ export function calculatePreviewAutoFields(
                 listed = true;
                 return Reflect.ownKeys(target);
             },
-            set(target, key, value, receiver) {
+            set(target, key, assigned, receiver) {
                 written = true;
-                return Reflect.set(target, key, value, receiver);
+                return Reflect.set(target, key, assigned, receiver);
             },
             deleteProperty(target, key) {
                 written = true;

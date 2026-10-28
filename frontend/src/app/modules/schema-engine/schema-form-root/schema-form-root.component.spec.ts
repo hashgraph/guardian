@@ -173,4 +173,72 @@ describe('SchemaFormRootComponent — required fields', () => {
         expect(root.previewMissingFieldIds).toEqual([]);
     }));
 
+    const rowDocument: ISchemaDocument = {
+        $id: '#row',
+        type: SchemaDataTypes.object,
+        title: 'Area',
+        properties: { PEt: numberField('PEt'), PBt: numberField('PBt') },
+        required: ['PEt', 'PBt']
+    };
+
+    const createRootWithOptionalParts = (): SchemaFormRootComponent => {
+        const root = createRoot();
+        root.schema = new Schema({ iri: '#calc&1.0.0', document: {
+            ...calcDocument,
+            properties: {
+                ...calcDocument.properties,
+                rows: { type: SchemaDataTypes.array, items: { $ref: '#row' } },
+                details: { $ref: '#row' }
+            },
+            $defs: { '#row': rowDocument }
+        } });
+        root.ngOnChanges({ schema: new SimpleChange(null, root.schema, false) });
+        flush();
+        root.group.get('amount')?.setValue(1);
+        root.group.get('rate')?.setValue(2);
+        return root;
+    };
+
+    it('removes the empty row and sub-section that only preview created when preview is switched off', fakeAsync(() => {
+        const root = createRootWithOptionalParts();
+        setRequired(root, ['rows.PEt', 'details.PEt']);
+        expect(root.group.getRawValue().rows.length).toBe(1);
+        expect(root.group.getRawValue().details).toBeDefined();
+        setRequired(root, null);
+        expect(root.group.getRawValue().rows).toEqual([]);
+        expect(root.group.getRawValue().details).toBeUndefined();
+        expect(root.group.valid).toBeTrue();
+    }));
+
+    it('keeps rows with values, including zero, and their positions when preview is switched off', fakeAsync(() => {
+        const root = createRootWithOptionalParts();
+        root.presetDocument = { amount: 1, rate: 2, rows: [{ PEt: 0 }, {}, { PBt: 3 }] };
+        root.ngOnChanges({ presetDocument: new SimpleChange(null, root.presetDocument, false) });
+        flush();
+        setRequired(root, ['rows.PEt']);
+        setRequired(root, null);
+        expect(root.group.getRawValue().rows).toEqual([
+            { PEt: 0, PBt: null }, { PEt: null, PBt: null }, { PEt: null, PBt: 3 }
+        ]);
+    }));
+
+    it('keeps unsaved edits marked after the requirements change', fakeAsync(() => {
+        const root = createRoot();
+        root.group.get('amount')?.setValue(5);
+        root.group.get('amount')?.markAsDirty();
+        setRequired(root, ['rate']);
+        expect(root.group.dirty).toBeTrue();
+        setRequired(root, null);
+        expect(root.group.dirty).toBeTrue();
+        expect(root.group.get('amount')?.value).toBe(5);
+    }));
+
+    it('keeps an untouched form clean after the requirements change', fakeAsync(() => {
+        const root = createRoot();
+        setRequired(root, ['rate']);
+        expect(root.group.pristine).toBeTrue();
+        setRequired(root, null);
+        expect(root.group.pristine).toBeTrue();
+    }));
+
 });
