@@ -13,12 +13,13 @@ export const REQUIRED_PROPS = {
     SCHEMA_TEMPLATES: 'schemaTemplates',
     DISCONTINUED_DATE: 'discontinuedDate',
     AVAILABILITY: 'availability',
-    ORIGINAL_CHANGED: 'originalChanged'
+    ORIGINAL_CHANGED: 'originalChanged',
+    CREATE_DATE: 'createDate',
+    LOCATION_TYPE: 'locationType'
 };
 
 export const UN_REQUIRED_PROPS = {
     CODE_VERSION: 'codeVersion',
-    CREATE_DATE: 'createDate',
     CREATOR: 'creator',
     // DESCRIPTION: 'description',
     ID: 'id',

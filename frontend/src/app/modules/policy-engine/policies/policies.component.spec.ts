@@ -56,4 +56,49 @@ describe('PoliciesComponent', () => {
             expect(component.policies![0].previousVersion).toBe('');
         });
     });
+
+    describe('status filter', () => {
+        const key = 'GUARDIAN_POLICIES_STATUS_FILTER:did:1:local';
+
+        beforeEach(() => {
+            localStorage.clear();
+            component.owner = 'did:1';
+            component.tab = 'local';
+            spyOn<any>(component, 'loadAllPolicy');
+        });
+
+        afterEach(() => localStorage.clear());
+
+        it('restores saved statuses and drops stale ones', () => {
+            localStorage.setItem(key, JSON.stringify(['PUBLISH', 'VIEW', 'BOGUS']));
+            component.restoreStatusFilter();
+            expect(component.statusFilter).toEqual(['PUBLISH']);
+        });
+
+        it('offers VIEW on the remote tab only', () => {
+            expect(component.statusOptions.map((o) => o.value)).not.toContain('VIEW');
+            component.tab = 'remote';
+            expect(component.statusOptions.map((o) => o.value)).toContain('VIEW');
+        });
+
+        it('saves per user and tab, resets the page and reloads', () => {
+            component.pageIndex = 3;
+            component.onStatusChange(['DRAFT', 'PUBLISH']);
+            expect(JSON.parse(localStorage.getItem(key) as string)).toEqual(['DRAFT', 'PUBLISH']);
+            expect(component.pageIndex).toBe(0);
+            expect((component as any).loadAllPolicy).toHaveBeenCalled();
+        });
+
+        it('removes the stored value when cleared', () => {
+            component.onStatusChange(['DRAFT']);
+            component.onStatusChange([]);
+            expect(localStorage.getItem(key)).toBeNull();
+        });
+
+        it('keeps the filter bar visible when a status is set and nothing matches', () => {
+            component.policies = [];
+            component.statusFilter = ['PUBLISH_ERROR'];
+            expect(component.showFilterBar).toBeTrue();
+        });
+    });
 });

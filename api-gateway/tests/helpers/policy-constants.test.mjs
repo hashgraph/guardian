@@ -9,9 +9,10 @@ describe('api-gateway policy constants', () => {
         }
         assert.equal(REQUIRED_PROPS.UUID, 'uuid');
         assert.equal(REQUIRED_PROPS.AVAILABILITY, 'availability');
+        assert.equal(REQUIRED_PROPS.CREATE_DATE, 'createDate');
+        assert.equal(REQUIRED_PROPS.LOCATION_TYPE, 'locationType');
     });
-    it('UN_REQUIRED_PROPS strips owner/createDate/id-style fields on import', () => {
-        assert.equal(UN_REQUIRED_PROPS.CREATE_DATE, 'createDate');
+    it('UN_REQUIRED_PROPS strips owner/id-style fields on import', () => {
         assert.equal(UN_REQUIRED_PROPS.OWNER, 'owner');
         assert.equal(UN_REQUIRED_PROPS.ID, 'id');
     });
