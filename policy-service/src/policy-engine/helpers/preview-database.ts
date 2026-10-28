@@ -5,7 +5,7 @@ import { GlobalEventsWriterStream } from '@guardian/common/entity/global-events-
 import { ObjectId } from '@mikro-orm/mongodb';
 import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import { RecordActionStep } from '../record-action-step.js';
-import { PreviewScope, getPreviewComputed, getPreviewDocumentSchema, setPreviewComputed, setPreviewDocumentSchema } from './preview.js';
+import { PreviewScope, keepPreviewDocumentOrigins, markPreviewStoredDocuments } from './preview.js';
 import {
     PreviewQueryUnsupportedError,
     buildPreviewDocumentCache,
@@ -130,8 +130,7 @@ function clonePreviewValue(value: unknown): unknown {
 }
 
 function copyPreviewOrigins<T>(source: unknown, result: T): T {
-    setPreviewDocumentSchema(result, getPreviewDocumentSchema(source));
-    return setPreviewComputed(result, getPreviewComputed(source));
+    return keepPreviewDocumentOrigins(source, result);
 }
 
 function toRecord(value: unknown): Record<string, unknown> {
@@ -340,7 +339,7 @@ class PreviewDatabase {
 
     public async find(entityClass: EntityClass, filters: unknown, options?: unknown): Promise<unknown[]> {
         if (!this.store.touched(entityClass)) {
-            return await this.call('find', [entityClass, filters, options]);
+            return markPreviewStoredDocuments(await this.call('find', [entityClass, filters, options]));
         }
         const settings = isRecordObject(options) ? options : {};
         if (settings.fields || settings.exclude || settings.populate) {
@@ -357,7 +356,7 @@ class PreviewDatabase {
             const id = getRecordId(item);
             const entry = id ? bucket.get(id) : undefined;
             if (!entry) {
-                records.push({ value: item, view: getStoredView(entityClass, toRecord(item), this.dryRun) });
+                records.push({ value: markPreviewStoredDocuments(item), view: getStoredView(entityClass, toRecord(item), this.dryRun) });
             } else if (entry.record && this.matches(entityClass, entry.record, filter)) {
                 records.push({ value: toRecord(entry.record), view: getStoredView(entityClass, entry.record, this.dryRun) });
             }
@@ -387,7 +386,7 @@ class PreviewDatabase {
 
     public async findOne(entityClass: EntityClass, filters: unknown, options?: unknown): Promise<unknown> {
         if (!this.store.touched(entityClass)) {
-            return await this.call('findOne', [entityClass, filters, options]);
+            return markPreviewStoredDocuments(await this.call('findOne', [entityClass, filters, options]));
         }
         if (!filters) {
             return null;
@@ -417,14 +416,15 @@ class PreviewDatabase {
 
     public async findAndCount(entityClass: EntityClass, filters: unknown, options?: unknown): Promise<[unknown[], number]> {
         if (!this.store.touched(entityClass)) {
-            return await this.call('findAndCount', [entityClass, filters, options]);
+            const [rows, count] = await this.call('findAndCount', [entityClass, filters, options]);
+            return [markPreviewStoredDocuments(rows), count];
         }
         return [await this.find(entityClass, filters, options), await this.count(entityClass, filters)];
     }
 
     public async findAll(entityClass: EntityClass, options?: unknown): Promise<unknown[]> {
         if (!this.store.touched(entityClass)) {
-            return await this.call('findAll', [entityClass, options]);
+            return markPreviewStoredDocuments(await this.call('findAll', [entityClass, options]));
         }
         return await this.find(entityClass, {}, options);
     }

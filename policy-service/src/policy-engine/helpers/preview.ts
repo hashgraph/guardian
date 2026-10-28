@@ -1,5 +1,6 @@
 import { compileFunction } from 'node:vm';
 import { AsyncLocalStorage } from 'node:async_hooks';
+import * as mathjs from 'mathjs';
 import { LocationType, SchemaCondition, SchemaField, SchemaHelper, } from '@guardian/interfaces';
 import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
 import { Message } from '@guardian/hedera/message/message';
@@ -13,6 +14,7 @@ import { getDocumentValueByPath, MathEngine, MathItemType } from './math-model/i
 import { PREVIEW_SCRIPT_FILE, PreviewReadTracker } from './workers/preview-read-tracker.js';
 import { findPreviewScriptFields } from './preview-script-fields.js';
 import { getPreviewIncomplete } from './preview-database.js';
+import { BlockActionError } from '../errors/index.js';
 
 export const PREVIEW_SKIPPED_INPUTS: ReadonlySet<string> = new Set<string>([
     PolicyInputEventType.TimerEvent,
@@ -544,6 +546,97 @@ export function isPreviewComputedRead(documents: unknown, schema: string | null,
         const paths = expandPreviewPath(getPreviewSubject(document), path.split('.').filter((part) => part !== ''), []);
         return (paths.length ? paths : [path]).every((item) => computed.some((written) => isPreviewPathCovered(item, written)));
     });
+}
+
+const previewStoredDocuments = new WeakMap<RecordActionStep, WeakSet<object>>();
+
+export function markPreviewStoredDocuments<T>(value: T): T {
+    const actionStatus = PreviewScope.current();
+    if (actionStatus?.preview) {
+        let stored = previewStoredDocuments.get(actionStatus);
+        if (!stored) {
+            stored = new WeakSet<object>();
+            previewStoredDocuments.set(actionStatus, stored);
+        }
+        for (const item of Array.isArray(value) ? value : [value]) {
+            if (item && typeof item === 'object') {
+                stored.add(item);
+            }
+        }
+    }
+    return value;
+}
+
+export function isPreviewStoredDocument(document: unknown): boolean {
+    const actionStatus = PreviewScope.current();
+    return !!actionStatus && !!document && typeof document === 'object' && !!previewStoredDocuments.get(actionStatus)?.has(document);
+}
+
+export function keepPreviewDocumentOrigins<T>(source: unknown, result: T): T {
+    if (PreviewScope.current()?.preview) {
+        setPreviewDocumentSchema(result, getPreviewDocumentSchema(source));
+        setPreviewComputed(result, getPreviewComputed(source));
+        if (isPreviewStoredDocument(source)) {
+            markPreviewStoredDocuments(result);
+        }
+    }
+    return result;
+}
+
+export function addPreviewDocumentRead(document: unknown, configuredPath: unknown): void {
+    const actionStatus = PreviewScope.current();
+    const path = toPreviewFormPath(configuredPath);
+    const schema = getPreviewDocumentSchema(document);
+    if (actionStatus?.preview && path && schema && !isPreviewStoredDocument(document) && !isPreviewComputedRead(document, schema, path)) {
+        actionStatus.addPreviewRead(schema, path);
+    }
+}
+
+export function assertPreviewFiniteResult(value: unknown): void {
+    const actionStatus = PreviewScope.current();
+    if (actionStatus?.preview && !actionStatus.getPreviewSource()?.discovery) {
+        assertPreviewCalculationResult(value);
+    }
+}
+
+export function throwPreviewFormulaError(block: { blockType?: string; uuid?: string }, message: string): void {
+    const actionStatus = PreviewScope.current();
+    if (actionStatus?.preview && !actionStatus.getPreviewSource()?.discovery) {
+        throw new BlockActionError(message, block.blockType, block.uuid);
+    }
+}
+
+export function evaluatePreviewFormula(formula: string, scope: any, document: unknown): any {
+    const actionStatus = PreviewScope.current();
+    const source = actionStatus?.preview ? actionStatus.getPreviewSource() : null;
+    const schema = source ? getPreviewDocumentSchema(document) : null;
+    if (!source || !schema || schema !== source.schema || isPreviewStoredDocument(document)) {
+        return PolicyUtils.evaluateFormula(formula, scope);
+    }
+    const tracker = new PreviewReadTracker();
+    tracker.configure(formula);
+    const tracked = tracker.track(scope, schema);
+    if (!tracked || typeof tracked !== 'object') {
+        return PolicyUtils.evaluateFormula(formula, scope);
+    }
+    const fields = new Set(source.paths);
+    const roots = new Set(source.paths.map((path) => path.split('.')[0]));
+    const result = PolicyUtils.evaluateFormula(formula, new Proxy(tracked, {
+        has(target, key) {
+            const exists = Reflect.has(target, key);
+            if (!exists && typeof key === 'string' && roots.has(key) && !(key in mathjs) && !mathjs.Unit.isValuelessUnit(key)) {
+                tracker.add(schema, key);
+            }
+            return exists;
+        }
+    }));
+    for (const read of tracker.take()) {
+        const path = read.fullPath ?? read.path;
+        if (fields.has(normalizePreviewPath(path)) && !isPreviewComputedRead(document, schema, path)) {
+            actionStatus.addPreviewRead(schema, path);
+        }
+    }
+    return result;
 }
 
 export function getPreviewSubject(document: unknown): unknown {

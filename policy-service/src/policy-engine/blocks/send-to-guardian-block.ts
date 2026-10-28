@@ -23,7 +23,7 @@ import { DocumentType } from '../interfaces/document.type.js';
 import { FilterQuery } from '@mikro-orm/core';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
 import { PolicyUser } from '@policy-engine/policy-user.js';
-import { PreviewScope, getPreviewComputed, getPreviewDocumentSchema, setPreviewComputed, setPreviewDocumentSchema } from '../helpers/preview.js';
+import { PreviewScope, keepPreviewDocumentOrigins } from '../helpers/preview.js';
 
 /**
  * Document Operations
@@ -649,11 +649,7 @@ export class SendToGuardianBlock {
      * @param result
      */
     private keepPreviewOrigins(source: IPolicyDocument, result: IPolicyDocument): IPolicyDocument {
-        if (PreviewScope.current()?.preview) {
-            setPreviewDocumentSchema(result, getPreviewDocumentSchema(source));
-            setPreviewComputed(result, getPreviewComputed(source));
-        }
-        return result;
+        return keepPreviewDocumentOrigins(source, result);
     }
 
     /**

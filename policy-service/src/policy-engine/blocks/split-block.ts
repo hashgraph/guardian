@@ -16,7 +16,7 @@ import { BlockActionError } from '../errors/index.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { Inject } from '../../helpers/decorators/inject.js';
 import { RecordActionStep } from '../record-action-step.js';
-import { PreviewScope } from '../helpers/preview.js';
+import { PreviewScope, addPreviewDocumentRead } from '../helpers/preview.js';
 
 /**
  * Split block
@@ -94,6 +94,7 @@ export class SplitBlock {
     private async calcDocValue(ref: IPolicyBlock, doc: IPolicyDocument, user?: PolicyUser): Promise<number> {
         try {
             const options = await ref.getOptions(user);
+            addPreviewDocumentRead(doc, options.sourceField);
             const value = PolicyUtils.getObjectValue<any>(doc, options.sourceField);
             return parseFloat(value);
         } catch (error) {

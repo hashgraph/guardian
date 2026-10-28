@@ -23,7 +23,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
 import { MintService } from '../mint/mint-service.js';
 import { RecordActionStep } from '../record-action-step.js';
 import { checkOrgTokenPermission } from '../helpers/org-utils.js';
-import { registerPreviewMessage } from '../helpers/preview.js';
+import { keepPreviewDocumentOrigins, registerPreviewMessage } from '../helpers/preview.js';
 
 /**
  * Mint block
@@ -120,7 +120,7 @@ export class MintBlock {
                 throw new BlockActionError('Invalid VC proof', ref.blockType, ref.uuid);
             }
             const json = VcDocument.fromJsonTree(doc.document);
-            vcs.push(json);
+            vcs.push(keepPreviewDocumentOrigins(doc, json));
             if (doc.messageId) {
                 messages.push(doc.messageId);
             }
