@@ -573,12 +573,12 @@ describe('FieldForm — required fields from a list', () => {
         expect(controlOf(inner, 'lon').required).toBeFalse();
     });
 
-    it('does not create a sub-schema that holds no listed field', () => {
+    it('keeps a sub-schema that holds no listed field optional but creates it as an ordinary form does', () => {
         const form = buildCalcForm(['amount']);
         const location = controlOf(form, 'location');
         expect(location.required).toBeFalse();
         expect(location.displayRequired).toBeFalse();
-        expect(location.model).toBeNull();
+        expect(location.model).not.toBeNull();
     });
 
     for (const isArray of [false, true]) {

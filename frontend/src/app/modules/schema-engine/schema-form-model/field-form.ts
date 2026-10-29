@@ -114,6 +114,7 @@ export class FieldForm {
     private readonly childControlledFields: Map<string, Set<string>>;
     private readonly ancestorChildPaths: Map<string, Set<string>>;
     public rootForm: FieldForm;
+    public keepDefaultLabels: boolean = false;
     private arrayGroupCache: Map<IFieldControl<any>, IArrayGroupEntry[]> | null = null;
     private fieldOrder: Map<string, number> | null = null;
 
@@ -170,7 +171,11 @@ export class FieldForm {
         readonlyFields?: any;
         ownParentControlledFields?: Set<string>;
         requiredFields?: string[] | null;
+        keepDefaultLabels?: boolean;
     }) {
+        if (data.keepDefaultLabels !== undefined) {
+            this.keepDefaultLabels = data.keepDefaultLabels;
+        }
         if (data.privateFields) {
             this.privateFields = data.privateFields;
         }
@@ -1244,7 +1249,7 @@ export class FieldForm {
         item.required = this.isFieldRequired(field);
         item.preset = field.default;
         if (preset) {
-            item.isPreset = true;
+            item.isPreset = !this.rootForm.keepDefaultLabels;
             item.preset = preset[field.name];
         }
 
@@ -1266,7 +1271,7 @@ export class FieldForm {
         if (!field.isArray && field.isRef) {
             item.fields = field.fields;
             item.displayRequired = item.fields?.some((refField: any) => this.isFieldRequired(refField));
-            if (item.required || item.preset) {
+            if (field.required || item.preset) {
                 item.control = this.createSubSchemaControl(item);
                 item.model = this.createSubForm(
                     item.customType,
@@ -1297,7 +1302,7 @@ export class FieldForm {
                     item.control.push(listItem.control, { emitEvent: false, onlySelf: true });
                 }
                 // this.form.updateValueAndValidity();
-            } else if (item.required) {
+            } else if (field.required) {
                 const listItem = this.createListControl(item);
                 item.list.push(listItem);
                 item.control.push(listItem.control, { emitEvent: false, onlySelf: true });
@@ -1320,7 +1325,7 @@ export class FieldForm {
                     item.control.push(listItem.control, { emitEvent: false, onlySelf: true });
                 }
                 // this.form.updateValueAndValidity();
-            } else if (item.required) {
+            } else if (field.required) {
                 const listItem = this.createListControl(item); //todo
                 item.list.push(listItem);
                 item.control.push(listItem.control, { emitEvent: false, onlySelf: true });

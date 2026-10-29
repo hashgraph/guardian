@@ -299,6 +299,31 @@ describe('@unit writing blocks in a preview', () => {
             assert.deepEqual(db.records(GlobalEventsWriterStream), []);
         });
 
+        for (const preview of [true, false]) {
+            it(`records its wait with defaultActive only in a preview: preview=${preview}`, async () => {
+                patch(PolicyUtils, {
+                    getUserCredentials: async () => ({ loadRelayerAccount: async () => ({ hederaAccountId: '0.0.1', hederaAccountKey: 'key', signOptions: null }) })
+                });
+                patch(MessageServer.prototype, { sendMessage: async () => { throw new Error('must not publish'); } });
+                const server = wrappedServer();
+                const { block } = makeBlock(GlobalEventsWriterBlock, {
+                    options: { topicIds: [{ topicId: '0.0.77', documentType: 'any', active: false }] },
+                    components: makeComponents({ databaseServer: server })
+                });
+                block.defaultActive = true;
+                const outputs = [];
+                block.triggerEvents = async (type) => { outputs.push(type); };
+                const step = new RecordActionStep(() => {}, 0, true, true, undefined, preview);
+                const data = { data: { messageId: '1.000000001', topicId: '0.0.1', document: { '@context': [], type: [] } } };
+                const run = () => block.runAction({ user: makeUser({ userId: 'u1' }), data, actionStatus: step });
+                await (preview ? inPreview(step, run) : run());
+                assert.deepEqual(outputs, []);
+                assert.deepEqual(step.getPreviewDocuments(), preview ? [
+                    { source: null, target: block.tag, blockType: 'globalEventsWriterBlock', document: data.data }
+                ] : []);
+            });
+        }
+
         it('publishes nothing in a preview', async () => {
             patch(PolicyUtils, {
                 getUserCredentials: async () => ({ loadRelayerAccount: async () => ({ hederaAccountId: '0.0.1', hederaAccountKey: 'key', signOptions: null }) })

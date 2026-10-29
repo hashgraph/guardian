@@ -115,6 +115,34 @@ describe('@unit basic block triggerEvents in preview', () => {
         await triggerEvents.call(block, 'Option_1', {}, state, step);
         assert.equal(await triggerEventSync.call(block, 'RunEvent', {}, state, step), null);
         assert.deepEqual(calls, []);
+        assert.deepEqual(step.getPreviewDocuments(), [
+            { source: 'switch', target: null, blockType: null, document: { id: 'doc-1' } }
+        ]);
+    });
+
+    it('records the document of a branch whose only RunEvent link goes into a refresh input, next to a waiting branch', async () => {
+        const calls = [];
+        const step = previewStep();
+        const waiting = link('RunEvent', 'approve', 'buttonBlock', calls);
+        waiting.run = async () => {
+            calls.push('approve');
+            recordPreviewWait({ source: 'form', outputType: 'RunEvent', data: state, actionStatus: step }, waiting.target);
+        };
+        await triggerEvents.call({ tag: 'form', sourceLinks: [waiting] }, 'RunEvent', {}, state, step);
+        const saved = { data: { id: 'doc-2' } };
+        await triggerEvents.call({ tag: 'save', sourceLinks: [link('RunEvent', 'grid', 'interfaceDocumentsSourceBlock', calls, 'RefreshEvent')] }, 'RunEvent', {}, saved, step);
+        assert.deepEqual(calls, ['approve']);
+        assert.deepEqual(step.getPreviewDocuments(), [
+            { source: 'form', target: 'approve', blockType: 'buttonBlock', document: { id: 'doc-1' } },
+            { source: 'save', target: null, blockType: null, document: { id: 'doc-2' } }
+        ]);
+    });
+
+    it('does not record a refresh-only document in an ordinary run', async () => {
+        const calls = [];
+        const step = new RecordActionStep(() => {}, 0, true, true, undefined, false);
+        await triggerEvents.call({ tag: 'save', sourceLinks: [link('RunEvent', 'grid', 'interfaceDocumentsSourceBlock', calls, 'RefreshEvent')] }, 'RunEvent', {}, state, step);
+        assert.deepEqual(calls, ['grid']);
         assert.deepEqual(step.getPreviewDocuments(), []);
     });
 

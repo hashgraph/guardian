@@ -171,6 +171,24 @@ describe('@unit customLogicBlock preview', () => {
         });
     }
 
+    for (const call of ['debug(doc);', 'debug(documents);', 'console.log(doc);', 'console.warn([doc]);']) {
+        it(`ignores a logged tracked object and keeps the ordinary result: ${call}`, async function () {
+            this.timeout(20000);
+            const result = await executeConditional({ expression: 'const doc=documents[0].document.credentialSubject[0];'
+                + call + 'doc.total=doc.amount*2;done(documents[0]);' });
+            assert.deepEqual(result.fields, ['amount']);
+            assert.equal(result.documents[0].document.document.credentialSubject[0].total, 10);
+        });
+    }
+
+    it('reads a frozen nested object like an ordinary run', async function () {
+        this.timeout(20000);
+        const result = await executeConditional({ expression: 'const doc=documents[0].document.credentialSubject[0];'
+            + 'const sub=Object.freeze(doc.sub);doc.total=sub.inner.x*2;done(documents[0]);',
+            values: { sub: { inner: { x: 3 } } }, paths: ['sub', 'sub.inner', 'sub.inner.x'] });
+        assert.equal(result.documents[0].document.document.credentialSubject[0].total, 6);
+    });
+
     for (const preparation of ['', 'const c={...doc};', 'debug(JSON.stringify(doc));']) {
         it(`retains an explicit same-expression input beyond the old work limit: ${preparation}`, async function () {
             this.timeout(20000);

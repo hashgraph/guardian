@@ -396,10 +396,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 let linked = false;
                 for (const link of this.sourceLinks) {
                     if (link.outputType === output) {
-                        linked = true;
                         if (actionStatus?.preview && !isPreviewInputAllowed(link.inputType)) {
                             continue;
                         }
+                        linked = true;
                         if (output === PolicyOutputEventType.RunEvent && actionStatus) {
                             actionStatus.checkCycle(link);
                         }

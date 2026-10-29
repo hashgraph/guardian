@@ -123,6 +123,20 @@ describe('@unit mathBlock preview chain with real workers', function () {
         });
     });
 
+    for (const [name, text] of [
+        ['a filtered array', 'scope.valid = [document.amount, 0].filter((value) => value > 0); result.final = scope.valid.length * document.amount;'],
+        ['a function', 'scope.double = (value) => value * 2; result.final = scope.double(document.amount);'],
+        ['a document reference', 'scope.src = document; result.final = scope.src.amount * 2;']
+    ]) {
+        it(`keeps the result and the calculation view when code stores ${name} in scope`, async () => {
+            const step = previewStep(['amount', 'temp', 'final']);
+            const output = await runMath(step, mathRef('scoped', expression('amount', 'temp', text)), formDocument());
+            assert.equal(subject(output).final, name === 'a filtered array' ? 2 : 4);
+            const calculation = step.getPreviewCalculations().find((item) => item.source === 'scoped');
+            assert.deepEqual(calculation.values, [{ name: 'b', description: '', formula: 'a+1', value: 3 }]);
+        });
+    }
+
     it('passes the reference of the form to a script after a Math block that writes another schema', async () => {
         const step = previewStep(['amount', 'temp']);
         const math = await runMath(step, mathRef('cross', expression('amount', 'temp'), '#OUT'), formDocument());

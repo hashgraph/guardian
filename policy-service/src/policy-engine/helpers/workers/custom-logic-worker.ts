@@ -43,6 +43,9 @@ function execute(): void {
         });
     }
     const debug = (message: any) => {
+        if (tracker) {
+            return;
+        }
         parentPort.postMessage({ type: 'debug', message });
     }
 

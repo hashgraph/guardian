@@ -149,6 +149,9 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             this.updatePreviewMissingFieldIds();
             this.schedulePreviewFocus();
         }
+        if (changes.presetDocument) {
+            this.userPreset = !!this.presetDocument;
+        }
         let keepDirty = false;
         if (requiredChanged && !changes.requiredFields.firstChange && this.model) {
             keepDirty = this.group.dirty;
@@ -218,6 +221,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             fields: this.fields,
             conditions: this.conditions,
             requiredFields: this.requiredFields,
+            keepDefaultLabels: !this.userPreset,
         });
         this.model.build();
         this.updatePreviewMissingFieldIds();
@@ -273,6 +277,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
 
     public preset(data: any) {
         this.presetDocument = data;
+        this.userPreset = !!data;
         this.buildFields();
         this.changeDetectorRef.detectChanges();
     }
@@ -316,18 +321,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         this.changeDetectorRef.detectChanges();
     }
 
-    public previewFieldLocation(path: string): string {
-        let fields = this.fields || this.schema?.fields || [];
-        const title = this.schema?.document?.title || this.schema?.name;
-        const titles: string[] = title ? [title] : [];
-        for (const part of path.split('.')) {
-            if (/^\d+$/.test(part)) { titles.push(`row ${Number(part) + 1}`); continue; }
-            const field = fields.find(item => item.name === part);
-            titles.push(field?.title || field?.description || part);
-            fields = field?.fields || [];
-        }
-        return titles.join(' › ');
-    }
+    private userPreset = false;
 
     public previewMissingFieldIds: string[] = [];
 

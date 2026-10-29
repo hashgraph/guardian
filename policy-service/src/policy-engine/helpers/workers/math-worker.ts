@@ -5,6 +5,42 @@ import { buildTableHelper } from '../table-field-core.js';
 import { PREVIEW_SCRIPT_FILE, PreviewReadTracker } from './preview-read-tracker.js';
 import { isPreviewFiniteResult, startPreviewCopyDiagnosis } from './preview-copy-diagnosis.js';
 
+function toCloneable(value: unknown, seen: Map<object, unknown>): unknown {
+    if (typeof value === 'function' || typeof value === 'symbol') {
+        return undefined;
+    }
+    if (!value || typeof value !== 'object') {
+        return value;
+    }
+    if (seen.has(value)) {
+        return seen.get(value);
+    }
+    try {
+        const cloned = structuredClone(value);
+        seen.set(value, cloned);
+        return cloned;
+    } catch {
+        const copy: Record<string, unknown> | unknown[] = Array.isArray(value) ? [] : {};
+        seen.set(value, copy);
+        for (const key of Object.keys(value)) {
+            const child = toCloneable(Reflect.get(value, key), seen);
+            if (child !== undefined) {
+                Reflect.set(copy, key, child);
+            }
+        }
+        return copy;
+    }
+}
+
+function toCloneableScope(scope: unknown): Record<string, unknown> {
+    const result = toCloneable(scope, new Map<object, unknown>());
+    const plain: Record<string, unknown> = {};
+    if (result && typeof result === 'object') {
+        Object.assign(plain, result);
+    }
+    return plain;
+}
+
 /**
  * Execute function
  */
@@ -115,7 +151,7 @@ function execute(): void {
         type: 'done',
         result: plain,
         warnings: groupContext.getWarnings(),
-        scope: withScope ? context.scope : undefined,
+        scope: withScope ? toCloneableScope(tracker ? tracker.unwrap(context.scope) : context.scope) : undefined,
         body: tracker ? body : undefined,
         sites: tracker ? tracker.takeSites() : undefined,
         unexecuted: tracker ? tracker.takeUnexecuted() : undefined,

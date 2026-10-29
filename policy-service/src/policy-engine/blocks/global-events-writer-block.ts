@@ -14,7 +14,7 @@ import { TopicConfig } from '@guardian/hedera/topic';
 import { TopicHelper } from '@guardian/hedera/topic-helper';
 import { TopicId } from '@hiero-ledger/sdk';
 import { CacheState } from './../interfaces/index.js'
-import { PreviewScope } from '../helpers/preview.js';
+import { PreviewScope, recordPreviewWait } from '../helpers/preview.js';
 
 type SetDataStreamPayload = {
     topicId?: string;
@@ -491,7 +491,10 @@ export class GlobalEventsWriterBlock {
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, outState, event.actionStatus);
             ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, outState, event.actionStatus);
             ref.backup();
+            return;
         }
+
+        recordPreviewWait(event, ref);
     }
 
     /**

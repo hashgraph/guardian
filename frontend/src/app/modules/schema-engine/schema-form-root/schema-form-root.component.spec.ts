@@ -36,6 +36,68 @@ describe('SchemaFormRootComponent — required fields', () => {
         flush();
     };
 
+    const createRootWith = (document: ISchemaDocument, preset: unknown = null): SchemaFormRootComponent => {
+        const changeDetector = jasmine.createSpyObj<ChangeDetectorRef>('ChangeDetectorRef', ['detectChanges']);
+        const root = new SchemaFormRootComponent(new UntypedFormBuilder(), changeDetector);
+        root.schema = new Schema({ iri: '#calc&1.0.0', document });
+        root.presetDocument = preset;
+        root.ngOnChanges({
+            schema: new SimpleChange(null, root.schema, true),
+            presetDocument: new SimpleChange(null, preset, true)
+        });
+        flush();
+        return root;
+    };
+
+    const listDocument = (required: string[]): ISchemaDocument => ({
+        ...calcDocument,
+        properties: {
+            amount: numberField('amount'),
+            rows: { type: SchemaDataTypes.array, title: 'rows', description: 'rows', items: { type: SchemaDataTypes.number } },
+        },
+        required,
+    });
+
+    it('creates no row for a list that only the preview requires', fakeAsync(() => {
+        const root = createRootWith(listDocument(['amount']));
+        setRequired(root, ['amount', 'rows']);
+        expect(root.model?.controls?.find(field => field.name === 'rows')?.list?.length).toBe(0);
+        expect(root.group.getRawValue().rows).toEqual([]);
+    }));
+
+    it('still creates the first row of an ordinarily required list, also in preview', fakeAsync(() => {
+        const root = createRootWith(listDocument(['amount', 'rows']));
+        expect(root.model?.controls?.find(field => field.name === 'rows')?.list?.length).toBe(1);
+        setRequired(root, ['amount']);
+        expect(root.model?.controls?.find(field => field.name === 'rows')?.list?.length).toBe(1);
+    }));
+
+    const defaultDocument: ISchemaDocument = {
+        ...calcDocument,
+        properties: {
+            amount: Object.assign(numberField('amount'), { default: 3 }),
+            rate: numberField('rate'),
+        },
+    };
+
+    it('keeps the default value label after preview is turned on and off', fakeAsync(() => {
+        const root = createRootWith(defaultDocument);
+        const amount = () => root.model?.controls?.find(field => field.name === 'amount');
+        expect(amount()?.isPreset).toBeFalsy();
+        setRequired(root, ['amount']);
+        expect(amount()?.isPreset).toBeFalse();
+        setRequired(root, null);
+        expect(amount()?.isPreset).toBeFalse();
+        expect(root.group.get('amount')?.value).toBe(3);
+    }));
+
+    it('still marks values loaded from a document as preset after a rebuild', fakeAsync(() => {
+        const root = createRootWith(defaultDocument, { amount: 5 });
+        setRequired(root, ['amount']);
+        expect(root.model?.controls?.find(field => field.name === 'amount')?.isPreset).toBeTrue();
+        expect(root.group.get('amount')?.value).toBe(5);
+    }));
+
     it('builds with the schema rule when no list is given', fakeAsync(() => {
         const root = createRoot();
         expect(root.group.get('amount')?.errors?.['required']).toBeTruthy();
@@ -99,15 +161,6 @@ describe('SchemaFormRootComponent — required fields', () => {
         expect(applied).toEqual([root.group]);
         expect(forms[forms.length - 1]).toBe(root.group);
         expect(root.group.get('amount')?.value).toBe(7);
-    }));
-
-    it('shows field titles, parent sections and the one-based row number', fakeAsync(() => {
-        const root = createRoot();
-        const fields = root.schema.fields;
-        const bonus = Object.assign(fields[1], { name: 'bonus', title: 'Bonus' });
-        root.fields = [Object.assign(fields[0], { name: 'rows', title: 'Fuel usage', fields: [bonus], isArray: true })];
-        expect(root.previewFieldLocation('rows.1.bonus')).toBe('Calc › Fuel usage › row 2 › Bonus');
-        expect(root.previewFieldLocation('rows.1.unknown')).toBe('Calc › Fuel usage › row 2 › unknown');
     }));
 
     it('scrolls only the selected form field and keeps entered values', fakeAsync(() => {
@@ -199,11 +252,11 @@ describe('SchemaFormRootComponent — required fields', () => {
         return root;
     };
 
-    it('removes the empty row and sub-section that only preview created when preview is switched off', fakeAsync(() => {
+    it('creates no row or sub-section for parts that only preview requires, before and after preview is switched off', fakeAsync(() => {
         const root = createRootWithOptionalParts();
         setRequired(root, ['rows.PEt', 'details.PEt']);
-        expect(root.group.getRawValue().rows.length).toBe(1);
-        expect(root.group.getRawValue().details).toBeDefined();
+        expect(root.group.getRawValue().rows).toEqual([]);
+        expect(root.group.getRawValue().details).toBeUndefined();
         setRequired(root, null);
         expect(root.group.getRawValue().rows).toEqual([]);
         expect(root.group.getRawValue().details).toBeUndefined();

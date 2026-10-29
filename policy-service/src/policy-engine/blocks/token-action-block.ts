@@ -134,7 +134,9 @@ export class TokenActionBlock {
             token = await ref.databaseServer.getToken(options.tokenId);
         }
         if (options.useTemplate && doc && doc.tokens) {
-            token = await ref.databaseServer.getToken(doc.tokens[options.template], ref.dryRun);
+            token = PreviewScope.current()
+                ? await ref.databaseServer.findOne(Token, { tokenId: doc.tokens[options.template] })
+                : await ref.databaseServer.getToken(doc.tokens[options.template], ref.dryRun);
         }
         if (!token) {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);

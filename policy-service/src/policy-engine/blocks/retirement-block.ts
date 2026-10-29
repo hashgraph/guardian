@@ -21,7 +21,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
 import { MintService } from '../mint/mint-service.js';
 import { RecordActionStep } from '../record-action-step.js';
 import { checkOrgTokenPermission } from '../helpers/org-utils.js';
-import { keepPreviewDocumentOrigins, registerPreviewMessage } from '../helpers/preview.js';
+import { PreviewScope, keepPreviewDocumentOrigins, registerPreviewMessage } from '../helpers/preview.js';
 
 /**
  * Retirement block
@@ -345,7 +345,9 @@ export class RetirementBlock {
         if (options.useTemplate) {
             if (docs[0].tokens) {
                 const tokenId = docs[0].tokens[options.template];
-                token = await ref.databaseServer.getToken(tokenId, ref.dryRun);
+                token = PreviewScope.current()
+                    ? await ref.databaseServer.findOne(TokenCollection, { tokenId })
+                    : await ref.databaseServer.getToken(tokenId, ref.dryRun);
             }
         } else {
             token = await ref.databaseServer.getToken(options.tokenId);

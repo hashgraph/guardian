@@ -196,15 +196,17 @@ export class PreviewReadTracker {
                 }
                 const writePath = writePrefix ? `${writePrefix}.${key}` : key;
                 const nested = !!result && typeof result === 'object';
+                const descriptor = Reflect.getOwnPropertyDescriptor(target, key);
+                const frozen = !!descriptor && descriptor.configurable === false && descriptor.writable === false;
                 if (isList) {
                     if (/^\d+$/.test(key) && !nested && prefix) {
                         tracker.add(schema, prefix, writePrefix, document, tracker.site(), tracker.listed.has(target));
                     }
-                    return /^\d+$/.test(key) ? tracker.track(result, schema, prefix, writePath, document) : result;
+                    return /^\d+$/.test(key) && !frozen ? tracker.track(result, schema, prefix, writePath, document) : result;
                 }
                 const path = prefix ? `${prefix}.${key}` : key;
                 tracker.add(schema, path, writePath, document, tracker.site(), tracker.listed.has(target), nested);
-                return tracker.track(result, schema, path, writePath, document);
+                return frozen ? result : tracker.track(result, schema, path, writePath, document);
             },
             ownKeys(target) {
                 tracker.listed.add(target);
