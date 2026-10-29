@@ -133,6 +133,7 @@ export class SchemaConfigComponent implements OnInit {
         { label: 'System Schemas', value: SchemaType.System }
     ];
     public textSearch: any;
+    private appliedSearchKey: string = '';
     public textSearchOptionsValue: string[] = [
         'uuid', 'name', 'description', 'references', 'fields'
     ];
@@ -645,12 +646,14 @@ export class SchemaConfigComponent implements OnInit {
             case SchemaType.Tool:
             default: {
                 const category = this.getCategory();
+                const searchText = this.getSearchText();
+                this.appliedSearchKey = this.getSearchKey(searchText);
                 loader = this.schemaService.getSchemasByPage({
                     category,
                     topicId: this.currentTopic || '',
                     templateSchemasOnly: this.type === SchemaType.Policy && this.templateSchemasOnly,
                     unusedInPolicyOnly: this.type === SchemaType.Policy && this.unusedInPolicyOnly,
-                    search: this.textSearch,
+                    search: searchText || undefined,
                     searchOptions: this.textSearchOptionsValue,
                     pageIndex: this.pageIndex,
                     pageSize: this.pageSize
@@ -808,6 +811,20 @@ export class SchemaConfigComponent implements OnInit {
             setTimeout(() => {
                 this.loading = false;
             }, 500);
+        }
+    }
+
+    private getSearchText(): string {
+        return String(this.textSearch ?? '').trim();
+    }
+
+    private getSearchKey(text = this.getSearchText()): string {
+        return text ? JSON.stringify([text, this.textSearchOptionsValue]) : '';
+    }
+
+    public onSearchChange() {
+        if (this.getSearchKey() !== this.appliedSearchKey) {
+            this.onFilter();
         }
     }
 

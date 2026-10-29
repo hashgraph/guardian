@@ -691,6 +691,21 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
     }
 
     /**
+     * Find plain rows without hydrating entities (entity hooks, e.g. file loading, are skipped)
+     * @param filters Filters
+     * @param fields Fields to select
+     * @returns Plain rows
+     */
+    @CreateRequestContext(() => DataBaseHelper.orm)
+    public async findRaw(filters: FilterQuery<T>, fields: string[]): Promise<any[]> {
+        return await this._em.getDriver().find(
+            this.entityClass.name,
+            filters as any,
+            { fields: fields as any }
+        );
+    }
+
+    /**
      * Find all entities
      * @param options Options
      * @returns Entities
