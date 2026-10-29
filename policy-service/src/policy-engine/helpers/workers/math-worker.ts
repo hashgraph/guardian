@@ -156,7 +156,7 @@ function execute(): void {
         sites: tracker ? tracker.takeSites() : undefined,
         unexecuted: tracker ? tracker.takeUnexecuted() : undefined,
         enumerated: tracker ? tracker.takeEnumerated() : undefined,
-        writes: copy && plain === document ? writes : undefined
+        writes: copy && (tracker ? tracker.original(plain) : plain) === document ? writes : undefined
     });
 }
 

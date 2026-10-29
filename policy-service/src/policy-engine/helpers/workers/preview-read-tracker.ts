@@ -280,22 +280,37 @@ export class PreviewReadTracker {
         });
     }
 
-    public unwrap(value: unknown, seen: Set<object> = new Set<object>()): unknown {
+    public original(value: unknown): unknown {
+        return value && typeof value === 'object' ? this.targets.get(value) ?? value : value;
+    }
+
+    public unwrap(value: unknown, seen: Map<object, object> = new Map<object, object>()): unknown {
         if (!value || typeof value !== 'object') {
             return value;
         }
         const target = this.targets.get(value) ?? value;
-        if (seen.has(target)) {
+        const copied = seen.get(target);
+        if (copied) {
+            return copied;
+        }
+        const prototype = Object.getPrototypeOf(target);
+        if (!Array.isArray(target) && prototype !== Object.prototype && prototype !== null) {
+            seen.set(target, target);
+            for (const key of Object.keys(target)) {
+                const child = Reflect.get(target, key);
+                const unwrapped = this.unwrap(child, seen);
+                if (unwrapped !== child) {
+                    Reflect.set(target, key, unwrapped);
+                }
+            }
             return target;
         }
-        seen.add(target);
+        const copy: Record<string, unknown> | unknown[] = Array.isArray(target) ? [] : {};
+        seen.set(target, copy);
+        this.targets.set(copy, target);
         for (const key of Object.keys(target)) {
-            const child = Reflect.get(target, key);
-            const unwrapped = this.unwrap(child, seen);
-            if (unwrapped !== child) {
-                Reflect.set(target, key, unwrapped);
-            }
+            Reflect.set(copy, key, this.unwrap(Reflect.get(target, key), seen));
         }
-        return target;
+        return copy;
     }
 }

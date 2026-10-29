@@ -1120,6 +1120,7 @@ export function getPreviewInputError(actionStatus: RecordActionStep): MessageErr
     const { fields } = resolvePreviewFields(source, reads);
     return new MessageError('Missing calculation inputs', 422, {
         preview: true,
+        notLogged: true,
         fields: [...new Set([...fields, ...missing])].sort(),
         missingFields: missing
     });
