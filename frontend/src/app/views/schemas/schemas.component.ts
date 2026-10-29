@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, NgZone, OnInit } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
@@ -162,6 +162,7 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     constructor(
+        private ngZone: NgZone,
         public tagsService: TagsService,
         private profileService: ProfileService,
         private schemaService: SchemaService,
@@ -825,9 +826,13 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     public onSearchChange() {
-        if (this.getSearchKey() !== this.appliedSearchKey) {
-            this.onFilter();
-        }
+        // The scope dropdown emits panel-hide outside the Angular zone, and the
+        // reload started from there is never followed by change detection.
+        this.ngZone.run(() => {
+            if (this.getSearchKey() !== this.appliedSearchKey) {
+                this.onFilter();
+            }
+        });
     }
 
     public onFilter(event?: any) {
