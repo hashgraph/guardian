@@ -448,13 +448,56 @@ describe('Custom Logic result transport', function () {
     });
 
     it('requires a dynamic calculation input after enumerating document keys', async () => {
-        const expression = 'const doc=documents[0].document.credentialSubject[0];console.log(Object.keys(doc));const key=["amo","unt"].join("");done({total:doc[key]>0?5:7});';
-        const { step, outputs } = await execute(expression, true);
-        assert.deepEqual(outputs, []);
-        const error = getPreviewInputError(step);
-        assert.equal(error.code, 422);
-        assert.deepEqual(error.data.fields, ['amount']);
-        assert.deepEqual(error.data.missingFields, ['amount']);
+        const response = await runPreview(
+            { blockType: 'requestVcDocumentBlock' },
+            makeUser(),
+            {},
+            async (_request, user, _data, step) => {
+                step.setPreviewSource({
+                    schema: '#S',
+                    document: {},
+                    paths: ['amount'],
+                    dependencies: {}
+                });
+
+                const { block } = makeBlock(CustomLogicBlock, {
+                    options: {
+                        unsigned: true,
+                        expression: `
+                            const doc = documents[0].document.credentialSubject[0];
+                            console.log(Object.keys(doc));
+                            const key = ["amo", "unt"].join("");
+                            done({ total: doc[key] > 0 ? 5 : 7 });
+                        `
+                    }
+                });
+
+                block.triggerEvents = async (type, _user, state) => {
+                    if (type === 'RunEvent') {
+                        step.addPreviewDocument('script', null, state);
+                    }
+                };
+
+                await block.runAction({
+                    user,
+                    actionStatus: step,
+                    data: {
+                        data: {
+                            schema: '#S',
+                            document: { credentialSubject: [{}] }
+                        }
+                    }
+                });
+
+                return new MessageResponse({});
+            }
+        );
+
+        assert.ok(response instanceof MessageError);
+        assert.equal(response.code, 422);
+        assert.equal(response.body, null);
+        assert.deepEqual(response.data.fields, ['amount']);
+        assert.deepEqual(response.data.missingFields, ['amount']);
     });
 
     for (const amount of [5, 0]) {
