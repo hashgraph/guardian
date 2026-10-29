@@ -133,7 +133,8 @@ export class SchemaConfigComponent implements OnInit {
         { label: 'System Schemas', value: SchemaType.System }
     ];
     public textSearch: any;
-    private appliedSearchKey: string = '';
+    // null after a failed load, so the same search can be retried
+    private appliedSearchKey: string | null = '';
     public textSearchOptionsValue: string[] = [
         'uuid', 'name', 'description', 'references', 'fields'
     ];
@@ -472,6 +473,7 @@ export class SchemaConfigComponent implements OnInit {
         this.page = [];
         this.count = 0;
         this.loading = false;
+        this.appliedSearchKey = null;
         console.error(error);
     }
 
