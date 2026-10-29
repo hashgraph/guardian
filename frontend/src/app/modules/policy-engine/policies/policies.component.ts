@@ -798,6 +798,7 @@ export class PoliciesComponent implements OnInit {
     @ViewChild('policySubMenu') policySubMenu?: OverlayPanel;
 
     private _destroy$ = new Subject<void>();
+    private _cancelLoad$ = new Subject<void>();
 
     constructor(
         public tagsService: TagsService,
@@ -922,11 +923,12 @@ export class PoliciesComponent implements OnInit {
     }
 
     private loadAllPolicy() {
+        this._cancelLoad$.next();
         this.loading = true;
         this.tagOptions = [];
         this.policyEngineService
             .page(this.pageIndex, this.pageSize, this.tab, this.statusFilter)
-            .pipe(takeUntil(this._destroy$)).subscribe((policiesResponse) => {
+            .pipe(takeUntil(this._destroy$), takeUntil(this._cancelLoad$)).subscribe((policiesResponse) => {
                 let publishedPolicy = false;
 
                 this.policies = [];
@@ -995,7 +997,7 @@ export class PoliciesComponent implements OnInit {
             }, 500);
         } else {
             const ids = policies.map((e) => e.id);
-            this.tagsService.search(this.tagEntity, ids).pipe(takeUntil(this._destroy$)).subscribe((data) => {
+            this.tagsService.search(this.tagEntity, ids).pipe(takeUntil(this._destroy$), takeUntil(this._cancelLoad$)).subscribe((data) => {
                 for (const policy of policies) {
                     (policy as any)._tags = data[policy.id];
                     data[policy.id]?.tags.forEach((tag: any) => {

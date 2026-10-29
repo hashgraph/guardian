@@ -1,3 +1,4 @@
+import { Subject } from 'rxjs';
 import { PoliciesComponent } from './policies.component';
 
 describe('PoliciesComponent', () => {
@@ -54,6 +55,26 @@ describe('PoliciesComponent', () => {
             (component as any).setVersion({ id: 'p1', uuid: 'u1' });
 
             expect(component.policies![0].previousVersion).toBe('');
+        });
+    });
+
+    describe('loadAllPolicy', () => {
+        it('cancels the previous request so a late response cannot overwrite a newer one', () => {
+            const requests: Subject<any>[] = [];
+            (component as any).policyEngineService = {
+                page: jasmine.createSpy('page').and.callFake(() => {
+                    const request = new Subject<any>();
+                    requests.push(request);
+                    return request;
+                }),
+            };
+
+            (component as any).loadAllPolicy();
+            (component as any).loadAllPolicy();
+
+            expect(requests.length).toBe(2);
+            expect(requests[0].observed).toBeFalse();
+            expect(requests[1].observed).toBeTrue();
         });
     });
 
