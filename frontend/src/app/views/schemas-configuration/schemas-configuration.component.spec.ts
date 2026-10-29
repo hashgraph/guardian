@@ -116,6 +116,45 @@ describe('SchemasConfigurationComponent', () => {
             expect(component.markDirty).toHaveBeenCalled();
         });
 
+        it('restores the previous preset value when the dialog is cancelled', () => {
+            const component = createComponent();
+            component.selectedField = makeField({ default: '<p>Default</p>' });
+            component.markDirty = jasmine.createSpy('markDirty');
+
+            component.openRichTextPresetDialog('default');
+            component.setRichTextPresetValue('<p>Changed</p>');
+            component.cancelRichTextPresetDialog();
+
+            expect(component.selectedField.default).toBe('<p>Default</p>');
+            expect(component.richTextPresetTarget).toBeNull();
+        });
+
+        it('restores an absent test value when the dialog is cancelled', () => {
+            const component = createComponent();
+            component.selectedField = makeField();
+            component.markDirty = jasmine.createSpy('markDirty');
+            const before = component.selectedField.examples;
+
+            component.openRichTextPresetDialog('test');
+            component.setRichTextPresetValue('<p>Example</p>');
+            component.cancelRichTextPresetDialog();
+
+            expect(component.selectedField.examples).toEqual(before);
+        });
+
+        it('keeps the preset value on Done and ignores the hide event that follows', () => {
+            const component = createComponent();
+            component.selectedField = makeField({ default: '<p>Default</p>' });
+            component.markDirty = jasmine.createSpy('markDirty');
+
+            component.openRichTextPresetDialog('default');
+            component.setRichTextPresetValue('<p>Changed</p>');
+            component.closeRichTextPresetDialog();
+            component.cancelRichTextPresetDialog();
+
+            expect(component.selectedField.default).toBe('<p>Changed</p>');
+        });
+
         it('writes a Rich Text test value through the existing example value flow', () => {
             const component = createComponent();
             component.selectedField = makeField();

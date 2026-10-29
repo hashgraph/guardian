@@ -387,6 +387,39 @@
                                       {{ itemControl.unit }}
                                     </div>
                                   }
+                                  @if (isRichText(itemControl)) {
+                                    @let richTextCellHtml = getRichTextCellHtml$(itemControl) | async;
+                                    @let richTextCellEditable = !(isEditMode && !itemControl.isUpdatable);
+                                    <div
+                                      class="rich-text-table-card"
+                                      [class.rich-text-table-card--no-clear]="!richTextCellHtml || !richTextCellEditable"
+                                      [attr.readonly-field]="!richTextCellEditable"
+                                      (mouseenter)="onRichTextCellEnter($event, itemControl, suggestPopover)"
+                                      (mouseleave)="onSuggestLeave(suggestPopover)"
+                                      >
+                                      @if (richTextCellHtml) {
+                                        <div class="rich-text-table-preview" appRichTextClip [innerHTML]="richTextCellHtml"></div>
+                                      } @else {
+                                        <span class="rich-text-table-empty">Use the pencil to write text</span>
+                                      }
+                                      <button
+                                        type="button"
+                                        class="rich-text-table-edit"
+                                        [title]="'Edit ' + itemControl.description"
+                                        [attr.aria-label]="'Edit ' + itemControl.description"
+                                        (click)="openRichTextDialog(itemControl, suggestPopover)"
+                                        ><i class="pi pi-pencil"></i></button>
+                                      @if (richTextCellHtml && richTextCellEditable) {
+                                        <button
+                                          type="button"
+                                          class="rich-text-table-clear"
+                                          [title]="'Clear ' + itemControl.description"
+                                          [attr.aria-label]="'Clear ' + itemControl.description"
+                                          (click)="clearRichTextCell(itemControl, suggestPopover)"
+                                          ><i class="pi pi-times"></i></button>
+                                      }
+                                    </div>
+                                  }
                                   @if (isInput(itemControl)) {
                                     <div
                                       class="form-field-input guardian-input-container"
@@ -1551,3 +1584,32 @@
     [innerHTML]="suggestPopoverValue"
   ></div>
 </p-popover>
+
+<p-dialog
+  [header]="richTextDialogControl?.description || ''"
+  [visible]="!!richTextDialogControl"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: 'min(760px, 95vw)' }"
+  [closeOnEscape]="!isRichTextDialogBusy()"
+  [styleClass]="isRichTextDialogBusy() ? 'schema-form-rich-text-dialog schema-form-rich-text-dialog--locked' : 'schema-form-rich-text-dialog'"
+  (onHide)="cancelRichTextDialog()">
+  @if (richTextDialogControl) {
+    <app-rich-text-editor
+      #richTextDialogEditor
+      [formControl]="richTextDialogControl.control"
+      [placeholder]="getPlaceholderByFieldType(richTextDialogControl)"
+      [readonly]="!!(isEditMode && !richTextDialogControl.isUpdatable)"
+      [imageUploader]="uploadRichTextImage"
+      [imageResolver]="resolveRichTextImage"
+    ></app-rich-text-editor>
+  }
+  <ng-template pTemplate="footer">
+    <button
+      type="button"
+      class="rich-text-dialog-done"
+      [disabled]="isRichTextDialogBusy()"
+      (click)="closeRichTextDialog()">Done</button>
+  </ng-template>
+</p-dialog>

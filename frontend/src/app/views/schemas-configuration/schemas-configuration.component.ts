@@ -2357,8 +2357,28 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.markDirty();
     }
 
+    private richTextPresetInitial: any = undefined;
+
     public openRichTextPresetDialog(target: 'default' | 'suggest' | 'test'): void {
         this.richTextPresetTarget = target;
+        this.richTextPresetInitial = target === 'test'
+            ? (this.selectedField as any)?.examples
+            : (this.selectedField as any)?.[target];
+    }
+
+    public cancelRichTextPresetDialog(): void {
+        const target = this.richTextPresetTarget;
+        if (target === null || this.isRichTextPresetBusy()) {
+            return;
+        }
+        if (this.selectedField) {
+            if (target === 'test') {
+                (this.selectedField as any).examples = this.richTextPresetInitial;
+            } else {
+                (this.selectedField as any)[target] = this.richTextPresetInitial;
+            }
+        }
+        this.closeRichTextPresetDialog();
     }
 
     public isFormattedPresetField(): boolean {
