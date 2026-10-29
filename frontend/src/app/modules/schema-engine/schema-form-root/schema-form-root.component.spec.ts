@@ -91,6 +91,22 @@ describe('SchemaFormRootComponent — required fields', () => {
         expect(root.group.get('amount')?.value).toBe(3);
     }));
 
+    for (const value of [7, 0]) {
+        it(`keeps an edited default styled as edited after requirement rebuilds (${value})`, fakeAsync(() => {
+            const root = createRootWith(defaultDocument);
+            root.group.get('amount')?.setValue(value);
+            root.group.get('amount')?.markAsDirty();
+            setRequired(root, ['amount']);
+            expect(root.group.get('amount')?.dirty).toBeTrue();
+            expect(root.group.get('amount')?.value).toBe(value);
+            expect(root.group.get('rate')?.pristine).toBeTrue();
+            setRequired(root, null);
+            const amount = root.model?.controls?.find(field => field.name === 'amount');
+            expect(!!(amount?.default && !amount.isPreset && !amount.control.dirty)).toBeFalse();
+            expect(root.group.get('amount')?.value).toBe(value);
+        }));
+    }
+
     it('still marks values loaded from a document as preset after a rebuild', fakeAsync(() => {
         const root = createRootWith(defaultDocument, { amount: 5 });
         setRequired(root, ['amount']);

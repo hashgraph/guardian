@@ -104,4 +104,18 @@ describe('Switch executed document origins', function () {
         });
     }
 
+    for (const formula of ['sum(map(amount,abs)) > 0', 'sum(map(amount,square)) > 0', 'sum(filter(amount,isPositive)) > 0', 'f(x)=abs(x);sum(map(amount,f)) > 0', 'f(x)=abs(x);g=f;sum(map(amount,g)) > 0']) {
+        for (const amount of [5, 0]) {
+            it(`preserves callback branches and input requirements: ${formula}, amount ${amount}`, async () => {
+                const { response, reads } = await runSelection(formula, { amount }, ['amount'], [
+                    { value: { amount: 7 }, stored: true },
+                    { value: { amount } }
+                ]);
+                assert.equal(response.code, 200);
+                assert.deepEqual(response.body.errors, []);
+                assert.deepEqual(reads, [{ schema: '#S', path: 'amount' }]);
+            });
+        }
+    }
+
 });

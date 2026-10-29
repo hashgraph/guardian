@@ -802,7 +802,10 @@ export function evaluatePreviewSwitchFormula(formula: string, scope: any, record
             if (mathjs.isSymbolNode(node)
                 && !(parent && mathjs.isAccessorNode(parent) && path === 'object')
                 && !(parent && mathjs.isFunctionNode(parent) && path === 'fn')
-                && !(parent && mathjs.isAssignmentNode(parent) && path === 'object')) {
+                && !(parent && mathjs.isAssignmentNode(parent) && path === 'object')
+                && !(parent && mathjs.isFunctionNode(parent) && mathjs.isSymbolNode(parent.fn)
+                    && (parent.fn.name === 'map' || parent.fn.name === 'filter')
+                    && path === `args[${parent.args.length - 1}]`)) {
                 const reference = parent && (mathjs.isAssignmentNode(parent) && path === 'value'
                     || mathjs.isFunctionNode(parent) && mathjs.isSymbolNode(parent.fn) && functions.has(parent.fn.name));
                 const args: mathjs.MathNode[] = [node, new mathjs.ConstantNode(node.name)];

@@ -1,6 +1,6 @@
 import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { SchemaFormComponent } from '../schema-form/schema-form.component';
-import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
+import { AbstractControl, UntypedFormArray, UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { Schema, SchemaField, SchemaRuleValidateResult } from '@guardian/interfaces';
 import { equalsLoosely, FieldForm, IFieldControl } from '../schema-form-model/field-form';
 import { Subscription } from 'rxjs';
@@ -153,8 +153,20 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             this.userPreset = !!this.presetDocument;
         }
         let keepDirty = false;
+        const dirtyPaths: string[][] = [];
         if (requiredChanged && !changes.requiredFields.firstChange && this.model) {
             keepDirty = this.group.dirty;
+            const collectDirty = (control: AbstractControl, path: string[]): void => {
+                if (control.dirty && path.length) {
+                    dirtyPaths.push(path);
+                }
+                if (control instanceof UntypedFormGroup || control instanceof UntypedFormArray) {
+                    for (const [key, child] of Object.entries(control.controls)) {
+                        collectDirty(child, [...path, key]);
+                    }
+                }
+            };
+            collectDirty(this.group, []);
             this.presetDocument = this.withoutEmptyCollections(this.group.getRawValue());
         }
         const presetApplied = !!changes.presetDocument && !changes.presetDocument.firstChange;
@@ -169,6 +181,9 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         ) {
             setTimeout(() => {
                 this.buildFields();
+                for (const path of dirtyPaths) {
+                    this.group.get(path)?.markAsDirty();
+                }
                 if (keepDirty) {
                     this.group.markAsDirty();
                 }
