@@ -53,7 +53,7 @@ describe('CalculationPreviewService', () => {
         expect(response.documents).toEqual([]);
     });
 
-    it('FULL-23 sends selected evidence and relayer in discovery and real Preview', async () => {
+    it('sends selected evidence and relayer in discovery and real Preview', async () => {
         policyEngine.setBlockDataWithResult.and.returnValue(of({ preview: true }));
         const metadata = { relayerAccount: '0.0.999', evidence: [{ dataType: 'message', data: 'proof' }] };
         for (const discovery of [true, false]) {

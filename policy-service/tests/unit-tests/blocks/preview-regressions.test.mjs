@@ -61,7 +61,7 @@ describe('@unit Preview regressions', function () {
     });
     after(() => restoreHarness());
 
-    it('FULL-19 returns indexed requirements for an actual script cell read', async () => {
+    it('returns indexed requirements for an actual script cell read', async () => {
         const expression = 'done({total:documents[0].document.credentialSubject[0].rows[1].amount*2});';
         const missing = await previewScript([credential({ rows: [{}, {}, {}] })], expression,
             { rows: [{}, {}, {}] }, ['rows', 'rows.amount', 'total']);
@@ -75,7 +75,7 @@ describe('@unit Preview regressions', function () {
         assert.equal(supplied.output.document.credentialSubject[0].total, 0);
     });
 
-    it('FULL-21 excludes historical by-name source copies through the actual source addon', async () => {
+    it('excludes historical by-name source copies through the actual source addon', async () => {
         for (const mode of ['historical-filled', 'historical-missing', 'temporary-missing']) {
             const { db, server } = await previewDatabase();
             const subject = mode === 'historical-filled' ? { rate: 3 } : {};
@@ -105,7 +105,7 @@ describe('@unit Preview regressions', function () {
         }
     });
 
-    it('FULL-16 preserves origins through real Split and the Preview database proxy', async () => {
+    it('preserves origins through real Split and the Preview database proxy', async () => {
         const originalCredentials = PolicyUtils.getUserCredentials;
         PolicyUtils.getUserCredentials = async () => ({});
         try {
@@ -158,7 +158,7 @@ describe('@unit Preview regressions', function () {
         }
     });
 
-    it('FULL-14 recovers an extracted copied object at its original path', async () => {
+    it('recovers an extracted copied object at its original path', async () => {
         const child = credential({});
         delete child.schema;
         const parent = credential({ section: {} });
@@ -170,7 +170,7 @@ describe('@unit Preview regressions', function () {
         assert.deepEqual(result.response.data.missingFields, ['section.rate']);
     });
 
-    it('FULL-18 does not charge actual HTTP output fields to the form', async () => {
+    it('does not charge actual HTTP output fields to the form', async () => {
         let total;
         const response = await runPreview({ blockType: 'requestVcDocumentBlock' }, user, {}, async (_r, _u, _d, step) => {
             step.setPreviewSource({ schema: '#S', document: {}, paths: ['rate', 'total'], dependencies: {} });
@@ -193,7 +193,7 @@ describe('@unit Preview regressions', function () {
         assert.deepEqual(response.body.fields, []);
     });
 
-    it('FULL-15 prepares rows independently through the actual Request handler', async () => {
+    it('prepares rows independently through the actual Request handler', async () => {
         const block = makeBlock(RequestVcDocumentBlock).block;
         block._schema = { iri: '#S', fields: [{ name: 'rows', isRef: true, isArray: true, fields: [
             { name: 'flag', type: 'boolean' }, { name: 'amount', type: 'number' },
@@ -208,7 +208,7 @@ describe('@unit Preview regressions', function () {
         assert.ok(!response.body.fields.includes('rows.1.amount'));
     });
 
-    it('FULL-17 preserves selected stored input through aliases and function parameters', async () => {
+    it('preserves selected stored input through aliases and function parameters', async () => {
         for (const formula of ['amount[1]>0', 'a=amount; a[1]>0', 'f(x)=x[1]; f(amount)>0']) {
             for (const selected of [1, 2]) {
                 const expression = formula.replace(/\[1\]/g, `[${selected}]`);
@@ -229,7 +229,7 @@ describe('@unit Preview regressions', function () {
         }
     });
 
-    it('FULL-25/C2 accepts handled missing parents and still requires unhandled children', async () => {
+    it('accepts handled missing parents and still requires unhandled children', async () => {
         const forms = [
             '(d.geo?.lat ?? 0)*2',
             '((d.geo && d.geo.lat) || 0)*2',
@@ -260,7 +260,7 @@ describe('@unit Preview regressions', function () {
         assert.deepEqual(required.response.data.missingFields, ['geo.lat']);
     });
 
-    it('FULL-22 recovers the copied nested section in autocalculate', async () => {
+    it('recovers the copied nested section in autocalculate', async () => {
         const block = makeBlock(RequestVcDocumentBlock).block;
         block._schema = { iri: '#S', fields: [
             { name: 'costs', isRef: true, fields: [{ name: 'amount', type: 'number' }] },
@@ -279,7 +279,7 @@ describe('@unit Preview regressions', function () {
         }
     });
 
-    it('FULL-21 tracks direct and copied current-form source reads, excluding history', async () => {
+    it('tracks direct and copied current-form source reads, excluding history', async () => {
         for (const copy of [false, true]) {
             const expression = 'const original=sources[0].document.credentialSubject[0];const c=' + (copy ? '{...original}' : 'original') + ';done({total:c["ra"+"te"]*2});';
             const missing = await previewScript([], expression, {}, ['rate', 'total'], async block => {
@@ -296,7 +296,7 @@ describe('@unit Preview regressions', function () {
         }
     });
 
-    it('FULL-20 recovers the actual copied document when several form documents arrive', async () => {
+    it('recovers the actual copied document when several form documents arrive', async () => {
         const expression = 'const c={...documents[0].document.credentialSubject[0]};done({total:c["ra"+"te"]*2});';
         const missing = await previewScript([credential({}), credential({})], expression, {}, ['rate', 'total']);
         assert.equal(missing.response.code, 422);

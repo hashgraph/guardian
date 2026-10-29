@@ -262,7 +262,7 @@ describe('@unit Preview copied-field diagnosis', function () {
                 [{ schema: '#S', document: 0, path: '', names: ['rate', 'other'] }]);
         });
 
-        it('FULL-14 maps extracted copy fallback to the original indexed object', async () => {
+        it('maps extracted copy fallback to the original indexed object', async () => {
             const step = status(false, { rows: [{}, {}] });
             step.setPreviewSource({ schema: '#S', document: { rows: [{}, {}] }, paths: ['rows', 'rows.rate'], dependencies: {} });
             await PreviewScope.run(step, async () => {

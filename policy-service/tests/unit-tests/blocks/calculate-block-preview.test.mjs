@@ -132,7 +132,7 @@ describe('@unit calculateContainerBlock preview', () => {
         await setup().process(source, refWith(options), 'uid', step, makeUser());
         assert.deepEqual(step.getPreviewReads(), [{ schema: '#in', path: 'rate' }]);
     });
-    it('FULL-13 excludes stored configured inputs and translates extracted ones', async () => {
+    it('excludes stored configured inputs and translates extracted ones', async () => {
         const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
         const options = { unsigned: true, inputFields: [{ name: 'a', value: 'a' }] };
         await PreviewScope.run(step, async () => {

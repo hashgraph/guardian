@@ -81,7 +81,7 @@ describe('request document preview wiring', () => {
         return { component, calls: fake.calls, errors: fake.errors, warnings: fake.warnings, uploads, dialogs };
     };
 
-    it('FULL-23 forwards already selected metadata from the page and dialog', async () => {
+    it('forwards already selected metadata from the page and dialog', async () => {
         for (const kind of ['page', 'dialog']) {
             const state = kind === 'page' ? page([]) : dialog([], pageParent());
             const component = state.component;

@@ -612,7 +612,7 @@ describe('FieldForm — required fields from a list', () => {
     });
 });
 
-describe('FULL-19 indexed Preview requirements', () => {
+describe('indexed Preview requirements', () => {
     const make = (requiredFields: string[] | null) => {
         const document: any = { $id: '#rows', type: 'object', properties: {
             rows: { type: 'array', items: { $ref: '#row' } }

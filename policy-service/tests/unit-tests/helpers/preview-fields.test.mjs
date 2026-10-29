@@ -843,7 +843,7 @@ describe('@unit preview form condition priority', () => {
 });
 
 describe('@unit indexed requirements', () => {
-    it('FULL-15 keeps dependencies separate for executed row branches', () => {
+    it('keeps dependencies separate for executed row branches', () => {
         const fields = [{ name: 'rows', isRef: true, isArray: true, fields: [
             field('flag', 'boolean'), field('amount', 'number'),
             field('total', 'number', { autocalculate: true, expression: 'flag ? amount * 2 : 0' })
@@ -860,7 +860,7 @@ describe('@unit indexed requirements', () => {
         assert.deepEqual(resolvePreviewFields(source, []).missingFields, []);
         assert.ok(!resolvePreviewFields(source, []).fields.includes('rows.1.amount'));
     });
-    it('FULL-24 projects deep reads onto the same indexed object', () => {
+    it('projects deep reads onto the same indexed object', () => {
         const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
         step.setPreviewSource({ schema: '#S', document: { rows: [{}, { geo: { coordinates: [3, 4] } }] }, paths: ['rows', 'rows.geo'], dependencies: {} });
         step.addPreviewRead('#S', 'rows.1.geo.coordinates.0');
@@ -879,7 +879,7 @@ describe('@unit indexed requirements', () => {
 });
 
 describe('@unit stored nested credentials', () => {
-    it('FULL-16 marks the nested persisted Split credential but not current input', () => {
+    it('marks the nested persisted Split credential but not current input', () => {
         const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
         PreviewScope.run(step, () => {
             const saved = { document: { schema: '#S', document: { credentialSubject: [{ rate: 3 }] } } };
@@ -893,7 +893,7 @@ describe('@unit stored nested credentials', () => {
 });
 
 describe('@unit known external results', () => {
-    it('FULL-18 excludes present and absent response fields through copy and extraction', () => {
+    it('excludes present and absent response fields through copy and extraction', () => {
         const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
         PreviewScope.run(step, () => {
             const response = markPreviewResultDocument({ document: { credentialSubject: [{ rate: 3 }] } });
