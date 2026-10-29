@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { types } from 'node:util';
 import { PolicyUtils } from '../../../dist/policy-engine/helpers/utils.js';
 import { RecordActionStep } from '../../../dist/policy-engine/record-action-step.js';
-import { assertPreviewCalculationResult, calculatePreviewAutoFields, collectPreviewNullPaths, collectPreviewUnavailablePaths, collectPreviewPaths, fillPreviewPlaceholders, getMathPreviewOutputPaths, getMathPreviewReads, getPreviewChangedPaths, getPreviewComputed, getPreviewDocumentPaths, evaluatePreviewSwitchFormula, getPreviewSubject, isMissingPreviewValue, isPreviewComputedRead, isPreviewOutputRead, isPreviewPathCovered, normalizePreviewPath, markPreviewExtractedDocument, markPreviewStoredDocuments, PreviewScope, removePreviewEmptyValues, resolvePreviewDocumentRead, resolvePreviewFields, setPreviewComputed, setPreviewDocumentSchema, trackPreviewFormulaScope } from '../../../dist/policy-engine/helpers/preview.js';
+import { assertPreviewCalculationResult, calculatePreviewAutoFields, collectPreviewNullPaths, collectPreviewUnavailablePaths, collectPreviewPaths, fillPreviewPlaceholders, keepPreviewDocumentOrigins, markPreviewResultDocument, isPreviewStoredDocument, getPreviewInputError, getMathPreviewOutputPaths, getMathPreviewReads, getPreviewChangedPaths, getPreviewComputed, getPreviewDocumentPaths, evaluatePreviewSwitchFormula, getPreviewSubject, isMissingPreviewValue, isPreviewComputedRead, isPreviewOutputRead, isPreviewPathCovered, normalizePreviewPath, markPreviewExtractedDocument, markPreviewStoredDocuments, PreviewScope, removePreviewEmptyValues, resolvePreviewDocumentRead, resolvePreviewFields, setPreviewComputed, setPreviewDocumentSchema, trackPreviewFormulaScope } from '../../../dist/policy-engine/helpers/preview.js';
 
 const field = (name, type, extra = {}) => ({ name, type, isRef: false, isArray: false, ...extra });
 
@@ -81,7 +81,7 @@ describe('@unit preview fields', () => {
             assert.equal(doc.total, 6);
             assert.equal(doc.items[0].double, 2);
             assert.equal(doc.items[1].double, 8);
-            assert.deepEqual(dependencies, { total: ['amount', 'rate'], 'items.double': ['items.value'] });
+            assert.deepEqual(dependencies, { total: ['amount', 'rate'], 'items.0.double': ['items.0.value'], 'items.1.double': ['items.1.value'] });
             assert.deepEqual(errors, []);
         });
 
@@ -313,7 +313,7 @@ describe('@unit preview fields', () => {
             calculatePreviewAutoFields(autoFields, doc, dependencies, errors, '', true);
             assert.ok(Number.isNaN(doc.total));
             assert.ok(Number.isNaN(doc.items[0].double));
-            assert.deepEqual(dependencies, { total: ['amount', 'rate'], 'items.double': ['items.value'] });
+            assert.deepEqual(dependencies, { total: ['amount', 'rate'], 'items.0.double': ['items.0.value'] });
             assert.deepEqual(errors, []);
             errors.length = 0;
             const real = { amount: 2, rate: 3, items: [{}] };
@@ -695,7 +695,7 @@ describe('@unit preview fields', () => {
                 { schema: '#R', path: 'amount' }
             ];
             assert.deepEqual(resolvePreviewFields(source, reads), {
-                fields: ['amount', 'items.value', 'location.lat', 'rate', 'table'],
+                fields: ['amount', 'items.1.value', 'items.value', 'location.lat', 'rate', 'table'],
                 missingFields: ['items.value', 'rate', 'table']
             });
         });
@@ -747,9 +747,9 @@ describe('@unit null preview fields', () => {
     it('still requires a numeric column with the same leaf name as a null heading', () => {
         const reads = ['section.unit', 'rows.1.unit'].map(path => ({ schema: '#S', path }));
         assert.deepEqual(resolvePreviewFields(source({ rows: [{ unit: 0 }, {}] }), reads),
-            { fields: ['rows.unit'], missingFields: ['rows.unit'] });
+            { fields: ['rows.1.unit'], missingFields: ['rows.1.unit'] });
         assert.deepEqual(resolvePreviewFields(source({ rows: [{}] }), reads),
-            { fields: ['rows.unit'], missingFields: ['rows.unit'] });
+            { fields: ['rows.1.unit'], missingFields: [] });
     });
 
     it('keeps an explicitly read section required after discarding its null child', () => {
@@ -839,5 +839,71 @@ describe('@unit preview form condition priority', () => {
         const current = source({ mode: 'disabled' }, [mode, rate, field('amount', 'number')], [condition]);
         current.dependencies.rate = ['amount'];
         assert.deepEqual(resolvePreviewFields(current, []), { fields: [], missingFields: [] });
+    });
+});
+
+describe('@unit indexed requirements', () => {
+    it('FULL-15 keeps dependencies separate for executed row branches', () => {
+        const fields = [{ name: 'rows', isRef: true, isArray: true, fields: [
+            field('flag', 'boolean'), field('amount', 'number'),
+            field('total', 'number', { autocalculate: true, expression: 'flag ? amount * 2 : 0' })
+        ] }];
+        const document = { rows: [{ flag: true, amount: 5 }, { flag: false }] };
+        const dependencies = {};
+        const errors = [];
+        calculatePreviewAutoFields(fields, document, dependencies, errors);
+        assert.deepEqual(errors, []);
+        assert.deepEqual(document.rows.map(row => row.total), [10, 0]);
+        assert.deepEqual(dependencies['rows.0.total'], ['rows.0.flag', 'rows.0.amount']);
+        assert.deepEqual(dependencies['rows.1.total'], ['rows.1.flag']);
+        const source = { schema: '#S', document: { rows: [{ flag: true, amount: 5 }, { flag: false }] }, paths: collectPreviewPaths(fields), dependencies };
+        assert.deepEqual(resolvePreviewFields(source, []).missingFields, []);
+        assert.ok(!resolvePreviewFields(source, []).fields.includes('rows.1.amount'));
+    });
+    it('FULL-24 projects deep reads onto the same indexed object', () => {
+        const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
+        step.setPreviewSource({ schema: '#S', document: { rows: [{}, { geo: { coordinates: [3, 4] } }] }, paths: ['rows', 'rows.geo'], dependencies: {} });
+        step.addPreviewRead('#S', 'rows.1.geo.coordinates.0');
+        assert.equal(getPreviewInputError(step), null);
+        step.addPreviewRead('#S', 'rows.0.geo.coordinates.0');
+        assert.deepEqual(getPreviewInputError(step).data.missingFields, ['rows.0.geo']);
+    });
+    it('does not list a read of a row the table does not have as missing', () => {
+        const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
+        step.setPreviewSource({ schema: '#S', document: { rows: [{ amount: 1 }] }, paths: ['rows', 'rows.amount'], dependencies: {} });
+        step.addPreviewRead('#S', 'rows.1.amount');
+        assert.equal(getPreviewInputError(step), null);
+        step.addPreviewRead('#S', 'rows.0.amount');
+        assert.equal(getPreviewInputError(step), null);
+    });
+});
+
+describe('@unit stored nested credentials', () => {
+    it('FULL-16 marks the nested persisted Split credential but not current input', () => {
+        const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
+        PreviewScope.run(step, () => {
+            const saved = { document: { schema: '#S', document: { credentialSubject: [{ rate: 3 }] } } };
+            const current = { schema: '#S', document: { credentialSubject: [{}] } };
+            markPreviewStoredDocuments(saved);
+            assert.equal(isPreviewStoredDocument(saved.document), true);
+            assert.equal(resolvePreviewDocumentRead(saved.document, 'rate'), null);
+            assert.deepEqual(resolvePreviewDocumentRead(current, 'rate'), { schema: '#S', path: 'rate' });
+        });
+    });
+});
+
+describe('@unit known external results', () => {
+    it('FULL-18 excludes present and absent response fields through copy and extraction', () => {
+        const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
+        PreviewScope.run(step, () => {
+            const response = markPreviewResultDocument({ document: { credentialSubject: [{ rate: 3 }] } });
+            const copy = keepPreviewDocumentOrigins(response, structuredClone(response));
+            const child = markPreviewExtractedDocument({ document: { credentialSubject: [{}] } }, copy, 'section');
+            for (const doc of [response, copy, child]) {
+                assert.equal(resolvePreviewDocumentRead(doc, 'rate'), null);
+                assert.equal(resolvePreviewDocumentRead(doc, 'absent'), null);
+            }
+            assert.deepEqual(resolvePreviewDocumentRead({ document: { credentialSubject: [{}] } }, 'rate'), { schema: null, path: 'rate' });
+        });
     });
 });

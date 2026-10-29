@@ -3,7 +3,7 @@ import { Worker } from 'node:worker_threads';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { hasPreviewPresenceCheck, isPreviewFiniteResult } from '../../../dist/policy-engine/helpers/workers/preview-copy-diagnosis.js';
-import { calculatePreviewAutoFields, getPreviewCopyTargets, getPreviewInputError, recoverPreviewCopiedFields, runPreview, setPreviewComputed } from '../../../dist/policy-engine/helpers/preview.js';
+import { PreviewScope, markPreviewExtractedDocument, calculatePreviewAutoFields, getPreviewCopyTargets, getPreviewInputError, recoverPreviewCopiedFields, runPreview, setPreviewComputed } from '../../../dist/policy-engine/helpers/preview.js';
 import { MessageResponse } from '@guardian/common/models/message-response';
 import { makeBlock, makeUser } from '../blocks/_block-exec-harness.mjs';
 import { CustomLogicBlock } from '../../../dist/policy-engine/blocks/custom-logic-block.js';
@@ -262,6 +262,20 @@ describe('@unit Preview copied-field diagnosis', function () {
                 [{ schema: '#S', document: 0, path: '', names: ['rate', 'other'] }]);
         });
 
+        it('FULL-14 maps extracted copy fallback to the original indexed object', async () => {
+            const step = status(false, { rows: [{}, {}] });
+            step.setPreviewSource({ schema: '#S', document: { rows: [{}, {}] }, paths: ['rows', 'rows.rate'], dependencies: {} });
+            await PreviewScope.run(step, async () => {
+                const parent = { schema: '#S', document: { credentialSubject: [{ rows: [{}, {}] }] } };
+                const child = markPreviewExtractedDocument({ document: { credentialSubject: [{}] } }, parent, 'rows.1');
+                const targets = getPreviewCopyTargets(step, [{ schema: null, path: '', document: 0 }], () => child);
+                assert.equal(targets.length, 1);
+                assert.equal(targets[0].formPath, 'rows.1');
+                await recoverPreviewCopiedFields(step, targets, script, async () => null);
+                assert.deepEqual(getPreviewInputError(step).data.missingFields, ['rows.1.rate']);
+            });
+        });
+
         it('leaves out a field an earlier block already calculated', () => {
             const calculated = setPreviewComputed({ schema: '#S', document: { credentialSubject: [{ amount: 2, rate: 5, rows: [{ value: 1 }] }] } }, ['rate']);
             assert.deepEqual(getPreviewCopyTargets(status(), enumerated, () => calculated),
@@ -389,12 +403,13 @@ describe('@unit Preview copied-field diagnosis', function () {
             assert.deepEqual(result.data.missingFields, ['rate']);
         });
 
-        it('does not require form fields for a copy of another input of the same schema', async () => {
+        it('falls back to the empty fields of a copied same-schema input after a failure', async () => {
             const { result } = await preview(
                 'const old = documents[1].document.credentialSubject[0]; const c = { ...old }; done({ total: c["ra" + "te"] * 2 });',
                 [credential({ amount: 2 }), credential({ amount: 7 })]
             );
-            assert.notEqual(result.code, 422);
+            assert.equal(result.code, 422);
+            assert.deepEqual(result.data.missingFields, ['rate']);
         });
     });
 });

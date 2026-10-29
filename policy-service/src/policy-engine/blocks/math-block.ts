@@ -49,7 +49,6 @@ import {
     isPreviewComputedRead,
     isPreviewOutputRead,
     getPreviewCopyTargets,
-    isPreviewStoredDocument,
     keepPreviewDocumentOrigins,
     recoverPreviewCopiedFields,
     resolvePreviewDocumentRead,
@@ -318,7 +317,7 @@ export class MathBlock {
                 : !previewSource?.discovery && !isPreviewFiniteResult(workerResult.result);
             if (failed && workerResult.body) {
                 const targets = getPreviewCopyTargets(actionStatus, workerResult.enumerated ?? [],
-                    () => source && !isPreviewStoredDocument(source) && currentSchema === previewSource?.schema ? source : null);
+                    () => source);
                 await recoverPreviewCopiedFields(actionStatus, targets, workerResult.body, (copyTargets) => this.diagnose(workerData, copyTargets), ['document', 'result'], workerResult.error ?? null, collectPreviewNonFiniteNames(workerResult.result));
             }
             if (workerResult.error) {

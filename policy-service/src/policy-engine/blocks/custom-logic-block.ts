@@ -27,7 +27,6 @@ import {
     getPreviewDocumentSchema,
     getPreviewSubject,
     isPreviewComputedRead,
-    isPreviewStoredDocument,
     keepPreviewDocumentOrigins,
     getPreviewCopyTargets,
     normalizePreviewPath,
@@ -283,6 +282,7 @@ export class CustomLogicBlock {
                     }
                     metadata = await this.aggregateMetadata(documents, user, ref, userId);
                 }
+                let readDocuments = documents;
                 const didBatch: IGenerateDidBatch = {};
                 const scriptReads = new Set<string>();
                 const scriptWrites: { path: string; document: number | null }[] = [];
@@ -320,7 +320,7 @@ export class CustomLogicBlock {
                             return item;
                         }
                         const found = scriptSources.get(json) ?? -1;
-                        const source = documents[found >= 0 ? found : documents.length === 1 ? 0 : -1];
+                        const source = found >= 0 ? readDocuments[found] : documents[documents.length === 1 ? 0 : -1];
                         if (found >= 0) {
                             keepPreviewDocumentOrigins(source, item);
                         }
@@ -382,6 +382,9 @@ export class CustomLogicBlock {
                 }
 
                 const sources: IPolicyDocument[] = await this.getSources(user);
+                if (actionStatus?.preview) {
+                    readDocuments = [...documents, ...sources];
+                }
 
                 const context = await ref.debugContext({ documents, sources });
 
@@ -400,10 +403,10 @@ export class CustomLogicBlock {
                     if (!previewSource || !Array.isArray(data?.sites)) {
                         return;
                     }
-                    const form = documents.some((document) => [previewSource.schema, null].includes(getPreviewDocumentSchema(document)));
+                    const form = readDocuments.some((document) => [previewSource.schema, null].includes(getPreviewDocumentSchema(document)));
                     const fields = findPreviewScriptFields(`${execCode}${expression}`, data.sites, data.unexecuted || [], previewSource.schema, form ? previewSource.paths : []);
                     for (const read of fields) {
-                        const document = typeof read.document === 'number' ? documents[read.document] : undefined;
+                        const document = typeof read.document === 'number' ? readDocuments[read.document] : undefined;
                         const origin = document
                             ? resolvePreviewDocumentRead(document, read.fullPath ?? read.path)
                             : !isPreviewComputedRead(documents, read.schema, read.path) ? { schema: read.schema, path: read.fullPath ?? read.path } : null;
@@ -558,8 +561,8 @@ export class CustomLogicBlock {
                         sources: context.sources,
                         tablesPack,
                         trackReads: !!actionStatus?.preview,
-                        schemas: actionStatus?.preview && Array.isArray(context.documents)
-                            ? context.documents.map(getPreviewDocumentSchema)
+                        schemas: actionStatus?.preview
+                            ? readDocuments.map(getPreviewDocumentSchema)
                             : []
                     };
                     const enumerated: IPreviewWriteRecord[] = [];
@@ -583,13 +586,8 @@ export class CustomLogicBlock {
                     const fail = async (error: unknown, fieldFailure: boolean, outputs: string[] = []) => {
                         recovering = true;
                         if (actionStatus?.preview && fieldFailure) {
-                            const schema = actionStatus.getPreviewSource()?.schema;
-                            const forms = documents
-                                .map((document, index) => !isPreviewStoredDocument(document) && workerData.schemas[index] === schema ? index : -1)
-                                .filter((index) => index >= 0);
-                            const targets = getPreviewCopyTargets(actionStatus, enumerated, (record) => forms.length === 1 && record.document === forms[0]
-                                ? documents[forms[0]]
-                                : null);
+                            const targets = getPreviewCopyTargets(actionStatus, enumerated,
+                                (record) => typeof record.document === 'number' ? readDocuments[record.document] : null);
                             await recoverPreviewCopiedFields(actionStatus, targets, workerData.execFunc, diagnose, [], undefined, outputs);
                         }
                         reject(error);

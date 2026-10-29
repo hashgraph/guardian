@@ -183,7 +183,7 @@ describe('@unit RequestVcDocumentBlock preview', () => {
             });
         assert.ok(response instanceof MessageError);
         assert.equal(response.code, 422);
-        assert.deepEqual(response.data.fields, ['amount', 'rate', 'rows.unit']);
+        assert.deepEqual(response.data.fields, ['amount', 'rate', 'rows.1.unit']);
         assert.deepEqual(response.data.missingFields, ['rows.1.unit']);
     });
 

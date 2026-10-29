@@ -233,6 +233,24 @@ describe('SchemaFormRootComponent — required fields', () => {
         expect(root.group.get('amount')?.value).toBe(5);
     }));
 
+    it('keeps the form and refreshes missing highlights when the same requirements arrive again', fakeAsync(() => {
+        const root = createRoot();
+        setRequired(root, ['rate']);
+        const group = root.group;
+        root.requiredFields = ['rate'];
+        root.previewMissingFields = ['rate'];
+        root.ngOnChanges({
+            requiredFields: new SimpleChange(['rate'], root.requiredFields, false),
+            previewMissingFields: new SimpleChange([], root.previewMissingFields, false)
+        });
+        flush();
+        expect(root.group).toBe(group);
+        expect(root.previewMissingFieldIds.length).toBe(1);
+        expect(root.loading).toBeFalse();
+        setRequired(root, ['amount']);
+        expect(root.group).not.toBe(group);
+    }));
+
     it('keeps an untouched form clean after the requirements change', fakeAsync(() => {
         const root = createRoot();
         setRequired(root, ['rate']);

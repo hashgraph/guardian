@@ -69,8 +69,20 @@ function usageOf(node: Node, parents: Map<Node, Node | null>): Usage {
         return 'use';
     }
     switch (parent.type) {
-        case 'MemberExpression':
-            return parent.object === current ? 'path' : 'use';
+        case 'MemberExpression': {
+            if (parent.object !== current) {
+                return 'use';
+            }
+            let end = current;
+            let next = parents.get(end);
+            let optional = false;
+            while (next?.type === 'MemberExpression' && next.object === end || next?.type === 'ChainExpression') {
+                optional = optional || next.type === 'MemberExpression' && !!next.optional;
+                end = next;
+                next = parents.get(end);
+            }
+            return optional && usageOf(end, parents) === 'check' ? 'check' : 'path';
+        }
         case 'ForOfStatement':
         case 'ForInStatement':
             return parent.right === current ? 'path' : 'write';
@@ -240,14 +252,20 @@ function collect(source: string, expression: boolean): IScript {
             return false;
         }
         const bare = test.type === 'UnaryExpression' && test.operator === '!' ? test.argument : test;
-        if (byNode.has(bare) && text(bare) === value) {
-            byNode.get(bare).usage = 'check';
-            return true;
+        if (byNode.has(bare)) {
+            const name = text(bare);
+            if (name === value) {
+                byNode.get(bare).usage = 'check';
+                return true;
+            }
+            if (test.type !== 'UnaryExpression' && (value.startsWith(`${name}.`) || value.startsWith(`${name}[`))) {
+                byNode.get(bare).usage = 'check';
+            }
         }
         return script.occurrences.some((item) => item.usage === 'check' && item.start >= test.start && item.start < test.end && text(item.node) === value);
     };
     for (const occurrence of script.occurrences) {
-        if (occurrence.usage !== 'use' || !['MemberExpression', 'Identifier'].includes(occurrence.node.type)) {
+        if (occurrence.usage === 'write' || !['MemberExpression', 'Identifier'].includes(occurrence.node.type)) {
             continue;
         }
         const value = text(occurrence.node);

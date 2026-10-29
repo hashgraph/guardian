@@ -89,7 +89,8 @@ export class CalculationPreviewService {
         blockId: string,
         formValue: unknown,
         ref: unknown,
-        previewFields: boolean
+        previewFields: boolean,
+        metadata?: { relayerAccount?: unknown; evidence?: { dataType: string; data: string }[] }
     ): Promise<ICalculationPreviewResult> {
         const document = structuredClone(formValue);
         await this.tablePersist.inlineTablesForPreview(document);
@@ -103,6 +104,7 @@ export class CalculationPreviewService {
         const response = await firstValueFrom(this.policyEngineService.setBlockDataWithResult(blockId, policyId, {
             document,
             ref,
+            ...metadata,
             preview: true,
             previewFields
         }));
@@ -142,12 +144,8 @@ export class CalculationPreviewService {
             : null;
     }
 
-    public updateRequiredFields(current: string[] | null, result: Pick<ICalculationPreviewResult, 'fields' | 'missingFields'>): string[] {
-        const latest = [...new Set([...result.fields, ...result.missingFields].map(path => path.split('.').filter(part => !/^\d+$/.test(part)).join('.')))].sort();
-        if (current && current.length === latest.length && current.every((path, index) => path === latest[index])) {
-            return current;
-        }
-        return latest;
+    public updateRequiredFields(_current: string[] | null, result: Pick<ICalculationPreviewResult, 'fields' | 'missingFields'>): string[] {
+        return [...new Set([...result.fields, ...result.missingFields])].sort();
     }
 
     public getViewerDocuments(result: ICalculationPreviewResult): ICalculationPreviewViewerDocument[] {

@@ -65,6 +65,8 @@ describe('request document preview wiring', () => {
         component.policyTest = { state: { captureNextFormSubmit: false } };
         component.stepper = [true, false, false];
         component.enableAdditionalData = true;
+        component.evidenceFiles = [];
+        component.evidenceText = '';
         component.relayerAccount = true;
         component.user = { id: 'user-1' };
         component.destroy$ = new Subject<void>();
@@ -78,6 +80,25 @@ describe('request document preview wiring', () => {
         component.previewRequest = 0;
         return { component, calls: fake.calls, errors: fake.errors, warnings: fake.warnings, uploads, dialogs };
     };
+
+    it('FULL-23 forwards already selected metadata from the page and dialog', async () => {
+        for (const kind of ['page', 'dialog']) {
+            const state = kind === 'page' ? page([]) : dialog([], pageParent());
+            const component = state.component;
+            component.enableAdditionalData = true;
+            component.evidenceText = 'selected proof';
+            component.evidenceFiles = [];
+            component.relayerAccountType = 'relayerAccount';
+            component.currentRelayerAccount = '0.0.999';
+            if (kind === 'dialog') component.parent.relayerAccount = true;
+            const run = jasmine.createSpy('run').and.resolveTo(response([]));
+            component.calculationPreview.run = run;
+            component.previewMode = true;
+            await component.runPreview(true);
+            expect(run.calls.mostRecent().args[5]).toEqual({ relayerAccount: '0.0.999',
+                evidence: [{ dataType: 'message', data: 'selected proof' }] });
+        }
+    });
 
     it('asks the backend for the calculation fields when the toggle is switched on', async () => {
         const { component, calls, dialogs } = page([Promise.resolve(response(['amount', 'rate'], ['rate']))]);
@@ -384,12 +405,12 @@ describe('request document preview wiring', () => {
             } } };
             component.dataForm.getRawValue = () => values;
             component.previewMode = true;
-            const required = [field];
+            const required = [path, field];
             component.previewRequiredFields = required;
             spyOn(console, 'error');
             await component.runPreview(false);
             expect(component.previewMissingFields).toEqual([path]);
-            expect(component.previewRequiredFields).toBe(required);
+            expect(component.previewRequiredFields).toEqual(required);
             expect(component.dataForm.getRawValue()).toEqual(values);
             expect(component.loading).toBeFalse();
             expect(state.dialogs.length).toBe(0);
@@ -489,7 +510,7 @@ describe('request document preview wiring', () => {
             expect(component.previewRequiredFields).toEqual(['fresh']);
             expect(component.calculationPreview.loadMode).toHaveBeenCalledOnceWith('user-1', 'policy-1', 'block-1');
             expect(run).toHaveBeenCalledWith('policy-1', 'block-1', { amount: 5 },
-                { id: kind === 'page' ? 'ref-1' : 'ref-2' }, true);
+                { id: kind === 'page' ? 'ref-1' : 'ref-2' }, true, { relayerAccount: null, evidence: kind === 'page' ? [] : undefined });
             expect(dialogs.length).toBe(0);
             component.initForm(group);
             await Promise.resolve();
@@ -570,7 +591,7 @@ describe('request document preview wiring', () => {
             component.previewRequiredFields = ['amount'];
             await component.runPreview(false);
             expect(component.previewMissingFields).toEqual(['rows.1.bonus','rows.3.rate']);
-            expect(component.previewRequiredFields).toEqual(['amount','rows.bonus','rows.rate']);
+            expect(component.previewRequiredFields).toEqual(['amount','rows.1.bonus','rows.3.rate']);
             expect(component.dataForm.getRawValue()).toEqual({ amount: 5 });
             expect(dialogs.length).toBe(0);
             component.destroy$.next();

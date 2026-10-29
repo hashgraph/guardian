@@ -5,7 +5,7 @@ import { makeBlock, makeUser, restoreHarness } from './_block-exec-harness.mjs';
 import { CalculateContainerBlock } from '../../../dist/policy-engine/blocks/calculate-block.js';
 import { PolicyUtils } from '../../../dist/policy-engine/helpers/utils.js';
 import { RecordActionStep } from '../../../dist/policy-engine/record-action-step.js';
-import { getPreviewComputed, getPreviewDocumentSchema, setPreviewComputed, setPreviewDocumentSchema } from '../../../dist/policy-engine/helpers/preview.js';
+import { markPreviewStoredDocuments, markPreviewExtractedDocument, getPreviewComputed, getPreviewDocumentSchema, setPreviewComputed, setPreviewDocumentSchema } from '../../../dist/policy-engine/helpers/preview.js';
 
 describe('@unit calculateContainerBlock preview', () => {
     let releaseCredentials;
@@ -131,6 +131,19 @@ describe('@unit calculateContainerBlock preview', () => {
         const source = setPreviewComputed(input(), ['amount']);
         await setup().process(source, refWith(options), 'uid', step, makeUser());
         assert.deepEqual(step.getPreviewReads(), [{ schema: '#in', path: 'rate' }]);
+    });
+    it('FULL-13 excludes stored configured inputs and translates extracted ones', async () => {
+        const step = new RecordActionStep(() => {}, 0, true, true, undefined, true);
+        const options = { unsigned: true, inputFields: [{ name: 'a', value: 'a' }] };
+        await PreviewScope.run(step, async () => {
+            const stored = markPreviewStoredDocuments(input());
+            await setup().process(stored, refWith(options), 'uid', step, makeUser());
+            assert.deepEqual(step.getPreviewReads(), []);
+            const original = { schema: '#in', document: PolicyUtils.createVcFromSubject({ section: {} }).toJsonTree() };
+            const child = markPreviewExtractedDocument({ document: PolicyUtils.createVcFromSubject({}).toJsonTree() }, original, 'section');
+            await setup().process(child, refWith(options), 'uid', step, makeUser());
+            assert.deepEqual(step.getPreviewReads(), [{ schema: '#in', path: 'section.a' }]);
+        });
     });
     afterEach(() => releaseCredentials());
 

@@ -448,7 +448,11 @@ export class RequestDocumentBlockDialog {
                 this.id,
                 this.dataForm.getRawValue(),
                 this.docRef,
-                previewFields
+                previewFields,
+                {
+                    relayerAccount: this.relayerAccountType === 'new' ? null : this.getRelayerAccount(),
+                    evidence: this.enableAdditionalData ? this.buildEvidence() : undefined
+                }
             );
             if (!this.previewMode || !current()) {
                 return;

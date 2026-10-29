@@ -470,23 +470,50 @@ export function calculatePreviewAutoFields(
             failed = failed || isPreviewFieldFailure(thrown?.name, thrown?.message);
         }
         const required = findPreviewScriptFields(source, tracker.takeSites(), [], null, paths, true, prefix);
-        if (failed && listed && !discovery) {
-            const candidates = (fields || [])
-                .filter((item) => !item.autocalculate && !item.isRef && isEmptyPreviewValue(Reflect.get(document, item.name)))
-                .map((item) => item.name);
-            if (candidates.length) {
-                const found = written || tracker.takeWrites().length ? [] : diagnosePreviewAutoField(field, document, candidates, paths, prefix, fullPrefix);
-                required.push(...(found.length ? found : candidates.map((name) => ({ schema: null, path: `${prefix}${name}` }))));
+        if (failed && !discovery) {
+            const enumerated = tracker.takeEnumerated();
+            if (listed) {
+                enumerated.push({ schema: null, document: null, path: fullPrefix.replace(/\.$/, '') });
+            }
+            const targets: IPreviewCopyTarget[] = [];
+            for (const record of enumerated) {
+                const relative = fullPrefix && record.path.startsWith(fullPrefix)
+                    ? record.path.slice(fullPrefix.length) : record.path === fullPrefix.replace(/\.$/, '') ? '' : record.path;
+                let entry = document;
+                let nestedFields = fields;
+                for (const part of relative ? relative.split('.') : []) {
+                    entry = entry && typeof entry === 'object' ? Reflect.get(entry, part) : undefined;
+                    if (!isPreviewIndex(part)) {
+                        nestedFields = nestedFields?.find((item) => item.name === part)?.fields;
+                    }
+                }
+                if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+                    continue;
+                }
+                const empty = (nestedFields || [])
+                    .filter((item) => !item.autocalculate && !item.isRef && isEmptyPreviewValue(Reflect.get(entry, item.name)))
+                    .map((item) => item.name);
+                if (empty.length) {
+                    targets.push({ schema: null, document: 0, path: relative, names: empty });
+                }
+            }
+            if (targets.length) {
+                const found = written || tracker.takeWrites().length ? [] : diagnosePreviewAutoField(field, document, targets, paths, prefix, fullPrefix);
+                required.push(...(found.length ? found : targets.flatMap((target) => target.names.map((name) => {
+                    const relative = target.path ? `${target.path}.${name}` : name;
+                    return { schema: null, path: `${prefix}${normalizePreviewPath(relative)}`, fullPath: `${fullPrefix}${relative}` };
+                }))));
             }
         }
-        dependencies[path] = [...new Set([...(dependencies[path] || []), ...required.map((read) => read.path)])].filter((read) => read !== path);
+        const fullPath = `${fullPrefix}${field.name}`;
+        dependencies[fullPath] = [...new Set([...(dependencies[fullPath] || []), ...required.map((read) => read.fullPath ?? read.path)])].filter((read) => read !== fullPath);
     }
 }
 
 function diagnosePreviewAutoField(
     field: SchemaField,
     document: object,
-    candidates: string[],
+    targets: IPreviewCopyTarget[],
     paths: string[],
     prefix: string,
     fullPrefix: string
@@ -511,7 +538,7 @@ function diagnosePreviewAutoField(
             objectConstructor: runInContext('Object', context),
             reflect: runInContext('Reflect', context),
             global: runInContext('globalThis', context)
-        }], [{ schema: null, document: 0, path: '', names: candidates }], [subject]);
+        }], targets, [subject]);
         tracker.configure(body);
         const func = compileFunction(body, ['table'], { filename: PREVIEW_SCRIPT_FILE, parsingContext: context });
         Reflect.set(context, '__previewAutoField', () => func.apply(subject, [buildTableHelper()]));
@@ -636,6 +663,26 @@ export function isPreviewComputedRead(documents: unknown, schema: string | null,
     });
 }
 
+const previewResultDocuments = new WeakMap<RecordActionStep, WeakSet<object>>();
+
+export function markPreviewResultDocument<T>(document: T): T {
+    const step = PreviewScope.current();
+    if (step?.preview && document && typeof document === 'object') {
+        let results = previewResultDocuments.get(step);
+        if (!results) {
+            results = new WeakSet<object>();
+            previewResultDocuments.set(step, results);
+        }
+        results.add(document);
+    }
+    return document;
+}
+
+function isPreviewResultDocument(document: unknown): boolean {
+    const step = PreviewScope.current();
+    return !!step && !!document && typeof document === 'object' && !!previewResultDocuments.get(step)?.has(document);
+}
+
 const previewStoredDocuments = new WeakMap<RecordActionStep, WeakSet<object>>();
 
 export function markPreviewStoredDocuments<T>(value: T): T {
@@ -649,6 +696,10 @@ export function markPreviewStoredDocuments<T>(value: T): T {
         for (const item of Array.isArray(value) ? value : [value]) {
             if (item && typeof item === 'object') {
                 stored.add(item);
+                const nested = Reflect.get(item, 'document');
+                if (nested && typeof nested === 'object' && Reflect.has(nested, 'document')) {
+                    stored.add(nested);
+                }
             }
         }
     }
@@ -684,7 +735,7 @@ function getPreviewExtractedOrigin(document: unknown): { document: unknown; path
 
 export function resolvePreviewDocumentRead(document: unknown, path: string): IPreviewRead | null {
     const schema = getPreviewDocumentSchema(document);
-    if (isPreviewStoredDocument(document) || isPreviewComputedRead(document, schema, path)) {
+    if (isPreviewStoredDocument(document) || isPreviewResultDocument(document) || isPreviewComputedRead(document, schema, path)) {
         return null;
     }
     const origin = getPreviewExtractedOrigin(document);
@@ -712,24 +763,34 @@ export function evaluatePreviewSwitchFormula(formula: string, scope: any, record
     }
     const values = new Map(Object.entries(scope));
     const read = (value: any, key: string, object?: unknown) => {
-        if (object === undefined) {
-            if (values.get(key) === value) {
-                record(key, null);
-            }
-        } else if (values.get(key) !== object) {
-            record(key, NaN);
+        const source = object === undefined || object === null ? value : object;
+        const origin = values.get(key) === source ? key : [...values]
+            .find(([, original]) => original && typeof original === 'object' && original === source)?.[0];
+        if (!origin) {
+            return value;
+        }
+        if (object === null) {
+            record(origin, NaN);
+        } else if (object === undefined) {
+            record(origin, null);
         } else {
             const indexes = mathjs.isMatrix(value) ? value.toArray() : value;
             for (const index of Array.isArray(indexes) ? indexes : [indexes]) {
-                record(key, Number.isInteger(index) ? index - 1 : null);
+                record(origin, Number.isInteger(index) ? index - 1 : null);
             }
         }
         return value;
     };
     try {
+        const tree = mathjs.parse(formula);
+        const functions = new Set<string>();
+        tree.traverse((node) => {
+            if (node.type === 'FunctionAssignmentNode' && typeof Reflect.get(node, 'name') === 'string') {
+                functions.add(Reflect.get(node, 'name'));
+            }
+        });
         const visit = (node: mathjs.MathNode, parent?: mathjs.MathNode, path?: string): mathjs.MathNode => {
             if (mathjs.isAccessorNode(node) && mathjs.isSymbolNode(node.object)
-                && values.has(node.object.name)
                 && !(node.index.dimensions.length === 1 && mathjs.isConstantNode(node.index.dimensions[0])
                     && typeof node.index.dimensions[0].value === 'string')) {
                 const key = node.object.name;
@@ -738,15 +799,21 @@ export function evaluatePreviewSwitchFormula(formula: string, scope: any, record
                     : visit(dimension, node.index));
                 return new mathjs.AccessorNode(node.object, new mathjs.IndexNode(dimensions, node.index.dotNotation));
             }
-            if (mathjs.isSymbolNode(node) && values.has(node.name)
+            if (mathjs.isSymbolNode(node)
                 && !(parent && mathjs.isAccessorNode(parent) && path === 'object')
                 && !(parent && mathjs.isFunctionNode(parent) && path === 'fn')
                 && !(parent && mathjs.isAssignmentNode(parent) && path === 'object')) {
-                return new mathjs.FunctionNode(new mathjs.SymbolNode(name), [node, new mathjs.ConstantNode(node.name)]);
+                const reference = parent && (mathjs.isAssignmentNode(parent) && path === 'value'
+                    || mathjs.isFunctionNode(parent) && mathjs.isSymbolNode(parent.fn) && functions.has(parent.fn.name));
+                const args: mathjs.MathNode[] = [node, new mathjs.ConstantNode(node.name)];
+                if (reference) {
+                    args.push(new mathjs.ConstantNode(null));
+                }
+                return new mathjs.FunctionNode(new mathjs.SymbolNode(name), args);
             }
             return node.map((child, childPath) => visit(child, node, childPath));
         };
-        const expression = visit(mathjs.parse(formula)).toString();
+        const expression = visit(tree).toString();
         scope[name] = read;
         ready?.();
         try {
@@ -765,6 +832,9 @@ export function keepPreviewDocumentOrigins<T>(source: unknown, result: T): T {
         setPreviewComputed(result, getPreviewComputed(source));
         if (isPreviewStoredDocument(source)) {
             markPreviewStoredDocuments(result);
+        }
+        if (isPreviewResultDocument(source)) {
+            markPreviewResultDocument(result);
         }
         const origin = getPreviewExtractedOrigin(source);
         if (origin) {
@@ -909,23 +979,39 @@ export function resolvePreviewFields(
     }
     const known = new Set(source.paths);
     const toField = (path: string): string | null => {
-        const parts = normalizePreviewPath(path).split('.');
-        for (let length = parts.length; length > 0; length--) {
-            const candidate = parts.slice(0, length).join('.');
-            if (known.has(candidate)) {
-                return candidate;
+        const parts = path.split('.').filter((part) => part !== '');
+        const schemaParts = parts.filter((part) => !isPreviewIndex(part));
+        for (let length = schemaParts.length; length > 0; length--) {
+            if (!known.has(schemaParts.slice(0, length).join('.'))) {
+                continue;
             }
+            let count = 0;
+            let end = 0;
+            for (; end < parts.length; end++) {
+                if (!isPreviewIndex(parts[end]) && ++count > length) {
+                    break;
+                }
+            }
+            return parts.slice(0, end).join('.');
         }
         return null;
     };
     const result = new Set<string>();
     const visit = (path: string, seen: Set<string>) => {
-        if (source.nulls?.includes(path) || isPreviewUnavailablePath(source, path)) {
+        if (source.nulls?.includes(normalizePreviewPath(path)) || isPreviewUnavailablePath(source, path)) {
             return;
         }
         const fieldDependencies = source.dependencies[path];
         if (!fieldDependencies) {
-            result.add(path);
+            const indexed = Object.keys(source.dependencies).filter((key) => key !== path
+                && normalizePreviewPath(key) === path);
+            if (indexed.length) {
+                for (const key of indexed) {
+                    visit(key, new Set(seen));
+                }
+            } else {
+                result.add(path);
+            }
             return;
         }
         if (seen.has(path)) {
@@ -986,6 +1072,9 @@ function getMissingPreviewPaths(source: IPreviewSource, path: string): string[] 
         }
         let current = source.document;
         for (const part of candidate.split('.')) {
+            if (Array.isArray(current) && isPreviewIndex(part) && Number(part) >= current.length) {
+                return false;
+            }
             current = current && typeof current === 'object' ? Reflect.get(current, part) : undefined;
         }
         return isEmptyPreviewValue(current);
@@ -999,7 +1088,7 @@ function previewMissingPaths(source: IPreviewSource, reads: IPreviewRead[]): str
             continue;
         }
         const normalized = normalizePreviewPath(read.path);
-        const resolved = resolvePreviewFields(source, [{ schema: read.schema, path: normalized }], false);
+        const resolved = resolvePreviewFields(source, [read], false);
         for (const path of resolved.fields) {
             const indexed = normalized === path ? read.path : path;
             for (const candidate of getMissingPreviewPaths(source, indexed)) {
@@ -1028,7 +1117,7 @@ export function getPreviewInputError(actionStatus: RecordActionStep): MessageErr
     const { fields } = resolvePreviewFields(source, reads);
     return new MessageError('Missing calculation inputs', 422, {
         preview: true,
-        fields: [...new Set([...fields, ...missing.map(normalizePreviewPath)])].sort(),
+        fields: [...new Set([...fields, ...missing])].sort(),
         missingFields: missing
     });
 }
@@ -1056,13 +1145,22 @@ export function getPreviewCopyTargets(
             continue;
         }
         const prefix = normalizePreviewPath(record.path);
-        const names = source.paths
+        const names = getPreviewDocumentPaths(document, source.paths)
             .filter((path) => prefix ? path.startsWith(`${prefix}.`) : true)
             .map((path) => prefix ? path.slice(prefix.length + 1) : path)
             .filter((name) => name && !name.includes('.') && isEmptyPreviewValue(Reflect.get(value, name)))
-            .filter((name) => !isPreviewComputedRead(document, source.schema, prefix ? `${prefix}.${name}` : name));
+            .filter((name) => resolvePreviewDocumentRead(document, record.path ? `${record.path}.${name}` : name)?.schema === source.schema);
         if (names.length) {
-            targets.set(`${record.document ?? ''}\u0000${record.path}`, { schema: source.schema, document: record.document, path: record.path, names });
+            const origin = resolvePreviewDocumentRead(document, record.path ? `${record.path}.${names[0]}` : names[0]);
+            if (!origin) {
+                continue;
+            }
+            const formPath = origin.path.split('.').slice(0, -1).join('.');
+            const target: IPreviewCopyTarget = { schema: source.schema, document: record.document, path: record.path, names };
+            if (formPath !== record.path) {
+                target.formPath = formPath;
+            }
+            targets.set(`${record.document ?? ''}\u0000${record.path}`, target);
         }
     }
     return [...targets.values()];
@@ -1091,7 +1189,17 @@ export async function recoverPreviewCopiedFields(
     }
     const same = expected === undefined || (diagnosis?.error ?? null) === expected;
     const exact = diagnosis?.trusted && diagnosis.failed && same && diagnosis.sites.length
-        ? findPreviewScriptFields(script, diagnosis.sites, [], source.schema, source.paths, false, '', roots)
+        ? findPreviewScriptFields(script, diagnosis.sites.map((site) => {
+            const path = site.fullPath ?? site.path;
+            const target = targets.find((item) => item.document === (site.document ?? null)
+                && (path === item.path || path.startsWith(item.path ? `${item.path}.` : '')));
+            if (target?.formPath === undefined) {
+                return site;
+            }
+            const suffix = path.slice(target.path.length).replace(/^\./, '');
+            const fullPath = target.formPath ? `${target.formPath}.${suffix}` : suffix;
+            return { ...site, schema: source.schema, path: normalizePreviewPath(fullPath), fullPath };
+        }), [], source.schema, source.paths, false, '', roots)
         : [];
     const written = new Set([
         ...(diagnosis?.written ?? []),
@@ -1101,7 +1209,10 @@ export async function recoverPreviewCopiedFields(
         ? exact.map((read) => read.fullPath ?? read.path)
         : targets.flatMap((target) => target.names
             .filter((name) => !written.has(name))
-            .map((name) => target.path ? `${target.path}.${name}` : name));
+            .map((name) => {
+                const path = target.formPath ?? target.path;
+                return path ? `${path}.${name}` : name;
+            }));
     for (const field of fields) {
         actionStatus.addPreviewRead(source.schema, field);
     }

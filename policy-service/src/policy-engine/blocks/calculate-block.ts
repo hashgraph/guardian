@@ -17,9 +17,8 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
 import { RecordActionStep } from '../record-action-step.js';
 import {
     buildCalculatePreviewCalculation,
-    getPreviewDocumentSchema,
     assertPreviewCalculationResult,
-    isPreviewComputedRead,
+    resolvePreviewDocumentRead,
     PreviewScope,
     setPreviewComputed,
     setPreviewDocumentSchema
@@ -172,9 +171,9 @@ export class CalculateContainerBlock {
             const readDocuments = Array.isArray(contextDocuments) ? contextDocuments : [contextDocuments];
             for (const readDocument of readDocuments) {
                 for (const field of options.inputFields || []) {
-                    const readSchema = getPreviewDocumentSchema(readDocument);
-                    if (!isPreviewComputedRead(readDocument, readSchema, field.name)) {
-                        actionStatus.addPreviewRead(readSchema, field.name);
+                    const read = resolvePreviewDocumentRead(readDocument, field.name);
+                    if (read) {
+                        actionStatus.addPreviewRead(read.schema, read.path);
                     }
                 }
             }

@@ -53,6 +53,17 @@ describe('CalculationPreviewService', () => {
         expect(response.documents).toEqual([]);
     });
 
+    it('FULL-23 sends selected evidence and relayer in discovery and real Preview', async () => {
+        policyEngine.setBlockDataWithResult.and.returnValue(of({ preview: true }));
+        const metadata = { relayerAccount: '0.0.999', evidence: [{ dataType: 'message', data: 'proof' }] };
+        for (const discovery of [true, false]) {
+            await service.run('p', 'b', { amount: 3 }, null, discovery, metadata);
+            expect(policyEngine.setBlockDataWithResult).toHaveBeenCalledWith('b', 'p', {
+                document: { amount: 3 }, ref: null, ...metadata, preview: true, previewFields: discovery
+            });
+        }
+    });
+
     const previewTable = (size: number): string =>
         JSON.stringify({ type: 'table', fileId: 'preview-key', csv: 'a'.repeat(size), columnNames: ['a'], columnKeys: ['a'] });
 
@@ -175,9 +186,11 @@ describe('CalculationPreviewService', () => {
         expect(service.updateRequiredFields(['amount'], result([], []))).toEqual([]);
     });
 
-    it('returns the same list when nothing new is needed', () => {
+    it('returns a fresh list so a response replaces requirements shifted by row deletion', () => {
         const current = ['amount', 'rate'];
-        expect(service.updateRequiredFields(current, result(['rate'], ['amount']))).toBe(current);
+        const next = service.updateRequiredFields(current, result(['rate'], ['amount']));
+        expect(next).toEqual(current);
+        expect(next).not.toBe(current);
     });
 
     it('returns an empty list when the form has no calculation', () => {
@@ -298,7 +311,7 @@ describe('CalculationPreviewService', () => {
         } } });
         const validation = service.getInputValidation(error)!;
         expect(validation.missingFields).toEqual(['rows.1.bonus','rows.3.rate']);
-        expect(service.updateRequiredFields(['amount'], validation)).toEqual(['amount','rows.bonus','rows.rate']);
+        expect(service.updateRequiredFields(['amount'], validation)).toEqual(['amount','rows.1.bonus','rows.3.rate']);
     });
 
 });

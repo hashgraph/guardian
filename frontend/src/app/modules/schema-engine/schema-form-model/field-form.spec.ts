@@ -1,3 +1,5 @@
+import { RequestDocumentBlockComponent } from '../../policy-engine/policy-viewer/blocks/request-document-block/request-document-block.component';
+import { RequestDocumentBlockDialog } from '../../policy-engine/policy-viewer/blocks/request-document-block/dialog/request-document-block-dialog.component';
 import { UntypedFormGroup } from '@angular/forms';
 import { ISchemaDocument, Schema, SchemaDataTypes } from '@guardian/interfaces';
 import { FieldForm, IFieldControl, IFieldIndexControl } from './field-form';
@@ -607,5 +609,66 @@ describe('FieldForm — required fields from a list', () => {
         controlOf(form, 'amount').control.setValue(3);
         form.form.updateValueAndValidity();
         expect(form.form.valid).toBeTrue();
+    });
+});
+
+describe('FULL-19 indexed Preview requirements', () => {
+    const make = (requiredFields: string[] | null) => {
+        const document: any = { $id: '#rows', type: 'object', properties: {
+            rows: { type: 'array', items: { $ref: '#row' } }
+        }, $defs: { '#row': { $id: '#row', type: 'object', properties: {
+            amount: { type: 'number' }, note: { type: 'string' }
+        }, required: ['amount'] } } };
+        const form = new FieldForm(new UntypedFormGroup({}));
+        form.setData({ schema: new Schema({ iri: '#rows', document }), requiredFields,
+            preset: { rows: [{ note: 'first' }, { note: 'second' }, { note: 'third' }] } });
+        form.build();
+        return form;
+    };
+    it('requires only the indexed row and accepts its zero value', () => {
+        const form = make(['rows.1.amount']);
+        const amounts = [0, 1, 2].map(index => form.form.get(`rows.${index}.amount`));
+        expect(amounts.map(control => !!control?.errors?.['required'])).toEqual([false, true, false]);
+        amounts[1]?.setValue(0);
+        expect(form.form.valid).toBeTrue();
+        form.destroy();
+    });
+    it('updates row requirements after removing an earlier row without losing values', () => {
+        const form = make(['rows.1.amount']);
+        const rows = form.controls?.find(item => item.name === 'rows');
+        if (!rows?.list?.length) throw new Error('Missing rows');
+        form.form.get('rows.1.amount')?.setValue(0);
+        form.removeItem(rows, rows.list[0]);
+        expect(form.form.get('rows.0.amount')?.value).toBe(0);
+        expect(!!form.form.get('rows.0.amount')?.errors?.['required']).toBeFalse();
+        expect(!!form.form.get('rows.1.amount')?.errors?.['required']).toBeFalse();
+        expect(form.form.valid).toBeTrue();
+        const gate = { dataForm: form.form, loading: false, isRemoteWarning: false,
+            ifRelayerAccountDisabled: () => false };
+        expect(Reflect.apply(RequestDocumentBlockComponent.prototype.ifDisabledBtn, gate, [])).toBeFalse();
+        expect(Reflect.apply(RequestDocumentBlockDialog.prototype.ifDisabledBtn, gate, [{ id: 'submit' }])).toBeFalse();
+        form.form.get('rows.0.amount')?.setValue(null);
+        expect(!!form.form.get('rows.0.amount')?.errors?.['required']).toBeTrue();
+        expect(!!form.form.get('rows.1.amount')?.errors?.['required']).toBeFalse();
+        form.destroy();
+    });
+    it('drops a removed row requirement and shifts a still-missing cell with its row', () => {
+        const form = make(['rows.1.amount']);
+        const rows = form.controls?.find(item => item.name === 'rows');
+        if (!rows?.list?.length) throw new Error('Missing rows');
+        form.removeItem(rows, rows.list[0]);
+        expect(!!form.form.get('rows.0.amount')?.errors?.['required']).toBeTrue();
+        expect(!!form.form.get('rows.1.amount')?.errors?.['required']).toBeFalse();
+        form.removeItem(rows, rows.list[0]);
+        expect(form.form.valid).toBeTrue();
+        form.destroy();
+    });
+    it('retains explicit whole-column requirements and ordinary schema rules', () => {
+        for (const requirements of [['rows.amount'], null]) {
+            const form = make(requirements);
+            expect([0, 1, 2].map(index => !!form.form.get(`rows.${index}.amount`)?.errors?.['required']))
+                .toEqual([true, true, true]);
+            form.destroy();
+        }
     });
 });

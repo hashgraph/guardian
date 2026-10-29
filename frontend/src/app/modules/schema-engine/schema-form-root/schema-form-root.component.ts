@@ -143,12 +143,14 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             this.buildFormulaModel();
         }
         this.loading = true;
-        if (changes.previewMissingFields && !changes.requiredFields) {
+        const requiredChanged = !!changes.requiredFields
+            && !(!changes.requiredFields.firstChange && this.model?.hasSameRequiredFields(this.requiredFields));
+        if (changes.previewMissingFields && !requiredChanged) {
             this.updatePreviewMissingFieldIds();
             this.schedulePreviewFocus();
         }
         let keepDirty = false;
-        if (changes.requiredFields && !changes.requiredFields.firstChange && this.model) {
+        if (requiredChanged && !changes.requiredFields.firstChange && this.model) {
             keepDirty = this.group.dirty;
             this.presetDocument = this.withoutEmptyCollections(this.group.getRawValue());
         }
@@ -160,7 +162,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             changes.readonly ||
             changes.conditions ||
             changes.presetDocument ||
-            changes.requiredFields
+            requiredChanged
         ) {
             setTimeout(() => {
                 this.buildFields();

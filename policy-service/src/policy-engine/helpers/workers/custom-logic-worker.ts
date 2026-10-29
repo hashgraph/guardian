@@ -57,11 +57,12 @@ function execute(): void {
     sandbox.done = done;
     sandbox.debug = debug;
     sandbox.user = user;
-    sandbox.documents = tracker ? tracker.trackPolicyDocuments(documents, schemas) : documents;
+    const tracked = tracker ? tracker.trackPolicyDocuments([...(documents || []), ...(sources || [])], schemas) : null;
+    sandbox.documents = Array.isArray(tracked) ? tracked.slice(0, documents.length) : documents;
     sandbox.mathjs = mathjs;
     sandbox.artifacts = artifacts;
     sandbox.formulajs = formulajs;
-    sandbox.sources = sources;
+    sandbox.sources = Array.isArray(tracked) ? tracked.slice(documents.length) : sources;
     sandbox.table = buildTableHelper(tablesPack);
 
     // Convenience globals expected by user code
@@ -99,7 +100,7 @@ function execute(): void {
                 reflect: vm.runInContext('Reflect', context),
                 global: vm.runInContext('globalThis', context)
             }
-        ], diagnose, Array.isArray(documents) ? documents.map((item: any) => item?.document?.credentialSubject) : []);
+        ], diagnose, [...(documents || []), ...(sources || [])].map((item: any) => item?.document?.credentialSubject));
     }
 
     try {

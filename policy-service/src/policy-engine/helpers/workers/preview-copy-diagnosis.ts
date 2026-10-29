@@ -6,6 +6,7 @@ export interface IPreviewCopyTarget {
     document: number | null;
     path: string;
     names: string[];
+    formPath?: string;
 }
 
 export interface IPreviewCopyDiagnosis {
@@ -200,7 +201,8 @@ export function startPreviewCopyDiagnosis(
                         path: fullPath.split('.').filter((part) => !/^\d+$/.test(part)).join('.'),
                         fullPath,
                         site,
-                        listed: false
+                        listed: false,
+                        ...(owners[0].document === null ? {} : { document: owners[0].document })
                     });
                     return undefined;
                 },

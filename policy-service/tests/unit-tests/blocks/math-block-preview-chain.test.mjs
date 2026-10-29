@@ -367,8 +367,8 @@ describe('@unit mathBlock preview chain with real workers', function () {
         });
         await runMath(step, mathRef('rows', expression('items.0.value', 'final')), script);
         assert.deepEqual(resolvePreviewFields(step.getPreviewSource(), step.getPreviewReads()), {
-            fields: ['amount', 'items.value'],
-            missingFields: ['items.value']
+            fields: ['amount', 'items.0.value'],
+            missingFields: ['items.0.value']
         });
     });
 
@@ -377,7 +377,7 @@ describe('@unit mathBlock preview chain with real workers', function () {
         const otherRow = rowsStep([{}, {}]);
         const otherOutput = await runScript(otherRow, rowsDocument([{}, {}]), { passOriginal: true, expression: script });
         await runMath(otherRow, mathRef('rows', expression('items.1.value', 'final')), otherOutput);
-        assert.deepEqual(resolvePreviewFields(otherRow.getPreviewSource(), otherRow.getPreviewReads()).missingFields, ['items.value']);
+        assert.deepEqual(resolvePreviewFields(otherRow.getPreviewSource(), otherRow.getPreviewReads()).missingFields, ['items.1.value']);
 
         const sameRow = rowsStep([{}, {}]);
         const sameOutput = await runScript(sameRow, rowsDocument([{}, {}]), { passOriginal: true, expression: script });
