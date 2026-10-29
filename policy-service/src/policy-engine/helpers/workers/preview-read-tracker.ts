@@ -1,4 +1,5 @@
 import { createRequire } from 'node:module';
+import { types } from 'node:util';
 import type { Session } from 'node:inspector';
 
 export interface IPreviewReadRecord {
@@ -293,23 +294,24 @@ export class PreviewReadTracker {
         if (copied) {
             return copied;
         }
-        const prototype = Object.getPrototypeOf(target);
-        if (!Array.isArray(target) && prototype !== Object.prototype && prototype !== null) {
+        if (types.isDate(target) || types.isRegExp(target) || types.isMap(target) || types.isSet(target)
+            || types.isAnyArrayBuffer(target) || ArrayBuffer.isView(target) || types.isNativeError(target)
+            || types.isBoxedPrimitive(target) || types.isPromise(target) || types.isWeakMap(target)
+            || types.isWeakSet(target) || types.isGeneratorObject(target) || types.isModuleNamespaceObject(target)
+            || types.isProxy(target)) {
             seen.set(target, target);
-            for (const key of Object.keys(target)) {
-                const child = Reflect.get(target, key);
-                const unwrapped = this.unwrap(child, seen);
-                if (unwrapped !== child) {
-                    Reflect.set(target, key, unwrapped);
-                }
-            }
             return target;
         }
-        const copy: Record<string, unknown> | unknown[] = Array.isArray(target) ? [] : {};
+        const copy: Record<string, unknown> | unknown[] = Array.isArray(target) ? new Array(target.length) : {};
         seen.set(target, copy);
         this.targets.set(copy, target);
         for (const key of Object.keys(target)) {
-            Reflect.set(copy, key, this.unwrap(Reflect.get(target, key), seen));
+            Object.defineProperty(copy, key, {
+                value: this.unwrap(Reflect.get(target, key), seen),
+                enumerable: true,
+                configurable: true,
+                writable: true
+            });
         }
         return copy;
     }

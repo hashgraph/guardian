@@ -234,7 +234,7 @@ describe('@unit preview helpers', function () {
             assert.ok(res instanceof MessageError);
             assert.equal(res.code, 422);
             assert.equal(res.body, null);
-            assert.deepEqual(res.data, { preview: true, fields: ['amount', 'rate'], missingFields: ['rate'] });
+            assert.deepEqual(res.data, { preview: true, notLogged: true, fields: ['amount', 'rate'], missingFields: ['rate'] });
             assert.equal('documents' in res.data, false);
             assert.equal('calculations' in res.data, false);
         });
@@ -253,7 +253,7 @@ describe('@unit preview helpers', function () {
                 assert.ok(res instanceof MessageError);
                 assert.equal(res.code, 422);
                 assert.equal(res.body, null);
-                assert.deepEqual(res.data, { preview: true, fields: ['amount', 'bonus'], missingFields: ['bonus'] });
+                assert.deepEqual(res.data, { preview: true, notLogged: true, fields: ['amount', 'bonus'], missingFields: ['bonus'] });
             });
         }
 
@@ -299,7 +299,7 @@ describe('@unit preview helpers', function () {
                 return new MessageResponse({ total: 10, sum: 0 });
             });
             assert.equal(res.code, 422);
-            assert.deepEqual(res.data, { preview: true, fields: ['amount', 'bonus', 'rows'], missingFields: ['bonus', 'rows'] });
+            assert.deepEqual(res.data, { preview: true, notLogged: true, fields: ['amount', 'bonus', 'rows'], missingFields: ['bonus', 'rows'] });
         });
 
         it('never requires a hidden field', async () => {

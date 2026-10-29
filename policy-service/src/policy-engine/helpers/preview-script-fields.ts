@@ -454,7 +454,25 @@ export function findPreviewScriptFields(
     const evidence = new Set<string>();
     const siteOf = (read: IPreviewReadSite) => {
         const key = read.path.split('.').pop() || '';
-        return bySite.get(read.site)?.find((item) => item.key === key || item.dynamic && !read.listed);
+        return bySite.get(read.site)?.find((item) => item.key === key || item.dynamic);
+    };
+    const isCopyRead = (occurrence: IOccurrence): boolean => {
+        const node = occurrence.node;
+        const parent = script.parents.get(node);
+        if (node.type !== 'MemberExpression'
+            || !node.computed
+            || parent?.type !== 'AssignmentExpression'
+            || parent.operator !== '='
+            || parent.right !== node) {
+            return false;
+        }
+        const target = parent.left;
+        if (target.type !== 'MemberExpression' || !target.computed) {
+            return false;
+        }
+        const text = (value: Node) => source.slice(value.start, value.end);
+        return text(target.property) === text(node.property)
+            && text(target.object) !== text(node.object);
     };
     for (const read of sites) {
         const occurrence = siteOf(read);
@@ -528,7 +546,10 @@ export function findPreviewScriptFields(
         return !call || usageOf(call, script.parents) !== 'check';
     };
     for (const read of sites) {
-        const occurrence = siteOf(read);
+        const matched = siteOf(read);
+        const occurrence = matched && !isCopyRead(matched)
+            ? matched
+            : undefined;
         const required = read.site === -2 ? explicit(read) : (occurrence
             ? occurrence.usage === 'use' || occurrence.usage === 'path' && !read.nested
             : read.listed && expression ? false : own(read) ? usedPaths.has(read.path) : usedKeys.has(read.path.split('.').pop() || ''));

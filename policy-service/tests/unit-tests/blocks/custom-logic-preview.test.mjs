@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
 import { ArtifactType } from '@guardian/interfaces';
 import { PolicyUtils } from '../../../dist/policy-engine/helpers/utils.js';
-import { runPreview, setPreviewComputed, setPreviewDocumentSchema } from '../../../dist/policy-engine/helpers/preview.js';
-import { makeBlock, makeUser } from './_block-exec-harness.mjs';
+import { runPreview, setPreviewComputed, setPreviewDocumentSchema, PreviewScope, getPreviewInputError } from '../../../dist/policy-engine/helpers/preview.js';
+import { makeBlock, makeUser, restoreHarness } from './_block-exec-harness.mjs';
 import { CustomLogicBlock } from '../../../dist/policy-engine/blocks/custom-logic-block.js';
 import { PolicyComponentsUtils } from '../../../dist/policy-engine/policy-components-utils.js';
 import { RecordActionStep } from '../../../dist/policy-engine/record-action-step.js';
@@ -382,4 +382,90 @@ describe('@unit customLogicBlock preview', () => {
         await block.runAction(makeEvent(previewStep()));
         assert.equal(events.length, 0);
     });
+});
+
+
+describe('Custom Logic result transport', function () {
+    this.timeout(20000);
+    after(() => restoreHarness());
+
+    const execute = async (expression, preview, subject = {}) => {
+        const step = new RecordActionStep(() => {}, 0, true, true, undefined, preview);
+        if (preview) step.setPreviewSource({ schema: '#S', document: subject, paths: ['amount'], dependencies: {} });
+        const { block } = makeBlock(CustomLogicBlock, { options: { unsigned: true, expression } });
+        const outputs = [];
+        block.triggerEvents = async (type, _user, state) => {
+            if (type === 'RunEvent') outputs.push(state.data.document.credentialSubject[0]);
+        };
+        const run = () => block.runAction({ user: makeUser(), actionStatus: step,
+            data: { data: { schema: '#S', document: { credentialSubject: [subject] } } } });
+        if (preview) await PreviewScope.run(step, run);
+        else await run();
+        return { outputs, step };
+    };
+
+    for (const [expression, expected] of [
+        ['let calls=0;done({get total(){return ++calls}});', [{ total: 1 }]],
+        ['let calls=0;done({row:{get total(){return ++calls}}});', [{ row: { total: 1 } }]],
+        ['let calls=0;const output={get total(){return ++calls}};done(output,false);done({total:output.total});', [{ total: 1 }, { total: 2 }]]
+    ]) {
+        it(`preserves ordinary getter values and worker-side reuse: ${expression}`, async () => {
+            const ordinary = await execute(expression, false);
+            const preview = await execute(expression, true);
+            assert.deepEqual(ordinary.outputs, expected);
+            assert.deepEqual(preview.outputs, ordinary.outputs);
+            assert.deepEqual(preview.step.getErrors(), []);
+        });
+    }
+
+    it('preserves the length of a script array with trailing empty slots', async () => {
+        const expression = 'const rows=new Array(3);rows[0]=5;done({rows});';
+        const ordinary = await execute(expression, false);
+        const preview = await execute(expression, true);
+        assert.equal(ordinary.outputs[0].rows.length, 3);
+        assert.equal(preview.outputs[0].rows.length, 3);
+        assert.deepEqual(preview.outputs, ordinary.outputs);
+        assert.deepEqual(preview.step.getErrors(), []);
+    });
+
+    for (const amount of [5, 0]) {
+        it(`keeps input attribution when the result getter reads amount ${amount}`, async () => {
+            const expression = 'const doc=documents[0].document.credentialSubject[0];let calls=0;done({get total(){return doc.amount*++calls}});';
+            const ordinary = await execute(expression, false, { amount });
+            const preview = await execute(expression, true, { amount });
+            assert.deepEqual(preview.outputs, ordinary.outputs);
+            assert.equal(preview.outputs[0].total, amount);
+            assert.deepEqual(preview.step.getPreviewReads(), [{ schema: '#S', path: 'amount' }]);
+            assert.equal(getPreviewInputError(preview.step), null);
+        });
+    }
+
+    it('still reports a missing input read by a result getter', async () => {
+        const { step, outputs } = await execute('const doc=documents[0].document.credentialSubject[0];done({get total(){return doc.amount*2}});', true);
+        assert.deepEqual(outputs, []);
+        assert.equal(getPreviewInputError(step).code, 422);
+        assert.deepEqual(getPreviewInputError(step).data.missingFields, ['amount']);
+    });
+
+    it('requires a dynamic calculation input after enumerating document keys', async () => {
+        const expression = 'const doc=documents[0].document.credentialSubject[0];console.log(Object.keys(doc));const key=["amo","unt"].join("");done({total:doc[key]>0?5:7});';
+        const { step, outputs } = await execute(expression, true);
+        assert.deepEqual(outputs, []);
+        const error = getPreviewInputError(step);
+        assert.equal(error.code, 422);
+        assert.deepEqual(error.data.fields, ['amount']);
+        assert.deepEqual(error.data.missingFields, ['amount']);
+    });
+
+    for (const amount of [5, 0]) {
+        it(`retains a supplied dynamic input after enumeration: ${amount}`, async () => {
+            const expression = 'const doc=documents[0].document.credentialSubject[0];console.log(Object.keys(doc));const key=["amo","unt"].join("");done({total:doc[key]>0?5:7});';
+            const ordinary = await execute(expression, false, { amount });
+            const preview = await execute(expression, true, { amount });
+            assert.deepEqual(preview.outputs, ordinary.outputs);
+            assert.deepEqual(preview.outputs, [{ total: amount > 0 ? 5 : 7 }]);
+            assert.deepEqual(preview.step.getPreviewReads(), [{ schema: '#S', path: 'amount' }]);
+            assert.equal(getPreviewInputError(preview.step), null);
+        });
+    }
 });

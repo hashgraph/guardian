@@ -265,3 +265,87 @@ describe('@unit PreviewReadTracker', () => {
         assert.deepEqual(JSON.parse(output), [false, true]);
     });
 });
+
+
+describe('Preview result snapshots', () => {
+    for (const expression of [
+        'let calls = 0; ({ get total() { return ++calls; } })',
+        'let calls = 0; new class { constructor() { Object.defineProperty(this, "total", { enumerable: true, get: () => ++calls }); } }'
+    ]) {
+        it(`materializes a VM getter once and preserves the original accessor: ${expression}`, () => {
+            const tracker = new PreviewReadTracker();
+            const source = runInNewContext(expression, { Object });
+            const result = tracker.unwrap(source);
+            assert.notEqual(result, source);
+            assert.equal(structuredClone(result).total, 1);
+            assert.equal(Object.getOwnPropertyDescriptor(result, 'total').get, undefined);
+            assert.equal(typeof Object.getOwnPropertyDescriptor(source, 'total').get, 'function');
+            assert.equal(source.total, 2);
+            assert.equal(tracker.original(result), source);
+        });
+    }
+
+    it('materializes nested VM accessors without changing the source graph', () => {
+        const tracker = new PreviewReadTracker();
+        const source = runInNewContext('let calls = 0; ({ row: { get total() { return ++calls; } } })');
+        assert.equal(structuredClone(tracker.unwrap(source)).row.total, 1);
+        assert.equal(source.row.total, 2);
+    });
+
+    for (const populated of [false, true]) {
+        it(`preserves trailing empty array slots (${populated ? 'partly filled' : 'empty'})`, () => {
+            const tracker = new PreviewReadTracker();
+            const source = new Array(3);
+            if (populated) source[0] = 5;
+            const result = tracker.unwrap(source);
+            assert.equal(result.length, 3);
+            assert.equal(2 in result, false);
+            assert.deepEqual(structuredClone(result), structuredClone(source));
+            assert.equal(source.length, 3);
+        });
+    }
+
+    it('preserves cycles, shared references and original document identity', () => {
+        const tracker = new PreviewReadTracker();
+        const [source] = tracker.trackPolicyDocuments([{ schema: '#S', document: { credentialSubject: [{ amount: 5 }] } }]);
+        const result = { first: source, second: source };
+        result.self = result;
+        const snapshot = tracker.unwrap(result);
+        assert.equal(snapshot.self, snapshot);
+        assert.equal(snapshot.first, snapshot.second);
+        assert.deepEqual(tracker.findSources(snapshot.first), [0]);
+        assert.equal(tracker.original(snapshot.first.document.credentialSubject[0]), tracker.original(source.document.credentialSubject[0]));
+        assert.doesNotThrow(() => structuredClone(snapshot));
+    });
+
+    it('copies an own __proto__ value without changing the snapshot prototype', () => {
+        const tracker = new PreviewReadTracker();
+        const source = JSON.parse('{"__proto__":{"value":5}}');
+        const snapshot = tracker.unwrap(source);
+        assert.equal(Object.getPrototypeOf(snapshot), Object.prototype);
+        assert.equal(Object.hasOwn(snapshot, '__proto__'), true);
+        assert.deepEqual(structuredClone(snapshot), source);
+    });
+
+    for (const [name, expression] of [
+        ['date', 'new Date(0)'], ['regular expression', '/value/gi'], ['map', 'new Map([["a", 5]])'],
+        ['set', 'new Set([5])'], ['typed array', 'new Uint8Array([1, 2])'],
+        ['array buffer', 'new Uint8Array([1, 2]).buffer'], ['boxed number', 'Object(5)'],
+        ['error', 'new Error("invalid value")']
+    ]) {
+        it(`keeps native structured-clone behavior for a VM ${name}`, () => {
+            const tracker = new PreviewReadTracker();
+            const source = runInNewContext(expression);
+            assert.deepEqual(structuredClone(tracker.unwrap(source)), structuredClone(source));
+        });
+    }
+
+    for (const expression of ['Promise.resolve(5)', 'new WeakMap()', 'new WeakSet()', 'new Proxy({}, {})', '(function* () {})()']) {
+        it(`keeps the ordinary clone error for ${expression}`, () => {
+            const tracker = new PreviewReadTracker();
+            const source = runInNewContext(expression);
+            assert.throws(() => structuredClone(source), { name: 'DataCloneError' });
+            assert.throws(() => structuredClone(tracker.unwrap(source)), { name: 'DataCloneError' });
+        });
+    }
+});
