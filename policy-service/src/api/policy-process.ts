@@ -148,7 +148,16 @@ Promise.all([
     const synchronizationService = new SynchronizationService(policyConfig, logger, policyOwnerId);
     synchronizationService.start();
 
-    const shutdown = async (ownerId: string | null) => {
+    const shutdown = async (ownerId: string | null, drainFirst = false) => {
+        if (drainFirst) {
+            // Stop answering before the blocks are unregistered: a late request must get
+            // NO_RESPONDERS (and start the policy again), not a block-not-found error
+            try {
+                await cn.drain();
+            } catch (error) {
+                console.warn(error);
+            }
+        }
         await generator.destroyModel(policyId, logger, ownerId);
         synchronizationService.stop();
         process.exit(0);
@@ -162,7 +171,7 @@ Promise.all([
     if (policyConfig.status === PolicyStatus.DISCONTINUED) {
         const idleStop = new IdleStop(getDiscontinuedIdleMs(), () => {
             void logger.info('Stop idle discontinued policy', ['POLICY', policyConfig.name, policyId.toString()], policyOwnerId);
-            void shutdown(policyOwnerId);
+            void shutdown(policyOwnerId, true);
         });
         generator.setIdleStop(idleStop);
         idleStop.start();
