@@ -72,6 +72,7 @@ export interface IFieldScope {
     schema: Schema;
     field: SchemaField;
     prefix: string[];
+    ancestors?: SchemaField[];
     fields: SchemaField[];
 }
 
@@ -88,6 +89,10 @@ interface IPendingBinding {
 
 function isAssignment(p: IPendingBinding): boolean {
     return p.type === 'bind' || p.type === 'create';
+}
+
+function livePrefix(scope: IFieldScope | null): string[] {
+    return scope?.ancestors ? scope.ancestors.map((f) => f.name) : scope?.prefix || [];
 }
 
 const HIDDEN: IFieldFormulasView = { state: 'hidden', rows: [], groups: [], documents: [] };
@@ -115,6 +120,7 @@ export class SchemaFieldFormulas {
     private readonly formulas = new Map<string, IFormula[]>();
     private readonly loading = new Set<string>();
     private pending: IPendingBinding[] = [];
+    private savedNames = new WeakMap<SchemaField, string>();
     private version: number = 0;
 
     private viewKey: any[] = [];
@@ -218,7 +224,7 @@ export class SchemaFieldFormulas {
         const schema = scope?.schema || null;
         const field = scope?.field || null;
         const key = [
-            schema, field, field?.name, scope?.prefix.join('.'), scope?.fields, schema?.iri, (schema as any)?.id,
+            schema, field, field?.name, livePrefix(scope).join('.'), scope?.fields, schema?.iri, (schema as any)?.id,
             eligible, subSchema, this.policy, this.canEdit, this.version
         ];
         if (key.length === this.viewKey.length && key.every((value, i) => value === this.viewKey[i])) {
@@ -348,8 +354,8 @@ export class SchemaFieldFormulas {
         if (row.pending) {
             this.pending = this.pending.filter((p) => !this.isPendingOp(p, row.itemUuid, target, false));
         } else {
-            const moved = this.pending.find((p) => p.type === 'move' && p.scope.field === scope.field && p.itemUuid === row.itemUuid &&
-                p.fieldPath === p.basePath);
+            const moved = this.pending.find((p) => p.type === 'move' && p.formulaId === row.formulaId && p.itemUuid === row.itemUuid &&
+                this.targetOf(p).fieldPath === target.fieldPath);
             const fieldPath = moved?.fieldPath || target.fieldPath;
             this.pending = this.pending.filter((p) => p !== moved);
             this.pending.push({ type: 'unbind', policyId: this.policy.id, formulaId: row.formulaId, itemUuid: row.itemUuid, scope: this.copyScope(scope), fieldPath });
@@ -365,6 +371,8 @@ export class SchemaFieldFormulas {
         }
         const links = saved || [];
         this.pending = this.pending.filter((p) => p.scope.field !== scope.field || (!isAssignment(p) && p.type !== 'move'));
+        this.pending = this.pending.filter((p) => p.type !== 'move' ||
+            !links.some(({ formula, item, path }) => p.formulaId === String(formula.id) && p.itemUuid === item.uuid && p.fieldPath === path));
         const unbinds = [
             ...moves.map((p) => ({ formulaId: p.formulaId, itemUuid: p.itemUuid, path: p.fieldPath! })),
             ...links.map(({ formula, item, path }) => ({ formulaId: String(formula.id), itemUuid: item.uuid, path }))
@@ -390,15 +398,20 @@ export class SchemaFieldFormulas {
 
     public rename(scope: IFieldScope): void {
         this.version++;
-        if (this.pending.some((p) => p.type === 'move' && p.scope.field === scope.field)) {
-            return;
+        if (!this.savedNames.has(scope.field)) {
+            this.savedNames.set(scope.field, scope.field.name);
         }
         const links = this.savedLinks(scope);
         if (!links?.length) {
             return;
         }
-        const basePath = buildFieldPath(scope.prefix, scope.field.name);
+        const basePath = this.savedPath(scope);
         for (const { formula, item, path } of links) {
+            const same = (p: IPendingBinding) => p.formulaId === String(formula.id) && p.itemUuid === item.uuid && p.fieldPath === path;
+            if (this.pending.some((p) => (p.type === 'unbind' || (p.type === 'move' && p.basePath!.length >= basePath.length)) && same(p))) {
+                continue;
+            }
+            this.pending = this.pending.filter((p) => p.type !== 'move' || !same(p));
             this.pending.push({
                 type: 'move',
                 policyId: this.policy.id,
@@ -411,13 +424,20 @@ export class SchemaFieldFormulas {
         }
     }
 
+    /** the path the field had when it was last saved */
+    private savedPath(scope: IFieldScope): string {
+        const saved = (field: SchemaField) => this.savedNames.get(field) ?? field.name;
+        const prefix = scope.ancestors ? scope.ancestors.map(saved) : scope.prefix;
+        return buildFieldPath(prefix, saved(scope.field));
+    }
+
     private savedLinks(scope: IFieldScope): { formula: IFormula; item: IFormulaItem; path: string }[] | null {
         const iri = String(scope.schema.iri || '');
         if (!this.policy || !this.canEdit || !iri || !this.formulas.has(this.policy.id) ||
             scope.schema.status === SchemaStatus.PUBLISHED) {
             return null;
         }
-        const base = buildFieldPath(scope.prefix, scope.field.name);
+        const base = this.savedPath(scope);
         const result: { formula: IFormula; item: IFormulaItem; path: string }[] = [];
         for (const formula of this.formulas.get(this.policy.id) || []) {
             if (formula.id === NEW_FORMULA_DOCUMENT || !isEditableFormula(formula)) {
@@ -519,6 +539,13 @@ export class SchemaFieldFormulas {
         if (this.pending.length !== count) {
             this.version++;
         }
+        this.resetSavedNames();
+    }
+
+    private resetSavedNames(): void {
+        if (!this.pending.length) {
+            this.savedNames = new WeakMap<SchemaField, string>();
+        }
     }
 
     /**
@@ -599,6 +626,7 @@ export class SchemaFieldFormulas {
                 });
             }
             this.pending = this.pending.filter((p) => !done.has(p));
+            this.resetSavedNames();
             const policies = new Set(Array.from(done).map((p) => p.policyId));
             for (const policyId of policies) {
                 this.applySaved(policyId, Array.from(done).filter((p) => p.policyId === policyId));
@@ -657,7 +685,7 @@ export class SchemaFieldFormulas {
     private target(scope: IFieldScope): IFieldTarget {
         return {
             schemaIri: String(scope.schema.iri || ''),
-            fieldPath: buildFieldPath(scope.prefix, scope.field.name)
+            fieldPath: buildFieldPath(livePrefix(scope), scope.field.name)
         };
     }
 
@@ -675,7 +703,7 @@ export class SchemaFieldFormulas {
     }
 
     private copyScope(scope: IFieldScope): IFieldScope {
-        return { ...scope, prefix: [...scope.prefix] };
+        return { ...scope, prefix: [...livePrefix(scope)], ancestors: scope.ancestors && [...scope.ancestors] };
     }
 
     /** a pending unbind (`unbind` true) or a pending bind/create of the item on the field */

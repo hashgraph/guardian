@@ -284,6 +284,81 @@ describe('SchemaFieldFormulas', () => {
             });
         });
 
+        describe('a renamed field and its renamed parent', () => {
+            function nestedDoc(): IFormula {
+                const doc = createDoc();
+                (doc.config as any).formulas[0].link = { type: 'schema', entityId: '#root', item: 'X.a' };
+                return doc;
+            }
+
+            function scopes() {
+                const parent: any = { name: 'X' };
+                const child: any = { name: 'a' };
+                const schema: any = { id: 's1', iri: '#root', status: 'DRAFT', fields: [parent] };
+                return {
+                    parent,
+                    child,
+                    parentScope: (): IFieldScope => ({ schema, field: parent, prefix: [], fields: [parent] }),
+                    childScope: (): IFieldScope => ({ schema, field: child, prefix: [parent.name], ancestors: [parent], fields: [child] })
+                };
+            }
+
+            const link = (item: string) => ({ type: 'schema', entityId: '#root', item });
+
+            it('follows the child rename and then the parent rename', (done) => {
+                const { model, updates } = create(nestedDoc());
+                const f = scopes();
+                model.rename(f.childScope());
+                f.child.name = 'b';
+                model.rename(f.parentScope());
+                f.parent.name = 'Y';
+                model.save().subscribe(() => {
+                    expect(updates[0].config.formulas[0].link).toEqual(link('Y.b'));
+                    done();
+                });
+            });
+
+            it('follows the parent rename and then the child rename', (done) => {
+                const { model, updates } = create(nestedDoc());
+                const f = scopes();
+                model.rename(f.parentScope());
+                f.parent.name = 'Y';
+                model.rename(f.childScope());
+                f.child.name = 'b';
+                model.save().subscribe(() => {
+                    expect(updates[0].config.formulas[0].link).toEqual(link('Y.b'));
+                    done();
+                });
+            });
+
+            it('unbinds the link of a child deleted after the parent rename', (done) => {
+                const { model, updates } = create(nestedDoc());
+                const f = scopes();
+                model.rename(f.parentScope());
+                f.parent.name = 'Y';
+                model.release(f.childScope());
+                model.save().subscribe(() => {
+                    expect(updates[0].config.formulas[0].link).toBeNull();
+                    done();
+                });
+            });
+
+            it('follows a second child rename after the parent rename', (done) => {
+                const { model, updates } = create(nestedDoc());
+                const f = scopes();
+                model.rename(f.childScope());
+                f.child.name = 'b';
+                model.rename(f.parentScope());
+                f.parent.name = 'Y';
+                model.rename(f.childScope());
+                f.child.name = 'c';
+                model.save().subscribe(() => {
+                    expect(updates[0].config.formulas[0].link).toEqual(link('Y.c'));
+                    done();
+                });
+            });
+        });
+
         describe('fields inside a sub-schema field', () => {
             function nestedDoc(): IFormula {
                 const doc = createDoc();

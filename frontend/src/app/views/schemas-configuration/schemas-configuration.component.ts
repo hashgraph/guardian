@@ -35,6 +35,7 @@ export interface DrillEntry {
     fieldLabel: string;
     /** key of the sub-schema field drilled into; the drill path is the formula link path prefix */
     fieldName: string;
+    field?: SchemaField;
     fields: SchemaField[];
     schemaIri: string;
 }
@@ -2252,6 +2253,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return this.isDrilling ? this.drillStack.map(e => e.fieldName) : [];
     }
 
+    private get fieldFormulaAncestors(): SchemaField[] | undefined {
+        return this.drillStack.every(e => e.field) ? this.drillStack.map(e => e.field!) : undefined;
+    }
+
     /**
      * The selected field as formulas see it: the open (root) schema and the path from it.
      * When drilling, the drilled-into field names prefix the path. Null when there is no
@@ -2267,7 +2272,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (!Array.isArray(fields) || !fields.includes(field)) {
             return null;
         }
-        return { schema, field, prefix: this.fieldFormulaPrefix, fields };
+        return { schema, field, prefix: this.fieldFormulaPrefix, ancestors: this.fieldFormulaAncestors, fields };
     }
 
     private formulaScopeOf(field: SchemaField): IFieldScope | null {
@@ -2276,7 +2281,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             return null;
         }
         const fields = this.isDrilling ? this.drillCurrentFields : schema.fields;
-        return { schema, field, prefix: this.fieldFormulaPrefix, fields };
+        return { schema, field, prefix: this.fieldFormulaPrefix, ancestors: this.fieldFormulaAncestors, fields };
     }
 
     private releaseFieldFormulas(field: SchemaField): void {
@@ -3603,7 +3608,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.activeDrillTab = 'fields';
         this.drillStack = [
             ...this.drillStack,
-            { fieldLabel: field.title || field.name, fieldName: field.name, fields, schemaIri: field.type || '' }
+            { fieldLabel: field.title || field.name, fieldName: field.name, field, fields, schemaIri: field.type || '' }
         ];
         this.persistSuggestionsForContext(previousContext);
         this.restoreOrClearSuggestionsForContext();
