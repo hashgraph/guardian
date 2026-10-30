@@ -2738,7 +2738,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         });
     }
 
-    /** Private exists only on Encrypted VC schemas, so leaving that type clears every field's flag. */
+    /** Private exists only on Encrypted VC schemas, so leaving that type clears the flag of its top-level fields. */
     public onSchemaEntityChange(schema: Schema | null): void {
         if (schema && schema.entity !== SchemaEntity.EVC) {
             this.clearPrivateFlags(schema.fields);
@@ -2753,7 +2753,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     private clearPrivateFlags(fields?: SchemaField[]): void {
         for (const field of fields ?? []) {
             field.isPrivate = undefined;
-            this.clearPrivateFlags(field.fields);
         }
     }
 

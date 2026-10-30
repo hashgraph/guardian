@@ -2259,15 +2259,23 @@ describe('SchemasConfigurationComponent', () => {
             return schema;
         }
 
-        it('clears every field flag when the schema leaves Encrypted VC', () => {
+        it('clears the flag of the top-level and condition fields when the schema leaves Encrypted VC', () => {
             const component = createComponent();
             component.markDirty = () => {};
             const schema = schemaWithPrivateFields('EVC');
             schema.entity = 'VC';
             component.onSchemaEntityChange(schema);
             expect(schema.fields[0].isPrivate).toBeUndefined();
-            expect(schema.fields[0].fields[0].isPrivate).toBeUndefined();
             expect(schema.conditions[0].thenFields[0].isPrivate).toBeUndefined();
+        });
+
+        it('leaves the fields shared with a referenced sub-schema untouched', () => {
+            const component = createComponent();
+            component.markDirty = () => {};
+            const schema = schemaWithPrivateFields('EVC');
+            schema.entity = 'VC';
+            component.onSchemaEntityChange(schema);
+            expect(schema.fields[0].fields[0].isPrivate).toBe(true);
         });
 
         it('offers Private for top-level fields of an Encrypted VC schema only', () => {
