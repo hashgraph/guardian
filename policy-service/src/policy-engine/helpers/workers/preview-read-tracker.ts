@@ -221,11 +221,11 @@ export class PreviewReadTracker {
                 }
                 let carried = tracker.targets.has(newValue) || Array.isArray(newValue) && types.isProxy(newValue);
                 if (!carried && Array.isArray(newValue)) {
-                    for (const key of Object.getOwnPropertyNames(newValue)) {
-                        if (!/^\d+$/.test(key)) {
+                    for (const name of Object.getOwnPropertyNames(newValue)) {
+                        if (!/^\d+$/.test(name)) {
                             continue;
                         }
-                        const descriptor = Object.getOwnPropertyDescriptor(newValue, key);
+                        const descriptor = Object.getOwnPropertyDescriptor(newValue, name);
                         if (descriptor && 'value' in descriptor && tracker.targets.has(descriptor.value)) {
                             carried = true;
                             break;
