@@ -34,10 +34,6 @@ export class IdleStop {
      * Start watching
      */
     public start(): void {
-        if (this.timer) {
-            return;
-        }
-        this.lastActivity = Date.now();
         this.timer = setInterval(() => {
             if (Date.now() - this.lastActivity >= this.idleMs) {
                 this.stop();

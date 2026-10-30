@@ -78,7 +78,7 @@ export class BlockTreeGenerator extends NatsService {
      * Set idle watcher, every request except a liveness check counts as activity
      * @param idleStop
      */
-    public setIdleStop(idleStop: IdleStop | null): void {
+    public setIdleStop(idleStop: IdleStop): void {
         this.idleStop = idleStop;
     }
 

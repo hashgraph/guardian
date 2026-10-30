@@ -199,6 +199,8 @@ export function resolveDraftTokensToDelete(
  */
 @Singleton
 export class PolicyEngine extends NatsService {
+    private readonly pendingDiscontinuedStarts = new Map<string, Promise<boolean>>();
+
     constructor(private readonly logger: PinoLogger) {
         super();
     }
@@ -350,12 +352,23 @@ export class PolicyEngine extends NatsService {
      * @param policyId
      * @returns false if the policy is not discontinued (nothing is started)
      */
-    public async ensureDiscontinuedRunning(policyId: string): Promise<boolean> {
+    public ensureDiscontinuedRunning(policyId: string): Promise<boolean> {
+        // A viewer opens several blocks at once: they all share one start
+        let pending = this.pendingDiscontinuedStarts.get(policyId);
+        if (!pending) {
+            pending = this.startDiscontinued(policyId).finally(() => {
+                this.pendingDiscontinuedStarts.delete(policyId);
+            });
+            this.pendingDiscontinuedStarts.set(policyId, pending);
+        }
+        return pending;
+    }
+
+    private async startDiscontinued(policyId: string): Promise<boolean> {
         // Checked before taking the lock: most callers here are not discontinued policies
-        const options: any = { fields: ['id'] };
         const policy = await DatabaseServer.getPolicy(
             { id: policyId, status: PolicyStatus.DISCONTINUED },
-            options
+            { fields: ['id'] } as any
         );
         if (!policy) {
             return false;
