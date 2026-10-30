@@ -43,6 +43,7 @@ services:
   #     - '3013'
   #   models:
   #     - llm
+  
   api-gateway:
     image: gcr.io/hedera-registry/api-gateway-demo:${GUARDIAN_VERSION:-latest}
     depends_on:
