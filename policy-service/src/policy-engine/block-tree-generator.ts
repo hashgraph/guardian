@@ -10,6 +10,7 @@ import { Users } from '@guardian/common/helpers/users';
 import { GenerateUUIDv4, IUser, PolicyAvailability, PolicyEvents, PolicyStatus } from '@guardian/interfaces';
 import { headers } from 'nats';
 import { Inject } from '../helpers/decorators/inject.js';
+import { IdleStop } from '../helpers/idle-stop.js';
 import { PolicyValidator } from '../policy-engine/block-validators/index.js';
 import { ComponentsService } from './helpers/components-service.js';
 import { blockCompleteEvent, PolicyComponentsUtils } from './policy-components-utils.js';
@@ -68,6 +69,20 @@ export class BlockTreeGenerator extends NatsService {
     }
 
     /**
+     * Idle watcher of a discontinued policy process
+     * @private
+     */
+    private idleStop: IdleStop | null = null;
+
+    /**
+     * Set idle watcher, every request except a liveness check counts as activity
+     * @param idleStop
+     */
+    public setIdleStop(idleStop: IdleStop | null): void {
+        this.idleStop = idleStop;
+    }
+
+    /**
      * Get messages
      * @param subject
      * @param cb
@@ -76,6 +91,9 @@ export class BlockTreeGenerator extends NatsService {
         this.connection.subscribe([policyId, subject].join('-'), {
             queue: this.messageQueueName,
             callback: async (error, msg) => {
+                if (subject !== PolicyEvents.CHECK_IF_ALIVE) {
+                    this.idleStop?.touch();
+                }
                 let token = '';
 
                 try {

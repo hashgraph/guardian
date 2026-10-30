@@ -27,7 +27,8 @@ import { BlockTreeGenerator } from '../policy-engine/block-tree-generator.js';
 import { PolicyValidator } from '../policy-engine/block-validators/index.js';
 import process from 'node:process';
 import { CommonVariables } from '../helpers/common-variables.js';
-import { PolicyEvents } from '@guardian/interfaces';
+import { PolicyEvents, PolicyStatus } from '@guardian/interfaces';
+import { getDiscontinuedIdleMs, IdleStop } from '../helpers/idle-stop.js';
 import { SynchronizationService } from '../policy-engine/multi-policy-service/index.js';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
@@ -147,11 +148,25 @@ Promise.all([
     const synchronizationService = new SynchronizationService(policyConfig, logger, policyOwnerId);
     synchronizationService.start();
 
-    generator.getPolicyMessages(PolicyEvents.DELETE_POLICY, policyId, async (payload: { policyOwnerId: string | null }) => {
-        await generator.destroyModel(policyId, logger, payload.policyOwnerId);
+    const shutdown = async (ownerId: string | null) => {
+        await generator.destroyModel(policyId, logger, ownerId);
         synchronizationService.stop();
         process.exit(0);
+    };
+
+    generator.getPolicyMessages(PolicyEvents.DELETE_POLICY, policyId, async (payload: { policyOwnerId: string | null }) => {
+        await shutdown(payload.policyOwnerId);
     });
+
+    // A discontinued policy runs only on demand: it stops itself when nobody uses it
+    if (policyConfig.status === PolicyStatus.DISCONTINUED) {
+        const idleStop = new IdleStop(getDiscontinuedIdleMs(), () => {
+            void logger.info('Stop idle discontinued policy', ['POLICY', policyConfig.name, policyId.toString()], policyOwnerId);
+            void shutdown(policyOwnerId);
+        });
+        generator.setIdleStop(idleStop);
+        idleStop.start();
+    }
 
     generator.publish(PolicyEvents.POLICY_READY, {
         policyId: policyId.toString(),

@@ -981,3 +981,15 @@
         background: var(--pc-border-color);
     }
 }
+
+.loading-starting {
+    flex-direction: column;
+    gap: 16px;
+}
+
+.loading-message {
+    max-width: 420px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--color-grey-6, #848fa9);
+}

@@ -1106,6 +1106,7 @@ export class PolicyEngineService {
                 if (policy.status !== PolicyStatus.PUBLISH && policy.status !== PolicyStatus.DISCONTINUED) {
                     result.withRecords = !!policy.autoRecordSteps;
                 }
+                await this.policyEngine.setRunningState([result]);
 
                 return new MessageResponse(result);
             });
@@ -1177,6 +1178,7 @@ export class PolicyEngineService {
                     for (const policy of policies) {
                         await PolicyComponentsUtils.GetPolicyInfo(policy, userFull);
                     }
+                    await this.policyEngine.setRunningState(policies);
                     return new MessageResponse({ policies, count });
                 } catch (error) {
                     return new MessageError(error);
@@ -1213,6 +1215,7 @@ export class PolicyEngineService {
                     for (const policy of policies) {
                         await PolicyComponentsUtils.GetPolicyInfo(policy, userFull);
                     }
+                    await this.policyEngine.setRunningState(policies);
                     return new MessageResponse({ policies, count });
                 } catch (error) {
                     return new MessageError(error);
@@ -1721,7 +1724,13 @@ export class PolicyEngineService {
                         });
                     await DatabaseServer.updatePolicy(model);
 
-                    await new GuardiansService().sendPolicyMessage(PolicyEvents.REFRESH_MODEL, policyId, {});
+                    if (model.status === PolicyStatus.DISCONTINUED) {
+                        // Discontinued policies run only on demand, so stop the process now.
+                        // Not awaited: the status is saved and the stop can take a while.
+                        void this.policyEngine.stopDiscontinued(policyId, owner?.id);
+                    } else {
+                        await new GuardiansService().sendPolicyMessage(PolicyEvents.REFRESH_MODEL, policyId, {});
+                    }
 
                     return new MessageResponse(true);
                 } catch (error) {

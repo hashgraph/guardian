@@ -586,6 +586,15 @@ export class PoliciesComponent implements OnInit {
         }
     }
 
+    public readonly stoppedTooltip = 'Discontinued policy is stopped. It starts automatically when opened and may take a minute.';
+
+    public readonly runningTooltip = 'Discontinued policy is running. It stops automatically after a period of inactivity.';
+
+    public isStoppedDiscontinued(policy: any): boolean {
+        // isRunning is only set for discontinued policies
+        return policy?.isRunning === false;
+    }
+
     public getDiscontinuedTooltip(date: Date) {
         return date ? `Discontinue date is ${date.toLocaleString()}` : '';
     }

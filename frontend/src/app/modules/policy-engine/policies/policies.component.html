@@ -551,6 +551,7 @@
                           [tooltipDisabled]="!policy.discontinuedDate"
                           class="chip chip-color-{{getColor(policy.status, !!policy.discontinuedDate)}}"
                           >{{ getLabelStatus(policy.status, !!policy.discontinuedDate) }}
+                          <ng-container *ngTemplateOutlet="runStateIcon; context: { $implicit: policy }"></ng-container>
                         </div>
                       }
                       @if (user.POLICIES_POLICY_REVIEW) {
@@ -588,6 +589,7 @@
                               [pTooltip]="getDiscontinuedTooltip(policy.discontinuedDate)"
                               tooltipPosition="bottom">
                               {{ getStatusName(policy) }}
+                              <ng-container *ngTemplateOutlet="runStateIcon; context: { $implicit: policy }"></ng-container>
                             </div>
                           }
                         </div>
@@ -838,3 +840,15 @@
       <div class="preloader-image preloader-image-l-size"></div>
     </div>
   }
+
+<ng-template #runStateIcon let-policy>
+  @if (isStoppedDiscontinued(policy)) {
+    <i class="pi pi-stop-circle stopped-icon"
+      [pTooltip]="stoppedTooltip"
+      tooltipPosition="bottom"></i>
+  } @else if (policy.isRunning) {
+    <i class="pi pi-clock stopped-icon"
+      [pTooltip]="runningTooltip"
+      tooltipPosition="bottom"></i>
+  }
+</ng-template>
