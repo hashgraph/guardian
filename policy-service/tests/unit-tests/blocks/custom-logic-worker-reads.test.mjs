@@ -27,6 +27,24 @@ const formDocuments = () => [{ schema: '#S', document: { credentialSubject: [{ a
 describe('@unit customLogic worker read tracking', function () {
     this.timeout(20000);
 
+    for (const [name, calculation, total] of [
+        ['object identity', 'const child = { amount: 3 }; doc.child = child; done({ total: doc.child === child ? 10 : 20 });', 10],
+        ['Date receiver', 'doc.date = new Date(0); done({ total: doc.date.getTime() });', 0],
+        ['Map receiver', 'doc.lookup = new Map([["rate", 3]]); done({ total: doc.lookup.get("rate") * doc.amount });', 6]
+    ]) {
+        it(`preserves ordinary calculation after assigning a new ${name}`, async () => {
+            const script = 'const doc = documents[0].document.credentialSubject[0]; ' + calculation;
+            const ordinary = await runWorker(script, formDocuments(), false);
+            const preview = await runWorker(script, formDocuments(), true);
+            assert.equal(preview.some(message => message.type === 'error'), false);
+            assert.deepEqual(ordinary.find(message => message.type === 'done').result, { total });
+            assert.deepEqual(preview.find(message => message.type === 'done').result, { total });
+            if (name === 'Map receiver') {
+                assert.deepEqual(preview.find(message => message.type === 'done').reads, [{ schema: '#S', path: 'amount', fullPath: 'amount' }]);
+            }
+        });
+    }
+
     it('reports the fields the script reads and returns a plain result', async () => {
         const messages = await runWorker(
             'const doc = documents[0].document.credentialSubject[0]; doc.total = doc.amount * (doc.rate || 1); done(doc);',

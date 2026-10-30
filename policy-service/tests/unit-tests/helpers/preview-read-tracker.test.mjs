@@ -4,6 +4,32 @@ import { runInNewContext } from 'node:vm';
 import { PREVIEW_SCRIPT_FILE, PreviewReadTracker } from '../../../dist/policy-engine/helpers/workers/preview-read-tracker.js';
 
 describe('@unit PreviewReadTracker', () => {
+    it('preserves newly assigned objects and native receivers', () => {
+        const tracker = new PreviewReadTracker();
+        const doc = tracker.track({ rows: [] }, '#S');
+        const child = { amount: 3 };
+        doc.child = child;
+        doc.date = new Date(0);
+        doc.lookup = new Map([['rate', 3]]);
+        doc.rows.push(child);
+        assert.equal(doc.child, child);
+        assert.equal(doc.rows[0], child);
+        assert.equal(doc.date.getTime(), 0);
+        assert.equal(doc.lookup.get('rate'), 3);
+    });
+
+    it('keeps tracking input aliases inside newly assigned containers', () => {
+        const tracker = new PreviewReadTracker();
+        const doc = tracker.track({ source: { amount: 2 }, rows: [{ rate: 3 }] }, '#S');
+        const source = doc.source;
+        doc.box = { source };
+        doc.selected = doc.rows.map(row => row);
+        tracker.take();
+        assert.equal(doc.box.source, source);
+        assert.equal(doc.box.source.amount * doc.selected[0].rate, 6);
+        assert.deepEqual(tracker.take().map(read => read.path), ['source.amount', 'selected', 'rows.rate']);
+    });
+
     it('records nested reads with dotted paths', () => {
         const tracker = new PreviewReadTracker();
         const doc = tracker.track({ amount: 2, location: { lat: 1 } }, '#S');

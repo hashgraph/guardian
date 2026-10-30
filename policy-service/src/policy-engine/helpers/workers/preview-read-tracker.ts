@@ -37,6 +37,7 @@ export class PreviewReadTracker {
     private readonly targets = new WeakMap<object, object>();
     private readonly sources = new WeakMap<object, number>();
     private readonly listed = new WeakSet<object>();
+    private readonly assigned = new WeakSet<object>();
     private readonly enumerated = new Map<string, IPreviewWriteRecord>();
     private lines: number[] | null = null;
     private session: Session | null = null;
@@ -180,7 +181,7 @@ export class PreviewReadTracker {
         writePrefix: string = prefix,
         document: number | null = null
     ): unknown {
-        if (!value || typeof value !== 'object' || this.targets.has(value)) {
+        if (!value || typeof value !== 'object' || this.targets.has(value) || this.assigned.has(value)) {
             return value;
         }
         const cached = this.proxies.get(value);
@@ -215,6 +216,9 @@ export class PreviewReadTracker {
                 return Reflect.ownKeys(target);
             },
             set(target, key, newValue, receiver) {
+                if (newValue && typeof newValue === 'object' && !tracker.proxies.has(newValue) && !tracker.targets.has(newValue)) {
+                    tracker.assigned.add(newValue);
+                }
                 const carried = tracker.targets.has(newValue) || Array.isArray(newValue) && newValue.some((item) => tracker.targets.has(item));
                 if (typeof key === 'string' && (!isList || /^\d+$/.test(key)) && !carried) {
                     tracker.addWrite(schema, writePrefix ? `${writePrefix}.${key}` : key, document);
