@@ -698,12 +698,19 @@ a {
         pointer-events: none;
         color: #6c757d;
     }
+
+    .search-hint {
+        grid-column: 2;
+        margin-top: 4px;
+        font-size: 12px;
+        color: #6c757d;
+    }
 }
 
 ::ng-deep .schema-text-search-options {
     .p-multiselect-list-container,
     .p-multiselect-items-wrapper {
-        max-height: 300px !important;
+        max-height: none !important;
     }
 }
 

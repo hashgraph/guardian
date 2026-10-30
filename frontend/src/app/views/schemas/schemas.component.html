@@ -96,6 +96,9 @@
             <p-multiSelect
               [(ngModel)]="textSearchOptionsValue"
               [options]="textSearchOptions"
+              [group]="true"
+              optionGroupLabel="label"
+              optionGroupChildren="items"
               class="guardian-multiselect"
               appendTo="body"
               placeholder="Not selected"
@@ -116,6 +119,9 @@
               placeholder="Search"
               />
             <i class="pi pi-search search-icon"></i>
+            @if (isSlowSearch) {
+              <span class="search-hint">Searching inside documents may take a while.</span>
+            }
           </div>
         }
       </div>

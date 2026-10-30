@@ -476,80 +476,6 @@ async function getUsedPolicySchemaIds(
     return usedIds;
 }
 
-const SEARCH_DOCUMENT_CONCURRENCY = 16;
-
-/**
- * Find schemas matching the text. Name, uuid and description are checked on lightweight rows;
- * documents are read from the file storage (in parallel, only for schemas not matched yet)
- * and only when the references or fields scopes are selected.
- */
-async function searchSchemaIds(filter: any, text: string, searchOptions?: string[]): Promise<any[]> {
-    let search = text.toLowerCase();
-    if (search.startsWith('@') || search.startsWith('#')) {
-        search = search.substring(1);
-    }
-    const scopes = searchOptions || ['uuid', 'name', 'description', 'references', 'fields'];
-    const inUuid = scopes.includes('uuid');
-    const inName = scopes.includes('name');
-    const inDescription = scopes.includes('description');
-    const inReferences = scopes.includes('references');
-    const inFields = scopes.includes('fields');
-    const needDocuments = inReferences || inFields;
-
-    const fields = ['_id'];
-    if (inUuid) {
-        fields.push('iri');
-    }
-    if (inName) {
-        fields.push('name');
-    }
-    if (inDescription) {
-        fields.push('description');
-    }
-    if (needDocuments) {
-        fields.push('documentFileId');
-    }
-    const rows = await new DataBaseHelper(SchemaCollection).findRaw(filter, fields);
-
-    const matched: any[] = [];
-    const rest: any[] = [];
-    for (const row of rows) {
-        if (
-            (inUuid && row.iri?.toLowerCase().includes(search)) ||
-            (inName && row.name?.toLowerCase().includes(search)) ||
-            (inDescription && row.description?.toLowerCase().includes(search))
-        ) {
-            matched.push(row._id);
-        } else if (needDocuments && row.documentFileId) {
-            rest.push(row);
-        }
-    }
-
-    let index = 0;
-    const worker = async () => {
-        while (index < rest.length) {
-            const row = rest[index++];
-            const buffer = await DatabaseServer.loadFile(row.documentFileId);
-            if (!buffer) {
-                continue;
-            }
-            const document = JSON.parse(buffer.toString());
-            const defs = document.$defs;
-            delete document.$defs;
-            if (
-                (inReferences && defs && JSON.stringify(defs).toLowerCase().includes(search)) ||
-                (inFields && JSON.stringify(document).toLowerCase().includes(search))
-            ) {
-                matched.push(row._id);
-            }
-        }
-    };
-    await Promise.all(
-        Array.from({ length: Math.min(SEARCH_DOCUMENT_CONCURRENCY, rest.length) }, worker)
-    );
-    return matched;
-}
-
 async function applyPolicySchemaGridFilters(
     filter: any,
     options: {
@@ -1756,9 +1682,65 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 //search
-                const searchText = options.search?.trim();
-                if (searchText) {
-                    const ids = await searchSchemaIds(filter, searchText, options.searchOptions);
+                if (options.search) {
+                    let search = options.search.toLowerCase();
+                    if (search.startsWith('@') || search.startsWith('#')) {
+                        search = search.substring(1);
+                    }
+                    const searchOptions = options.searchOptions || ['uuid', 'name', 'description', 'references', 'fields'];
+                    const fields = ['_id'];
+                    if (searchOptions.includes('uuid')) {
+                        fields.push('iri');
+                    }
+                    if (searchOptions.includes('name')) {
+                        fields.push('name');
+                    }
+                    if (searchOptions.includes('description')) {
+                        fields.push('description');
+                    }
+                    if (searchOptions.includes('references') || searchOptions.includes('fields')) {
+                        fields.push('documentFileId');
+                    }
+                    let schemas = await DatabaseServer.getSchemas(filter, {
+                        orderBy: { createDate: 'DESC' },
+                        fields
+                    });
+                    schemas = schemas.filter((s) => {
+                        if (searchOptions.includes('uuid')) {
+                            if (s.iri && s.iri.toLowerCase().includes(search)) {
+                                return true;
+                            }
+                        }
+                        if (searchOptions.includes('name')) {
+                            if (s.name && s.name.toLowerCase().includes(search)) {
+                                return true;
+                            }
+                        }
+                        if (searchOptions.includes('description')) {
+                            if (s.description && s.description.toLowerCase().includes(search)) {
+                                return true;
+                            }
+                        }
+                        if (searchOptions.includes('references')) {
+                            if (s.document?.$defs) {
+                                const text = JSON.stringify(s.document.$defs).toLowerCase();
+                                if (text.includes(search)) {
+                                    return true;
+                                }
+                            }
+                        }
+                        if (searchOptions.includes('fields')) {
+                            if (s.document) {
+                                delete s.document.$defs;
+                                const text = JSON.stringify(s.document).toLowerCase();
+                                if (text.includes(search)) {
+                                    return true;
+                                }
+                            }
+                        }
+                        return false;
+                    })
+                    const ids = schemas.map((s) => s._id);
                     filter._id = { $in: ids };
                 }
 

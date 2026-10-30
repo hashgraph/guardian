@@ -135,16 +135,32 @@ export class SchemaConfigComponent implements OnInit {
     public textSearch: any;
     // null after a failed load, so the same search can be retried
     private appliedSearchKey: string | null = '';
+    // References and Fields read every schema document, so they are opt-in
     public textSearchOptionsValue: string[] = [
-        'uuid', 'name', 'description', 'references', 'fields'
+        'uuid', 'name', 'description'
     ];
-    public textSearchOptions: { label: string; value: string }[] = [
-        { label: 'UUID', value: 'uuid' },
-        { label: 'Name', value: 'name' },
-        { label: 'Description', value: 'description' },
-        { label: 'References', value: 'references' },
-        { label: 'Fields', value: 'fields' },
+    public textSearchOptions = [
+        {
+            label: 'Schema details',
+            items: [
+                { label: 'UUID', value: 'uuid' },
+                { label: 'Name', value: 'name' },
+                { label: 'Description', value: 'description' }
+            ]
+        },
+        {
+            label: 'Inside documents – slower',
+            items: [
+                { label: 'References', value: 'references' },
+                { label: 'Fields', value: 'fields' }
+            ]
+        }
     ];
+    private static readonly SLOW_SEARCH_OPTIONS = ['references', 'fields'];
+    public get isSlowSearch(): boolean {
+        return this.textSearchOptionsValue.some((o) => SchemaConfigComponent.SLOW_SEARCH_OPTIONS.includes(o));
+    }
+
     public templateSchemasOnly: boolean = false;
     public unusedInPolicyOnly: boolean = false;
 
