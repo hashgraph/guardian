@@ -367,6 +367,7 @@ request-draft-file-actions[inert] {
 
 :host ::ng-deep .preview-missing-dropdown.p-select {
     margin-right: 16px;
+    width: 320px;
     max-width: 320px;
 
     .guardian-dropdown-selected .guardian-dropdown-label {
@@ -382,4 +383,20 @@ request-draft-file-actions[inert] {
     flex: 0 1 auto;
     align-self: center;
     min-width: 0;
+}
+
+.preview-missing-option {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+::ng-deep .preview-missing-panel.p-select-overlay {
+    width: 320px;
+    max-width: 320px;
+
+    .p-select-option {
+        overflow: hidden;
+    }
 }

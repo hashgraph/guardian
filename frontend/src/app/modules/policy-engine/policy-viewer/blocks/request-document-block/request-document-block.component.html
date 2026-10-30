@@ -36,15 +36,18 @@
               optionValue="value"
               [placeholder]="'Missing fields: ' + previewMissingOptions.length"
               class="guardian-dropdown preview-missing-dropdown"
-              panelStyleClass="guardian-dropdown-panel"
+              panelStyleClass="guardian-dropdown-panel preview-missing-panel"
               [disabled]="isPreviewBusy"
               [appendTo]="'body'"
               >
               <ng-template pTemplate="selectedItem" let-item>
-                <div class="guardian-dropdown-selected" [title]="item?.label">
+                <div class="guardian-dropdown-selected" [truncateTooltip]="item?.label" tooltipPosition="bottom">
                   <span class="guardian-dropdown-label">Missing</span>
                   <span class="guardian-dropdown-item">{{ item?.label }}</span>
                 </div>
+              </ng-template>
+              <ng-template pTemplate="item" let-item>
+                <div class="preview-missing-option" [truncateTooltip]="item.label" tooltipPosition="bottom">{{ item.label }}</div>
               </ng-template>
             </p-select>
             }
