@@ -403,7 +403,9 @@ a {
 
 .policy-dropdown-container {
     display: flex;
+    flex: 1 1 auto;
     flex-wrap: wrap;
+    min-width: 0;
     gap: 12px 16px;
 }
 
@@ -449,6 +451,7 @@ a {
 
 .schema-actions-buttons-container {
     margin-left: auto;
+    flex-shrink: 0;
 }
 
 /* tooltip anchor around each toolbar p-button - must not change the layout */
@@ -660,7 +663,10 @@ a {
 .text-search {
     position: relative;
     display: grid;
-    grid-template-columns: 156px auto;
+    grid-template-columns: 156px minmax(0, 1fr);
+    width: 100%;
+    max-width: 765px;
+    min-width: 0;
 
     &::ng-deep {
         .guardian-multiselect {
@@ -677,6 +683,7 @@ a {
     }
 
     input {
+        min-width: 0;
         border-top-left-radius: 0px;
         border-bottom-left-radius: 0px;
         position: relative;
@@ -691,14 +698,15 @@ a {
         pointer-events: none;
         color: #6c757d;
     }
-}
 
-::ng-deep .schema-text-search-options {
-    .p-multiselect-list-container,
-    .p-multiselect-items-wrapper {
-        max-height: 300px !important;
+    .search-hint {
+        grid-column: 2;
+        margin-top: 4px;
+        font-size: 12px;
+        color: #6c757d;
     }
 }
+
 
 .guardian-user-not-data {
     position: absolute;
@@ -932,5 +940,42 @@ a {
                 }
             }
         }
+    }
+}
+
+// Policy grid columns; Name takes the remaining space but never less than its minimum,
+// below that the table scrolls horizontally.
+.policy-grid {
+    --col-select: 0px;
+    --col-name-min: 200px;
+    --col-topic: 112px;
+    --col-version: 85px;
+    --col-entity: 100px;
+    --col-template: 185px;
+    --col-tags: 185px;
+    --col-status: 100px;
+    --col-operations: 140px;
+    --col-actions: 145px;
+    --col-fixed-total: calc(
+        var(--col-topic) + var(--col-version) + var(--col-entity) + var(--col-template)
+        + var(--col-tags) + var(--col-status) + var(--col-operations) + var(--col-actions)
+    );
+
+    col.col-select { width: var(--col-select); }
+    col.col-topic { width: var(--col-topic); }
+    col.col-version { width: var(--col-version); }
+    col.col-entity { width: var(--col-entity); }
+    col.col-template { width: var(--col-template); }
+    col.col-tags { width: var(--col-tags); }
+    col.col-status { width: var(--col-status); }
+    col.col-operations { width: var(--col-operations); }
+    col.col-actions { width: var(--col-actions); }
+
+    ::ng-deep table {
+        min-width: calc(var(--col-select) + var(--col-name-min) + var(--col-fixed-total));
+    }
+
+    &.policy-grid-select {
+        --col-select: 54px;
     }
 }
