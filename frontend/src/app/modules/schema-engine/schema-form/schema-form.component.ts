@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { UntypedFormArray } from '@angular/forms';
 import {
     isGeoCustomType,
@@ -145,7 +145,8 @@ export class SchemaFormComponent implements OnInit {
     constructor(
         private ipfs: IPFSService,
         protected changeDetectorRef: ChangeDetectorRef,
-        private readonly dialog: DialogService
+        private readonly dialog: DialogService,
+        private readonly elementRef: ElementRef<HTMLElement>
     ) { }
 
     ngOnInit(): void {
@@ -943,7 +944,7 @@ export class SchemaFormComponent implements OnInit {
         }
     }
 
-    private getNextShownFields(fields: SchemaField[] | undefined | null): boolean[] {
+    private getNextShownFields(fields: SchemaField[] | undefined | null, scroll = true): boolean[] {
         if (!fields) {
             return this.isShown;
         }
@@ -978,7 +979,9 @@ export class SchemaFormComponent implements OnInit {
         }
         this.buttons.emit(this.buttonsConfig);
 
-        this.updateScroll();
+        if (scroll) {
+            this.updateScroll();
+        }
 
         return this.isShown;
     }
@@ -1071,7 +1074,7 @@ export class SchemaFormComponent implements OnInit {
         }, 100)
     }
 
-    public openField(link?: string): void {
+    public openField(link?: string, scroll = true): void {
         if (!link || !this.formModel?.controls) return;
 
         let found = false;
@@ -1111,8 +1114,56 @@ export class SchemaFormComponent implements OnInit {
             } catch (e) {
                 console.error(e);
             }
-            this.scrollToAccordionAttr(parts[parts.length - 1]);
+            if (scroll) {
+                this.scrollToAccordionAttr(parts[parts.length - 1]);
+            }
         }
+    }
+
+    public focusFirstInvalid(): void {
+        const controls = this.formModel?.controls;
+        if (!controls) {
+            return;
+        }
+        const findInvalid = (items: IFieldControl<any>[] | undefined | null): IFieldControl<any> | undefined => {
+            const field = items?.find((item) => this.ifInvalidField(item));
+            return field && (findInvalid((field as any).model?.controls) || field);
+        };
+        let invalid: IFieldControl<any> | undefined;
+        const topIndex = controls.findIndex((field) => invalid = findInvalid([field]));
+        if (!invalid) {
+            return;
+        }
+        if (!this.isShown[topIndex]) {
+            // Previous does not retrace the pages Next shows, so restart from the first page.
+            this.isShown = new Array(controls.length).fill(false);
+            this.currentIndex = 0;
+            this.updatePages();
+            while (!this.isShown[topIndex] && !this.isShown[controls.length - 1]) {
+                const index = this.currentIndex;
+                this.getNextShownFields(controls, false);
+                if (this.currentIndex === index) {
+                    break;
+                }
+            }
+        }
+        if (invalid.id) {
+            this.openField(invalid.id, false);
+        }
+        this.changeDetectorRef.detectChanges();
+        setTimeout(() => this.scrollToFirstInvalidLabel());
+    }
+
+    private scrollToFirstInvalidLabel(): void {
+        const labels = Array.from(this.elementRef.nativeElement.querySelectorAll<HTMLElement>('.invalid-field-label'))
+            .filter((label) => label.offsetParent);
+        const label = labels.find((item) => !item.classList.contains('invalid-sub-schema')) || labels[0];
+        if (!label) {
+            return;
+        }
+        const container = label.closest<HTMLElement>('.form-field-container') || label;
+        container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        container.querySelector<HTMLElement>('input, textarea, [role="combobox"]')?.focus({ preventScroll: true });
     }
 
     private findAndOpen(controls: IFieldControl<any>[] | undefined | null, target: string): boolean {

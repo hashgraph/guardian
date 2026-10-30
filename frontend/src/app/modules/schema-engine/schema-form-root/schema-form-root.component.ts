@@ -26,6 +26,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     public navFields: IFieldControl<any>[] = [];
     public formulaModel: FormFormulas | null = null;
     private formulaSub?: Subscription;
+    private controlsSub?: Subscription;
 
     private startX: number = 0;
     private startWidthPercent: number = 25;
@@ -257,6 +258,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         if (this.previewBuildFrame !== null) cancelAnimationFrame(this.previewBuildFrame);
         if (this.previewFocusTimer !== null) clearTimeout(this.previewFocusTimer);
         this.formulaSub?.unsubscribe();
+        this.controlsSub?.unsubscribe();
         if (this.model) {
             this.model.destroy();
         }
@@ -276,6 +278,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     }
 
     private buildFields() {
+        this.controlsSub?.unsubscribe();
         if (this.model) {
             this.model.destroy();
             this.model = null;
@@ -295,6 +298,10 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         this.model.build();
         this.updatePreviewMissingFieldIds();
         this.navFields = [...(this.model.controls || [])];
+        this.controlsSub = this.model.controlsChanged$.subscribe(() => {
+            this.navFields = [...(this.model?.controls || [])];
+            this.changeDetectorRef.detectChanges();
+        });
         this.group.updateValueAndValidity();
         this.buildFormulaModel();
         this.form.emit(this.group);
@@ -484,6 +491,10 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         if (this.childForm && typeof this.childForm.openField === 'function') {
             this.childForm.openField(link);
         }
+    }
+
+    public focusFirstInvalid(): void {
+        this.childForm?.focusFirstInvalid();
     }
 
     public onNavHasItemsEvent(hasItems: boolean): void {

@@ -20,6 +20,8 @@ import { AttachedFile } from 'src/app/modules/common/policy-comments/attached-fi
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { FormulasService } from 'src/app/services/formulas.service';
 import { FormulasTree } from 'src/app/modules/formulas/models/formula-tree';
+import { SchemaFormRootComponent } from 'src/app/modules/schema-engine/schema-form-root/schema-form-root.component';
+import { ToastService } from 'src/app/services/toast.service';
 import { PolicyTestAutomationService } from '../../../policy-test-automation/policy-test-automation.service';
 import { CalculationPreviewService, ICalculationPreviewResult } from 'src/app/services/calculation-preview.service';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
@@ -127,6 +129,7 @@ export class RequestDocumentBlockDialog {
 
     public isLargeSize: boolean = true;
     @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
+    @ViewChild('formRoot') formRoot?: SchemaFormRootComponent;
 
     constructor(
         public dialogRef: DynamicDialogRef,
@@ -144,6 +147,7 @@ export class RequestDocumentBlockDialog {
         private policyTest: PolicyTestAutomationService,
         private formulasService: FormulasService,
         private calculationPreview: CalculationPreviewService,
+        private toastService: ToastService,
     ) {
         this.parent = this.config.data;
         this.dataForm = this.fb.group({});
@@ -400,26 +404,34 @@ export class RequestDocumentBlockDialog {
             });
     }
 
+    private reportInvalid() {
+        this.setStep(0);
+        this.toastService.error('Please fix the highlighted fields before continuing');
+        this.formRoot?.focusFirstInvalid();
+    }
+
     public async onStep(draft?: boolean) {
         if (this.disabled || this.loading) {
             return;
         }
-        if (this.dataForm.valid || draft) {
-            if (this.previewMode && !draft) {
-                await this.runPreview(false);
-                return;
-            }
-            if (this.enableAdditionalData && this.isStep(0)) {
-                this.setStep(1);
-            } else if (this.enableAdditionalData && this.isStep(1) && this.relayerAccount) {
-                this.setStep(2);
-                this.loadRelayerAccounts();
-            } else if (!this.enableAdditionalData && this.relayerAccount && this.isStep(0)) {
-                this.setStep(1);
-                this.loadRelayerAccounts();
-            } else {
-                await this.onSubmit(draft);
-            }
+        if (!this.dataForm.valid && !draft) {
+            this.reportInvalid();
+            return;
+        }
+        if (this.previewMode && !draft) {
+            await this.runPreview(false);
+            return;
+        }
+        if (this.enableAdditionalData && this.isStep(0)) {
+            this.setStep(1);
+        } else if (this.enableAdditionalData && this.isStep(1) && this.relayerAccount) {
+            this.setStep(2);
+            this.loadRelayerAccounts();
+        } else if (!this.enableAdditionalData && this.relayerAccount && this.isStep(0)) {
+            this.setStep(1);
+            this.loadRelayerAccounts();
+        } else {
+            await this.onSubmit(draft);
         }
     }
 
@@ -551,9 +563,7 @@ export class RequestDocumentBlockDialog {
     }
 
     public handleSubmitBtnEvent($event: any, data: RequestDocumentBlockDialog) {
-        if (data.dataForm.valid || !this.loading) {
-            data.onStep();
-        }
+        data.onStep();
     }
 
     public handleSaveBtnEvent($event: any, data: RequestDocumentBlockDialog) {
@@ -616,7 +626,7 @@ export class RequestDocumentBlockDialog {
     public ifDisabledBtn(config: any) {
         if (this.isPreviewBusy && config.id !== 'cancel') return true;
         if (config.id === 'submit') {
-            return !this.dataForm.valid || this.loading || this.ifRelayerAccountDisabled() || this.isRemoteWarning;
+            return this.loading || this.ifRelayerAccountDisabled() || this.isRemoteWarning;
         } else {
             return false;
         }

@@ -84,6 +84,7 @@
         <form (ngSubmit)="onStep()" [formGroup]="dataForm" [attr.visibility]="isStep(0)">
           <div class="form-dialog" [attr.dry-run]="!!dryRun" [attr.restore]="!!restoreData">
             <app-schema-form-root
+              #formRoot
               tabindex="0"
               [schema]="schema"
               [preset]="presetDocument"
