@@ -45,9 +45,6 @@ logs/
 # Contracts
 /contractAddresses.json
 
-# SSL certificates
-certs/
-
 # Claude Code
 .claude/
 .claude/settings.local.json

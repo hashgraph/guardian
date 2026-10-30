@@ -80,8 +80,9 @@ context('Modules', { tags: ['modules', 'thirdPool', 'all', 'all-no-mgs'] }, () =
                 });
                 expect(response.body.creator).eql(did);
                 expect(response.body.description).eql('');
-                // A repeated import gets a "_<timestamp>" suffix to keep module names unique
-                expect(response.body.name).to.match(/^ComparedModuleIPFS(_\d+)?$/);
+                // A repeated import gets a "_<timestamp>" suffix to keep module names unique;
+                // re-seeding the same stack accumulates one suffix per import, so allow several.
+                expect(response.body.name).to.match(/^ComparedModuleIPFS(_\d+)*$/);
                 expect(response.body.owner).eql(did);
                 expect(response.body.status).eql('DRAFT');
                 expect(response.body.type).eql('CUSTOM');

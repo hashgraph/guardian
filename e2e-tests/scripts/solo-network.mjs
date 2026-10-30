@@ -23,7 +23,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { AccountCreateTransaction, AccountId, Client, Hbar, PrivateKey } from '@hiero-ledger/sdk';
 
-export const SOLO_VERSION = '0.94.0';
+export const SOLO_VERSION = '0.95.0';
 export const KIND_CLUSTER_NAME = 'solo-cluster';
 const SOLO_DEPLOYMENT_NAME = 'one-shot';
 const MIN_NODE_MAJOR = 22;
@@ -39,7 +39,7 @@ const CONSENSUS_NODE_ACCOUNT = '0.0.3';
 // Same funding as the operator the CI action creates; HBAR is free on a local network.
 const OPERATOR_HBAR = 50_000_000;
 
-const NETWORK_READY_TIMEOUT_MS = 10 * 60 * 1000;
+const NETWORK_READY_TIMEOUT_MS = 5 * 60 * 1000;
 const NETWORK_POLL_INTERVAL_MS = 2000;
 
 const here = path.dirname(fileURLToPath(import.meta.url));
