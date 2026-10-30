@@ -108,7 +108,8 @@
               optionValue="value"
               [showHeader]="false"
               [filter]="false"
-              panelStyleClass="guardian-multiselect-panel schema-text-search-options"
+              panelStyleClass="guardian-multiselect-panel"
+              scrollHeight="auto"
               (onPanelHide)="onSearchChange()">
             </p-multiSelect>
             <input
@@ -187,7 +188,7 @@
                   @if (canDisplayColumn('select')) {
                     <col class="col-select" />
                   }
-                  <col class="col-name" />
+                  <col />
                   <col class="col-topic" />
                   <col class="col-version" />
                   <col class="col-entity" />

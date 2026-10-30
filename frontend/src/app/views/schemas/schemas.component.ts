@@ -156,9 +156,9 @@ export class SchemaConfigComponent implements OnInit {
             ]
         }
     ];
-    private static readonly SLOW_SEARCH_OPTIONS = ['references', 'fields'];
     public get isSlowSearch(): boolean {
-        return this.textSearchOptionsValue.some((o) => SchemaConfigComponent.SLOW_SEARCH_OPTIONS.includes(o));
+        const slow = this.textSearchOptions[1].items;
+        return slow.some((o) => this.textSearchOptionsValue.includes(o.value));
     }
 
     public templateSchemasOnly: boolean = false;
