@@ -163,6 +163,46 @@ describe('SchemaFormComponent Preview table validation', () => {
         expect(Reflect.get(view, 'previewFrames').size).toBe(0);
     }));
 
+    for (const preview of [false, true]) {
+        it(`renders a row added to a top-level list with Preview ${preview}`, fakeAsync(() => {
+            const { fixture } = render();
+            tick(48);
+            const model = new FieldForm(new UntypedFormGroup({}));
+            model.setData({
+                schema: new Schema({ iri: '#sections', document: {
+                    $id: '#sections', type: SchemaDataTypes.object,
+                    properties: { section: { type: SchemaDataTypes.array, items: { $ref: '#section' } } },
+                    $defs: {
+                        '#section': { $id: '#section', type: SchemaDataTypes.object,
+                            properties: { details: { $ref: '#details' } } },
+                        '#details': { $id: '#details', type: SchemaDataTypes.object,
+                            properties: { rate: { type: SchemaDataTypes.number, title: 'Rate', description: 'Rate' } } },
+                    },
+                } }),
+                preset: { section: [{ details: { rate: 3 } }] },
+                requiredFields: preview ? [] : null,
+            });
+            model.build();
+            fixture.componentRef.setInput('previewValidation', preview);
+            fixture.componentRef.setInput('form-model', model);
+            fixture.detectChanges();
+            tick(64);
+            fixture.detectChanges();
+            const view = fixture.componentInstance;
+            const rows = view.formModel.controls![0];
+            expect(rows.open).toBeTrue();
+            const changes = spyOn(view.previewLoadingChange, 'emit');
+            view.addItem(rows);
+            fixture.detectChanges(false);
+            const added = rows.list![1];
+            expect(added.open).toBeTrue();
+            tick(64);
+            fixture.detectChanges(false);
+            expect(view.isPreviewSectionReady(added)).toBeTrue();
+            expect(changes.calls.allArgs()).toEqual(preview ? [[true], [false]] : []);
+        }));
+    }
+
     it('prepares a Preview input section opened from navigation', fakeAsync(() => {
         const fixture = renderSection(true);
         const view = fixture.componentInstance;

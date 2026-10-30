@@ -421,6 +421,7 @@ export class SchemaFormComponent implements OnInit {
 
     public addItem(item: IFieldControl<UntypedFormArray>) {
         this.formModel?.addItem(item);
+        if (this.previewValidation) this.prepareOpenPreviewSections();
         setTimeout(() => {
             this.formModel?.updateValueAndValidity();
             this.change.emit();
