@@ -632,6 +632,12 @@
                           <div class="btn-icon-small" (click)="onCopyMessage(policy)">
                             <i class="pi pi-copy"></i>
                           </div>
+                          <div class="btn-icon-small" pTooltip="Copy invite link" (click)="onCopyInvite(policy)">
+                            <i class="pi pi-link"></i>
+                          </div>
+                          <div class="btn-icon-small" pTooltip="Show invite QR code" (click)="onShowInviteQr(policy)">
+                            <i class="pi pi-qrcode"></i>
+                          </div>
                         </span>
                       }
                       @if (policy.availability !== 'public') {

@@ -421,6 +421,10 @@ export class RoleService extends NatsService {
                         return new MessageError('Invalid update user parameters');
                     }
                     const { username, userRoles, owner } = msg;
+                    // an empty username would match remote users, which have none
+                    if (!UserUtils.isUsername(username)) {
+                        return new MessageError('User does not exist');
+                    }
 
                     const target = await UserUtils.getUser({ username, parent: owner.creator }, UserProp.RAW);
                     if (!target) {
@@ -533,6 +537,9 @@ export class RoleService extends NatsService {
                         return new MessageError('Invalid update user parameters');
                     }
                     const { username, userRoles, owner } = msg;
+                    if (!UserUtils.isUsername(username)) {
+                        return new MessageError('User does not exist');
+                    }
 
                     const user = await UserUtils.getUser({ did: owner.creator }, UserProp.RAW);
                     const target = await UserUtils.getUser({ username }, UserProp.RAW);
@@ -599,6 +606,9 @@ export class RoleService extends NatsService {
         this.getMessages(AuthEvents.GET_USER_PERMISSIONS, async (msg: any) => {
             const { username, userId } = msg;
             try {
+                if (!UserUtils.isUsername(username)) {
+                    return new MessageResponse(null);
+                }
                 const user = await UserUtils.getUser({ username }, UserProp.REQUIRED)
                 return new MessageResponse(user);
             } catch (error) {

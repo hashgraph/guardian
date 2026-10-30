@@ -1408,7 +1408,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
                 status: { $push: '$status' },
                 type: { $first: '$type', },
                 username: { $push: '$username' },
-                types: { $push: { username: '$username', type: '$type' } }
+                types: { $push: { username: '$username', type: '$type', status: '$status', joinStatus: '$joinStatus', joinError: '$joinError' } }
             }
         });
         pipeline.push({
