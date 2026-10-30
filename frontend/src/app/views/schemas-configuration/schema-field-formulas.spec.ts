@@ -1,4 +1,4 @@
-import { of } from 'rxjs';
+import { NEVER, of } from 'rxjs';
 import { EntityStatus, FormulaItemType, IFormula } from '@guardian/interfaces';
 import { IFieldScope, SchemaFieldFormulas } from './schema-field-formulas';
 
@@ -48,6 +48,34 @@ describe('SchemaFieldFormulas', () => {
         expect(view.state).toBe('ready');
         expect(view.rows.map((r: any) => r.itemUuid)).toEqual(['v1']);
         expect(model.view(scope([]), true, false).rows).toEqual([]);
+    });
+
+    it('builds the preview tree from the loaded formulas, including pending assignments', () => {
+        const { model } = create();
+        const tree = model.previewTree([]);
+        expect(tree.getFields('#root')['#root/risks.G6']).toBeDefined();
+        expect(tree.getFields('#root')['#root/G7']).toBeUndefined();
+
+        model.assign(scope([], 'G7'), 'd1|f1');
+        expect(model.previewTree([]).getFields('#root')['#root/G7']).toBeDefined();
+    });
+
+    it('keeps the saved link in the preview tree while the formulas reload', (done) => {
+        const { model } = create();
+        model.formulasService.getFormulas = () => NEVER;
+        model.assign(scope([], 'G7'), 'd1|f1');
+
+        model.save().subscribe(() => {
+            expect(model.hasPending).toBeFalse();
+            expect(model.previewTree([]).getFields('#root')['#root/G7']).toBeDefined();
+            done();
+        });
+    });
+
+    it('has no preview tree before the formulas are loaded', () => {
+        const { model } = create();
+        model.formulas.clear();
+        expect(model.previewTree([])).toBeNull();
     });
 
     it('shows only a hint for a sub-schema opened directly', () => {
@@ -135,5 +163,234 @@ describe('SchemaFieldFormulas', () => {
         expect(model.hasPending).toBeFalse();
         model.newDocument = 'd1';
         expect(model.canCreate).toBeTrue();
+    });
+    describe('renames and deletes', () => {
+        function savedScope(name: string = 'G6', status: string = 'DRAFT'): IFieldScope {
+            const field: any = { name };
+            const schema: any = { id: 's1', iri: '#root', status, fields: [] };
+            return { schema, field, prefix: ['risks'], fields: [field] };
+        }
+
+        it('queues no unbind when the field only has a pending bind', () => {
+            const { model } = create();
+            const s = savedScope('G7');
+            model.assign(s, 'd1|f1');
+            model.release(s);
+            expect(model.hasPending).toBeFalse();
+        });
+
+        it('unbinds the saved link when the field is deleted', (done) => {
+            const { model, updates } = create();
+            model.release(savedScope());
+            model.save().subscribe(() => {
+                expect(updates[0].config.formulas[0].link).toBeNull();
+                done();
+            });
+        });
+
+        it('queues nothing for a published schema', () => {
+            const { model } = create();
+            model.release(savedScope('G6', 'PUBLISHED'));
+            model.rename(savedScope('G6', 'PUBLISHED'));
+            expect(model.hasPending).toBeFalse();
+        });
+
+        it('moves the saved link to the new key', (done) => {
+            const { model, updates } = create();
+            const s = savedScope();
+            model.rename(s);
+            s.field.name = 'G9';
+            model.save().subscribe(() => {
+                expect(updates[0].config.formulas[0].link).toEqual({ type: 'schema', entityId: '#root', item: 'risks.G9' });
+                done();
+            });
+        });
+
+        it('unbinds the saved key when a renamed field is deleted', (done) => {
+            const { model, updates } = create();
+            const s = savedScope();
+            model.rename(s);
+            s.field.name = 'G9';
+            model.release(s);
+            model.save().subscribe(() => {
+                expect(updates[0].config.formulas[0].link).toBeNull();
+                done();
+            });
+        });
+
+        it('has no pending change after the key is typed back to the saved one', () => {
+            const { model } = create();
+            const s = savedScope();
+            model.rename(s);
+            s.field.name = 'G9';
+            expect(model.hasPending).toBeTrue();
+            s.field.name = 'G6';
+            expect(model.hasPending).toBeFalse();
+        });
+
+        it('writes nothing when the key is typed back to the saved one', (done) => {
+            const { model, updates } = create();
+            const s = savedScope();
+            model.rename(s);
+            s.field.name = 'G9';
+            s.field.name = 'G6';
+            model.save().subscribe((ok: boolean) => {
+                expect(ok).toBeTrue();
+                expect(updates.length).toBe(0);
+                done();
+            });
+        });
+
+        it('queues nothing when the schema has no saved links', () => {
+            const { model } = create();
+            model.rename(savedScope('G7'));
+            expect(model.hasPending).toBeFalse();
+        });
+
+        it('keeps the unbind on the saved key when the key is renamed afterwards', (done) => {
+            const { model, updates } = create();
+            const s = savedScope();
+            const row = model.view(s, true, false).rows[0];
+            model.unbind(s, row);
+            model.rename(s);
+            s.field.name = 'G9';
+            model.save().subscribe(() => {
+                expect(updates[0].config.formulas[0].link).toBeNull();
+                done();
+            });
+        });
+
+        it('unbinds the saved key when the key was renamed before the unbind', (done) => {
+            const { model, updates } = create();
+            const s = savedScope();
+            model.rename(s);
+            s.field.name = 'G9';
+            const row = model.view(s, true, false).rows[0];
+            model.unbind(s, row);
+            model.save().subscribe(() => {
+                expect(updates[0].config.formulas[0].link).toBeNull();
+                done();
+            });
+        });
+        it('keeps the link on the old key when the new key is already used by another field', (done) => {
+            const { model, updates } = create();
+            const s = savedScope();
+            s.fields.push({ name: 'G9' } as any);
+            model.rename(s);
+            s.field.name = 'G9';
+            model.save().subscribe(() => {
+                expect(updates[0].config.formulas[0].link).toEqual({ type: 'schema', entityId: '#root', item: 'risks.G6' });
+                done();
+            });
+        });
+
+        describe('a renamed field and its renamed parent', () => {
+            function nestedDoc(): IFormula {
+                const doc = createDoc();
+                (doc.config as any).formulas[0].link = { type: 'schema', entityId: '#root', item: 'X.a' };
+                return doc;
+            }
+
+            function scopes() {
+                const parent: any = { name: 'X' };
+                const child: any = { name: 'a' };
+                const schema: any = { id: 's1', iri: '#root', status: 'DRAFT', fields: [parent] };
+                return {
+                    parent,
+                    child,
+                    parentScope: (): IFieldScope => ({ schema, field: parent, prefix: [], fields: [parent] }),
+                    childScope: (): IFieldScope => ({ schema, field: child, prefix: [parent.name], ancestors: [parent], fields: [child] })
+                };
+            }
+
+            const link = (item: string) => ({ type: 'schema', entityId: '#root', item });
+
+            it('follows the child rename and then the parent rename', (done) => {
+                const { model, updates } = create(nestedDoc());
+                const f = scopes();
+                model.rename(f.childScope());
+                f.child.name = 'b';
+                model.rename(f.parentScope());
+                f.parent.name = 'Y';
+                model.save().subscribe(() => {
+                    expect(updates[0].config.formulas[0].link).toEqual(link('Y.b'));
+                    done();
+                });
+            });
+
+            it('follows the parent rename and then the child rename', (done) => {
+                const { model, updates } = create(nestedDoc());
+                const f = scopes();
+                model.rename(f.parentScope());
+                f.parent.name = 'Y';
+                model.rename(f.childScope());
+                f.child.name = 'b';
+                model.save().subscribe(() => {
+                    expect(updates[0].config.formulas[0].link).toEqual(link('Y.b'));
+                    done();
+                });
+            });
+
+            it('unbinds the link of a child deleted after the parent rename', (done) => {
+                const { model, updates } = create(nestedDoc());
+                const f = scopes();
+                model.rename(f.parentScope());
+                f.parent.name = 'Y';
+                model.release(f.childScope());
+                model.save().subscribe(() => {
+                    expect(updates[0].config.formulas[0].link).toBeNull();
+                    done();
+                });
+            });
+
+            it('follows a second child rename after the parent rename', (done) => {
+                const { model, updates } = create(nestedDoc());
+                const f = scopes();
+                model.rename(f.childScope());
+                f.child.name = 'b';
+                model.rename(f.parentScope());
+                f.parent.name = 'Y';
+                model.rename(f.childScope());
+                f.child.name = 'c';
+                model.save().subscribe(() => {
+                    expect(updates[0].config.formulas[0].link).toEqual(link('Y.c'));
+                    done();
+                });
+            });
+        });
+
+        describe('fields inside a sub-schema field', () => {
+            function nestedDoc(): IFormula {
+                const doc = createDoc();
+                (doc.config as any).formulas[0].link = { type: 'schema', entityId: '#root', item: 'risks.G6.child' };
+                return doc;
+            }
+
+            it('moves the links inside the field to the new key', (done) => {
+                const { model, updates } = create(nestedDoc());
+                const s = savedScope();
+                model.rename(s);
+                s.field.name = 'G9';
+                model.save().subscribe(() => {
+                    expect(updates[0].config.formulas[0].link).toEqual({ type: 'schema', entityId: '#root', item: 'risks.G9.child' });
+                    done();
+                });
+            });
+
+            it('unbinds the links inside the field when it is deleted', (done) => {
+                const { model, updates } = create(nestedDoc());
+                model.release(savedScope());
+                model.save().subscribe(() => {
+                    expect(updates[0].config.formulas[0].link).toBeNull();
+                    done();
+                });
+            });
+
+            it('leaves the links of a field with a similar key alone', () => {
+                const { model } = create(nestedDoc());
+                model.release(savedScope('G'));
+                expect(model.hasPending).toBeFalse();
+            });
+        });
     });
 });

@@ -35,6 +35,7 @@ export interface DrillEntry {
     fieldLabel: string;
     /** key of the sub-schema field drilled into; the drill path is the formula link path prefix */
     fieldName: string;
+    field?: SchemaField;
     fields: SchemaField[];
     schemaIri: string;
 }
@@ -1198,6 +1199,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 this.schemaTemplate = appliedTemplate;
             }
             this.normalizeLegacyConditionFieldOrder(schema);
+            if (this.selectedField && !this.isDrilling) {
+                const name = this.selectedField.name;
+                this.selectedField = schema.fields?.find(f => f.name === name) ?? null;
+            }
             this.selectedSchema = schema;
             this.loadProperties(resolveIwaVersion(schema));
             this.resetArrayDependencyEditor();
@@ -2154,6 +2159,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     if (savedId) {
                         s.id = savedId;
                         (s as any)._id = savedId;
+                        if (saved?.iri) { s.iri = saved.iri; }
                         const dirtyKey = `new:${s.uuid}`;
                         this.newSchemaKeys.delete(dirtyKey);
                         this.dirtySchemaIds.delete(dirtyKey);
@@ -2247,6 +2253,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return this.isDrilling ? this.drillStack.map(e => e.fieldName) : [];
     }
 
+    private get fieldFormulaAncestors(): SchemaField[] | undefined {
+        return this.drillStack.every(e => e.field) ? this.drillStack.map(e => e.field!) : undefined;
+    }
+
     /**
      * The selected field as formulas see it: the open (root) schema and the path from it.
      * When drilling, the drilled-into field names prefix the path. Null when there is no
@@ -2262,7 +2272,23 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (!Array.isArray(fields) || !fields.includes(field)) {
             return null;
         }
-        return { schema, field, prefix: this.fieldFormulaPrefix, fields };
+        return { schema, field, prefix: this.fieldFormulaPrefix, ancestors: this.fieldFormulaAncestors, fields };
+    }
+
+    private formulaScopeOf(field: SchemaField): IFieldScope | null {
+        const schema = this.selectedSchema;
+        if (!this.fieldFormulas || !schema || this.isTemplateMode || schema.entity === SchemaEntity.NONE) {
+            return null;
+        }
+        const fields = this.isDrilling ? this.drillCurrentFields : schema.fields;
+        return { schema, field, prefix: this.fieldFormulaPrefix, ancestors: this.fieldFormulaAncestors, fields };
+    }
+
+    private releaseFieldFormulas(field: SchemaField): void {
+        const scope = this.formulaScopeOf(field);
+        if (scope) {
+            this.fieldFormulas.release(scope);
+        }
     }
 
     /** the selected field scope when its formulas can be changed, else null */
@@ -2429,6 +2455,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const idx = this.selectedSchema.fields.indexOf(field);
         if (idx !== -1) {
             this.removeGeoDependenciesByField(field, this.selectedSchema.fields);
+            this.releaseFieldFormulas(field);
             this.selectedSchema.fields.splice(idx, 1);
             if (this.selectedField === field) {
                 this.selectedField = null;
@@ -3065,6 +3092,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
         const oldName = this.selectedField.name;
         this.invalidateFieldSuggestion(oldName);
+        const scope = this.formulaScopeOf(this.selectedField);
+        if (scope) {
+            this.fieldFormulas.rename(scope);
+        }
         this.selectedField.name = name;
         for (const candidate of this.currentFieldScope) {
             if (candidate.dependency?.kind === 'geo' && candidate.dependency.on === oldName) {
@@ -3577,7 +3608,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.activeDrillTab = 'fields';
         this.drillStack = [
             ...this.drillStack,
-            { fieldLabel: field.title || field.name, fieldName: field.name, fields, schemaIri: field.type || '' }
+            { fieldLabel: field.title || field.name, fieldName: field.name, field, fields, schemaIri: field.type || '' }
         ];
         this.persistSuggestionsForContext(previousContext);
         this.restoreOrClearSuggestionsForContext();
@@ -3660,6 +3691,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const idx = this.drillCurrentFields.indexOf(field);
         if (idx !== -1) {
             this.removeGeoDependenciesByField(field, this.drillCurrentFields);
+            this.releaseFieldFormulas(field);
             this.drillCurrentFields.splice(idx, 1);
             if (this.selectedField === field) { this.selectedField = null; }
             this.markDirty();
@@ -4803,20 +4835,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.condThenRefVal = rekey(this.condThenRefVal);
         this.condElseRefVal = rekey(this.condElseRefVal);
         const cond = schema.conditions?.[index];
-        if (cond) {
-            const toRemove = new Set([
-                ...(cond.thenFields ?? []).map(f => f.name),
-                ...(cond.elseFields ?? []).map(f => f.name),
-            ]);
-            if (toRemove.size) {
-                // H2: splice in-place to preserve drillStack reference
-                for (let i = schema.fields.length - 1; i >= 0; i--) {
-                    if (toRemove.has(schema.fields[i].name)) { schema.fields.splice(i, 1); }
-                }
-                if (toRemove.has(this.selectedField?.name ?? '')) { this.selectedField = null; }
-            }
-        }
         schema.conditions = (schema.conditions ?? []).filter((_, i) => i !== index);
+        const owned = this.conditionOwnedFieldNames;
+        for (const f of [...(cond?.thenFields ?? []), ...(cond?.elseFields ?? [])]) {
+            if (!owned.has(f.name)) { f.conditionUserOrdered = false; }
+        }
         this.markDirty();
     }
 
@@ -4943,7 +4966,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     // server copies are the saved baseline; a locally edited
                     // selectedSchema still differs from its signature and stays dirty
                     items.forEach(schema => this.normalizeLegacyConditionFieldOrder(schema));
-                    items.forEach(schema => this.snapshotSchema(schema));
+                    items.forEach(schema => {
+                        const id = schema.id || (schema as any)._id;
+                        if (id && id === this.loadedSchemaId && this.savedSignatures.has(id)) {
+                            return;
+                        }
+                        this.snapshotSchema(schema);
+                    });
                     this.loadAppliedSchemaTemplate();
                     if (this.selectedSchema) { this.upsertInSidebar(this.selectedSchema); }
                     this.pruneDirtySchemaIds();
@@ -5198,19 +5227,12 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             || this.previewBuiltFor.path !== this.fieldFormulaPrefix.join('.');
     }
 
-    /** the saved formulas of the schema, so the preview shows them like the request form */
+    /** the formulas of the policy, so the preview shows them like the request form */
     private loadPreviewFormulas(): void {
-        const iri = this.selectedSchema?.iri;
         if (this.activeTab !== 'preview' || !this.fieldFormulas || this.isTemplateMode) {
             return;
         }
-        this.fieldFormulas.previewTree(iri)
-            .pipe(takeUntil(this.destroy$))
-            .subscribe((tree) => {
-                if (this.selectedSchema?.iri === iri) {
-                    this.previewFormulas = tree;
-                }
-            });
+        this.previewFormulas = this.fieldFormulas.previewTree(this.schemas);
     }
 
     private rebuildPreview(): void {
@@ -5221,6 +5243,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             ? { schema: this.selectedSchema.iri, prefix: this.fieldFormulaPrefix }
             : null;
         this.previewKey++;
+        if (schema) {
+            this.refreshFieldPaths(schema.fields, '', `${schema.iri}/`);
+        }
         if (!schema || this.previewPill === 'submitter') {
             this.previewPreset = null;
             this.previewReadonlyFields = null;
@@ -5228,6 +5253,16 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
         this.previewPreset = DocumentGenerator.generateDocument(schema);
         this.previewReadonlyFields = schema.fields;
+    }
+
+    private refreshFieldPaths(fields: SchemaField[] | undefined, path: string, fullPath: string): void {
+        for (const field of fields ?? []) {
+            field.path = path + field.name;
+            field.fullPath = fullPath + field.name;
+            if (Array.isArray(field.fields)) {
+                this.refreshFieldPaths(field.fields, `${field.path}.`, `${field.fullPath}.`);
+            }
+        }
     }
 
     public onExport(): void {
