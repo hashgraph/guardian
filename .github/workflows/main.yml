@@ -1,4 +1,4 @@
-name: Component Tests
+name: Component tests
 on:
   push:
     paths-ignore:
@@ -25,12 +25,12 @@ jobs:
       YARN_ENABLE_GLOBAL_CACHE: 'false'
       NODE_VERSION: "24.22.1"
     steps:
-      - name: Harden Runner
+      - name: Harden runner
         uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
         with:
           egress-policy: audit
 
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
@@ -213,8 +213,8 @@ jobs:
           OPERATOR_ID: ${{ secrets.CI_HEDERA_ACCOUNT }}
           OPERATOR_KEY: ${{ secrets.CI_HEDERA_PRIV_KEY }}
 
-      - name: Publish Unit Test Results
+      - name: Publish test results
         uses: step-security/publish-unit-test-result-action@8cf946dca1a299ebf36dff640273fda13717050a # v2.24.0
-        if: always()
+        if: (!cancelled())
         with:
           files: test_results/**/*.xml

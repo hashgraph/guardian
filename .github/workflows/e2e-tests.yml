@@ -457,9 +457,9 @@ jobs:
             e2e-tests/cypress/reports \
             "$GUARDIAN_LOG_DIR"
 
-      - name: Print test results
+      - name: Publish test results
         uses: step-security/publish-unit-test-result-action@8cf946dca1a299ebf36dff640273fda13717050a # v2.24.0
-        if: always()
+        if: (!cancelled())
         with:
           files: e2e-tests/cypress/test_results/**/*.xml
           check_name: Test results
