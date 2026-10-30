@@ -582,7 +582,7 @@ __metadata:
     ioredis: "npm:^5.4.0"
     jest: "npm:^30.3.0"
     jszip: "npm:^3.10.1"
-    nodemailer: "npm:^9.0.1"
+    nodemailer: "npm:^10.1.4"
     pdfmake: "npm:0.3.11"
     pg: "npm:^8.13.0"
     reflect-metadata: "npm:^0.2.2"
@@ -6142,10 +6142,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nodemailer@npm:^9.0.1":
-  version: 9.0.1
-  resolution: "nodemailer@npm:9.0.1"
-  checksum: 10c0/4213f01aa211127c1ce33243c5e45e7f831601a933d03fa864cd827b1bd5ea2782cb4b43722bee7028cbc193733d9802dad1120fe67181448eb0b7de52218a37
+"nodemailer@npm:^10.1.4":
+  version: 10.1.4
+  resolution: "nodemailer@npm:10.1.4"
+  checksum: 10c0/fa60d4757c876b88ded425530b0f9c041bf793f7369fa673d3eb6df24f47ea67128566bca10ed8b81ecca17ec682d7491bcc032d328e6ca878d11c91472ab3d2
   languageName: node
   linkType: hard
 
