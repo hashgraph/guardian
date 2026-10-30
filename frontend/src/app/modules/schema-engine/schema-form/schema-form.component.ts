@@ -685,6 +685,8 @@ export class SchemaFormComponent implements OnInit {
 
     private richTextImages = new Map<string, string | null>();
 
+    private richTextImageRequests = new Map<string, Promise<string | null>>();
+
     private richTextHoverItem: IFieldControl<any> | null = null;
 
     private getRichTextMarkdown(item: IFieldControl<any>): string {
@@ -710,13 +712,22 @@ export class SchemaFormComponent implements OnInit {
         if (!missing.length) {
             return false;
         }
-        await Promise.all(missing.map(async (reference) => {
-            const source = await Promise.resolve()
-                .then(() => this.resolveRichTextImage(reference))
-                .catch(() => null);
-            this.richTextImages.set(reference, source);
+        await Promise.all(missing.map((reference) => {
+            let request = this.richTextImageRequests.get(reference);
+            if (!request) {
+                request = Promise.resolve()
+                    .then(() => this.resolveRichTextImage(reference))
+                    .then((source) => {
+                        this.richTextImages.set(reference, source);
+                        return source;
+                    })
+                    .catch(() => null)
+                    .finally(() => this.richTextImageRequests.delete(reference));
+                this.richTextImageRequests.set(reference, request);
+            }
+            return request;
         }));
-        return true;
+        return missing.some((reference) => this.richTextImages.has(reference));
     }
 
     private richTextCellHtml = new WeakMap<IFieldControl<any>, Observable<string>>();

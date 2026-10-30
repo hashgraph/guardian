@@ -650,6 +650,7 @@ form::ng-deep {
     li > p { margin: 0; }
     li + li { margin-top: 0.1em; }
     a { color: var(--color-primary); text-decoration: underline; }
+    img { max-width: 100%; }
 }
 
 ::ng-deep .schema-form-rich-text-dialog {
@@ -664,6 +665,10 @@ form::ng-deep {
 
     .rte-editor {
         font-size: 15px;
+    }
+
+    .rte-editor img {
+        max-width: 100%;
     }
 
     .rich-text-dialog-done {

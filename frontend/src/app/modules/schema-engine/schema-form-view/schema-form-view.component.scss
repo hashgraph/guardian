@@ -696,4 +696,8 @@ form {
 ::ng-deep .schema-form-view-rich-text-dialog .rte-view-content {
     max-height: 70vh;
     overflow: auto;
+
+    img {
+        max-width: 100%;
+    }
 }

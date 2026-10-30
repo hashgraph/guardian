@@ -191,4 +191,45 @@ describe('SchemaFormComponent Rich Text table cell', () => {
         component.cancelRichTextDialog();
         expect(filled.control.value).toBe('Saved with Done');
     });
+
+    it('shows an eye labelled View on a cell that cannot be edited', () => {
+        const { fixture, component, filled, cards } = render();
+        filled.isUpdatable = false;
+        component.isEditMode = true;
+        fixture.componentRef.changeDetectorRef.markForCheck();
+        fixture.detectChanges();
+        const button = cards()[0].querySelector('.rich-text-table-edit') as HTMLElement;
+        expect(button.getAttribute('title')).toBe('View Outcome');
+        expect(button.querySelector('i')?.className).toContain('pi-eye');
+        expect(cards()[0].querySelector('.rich-text-table-clear')).toBeNull();
+        expect(getComputedStyle(cards()[0]).pointerEvents).not.toBe('none');
+        expect(getComputedStyle(button).pointerEvents).not.toBe('none');
+    });
+
+    it('fetches an image only once while the first request is still pending', async () => {
+        const ipfs = jasmine.createSpyObj('ipfs', ['getImageWithDryRunFallback']);
+        ipfs.getImageWithDryRunFallback.and.returnValue(new Promise(() => undefined));
+        const { fixture, component, filled } = render(ipfs, 'Photo ![site](ipfs://bafyimage)');
+        filled.control.setValue('Photo ![site](ipfs://bafyimage) more');
+        filled.control.setValue('Photo ![site](ipfs://bafyimage) more text');
+        component.onRichTextCellEnter(new MouseEvent('mouseenter'), filled, popoverSpy());
+        component.onRichTextCellEnter(new MouseEvent('mouseenter'), filled, popoverSpy());
+        await new Promise((resolve) => setTimeout(resolve));
+        fixture.detectChanges();
+        expect(ipfs.getImageWithDryRunFallback).toHaveBeenCalledTimes(1);
+    });
+
+    it('retries an image after a failed fetch', async () => {
+        const ipfs = jasmine.createSpyObj('ipfs', ['getImageWithDryRunFallback']);
+        ipfs.getImageWithDryRunFallback.and.returnValues(Promise.reject(new Error('offline')), Promise.resolve('blob:second-try'));
+        const { fixture, component, filled, cards } = render(ipfs, 'Photo ![site](ipfs://bafyimage)');
+        await new Promise((resolve) => setTimeout(resolve));
+        fixture.detectChanges();
+        expect(cards()[0].querySelector('.rich-text-table-preview img')?.getAttribute('src')).toBe('');
+        component.onRichTextCellEnter(new MouseEvent('mouseenter'), filled, popoverSpy());
+        await new Promise((resolve) => setTimeout(resolve));
+        fixture.detectChanges();
+        expect(ipfs.getImageWithDryRunFallback).toHaveBeenCalledTimes(2);
+        expect(component.suggestPopoverValue).toContain('src="blob:second-try"');
+    });
 });

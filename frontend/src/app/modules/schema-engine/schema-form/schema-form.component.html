@@ -393,7 +393,6 @@
                                     <div
                                       class="rich-text-table-card"
                                       [class.rich-text-table-card--no-clear]="!richTextCellHtml || !richTextCellEditable"
-                                      [attr.readonly-field]="!richTextCellEditable"
                                       (mouseenter)="onRichTextCellEnter($event, itemControl, suggestPopover)"
                                       (mouseleave)="onSuggestLeave(suggestPopover)"
                                       >
@@ -405,10 +404,10 @@
                                       <button
                                         type="button"
                                         class="rich-text-table-edit"
-                                        [title]="'Edit ' + itemControl.description"
-                                        [attr.aria-label]="'Edit ' + itemControl.description"
+                                        [title]="(richTextCellEditable ? 'Edit ' : 'View ') + itemControl.description"
+                                        [attr.aria-label]="(richTextCellEditable ? 'Edit ' : 'View ') + itemControl.description"
                                         (click)="openRichTextDialog(itemControl, suggestPopover)"
-                                        ><i class="pi pi-pencil"></i></button>
+                                        ><i [class]="richTextCellEditable ? 'pi pi-pencil' : 'pi pi-eye'"></i></button>
                                       @if (richTextCellHtml && richTextCellEditable) {
                                         <button
                                           type="button"
