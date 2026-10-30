@@ -7,7 +7,8 @@
 # Defining CA_CERTIFICATES is mandatory if you want to use this override.
 # Example:
 #
-# CA_CERTIFICATES=~/zscaler-combined-ca.pem docker compose -f docker-compose-quickstart.yml -f docker-compose.ca-certificates.yml up -d 
+# CA_CERTIFICATES=~/zscaler-combined-ca.pem docker compose -f docker-compose-quickstart.yml -f docker-compose.ca-certificates.yml up -d --pull always
+#
 services:
   ipfs-node:
     volumes:

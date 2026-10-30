@@ -346,7 +346,7 @@ The following list outlines various Docker Compose configurations for different 
 | Indexer Build | Indexer building services from source code | `docker compose -f docker-compose-indexer-build.yml up -d --build` |
 | Analytics Service | Analytics Service using pre-built images | `docker compose -f docker-compose-analytics.yml up -d --build --pull always` |
 | Analytics Service Build | Analytics Service building services from source code | `docker compose -f docker-compose-analytics-build.yml up -d --build` |
-| Override CA bundle | Helper file to override CA certificates (i.e., for machine running behind MITM proxies like ZScaler) | `CA_CERTIFICATES_BUNDLE=~/zscaler-combined-ca.pem docker compose -f docker-compose-quickstart.yml -f docker-compose-override-ca.yml up -d --pull always` |
+| Override CA certificates bundle | Helper file to override CA certificates bundle (i.e., for machine running behind MITM proxies like ZScaler) | `CA_CERTIFICATES=~/zscaler-combined-ca.pem docker compose -f docker-compose-quickstart.yml -f docker-compose.ca-certificates.yml up -d --pull always` |
 
 To proceed:
 
