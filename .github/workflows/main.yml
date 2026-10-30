@@ -9,7 +9,6 @@ on:
 
 permissions:
   contents: read
-  checks: write        # required by publish-unit-test-result-action
 
 concurrency:
   group: component-tests-${{ github.event_name }}-${{ github.ref }}
@@ -213,9 +212,10 @@ jobs:
           OPERATOR_ID: ${{ secrets.CI_HEDERA_ACCOUNT }}
           OPERATOR_KEY: ${{ secrets.CI_HEDERA_PRIV_KEY }}
 
-      # NOTE: Re-enable this when the workflow is merged to main
-      # - name: Publish test results
-      #   uses: step-security/publish-unit-test-result-action@8cf946dca1a299ebf36dff640273fda13717050a # v2.24.0
-      #   if: (!cancelled())
-      #   with:
-      #     files: test_results/**/*.xml
+      # Local replacement for the step-security publish-unit-test-result-action:
+      # the mocha runs already wrote JUnit XML into test_results/, so render the
+      # breakdown into the job summary instead of opening a check run.
+      # always(): the table is most useful right after a failed Test step.
+      - name: Report test results
+        if: always()
+        run: node .github/scripts/report-test-summary.mjs
