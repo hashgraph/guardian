@@ -632,7 +632,7 @@
                                                   optionValue="value"
                                                   appendTo="body"
                                                   [(ngModel)]="selectedSchema.entity"
-                                                  (ngModelChange)="markDirty()">
+                                                  (ngModelChange)="onSchemaEntityChange(selectedSchema)">
                                         </p-select>
                                     </div>
                                     <div class="sc-schema-props-field">
@@ -846,7 +846,7 @@
                                                       optionValue="value"
                                                       appendTo="body"
                                                       [(ngModel)]="ds.entity"
-                                                      (ngModelChange)="markDirty()">
+                                                      (ngModelChange)="onSchemaEntityChange(ds)">
                                             </p-select>
                                         </div>
                                         <div class="sc-schema-props-field">
@@ -1022,17 +1022,6 @@
                                 [(ngModel)]="selectedField.description"
                                 (ngModelChange)="markDirty(); invalidateSelectedFieldSuggestion()" />
                         </div>
-                        @if (selectedFieldIsString) {
-                            <div class="sc-rp-group">
-                                <label class="sc-rp-label">Pattern</label>
-                                <input
-                                    class="sc-rp-input"
-                                    type="text"
-                                    placeholder="e.g. [0-9]+"
-                                    [(ngModel)]="selectedField.pattern"
-                                    (ngModelChange)="markDirty()" />
-                            </div>
-                        }
                         <div class="sc-rp-group">
                             <div class="sc-rp-label">Type</div>
                             <div class="sc-type-grid">
@@ -1050,10 +1039,82 @@
                             </div>
                         </div>
 
-                        @if (selectedFieldHasGeoAncestors || selectedField.dependency) {
+                        @if (selectedFieldIsGeoJson) {
                             <div class="sc-rp-divider"></div>
+                            <div class="sc-rp-label">GeoJSON types</div>
+                            <div class="sc-check-list">
+                                @for (opt of geoJsonOptions; track opt) {
+                                    <div class="sc-check-item" (click)="toggleGeoJsonType(opt)">
+                                        <p-checkbox class="guardian-checkbox checkbox-24" [binary]="true"
+                                                    style="pointer-events:none"
+                                                    [ngModel]="isGeoJsonTypeSelected(opt)"></p-checkbox>
+                                        <div class="sc-check-desc">
+                                            <strong>{{ opt }}</strong>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        @if (selectedFieldShowsRequiredModes) {
+                            <div class="sc-rp-divider"></div>
+                            <div class="sc-rp-label">Required / Visibility</div>
+                            <div class="sc-radio-list">
+                                @for (opt of selectedFieldRequiredModes; track opt.value) {
+                                    <div class="sc-radio-item" (click)="setFieldRequiredMode(opt.value)">
+                                        <p-radioButton class="guardian-radio-button radio-button-24" name="sc-required-mode"
+                                                       style="pointer-events:none"
+                                                       [value]="opt.value"
+                                                       [ngModel]="getFieldRequiredMode(selectedField)"></p-radioButton>
+                                        <span>{{ opt.label }}</span>
+                                    </div>
+                                }
+                            </div>
+                            <div class="sc-rp-divider"></div>
+                        }
+
+                        @if (getFieldRequiredMode(selectedField) === 'autocalculate') {
                             <div class="sc-rp-group">
-                                <label class="sc-rp-label">Depends on</label>
+                                <label class="sc-rp-label">* Parameter: Expression</label>
+                                <div class="sc-expr-row">
+                                    <input
+                                        class="sc-rp-input sc-expr-preview"
+                                        type="text"
+                                        readonly
+                                        [value]="$any(selectedField).expression || ''"
+                                        placeholder="No expression set" />
+                                    <button class="sc-btn sc-btn-expr" (click)="openExpressionEditor()"
+                                        [class.sc-btn-expr--warn]="!$any(selectedField).expression">
+                                        <i class="pi pi-pencil"></i>
+                                        Edit
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                        @if (selectedFieldParameterUnused) {
+                            <div class="sc-rp-group">
+                                <label class="sc-rp-label">Parameter</label>
+                                <input
+                                    class="sc-rp-input"
+                                    type="text"
+                                    disabled
+                                    placeholder="Not used by this field type" />
+                            </div>
+                        }
+                        @if (selectedFieldIsString) {
+                            <div class="sc-rp-group">
+                                <label class="sc-rp-label">Parameter: Pattern</label>
+                                <input
+                                    class="sc-rp-input"
+                                    type="text"
+                                    placeholder="e.g. [0-9]+"
+                                    [(ngModel)]="selectedField.pattern"
+                                    (ngModelChange)="markDirty()" />
+                            </div>
+                        }
+                        @if (selectedFieldHasGeoAncestors || selectedField.dependency) {
+                            <div class="sc-rp-group">
+                                <label class="sc-rp-label">Parameter: Depends on</label>
                                 <p-select
                                     class="guardian-dropdown sc-rp-select"
                                     panelStyleClass="guardian-dropdown-panel"
@@ -1078,11 +1139,9 @@
                                 }
                             </div>
                         }
-
                         @if (selectedFieldIsEnum) {
-                            <div class="sc-rp-divider"></div>
                             <div class="sc-rp-group">
-                                <label class="sc-rp-label">Enum name</label>
+                                <label class="sc-rp-label">Parameter: Enum name</label>
                                 <input
                                     class="sc-rp-input"
                                     type="text"
@@ -1112,27 +1171,21 @@
                                 }
                             </div>
                         }
-
-                        @if (selectedFieldIsGeoJson) {
-                            <div class="sc-rp-divider"></div>
-                            <div class="sc-rp-label">GeoJSON types</div>
-                            <div class="sc-check-list">
-                                @for (opt of geoJsonOptions; track opt) {
-                                    <div class="sc-check-item" (click)="toggleGeoJsonType(opt)">
-                                        <p-checkbox class="guardian-checkbox checkbox-24" [binary]="true"
-                                                    style="pointer-events:none"
-                                                    [ngModel]="isGeoJsonTypeSelected(opt)"></p-checkbox>
-                                        <div class="sc-check-desc">
-                                            <strong>{{ opt }}</strong>
-                                        </div>
-                                    </div>
-                                }
+                        @if (selectedFieldIsUnit) {
+                            <div class="sc-rp-group">
+                                <label class="sc-rp-label">Parameter: Unit</label>
+                                <input
+                                    class="sc-rp-input"
+                                    type="text"
+                                    placeholder="e.g. tCO₂e, ha, m³"
+                                    [(ngModel)]="selectedField.unit"
+                                    (ngModelChange)="markDirty()" />
                             </div>
                         }
 
                         @if (selectedFieldIsHelpText) {
                             <div class="sc-rp-divider"></div>
-                            <div class="sc-rp-label">Text style</div>
+                            <div class="sc-rp-label">Parameter: Text style</div>
                             <div class="sc-check-list">
                                 <div class="sc-check-item" (click)="$any(selectedField).textBold = !$any(selectedField).textBold; markDirty()">
                                     <p-checkbox class="guardian-checkbox checkbox-24" [binary]="true"
@@ -1189,26 +1242,9 @@
                             </button>
                         }
 
-                        @if (selectedFieldIsUnit) {
-                            <div class="sc-rp-divider"></div>
-                            <div class="sc-rp-group">
-                                <label class="sc-rp-label">Unit</label>
-                                <input
-                                    class="sc-rp-input"
-                                    type="text"
-                                    placeholder="e.g. tCO₂e, ha, m³"
-                                    [(ngModel)]="selectedField.unit"
-                                    (ngModelChange)="markDirty()" />
-                            </div>
-                        }
-
                         @if (getFieldCurrentType(selectedField) === 'sub-schema') {
-                            <div class="sc-rp-divider"></div>
                             <div class="sc-rp-group">
-                                <label class="sc-rp-label">
-                                    <i class="pi pi-sitemap" style="font-size:11px;color:var(--color-primary, #4169E2);margin-right:4px"></i>
-                                    Sub-schema reference
-                                </label>
+                                <label class="sc-rp-label">Parameter: Sub-schema reference</label>
                                 <p-select
                                     class="guardian-dropdown sc-rp-select"
                                     panelStyleClass="guardian-dropdown-panel sc-ref-schema-panel"
@@ -1242,42 +1278,79 @@
                             </div>
                         }
 
-                        <div class="sc-rp-divider"></div>
-                        <div class="sc-rp-label">Required / Visibility</div>
-                        <div class="sc-radio-list">
-                            @for (opt of requiredModeOptions; track opt.value) {
-                                <div class="sc-radio-item" (click)="setFieldRequiredMode(opt.value)">
-                                    <p-radioButton class="guardian-radio-button radio-button-24" name="sc-required-mode"
-                                                   style="pointer-events:none"
-                                                   [value]="opt.value"
-                                                   [ngModel]="getFieldRequiredMode(selectedField)"></p-radioButton>
-                                    <span>{{ opt.label }}</span>
-                                </div>
-                            }
-                        </div>
-                        @if (getFieldRequiredMode(selectedField) === 'autocalculate') {
-                            <div class="sc-rp-group sc-rp-group--expr">
-                                <label class="sc-rp-label">
-                                    Expression
-                                    @if (!$any(selectedField).expression) {
-                                        <span class="sc-rp-hint sc-rp-hint--warn">required</span>
-                                    }
-                                </label>
-                                <div class="sc-expr-row">
-                                    <input
-                                        class="sc-rp-input sc-rp-input--mono sc-expr-preview"
-                                        type="text"
-                                        readonly
-                                        [value]="$any(selectedField).expression || ''"
-                                        placeholder="No expression set" />
-                                    <button class="sc-btn sc-btn-expr" (click)="openExpressionEditor()"
-                                        [class.sc-btn-expr--warn]="!$any(selectedField).expression">
-                                        <i class="pi pi-pencil"></i>
-                                        Edit
-                                    </button>
+                        @if (selectedFieldIsTable) {
+                            <div class="sc-rp-divider"></div>
+                            <div class="sc-rp-label">Parameter: Table columns</div>
+                            <div class="sc-check-list">
+                                <div class="sc-check-item" (click)="toggleTableColumns()">
+                                    <p-checkbox class="guardian-checkbox checkbox-24" [binary]="true"
+                                                style="pointer-events:none"
+                                                [ngModel]="selectedFieldTableColumnsEnabled"></p-checkbox>
+                                    <div class="sc-check-desc">
+                                        <strong>Define columns</strong>
+                                        <span>Declare the table structure in the schema</span>
+                                    </div>
                                 </div>
                             </div>
+                            @if (selectedFieldTableColumnsEnabled) {
+                                <div class="sc-rp-group sc-table-columns">
+                                    @for (column of selectedFieldTableColumns; track column) {
+                                        <div
+                                            class="sc-table-column"
+                                            [class.sc-table-column--dragging]="isTableColumnDragActive
+                                                && tableColumnDragIndex === $index"
+                                            [class.sc-table-column--drag-target]="isTableColumnDragActive
+                                                && tableColumnDragOverIndex === $index">
+                                            <span
+                                                class="sc-drag-handle sc-table-column-handle"
+                                                [class.sc-table-column-handle--off]="!selectedFieldTableColumnsDraggable"
+                                                [title]="selectedFieldTableColumnsDraggable
+                                                    ? 'Drag to reorder'
+                                                    : 'Add a second column to reorder'"
+                                                (mousedown)="onTableColumnMouseDown($event, $index)">
+                                                <i class="pi pi-bars"></i>
+                                            </span>
+                                            <input
+                                                class="sc-rp-input sc-table-column-name"
+                                                type="text"
+                                                placeholder="Column name"
+                                                [ngModel]="column.name"
+                                                (ngModelChange)="setTableColumnValue($index, 'name', $event)" />
+                                            <button
+                                                class="sc-icon-btn sc-icon-btn--danger sc-table-column-remove"
+                                                title="Remove column"
+                                                [disabled]="selectedFieldTableColumns.length <= 1"
+                                                (click)="removeTableColumn($index)">
+                                                <i class="pi pi-trash"></i>
+                                            </button>
+                                            <div class="sc-table-column-key-wrap">
+                                                <input
+                                                    class="sc-rp-input sc-table-column-key"
+                                                    type="text"
+                                                    placeholder="key"
+                                                    [disabled]="!isTableColumnKeyUnlocked(column)"
+                                                    [ngModel]="column.key"
+                                                    (ngModelChange)="setTableColumnValue($index, 'key', $event)" />
+                                                <button
+                                                    class="sc-table-column-key-lock"
+                                                    [class.active]="isTableColumnKeyUnlocked(column)"
+                                                    [title]="isTableColumnKeyUnlocked(column)
+                                                        ? 'Back to a key built from the name'
+                                                        : 'Write the key by hand'"
+                                                    (click)="toggleTableColumnKeyLock($index)">
+                                                    <i class="pi pi-pencil"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    }
+                                    <button class="sc-btn sc-btn--sm sc-table-column-add" (click)="addTableColumn()">
+                                        <i class="pi pi-plus"></i>
+                                        Add column
+                                    </button>
+                                </div>
+                            }
                         }
+
 
                         @let formulasView = selectedFieldFormulasView;
                         @if (formulasView && formulasView.state !== 'hidden') {
@@ -1417,7 +1490,7 @@
                             }
                         }
 
-                        @if (selectedFieldCanBeArray || selectedFieldCanBeUpdatable) {
+                        @if (selectedFieldCanBeArray || selectedFieldCanBeUpdatable || selectedFieldCanBePrivate) {
                             <div class="sc-rp-divider"></div>
                             <div class="sc-rp-label">Other</div>
                             <div class="sc-check-list">
@@ -1443,81 +1516,20 @@
                                         </div>
                                     </div>
                                 }
+                                @if (selectedFieldCanBePrivate) {
+                                    <div class="sc-check-item" (click)="toggleBehaviour('isPrivate')">
+                                        <p-checkbox class="guardian-checkbox checkbox-24" [binary]="true"
+                                                    style="pointer-events:none"
+                                                    [ngModel]="selectedField.isPrivate"></p-checkbox>
+                                        <div class="sc-check-desc">
+                                            <strong>Private field</strong>
+                                            <span>Value is stored encrypted</span>
+                                        </div>
+                                    </div>
+                                }
                             </div>
                         }
 
-                        @if (selectedFieldIsTable) {
-                            <div class="sc-rp-divider"></div>
-                            <div class="sc-rp-label">Table columns</div>
-                            <div class="sc-check-list">
-                                <div class="sc-check-item" (click)="toggleTableColumns()">
-                                    <p-checkbox class="guardian-checkbox checkbox-24" [binary]="true"
-                                                style="pointer-events:none"
-                                                [ngModel]="selectedFieldTableColumnsEnabled"></p-checkbox>
-                                    <div class="sc-check-desc">
-                                        <strong>Define columns</strong>
-                                        <span>Declare the table structure in the schema</span>
-                                    </div>
-                                </div>
-                            </div>
-                            @if (selectedFieldTableColumnsEnabled) {
-                                <div class="sc-rp-group sc-table-columns">
-                                    @for (column of selectedFieldTableColumns; track column) {
-                                        <div
-                                            class="sc-table-column"
-                                            [class.sc-table-column--dragging]="isTableColumnDragActive
-                                                && tableColumnDragIndex === $index"
-                                            [class.sc-table-column--drag-target]="isTableColumnDragActive
-                                                && tableColumnDragOverIndex === $index">
-                                            <span
-                                                class="sc-drag-handle sc-table-column-handle"
-                                                [class.sc-table-column-handle--off]="!selectedFieldTableColumnsDraggable"
-                                                [title]="selectedFieldTableColumnsDraggable
-                                                    ? 'Drag to reorder'
-                                                    : 'Add a second column to reorder'"
-                                                (mousedown)="onTableColumnMouseDown($event, $index)">
-                                                <i class="pi pi-bars"></i>
-                                            </span>
-                                            <input
-                                                class="sc-rp-input sc-table-column-name"
-                                                type="text"
-                                                placeholder="Column name"
-                                                [ngModel]="column.name"
-                                                (ngModelChange)="setTableColumnValue($index, 'name', $event)" />
-                                            <button
-                                                class="sc-icon-btn sc-icon-btn--danger sc-table-column-remove"
-                                                title="Remove column"
-                                                [disabled]="selectedFieldTableColumns.length <= 1"
-                                                (click)="removeTableColumn($index)">
-                                                <i class="pi pi-trash"></i>
-                                            </button>
-                                            <div class="sc-table-column-key-wrap">
-                                                <input
-                                                    class="sc-rp-input sc-table-column-key"
-                                                    type="text"
-                                                    placeholder="key"
-                                                    [disabled]="!isTableColumnKeyUnlocked(column)"
-                                                    [ngModel]="column.key"
-                                                    (ngModelChange)="setTableColumnValue($index, 'key', $event)" />
-                                                <button
-                                                    class="sc-table-column-key-lock"
-                                                    [class.active]="isTableColumnKeyUnlocked(column)"
-                                                    [title]="isTableColumnKeyUnlocked(column)
-                                                        ? 'Back to a key built from the name'
-                                                        : 'Write the key by hand'"
-                                                    (click)="toggleTableColumnKeyLock($index)">
-                                                    <i class="pi pi-pencil"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    }
-                                    <button class="sc-btn sc-btn--sm sc-table-column-add" (click)="addTableColumn()">
-                                        <i class="pi pi-plus"></i>
-                                        Add column
-                                    </button>
-                                </div>
-                            }
-                        }
 
                         @if (selectedFieldShowValues) {
                             <div class="sc-rp-divider"></div>
@@ -1815,6 +1827,9 @@
                                     }
                                     @if (field.isUpdatable) {
                                         <span class="sc-badge sc-badge--upd">Updatable</span>
+                                    }
+                                    @if (field.isPrivate) {
+                                        <span class="sc-badge sc-badge--priv">Private</span>
                                     }
                                     @if (isFieldConditional(field)) {
                                         <span class="sc-badge sc-badge--cond">

@@ -1,5 +1,5 @@
 import { Range, Workbook, Worksheet } from './models/workbook.js';
-import { Dictionary, FieldTypes, IFieldTypes } from './models/dictionary.js';
+import { Dictionary, FieldTypes, IFieldTypes, resolveFieldHeader } from './models/dictionary.js';
 import { xlsxToBoolean, xlsxToEntity, xlsxToFont, xlsxToPresetArray, xlsxToPresetValue, xlsxToUnit, xlsxToVisibility } from './models/value-converters.js';
 import { Table } from './models/table.js';
 import * as mathjs from 'mathjs';
@@ -165,12 +165,13 @@ export class XlsxToJson {
         const startRow = range.s.r;
         const endCol = Math.min(range.e.c, startCol + 10);
         const endRow = Math.min(range.e.r, startRow + 10);
-        for (let c = startCol; c < endCol; c++) {
-            for (let r = startRow; r < endRow; r++) {
-                const title = worksheet.getValue<string>(c, r);
-                if (title === Dictionary.FIELD_TYPE) {
-                    return true;
-                }
+        for (let r = startRow; r < endRow; r++) {
+            const headers = new Set<Dictionary | null>();
+            for (let c = startCol; c < endCol; c++) {
+                headers.add(resolveFieldHeader(worksheet.getValue<string>(c, r)));
+            }
+            if (headers.has(Dictionary.FIELD_TYPE) && headers.has(Dictionary.REQUIRED_FIELD)) {
+                return true;
             }
         }
         return false;
@@ -467,7 +468,9 @@ export class XlsxToJson {
                     worksheet,
                     table,
                     row,
-                    xlsxResult
+                    xlsxResult,
+                    schema.entity,
+                    groupIndex > 0
                 );
                 if (field) {
                     allFields.set(field.title, field);
@@ -625,11 +628,76 @@ export class XlsxToJson {
         }
     }
 
+    private static readonly NON_UPDATABLE_TYPES = new Set(['Help Text', 'Prefix', 'Postfix', 'Sub-Schema']);
+
+    /**
+     * Applies the schema editor rules to field flags:
+     * auto calculated fields are single valued, Updatable is not available for display-only
+     * and sub-schema types, Private only for top-level fields of an Encrypted VC schema.
+     */
+    private static readFieldFlags(
+        worksheet: Worksheet,
+        table: Table,
+        field: SchemaField,
+        fieldType: IFieldTypes | null,
+        row: number,
+        xlsxResult: XlsxResult,
+        entity: SchemaEntity | undefined,
+        nested: boolean
+    ): void {
+        const ignored = (header: Dictionary, reason: string) => {
+            xlsxResult.addError({
+                type: 'warning',
+                text: `"${header}" is not available here and is ignored.`,
+                message: `Sheet "${worksheet.name}", row ${row}: "${header}" is ignored because ${reason}.`,
+                worksheet: worksheet.name,
+                cell: worksheet.getPath(table.getCol(header), row),
+                row,
+                col: table.getCol(header)
+            }, field);
+        };
+
+        const autocalculated = field.autocalculate || fieldType?.name === 'Auto-Calculate';
+        if (autocalculated && field.isArray) {
+            field.isArray = false;
+            ignored(Dictionary.ALLOW_MULTIPLE_ANSWERS, 'an auto calculated field holds a single value');
+        }
+
+        if (table.hasCol(Dictionary.UPDATABLE)) {
+            const updatable = xlsxToBoolean(worksheet.getValue<string>(table.getCol(Dictionary.UPDATABLE), row));
+            const unsupported = fieldType
+                ? XlsxToJson.NON_UPDATABLE_TYPES.has(fieldType.name)
+                : !!field.isRef;
+            if (updatable && unsupported) {
+                ignored(Dictionary.UPDATABLE, 'the field type cannot be updated');
+            } else {
+                field.isUpdatable = updatable;
+            }
+        }
+
+        if (table.hasCol(Dictionary.PRIVATE)) {
+            const isPrivate = xlsxToBoolean(worksheet.getValue<string>(table.getCol(Dictionary.PRIVATE), row));
+            if (entity !== SchemaEntity.EVC) {
+                if (isPrivate) {
+                    ignored(Dictionary.PRIVATE, 'the schema type is not "Encrypted Verifiable Credential"');
+                }
+            } else if (nested) {
+                if (isPrivate) {
+                    ignored(Dictionary.PRIVATE, 'it is only available for top-level fields');
+                }
+            } else {
+                field.isPrivate = isPrivate;
+            }
+        }
+    }
+
     private static readField(
         worksheet: Worksheet,
         table: Table,
         row: number,
-        xlsxResult: XlsxResult
+        xlsxResult: XlsxResult,
+        entity?: SchemaEntity,
+        nested: boolean = false
     ): SchemaField {
         if (worksheet.empty(table.start.c, table.end.c, row)) {
             return null;
@@ -718,6 +786,8 @@ export class XlsxToJson {
                     col: table.getCol(Dictionary.FIELD_TYPE),
                 }, field);
             }
+
+            XlsxToJson.readFieldFlags(worksheet, table, field, fieldType, row, xlsxResult, entity, nested);
 
             if (!typeError && !XlsxToJson.isAutoCalculate(type, field)) {
                 let parseType = (val: any) => val;
