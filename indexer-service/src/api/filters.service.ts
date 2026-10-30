@@ -25,4 +25,5 @@ export class FiltersService {
             return new MessageError(error);
         }
     }
+
 }
