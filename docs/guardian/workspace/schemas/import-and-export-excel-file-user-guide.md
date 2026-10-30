@@ -131,7 +131,7 @@ All schemas created for importing into Guardian must follow the design of the te
 ![](<../../../.gitbook/assets/8 (15).png>)
 
 {% hint style="info" %}
-**Auto Calculate is not available** for fields: Enum, Table, Help Text, Prefix, Postfix, Sub-Schema, a String with a Pattern, Continent, Country and State/Province. It also cannot be combined with **Allow Multiple Answers**.
+**Auto Calculate is not available** for fields: Enum, Table, Help Text, Prefix, Postfix, Sub-Schema, Image, File, HederaAccount, a String with a Pattern, Continent, Country and State/Province. It also cannot be combined with **Allow Multiple Answers**.
 {% endhint %}
 
 ### 2. Export

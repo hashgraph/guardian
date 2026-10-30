@@ -720,11 +720,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     private static readonly NON_UPDATABLE_TYPES = new Set(['helptext', 'prefix', 'postfix', 'sub-schema']);
     private static readonly NON_ARRAY_TYPES = new Set(['boolean', 'helptext']);
-    // Auto Calculate is unavailable for types whose XLSX Parameter cell already holds another value
-    // (enum name, table columns, text style, unit, sub-schema name, geo parent) and for geographic types.
-    // A String with a pattern is blocked too, see autocalcBlockReason.
     private static readonly NON_AUTOCALC_TYPES = new Set([
-        'enum', 'table', 'helptext', 'prefix', 'postfix', 'sub-schema', 'continent', 'country', 'state'
+        'enum', 'table', 'helptext', 'prefix', 'postfix', 'sub-schema', 'continent', 'country', 'state',
+        'image', 'file', 'hederaAccount'
     ]);
 
     public readonly geoJsonOptions = ['Point', 'Polygon', 'LineString', 'MultiPoint', 'MultiPolygon', 'MultiLineString'];

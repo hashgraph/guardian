@@ -2345,7 +2345,7 @@ describe('SchemasConfigurationComponent', () => {
         }
 
         it('hides the option for every type that uses Parameter, and for geographic types', () => {
-            for (const key of ['enum', 'table', 'helptext', 'prefix', 'postfix', 'sub-schema', 'continent', 'country', 'state']) {
+            for (const key of ['enum', 'table', 'helptext', 'prefix', 'postfix', 'sub-schema', 'continent', 'country', 'state', 'image', 'file', 'hederaAccount']) {
                 const values = component(key).selectedFieldRequiredModes.map((o: any) => o.value);
                 expect(values).not.toContain('autocalculate');
             }
@@ -2354,6 +2354,16 @@ describe('SchemasConfigurationComponent', () => {
         it('keeps the option for number', () => {
             const values = component('number').selectedFieldRequiredModes.map((o: any) => o.value);
             expect(values).toContain('autocalculate');
+        });
+
+        it('reports the type error, not the pattern error, for image, file and Hedera account', () => {
+            for (const key of ['image', 'file', 'hederaAccount']) {
+                const field = makeField({ autocalculate: true });
+                field.expression = 'a';
+                const errors = component(key).getFieldErrors(field, [field]);
+                expect(errors).toContain('Auto Calculate is not available for this type');
+                expect(errors).not.toContain('Auto Calculate cannot be used with a pattern');
+            }
         });
 
         it('reports an error for an already auto calculated geographic field', () => {
