@@ -241,7 +241,7 @@ export class TimerBlock {
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const id = this.getUserId(event);
-        if (id) {
+        if (id && !event.actionStatus?.preview) {
             this.state[id] = true;
             ref.log(`start scheduler for: ${id}`);
         }

@@ -537,3 +537,19 @@ form::ng-deep {
     li + li { margin-top: 0.1em; }
     a { color: var(--color-primary); text-decoration: underline; }
 }
+
+.preview-missing-field {
+    outline: 2px solid #f44336;
+    outline-offset: 2px;
+    border-radius: 4px;
+
+    .form-field-input textarea {
+        border-color: #f44336;
+    }
+}
+
+.table-validation-error {
+    outline: 2px solid #f44336;
+    outline-offset: 2px;
+    border-radius: 4px;
+}

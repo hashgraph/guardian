@@ -1,3 +1,9 @@
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { CommonModule } from '@angular/common';
+import { By } from '@angular/platform-browser';
+import { DialogService } from 'primeng/dynamicdialog';
+import { TableModule } from 'primeng/table';
 import { SchemaFormViewComponent } from './schema-form-view.component';
 import { IPFSService } from 'src/app/services/ipfs.service';
 
@@ -196,6 +202,217 @@ describe('SchemaFormViewComponent', () => {
 
             expect(event.defaultPrevented).toBeFalse();
             expect(openSpy).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('sections in a calculation preview', () => {
+        const render = (preview: boolean, array = false) => {
+            const fields = [{
+                name: 'section', fullPath: 'section', description: 'Section', type: '#Section',
+                isRef: true, isArray: array,
+                fields: [{ name: 'details', fullPath: 'section.details', description: 'Details', type: '#Details', isRef: true, isArray: false,
+                    fields: [{ name: 'amount', fullPath: 'section.details.amount', description: 'Amount', type: 'number', isRef: false, isArray: false }] }],
+            }];
+            TestBed.configureTestingModule({
+                declarations: [SchemaFormViewComponent],
+                imports: [CommonModule],
+                providers: [
+                    { provide: IPFSService, useValue: ipfs },
+                    { provide: DialogService, useValue: dialogService },
+                ],
+                schemas: [NO_ERRORS_SCHEMA],
+            });
+            const fixture = TestBed.createComponent(SchemaFormViewComponent);
+            fixture.componentRef.setInput('private-fields', {});
+            fixture.componentRef.setInput('fields', fields);
+            fixture.componentRef.setInput('values', { section: array ? [{ details: { amount: 3 } }] : { details: { amount: 3 } } });
+            fixture.componentRef.setInput('preview', preview);
+            fixture.detectChanges();
+            return fixture;
+        };
+
+        for (const array of [false, true]) {
+            it(`reports loading before rendering a Preview section with array ${array}`, fakeAsync(() => {
+                const fixture = render(true, array);
+                const view = fixture.componentInstance;
+                const changes = spyOn(view.previewLoadingChange, 'emit');
+                fixture.debugElement.query(By.css('p-accordion')).triggerEventHandler('valueChange', 0);
+                fixture.detectChanges();
+                expect(changes).toHaveBeenCalledOnceWith(true);
+                expect(fixture.debugElement.queryAll(By.directive(SchemaFormViewComponent)).length).toBe(0);
+                tick(16);
+                expect(view.fields![0].previewReady).not.toBeTrue();
+                tick(16);
+                fixture.detectChanges();
+                const child = fixture.debugElement.query(By.directive(SchemaFormViewComponent));
+                expect(child).not.toBeNull();
+                expect(changes.calls.allArgs()).toEqual([[true]]);
+                child.componentInstance.previewLoadingChange.emit(true);
+                expect(changes.calls.allArgs()).toEqual([[true], [true]]);
+                child.componentInstance.previewLoadingChange.emit(false);
+                tick(16);
+                expect(changes.calls.allArgs()).toEqual([[true], [true], [false], [false]]);
+            }));
+        }
+
+        it('keeps ordinary section opening immediate without loading notifications or frames', fakeAsync(() => {
+            const fixture = render(false);
+            const view = fixture.componentInstance;
+            const changes = spyOn(view.previewLoadingChange, 'emit');
+            fixture.debugElement.query(By.css('p-accordion')).triggerEventHandler('valueChange', 0);
+            fixture.detectChanges();
+            expect(fixture.debugElement.query(By.directive(SchemaFormViewComponent))).not.toBeNull();
+            expect(view.fields![0].previewReady).toBeUndefined();
+            expect(changes).not.toHaveBeenCalled();
+            tick(64);
+            expect(changes).not.toHaveBeenCalled();
+        }));
+
+        it('prepares Preview sections opened from navigation', fakeAsync(() => {
+            const fixture = render(true);
+            const view = fixture.componentInstance;
+            const changes = spyOn(view.previewLoadingChange, 'emit');
+            view.openAccordion('section');
+            expect(changes).toHaveBeenCalledOnceWith(true);
+            tick(48);
+            expect(view.fields![0].previewReady).toBeTrue();
+            expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+        }));
+
+        for (const action of ['close', 'destroy', 'replace']) {
+            it(`balances Preview loading when interrupted by ${action}`, fakeAsync(() => {
+                const fixture = render(true);
+                const view = fixture.componentInstance;
+                const changes = spyOn(view.previewLoadingChange, 'emit');
+                view.openAccordion('section');
+                if (action === 'close') {
+                    fixture.debugElement.query(By.css('p-accordion')).triggerEventHandler('valueChange', null);
+                } else if (action === 'destroy') {
+                    fixture.destroy();
+                } else {
+                    fixture.componentRef.setInput('fields', []);
+                    fixture.detectChanges();
+                }
+                tick(64);
+                expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+            }));
+        }
+    });
+
+    describe('large sections in a calculation preview', () => {
+        const render = (preview: boolean) => {
+            const fields = Array.from({ length: 25 }, (_, index) => ({
+                name: `f${index}`, fullPath: `f${index}`, description: `F${index}`, type: 'number', isRef: false, isArray: false,
+            }));
+            const values = Object.fromEntries(fields.map((field, index) => [field.name, index + 1]));
+            TestBed.configureTestingModule({
+                declarations: [SchemaFormViewComponent],
+                imports: [CommonModule],
+                providers: [
+                    { provide: IPFSService, useValue: ipfs },
+                    { provide: DialogService, useValue: dialogService },
+                ],
+                schemas: [NO_ERRORS_SCHEMA],
+            });
+            const fixture = TestBed.createComponent(SchemaFormViewComponent);
+            const changes = spyOn(fixture.componentInstance.previewLoadingChange, 'emit');
+            fixture.componentRef.setInput('private-fields', {});
+            fixture.componentRef.setInput('fields', fields);
+            fixture.componentRef.setInput('values', values);
+            fixture.componentRef.setInput('preview', preview);
+            fixture.detectChanges();
+            const count = () => fixture.nativeElement.querySelectorAll('[field-id]').length;
+            return { fixture, changes, count };
+        };
+
+        it('renders Preview fields in parts across frames and reports loading until the last part', fakeAsync(() => {
+            const { fixture, changes, count } = render(true);
+            expect(count()).toBe(10);
+            expect(changes.calls.allArgs()).toEqual([[true]]);
+            tick(16);
+            expect(count()).toBe(20);
+            tick(16);
+            expect(count()).toBe(25);
+            expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+            tick(64);
+            expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+            fixture.destroy();
+        }));
+
+        it('renders every ordinary field at once without loading notifications or frames', fakeAsync(() => {
+            const { changes, count } = render(false);
+            expect(count()).toBe(25);
+            tick(64);
+            expect(changes).not.toHaveBeenCalled();
+        }));
+
+        it('balances Preview loading when destroyed before the last part', fakeAsync(() => {
+            const { fixture, changes } = render(true);
+            tick(16);
+            fixture.destroy();
+            tick(64);
+            expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+        }));
+    });
+
+    describe('tables in a calculation preview', () => {
+        const table = {
+            name: 'rows',
+            description: 'Rows',
+            type: '#Row',
+            isArray: true,
+            isRef: true,
+            fullPath: 'rows',
+            fields: [{ name: 'value', description: 'Value', type: 'string', isArray: false, isRef: false, fullPath: 'rows.value' }]
+        } as any;
+        const values = { rows: Array.from({ length: 30 }, (_, index) => ({ value: `row ${index}` })) };
+
+        const render = (preview: boolean) => {
+            TestBed.resetTestingModule();
+            TestBed.configureTestingModule({
+                declarations: [SchemaFormViewComponent],
+                imports: [TableModule],
+                providers: [
+                    { provide: IPFSService, useValue: ipfs },
+                    { provide: DialogService, useValue: dialogService },
+                ],
+                schemas: [NO_ERRORS_SCHEMA],
+            });
+            const fixture = TestBed.createComponent(SchemaFormViewComponent);
+            fixture.componentRef.setInput('private-fields', {});
+            fixture.componentRef.setInput('values', values);
+            fixture.componentRef.setInput('fields', [table]);
+            fixture.componentRef.setInput('preview', preview);
+            fixture.detectChanges();
+            return fixture;
+        };
+
+        it('builds the rows once and shows them 25 per page', () => {
+            const fixture = render(true);
+            const view = fixture.componentInstance;
+            const item = view.fields![0];
+            expect(view.getTableRows(item)).toBe(view.getTableRows(item));
+            expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(25);
+            expect(fixture.nativeElement.querySelector('.p-paginator')).not.toBeNull();
+        });
+
+        it('builds the rows again for another list', () => {
+            const fixture = render(true);
+            const view = fixture.componentInstance;
+            const item = view.fields![0];
+            const rows = view.getTableRows(item);
+            item.list = values.rows.slice(0, 2) as any;
+            expect(view.getTableRows(item)).not.toBe(rows);
+            expect(view.getTableRows(item).length).toBe(2);
+        });
+
+        it('keeps the ordinary view unchanged', () => {
+            const fixture = render(false);
+            const view = fixture.componentInstance;
+            const item = view.fields![0];
+            expect(view.getTableRows(item)).not.toBe(view.getTableRows(item));
+            expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(30);
+            expect(fixture.nativeElement.querySelector('.p-paginator')).toBeNull();
         });
     });
 });

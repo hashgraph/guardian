@@ -1,3 +1,4 @@
+import { PolicyCredential } from '../helpers/policy-credential.js';
 import { ActionCallback, TokenBlock } from '../helpers/decorators/index.js';
 import { BlockActionError } from '../errors/index.js';
 import { DocumentSignature, SchemaEntity, SchemaHelper, DocumentCategoryType, LocationType, OrgRolePermission } from '@guardian/interfaces';
@@ -22,6 +23,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
 import { MintService } from '../mint/mint-service.js';
 import { RecordActionStep } from '../record-action-step.js';
 import { checkOrgTokenPermission } from '../helpers/org-utils.js';
+import { PreviewScope, keepPreviewDocumentOrigins, registerPreviewMessage } from '../helpers/preview.js';
 
 /**
  * Mint block
@@ -89,7 +91,9 @@ export class MintBlock {
         if (options.useTemplate) {
             if (docs[0].tokens) {
                 const tokenId = docs[0].tokens[options.template];
-                token = await ref.databaseServer.getToken(tokenId, ref.dryRun);
+                token = PreviewScope.current()
+                    ? await ref.databaseServer.findOne(TokenCollection, { tokenId })
+                    : await ref.databaseServer.getToken(tokenId, ref.dryRun);
             }
         } else {
             token = await ref.databaseServer.getToken(options.tokenId);
@@ -118,7 +122,7 @@ export class MintBlock {
                 throw new BlockActionError('Invalid VC proof', ref.blockType, ref.uuid);
             }
             const json = VcDocument.fromJsonTree(doc.document);
-            vcs.push(json);
+            vcs.push(keepPreviewDocumentOrigins(doc, json));
             if (doc.messageId) {
                 messages.push(doc.messageId);
             }
@@ -212,7 +216,8 @@ export class MintBlock {
             amount: amount.toString()
         }
         const uuid = await ref.components.generateUUID(actionStatusId);
-        const mintVC = await vcHelper.createVerifiableCredential(
+        const mintVC = await PolicyCredential.createVC(
+            vcHelper,
             vcSubject,
             didDocument,
             null,
@@ -259,7 +264,8 @@ export class MintBlock {
                 vcSubject.relationships = additionalMessages.slice();
             }
             const uuid = await ref.components.generateUUID(actionStatusId);
-            const vc = await vcHelper.createVerifiableCredential(
+            const vc = await PolicyCredential.createVC(
+                vcHelper,
                 vcSubject,
                 policyOwnerDid,
                 null,
@@ -289,7 +295,8 @@ export class MintBlock {
         vcs: VcDocument[]
     ) {
         const vcHelper = new VcHelper();
-        const vp = await vcHelper.createVerifiablePresentation(
+        const vp = await PolicyCredential.createVP(
+            vcHelper,
             vcs,
             didDocument,
             null,
@@ -364,22 +371,26 @@ export class MintBlock {
         // #region Save Mint VC
         const topic = await PolicyUtils.getPolicyTopic(ref, topicId, userId);
         const vcMessage = new VCMessage(MessageAction.CreateVC);
-        vcMessage.setDocument(mintVC);
+        if (!actionStatus?.preview) {
+            vcMessage.setDocument(mintVC);
+        }
         vcMessage.setRelationships(messages);
         vcMessage.setTag(mintVC);
         vcMessage.setEntityType(mintVC);
         vcMessage.setOption(null, ref);
         vcMessage.setUser(null);
-        const vcMessageResult = await messageServer
-            .setTopicObject(topic)
-            .sendMessage(vcMessage, {
-                sendToIPFS: true,
-                memo: null,
-                userId,
-                interception: null,
-                dryRun: ref.dryRun,
-                mockId: ref.mockId
-            });
+        const vcMessageResult = actionStatus?.preview
+            ? registerPreviewMessage(actionStatus, vcMessage, topic?.topicId)
+            : await messageServer
+                .setTopicObject(topic)
+                .sendMessage(vcMessage, {
+                    sendToIPFS: true,
+                    memo: null,
+                    userId,
+                    interception: null,
+                    dryRun: ref.dryRun,
+                    mockId: ref.mockId
+                });
         const mintVcDocument = PolicyUtils.createVC(ref, user, mintVC, actionStatus?.id);
 
         PolicyUtils.setDocumentTags(mintVcDocument, tags);
@@ -400,23 +411,27 @@ export class MintBlock {
 
         // #region Save Mint VP
         const vpMessage = new VPMessage(MessageAction.CreateVP);
-        vpMessage.setDocument(vp);
+        if (!actionStatus?.preview) {
+            vpMessage.setDocument(vp);
+        }
         vpMessage.setRelationships(messages);
         vpMessage.setTag(vp);
         vpMessage.setEntityType(vp);
         vpMessage.setOption(null, vp);
         vpMessage.setUser(null);
 
-        const vpMessageResult = await messageServer
-            .setTopicObject(topic)
-            .sendMessage(vpMessage, {
-                sendToIPFS: true,
-                memo: null,
-                userId,
-                interception: null,
-                dryRun: ref.dryRun,
-                mockId: ref.mockId
-            });
+        const vpMessageResult = actionStatus?.preview
+            ? registerPreviewMessage(actionStatus, vpMessage, topic?.topicId)
+            : await messageServer
+                .setTopicObject(topic)
+                .sendMessage(vpMessage, {
+                    sendToIPFS: true,
+                    memo: null,
+                    userId,
+                    interception: null,
+                    dryRun: ref.dryRun,
+                    mockId: ref.mockId
+                });
         const vpMessageId = vpMessageResult.getId();
         const vpDocument = PolicyUtils.createVP(ref, user, vp, actionStatus?.id);
         PolicyUtils.setDocumentTags(vpDocument, tags);

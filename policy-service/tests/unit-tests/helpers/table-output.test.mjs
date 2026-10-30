@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { decodeGridFileText, parseCsvToTable } from '@guardian/common/helpers/table-csv';
 import {
     buildCompactTableJson,
+    buildPreviewTableJson,
     buildTableOutputCsv,
     gzipTableCsv,
     isTableOutputValue,
@@ -97,6 +98,15 @@ describe('@unit table output helpers', () => {
                 columnNames: ['Year', 'CO2 (tonnes)'],
                 columnKeys: ['year', 'co2_tonnes']
             });
+        });
+    });
+
+    describe('buildPreviewTableJson', () => {
+        it('matches the inline table the browser sends in a preview', () => {
+            assert.equal(
+                buildPreviewTableJson('preview-1', 'Year\r\n2020', columns),
+                '{"type":"table","fileId":"preview-1","csv":"Year\\r\\n2020","columnNames":["Year","CO2 (tonnes)"],"columnKeys":["year","co2_tonnes"]}'
+            );
         });
     });
 });

@@ -2,9 +2,36 @@
   <div class="header-container">
     <div class="header-text">{{dialogTitle}}</div>
   </div>
+  @if (previewMode && previewMissingOptions.length) {
+    @for (options of [previewMissingOptions]; track options) {
+    <p-select
+      [options]="options"
+      [(ngModel)]="previewMissingPath"
+      (onChange)="onPreviewMissingSelect($event.value)"
+      optionLabel="label"
+      optionValue="value"
+      [placeholder]="'Missing fields: ' + previewMissingOptions.length"
+      class="guardian-dropdown preview-missing-dropdown"
+      panelStyleClass="guardian-dropdown-panel preview-missing-panel"
+      [disabled]="isPreviewBusy"
+      [appendTo]="'body'"
+      >
+      <ng-template pTemplate="selectedItem" let-item>
+        <div class="guardian-dropdown-selected" [truncateTooltip]="item?.label" tooltipPosition="bottom">
+          <span class="guardian-dropdown-label">Missing</span>
+          <span class="guardian-dropdown-item">{{ item?.label }}</span>
+        </div>
+      </ng-template>
+      <ng-template pTemplate="item" let-item>
+        <div class="preview-missing-option" [truncateTooltip]="item.label" tooltipPosition="bottom">{{ item.label }}</div>
+      </ng-template>
+    </p-select>
+    }
+  }
   @if (restoreData) {
     <button
       class="guardian-button guardian-button-secondary header-action"
+      [disabled]="isPreviewBusy"
       (click)="onRestoreClick()"
       title="Restore the latest saved values">
       <svg-icon class="icon-btn svg-icon"
@@ -17,6 +44,7 @@
   @if (dryRun) {
     <button
       class="guardian-button guardian-button-secondary header-action"
+      [disabled]="isPreviewBusy"
       (click)="onDryRun()"
       title="Fill this document with test data">
       <svg-icon class="icon-btn svg-icon"
@@ -26,7 +54,18 @@
       <span>Fill with test data</span>
     </button>
   }
-  <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
+  @if (previewAvailable) {
+    <div class="calculation-preview-toggle">
+      <p-toggleswitch
+        inputId="calculationPreview_{{ id }}"
+        [ngModel]="previewMode"
+        [disabled]="loading || isPreviewBusy"
+        (onChange)="onPreviewModeChange($event.checked)">
+      </p-toggleswitch>
+      <label for="calculationPreview_{{ id }}">Calculation preview</label>
+    </div>
+  }
+  <div class="header-icon resize" [attr.aria-disabled]="isPreviewBusy ? true : null" (click)="!isPreviewBusy && toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
     <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
   </div>
   <div class="header-icon" (click)="onClose()">
@@ -34,12 +73,12 @@
   </div>
 </div>
 <div class="dialog-body">
-  @if (loading) {
-    <div class="guardian-loading">
+  @if (loading || isPreviewBusy) {
+    <div class="guardian-loading" [class.preview-loading-overlay]="previewMode">
       <div class="guardian-loading-image"></div>
     </div>
   }
-  <div class="dialog-body-container">
+  <div class="dialog-body-container" [attr.inert]="isPreviewBusy ? '' : null">
     @if (relayerAccount || enableAdditionalData) {
       <div class="relayer-account-steps">
         <div class="guardian-step-container">
@@ -83,6 +122,9 @@
               [rules]="rulesResults"
               [formulas]="formulas"
               [isFormForRequestBlock]="true"
+              [requiredFields]="previewRequiredFields"
+              [previewMissingFields]="previewMissingFields"
+              [previewActionsDisabled]="isPreviewBusy"
               [saveShown]="!edit || draft"
               [comesFromDialog]="true"
               [showButtons]="false"
@@ -90,6 +132,9 @@
               submitText = "Validate & Create"
               saveText = "Save Draft"
               (form)="initForm($event)"
+              (presetApplied)="onPresetApplied()"
+              (previewBusyChange)="onPreviewRenderingChange($event)"
+              (previewMissingOptionsChange)="onPreviewMissingOptionsChange($event)"
               (buttons)="onChangeButtons($event)"
               (cancelBtnEvent)="handleCancelBtnEvent($event, this)"
               (submitBtnEvent)="handleSubmitBtnEvent($event, this)"
@@ -260,8 +305,9 @@
       {{ minutesAgo$ | async }}
     </div>
   }
-  @if (!loading) {
+  @if (!loading || previewMode) {
     <request-draft-file-actions
+      [attr.inert]="isPreviewBusy ? '' : null"
       [schema]="schema"
       [policyId]="policyId"
       [blockId]="id"

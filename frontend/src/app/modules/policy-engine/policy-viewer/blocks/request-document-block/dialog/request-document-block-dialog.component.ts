@@ -23,6 +23,8 @@ import { FormulasTree } from 'src/app/modules/formulas/models/formula-tree';
 import { SchemaFormRootComponent } from 'src/app/modules/schema-engine/schema-form-root/schema-form-root.component';
 import { ToastService } from 'src/app/services/toast.service';
 import { PolicyTestAutomationService } from '../../../policy-test-automation/policy-test-automation.service';
+import { CalculationPreviewService, ICalculationPreviewResult } from 'src/app/services/calculation-preview.service';
+import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 
 @Component({
     selector: 'request-document-block-dialog',
@@ -68,6 +70,58 @@ export class RequestDocumentBlockDialog {
     public currentRelayerAccount: string;
     public relayerAccounts: any[] = [];
     public remoteWarning: boolean = false;
+    public previewMode: boolean = false;
+    public previewRendering: boolean = false;
+    private previewBusyHold: boolean = false;
+    private previewBusyTimer: ReturnType<typeof setTimeout> | null = null;
+
+    public get isPreviewBusy(): boolean {
+        return this.previewMode && (this.loading || this.previewRendering || this.previewBusyHold);
+    }
+
+    ngDoCheck(): void {
+        if (!this.previewMode || this.loading || this.previewRendering) {
+            if (this.previewBusyTimer !== null) {
+                clearTimeout(this.previewBusyTimer);
+                this.previewBusyTimer = null;
+            }
+            this.previewBusyHold = this.previewMode;
+            return;
+        }
+        if (this.previewBusyHold && this.previewBusyTimer === null) {
+            this.previewBusyTimer = setTimeout(() => {
+                this.previewBusyTimer = null;
+                this.previewBusyHold = false;
+                this.changeDetectorRef.markForCheck();
+            }, 300);
+        }
+    }
+
+    public previewMissingOptions: { label: string; value: string }[] = [];
+    public previewMissingPath: string | null = null;
+
+    public onPreviewMissingOptionsChange(options: { label: string; value: string }[]): void {
+        this.previewMissingOptions = this.previewMode ? options : [];
+        this.previewMissingPath = null;
+        this.changeDetectorRef.markForCheck();
+    }
+
+    public onPreviewMissingSelect(path: string): void {
+        this.formRoot?.focusPreviewField(path);
+    }
+
+    public onPreviewRenderingChange(rendering: boolean): void {
+        this.previewRendering = this.previewMode && rendering;
+        this.changeDetectorRef.markForCheck();
+    }
+    public previewRequiredFields: string[] | null = null;
+    private previewRequest: number = 0;
+    public previewMissingFields: string[] = [];
+    private previewPreferenceLoaded: boolean = false;
+
+    public get previewAvailable(): boolean {
+        return this.parent instanceof RequestDocumentBlockComponent;
+    }
 
     public enableAdditionalData: boolean = false;
     public evidenceText: string = '';
@@ -125,6 +179,7 @@ export class RequestDocumentBlockDialog {
         private ipfsService: IPFSService,
         private policyTest: PolicyTestAutomationService,
         private formulasService: FormulasService,
+        private calculationPreview: CalculationPreviewService,
         private toastService: ToastService,
     ) {
         this.parent = this.config.data;
@@ -140,7 +195,7 @@ export class RequestDocumentBlockDialog {
         this.loading = true;
         this.loadRules();
         this.loadFormulas();
-        this.initForm(this.dataForm);
+        this.initForm(this.dataForm, false);
         this.sub = interval(this.AUTOSAVE_INTERVAL).subscribe(async () => {
             const data = this.dataForm.getRawValue();
             const savedData = await this.storage.load(this.autosaveId);
@@ -155,12 +210,14 @@ export class RequestDocumentBlockDialog {
     }
 
     ngOnDestroy(): void {
+        if (this.previewBusyTimer !== null) clearTimeout(this.previewBusyTimer);
+        if (this.previewMode) this.previewRequest++;
         this.destroy$.next(true);
         this.destroy$.unsubscribe();
         this.sub?.unsubscribe();
     }
 
-    public initForm($event: any) {
+    public initForm($event: any, restorePreview: boolean = true) {
         this.dataForm = $event;
         this.dataForm.valueChanges
             .pipe(takeUntil(this.destroy$))
@@ -169,6 +226,15 @@ export class RequestDocumentBlockDialog {
                 this.validate();
                 this.dataSaved = false;
             });
+        if (restorePreview) {
+            this.restorePreviewMode();
+        }
+    }
+
+    public onPresetApplied(): void {
+        if (this.previewMode) {
+            void this.runPreview(true);
+        }
     }
 
     private loadRules() {
@@ -229,7 +295,7 @@ export class RequestDocumentBlockDialog {
     }
 
     public onClose(): void {
-        if (this.dataForm.dirty && !this.dataSaved) {
+        if ((this.dataForm.dirty && !this.dataSaved) || this.isPreviewBusy) {
             this.showUnsavedChangesDialog();
         } else {
             this.dialogRef.close(null);
@@ -386,6 +452,10 @@ export class RequestDocumentBlockDialog {
             this.reportInvalid();
             return;
         }
+        if (this.previewMode && !draft) {
+            await this.runPreview(false);
+            return;
+        }
         if (this.enableAdditionalData && this.isStep(0)) {
             this.setStep(1);
         } else if (this.enableAdditionalData && this.isStep(1) && this.relayerAccount) {
@@ -399,8 +469,96 @@ export class RequestDocumentBlockDialog {
         }
     }
 
+    private restorePreviewMode(): void {
+        if (this.previewPreferenceLoaded || this.disabled || !this.previewAvailable || !this.schema || !this.parent?.user?.id || !this.policyId || !this.id) {
+            return;
+        }
+        this.previewPreferenceLoaded = true;
+        if (this.calculationPreview.loadMode(this.parent?.user?.id, this.policyId, this.id)) {
+            void this.onPreviewModeChange(true);
+        }
+    }
+
+    public async onPreviewModeChange(enabled: boolean): Promise<void> {
+        this.previewPreferenceLoaded = true;
+        this.calculationPreview.saveMode(this.parent?.user?.id, this.policyId, this.id, enabled);
+        this.previewMode = enabled;
+        if (!enabled) this.previewRendering = false;
+        if (!enabled) {
+            this.previewRequest++;
+            this.loading = false;
+            this.previewRequiredFields = null;
+            this.previewMissingFields = [];
+            return;
+        }
+        this.setStep(0);
+        await this.runPreview(true);
+    }
+
+    private async runPreview(previewFields: boolean): Promise<void> {
+        const request = ++this.previewRequest;
+        const preset = this.presetDocument;
+        const current = () => request === this.previewRequest && preset === this.presetDocument;
+        this.loading = true;
+        try {
+            const result = await this.calculationPreview.run(
+                this.policyId,
+                this.id,
+                this.dataForm.getRawValue(),
+                this.docRef,
+                previewFields,
+                {
+                    relayerAccount: this.relayerAccountType === 'new' ? null : this.getRelayerAccount(),
+                    evidence: this.enableAdditionalData ? this.buildEvidence() : undefined
+                }
+            );
+            if (!this.previewMode || !current()) {
+                return;
+            }
+            this.previewRequiredFields = this.calculationPreview.updateRequiredFields(this.previewRequiredFields, result);
+            this.previewMissingFields = [];
+            if (previewFields) {
+                this.calculationPreview.showDiscoveryWarning(result);
+            } else {
+                this.showPreviewResult(result);
+            }
+        } catch (error) {
+            const validation = this.calculationPreview.getInputValidation(error);
+            if (this.previewMode && validation && current()) {
+                this.previewRequiredFields = this.calculationPreview.updateRequiredFields(this.previewRequiredFields, validation);
+                this.previewMissingFields = [...validation.missingFields];
+            }
+            console.error(error);
+        } finally {
+            if (current()) {
+                this.loading = false;
+            }
+        }
+    }
+
+    private showPreviewResult(result: ICalculationPreviewResult): void {
+        this.calculationPreview.showErrors(result);
+        const documents = this.calculationPreview.getViewerDocuments(result);
+        if (!documents.length) {
+            return;
+        }
+        this.dialogService.open(VCViewerDialog, {
+            showHeader: false,
+            width: '90%',
+            styleClass: 'guardian-dialog',
+            data: {
+                title: 'Calculation preview',
+                type: 'VC',
+                viewDocument: true,
+                dryRun: !!this.dryRun,
+                document: documents[0].document,
+                previewDocuments: documents
+            }
+        });
+    }
+
     public showUnsavedChangesDialog() {
-        if (!this.loading) {
+        if (!this.loading || this.previewMode) {
             const dialogOptionRef = this.dialogService.open(CustomConfirmDialogComponent, {
                 showHeader: false,
                 width: '640px',
@@ -455,6 +613,9 @@ export class RequestDocumentBlockDialog {
 
     public getButtonName(item: any) {
         if (item.id === 'submit') {
+            if (this.previewMode) {
+                return 'Preview';
+            }
             if (this.enableAdditionalData && this.isStep(0)) {
                 return 'Add Evidence Attachments';
             } else if (this.relayerAccount && (this.isStep(this.enableAdditionalData ? 1 : 0))) {
@@ -497,6 +658,7 @@ export class RequestDocumentBlockDialog {
     }
 
     public ifDisabledBtn(config: any) {
+        if (this.isPreviewBusy && config.id !== 'cancel') return true;
         if (config.id === 'submit') {
             return this.loading || this.ifRelayerAccountDisabled() || this.isRemoteWarning;
         } else {

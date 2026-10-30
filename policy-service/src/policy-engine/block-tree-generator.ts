@@ -22,6 +22,7 @@ import { RecordActionStep } from './record-action-step.js';
 import { MintService } from './mint/mint-service.js';
 import { PolicyVcDocumentsUtils } from './policy-vc-documents-utils.js';
 import { GridActionResolver } from './external/grid-action-resolver.js';
+import { runPreview } from './helpers/preview.js';
 
 /**
  * Block tree generator
@@ -138,6 +139,16 @@ export class BlockTreeGenerator extends NatsService {
             return error;
         }
         // Available -->
+
+        if (data?.preview === true) {
+            return await runPreview(
+                block,
+                userFull,
+                data,
+                (target, user, previewData, actionStatus) => PolicyComponentsUtils.blockSetData(target, user, previewData, actionStatus),
+                !!history
+            );
+        }
 
         const baseEvent = {
             blockType: block.blockType ?? '',

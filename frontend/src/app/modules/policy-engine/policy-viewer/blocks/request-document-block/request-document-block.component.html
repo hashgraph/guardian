@@ -16,7 +16,42 @@
         @if (title) {
           <h1 mat-dialog-title>{{ title }}</h1>
         }
-        <div class="draft-file-actions">
+        <div class="draft-file-actions" [attr.inert]="isPreviewBusy ? '' : null">
+          <div class="calculation-preview-toggle">
+            <p-toggleswitch
+              inputId="calculationPreview_{{ id }}"
+              [ngModel]="previewMode"
+              [disabled]="loading || isPreviewBusy"
+              (onChange)="onPreviewModeChange($event.checked)">
+            </p-toggleswitch>
+            <label for="calculationPreview_{{ id }}">Calculation preview</label>
+          </div>
+          @if (previewMode && previewMissingOptions.length) {
+            @for (options of [previewMissingOptions]; track options) {
+            <p-select
+              [options]="options"
+              [(ngModel)]="previewMissingPath"
+              (onChange)="onPreviewMissingSelect($event.value)"
+              optionLabel="label"
+              optionValue="value"
+              [placeholder]="'Missing fields: ' + previewMissingOptions.length"
+              class="guardian-dropdown preview-missing-dropdown"
+              panelStyleClass="guardian-dropdown-panel preview-missing-panel"
+              [disabled]="isPreviewBusy"
+              [appendTo]="'body'"
+              >
+              <ng-template pTemplate="selectedItem" let-item>
+                <div class="guardian-dropdown-selected" [truncateTooltip]="item?.label" tooltipPosition="bottom">
+                  <span class="guardian-dropdown-label">Missing</span>
+                  <span class="guardian-dropdown-item">{{ item?.label }}</span>
+                </div>
+              </ng-template>
+              <ng-template pTemplate="item" let-item>
+                <div class="preview-missing-option" [truncateTooltip]="item.label" tooltipPosition="bottom">{{ item.label }}</div>
+              </ng-template>
+            </p-select>
+            }
+          }
           <request-draft-file-actions
             [schema]="schema"
             [policyId]="policyId"
@@ -27,7 +62,7 @@
         </div>
         <div class="schema-form" [attr.dryRun]="dryRun" [attr.restoreData]="restoreData">
           @if (restoreData) {
-            <div class="restore-data">
+            <div class="restore-data" [attr.inert]="isPreviewBusy ? '' : null">
               <svg-icon class="svg-icon"
                 src="/assets/images/icons/info.svg"
                 svgClass="icon-color-primary">
@@ -48,7 +83,7 @@
             </div>
           }
           @if (dryRun) {
-            <div class="restore-data">
+            <div class="restore-data" [attr.inert]="isPreviewBusy ? '' : null">
               <svg-icon class="svg-icon"
                 src="/assets/images/icons/info.svg"
                 svgClass="icon-color-primary">
@@ -69,7 +104,7 @@
             </div>
           }
           @if (relayerAccount || enableAdditionalData) {
-            <div class="relayer-account-steps">
+            <div class="relayer-account-steps" [attr.inert]="isPreviewBusy ? '' : null">
               <div class="guardian-step-container">
                 <div class="guardian-stepper horizontal-stepper">
                   <div class="guardian-step" [attr.action]="isActionStep(0)" [attr.disabled]="isStep(0)" (click)="setStep(0)">
@@ -109,13 +144,19 @@
               [preset]="presetDocument"
               [private-fields]="hideFields"
               [readonly-fields]="presetReadonlyFields"
-              [submitText]="submitText"
+              [submitText]="previewMode ? 'Preview' : submitText"
               [rules]="rulesResults"
               [formulas]="formulas"
               [paginationHidden]="false"
               [saveShown]="false"
               [isFormForRequestBlock]="true"
+              [requiredFields]="previewRequiredFields"
+              [previewMissingFields]="previewMissingFields"
+              [previewActionsDisabled]="isPreviewBusy"
               (form)="initForm($event)"
+              (presetApplied)="onPresetApplied()"
+              (previewBusyChange)="onPreviewRenderingChange($event)"
+              (previewMissingOptionsChange)="onPreviewMissingOptionsChange($event)"
               (buttons)="onChangeButtons($event)"
               (saveBtnEvent)="handleSaveBtnEvent($event)"
               (cancelBtnEvent)="onCancelPage($event)"
@@ -125,7 +166,7 @@
             </app-schema-form-root>
           </form>
           @if (enableAdditionalData) {
-            <div class="evidence-container" [attr.visibility]="isStep(evidenceStepIndex)">
+            <div class="evidence-container" [attr.inert]="isPreviewBusy ? '' : null" [attr.visibility]="isStep(evidenceStepIndex)">
               <div class="toolbar-textarea guardian-textarea-container">
                 <textarea
                   placeholder="Add a comment (optional)"
@@ -161,7 +202,7 @@
               </div>
             </div>
           }
-          <div class="relayer-account-container" [attr.visibility]="isStep(enableAdditionalData ? 2 : 1)">
+          <div class="relayer-account-container" [attr.inert]="isPreviewBusy ? '' : null" [attr.visibility]="isStep(enableAdditionalData ? 2 : 1)">
             <div class="relayer-account-type-values">
               @if (needRemoteWarning) {
                 <div class="account-warning">
@@ -278,8 +319,14 @@
   <div class="preloader-image"></div>
 </ng-template>
 
-@if (loading) {
-  <div class="loading">
-    <div class="preloader-image preloader-image-l-size"></div>
-  </div>
+@if (loading || isPreviewBusy) {
+  @if (previewMode) {
+    <div class="guardian-loading preview-loading-overlay">
+      <div class="guardian-loading-image"></div>
+    </div>
+  } @else {
+    <div class="loading">
+      <div class="preloader-image preloader-image-l-size"></div>
+    </div>
+  }
 }

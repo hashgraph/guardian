@@ -1,3 +1,5 @@
+@use '../../../../../schema-engine/preview-loading' as preview;
+
 .context {
     position: relative;
     overflow-y: auto;
@@ -55,6 +57,10 @@
 
 form {
     width: 100%;
+}
+
+.guardian-loading.preview-loading-overlay {
+    @include preview.overlay;
 }
 
 .guardian-loading {
@@ -340,5 +346,57 @@ form {
         font-size: 12px;
         line-height: 14px;
         letter-spacing: 0%;
+    }
+}
+
+.dialog-header .calculation-preview-toggle {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    color: var(--guardian-font-color);
+}
+
+
+.header-icon.resize[aria-disabled='true'],
+request-draft-file-actions[inert] {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+:host ::ng-deep .preview-missing-dropdown.p-select {
+    margin-right: 16px;
+    width: 320px;
+    max-width: 320px;
+
+    .guardian-dropdown-selected .guardian-dropdown-label {
+        color: var(--color-grey-6);
+    }
+
+    .guardian-dropdown-selected .guardian-dropdown-item {
+        color: var(--guardian-font-color);
+    }
+}
+
+.dialog-header .preview-missing-dropdown {
+    flex: 0 1 auto;
+    align-self: center;
+    min-width: 0;
+}
+
+.preview-missing-option {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+::ng-deep .preview-missing-panel.p-select-overlay {
+    width: 320px;
+    max-width: 320px;
+
+    .p-select-option {
+        overflow: hidden;
     }
 }

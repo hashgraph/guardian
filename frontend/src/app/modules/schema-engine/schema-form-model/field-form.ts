@@ -99,6 +99,8 @@ export class FieldForm {
     private privateFields: { [x: string]: boolean; };
     private readonlyFields: { name: string }[];
     private preset: any = null;
+    private requiredFields: Set<string> | null = null;
+    private previewPath: () => string = () => '';
 
     public controls: IFieldControl<any>[] | null;
     private fieldControls: IFieldControl<any>[] | null;
@@ -112,6 +114,7 @@ export class FieldForm {
     private readonly childControlledFields: Map<string, Set<string>>;
     private readonly ancestorChildPaths: Map<string, Set<string>>;
     public rootForm: FieldForm;
+    public keepDefaultLabels: boolean = false;
     private arrayGroupCache: Map<IFieldControl<any>, IArrayGroupEntry[]> | null = null;
     private fieldOrder: Map<string, number> | null = null;
 
@@ -173,7 +176,12 @@ export class FieldForm {
         privateFields?: { [x: string]: boolean; };
         readonlyFields?: any;
         ownParentControlledFields?: Set<string>;
+        requiredFields?: string[] | null;
+        keepDefaultLabels?: boolean;
     }) {
+        if (data.keepDefaultLabels !== undefined) {
+            this.keepDefaultLabels = data.keepDefaultLabels;
+        }
         if (data.privateFields) {
             this.privateFields = data.privateFields;
         }
@@ -191,6 +199,9 @@ export class FieldForm {
         }
         if (data.preset) {
             this.preset = data.preset;
+        }
+        if (data.requiredFields !== undefined) {
+            this.requiredFields = data.requiredFields ? new Set<string>(data.requiredFields) : null;
         }
         if (data.ownParentControlledFields) {
             this.ownParentControlledFields = new Set<string>();
@@ -960,6 +971,7 @@ export class FieldForm {
                             control.fields,
                             control.conditions,
                             control.name,
+                            () => Number(listItem.index),
                         )
                     }
                 }
@@ -974,6 +986,7 @@ export class FieldForm {
         fields: any,
         conditions: any,
         fieldName?: string,
+        rowIndex?: () => number,
     ) {
         if (type === 'geo') {
             const form = new GeoForm(control);
@@ -995,6 +1008,8 @@ export class FieldForm {
                 : undefined;
             const form = new FieldForm(control, this.lvl + 1, this.validateLikeDryRun);
             form.rootForm = this.rootForm;
+            form.previewPath = () => [this.previewPath(), fieldName, rowIndex?.()]
+                .filter((part) => part !== undefined && part !== '').join('.');
             form.setData({
                 fields,
                 conditions,
@@ -1191,6 +1206,38 @@ export class FieldForm {
         };
     }
 
+    private isFieldRequired(field: SchemaField, parentPath: string = this.previewPath()): boolean {
+        const requiredFields = this.rootForm.requiredFields;
+        if (!requiredFields) {
+            return !!field.required;
+        }
+        if (field.hidden || field.autocalculate) {
+            return false;
+        }
+        const path = parentPath ? `${parentPath}.${field.name}` : field.name;
+        if (requiredFields.has(path) || requiredFields.has(field.path || field.name)) {
+            return true;
+        }
+        const prefix = `${path}.`;
+        for (const requiredPath of requiredFields) {
+            if (requiredPath.startsWith(prefix)) {
+                if (!field.fields?.length) {
+                    return true;
+                }
+                const tail = requiredPath.slice(prefix.length).split('.');
+                let start = 0;
+                while (/^\d+$/.test(tail[start] || '')) {
+                    start++;
+                }
+                const childPrefix = [path, ...tail.slice(0, start)].join('.');
+                if (field.fields.some(child => child.name === tail[start] && this.isFieldRequired(child, childPrefix))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private createFieldControl(field: SchemaField, preset?: any): IFieldControl<any> {
         const comment = this.getComment(field);
         const item: IFieldControl<any> = {
@@ -1208,9 +1255,10 @@ export class FieldForm {
             model: null
         };
         item.visibility = !item.hide && !item.hidden && !item.autocalculate;
+        item.required = this.isFieldRequired(field);
         item.preset = field.default;
         if (preset) {
-            item.isPreset = true;
+            item.isPreset = !this.rootForm.keepDefaultLabels;
             item.preset = preset[field.name];
         }
 
@@ -1231,7 +1279,7 @@ export class FieldForm {
         // ifSubSchema
         if (!field.isArray && field.isRef) {
             item.fields = field.fields;
-            item.displayRequired = item.fields?.some((refField: any) => refField.required);
+            item.displayRequired = item.fields?.some((refField: any) => this.isFieldRequired(refField));
             if (field.required || item.preset) {
                 item.control = this.createSubSchemaControl(item);
                 item.model = this.createSubForm(
@@ -1328,6 +1376,7 @@ export class FieldForm {
                 item.fields,
                 item.conditions,
                 item.name,
+                () => Number(listItem.index),
             )
         } else {
             // ifSimpleArray
@@ -1482,6 +1531,55 @@ export class FieldForm {
         this.form.removeControl(item.name);
     }
 
+    public hasSameRequiredFields(paths: string[] | null): boolean {
+        const current = this.rootForm.requiredFields;
+        if (!current || !paths) {
+            return !current && !paths;
+        }
+        const next = new Set(paths);
+        return current.size === next.size && [...next].every((path) => current.has(path));
+    }
+
+    public updatePreviewRequiredFields(paths: string[]): boolean {
+        if (!this.rootForm.requiredFields) {
+            return false;
+        }
+        this.rootForm.requiredFields = new Set(paths);
+        this.rootForm.refreshPreviewRequirements();
+        return true;
+    }
+
+    private refreshPreviewRequirements(): void {
+        if (!this.rootForm.requiredFields) {
+            return;
+        }
+        for (const item of this.controls || []) {
+            item.required = this.isFieldRequired(item.field);
+            if (item.isRef && !item.isArray) {
+                item.displayRequired = item.fields?.some(field => this.isFieldRequired(field));
+            }
+            if (!item.isRef && !item.isArray && item.control) {
+                item.control.setValidators(this.getValidators(item));
+                item.control.updateValueAndValidity({ emitEvent: false, onlySelf: true });
+            }
+            if (item.model instanceof FieldForm) {
+                item.model.refreshPreviewRequirements();
+            }
+            for (const entry of item.list || []) {
+                if (entry.model instanceof FieldForm) {
+                    entry.model.refreshPreviewRequirements();
+                } else if (!item.isRef) {
+                    entry.control.setValidators(this.getValidators(item));
+                    entry.control.updateValueAndValidity({ emitEvent: false, onlySelf: true });
+                }
+            }
+            if (item.isArray) {
+                item.control?.updateValueAndValidity({ emitEvent: false, onlySelf: true });
+            }
+        }
+        this.form.updateValueAndValidity({ emitEvent: false, onlySelf: true });
+    }
+
     public removeItem(
         item: IFieldControl<any>,
         listItem: IFieldIndexControl<any>,
@@ -1490,6 +1588,26 @@ export class FieldForm {
         if (item.list) {
             listItem.model?.destroy?.();
             const index = item.list.indexOf(listItem);
+            if (this.rootForm.requiredFields) {
+                const prefix = [this.previewPath(), item.name].filter(Boolean).join('.') + '.';
+                this.rootForm.requiredFields = new Set([...this.rootForm.requiredFields].flatMap((path) => {
+                    if (!path.startsWith(prefix)) {
+                        return [path];
+                    }
+                    const tail = path.slice(prefix.length).split('.');
+                    if (!/^\d+$/.test(tail[0])) {
+                        return [path];
+                    }
+                    const row = Number(tail[0]);
+                    if (row === index) {
+                        return [];
+                    }
+                    if (row > index) {
+                        tail[0] = String(row - 1);
+                    }
+                    return [prefix + tail.join('.')];
+                }));
+            }
             item.control.removeAt(index);
             item.list.splice(index, 1);
             for (let index = 0; index < item.list.length; index++) {
@@ -1508,6 +1626,9 @@ export class FieldForm {
             }
             if (!visited) {
                 this.rootForm.rebuildCrossSchemaConditions(true);
+                if (this.rootForm.requiredFields) {
+                    this.rootForm.refreshPreviewRequirements();
+                }
             }
         }
     }

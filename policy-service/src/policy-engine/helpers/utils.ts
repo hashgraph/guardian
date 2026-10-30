@@ -26,6 +26,7 @@ import { AnyBlockType, IPolicyDocument } from '../policy-engine.interface.js';
 import { IHederaCredentials, IRelayerAccount, PolicyUser, UserCredentials } from '../policy-user.js';
 import { guardianVersion } from '../../version.js';
 import { buildTableHelper } from '../helpers/table-field-core.js';
+import { assertPreviewFiniteResult, evaluatePreviewFormula, isPreviewRelayerAccount, keepPreviewDocumentOrigins } from './preview.js';
 
 export enum QueryType {
     eq = 'equal',
@@ -159,9 +160,10 @@ export class PolicyUtils {
         let amount = 0;
         for (const element of vcs) {
             const scope = PolicyUtils.getVCScope(element);
-            const value = parseFloat(PolicyUtils.evaluateFormula(rule, scope));
+            const value = parseFloat(evaluatePreviewFormula(rule, scope, element));
             amount += value;
         }
+        assertPreviewFiniteResult(amount);
         return amount;
     }
 
@@ -1297,6 +1299,9 @@ export class PolicyUtils {
             const userFull = await ref.components.getVirtualUser(did);
             return userFull?.hederaAccountId;
         } else {
+            if (relayerAccount && isPreviewRelayerAccount(did, relayerAccount)) {
+                return relayerAccount;
+            }
             const config = await PolicyUtils.users.getUserRelayerAccount(did, relayerAccount, userId);
             return config?.account;
         }
@@ -1719,6 +1724,7 @@ export class PolicyUtils {
         if (document.document) {
             clone.document = JSON.parse(JSON.stringify(document.document));
         }
+        keepPreviewDocumentOrigins(document, clone);
         return clone as VcDocumentCollection;
     }
 
@@ -2077,9 +2083,9 @@ export class PolicyUtils {
         }
     }
 
-    private static autoCalculateField(field: SchemaField, document: any): any {
+    public static autoCalculateField(field: SchemaField, document: any, compile: (name: string, body: string) => Function = Function): any {
         try {
-            const func = Function('table', `with (this) { return ${field.expression} }`);
+            const func = compile('table', `with (this) { return ${field.expression} }`);
 
             const table = buildTableHelper();
 

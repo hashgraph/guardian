@@ -1,3 +1,5 @@
+@use '../../../../schema-engine/preview-loading' as preview;
+
 .content-page {
     position: absolute;
     left: 0;
@@ -645,4 +647,47 @@
     justify-content: flex-end;
     gap: 8px;
     margin-bottom: 12px;
+}
+
+.calculation-preview-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: auto;
+    color: var(--guardian-font-color);
+}
+
+
+.guardian-loading.preview-loading-overlay {
+    @include preview.overlay;
+}
+
+:host ::ng-deep .preview-missing-dropdown.p-select {
+    margin-right: 16px;
+    width: 320px;
+    max-width: 320px;
+
+    .guardian-dropdown-selected .guardian-dropdown-label {
+        color: var(--color-grey-6);
+    }
+
+    .guardian-dropdown-selected .guardian-dropdown-item {
+        color: var(--guardian-font-color);
+    }
+}
+
+.preview-missing-option {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+::ng-deep .preview-missing-panel.p-select-overlay {
+    width: 320px;
+    max-width: 320px;
+
+    .p-select-option {
+        overflow: hidden;
+    }
 }
