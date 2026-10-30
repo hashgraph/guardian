@@ -1056,7 +1056,11 @@ export class SchemaFormComponent implements OnInit {
             this.currentIndex = 0;
             this.updatePages();
             while (!this.isShown[topIndex] && !this.isShown[controls.length - 1]) {
+                const index = this.currentIndex;
                 this.getNextShownFields(controls, false);
+                if (this.currentIndex === index) {
+                    break;
+                }
             }
         }
         if (invalid.id) {
