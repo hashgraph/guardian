@@ -117,6 +117,11 @@ export class FieldForm {
 
     private readonly destroy$: Subject<boolean>;
 
+    /**
+     * Emits (on the root form) when conditions toggled and the set of rendered controls changed.
+     */
+    public readonly controlsChanged$ = new Subject<void>();
+
     private readonly validateLikeDryRun?: boolean;
 
     constructor(form: UntypedFormGroup, lvl: number = 0, validateLikeDryRun = false) {
@@ -141,6 +146,7 @@ export class FieldForm {
     public destroy() {
         this.destroy$.next(true);
         this.destroy$.unsubscribe();
+        this.controlsChanged$.complete();
     }
 
     private normalizeIfCondition(raw: any): IConditionExpr {
@@ -517,6 +523,7 @@ export class FieldForm {
             this.form.addControl(item.name, item.control, { emitEvent: false });
         }
         this.controls = this.rebuildControls();
+        this.rootForm.controlsChanged$.next();
     }
 
     private insertFieldControlInOrder(item: IFieldControl<any>): void {
@@ -545,6 +552,7 @@ export class FieldForm {
         this.fieldControls.splice(idx, 1);
         this.form.removeControl(item.name, { emitEvent: false });
         this.controls = this.rebuildControls();
+        this.rootForm.controlsChanged$.next();
     }
 
     private rebuildCrossSchemaConditions(force: boolean = true): void {
@@ -926,6 +934,7 @@ export class FieldForm {
         if (anyChanged) {
             this.controls = this.rebuildControls();
             this.form.updateValueAndValidity({ emitEvent: false });
+            this.rootForm.controlsChanged$.next();
         }
     }
 

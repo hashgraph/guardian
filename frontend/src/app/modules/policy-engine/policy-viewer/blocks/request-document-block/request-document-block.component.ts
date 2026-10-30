@@ -26,6 +26,8 @@ import { PolicyStatus } from '@guardian/interfaces';
 import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
 import { AttachedFile } from 'src/app/modules/common/policy-comments/attached-file';
 import { IPFSService } from 'src/app/services/ipfs.service';
+import { SchemaFormRootComponent } from 'src/app/modules/schema-engine/schema-form-root/schema-form-root.component';
+import { ToastService } from 'src/app/services/toast.service';
 import { PolicyTestAutomationService } from '../../policy-test-automation/policy-test-automation.service';
 
 interface IRequestDocumentData {
@@ -74,6 +76,7 @@ export class RequestDocumentBlockComponent
     @Input('policyStatus') policyStatus!: string;
 
     @ViewChild('dialogTemplate') dialogTemplate!: TemplateRef<any>;
+    @ViewChild('formRoot') formRoot?: SchemaFormRootComponent;
 
     public isExist = false;
     public disabled = false;
@@ -160,6 +163,7 @@ export class RequestDocumentBlockComponent
         private policyTest: PolicyTestAutomationService,
         private schemaService: SchemaService,
         private formulasService: FormulasService,
+        private toastService: ToastService,
     ) {
         super(policyEngineService, profile, wsService);
         this.dataForm = this.fb.group({});
@@ -420,22 +424,30 @@ export class RequestDocumentBlockComponent
         return null;
     }
 
+    private reportInvalid() {
+        this.setStep(0);
+        this.toastService.error('Please fix the highlighted fields before continuing');
+        this.formRoot?.focusFirstInvalid();
+    }
+
     public async onStep(draft?: boolean) {
         if (this.disabled || this.loading) {
             return;
         }
-        if (this.dataForm.valid || draft) {
-            if (this.enableAdditionalData && this.isStep(0)) {
-                this.setStep(1);
-            } else if (this.enableAdditionalData && this.isStep(1) && this.relayerAccount) {
-                this.setStep(2);
-                this.loadRelayerAccounts();
-            } else if (!this.enableAdditionalData && this.relayerAccount && this.isStep(0)) {
-                this.setStep(1);
-                this.loadRelayerAccounts();
-            } else {
-                await this.onSubmit(draft);
-            }
+        if (!this.dataForm.valid && !draft) {
+            this.reportInvalid();
+            return;
+        }
+        if (this.enableAdditionalData && this.isStep(0)) {
+            this.setStep(1);
+        } else if (this.enableAdditionalData && this.isStep(1) && this.relayerAccount) {
+            this.setStep(2);
+            this.loadRelayerAccounts();
+        } else if (!this.enableAdditionalData && this.relayerAccount && this.isStep(0)) {
+            this.setStep(1);
+            this.loadRelayerAccounts();
+        } else {
+            await this.onSubmit(draft);
         }
     }
 
@@ -770,7 +782,7 @@ export class RequestDocumentBlockComponent
             for (const item of $event) {
                 if (item.id === 'submit') {
                     item.disabled = () => {
-                        return !this.dataForm.valid || this.loading;
+                        return this.loading;
                     }
                 }
             }
@@ -831,6 +843,6 @@ export class RequestDocumentBlockComponent
     }
 
     public ifDisabledBtn() {
-        return !this.dataForm.valid || this.loading || this.ifRelayerAccountDisabled() || this.isRemoteWarning;
+        return this.loading || this.ifRelayerAccountDisabled() || this.isRemoteWarning;
     }
 }

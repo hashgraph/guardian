@@ -28,6 +28,7 @@ export interface IFieldTarget {
 export type FieldBindingOp =
     { type: 'bind'; formulaId: string; itemUuid: string; target: IFieldTarget } |
     { type: 'unbind'; formulaId: string; itemUuid: string; target: IFieldTarget } |
+    { type: 'move'; formulaId: string; itemUuid: string; target: IFieldTarget; from: string } |
     { type: 'create'; formulaId: string; item: IFormulaItem; target: IFieldTarget };
 
 /**
@@ -114,6 +115,10 @@ export function createStubItem(name: string, uuid: string = GenerateUUIDv4()): I
     };
 }
 
+function isSameLink(a: IFormulaLink, b: IFormulaLink): boolean {
+    return a.type === b.type && a.entityId === b.entityId && a.item === b.item;
+}
+
 function withLinks(item: IFormulaItem, links: IFormulaLink[]): IFormulaItem {
     const copy: IFormulaItem = { ...item };
     setItemLinks(copy, links);
@@ -152,6 +157,28 @@ export function applyFieldBindingOps(
             if (!links.some((link) => isLinkedTo(link, op.target))) {
                 formulas[index] = withLinks(item, [...links, moveLink(null, op.target)]);
             }
+        } else if (op.type === 'move') {
+            if (op.from === op.target.fieldPath) {
+                continue;
+            }
+            const from = { ...op.target, fieldPath: op.from };
+            if (!links.some((link) => isLinkedTo(link, from))) {
+                continue;
+            }
+            const kept: IFormulaLink[] = [];
+            for (const link of links) {
+                if (!isLinkedTo(link, from)) {
+                    kept.push(link);
+                    continue;
+                }
+                const next = moveLink(link, op.target);
+                const taken = links.some((other) => !isLinkedTo(other, from) && isSameLink(other, next)) ||
+                    kept.some((other) => isSameLink(other, next));
+                if (!taken) {
+                    kept.push(next);
+                }
+            }
+            formulas[index] = withLinks(item, kept);
         } else if (links.some((link) => isLinkedTo(link, op.target))) {
             formulas[index] = withLinks(item, links.filter((link) => !isLinkedTo(link, op.target)));
         }

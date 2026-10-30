@@ -227,6 +227,8 @@ const columns = [{
     }
 }];
 
+const STATUS_FILTER_STORAGE_KEY = 'GUARDIAN_POLICIES_STATUS_FILTER';
+
 /**
  * Component for choosing a policy and
  * display blocks of the selected policy
@@ -251,6 +253,7 @@ export class PoliciesComponent implements OnInit {
     public tagOptions: string[] = [];
     public publishMenuSelector: any = null;
     public noFilterResults: boolean = false;
+    public statusFilter: string[] = [];
     private columns: string[] = [];
     private columnSize = new Map<string, string | undefined>();
 
@@ -346,6 +349,80 @@ export class PoliciesComponent implements OnInit {
 
     public get hasPolicies(): boolean {
         return this.policiesList.length > 0;
+    }
+
+    public get showFilterBar(): boolean {
+        return this.hasPolicies || this.hasStatusFilter;
+    }
+
+    public get hasStatusFilter(): boolean {
+        return this.statusFilter.length > 0;
+    }
+
+    public get statusOptions(): { label: string, value: string }[] {
+        return this.allowedStatuses.map((value) => ({
+            value,
+            label: this.getLabelStatus(value)
+        }));
+    }
+
+    private get allowedStatuses(): string[] {
+        if (this.tab === 'disconnected') {
+            return [];
+        }
+        const statuses: string[] = [
+            PolicyStatus.DRAFT,
+            PolicyStatus.DRY_RUN,
+            PolicyStatus.PUBLISH,
+            PolicyStatus.DISCONTINUED,
+            PolicyStatus.PUBLISH_ERROR,
+            PolicyStatus.DEMO
+        ];
+        if (this.tab === 'remote') {
+            statuses.push(PolicyStatus.VIEW);
+        }
+        return statuses;
+    }
+
+    private get statusFilterKey(): string | null {
+        return this.owner ? `${STATUS_FILTER_STORAGE_KEY}:${this.owner}:${this.tab}` : null;
+    }
+
+    public restoreStatusFilter(): void {
+        let saved: unknown[] = [];
+        const key = this.statusFilterKey;
+        if (key) {
+            try {
+                const parsed = JSON.parse(localStorage.getItem(key) || '[]');
+                saved = Array.isArray(parsed) ? parsed : [];
+            } catch (error) {
+                console.error(error);
+            }
+        }
+        this.statusFilter = this.allowedStatuses.filter((status) => saved.includes(status));
+    }
+
+    private saveStatusFilter(): void {
+        const key = this.statusFilterKey;
+        if (!key) {
+            return;
+        }
+        try {
+            if (this.statusFilter.length) {
+                localStorage.setItem(key, JSON.stringify(this.statusFilter));
+            } else {
+                localStorage.removeItem(key);
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    public onStatusChange(statuses: string[] | null): void {
+        this.statusFilter = statuses || [];
+        this.saveStatusFilter();
+        this.pageIndex = 0;
+        this.loadAllPolicy();
     }
 
     public checkMigrationStatus(status: string): boolean {
@@ -463,6 +540,8 @@ export class PoliciesComponent implements OnInit {
                 return `Discontinued`;
             case PolicyStatus.VIEW:
                 return `View`;
+            case PolicyStatus.DEMO:
+                return 'Demo';
             default:
                 return 'Incorrect status';
         }
@@ -514,29 +593,6 @@ export class PoliciesComponent implements OnInit {
     public getMenu(policy: any) {
         return {
             groups: [{
-                tooltip: 'Analytics',
-                group: false,
-                visible: this.user.ANALYTIC_POLICY_READ,
-                color: 'primary-color',
-                buttons: [
-                    new MenuButton({
-                        visible: this.user.ANALYTIC_POLICY_READ,
-                        disabled: false,
-                        tooltip: 'Search policies',
-                        icon: 'search',
-                        color: 'primary-color',
-                        click: () => this.searchPolicy(policy)
-                    }),
-                    new MenuButton({
-                        visible: this.user.ANALYTIC_POLICY_READ,
-                        disabled: false,
-                        tooltip: 'Compare policies',
-                        icon: 'compare',
-                        color: 'primary-color',
-                        click: () => this.comparePolicy(policy)
-                    })
-                ]
-            }, {
                 tooltip: 'Test',
                 group: false,
                 visible: true,
@@ -742,6 +798,7 @@ export class PoliciesComponent implements OnInit {
     @ViewChild('policySubMenu') policySubMenu?: OverlayPanel;
 
     private _destroy$ = new Subject<void>();
+    private _cancelLoad$ = new Subject<void>();
 
     constructor(
         public tagsService: TagsService,
@@ -848,6 +905,7 @@ export class PoliciesComponent implements OnInit {
             this.isConfirmed = !!(profile && profile.confirmed);
             this.user = new UserPermissions(profile);
             this.owner = this.user.did;
+            this.restoreStatusFilter();
             this.tagSchemas = SchemaHelper.map(tagSchemas);
 
             if (this.isConfirmed) {
@@ -865,11 +923,12 @@ export class PoliciesComponent implements OnInit {
     }
 
     private loadAllPolicy() {
+        this._cancelLoad$.next();
         this.loading = true;
         this.tagOptions = [];
         this.policyEngineService
-            .page(this.pageIndex, this.pageSize, this.tab)
-            .pipe(takeUntil(this._destroy$)).subscribe((policiesResponse) => {
+            .page(this.pageIndex, this.pageSize, this.tab, this.statusFilter)
+            .pipe(takeUntil(this._destroy$), takeUntil(this._cancelLoad$)).subscribe((policiesResponse) => {
                 let publishedPolicy = false;
 
                 this.policies = [];
@@ -932,12 +991,13 @@ export class PoliciesComponent implements OnInit {
 
     private loadPolicyTags(policies: any[]) {
         if (!this.user.TAGS_TAG_READ || !policies || !policies.length) {
+            this.applyFilters();
             setTimeout(() => {
                 this.loading = false;
             }, 500);
         } else {
             const ids = policies.map((e) => e.id);
-            this.tagsService.search(this.tagEntity, ids).pipe(takeUntil(this._destroy$)).subscribe((data) => {
+            this.tagsService.search(this.tagEntity, ids).pipe(takeUntil(this._destroy$), takeUntil(this._cancelLoad$)).subscribe((data) => {
                 for (const policy of policies) {
                     (policy as any)._tags = data[policy.id];
                     data[policy.id]?.tags.forEach((tag: any) => {
@@ -950,6 +1010,7 @@ export class PoliciesComponent implements OnInit {
                         ];
                     });
                 }
+                this.applyFilters();
                 setTimeout(() => {
                     this.loading = false;
                 }, 500);
@@ -2015,6 +2076,7 @@ export class PoliciesComponent implements OnInit {
             this.tab = 'local';
         }
         this.pageIndex = 0;
+        this.restoreStatusFilter();
         this.router.navigate([], {
             queryParams: { tab: this.tab }
         });

@@ -112,7 +112,37 @@
     align-items: center;
     flex-direction: row;
     justify-content: space-between;
+    gap: 12px;
     font-size: 16px;
+
+    &__group {
+        position: relative;
+        display: flex;
+        align-items: center;
+        padding: 6px;
+        border: 1px dashed var(--guardian-border-color, #e1e7ef);
+        border-radius: 8px;
+    }
+
+    &__group .search-policy-input {
+        width: 220px;
+    }
+
+    &__group .search-icon {
+        right: 16px;
+        margin-right: 0;
+    }
+
+    &__group-label {
+        position: absolute;
+        top: -9px;
+        left: 10px;
+        padding: 0 4px;
+        font-size: 11px;
+        line-height: 14px;
+        color: var(--guardian-disabled-color, #848FA9);
+        background: var(--guardian-background, #fff);
+    }
 
     &__control {
         margin-left: 20px;
@@ -624,6 +654,15 @@
 .tags-dropdown {
     margin-left: 16px;
     height: 40px;
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+
+    ::ng-deep .p-select-label {
+        font-family: inherit;
+        font-size: inherit;
+        font-weight: inherit;
+    }
 }
 
 :host ::ng-deep {
@@ -1280,4 +1319,61 @@
     opacity: 1 !important;
     background: var(--color-grey-white, #fff) !important;
     color: var(--color-grey-5, #848FA9) !important;
+}
+
+.status-filter {
+    height: 40px;
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+
+    ::ng-deep .p-multiselect-label-container {
+        display: flex;
+        align-items: stretch;
+    }
+
+    ::ng-deep .p-multiselect-label {
+        padding-top: 0;
+        padding-bottom: 0;
+        padding-left: 32px;
+        font-family: inherit;
+        font-size: inherit;
+        font-weight: inherit;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+    }
+}
+
+.status-filter-wrap {
+    position: relative;
+    display: inline-flex;
+}
+
+.status-filter__icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+    pointer-events: none;
+    font-size: 12px;
+    color: var(--primary-color, #4169E2);
+}
+
+.status-filter__count {
+    min-width: 18px;
+    padding: 0 6px;
+    border-radius: 10px;
+    font-size: 12px;
+    line-height: 18px;
+    text-align: center;
+    color: var(--primary-color, #4169E2);
+    background: var(--guardian-primary-background, #e1e7fa);
+}
+
+:host ::ng-deep .status-filter.p-multiselect {
+    width: auto;
+    min-width: 140px;
 }

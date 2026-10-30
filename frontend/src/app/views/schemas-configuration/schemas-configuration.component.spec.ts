@@ -1,4 +1,5 @@
 import { of, Subject, throwError } from 'rxjs';
+import { Schema } from '@guardian/interfaces';
 import { SchemasConfigurationComponent } from './schemas-configuration.component';
 import { FIELD_TYPES_UI } from 'src/app/modules/schema-engine/field-type-ui';
 
@@ -99,6 +100,40 @@ describe('SchemasConfigurationComponent', () => {
 
         return component;
     }
+
+    describe('removing a condition', () => {
+        it('keeps the branch fields in the schema as ordinary fields', () => {
+            const a: any = { name: 'a', conditionUserOrdered: true };
+            const b: any = { name: 'b', conditionUserOrdered: true };
+            const schema: any = {
+                fields: [a, b],
+                conditions: [{ thenFields: [a], elseFields: [b] }],
+            };
+            const component = createComponent({ selectedSchema: schema });
+            component.markDirty = () => {};
+            component.condThenRefVal = {};
+            component.condElseRefVal = {};
+            component.removeConditionAt(0);
+            expect(schema.conditions).toEqual([]);
+            expect(schema.fields).toEqual([a, b]);
+            expect(a.conditionUserOrdered).toBeFalse();
+            expect(b.conditionUserOrdered).toBeFalse();
+        });
+
+        it('keeps the ordering flag of a field still owned by another condition', () => {
+            const a: any = { name: 'a', conditionUserOrdered: true };
+            const schema: any = {
+                fields: [a],
+                conditions: [{ thenFields: [a] }, { elseFields: [a] }],
+            };
+            const component = createComponent({ selectedSchema: schema });
+            component.markDirty = () => {};
+            component.condThenRefVal = {};
+            component.condElseRefVal = {};
+            component.removeConditionAt(0);
+            expect(a.conditionUserOrdered).toBeTrue();
+        });
+    });
 
     describe('Rich Text preset dialog', () => {
         it('opens the requested preset and routes its value back to the selected field', () => {
@@ -2118,6 +2153,95 @@ describe('SchemasConfigurationComponent', () => {
 
             expect(calls).toEqual([]);
             expect(component.toasts.length).toBe(1);
+        });
+    });
+
+    describe('a sidebar list copy arriving after the full schema load', () => {
+
+        function makeFullSchema(id: string): any {
+            return new Schema({
+                id, _id: id, uuid: `u-${id}`, status: 'DRAFT', topicId: 'topic-1', name: `Schema ${id}`,
+                document: {
+                    $id: `#u-${id}`, title: `Schema ${id}`, description: '', type: 'object',
+                    properties: {
+                        field_1: {
+                            title: 'field_1', description: 'd', readOnly: false, type: 'string',
+                            $comment: '{"term":"field_1","@id":"https://www.schema.org/text","orderPosition":0}'
+                        }
+                    },
+                    required: [], additionalProperties: false, $defs: {}
+                }
+            } as any);
+        }
+
+        function listItem(id: string): any {
+            return { id, _id: id, uuid: `u-${id}`, status: 'DRAFT', topicId: 'topic-1', name: `Schema ${id}` };
+        }
+
+        function loadList(component: any, ids: string[]): void {
+            component.schemaService.getSchemasByPage = () => of({
+                body: ids.map(listItem),
+                headers: { get: () => String(ids.length) }
+            });
+            component.loadSchemas('topic-1');
+        }
+
+        it('does not replace the saved baseline of the open schema', () => {
+            const full = makeFullSchema('a');
+            const component = createComponent({ schemas: [full], selectedSchema: full });
+            component.loadedSchemaId = 'a';
+            component.snapshotSchema(full);
+            const baseline = component.savedSignatures.get('a');
+
+            loadList(component, ['a']);
+
+            expect(component.savedSignatures.get('a')).toBe(baseline);
+            component.deleteField(full.fields[0], { stopPropagation: () => {} });
+            expect(full.fields.length).toBe(0);
+            expect(component.hasUnsavedChanges).toBeTrue();
+        });
+
+        it('still records a baseline for the schemas that are not open', () => {
+            const full = makeFullSchema('a');
+            const component = createComponent({ schemas: [full], selectedSchema: full });
+            component.loadedSchemaId = 'a';
+            component.snapshotSchema(full);
+
+            loadList(component, ['a', 'b']);
+
+            expect(component.savedSignatures.has('b')).toBeTrue();
+        });
+    });
+
+    describe('field paths for the preview', () => {
+        it('gives new and renamed fields the path the formula links use', () => {
+            const added: any = makeField({ name: 'field_2' });
+            const nested: any = makeField({ name: 'inner' });
+            const group: any = makeField({ name: 'group', fields: [nested] });
+            const component = createComponent();
+
+            component.refreshFieldPaths([added, group], '', '#root/');
+
+            expect(added.path).toBe('field_2');
+            expect(added.fullPath).toBe('#root/field_2');
+            expect(nested.path).toBe('group.inner');
+            expect(nested.fullPath).toBe('#root/group.inner');
+
+            added.name = 'renamed';
+            component.refreshFieldPaths([added, group], '', '#root/');
+            expect(added.fullPath).toBe('#root/renamed');
+        });
+
+        it('sets them for the submitter view too, which builds no preset', () => {
+            const field: any = makeField({ name: 'field_1' });
+            const schema: any = makeSchema({ id: 'a', iri: '#root', fields: [field] });
+            const component = createComponent({ schemas: [schema], selectedSchema: schema });
+            component.rebuildPreview = SchemasConfigurationComponent.prototype['rebuildPreview'];
+            component.previewPill = 'submitter';
+
+            component.rebuildPreview();
+
+            expect(field.fullPath).toBe('#root/field_1');
         });
     });
 });

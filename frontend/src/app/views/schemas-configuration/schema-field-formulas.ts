@@ -1,6 +1,6 @@
 import { EMPTY, Observable, forkJoin, of } from 'rxjs';
 import { catchError, expand, map, reduce, shareReplay, switchMap } from 'rxjs/operators';
-import { EntityStatus, IFormula, IFormulaItem, IFormulaLink, Schema, SchemaField, UserPermissions } from '@guardian/interfaces';
+import { EntityStatus, IFormula, IFormulaItem, IFormulaLink, Schema, SchemaField, SchemaStatus, UserPermissions } from '@guardian/interfaces';
 import { FormulasService } from 'src/app/services/formulas.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -72,16 +72,27 @@ export interface IFieldScope {
     schema: Schema;
     field: SchemaField;
     prefix: string[];
+    ancestors?: SchemaField[];
     fields: SchemaField[];
 }
 
 interface IPendingBinding {
-    type: 'bind' | 'unbind' | 'create';
+    type: 'bind' | 'unbind' | 'create' | 'move';
     policyId: string;
     formulaId: string;
     itemUuid: string;
     item?: IFormulaItem;
     scope: IFieldScope;
+    fieldPath?: string;
+    basePath?: string;
+}
+
+function isAssignment(p: IPendingBinding): boolean {
+    return p.type === 'bind' || p.type === 'create';
+}
+
+function livePrefix(scope: IFieldScope | null): string[] {
+    return scope?.ancestors ? scope.ancestors.map((f) => f.name) : scope?.prefix || [];
 }
 
 const HIDDEN: IFieldFormulasView = { state: 'hidden', rows: [], groups: [], documents: [] };
@@ -109,6 +120,7 @@ export class SchemaFieldFormulas {
     private readonly formulas = new Map<string, IFormula[]>();
     private readonly loading = new Set<string>();
     private pending: IPendingBinding[] = [];
+    private savedNames = new WeakMap<SchemaField, string>();
     private version: number = 0;
 
     private viewKey: any[] = [];
@@ -128,7 +140,7 @@ export class SchemaFieldFormulas {
     }
 
     public get hasPending(): boolean {
-        return this.pending.length > 0;
+        return this.pending.some((p) => !this.isNoopMove(p));
     }
 
     /**
@@ -212,7 +224,7 @@ export class SchemaFieldFormulas {
         const schema = scope?.schema || null;
         const field = scope?.field || null;
         const key = [
-            schema, field, field?.name, scope?.prefix.join('.'), scope?.fields, schema?.iri, (schema as any)?.id,
+            schema, field, field?.name, livePrefix(scope).join('.'), scope?.fields, schema?.iri, (schema as any)?.id,
             eligible, subSchema, this.policy, this.canEdit, this.version
         ];
         if (key.length === this.viewKey.length && key.every((value, i) => value === this.viewKey[i])) {
@@ -342,9 +354,107 @@ export class SchemaFieldFormulas {
         if (row.pending) {
             this.pending = this.pending.filter((p) => !this.isPendingOp(p, row.itemUuid, target, false));
         } else {
-            this.pending.push({ type: 'unbind', policyId: this.policy.id, formulaId: row.formulaId, itemUuid: row.itemUuid, scope: this.copyScope(scope) });
+            const moved = this.pending.find((p) => p.type === 'move' && p.formulaId === row.formulaId && p.itemUuid === row.itemUuid &&
+                this.targetOf(p).fieldPath === target.fieldPath);
+            const fieldPath = moved?.fieldPath || target.fieldPath;
+            this.pending = this.pending.filter((p) => p !== moved);
+            this.pending.push({ type: 'unbind', policyId: this.policy.id, formulaId: row.formulaId, itemUuid: row.itemUuid, scope: this.copyScope(scope), fieldPath });
         }
         this.version++;
+    }
+
+    public release(scope: IFieldScope): void {
+        const moves = this.pending.filter((p) => p.type === 'move' && p.scope.field === scope.field);
+        const saved = this.savedLinks(scope);
+        if (!saved && !moves.length) {
+            return;
+        }
+        const links = saved || [];
+        this.pending = this.pending.filter((p) => p.scope.field !== scope.field || (!isAssignment(p) && p.type !== 'move'));
+        this.pending = this.pending.filter((p) => p.type !== 'move' ||
+            !links.some(({ formula, item, path }) => p.formulaId === String(formula.id) && p.itemUuid === item.uuid && p.fieldPath === path));
+        const unbinds = [
+            ...moves.map((p) => ({ formulaId: p.formulaId, itemUuid: p.itemUuid, path: p.fieldPath! })),
+            ...links.map(({ formula, item, path }) => ({ formulaId: String(formula.id), itemUuid: item.uuid, path }))
+        ];
+        const done = new Set<string>();
+        for (const { formulaId, itemUuid, path } of unbinds) {
+            const key = `${formulaId}|${itemUuid}|${path}`;
+            if (done.has(key)) {
+                continue;
+            }
+            done.add(key);
+            this.pending.push({
+                type: 'unbind',
+                policyId: this.policy.id,
+                formulaId,
+                itemUuid,
+                scope: this.copyScope(scope),
+                fieldPath: path
+            });
+        }
+        this.version++;
+    }
+
+    public rename(scope: IFieldScope): void {
+        this.version++;
+        if (!this.savedNames.has(scope.field)) {
+            this.savedNames.set(scope.field, scope.field.name);
+        }
+        const links = this.savedLinks(scope);
+        if (!links?.length) {
+            return;
+        }
+        const basePath = this.savedPath(scope);
+        for (const { formula, item, path } of links) {
+            const same = (p: IPendingBinding) => p.formulaId === String(formula.id) && p.itemUuid === item.uuid && p.fieldPath === path;
+            if (this.pending.some((p) => (p.type === 'unbind' || (p.type === 'move' && p.basePath!.length >= basePath.length)) && same(p))) {
+                continue;
+            }
+            this.pending = this.pending.filter((p) => p.type !== 'move' || !same(p));
+            this.pending.push({
+                type: 'move',
+                policyId: this.policy.id,
+                formulaId: String(formula.id),
+                itemUuid: item.uuid,
+                scope: this.copyScope(scope),
+                fieldPath: path,
+                basePath
+            });
+        }
+    }
+
+    /** the path the field had when it was last saved */
+    private savedPath(scope: IFieldScope): string {
+        const saved = (field: SchemaField) => this.savedNames.get(field) ?? field.name;
+        const prefix = scope.ancestors ? scope.ancestors.map(saved) : scope.prefix;
+        return buildFieldPath(prefix, saved(scope.field));
+    }
+
+    private savedLinks(scope: IFieldScope): { formula: IFormula; item: IFormulaItem; path: string }[] | null {
+        const iri = String(scope.schema.iri || '');
+        if (!this.policy || !this.canEdit || !iri || !this.formulas.has(this.policy.id) ||
+            scope.schema.status === SchemaStatus.PUBLISHED) {
+            return null;
+        }
+        const base = this.savedPath(scope);
+        const result: { formula: IFormula; item: IFormulaItem; path: string }[] = [];
+        for (const formula of this.formulas.get(this.policy.id) || []) {
+            if (formula.id === NEW_FORMULA_DOCUMENT || !isEditableFormula(formula)) {
+                continue;
+            }
+            for (const item of formula.config?.formulas || []) {
+                if (!item || !BINDABLE_ITEM_TYPES.has(item.type)) {
+                    continue;
+                }
+                const paths = new Set(getItemLinks(item)
+                    .filter((link) => link.type === 'schema' && link.entityId === iri &&
+                        (link.item === base || link.item?.startsWith(base + '.')))
+                    .map((link) => link.item));
+                paths.forEach((path) => result.push({ formula, item, path }));
+            }
+        }
+        return result;
     }
 
     /**
@@ -429,17 +539,27 @@ export class SchemaFieldFormulas {
         if (this.pending.length !== count) {
             this.version++;
         }
+        this.resetSavedNames();
+    }
+
+    private resetSavedNames(): void {
+        if (!this.pending.length) {
+            this.savedNames = new WeakMap<SchemaField, string>();
+        }
     }
 
     /**
-     * The saved formulas of the schema as a request form shows them, for the Preview tab.
-     * Emits null when the topic has no policy or the schema is not saved yet.
+     * The formulas of the policy for the Preview tab, pending changes included.
+     * Null until the formulas are loaded.
      */
-    public previewTree(schemaIri: string | null | undefined): Observable<FormulasTree | null> {
-        if (!this.policy?.id || !schemaIri) {
-            return of(null);
+    public previewTree(schemas: Schema[]): FormulasTree | null {
+        if (!this.policy?.id || !this.formulas.has(this.policy.id)) {
+            return null;
         }
-        return this.formulasService.getFormTree(this.policy.id, schemaIri).pipe(catchError(() => of(null)));
+        return FormulasTree.from(
+            { formulas: this.effectiveFormulas(), schemas, document: null as any, relationships: [] },
+            { excludeAutoGenerated: true }
+        );
     }
 
     /**
@@ -449,7 +569,7 @@ export class SchemaFieldFormulas {
      */
     public save(): Observable<boolean> {
         // a field deleted after its formulas were assigned has nothing to link to
-        this.pending = this.pending.filter((p) => p.scope.fields.includes(p.scope.field));
+        this.pending = this.pending.filter((p) => !this.isNoopMove(p) && (!isAssignment(p) || p.scope.fields.includes(p.scope.field)));
         const batch = [...this.pending];
         if (!batch.length) {
             return of(true);
@@ -506,12 +626,26 @@ export class SchemaFieldFormulas {
                 });
             }
             this.pending = this.pending.filter((p) => !done.has(p));
-            this.version++;
+            this.resetSavedNames();
             const policies = new Set(Array.from(done).map((p) => p.policyId));
             for (const policyId of policies) {
+                this.applySaved(policyId, Array.from(done).filter((p) => p.policyId === policyId));
                 this.loadFormulas(policyId, true);
             }
+            this.version++;
             return !failed;
+        }));
+    }
+
+    private applySaved(policyId: string, saved: IPendingBinding[]): void {
+        const ops = saved.filter((p) => p.formulaId !== NEW_FORMULA_DOCUMENT).map((p) => this.toOp(p));
+        const formulas = this.formulas.get(policyId);
+        if (!formulas || !ops.length) {
+            return;
+        }
+        this.formulas.set(policyId, formulas.map((formula) => {
+            const own = ops.filter((op) => op.formulaId === formula.id);
+            return own.length ? { ...formula, config: applyFieldBindingOps(formula.config, own).config } : formula;
         }));
     }
 
@@ -532,7 +666,11 @@ export class SchemaFieldFormulas {
     }
 
     private toOp(p: IPendingBinding): FieldBindingOp {
-        const target = this.target(p.scope);
+        const target = this.targetOf(p);
+        if (p.type === 'move') {
+            const taken = p.scope.fields.some((f) => f !== p.scope.field && f.name === p.scope.field.name);
+            return { type: 'move', formulaId: p.formulaId, itemUuid: p.itemUuid, target: taken ? { ...target, fieldPath: p.fieldPath! } : target, from: p.fieldPath! };
+        }
         if (p.type === 'create') {
             return { type: 'create', formulaId: p.formulaId, item: p.item!, target };
         }
@@ -547,23 +685,36 @@ export class SchemaFieldFormulas {
     private target(scope: IFieldScope): IFieldTarget {
         return {
             schemaIri: String(scope.schema.iri || ''),
-            fieldPath: buildFieldPath(scope.prefix, scope.field.name)
+            fieldPath: buildFieldPath(livePrefix(scope), scope.field.name)
         };
     }
 
+    private targetOf(p: IPendingBinding): IFieldTarget {
+        const target = this.target(p.scope);
+        if (p.type === 'move') {
+            return { ...target, fieldPath: target.fieldPath + p.fieldPath!.slice(p.basePath!.length) };
+        }
+        return p.fieldPath ? { ...target, fieldPath: p.fieldPath } : target;
+    }
+
+    /** a move back to the saved key */
+    private isNoopMove(p: IPendingBinding): boolean {
+        return p.type === 'move' && this.targetOf(p).fieldPath === p.fieldPath;
+    }
+
     private copyScope(scope: IFieldScope): IFieldScope {
-        return { ...scope, prefix: [...scope.prefix] };
+        return { ...scope, prefix: [...livePrefix(scope)], ancestors: scope.ancestors && [...scope.ancestors] };
     }
 
     /** a pending unbind (`unbind` true) or a pending bind/create of the item on the field */
     private isPendingOp(p: IPendingBinding, itemUuid: string, target: IFieldTarget, unbind: boolean): boolean {
-        return (p.type === 'unbind') === unbind &&
+        return (unbind ? p.type === 'unbind' : isAssignment(p)) &&
             p.itemUuid === itemUuid &&
             this.sameTarget(p, target);
     }
 
     private sameTarget(p: IPendingBinding, target: IFieldTarget): boolean {
-        const own = this.target(p.scope);
+        const own = this.targetOf(p);
         return own.schemaIri === target.schemaIri && own.fieldPath === target.fieldPath;
     }
 
