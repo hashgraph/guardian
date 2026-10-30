@@ -50,6 +50,7 @@ describe('request document preview wiring', () => {
         const dialogs: { type: unknown; config: any }[] = [];
         component.calculationPreview = fake.service;
         component.dataForm = { valid: true, getRawValue: () => ({ amount: 5 }) };
+        component.toastService = { error: jasmine.createSpy('error') };
         component.dialogService = { open: (type: unknown, config: any) => dialogs.push({ type, config }) };
         component.tablePersist = {
             persistTablesInDocument: async () => uploads.push('tables'),
@@ -224,6 +225,7 @@ describe('request document preview wiring', () => {
         component.parent = parent;
         component.destroy$ = new Subject<void>();
         component.dataForm = { valid: true, getRawValue: () => ({ amount: 5 }) };
+        component.toastService = { error: jasmine.createSpy('error') };
         component.dialogService = { open: (type: unknown, config: any) => dialogs.push({ type, config }) };
         component.stepper = [true, false, false];
         component.enableAdditionalData = false;
@@ -503,8 +505,9 @@ describe('request document preview wiring', () => {
             await component.onPreviewModeChange(true);
             expect(component.previewRequiredFields).toEqual(['amount', 'bonus']);
             component.dataForm.valid = false;
-            expect(component.ifDisabledBtn({ id: 'submit' })).toBeTrue();
+            expect(component.ifDisabledBtn({ id: 'submit' })).toBeFalse();
             await component.onStep();
+            expect(component.toastService.error).toHaveBeenCalledTimes(1);
             expect(state.calls.length).toBe(1);
             expect(dialogs.length).toBe(0);
             component.dataForm.valid = true;
@@ -523,8 +526,15 @@ describe('request document preview wiring', () => {
             await state.component.onPreviewModeChange(false);
             expect(state.component.previewRequiredFields).toBeNull();
             state.component.dataForm.valid = false;
-            expect(state.component.ifDisabledBtn({ id: 'submit' })).toBeTrue();
+            if (kind === 'dialog') {
+                state.component.parent.isLocalUser = true;
+            } else {
+                state.component.isLocalUser = true;
+            }
+            state.component.ifRelayerAccountDisabled = () => false;
+            expect(state.component.ifDisabledBtn({ id: 'submit' })).toBeFalse();
             await state.component.onStep();
+            expect(state.component.toastService.error).toHaveBeenCalledTimes(1);
             expect(state.calls.length).toBe(1);
             expect(state.dialogs.length).toBe(0);
         });
@@ -607,15 +617,15 @@ describe('request document preview wiring', () => {
         });
     }
 
-    it('keeps the page submit-button callback gated by normal form validity in preview', () => {
+    it('keeps the page submit-button callback enabled for an invalid form in preview', () => {
         const { component } = page([]);
         component.previewMode = true;
         component.dataForm.valid = false;
         const button = { id: 'submit', disabled: () => false };
         component.onChangeButtons([button]);
-        expect(button.disabled()).toBeTrue();
-        component.dataForm.valid = true;
         expect(button.disabled()).toBeFalse();
+        component.loading = true;
+        expect(button.disabled()).toBeTrue();
     });
 
     it('does not restore a preview flag for a Request Addon dialog', () => {
