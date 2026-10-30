@@ -861,7 +861,7 @@ export class SchemaFormComponent implements OnInit {
         }
     }
 
-    private getNextShownFields(fields: SchemaField[] | undefined | null): boolean[] {
+    private getNextShownFields(fields: SchemaField[] | undefined | null, scroll = true): boolean[] {
         if (!fields) {
             return this.isShown;
         }
@@ -896,7 +896,9 @@ export class SchemaFormComponent implements OnInit {
         }
         this.buttons.emit(this.buttonsConfig);
 
-        this.updateScroll();
+        if (scroll) {
+            this.updateScroll();
+        }
 
         return this.isShown;
     }
@@ -989,7 +991,7 @@ export class SchemaFormComponent implements OnInit {
         }, 100)
     }
 
-    public openField(link?: string): void {
+    public openField(link?: string, scroll = true): void {
         if (!link || !this.formModel?.controls) return;
 
         let found = false;
@@ -1028,7 +1030,9 @@ export class SchemaFormComponent implements OnInit {
             } catch (e) {
                 console.error(e);
             }
-            this.scrollToAccordionAttr(parts[parts.length - 1]);
+            if (scroll) {
+                this.scrollToAccordionAttr(parts[parts.length - 1]);
+            }
         }
     }
 
@@ -1038,20 +1042,12 @@ export class SchemaFormComponent implements OnInit {
             return;
         }
         const findInvalid = (items: IFieldControl<any>[] | undefined | null): IFieldControl<any> | undefined => {
-            if (!items || !Array.isArray(items)) {
-                return undefined;
-            }
-            for (const field of items) {
-                if (!field.control || field.control.valid || field.control.disabled) {
-                    continue;
-                }
-                const nested = (field as any).model?.controls;
-                return findInvalid(nested) || field;
-            }
-            return undefined;
+            const field = items?.find((item) => this.ifInvalidField(item));
+            return field && (findInvalid((field as any).model?.controls) || field);
         };
-        const topIndex = controls.findIndex((field) => findInvalid([field]));
-        if (topIndex === -1) {
+        let invalid: IFieldControl<any> | undefined;
+        const topIndex = controls.findIndex((field) => invalid = findInvalid([field]));
+        if (!invalid) {
             return;
         }
         if (!this.isShown[topIndex]) {
@@ -1059,32 +1055,27 @@ export class SchemaFormComponent implements OnInit {
             this.isShown = new Array(controls.length).fill(false);
             this.currentIndex = 0;
             this.updatePages();
-            for (let i = 0; i < controls.length && !this.isShown[topIndex] && !this.isShown[controls.length - 1]; i++) {
-                this.getNextShownFields(controls);
+            while (!this.isShown[topIndex] && !this.isShown[controls.length - 1]) {
+                this.getNextShownFields(controls, false);
             }
         }
-        const invalid = findInvalid([controls[topIndex]]);
-        if (invalid?.id) {
-            this.openField(invalid.id);
+        if (invalid.id) {
+            this.openField(invalid.id, false);
         }
-        this.scrollToFirstInvalidLabel();
+        this.changeDetectorRef.detectChanges();
+        setTimeout(() => this.scrollToFirstInvalidLabel());
     }
 
     private scrollToFirstInvalidLabel(): void {
-        setTimeout(() => {
-            try {
-                this.changeDetectorRef.detectChanges();
-            } catch (e) { }
-            const labels = Array.from(this.elementRef.nativeElement.querySelectorAll('.invalid-field-label'))
-                .filter((label) => (label as HTMLElement).offsetParent) as HTMLElement[];
-            const label = labels.find((item) => !item.classList.contains('invalid-sub-schema')) || labels[0];
-            if (!label) {
-                return;
-            }
-            const container = (label.closest('.form-field-container') as HTMLElement | null) || label;
-            container.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            (container.querySelector('input, textarea, [role="combobox"]') as HTMLElement | null)?.focus({ preventScroll: true });
-        }, 0);
+        const labels = Array.from(this.elementRef.nativeElement.querySelectorAll<HTMLElement>('.invalid-field-label'))
+            .filter((label) => label.offsetParent);
+        const label = labels.find((item) => !item.classList.contains('invalid-sub-schema')) || labels[0];
+        if (!label) {
+            return;
+        }
+        const container = label.closest<HTMLElement>('.form-field-container') || label;
+        container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        container.querySelector<HTMLElement>('input, textarea, [role="combobox"]')?.focus({ preventScroll: true });
     }
 
     private findAndOpen(controls: IFieldControl<any>[] | undefined | null, target: string): boolean {

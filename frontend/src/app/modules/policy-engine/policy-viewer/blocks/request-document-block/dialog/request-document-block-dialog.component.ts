@@ -439,9 +439,7 @@ export class RequestDocumentBlockDialog {
     }
 
     public handleSubmitBtnEvent($event: any, data: RequestDocumentBlockDialog) {
-        if (!this.loading) {
-            data.onStep();
-        }
+        data.onStep();
     }
 
     public handleSaveBtnEvent($event: any, data: RequestDocumentBlockDialog) {
