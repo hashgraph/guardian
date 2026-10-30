@@ -53,3 +53,6 @@ certs/
 .claude/settings.local.json
 !.claude/settings.json
 CLAUDE.local.md
+
+# Local only files
+.local
