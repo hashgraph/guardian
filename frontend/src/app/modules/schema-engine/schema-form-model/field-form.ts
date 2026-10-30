@@ -523,6 +523,7 @@ export class FieldForm {
             this.form.addControl(item.name, item.control, { emitEvent: false });
         }
         this.controls = this.rebuildControls();
+        this.rootForm.controlsChanged$.next();
     }
 
     private insertFieldControlInOrder(item: IFieldControl<any>): void {
@@ -551,6 +552,7 @@ export class FieldForm {
         this.fieldControls.splice(idx, 1);
         this.form.removeControl(item.name, { emitEvent: false });
         this.controls = this.rebuildControls();
+        this.rootForm.controlsChanged$.next();
     }
 
     private rebuildCrossSchemaConditions(force: boolean = true): void {
