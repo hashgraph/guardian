@@ -97,14 +97,23 @@ describe('Table.setDefault with tool=true', () => {
         assert.equal(t.getRow(Dictionary.SCHEMA_TOOL_ID), 11);
     });
 
-    it('places field headers on sequential columns from start', () => {
-        assert.equal(t.getCol(Dictionary.REQUIRED_FIELD), 2);
-        assert.equal(t.getCol(Dictionary.FIELD_TYPE), 3);
-        assert.equal(t.getCol(Dictionary.PARAMETER), 4);
+    it('places field headers on sequential columns in the schema editor order', () => {
+        const order = [
+            Dictionary.KEY, Dictionary.QUESTION, Dictionary.FIELD_TYPE, Dictionary.REQUIRED_FIELD,
+            Dictionary.VISIBILITY, Dictionary.PARAMETER, Dictionary.ALLOW_MULTIPLE_ANSWERS,
+            Dictionary.UPDATABLE, Dictionary.PRIVATE, Dictionary.DEFAULT, Dictionary.SUGGEST,
+            Dictionary.ANSWER, Dictionary.IWA_PROPERTY
+        ];
+        order.forEach((name, i) => assert.equal(t.getCol(name), 2 + i, name));
     });
 
-    it('places IWA Property after Key, the last field column', () => {
-        assert.equal(t.getCol(Dictionary.IWA_PROPERTY), t.getCol(Dictionary.KEY) + 1);
+    it('writes the header cells in the same order as the columns', () => {
+        const columns = Array.from(t.fieldHeaders).map(h => h.column);
+        assert.deepEqual(columns, [...columns].sort((x, y) => x - y));
+    });
+
+    it('still resolves the legacy "Field Type" header to the Type column', () => {
+        assert.isTrue(t.isFieldHeader('Field Type'));
     });
 
     it('hasCol returns true for placed field headers', () => {
