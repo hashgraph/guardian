@@ -68,7 +68,7 @@ context('Prepare accounts for future tests', { tags: ['preparing', 'smoke', 'all
                     method: METHOD.GET,
                     url: API.ApiServer + API.RandomKey,
                     headers: { authorization },
-                    timeout: 600000
+                    timeout: 10000
                 }).then((response) => {
                     let hederaAccountId = response.body.id
                     let hederaAccountKey = response.body.key
@@ -99,7 +99,7 @@ context('Prepare accounts for future tests', { tags: ['preparing', 'smoke', 'all
                                 '@context': [],
                             },
                         },
-                        timeout: 400000,
+                        timeout: 30000,
                     }).then(() => {
                         cy.task('log', `hedera credentials created for ${username}. hederaAccountId: ${hederaAccountId}`);
                         cy.task('log', 'Remember to transfer hbar funds to this account for running tests.');
@@ -138,7 +138,7 @@ context('Prepare accounts for future tests', { tags: ['preparing', 'smoke', 'all
                         }
                     }).then((response) => {
                         response.body.forEach(element => {
-                            if (element.username == SRUsername)
+                            if (element.username === SRUsername)
                                 {SRDid = element.did;}
                         })
                         cy.request({

@@ -2,6 +2,7 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { randomInt } from '../../../support/random';
 
 context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
@@ -10,14 +11,13 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
 
     const policiesUrl = `${API.ApiServer}${API.Policies}`;
 
-    let policyId;
+    // PUT only works on policies in DRAFT status, and the top of the list is not guaranteed to
+    // be DRAFT after re-runs (other suites publish policies), so provision a dedicated policy.
+    const runId = randomInt(999999);
+    const createdPolicyName = `PolicyForPut_${runId}`;
+    const createdPolicyTag = `PolicyForPutTag_${runId}`;
 
-    const listPoliciesWithAuth = (authorization) =>
-        cy.request({
-            method: METHOD.GET,
-            url: policiesUrl,
-            headers: { authorization },
-        });
+    let policyId;
 
     const putPolicyWithAuth = (authorization, id, body, failOnStatusCode = true) =>
         cy.request({
@@ -38,9 +38,29 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
 
     before(() => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            listPoliciesWithAuth(authorization).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.OK);
-                policyId = response.body.at(1).id;
+            cy.request({
+                method: METHOD.POST,
+                url: policiesUrl,
+                headers: { authorization },
+                body: { name: createdPolicyName, policyTag: createdPolicyTag },
+                timeout: 180000,
+            }).then((response) => {
+                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
+                const created = response.body.find((policy) => policy.name === createdPolicyName);
+                expect(created, 'created policy must be present in the returned list').to.exist;
+                policyId = created.id;
+            });
+        });
+    });
+
+    after(() => {
+        if (!policyId) return;
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            cy.request({
+                method: METHOD.DELETE,
+                url: `${policiesUrl}${API.Async}${policyId}`,
+                headers: { authorization },
+                failOnStatusCode: false,
             });
         });
     });
