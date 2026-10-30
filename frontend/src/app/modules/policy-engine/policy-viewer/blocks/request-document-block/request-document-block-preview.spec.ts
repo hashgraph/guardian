@@ -246,6 +246,57 @@ describe('request document preview wiring', () => {
         return parent;
     };
 
+    for (const kind of ['page', 'dialog']) {
+        it(`blocks ${kind} Preview controls for network or form rendering only in Preview`, () => {
+            const state = kind === 'page' ? page([]) : dialog([], pageParent());
+            const component = state.component;
+            component.previewRendering = false;
+            component.changeDetectorRef = { markForCheck: jasmine.createSpy('markForCheck') };
+            component.previewMode = true;
+            component.onPreviewRenderingChange(true);
+            expect(component.isPreviewBusy).toBeTrue();
+            if (kind === 'dialog') {
+                expect(component.ifDisabledBtn({ id: 'cancel' })).toBeFalse();
+                expect(component.ifDisabledBtn({ id: 'submit' })).toBeTrue();
+            }
+            component.onPreviewRenderingChange(false);
+            expect(component.isPreviewBusy).toBeFalse();
+            component.loading = true;
+            expect(component.isPreviewBusy).toBeTrue();
+            component.previewMode = false;
+            component.onPreviewRenderingChange(true);
+            expect(component.isPreviewBusy).toBeFalse();
+            if (kind === 'dialog') expect(component.ifDisabledBtn({ id: 'cancel' })).toBeFalse();
+        });
+
+        it(`does not open a late Preview result after the ${kind} closes`, async () => {
+            let resolve!: (value: unknown) => void;
+            const responsePromise = new Promise<unknown>(done => resolve = done);
+            const state = kind === 'page' ? page([responsePromise]) : dialog([responsePromise], pageParent());
+            state.component.previewMode = true;
+            if (kind === 'page') state.component.destroy = jasmine.createSpy('destroy');
+            const pending = state.component.runPreview(false);
+            state.component.ngOnDestroy();
+            resolve(response(['amount']));
+            await pending;
+            expect(state.dialogs).toEqual([]);
+        });
+    }
+
+    it('keeps the dirty Preview form close confirmation available during network loading', () => {
+        const { component } = dialog([], pageParent());
+        component.previewMode = true;
+        component.loading = true;
+        component.dataForm = { dirty: true };
+        const decision = new Subject<string>();
+        component.dialogService = { open: jasmine.createSpy('open').and.returnValue({ onClose: decision }) };
+        component.dialogRef = { close: jasmine.createSpy('close') };
+        component.onClose();
+        expect(component.dialogService.open).toHaveBeenCalledTimes(1);
+        decision.next('Confirm');
+        expect(component.dialogRef.close).toHaveBeenCalledWith(null);
+    });
+
     it('runs a preview from the dialog with its own document reference', async () => {
         const { component, calls, dialogs } = dialog([Promise.resolve(response(['amount']))], pageParent());
         component.previewMode = true;

@@ -115,6 +115,7 @@ export class SchemaFormComponent implements OnInit {
     @Input() formulaEntries?: Record<string, number> | null;
     @Input() previewMissingFieldIds: string[] = [];
     @Input() previewValidation: boolean = false;
+    @Input() previewBusy: boolean = false;
 
     @Output() change = new EventEmitter<Schema | null>();
     @Output() destroy = new EventEmitter<void>();
@@ -124,6 +125,7 @@ export class SchemaFormComponent implements OnInit {
     @Output() updatableBtnEvent = new EventEmitter();
     @Output() buttons = new EventEmitter<any>();
     @Output() onAccordionSelect = new EventEmitter<{path: string, isOpen: boolean}>();
+    @Output() previewLoadingChange = new EventEmitter<boolean>();
 
     public minutesAgo$ = getMinutesAgoStream(() => this.lastSavedAt);
 
@@ -137,6 +139,8 @@ export class SchemaFormComponent implements OnInit {
     private controlsIndex: Map<string, { ancestors: IFieldControl<any>[], field: IFieldControl<any>, listItem?: any }> = new Map();
 
     private entryScopes = new WeakMap<object, Record<string, number>>();
+    private previewSections = new WeakSet<object>();
+    private previewFrames = new Map<IFieldControl<any> | IFieldIndexControl<any>, number>();
 
     constructor(
         private ipfs: IPFSService,
@@ -145,6 +149,56 @@ export class SchemaFormComponent implements OnInit {
     ) { }
 
     ngOnInit(): void {
+    }
+
+    public isPreviewSectionReady(item: IFieldControl<any> | IFieldIndexControl<any>): boolean {
+        return !this.previewValidation || this.previewSections.has(item);
+    }
+
+    private cancelPreviewSections(): void {
+        for (const frame of this.previewFrames.values()) {
+            cancelAnimationFrame(frame);
+            this.previewLoadingChange.emit(false);
+        }
+        this.previewFrames.clear();
+        this.previewSections = new WeakSet<object>();
+    }
+
+    public preparePreviewSection(item: IFieldControl<any> | IFieldIndexControl<any>): void {
+        if (!this.previewValidation) return;
+        const pending = this.previewFrames.get(item);
+        if (!item.open) {
+            if (pending !== undefined) {
+                cancelAnimationFrame(pending);
+                this.previewFrames.delete(item);
+                this.previewLoadingChange.emit(false);
+            }
+            this.previewSections.delete(item);
+            return;
+        }
+        if (pending !== undefined || this.previewSections.has(item)) return;
+        this.previewLoadingChange.emit(true);
+        this.previewFrames.set(item, requestAnimationFrame(() => {
+            this.previewFrames.set(item, requestAnimationFrame(() => {
+                this.previewSections.add(item);
+                this.changeDetectorRef.detectChanges();
+                this.previewFrames.set(item, requestAnimationFrame(() => {
+                    this.previewFrames.delete(item);
+                    this.previewLoadingChange.emit(false);
+                }));
+            }));
+        }));
+    }
+
+    public prepareOpenPreviewSections(): void {
+        if (!this.previewValidation) return;
+        for (const item of this.formModel?.controls || []) {
+            if (!item.isRef || !item.open) continue;
+            this.preparePreviewSection(item);
+            for (const row of item.list || []) {
+                if (row.open) this.preparePreviewSection(row);
+            }
+        }
     }
 
     public getFieldFormulas(item: IFieldControl<any>): FormulaItem[] {
@@ -171,6 +225,10 @@ export class SchemaFormComponent implements OnInit {
     }
 
     ngOnChanges(changes: SimpleChanges) {
+        if (changes.formModel || changes.previewValidation) {
+            if (this.previewValidation || this.previewFrames.size) this.cancelPreviewSections();
+            if (this.previewValidation) this.prepareOpenPreviewSections();
+        }
         if (this.formModel && this.formModel.controls) {
             for (const item of this.formModel.controls) {
                 this.updateRemoteFiles(item);
@@ -236,6 +294,7 @@ export class SchemaFormComponent implements OnInit {
     }
 
     ngOnDestroy() {
+        this.cancelPreviewSections();
         this.clearSuggestHideTimer();
         this.geoSubscriptions.unsubscribe();
         this.destroy.emit();
@@ -479,6 +538,9 @@ export class SchemaFormComponent implements OnInit {
     }
 
     public ifRequiredField(item: IFieldControl<any>): boolean {
+        if (this.previewValidation && !item.control) {
+            return item.required;
+        }
         return item.required && !item.control.disabled;
     }
 
@@ -1042,6 +1104,7 @@ export class SchemaFormComponent implements OnInit {
         }
 
         if (found) {
+            if (this.previewValidation) this.prepareOpenPreviewSections();
             try {
                 this.changeDetectorRef.detectChanges();
             } catch (e) {

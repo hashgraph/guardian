@@ -1,10 +1,13 @@
 import { CommonModule } from '@angular/common';
+import { By } from '@angular/platform-browser';
 import { ChangeDetectorRef, ElementRef, NO_ERRORS_SCHEMA } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { ReactiveFormsModule, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Schema, SchemaDataTypes } from '@guardian/interfaces';
 import { DialogService } from 'primeng/dynamicdialog';
 import { TableModule } from 'primeng/table';
+import { AccordionModule } from 'primeng/accordion';
+import { SchemaFormNavigationComponent } from '../schema-form-navigation/schema-form-navigation.component';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { FieldForm } from '../schema-form-model/field-form';
 import { SchemaFormComponent } from './schema-form.component';
@@ -44,6 +47,181 @@ describe('SchemaFormComponent Preview table validation', () => {
         const second = model.controls![0].list![1].model.controls[0];
         return { fixture, first, second };
     };
+
+    it('renders a required Preview section before its optional sub-form is added', () => {
+        const { fixture } = render();
+        const schema = new Schema({ iri: '#optional', document: {
+            $id: '#optional', type: SchemaDataTypes.object,
+            properties: { section: { $ref: '#section', title: 'Section', description: 'Section' } },
+            $defs: { '#section': {
+                $id: '#section', type: SchemaDataTypes.object,
+                properties: { rate: { type: SchemaDataTypes.number, title: 'Rate', description: 'Rate' } },
+            } },
+        } });
+        const model = new FieldForm(new UntypedFormGroup({}));
+        model.setData({ schema, requiredFields: ['section.rate'] });
+        model.build();
+        const section = model.controls![0];
+        expect(section.control).toBeNull();
+        expect(section.required).toBeTrue();
+        fixture.componentRef.setInput('form-model', model);
+        expect(() => fixture.detectChanges()).not.toThrow();
+        const header = fixture.nativeElement.querySelector(`[preview-field-id="${section.id}"]`);
+        expect(header.querySelector('.required-field')).not.toBeNull();
+        fixture.componentInstance.addGroup(section);
+        expect(() => fixture.detectChanges()).not.toThrow();
+        expect(section.control.get('rate')?.errors?.['required']).toBeTrue();
+        section.control.disable();
+        fixture.detectChanges();
+        expect(header.querySelector('.required-field')).toBeNull();
+    });
+
+    const renderSection = (preview: boolean, array = false) => {
+        const { fixture } = render();
+        tick(48);
+        const model = new FieldForm(new UntypedFormGroup({}));
+        model.setData({
+            schema: new Schema({ iri: '#sections', document: {
+                $id: '#sections', type: SchemaDataTypes.object,
+                properties: { section: array ? { type: SchemaDataTypes.array, items: { $ref: '#section' } } : { $ref: '#section' } },
+                $defs: {
+                    '#section': { $id: '#section', type: SchemaDataTypes.object,
+                        properties: { details: { $ref: '#details' } } },
+                    '#details': { $id: '#details', type: SchemaDataTypes.object,
+                        properties: { rate: { type: SchemaDataTypes.number, title: 'Rate', description: 'Rate' } } },
+                },
+            } }),
+            preset: { section: array ? [{ details: { rate: 3 } }] : { details: { rate: 3 } } },
+            requiredFields: preview ? [] : null,
+        });
+        model.build();
+        fixture.componentRef.setInput('previewValidation', preview);
+        fixture.componentRef.setInput('form-model', model);
+        fixture.detectChanges();
+        tick(128);
+        fixture.detectChanges();
+        fixture.debugElement.query(By.css('p-accordion')).triggerEventHandler('valueChange', null);
+        fixture.detectChanges();
+        tick(0);
+        return fixture;
+    };
+
+    for (const array of [false, true]) {
+        it(`reports loading before rendering a Preview input section with array ${array}`, fakeAsync(() => {
+            const fixture = renderSection(true, array);
+            const view = fixture.componentInstance;
+            const changes = spyOn(view.previewLoadingChange, 'emit');
+            fixture.debugElement.query(By.css('p-accordion')).triggerEventHandler('valueChange', 0);
+            fixture.detectChanges();
+            expect(changes).toHaveBeenCalledOnceWith(true);
+            expect(fixture.debugElement.query(By.directive(SchemaFormComponent))).toBeNull();
+            tick(16);
+            expect(view.isPreviewSectionReady(view.formModel.controls![0])).toBeFalse();
+            tick(16);
+            fixture.detectChanges();
+            expect(fixture.debugElement.query(By.directive(SchemaFormComponent))).not.toBeNull();
+            tick(16);
+            expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+            expect(view.formModel.form.getRawValue().section).toEqual(array ? [{ details: { rate: 3 } }] : { details: { rate: 3 } });
+        }));
+    }
+
+    it('renders an ordinary input section immediately without Preview loading', fakeAsync(() => {
+        const fixture = renderSection(false);
+        const view = fixture.componentInstance;
+        const changes = spyOn(view.previewLoadingChange, 'emit');
+        fixture.debugElement.query(By.css('p-accordion')).triggerEventHandler('valueChange', 0);
+        fixture.detectChanges();
+        expect(fixture.debugElement.query(By.directive(SchemaFormComponent))).not.toBeNull();
+        expect(changes).not.toHaveBeenCalled();
+    }));
+
+    it('cancels pending Preview input rendering and balances its notification on close', fakeAsync(() => {
+        const fixture = renderSection(true);
+        const view = fixture.componentInstance;
+        const changes = spyOn(view.previewLoadingChange, 'emit');
+        const accordion = fixture.debugElement.query(By.css('p-accordion'));
+        accordion.triggerEventHandler('valueChange', 0);
+        tick(16);
+        accordion.triggerEventHandler('valueChange', null);
+        tick(64);
+        expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+        expect(view.isPreviewSectionReady(view.formModel.controls![0])).toBeFalse();
+    }));
+
+    it('cancels queued Preview input work when ordinary validation is restored', fakeAsync(() => {
+        const fixture = renderSection(true);
+        const view = fixture.componentInstance;
+        const changes = spyOn(view.previewLoadingChange, 'emit');
+        fixture.debugElement.query(By.css('p-accordion')).triggerEventHandler('valueChange', 0);
+        tick(16);
+        fixture.componentRef.setInput('previewValidation', false);
+        fixture.detectChanges();
+        expect(fixture.debugElement.query(By.directive(SchemaFormComponent))).not.toBeNull();
+        tick(64);
+        expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+        expect(Reflect.get(view, 'previewFrames').size).toBe(0);
+    }));
+
+    it('prepares a Preview input section opened from navigation', fakeAsync(() => {
+        const fixture = renderSection(true);
+        const view = fixture.componentInstance;
+        const changes = spyOn(view.previewLoadingChange, 'emit');
+        view.openField(view.formModel.controls![0].id);
+        expect(changes).toHaveBeenCalledOnceWith(true);
+        tick(1200);
+        expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+        expect(view.isPreviewSectionReady(view.formModel.controls![0])).toBeTrue();
+    }));
+
+    it('shows root loading synchronously for a real Preview input accordion-header click', fakeAsync(() => {
+        TestBed.configureTestingModule({
+            declarations: [SchemaFormRootComponent, SchemaFormComponent, SchemaFormNavigationComponent],
+            imports: [CommonModule, ReactiveFormsModule, AccordionModule, TableModule],
+            providers: [
+                UntypedFormBuilder,
+                { provide: IPFSService, useValue: {} },
+                { provide: DialogService, useValue: {} },
+            ],
+            schemas: [NO_ERRORS_SCHEMA],
+        });
+        const fixture = TestBed.createComponent(SchemaFormRootComponent);
+        fixture.componentRef.setInput('schema', new Schema({ iri: '#input', document: {
+            $id: '#input', type: SchemaDataTypes.object,
+            properties: { section: { $ref: '#section', title: 'Section', description: 'Section' } },
+            $defs: { '#section': { $id: '#section', type: SchemaDataTypes.object,
+                properties: { rate: { type: SchemaDataTypes.number, title: 'Rate', description: 'Rate' } } } },
+        } }));
+        fixture.componentRef.setInput('preset', { section: { rate: 3 } });
+        fixture.componentRef.setInput('requiredFields', []);
+        fixture.componentRef.setInput('showButtons', true);
+        fixture.detectChanges();
+        tick(256);
+        fixture.detectChanges();
+        const form = fixture.debugElement.query(By.directive(SchemaFormComponent));
+        const header = form.query(By.css('p-accordion-header'));
+        header.nativeElement.click();
+        fixture.detectChanges();
+        tick(64);
+        fixture.detectChanges();
+        expect(fixture.nativeElement.querySelector('.preview-loading-overlay')).toBeNull();
+        header.nativeElement.click();
+        fixture.detectChanges();
+        expect(fixture.componentInstance.previewLoadingCount).toBeGreaterThan(0);
+        const cancel: HTMLButtonElement = Array.from<HTMLButtonElement>(fixture.nativeElement.querySelectorAll('.progress-footer button')).find(button => button.textContent?.trim() === 'Cancel')!;
+        expect(cancel).toBeDefined();
+        expect(cancel.disabled).toBeFalse();
+        expect(cancel.closest('[inert]')).toBeNull();
+        const cancelled = spyOn(fixture.componentInstance.cancelBtnEvent, 'emit');
+        cancel.click();
+        expect(cancelled).toHaveBeenCalled();
+        expect(fixture.nativeElement.querySelector('.form-field-container').inert).toBeTrue();
+        expect(fixture.nativeElement.querySelector('.preview-loading-overlay')).not.toBeNull();
+        tick(48);
+        fixture.detectChanges();
+        expect(fixture.nativeElement.querySelector('.preview-loading-overlay')).toBeNull();
+        expect(fixture.nativeElement.querySelector('.form-field-container').inert).toBeFalse();
+    }));
 
     it('marks only the reported empty cell and exposes its exact scroll target', () => {
         const { fixture, first, second } = render();

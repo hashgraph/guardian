@@ -16,12 +16,12 @@
         @if (title) {
           <h1 mat-dialog-title>{{ title }}</h1>
         }
-        <div class="draft-file-actions">
+        <div class="draft-file-actions" [attr.inert]="isPreviewBusy ? '' : null">
           <div class="calculation-preview-toggle">
             <p-toggleswitch
               inputId="calculationPreview_{{ id }}"
               [ngModel]="previewMode"
-              [disabled]="loading"
+              [disabled]="loading || isPreviewBusy"
               (onChange)="onPreviewModeChange($event.checked)">
             </p-toggleswitch>
             <label for="calculationPreview_{{ id }}">Calculation preview</label>
@@ -36,7 +36,7 @@
         </div>
         <div class="schema-form" [attr.dryRun]="dryRun" [attr.restoreData]="restoreData">
           @if (restoreData) {
-            <div class="restore-data">
+            <div class="restore-data" [attr.inert]="isPreviewBusy ? '' : null">
               <svg-icon class="svg-icon"
                 src="/assets/images/icons/info.svg"
                 svgClass="icon-color-primary">
@@ -57,7 +57,7 @@
             </div>
           }
           @if (dryRun) {
-            <div class="restore-data">
+            <div class="restore-data" [attr.inert]="isPreviewBusy ? '' : null">
               <svg-icon class="svg-icon"
                 src="/assets/images/icons/info.svg"
                 svgClass="icon-color-primary">
@@ -78,7 +78,7 @@
             </div>
           }
           @if (relayerAccount || enableAdditionalData) {
-            <div class="relayer-account-steps">
+            <div class="relayer-account-steps" [attr.inert]="isPreviewBusy ? '' : null">
               <div class="guardian-step-container">
                 <div class="guardian-stepper horizontal-stepper">
                   <div class="guardian-step" [attr.action]="isActionStep(0)" [attr.disabled]="isStep(0)" (click)="setStep(0)">
@@ -125,8 +125,10 @@
               [isFormForRequestBlock]="true"
               [requiredFields]="previewRequiredFields"
               [previewMissingFields]="previewMissingFields"
+              [previewActionsDisabled]="isPreviewBusy"
               (form)="initForm($event)"
               (presetApplied)="onPresetApplied()"
+              (previewBusyChange)="onPreviewRenderingChange($event)"
               (buttons)="onChangeButtons($event)"
               (saveBtnEvent)="handleSaveBtnEvent($event)"
               (cancelBtnEvent)="onCancelPage($event)"
@@ -136,7 +138,7 @@
             </app-schema-form-root>
           </form>
           @if (enableAdditionalData) {
-            <div class="evidence-container" [attr.visibility]="isStep(evidenceStepIndex)">
+            <div class="evidence-container" [attr.inert]="isPreviewBusy ? '' : null" [attr.visibility]="isStep(evidenceStepIndex)">
               <div class="toolbar-textarea guardian-textarea-container">
                 <textarea
                   placeholder="Add a comment (optional)"
@@ -172,7 +174,7 @@
               </div>
             </div>
           }
-          <div class="relayer-account-container" [attr.visibility]="isStep(enableAdditionalData ? 2 : 1)">
+          <div class="relayer-account-container" [attr.inert]="isPreviewBusy ? '' : null" [attr.visibility]="isStep(enableAdditionalData ? 2 : 1)">
             <div class="relayer-account-type-values">
               @if (needRemoteWarning) {
                 <div class="account-warning">
@@ -290,7 +292,13 @@
 </ng-template>
 
 @if (loading) {
-  <div class="loading">
-    <div class="preloader-image preloader-image-l-size"></div>
-  </div>
+  @if (previewMode) {
+    <div class="guardian-loading preview-loading-overlay">
+      <div class="guardian-loading-image"></div>
+    </div>
+  } @else {
+    <div class="loading">
+      <div class="preloader-image preloader-image-l-size"></div>
+    </div>
+  }
 }

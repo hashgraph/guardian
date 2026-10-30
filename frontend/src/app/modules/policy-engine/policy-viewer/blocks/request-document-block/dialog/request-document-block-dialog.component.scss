@@ -1,3 +1,5 @@
+@use '../../../../../schema-engine/preview-loading' as preview;
+
 .context {
     position: relative;
     overflow-y: auto;
@@ -55,6 +57,10 @@
 
 form {
     width: 100%;
+}
+
+.guardian-loading.preview-loading-overlay {
+    @include preview.overlay;
 }
 
 .guardian-loading {
@@ -350,4 +356,11 @@ form {
     gap: 8px;
     white-space: nowrap;
     color: var(--guardian-font-color);
+}
+
+
+.header-icon.resize[aria-disabled='true'],
+request-draft-file-actions[inert] {
+    pointer-events: none;
+    opacity: 0.5;
 }

@@ -1531,15 +1531,27 @@ export class FieldForm {
         return current.size === next.size && [...next].every((path) => current.has(path));
     }
 
+    public updatePreviewRequiredFields(paths: string[]): boolean {
+        if (!this.rootForm.requiredFields) {
+            return false;
+        }
+        this.rootForm.requiredFields = new Set(paths);
+        this.rootForm.refreshPreviewRequirements();
+        return true;
+    }
+
     private refreshPreviewRequirements(): void {
         if (!this.rootForm.requiredFields) {
             return;
         }
         for (const item of this.controls || []) {
             item.required = this.isFieldRequired(item.field);
+            if (item.isRef && !item.isArray) {
+                item.displayRequired = item.fields?.some(field => this.isFieldRequired(field));
+            }
             if (!item.isRef && !item.isArray && item.control) {
                 item.control.setValidators(this.getValidators(item));
-                item.control.updateValueAndValidity({ emitEvent: false });
+                item.control.updateValueAndValidity({ emitEvent: false, onlySelf: true });
             }
             if (item.model instanceof FieldForm) {
                 item.model.refreshPreviewRequirements();
@@ -1547,9 +1559,16 @@ export class FieldForm {
             for (const entry of item.list || []) {
                 if (entry.model instanceof FieldForm) {
                     entry.model.refreshPreviewRequirements();
+                } else if (!item.isRef) {
+                    entry.control.setValidators(this.getValidators(item));
+                    entry.control.updateValueAndValidity({ emitEvent: false, onlySelf: true });
                 }
             }
+            if (item.isArray) {
+                item.control?.updateValueAndValidity({ emitEvent: false, onlySelf: true });
+            }
         }
+        this.form.updateValueAndValidity({ emitEvent: false, onlySelf: true });
     }
 
     public removeItem(

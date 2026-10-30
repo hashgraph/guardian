@@ -12,6 +12,7 @@
       @if (item.visibility) {
         <div
           [attr.showMobileField]="showPage(item, i)"
+          [attr.inert]="previewBusy ? '' : null"
           class="form-field-container"
           >
           <!-- simple field -->
@@ -1002,7 +1003,7 @@
                     }}"
                             [value]="item.open ? 0 : null"
                             [motionOptions]="{ disabled: true }"
-                            (valueChange)="item.open = ($event === 0); onAccordionSelectEvent(item.open, item)"
+                            (valueChange)="item.open = ($event === 0); previewValidation && preparePreviewSection(item); onAccordionSelectEvent(item.open, item)"
                             >
                             <p-accordion-panel [value]="0">
                               <p-accordion-header>
@@ -1076,7 +1077,7 @@
                                   </div>
                                 </p-accordion-header>
                                 <p-accordion-content>
-                                  @if (item.open) {
+                                  @if (item.open && isPreviewSectionReady(item)) {
                                     @if (
                                       !isFormForFinishSetup &&
                                       item.suggest &&
@@ -1147,6 +1148,8 @@
                                                   [formulas]="formulas"
                                                   [previewMissingFieldIds]="previewMissingFieldIds"
                                                   [previewValidation]="previewValidation"
+                                                  [previewBusy]="previewBusy"
+                                                  (previewLoadingChange)="previewValidation && previewLoadingChange.emit($event)"
                                                   [formulaEntries]="formulaEntries"
                                                   [private-fields]="hide"
                                                   [rules]="rules"
@@ -1204,7 +1207,7 @@
                     }}"
                                 [value]="item.open ? 0 : null"
                                 [motionOptions]="{ disabled: true }"
-                                (valueChange)="item.open = ($event === 0); onAccordionSelectEvent(item.open, item)"
+                                (valueChange)="item.open = ($event === 0); previewValidation && preparePreviewSection(item); onAccordionSelectEvent(item.open, item)"
                                 >
                                 <p-accordion-panel [value]="0">
                                   <p-accordion-header>
@@ -1256,7 +1259,7 @@
                                       </div>
                                     </p-accordion-header>
                                     <p-accordion-content>
-                                      @if (item.open) {
+                                      @if (item.open && isPreviewSectionReady(item)) {
                                         @if (
                                           !isFormForFinishSetup &&
                                           item.suggest &&
@@ -1306,7 +1309,7 @@
                                     }}"
                                                 [value]="listItem.open ? 0 : null"
                                                 [motionOptions]="{ disabled: true }"
-                                                (valueChange)="listItem.open = ($event === 0); onAccordionSelectEvent(listItem.open, item, listItem.index2)"
+                                                (valueChange)="listItem.open = ($event === 0); previewValidation && preparePreviewSection(listItem); onAccordionSelectEvent(listItem.open, item, listItem.index2)"
                                                 >
                                                 <p-accordion-panel [value]="0">
                                                   <p-accordion-header>
@@ -1349,7 +1352,7 @@
                                                     </div>
                                                   </p-accordion-header>
                                                   <p-accordion-content>
-                                                    @if (listItem.open) {
+                                                    @if (listItem.open && isPreviewSectionReady(listItem)) {
                                                       <div class="form-field-array-item">
                                                         <div
                                                           class="form-field-group"
@@ -1403,6 +1406,8 @@
                                                             [formulas]="formulas"
                                                             [previewMissingFieldIds]="previewMissingFieldIds"
                                                   [previewValidation]="previewValidation"
+                                                  [previewBusy]="previewBusy"
+                                                  (previewLoadingChange)="previewValidation && previewLoadingChange.emit($event)"
                                                             [formulaEntries]="getEntryFormulaScope(item, listItem)"
                                                                 [dryRun]="dryRun"
                                                             [policyId]="
@@ -1516,7 +1521,7 @@
                               @if (config.visible()) {
                                 <button
                                   (click)="config.fn()"
-                                  [disabled]="config.disabled()"
+                                  [disabled]="config.disabled() || (previewBusy && config.id !== 'cancel')"
                                   type="button"
                                   class="guardian-button guardian-button-{{ config.type }}"
                                   >
@@ -1540,7 +1545,7 @@
                         editButtonConfig.type
                     }}"
                                 (click)="editButtonConfig.fn()"
-                                [disabled]="editButtonConfig.disabled()"
+                                [disabled]="editButtonConfig.disabled() || previewBusy"
                                 >
                                 {{ editButtonConfig.text }}
                               </button>

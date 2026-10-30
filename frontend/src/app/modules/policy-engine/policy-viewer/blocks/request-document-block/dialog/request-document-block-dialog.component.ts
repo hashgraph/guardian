@@ -69,6 +69,16 @@ export class RequestDocumentBlockDialog {
     public relayerAccounts: any[] = [];
     public remoteWarning: boolean = false;
     public previewMode: boolean = false;
+    public previewRendering: boolean = false;
+
+    public get isPreviewBusy(): boolean {
+        return this.previewMode && (this.loading || this.previewRendering);
+    }
+
+    public onPreviewRenderingChange(rendering: boolean): void {
+        this.previewRendering = this.previewMode && rendering;
+        this.changeDetectorRef.markForCheck();
+    }
     public previewRequiredFields: string[] | null = null;
     private previewRequest: number = 0;
     public previewMissingFields: string[] = [];
@@ -163,6 +173,7 @@ export class RequestDocumentBlockDialog {
     }
 
     ngOnDestroy(): void {
+        if (this.previewMode) this.previewRequest++;
         this.destroy$.next(true);
         this.destroy$.unsubscribe();
         this.sub?.unsubscribe();
@@ -426,6 +437,7 @@ export class RequestDocumentBlockDialog {
         this.previewPreferenceLoaded = true;
         this.calculationPreview.saveMode(this.parent?.user?.id, this.policyId, this.id, enabled);
         this.previewMode = enabled;
+        if (!enabled) this.previewRendering = false;
         if (!enabled) {
             this.previewRequest++;
             this.loading = false;
@@ -500,7 +512,7 @@ export class RequestDocumentBlockDialog {
     }
 
     public showUnsavedChangesDialog() {
-        if (!this.loading) {
+        if (!this.loading || this.previewMode) {
             const dialogOptionRef = this.dialogService.open(CustomConfirmDialogComponent, {
                 showHeader: false,
                 width: '640px',
@@ -602,6 +614,7 @@ export class RequestDocumentBlockDialog {
     }
 
     public ifDisabledBtn(config: any) {
+        if (this.isPreviewBusy && config.id !== 'cancel') return true;
         if (config.id === 'submit') {
             return !this.dataForm.valid || this.loading || this.ifRelayerAccountDisabled() || this.isRemoteWarning;
         } else {

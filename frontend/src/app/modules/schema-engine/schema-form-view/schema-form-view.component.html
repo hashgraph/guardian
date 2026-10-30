@@ -250,13 +250,13 @@
             </div>
 
             <div *ngIf="ifSubSchema(item)" class="form-field-group">
-                <p-accordion class="guardian-accordion" [value]="item.open ? 0 : null" (valueChange)="item.open = ($event === 0); emitAccordionSelect(item.open, item)">
+                <p-accordion class="guardian-accordion" [value]="item.open ? 0 : null" (valueChange)="item.open = ($event === 0); preview && preparePreviewSection(item); emitAccordionSelect(item.open, item)">
                     <p-accordion-panel [value]="0">
                         <p-accordion-header>
                             <div class="label-field-accordion" [attr.accordiontabid]="item.fullPath">{{item.description}}</div>
                         </p-accordion-header>
                         <p-accordion-content>
-                        <ng-container *ngIf="item.open">
+                        <ng-container *ngIf="item.open && (!preview || item.previewReady)">
                             <div *ngIf="this.values && this.values[item.name]" class="form-field-array-item">
                                 <div class="form-field-group">
                                     <ng-container [ngSwitch]="item.customType">
@@ -282,6 +282,7 @@
                                             [link]="item.link"
                                             [accordionLink]="item.accordionLink"
                                             [preview]="preview"
+                                            (previewLoadingChange)="preview && previewLoadingChange.emit($event)"
                                             [discussion]="discussionData"
                                             [discussion-view]="discussionView"
                                             [discussion-action]="discussionAction"
@@ -436,13 +437,13 @@
             </div>
 
             <div *ngIf="ifSubSchemaArray(item) && !canDrawTable(item)" class="form-field-group schema-form-field-array-group">
-                <p-accordion class="guardian-accordion" [value]="item.open ? 0 : null" (valueChange)="item.open = ($event === 0); emitAccordionSelect(item.open, item)">
+                <p-accordion class="guardian-accordion" [value]="item.open ? 0 : null" (valueChange)="item.open = ($event === 0); preview && preparePreviewSection(item); emitAccordionSelect(item.open, item)">
                     <p-accordion-panel [value]="0">
                         <p-accordion-header>
                             <div class="label-field-accordion" [attr.accordiontabid]="item.fullPath">{{item.description}}</div>
                         </p-accordion-header>
                         <p-accordion-content>
-                        <ng-container *ngIf="item.open">
+                        <ng-container *ngIf="item.open && (!preview || item.previewReady)">
                             <div
                                 *ngFor="let listItem of getItemsPage(item)"
                                 class="form-field-array-item short-delimiter"
@@ -472,6 +473,7 @@
                                             [link]="item.link"
                                             [accordionLink]="item.accordionLink"
                                             [preview]="preview"
+                                            (previewLoadingChange)="preview && previewLoadingChange.emit($event)"
                                             [discussion]="discussionData"
                                             [discussion-view]="discussionView"
                                             [discussion-action]="discussionAction"

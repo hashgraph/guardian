@@ -1,3 +1,5 @@
+@use '../preview-loading' as preview;
+
 .header-container .tags-container {
     display: flex;
     justify-content: flex-start;
@@ -63,6 +65,17 @@
     .primary-color {
         fill: var(--color-primary, #0031ff);
         color: var(--color-primary, #0031ff);
+    }
+}
+
+.dialog-body.preview-viewer {
+    position: relative;
+
+    .preview-loading-overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 5;
+        @include preview.overlay;
     }
 }
 
@@ -192,4 +205,11 @@
             color: var(--guardian-font-color);
         }
     }
+}
+
+
+.header-icon.resize[aria-disabled='true'],
+request-draft-file-actions[inert] {
+    pointer-events: none;
+    opacity: 0.5;
 }

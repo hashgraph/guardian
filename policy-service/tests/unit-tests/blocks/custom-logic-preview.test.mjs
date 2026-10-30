@@ -91,6 +91,128 @@ describe('@unit customLogicBlock preview', () => {
         }
     });
 
+    for (const calculation of [
+        'done({total:(cache[key]=doc[key])>0?5:7});',
+        'cache[key]=doc[key];done({total:cache[key]>0?5:7});',
+        'Object.keys(doc);cache[key]=doc[key];done({total:cache[key]>0?5:7});'
+    ]) for (const subject of [{}, { amount: 0 }, { amount: 3 }]) {
+        it(`validates an input consumed by an indexed assignment: ${calculation} ${JSON.stringify(subject)}`, async function () {
+            this.timeout(20000);
+            const response = await runPreview({ blockType: 'requestVcDocumentBlock' }, makeUser(), {}, async (_request, user, _data, step) => {
+                step.setPreviewSource({ schema: '#S', document: subject, paths: ['amount'], dependencies: {} });
+                const { block } = makeBlock(CustomLogicBlock, { options: { unsigned: true,
+                    expression: 'const doc=documents[0].document.credentialSubject[0];const key=["am","ount"].join("");const cache={};' + calculation } });
+                block.triggerEvents = async (type, _user, state) => {
+                    if (type === 'RunEvent') step.addPreviewDocument('script', null, state);
+                };
+                await block.runAction({ user, actionStatus: step, data: { data: { schema: '#S', document: { credentialSubject: [structuredClone(subject)] } } } });
+                return new MessageResponse({});
+            });
+            if (!Object.hasOwn(subject, 'amount')) {
+                assert.ok(response instanceof MessageError);
+                assert.equal(response.code, 422);
+                assert.equal(response.body, null);
+                assert.deepEqual(response.data.fields, ['amount']);
+                assert.deepEqual(response.data.missingFields, ['amount']);
+            } else {
+                assert.ok(response instanceof MessageResponse);
+                assert.equal(response.code, 200);
+                assert.deepEqual(response.body.fields, ['amount']);
+                assert.deepEqual(response.body.missingFields, []);
+                assert.deepEqual(response.body.errors, []);
+                assert.equal(response.body.documents[0].document.document.credentialSubject[0].total, subject.amount > 0 ? 5 : 7);
+            }
+        });
+    }
+
+    it('requires a missing selected input after a nonempty-document guard', async function () {
+        this.timeout(20000);
+        const subject = { note: 'filled' };
+        const response = await runPreview({ blockType: 'requestVcDocumentBlock' }, makeUser(), {}, async (_request, user, _data, step) => {
+            step.setPreviewSource({ schema: '#S', document: subject, paths: ['amount', 'note'], dependencies: {} });
+            const { block } = makeBlock(CustomLogicBlock, { options: { unsigned: true,
+                expression: 'const doc=documents[0].document.credentialSubject[0];(()=>{if(!Object.keys(doc).length)return done(null);const key=["am","ount"].join("");const tmp={};tmp[key]=doc[key];done({total:tmp[key]>0?5:7});})();' } });
+            block.triggerEvents = async (type, _user, state) => {
+                if (type === 'RunEvent') step.addPreviewDocument('script', null, state);
+            };
+            await block.runAction({ user, actionStatus: step, data: { data: { schema: '#S', document: { credentialSubject: [structuredClone(subject)] } } } });
+            return new MessageResponse({});
+        });
+        assert.ok(response instanceof MessageError);
+        assert.equal(response.code, 422);
+        assert.equal(response.body, null);
+        assert.deepEqual(response.data.fields, ['amount']);
+        assert.deepEqual(response.data.missingFields, ['amount']);
+    });
+
+    it('returns the ordinary array getter value through the preview response', async function () {
+        this.timeout(20000);
+        const response = await runPreview({ blockType: 'requestVcDocumentBlock' }, makeUser(), {}, async (_request, user, _data, step) => {
+            step.setPreviewSource({ schema: '#S', document: {}, paths: ['rows'], dependencies: {} });
+            const { block } = makeBlock(CustomLogicBlock, { options: { unsigned: true,
+                expression: 'const doc=documents[0].document.credentialSubject[0];let calls=0;const rows=[];Object.defineProperty(rows,"0",{enumerable:true,get(){return ++calls}});doc.rows=rows;done({total:rows[0]});' } });
+            block.triggerEvents = async (type, _user, state) => {
+                if (type === 'RunEvent') step.addPreviewDocument('script', null, state);
+            };
+            await block.runAction({ user, actionStatus: step, data: { data: { schema: '#S', document: { credentialSubject: [{}] } } } });
+            return new MessageResponse({});
+        });
+        assert.ok(response instanceof MessageResponse);
+        assert.equal(response.code, 200);
+        assert.deepEqual(response.body.errors, []);
+        assert.deepEqual(response.body.incomplete, []);
+        assert.equal(response.body.documents[0].document.document.credentialSubject[0].total, 1);
+    });
+
+    for (const amount of [0, 3]) {
+        it(`requires only the consumed field from a copy using saved keys: ${amount}`, async function () {
+            this.timeout(20000);
+            const subject = { amount, note: '' };
+            const response = await runPreview({ blockType: 'requestVcDocumentBlock' }, makeUser(), {}, async (_request, user, _data, step) => {
+                step.setPreviewSource({ schema: '#S', document: subject, paths: ['amount', 'note'], dependencies: {} });
+                const { block } = makeBlock(CustomLogicBlock, { options: { unsigned: true,
+                    expression: 'const doc=documents[0].document.credentialSubject[0];const keys=Object.keys(doc);const c={};for(const k of keys)c[k]=doc[k];done({total:c.amount*2});' } });
+                block.triggerEvents = async (type, _user, state) => {
+                    if (type === 'RunEvent') step.addPreviewDocument('script', null, state);
+                };
+                await block.runAction({ user, actionStatus: step, data: { data: { schema: '#S', document: { credentialSubject: [structuredClone(subject)] } } } });
+                return new MessageResponse({});
+            });
+            assert.ok(response instanceof MessageResponse);
+            assert.equal(response.code, 200);
+            assert.deepEqual(response.body.fields, ['amount']);
+            assert.deepEqual(response.body.missingFields, []);
+            assert.deepEqual(response.body.errors, []);
+            assert.equal(response.body.documents[0].document.document.credentialSubject[0].total, amount * 2);
+        });
+    }
+
+    for (const copy of [
+        'Object.keys(doc).forEach(k=>c[k]=doc[k]);',
+        'for(const k of Object.keys(doc)){const key=k;c[key]=doc[key];}'
+    ]) {
+        it(`keeps unrelated copied fields optional: ${copy}`, async function () {
+            this.timeout(20000);
+            const subject = { amount: 3, note: '' };
+            const response = await runPreview({ blockType: 'requestVcDocumentBlock' }, makeUser(), {}, async (_request, user, _data, step) => {
+                step.setPreviewSource({ schema: '#S', document: subject, paths: ['amount', 'note'], dependencies: {} });
+                const { block } = makeBlock(CustomLogicBlock, { options: { unsigned: true,
+                    expression: 'const doc=documents[0].document.credentialSubject[0];const c={};' + copy + 'done({total:c.amount*2});' } });
+                block.triggerEvents = async (type, _user, state) => {
+                    if (type === 'RunEvent') step.addPreviewDocument('script', null, state);
+                };
+                await block.runAction({ user, actionStatus: step, data: { data: { schema: '#S', document: { credentialSubject: [structuredClone(subject)] } } } });
+                return new MessageResponse({});
+            });
+            assert.ok(response instanceof MessageResponse);
+            assert.equal(response.code, 200);
+            assert.deepEqual(response.body.fields, ['amount']);
+            assert.deepEqual(response.body.missingFields, []);
+            assert.deepEqual(response.body.errors, []);
+            assert.equal(response.body.documents[0].document.document.credentialSubject[0].total, 6);
+        });
+    }
+
     const conditionalExpression = 'const doc = documents[0].document.credentialSubject[0]; '
         + 'doc.total = doc.amount > 100 ? doc.amount * doc.rate : doc.amount - doc.discount; done(documents[0]);';
 

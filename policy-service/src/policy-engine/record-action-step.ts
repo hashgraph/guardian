@@ -208,7 +208,7 @@ export class RecordActionStep {
                 this.timer = null;
                 if (!this.callbackFired && this.counter === 0) {
                     this.callbackFired = true;
-                    this.callback(this.id, this.timestemp, [...this.errors]);
+                    this.callback(this.id, this.timestemp, this.errors.map(({ message, stack }) => ({ message, stack })));
                 }
             }, 1000);
         }

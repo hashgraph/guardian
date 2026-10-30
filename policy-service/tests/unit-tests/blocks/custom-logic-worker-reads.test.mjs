@@ -28,6 +28,8 @@ describe('@unit customLogic worker read tracking', function () {
     this.timeout(20000);
 
     for (const [name, calculation, total] of [
+        ['array accessor', 'let calls=0;const rows=[];Object.defineProperty(rows,"0",{enumerable:true,get(){return ++calls}});doc.rows=rows;done({total:rows[0]});', 1],
+        ['array Proxy', 'let calls=0;const rows=new Proxy([],{ownKeys(t){calls++;return Reflect.ownKeys(t)},getOwnPropertyDescriptor(t,k){calls++;return Reflect.getOwnPropertyDescriptor(t,k)}});doc.rows=rows;done({total:calls});', 0],
         ['object identity', 'const child = { amount: 3 }; doc.child = child; done({ total: doc.child === child ? 10 : 20 });', 10],
         ['Date receiver', 'doc.date = new Date(0); done({ total: doc.date.getTime() });', 0],
         ['Map receiver', 'doc.lookup = new Map([["rate", 3]]); done({ total: doc.lookup.get("rate") * doc.amount });', 6]
@@ -42,6 +44,19 @@ describe('@unit customLogic worker read tracking', function () {
             if (name === 'Map receiver') {
                 assert.deepEqual(preview.find(message => message.type === 'done').reads, [{ schema: '#S', path: 'amount', fullPath: 'amount' }]);
             }
+        });
+    }
+
+    for (const [rows, total] of [[[{}], 7], [[{ amount: 3 }], 5]]) {
+        it(`keeps input cell reads through an assigned array Proxy for rows ${JSON.stringify(rows)}`, async () => {
+            const script = 'const doc = documents[0].document.credentialSubject[0]; doc.rows = new Proxy([doc.rows[0]], {}); done({ total: doc.rows[0].amount > 0 ? 5 : 7 });';
+            const documents = () => [{ schema: '#S', document: { credentialSubject: [{ rows }] } }];
+            const ordinary = await runWorker(script, documents(), false);
+            const preview = await runWorker(script, documents(), true);
+            const done = preview.find(message => message.type === 'done');
+            assert.deepEqual(ordinary.find(message => message.type === 'done').result, { total });
+            assert.deepEqual(done.result, { total });
+            assert.ok(done.reads.some(read => read.schema === '#S' && read.path === 'rows.amount' && read.fullPath === 'rows.0.amount'));
         });
     }
 

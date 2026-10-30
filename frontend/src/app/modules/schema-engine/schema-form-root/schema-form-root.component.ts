@@ -72,8 +72,27 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     @Input() formulas: FormulasTree | null = null;
     @Input() requiredFields: string[] | null = null;
     @Input() previewMissingFields: string[] = [];
+    @Input() previewActionsDisabled: boolean = false;
     @Input() formulaLinkScope: IFormulaLinkScope | null = null;
     private previewFocusTimer: ReturnType<typeof setTimeout> | null = null;
+    private previewBuildFrame: number | null = null;
+    public previewLoadingCount: number = 0;
+    @Output() previewBusyChange = new EventEmitter<boolean>(true);
+
+    public get isPreviewBusy(): boolean {
+        return this.requiredFields !== null && (this.loading || this.previewLoadingCount > 0);
+    }
+
+    public get isPreviewLocked(): boolean {
+        return this.previewActionsDisabled || this.isPreviewBusy;
+    }
+
+    public onPreviewLoadingChange(loading: boolean): void {
+        if (this.requiredFields === null) return;
+        this.previewLoadingCount = Math.max(0, this.previewLoadingCount + (loading ? 1 : -1));
+        this.previewBusyChange.emit(this.isPreviewBusy);
+        this.changeDetectorRef.markForCheck();
+    }
 
     @Output('form') form = new EventEmitter<UntypedFormGroup>();
     @Output('presetApplied') presetApplied = new EventEmitter<UntypedFormGroup>();
@@ -142,6 +161,10 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         if (changes.formulas && this.model) {
             this.buildFormulaModel();
         }
+        if (changes.requiredFields && this.requiredFields === null) {
+            this.previewLoadingCount = 0;
+            if (!changes.requiredFields.firstChange && changes.requiredFields.previousValue !== null) this.previewBusyChange.emit(false);
+        }
         this.loading = true;
         const requiredChanged = !!changes.requiredFields
             && !(!changes.requiredFields.firstChange && this.model?.hasSameRequiredFields(this.requiredFields));
@@ -152,9 +175,19 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         if (changes.presetDocument) {
             this.userPreset = !!this.presetDocument;
         }
+        if (requiredChanged && !changes.requiredFields.firstChange && this.requiredFields !== null
+            && this.model && !changes.schema && !changes.fields && !changes.hide
+            && !changes.readonly && !changes.conditions && !changes.presetDocument
+            && this.model.updatePreviewRequiredFields(this.requiredFields)) {
+            this.updatePreviewMissingFieldIds();
+            this.loading = false;
+            this.schedulePreviewFocus();
+            return;
+        }
         let keepDirty = false;
         const dirtyPaths: string[][] = [];
-        if (requiredChanged && !changes.requiredFields.firstChange && this.model) {
+        if (requiredChanged && !changes.requiredFields.firstChange && this.model && !changes.presetDocument
+            && this.previewBuildFrame === null) {
             keepDirty = this.group.dirty;
             const collectDirty = (control: AbstractControl, path: string[]): void => {
                 if (control.dirty && path.length) {
@@ -179,7 +212,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             changes.presetDocument ||
             requiredChanged
         ) {
-            setTimeout(() => {
+            const rebuild = () => {
                 this.buildFields();
                 for (const path of dirtyPaths) {
                     this.group.get(path)?.markAsDirty();
@@ -190,17 +223,38 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
                 if (presetApplied) {
                     this.presetApplied.emit(this.group);
                 }
-                setTimeout(() => {
+                const finish = () => {
                     this.loading = false;
+                    if (this.requiredFields !== null) this.previewBusyChange.emit(this.isPreviewBusy);
                     this.schedulePreviewFocus();
-                }, 0);
-            }, 0);
+                };
+                if (this.requiredFields !== null) {
+                    this.changeDetectorRef.detectChanges();
+                    this.previewBuildFrame = requestAnimationFrame(() => {
+                        this.previewBuildFrame = null;
+                        finish();
+                        this.changeDetectorRef.markForCheck();
+                    });
+                } else setTimeout(finish, 0);
+            };
+            if (this.previewBuildFrame !== null) {
+                cancelAnimationFrame(this.previewBuildFrame);
+                this.previewBuildFrame = null;
+            }
+            if (this.requiredFields !== null) {
+                this.previewBusyChange.emit(true);
+                this.previewBuildFrame = requestAnimationFrame(() => {
+                    this.previewBuildFrame = requestAnimationFrame(rebuild);
+                });
+            } else setTimeout(rebuild, 0);
         } else {
             this.loading = false;
         }
     }
 
     ngOnDestroy() {
+        if (this.isPreviewBusy) this.previewBusyChange.emit(false);
+        if (this.previewBuildFrame !== null) cancelAnimationFrame(this.previewBuildFrame);
         if (this.previewFocusTimer !== null) clearTimeout(this.previewFocusTimer);
         this.formulaSub?.unsubscribe();
         if (this.model) {
@@ -387,12 +441,43 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
                 controls = row.model?.controls || [];
             } else controls = field.model?.controls || [];
         }
+        if (this.requiredFields !== null && this.childForm?.prepareOpenPreviewSections) {
+            this.childForm.prepareOpenPreviewSections();
+        }
         this.changeDetectorRef.detectChanges();
+        this.scrollToPreviewField(targetId, 20);
+    }
+
+    private scrollToPreviewField(targetId: string | undefined, attempts: number): void {
         const container: HTMLElement | undefined = this.contentContainerRef?.nativeElement;
         const target = Array.from(container?.querySelectorAll<HTMLElement>('[preview-field-id]') || [])
             .find(element => element.getAttribute('preview-field-id') === targetId);
-        target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        target?.querySelector<HTMLElement>('input,select,textarea,button,[tabindex]')?.focus({ preventScroll: true });
+        if (!target || this.isPreviewLocked) {
+            if (targetId && attempts > 0) {
+                this.previewFocusTimer = setTimeout(() => {
+                    this.previewFocusTimer = null;
+                    this.scrollToPreviewField(targetId, attempts - 1);
+                }, 50);
+            }
+            return;
+        }
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        target.querySelector<HTMLElement>('input,select,textarea,button,[tabindex]')?.focus({ preventScroll: true });
+        this.keepPreviewFieldInView(targetId, 5);
+    }
+
+    private keepPreviewFieldInView(targetId: string | undefined, attempts: number): void {
+        this.previewFocusTimer = setTimeout(() => {
+            this.previewFocusTimer = null;
+            const container: HTMLElement | undefined = this.contentContainerRef?.nativeElement;
+            const target = Array.from(container?.querySelectorAll<HTMLElement>('[preview-field-id]') || [])
+                .find(element => element.getAttribute('preview-field-id') === targetId);
+            if (!target) return;
+            const rect = target.getBoundingClientRect();
+            if (rect.top >= 0 && rect.bottom <= window.innerHeight) return;
+            target.scrollIntoView({ block: 'center' });
+            if (attempts > 1) this.keepPreviewFieldInView(targetId, attempts - 1);
+        }, 300);
     }
 
     public onNavSelectEvent(link: string) {

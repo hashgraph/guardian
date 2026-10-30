@@ -459,11 +459,11 @@ export function findPreviewScriptFields(
     const isCopyRead = (occurrence: IOccurrence): boolean => {
         const node = occurrence.node;
         const parent = script.parents.get(node);
-        if (node.type !== 'MemberExpression'
-            || !node.computed
-            || parent?.type !== 'AssignmentExpression'
-            || parent.operator !== '='
-            || parent.right !== node) {
+        const owner = parent ? script.parents.get(parent) : null;
+        if (node.type !== 'MemberExpression' || !node.computed
+            || parent?.type !== 'AssignmentExpression' || parent.operator !== '=' || parent.right !== node
+            || !(owner?.type === 'ExpressionStatement' || owner?.type === 'ReturnStatement'
+                || isFunction(owner) && owner?.body === parent)) {
             return false;
         }
         const target = parent.left;
@@ -471,8 +471,51 @@ export function findPreviewScriptFields(
             return false;
         }
         const text = (value: Node) => source.slice(value.start, value.end);
-        return text(target.property) === text(node.property)
-            && text(target.object) !== text(node.object);
+        const resolveCopyAlias = (value: Node): Node => {
+            const seen = new Set<Node>();
+            while (value.type === 'Identifier') {
+                const declaration = resolver.declaration(value);
+                if (!declaration || declaration.type !== 'VariableDeclarator' || !declaration.init
+                    || script.parents.get(declaration)?.kind !== 'const'
+                    || declaration.start >= parent.start || seen.has(declaration)) {
+                    break;
+                }
+                seen.add(declaration);
+                value = declaration.init;
+            }
+            return value;
+        };
+        const key = resolveCopyAlias(node.property);
+        if (text(resolveCopyAlias(target.property)) !== text(key) || text(target.object) === text(node.object)) {
+            return false;
+        }
+        const isSourceKeys = (value: Node): boolean => {
+            const list = resolveCopyAlias(value);
+            return list.type === 'CallExpression' && list.callee.type === 'MemberExpression'
+                && list.callee.object.type === 'Identifier' && list.callee.object.name === 'Object'
+                && keyOf(list.callee) === 'keys' && list.arguments.length === 1
+                && text(list.arguments[0]) === text(node.object);
+        };
+        let ancestor = owner;
+        while (ancestor) {
+            if (ancestor.type === 'ForInStatement' || ancestor.type === 'ForOfStatement') {
+                const binding = ancestor.left.type === 'VariableDeclaration'
+                    ? ancestor.left.declarations[0]?.id : ancestor.left;
+                if (binding?.type === 'Identifier' && key.type === 'Identifier' && binding.name === key.name) {
+                    return owner?.type === 'ExpressionStatement' && (ancestor.type === 'ForInStatement'
+                        ? text(ancestor.right) === text(node.object) : isSourceKeys(ancestor.right));
+                }
+            }
+            if (isFunction(ancestor)) {
+                const call = script.parents.get(ancestor);
+                return call?.type === 'CallExpression' && call.arguments[0] === ancestor
+                    && call.callee.type === 'MemberExpression' && keyOf(call.callee) === 'forEach'
+                    && ancestor.params[0]?.type === 'Identifier' && key.type === 'Identifier'
+                    && ancestor.params[0].name === key.name && isSourceKeys(call.callee.object);
+            }
+            ancestor = script.parents.get(ancestor);
+        }
+        return false;
     };
     for (const read of sites) {
         const occurrence = siteOf(read);
@@ -547,7 +590,7 @@ export function findPreviewScriptFields(
     };
     for (const read of sites) {
         const matched = siteOf(read);
-        const occurrence = matched && !isCopyRead(matched)
+        const occurrence = matched && !(read.listed && isCopyRead(matched))
             ? matched
             : undefined;
         const required = read.site === -2 ? explicit(read) : (occurrence

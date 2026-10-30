@@ -219,7 +219,19 @@ export class PreviewReadTracker {
                 if (newValue && typeof newValue === 'object' && !tracker.proxies.has(newValue) && !tracker.targets.has(newValue)) {
                     tracker.assigned.add(newValue);
                 }
-                const carried = tracker.targets.has(newValue) || Array.isArray(newValue) && newValue.some((item) => tracker.targets.has(item));
+                let carried = tracker.targets.has(newValue) || Array.isArray(newValue) && types.isProxy(newValue);
+                if (!carried && Array.isArray(newValue)) {
+                    for (const key of Object.getOwnPropertyNames(newValue)) {
+                        if (!/^\d+$/.test(key)) {
+                            continue;
+                        }
+                        const descriptor = Object.getOwnPropertyDescriptor(newValue, key);
+                        if (descriptor && 'value' in descriptor && tracker.targets.has(descriptor.value)) {
+                            carried = true;
+                            break;
+                        }
+                    }
+                }
                 if (typeof key === 'string' && (!isList || /^\d+$/.test(key)) && !carried) {
                     tracker.addWrite(schema, writePrefix ? `${writePrefix}.${key}` : key, document);
                 }

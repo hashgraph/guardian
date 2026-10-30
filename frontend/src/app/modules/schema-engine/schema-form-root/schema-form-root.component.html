@@ -12,7 +12,7 @@
     </div>
   }
   @if (model) {
-    <div class="schema-form-view-nav" [hidden]="!hasNavigation || navCollapsed" #navContainer>
+    <div class="schema-form-view-nav" [attr.inert]="isPreviewLocked ? '' : null" [hidden]="!hasNavigation || navCollapsed" #navContainer>
       <div class="nav-collapse-header">
         <span class="nav-collapse-title">Sections</span>
         <button
@@ -46,6 +46,7 @@
         [form-model]="model"
         [previewMissingFieldIds]="previewMissingFieldIds"
         [previewValidation]="requiredFields !== null"
+        [previewBusy]="isPreviewLocked"
         [formulas]="formulaModel"
         [private-fields]="hide"
         [readonly-fields]="readonly"
@@ -77,13 +78,14 @@
         (saveBtnEvent)="onSaveBtnEvent($event)"
         (updatableBtnEvent)="onUpdatableBtnEvent()"
         (onAccordionSelect)="onAccordionSelect($event)"
+        (previewLoadingChange)="onPreviewLoadingChange($event)"
         >
       </app-schema-form>
     }
   </div>
 </div>
-@if (loading) {
-  <div class="guardian-loading">
+@if (loading || (requiredFields !== null && previewLoadingCount > 0)) {
+  <div class="guardian-loading" [class.preview-loading-overlay]="requiredFields !== null">
     <div class="guardian-loading-image"></div>
   </div>
 }

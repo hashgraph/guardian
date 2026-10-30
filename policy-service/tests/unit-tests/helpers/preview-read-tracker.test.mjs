@@ -4,6 +4,19 @@ import { runInNewContext } from 'node:vm';
 import { PREVIEW_SCRIPT_FILE, PreviewReadTracker } from '../../../dist/policy-engine/helpers/workers/preview-read-tracker.js';
 
 describe('@unit PreviewReadTracker', () => {
+    it('does not read array accessors or an overridden some during assignment', () => {
+        const tracker = new PreviewReadTracker();
+        const doc = tracker.track({}, '#S');
+        let calls = 0;
+        const rows = [];
+        Object.defineProperty(rows, '0', { enumerable: true, get() { return ++calls; } });
+        Object.defineProperty(rows, 'some', { get() { throw new Error('some was read'); } });
+        doc.rows = rows;
+        assert.equal(calls, 0);
+        assert.equal(rows[0], 1);
+        assert.deepEqual(tracker.takeWrites(), [{ schema: '#S', path: 'rows', document: null }]);
+    });
+
     it('preserves newly assigned objects and native receivers', () => {
         const tracker = new PreviewReadTracker();
         const doc = tracker.track({ rows: [] }, '#S');

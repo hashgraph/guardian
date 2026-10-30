@@ -61,6 +61,20 @@ export class VCViewerDialog {
     public previewDocuments: { label: string; document: any }[] = [];
     public previewOptions: { label: string; value: number }[] = [];
     public selectedPreviewIndex: number = 0;
+    public previewLoadingCount: number = 0;
+    public previewPreparing: boolean = false;
+    public previewPrepared: boolean = false;
+    private previewPrepareFrame: number | null = null;
+
+    public get isPreviewBusy(): boolean {
+        return this.previewDocuments.length > 0 && (this.previewLoadingCount > 0 || this.previewPreparing || this.loading);
+    }
+
+    public onPreviewLoadingChange(loading: boolean): void {
+        if (!this.previewDocuments.length) return;
+        this.previewLoadingCount = Math.max(0, this.previewLoadingCount + (loading ? 1 : -1));
+        this.ref.markForCheck();
+    }
 
     public isLargeSize: boolean = true;
     @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
@@ -118,11 +132,12 @@ export class VCViewerDialog {
         this.id = id;
         this.dryRun = !!dryRun;
         this.title = title;
-        this.json = document ? JSON.stringify((document), null, 4) : '';
+        const isPreview = Array.isArray(previewDocuments) && previewDocuments.length > 0;
+        this.json = isPreview ? '' : (document ? JSON.stringify((document), null, 4) : '');
         this.text = document || '';
         this.tags = document?.tags;
 
-        const fileSizeBytes = new Blob([typeof document === 'string' ? document : JSON.stringify(document)]).size;
+        const fileSizeBytes = isPreview ? 0 : new Blob([typeof document === 'string' ? document : JSON.stringify(document)]).size;
         this.fileSize = Math.round((fileSizeBytes / (1024 * 1024)));
 
         this.document = document;
@@ -150,7 +165,8 @@ export class VCViewerDialog {
         this.previewDocuments = Array.isArray(previewDocuments) ? previewDocuments : [];
         this.previewOptions = this.previewDocuments.map((item, index) => ({ label: item.label, value: index }));
         if (this.previewDocuments.length) {
-            this.setPreviewFileSize();
+            this.previewPrepared = true;
+            this.preparePreviewDocument();
         }
 
         this.loadAllVersionVcDocuments();
@@ -159,6 +175,28 @@ export class VCViewerDialog {
 
     public onClose(): void {
         this.dialogRef.close(null);
+    }
+
+    ngOnDestroy(): void {
+        if (this.previewPrepareFrame !== null) cancelAnimationFrame(this.previewPrepareFrame);
+    }
+
+    private preparePreviewDocument(): void {
+        if (this.previewPrepareFrame !== null) cancelAnimationFrame(this.previewPrepareFrame);
+        this.previewPreparing = true;
+        this.previewPrepareFrame = requestAnimationFrame(() => {
+            this.previewPrepareFrame = requestAnimationFrame(() => {
+                this.setJson();
+                this.setPreviewFileSize();
+                this.previewPrepared = true;
+                this.ref.detectChanges();
+                this.previewPrepareFrame = requestAnimationFrame(() => {
+                    this.previewPrepareFrame = null;
+                    this.previewPreparing = false;
+                    this.ref.markForCheck();
+                });
+            });
+        });
     }
 
     getSubSchemes(id: string, topicId: string, category: string) {
@@ -266,11 +304,12 @@ export class VCViewerDialog {
     }
 
     public onPreviewDocumentChange(event: any) {
+        this.previewLoadingCount = 0;
+        this.previewPrepared = false;
         this.selectedPreviewIndex = event.value;
         this.selectVcDocument(
             this.previewDocuments[this.selectedPreviewIndex].document
         );
-        this.setPreviewFileSize();
     }
 
     private setPreviewFileSize() {
@@ -278,6 +317,12 @@ export class VCViewerDialog {
     }
 
     private selectVcDocument(document: any) {
+        if (this.previewDocuments.length) {
+            this.document = document;
+            this.tags = document.tags;
+            this.preparePreviewDocument();
+            return;
+        }
         this.loading = true;
         this.document = document;
         this.setJson();

@@ -1,3 +1,5 @@
+@use '../../../../schema-engine/preview-loading' as preview;
+
 .content-page {
     position: absolute;
     left: 0;
@@ -653,4 +655,9 @@
     gap: 8px;
     margin-right: auto;
     color: var(--guardian-font-color);
+}
+
+
+.guardian-loading.preview-loading-overlay {
+    @include preview.overlay;
 }

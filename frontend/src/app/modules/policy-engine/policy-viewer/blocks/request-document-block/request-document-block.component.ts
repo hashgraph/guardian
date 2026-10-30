@@ -127,6 +127,16 @@ export class RequestDocumentBlockComponent
     public evidenceFiles: AttachedFile[] = [];
     private _evidenceFileMap = new WeakMap<AttachedFile, File>();
     public previewMode: boolean = false;
+    public previewRendering: boolean = false;
+
+    public get isPreviewBusy(): boolean {
+        return this.previewMode && (this.loading || this.previewRendering);
+    }
+
+    public onPreviewRenderingChange(rendering: boolean): void {
+        this.previewRendering = this.previewMode && rendering;
+        this.changeDetectorRef.markForCheck();
+    }
     public previewRequiredFields: string[] | null = null;
     private previewRequest: number = 0;
     public previewMissingFields: string[] = [];
@@ -183,6 +193,7 @@ export class RequestDocumentBlockComponent
     }
 
     ngOnDestroy(): void {
+        if (this.previewMode) this.previewRequest++;
         this.destroy$.next(true);
         this.destroy$.unsubscribe();
         this.destroy();
@@ -474,6 +485,7 @@ export class RequestDocumentBlockComponent
         this.previewPreferenceLoaded = true;
         this.calculationPreview.saveMode(this.user?.id, this.policyId, this.id, enabled);
         this.previewMode = enabled;
+        if (!enabled) this.previewRendering = false;
         if (!enabled) {
             this.previewRequest++;
             this.loading = false;

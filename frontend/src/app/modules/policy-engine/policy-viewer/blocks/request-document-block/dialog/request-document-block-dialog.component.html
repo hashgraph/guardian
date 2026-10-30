@@ -5,6 +5,7 @@
   @if (restoreData) {
     <button
       class="guardian-button guardian-button-secondary header-action"
+      [disabled]="isPreviewBusy"
       (click)="onRestoreClick()"
       title="Restore the latest saved values">
       <svg-icon class="icon-btn svg-icon"
@@ -17,6 +18,7 @@
   @if (dryRun) {
     <button
       class="guardian-button guardian-button-secondary header-action"
+      [disabled]="isPreviewBusy"
       (click)="onDryRun()"
       title="Fill this document with test data">
       <svg-icon class="icon-btn svg-icon"
@@ -31,13 +33,13 @@
       <p-toggleswitch
         inputId="calculationPreview_{{ id }}"
         [ngModel]="previewMode"
-        [disabled]="loading"
+        [disabled]="loading || isPreviewBusy"
         (onChange)="onPreviewModeChange($event.checked)">
       </p-toggleswitch>
       <label for="calculationPreview_{{ id }}">Calculation preview</label>
     </div>
   }
-  <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
+  <div class="header-icon resize" [attr.aria-disabled]="isPreviewBusy ? true : null" (click)="!isPreviewBusy && toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
     <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
   </div>
   <div class="header-icon" (click)="onClose()">
@@ -46,11 +48,11 @@
 </div>
 <div class="dialog-body">
   @if (loading) {
-    <div class="guardian-loading">
+    <div class="guardian-loading" [class.preview-loading-overlay]="previewMode">
       <div class="guardian-loading-image"></div>
     </div>
   }
-  <div class="dialog-body-container">
+  <div class="dialog-body-container" [attr.inert]="isPreviewBusy ? '' : null">
     @if (relayerAccount || enableAdditionalData) {
       <div class="relayer-account-steps">
         <div class="guardian-step-container">
@@ -95,6 +97,7 @@
               [isFormForRequestBlock]="true"
               [requiredFields]="previewRequiredFields"
               [previewMissingFields]="previewMissingFields"
+              [previewActionsDisabled]="isPreviewBusy"
               [saveShown]="!edit || draft"
               [comesFromDialog]="true"
               [showButtons]="false"
@@ -103,6 +106,7 @@
               saveText = "Save Draft"
               (form)="initForm($event)"
               (presetApplied)="onPresetApplied()"
+              (previewBusyChange)="onPreviewRenderingChange($event)"
               (buttons)="onChangeButtons($event)"
               (cancelBtnEvent)="handleCancelBtnEvent($event, this)"
               (submitBtnEvent)="handleSubmitBtnEvent($event, this)"
@@ -275,6 +279,7 @@
   }
   @if (!loading) {
     <request-draft-file-actions
+      [attr.inert]="isPreviewBusy ? '' : null"
       [schema]="schema"
       [policyId]="policyId"
       [blockId]="id"
