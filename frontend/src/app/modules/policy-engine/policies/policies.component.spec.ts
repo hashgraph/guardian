@@ -1,3 +1,4 @@
+import { Subject } from 'rxjs';
 import { PoliciesComponent } from './policies.component';
 
 describe('PoliciesComponent', () => {
@@ -54,6 +55,71 @@ describe('PoliciesComponent', () => {
             (component as any).setVersion({ id: 'p1', uuid: 'u1' });
 
             expect(component.policies![0].previousVersion).toBe('');
+        });
+    });
+
+    describe('loadAllPolicy', () => {
+        it('cancels the previous request so a late response cannot overwrite a newer one', () => {
+            const requests: Subject<any>[] = [];
+            (component as any).policyEngineService = {
+                page: jasmine.createSpy('page').and.callFake(() => {
+                    const request = new Subject<any>();
+                    requests.push(request);
+                    return request;
+                }),
+            };
+
+            (component as any).loadAllPolicy();
+            (component as any).loadAllPolicy();
+
+            expect(requests.length).toBe(2);
+            expect(requests[0].observed).toBeFalse();
+            expect(requests[1].observed).toBeTrue();
+        });
+    });
+
+    describe('status filter', () => {
+        const key = 'GUARDIAN_POLICIES_STATUS_FILTER:did:1:local';
+
+        beforeEach(() => {
+            localStorage.clear();
+            component.owner = 'did:1';
+            component.tab = 'local';
+            spyOn<any>(component, 'loadAllPolicy');
+        });
+
+        afterEach(() => localStorage.clear());
+
+        it('restores saved statuses and drops stale ones', () => {
+            localStorage.setItem(key, JSON.stringify(['PUBLISH', 'VIEW', 'BOGUS']));
+            component.restoreStatusFilter();
+            expect(component.statusFilter).toEqual(['PUBLISH']);
+        });
+
+        it('offers VIEW on the remote tab only', () => {
+            expect(component.statusOptions.map((o) => o.value)).not.toContain('VIEW');
+            component.tab = 'remote';
+            expect(component.statusOptions.map((o) => o.value)).toContain('VIEW');
+        });
+
+        it('saves per user and tab, resets the page and reloads', () => {
+            component.pageIndex = 3;
+            component.onStatusChange(['DRAFT', 'PUBLISH']);
+            expect(JSON.parse(localStorage.getItem(key) as string)).toEqual(['DRAFT', 'PUBLISH']);
+            expect(component.pageIndex).toBe(0);
+            expect((component as any).loadAllPolicy).toHaveBeenCalled();
+        });
+
+        it('removes the stored value when cleared', () => {
+            component.onStatusChange(['DRAFT']);
+            component.onStatusChange([]);
+            expect(localStorage.getItem(key)).toBeNull();
+        });
+
+        it('keeps the filter bar visible when a status is set and nothing matches', () => {
+            component.policies = [];
+            component.statusFilter = ['PUBLISH_ERROR'];
+            expect(component.showFilterBar).toBeTrue();
         });
     });
 });

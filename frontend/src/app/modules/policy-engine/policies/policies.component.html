@@ -26,46 +26,70 @@
     @if (tab === 'local') {
       @if (user.POLICIES_POLICY_READ) {
         <div class="actions-container">
-          @if (hasPolicies) {
+          @if (showFilterBar) {
             <form [formGroup]="filtersForm" class="policy-filters">
-              <span class="p-input-icon-right">
-                <input
-                  class="search-policy-input"
-                  formControlName="policyName"
-                  pInputText
-                  placeholder="Search by Policy name"
-                  type="text"/>
-                <i class="pi pi-search search-icon"></i>
+              <span class="status-filter-wrap">
+                <i class="pi pi-bolt status-filter__icon"></i>
+                <p-multiselect
+                  [options]="statusOptions"
+                  [ngModel]="statusFilter"
+                  (ngModelChange)="onStatusChange($event)"
+                  [ngModelOptions]="{ standalone: true }"
+                  optionLabel="label"
+                  optionValue="value"
+                  [showToggleAll]="false"
+                  [filter]="false"
+                  [showHeader]="false"
+                  scrollHeight="none"
+                  [showClear]="true"
+                  appendTo="body"
+                  class="status-filter"
+                  [class.status-filter--active]="hasStatusFilter"
+                  pTooltip="Applied immediately"
+                  tooltipPosition="bottom"
+                  ariaLabel="Filter by status"
+                  placeholder="Status"
+                >
+                  <ng-template #selecteditems let-value>
+                    @if (value?.length) {
+                      <span>Status</span>
+                      <span class="status-filter__count">{{ value.length }}</span>
+                    }
+                  </ng-template>
+                </p-multiselect>
               </span>
-              <p-select
-                [options]="tagOptions"
-                appendTo="body"
-                class="tags-dropdown"
-                formControlName="tag"
-                placeholder="Tags"
-                [appendTo]="'body'"
-              ></p-select>
-              <button (click)="applyFilters()"
-                class="button ml-8"
-                label="Apply Filters"
-              pButton></button>
-              <button (click)="clearFilters()"
-                [disabled]="!filtersForm.dirty"
-                class="button secondary ml-8"
-                label="Clear filters"
-              pButton></button>
+              <div class="policy-filters__group">
+                <span class="policy-filters__group-label">Applied with button</span>
+                <span class="p-input-icon-right">
+                  <input
+                    class="search-policy-input"
+                    formControlName="policyName"
+                    pInputText
+                    placeholder="Search by Policy name"
+                    type="text"/>
+                  <i class="pi pi-search search-icon"></i>
+                </span>
+                <p-select
+                  [options]="tagOptions"
+                  appendTo="body"
+                  class="tags-dropdown"
+                  formControlName="tag"
+                  placeholder="Tags"
+                  [appendTo]="'body'"
+                ></p-select>
+                <button (click)="applyFilters()"
+                  class="button ml-8"
+                  label="Apply"
+                pButton></button>
+                <button (click)="clearFilters()"
+                  [disabled]="!filtersForm.dirty"
+                  class="button secondary ml-8"
+                  label="Clear"
+                pButton></button>
+              </div>
             </form>
           }
           <div class="actions-container-btns">
-            @if (user.POLICIES_POLICY_CREATE) {
-              <p-button
-                (click)="openPolicyWizardDialog()"
-                class="toolbar-btn-primary"
-                [pTooltip]="'Policy Wizard'"
-                tooltipPosition="bottom">
-                <svg-icon src="/assets/images/icons/wizard.svg" svgClass="color-white"></svg-icon>
-              </p-button>
-            }
             @if (user.POLICIES_POLICY_CREATE) {
               <p-button
                 (click)="createNewPolicy()"
@@ -82,6 +106,15 @@
                 [pTooltip]="'Import'"
                 tooltipPosition="bottom">
                 <svg-icon src="/assets/images/icons/import-cloud-2.svg" svgClass="color-white"></svg-icon>
+              </p-button>
+            }
+            @if (user.POLICIES_POLICY_CREATE) {
+              <p-button
+                (click)="openPolicyWizardDialog()"
+                class="toolbar-btn-primary"
+                [pTooltip]="'Policy Wizard'"
+                tooltipPosition="bottom">
+                <svg-icon src="/assets/images/icons/wizard.svg" svgClass="color-white"></svg-icon>
               </p-button>
             }
             @if (user.ANALYTIC_POLICY_READ) {
@@ -104,16 +137,6 @@
                 <svg-icon src="/assets/images/icons/compare.svg" svgClass="primary-color"></svg-icon>
               </p-button>
             }
-            @if (user.POLICIES_MIGRATION_CREATE) {
-              <p-button
-                (click)="migrateData()"
-                [pTooltip]="'Migrate data'"
-                class="toolbar-btn-secondary"
-                [outlined]=true
-                tooltipPosition="bottom">
-                <svg-icon src="/assets/images/icons/move-down.svg" svgClass="primary-color"></svg-icon>
-              </p-button>
-            }
             @if (user.SUGGESTIONS_SUGGESTIONS_READ) {
               <p-button
                 (click)="openSuggestionsDialog()"
@@ -131,26 +154,59 @@
     @if (tab === 'remote') {
       @if (user.POLICIES_EXTERNAL_POLICY_CREATE) {
         <div class="actions-container">
-          @if (hasPolicies) {
+          @if (showFilterBar) {
             <form [formGroup]="filtersForm" class="policy-filters">
-              <span class="p-input-icon-right">
-                <input
-                  class="search-policy-input"
-                  formControlName="policyName"
-                  pInputText
-                  placeholder="Search by Policy name"
-                  type="text"/>
-                <i class="pi pi-search search-icon"></i>
+              <span class="status-filter-wrap">
+                <i class="pi pi-bolt status-filter__icon"></i>
+                <p-multiselect
+                  [options]="statusOptions"
+                  [ngModel]="statusFilter"
+                  (ngModelChange)="onStatusChange($event)"
+                  [ngModelOptions]="{ standalone: true }"
+                  optionLabel="label"
+                  optionValue="value"
+                  [showToggleAll]="false"
+                  [filter]="false"
+                  [showHeader]="false"
+                  scrollHeight="none"
+                  [showClear]="true"
+                  appendTo="body"
+                  class="status-filter"
+                  [class.status-filter--active]="hasStatusFilter"
+                  pTooltip="Applied immediately"
+                  tooltipPosition="bottom"
+                  ariaLabel="Filter by status"
+                  placeholder="Status"
+                >
+                  <ng-template #selecteditems let-value>
+                    @if (value?.length) {
+                      <span>Status</span>
+                      <span class="status-filter__count">{{ value.length }}</span>
+                    }
+                  </ng-template>
+                </p-multiselect>
               </span>
-              <button (click)="applyFilters()"
-                class="button ml-8"
-                label="Apply Filters"
-              pButton></button>
-              <button (click)="clearFilters()"
-                [disabled]="!filtersForm.dirty"
-                class="button secondary ml-8"
-                label="Clear filters"
-              pButton></button>
+              <div class="policy-filters__group">
+                <span class="policy-filters__group-label">Applied with button</span>
+                <span class="p-input-icon-right">
+                  <input
+                    class="search-policy-input"
+                    formControlName="policyName"
+                    pInputText
+                    placeholder="Search by Policy name"
+                    type="text"/>
+                  <i class="pi pi-search search-icon"></i>
+                </span>
+                <button (click)="applyFilters()"
+                  class="button ml-8"
+                  label="Apply"
+                pButton></button>
+                <button (click)="clearFilters()"
+                  [disabled]="!filtersForm.dirty"
+                  class="button secondary ml-8"
+                  label="Clear"
+                pButton></button>
+              </div>
             </form>
           }
           <div class="actions-container-btns">
@@ -674,8 +730,12 @@
           <div class="not-exist">
             <svg-icon class="svg-icon-32" src="/assets/images/icons/32/list.svg" svgClass="disabled-color">
             </svg-icon>
-            <span class="info-text-strong">There are no policies created yet</span>
-            <span class="info-text">Please create a new policy to see the data</span>
+            @if (hasStatusFilter) {
+              <span class="info-text-strong">No policies match the selected status</span>
+            } @else {
+              <span class="info-text-strong">There are no policies created yet</span>
+              <span class="info-text">Please create a new policy to see the data</span>
+            }
           </div>
         }
       </div>

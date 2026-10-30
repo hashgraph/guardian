@@ -52,15 +52,16 @@ export class PolicyEngineService {
     public page(
         pageIndex?: number,
         pageSize?: number,
-        type?: string
+        type?: string,
+        status?: string[]
     ): Observable<HttpResponse<any[]>> {
         const filters: any = {};
-        const header: any = { observe: 'response' };
+        const header: any = { observe: 'response', headers: headersV2 };
         if (type) {
             filters.type = type;
         }
-        if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
-            header.headers = headersV2;
+        if (status?.length) {
+            filters.status = status.join(',');
         }
         header.params = PolicyEngineService.getOptions(filters, pageIndex, pageSize);
         return this.http.get<any[]>(`${this.url}`, header) as any;
