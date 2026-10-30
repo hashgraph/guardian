@@ -26,6 +26,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     public navFields: IFieldControl<any>[] = [];
     public formulaModel: FormFormulas | null = null;
     private formulaSub?: Subscription;
+    private controlsSub?: Subscription;
 
     private startX: number = 0;
     private startWidthPercent: number = 25;
@@ -160,6 +161,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
 
     ngOnDestroy() {
         this.formulaSub?.unsubscribe();
+        this.controlsSub?.unsubscribe();
         if (this.model) {
             this.model.destroy();
         }
@@ -179,6 +181,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     }
 
     private buildFields() {
+        this.controlsSub?.unsubscribe();
         if (this.model) {
             this.model.destroy();
             this.model = null;
@@ -195,6 +198,10 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         });
         this.model.build();
         this.navFields = [...(this.model.controls || [])];
+        this.controlsSub = this.model.controlsChanged$.subscribe(() => {
+            this.navFields = [...(this.model?.controls || [])];
+            this.changeDetectorRef.detectChanges();
+        });
         this.group.updateValueAndValidity();
         this.buildFormulaModel();
         this.form.emit(this.group);
