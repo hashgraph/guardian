@@ -26,6 +26,29 @@
             </p-toggleswitch>
             <label for="calculationPreview_{{ id }}">Calculation preview</label>
           </div>
+          @if (previewMode && previewMissingOptions.length) {
+            @for (options of [previewMissingOptions]; track options) {
+            <p-select
+              [options]="options"
+              [(ngModel)]="previewMissingPath"
+              (onChange)="onPreviewMissingSelect($event.value)"
+              optionLabel="label"
+              optionValue="value"
+              [placeholder]="'Missing fields: ' + previewMissingOptions.length"
+              class="guardian-dropdown preview-missing-dropdown"
+              panelStyleClass="guardian-dropdown-panel"
+              [disabled]="isPreviewBusy"
+              [appendTo]="'body'"
+              >
+              <ng-template pTemplate="selectedItem" let-item>
+                <div class="guardian-dropdown-selected" [title]="item?.label">
+                  <span class="guardian-dropdown-label">Missing</span>
+                  <span class="guardian-dropdown-item">{{ item?.label }}</span>
+                </div>
+              </ng-template>
+            </p-select>
+            }
+          }
           <request-draft-file-actions
             [schema]="schema"
             [policyId]="policyId"
@@ -130,6 +153,7 @@
               (form)="initForm($event)"
               (presetApplied)="onPresetApplied()"
               (previewBusyChange)="onPreviewRenderingChange($event)"
+              (previewMissingOptionsChange)="onPreviewMissingOptionsChange($event)"
               (buttons)="onChangeButtons($event)"
               (saveBtnEvent)="handleSaveBtnEvent($event)"
               (cancelBtnEvent)="onCancelPage($event)"
@@ -292,7 +316,7 @@
   <div class="preloader-image"></div>
 </ng-template>
 
-@if (loading) {
+@if (loading || isPreviewBusy) {
   @if (previewMode) {
     <div class="guardian-loading preview-loading-overlay">
       <div class="guardian-loading-image"></div>

@@ -131,9 +131,42 @@ export class RequestDocumentBlockComponent
     private _evidenceFileMap = new WeakMap<AttachedFile, File>();
     public previewMode: boolean = false;
     public previewRendering: boolean = false;
+    private previewBusyHold: boolean = false;
+    private previewBusyTimer: ReturnType<typeof setTimeout> | null = null;
 
     public get isPreviewBusy(): boolean {
-        return this.previewMode && (this.loading || this.previewRendering);
+        return this.previewMode && (this.loading || this.previewRendering || this.previewBusyHold);
+    }
+
+    ngDoCheck(): void {
+        if (!this.previewMode || this.loading || this.previewRendering) {
+            if (this.previewBusyTimer !== null) {
+                clearTimeout(this.previewBusyTimer);
+                this.previewBusyTimer = null;
+            }
+            this.previewBusyHold = this.previewMode;
+            return;
+        }
+        if (this.previewBusyHold && this.previewBusyTimer === null) {
+            this.previewBusyTimer = setTimeout(() => {
+                this.previewBusyTimer = null;
+                this.previewBusyHold = false;
+                this.changeDetectorRef.markForCheck();
+            }, 300);
+        }
+    }
+
+    public previewMissingOptions: { label: string; value: string }[] = [];
+    public previewMissingPath: string | null = null;
+
+    public onPreviewMissingOptionsChange(options: { label: string; value: string }[]): void {
+        this.previewMissingOptions = this.previewMode ? options : [];
+        this.previewMissingPath = null;
+        this.changeDetectorRef.markForCheck();
+    }
+
+    public onPreviewMissingSelect(path: string): void {
+        this.formRoot?.focusPreviewField(path);
     }
 
     public onPreviewRenderingChange(rendering: boolean): void {
@@ -197,6 +230,7 @@ export class RequestDocumentBlockComponent
     }
 
     ngOnDestroy(): void {
+        if (this.previewBusyTimer !== null) clearTimeout(this.previewBusyTimer);
         if (this.previewMode) this.previewRequest++;
         this.destroy$.next(true);
         this.destroy$.unsubscribe();

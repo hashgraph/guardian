@@ -299,6 +299,62 @@ describe('SchemaFormViewComponent', () => {
         }
     });
 
+    describe('large sections in a calculation preview', () => {
+        const render = (preview: boolean) => {
+            const fields = Array.from({ length: 25 }, (_, index) => ({
+                name: `f${index}`, fullPath: `f${index}`, description: `F${index}`, type: 'number', isRef: false, isArray: false,
+            }));
+            const values = Object.fromEntries(fields.map((field, index) => [field.name, index + 1]));
+            TestBed.configureTestingModule({
+                declarations: [SchemaFormViewComponent],
+                imports: [CommonModule],
+                providers: [
+                    { provide: IPFSService, useValue: ipfs },
+                    { provide: DialogService, useValue: dialogService },
+                ],
+                schemas: [NO_ERRORS_SCHEMA],
+            });
+            const fixture = TestBed.createComponent(SchemaFormViewComponent);
+            const changes = spyOn(fixture.componentInstance.previewLoadingChange, 'emit');
+            fixture.componentRef.setInput('private-fields', {});
+            fixture.componentRef.setInput('fields', fields);
+            fixture.componentRef.setInput('values', values);
+            fixture.componentRef.setInput('preview', preview);
+            fixture.detectChanges();
+            const count = () => fixture.nativeElement.querySelectorAll('[field-id]').length;
+            return { fixture, changes, count };
+        };
+
+        it('renders Preview fields in parts across frames and reports loading until the last part', fakeAsync(() => {
+            const { fixture, changes, count } = render(true);
+            expect(count()).toBe(10);
+            expect(changes.calls.allArgs()).toEqual([[true]]);
+            tick(16);
+            expect(count()).toBe(20);
+            tick(16);
+            expect(count()).toBe(25);
+            expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+            tick(64);
+            expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+            fixture.destroy();
+        }));
+
+        it('renders every ordinary field at once without loading notifications or frames', fakeAsync(() => {
+            const { changes, count } = render(false);
+            expect(count()).toBe(25);
+            tick(64);
+            expect(changes).not.toHaveBeenCalled();
+        }));
+
+        it('balances Preview loading when destroyed before the last part', fakeAsync(() => {
+            const { fixture, changes } = render(true);
+            tick(16);
+            fixture.destroy();
+            tick(64);
+            expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+        }));
+    });
+
     describe('tables in a calculation preview', () => {
         const table = {
             name: 'rows',

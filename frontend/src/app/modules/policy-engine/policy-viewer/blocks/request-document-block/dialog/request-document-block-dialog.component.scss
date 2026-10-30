@@ -364,3 +364,22 @@ request-draft-file-actions[inert] {
     pointer-events: none;
     opacity: 0.5;
 }
+
+:host ::ng-deep .preview-missing-dropdown.p-select {
+    margin-right: 16px;
+    max-width: 320px;
+
+    .guardian-dropdown-selected .guardian-dropdown-label {
+        color: var(--color-grey-6);
+    }
+
+    .guardian-dropdown-selected .guardian-dropdown-item {
+        color: var(--guardian-font-color);
+    }
+}
+
+.dialog-header .preview-missing-dropdown {
+    flex: 0 1 auto;
+    align-self: center;
+    min-width: 0;
+}

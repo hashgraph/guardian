@@ -27,6 +27,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     public formulaModel: FormFormulas | null = null;
     private formulaSub?: Subscription;
     private controlsSub?: Subscription;
+    private previewMissingSub?: Subscription;
 
     private startX: number = 0;
     private startWidthPercent: number = 25;
@@ -77,6 +78,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     @Input() formulaLinkScope: IFormulaLinkScope | null = null;
     private previewFocusTimer: ReturnType<typeof setTimeout> | null = null;
     private previewBuildFrame: number | null = null;
+    private previewHeightLocked: boolean = false;
     public previewLoadingCount: number = 0;
     @Output() previewBusyChange = new EventEmitter<boolean>(true);
 
@@ -97,6 +99,8 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
 
     @Output('form') form = new EventEmitter<UntypedFormGroup>();
     @Output('presetApplied') presetApplied = new EventEmitter<UntypedFormGroup>();
+    @Output() previewMissingOptionsChange = new EventEmitter<{ label: string; value: string }[]>(true);
+    public previewMissingOptions: { label: string; value: string }[] = [];
     @Output('change') change = new EventEmitter<Schema | null>();
     @Output('destroy') destroy = new EventEmitter<void>();
     @Output('buttons') buttons = new EventEmitter<any>();
@@ -114,6 +118,20 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     }
 
     ngOnInit(): void {
+    }
+
+    ngAfterViewChecked(): void {
+        const container: HTMLElement | undefined = this.contentContainerRef?.nativeElement;
+        if (!container) return;
+        if (this.isPreviewLocked) {
+            if (!this.previewHeightLocked) {
+                container.style.minHeight = `${container.offsetHeight}px`;
+                this.previewHeightLocked = true;
+            }
+        } else if (this.previewHeightLocked) {
+            container.style.minHeight = '';
+            this.previewHeightLocked = false;
+        }
     }
 
     ngAfterViewInit(): void {
@@ -181,7 +199,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             && !changes.readonly && !changes.conditions && !changes.presetDocument
             && this.model.updatePreviewRequiredFields(this.requiredFields)) {
             this.updatePreviewMissingFieldIds();
-            this.loading = false;
+            this.loading = this.previewBuildFrame !== null;
             this.schedulePreviewFocus();
             return;
         }
@@ -249,7 +267,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
                 });
             } else setTimeout(rebuild, 0);
         } else {
-            this.loading = false;
+            this.loading = this.previewBuildFrame !== null;
         }
     }
 
@@ -259,6 +277,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         if (this.previewFocusTimer !== null) clearTimeout(this.previewFocusTimer);
         this.formulaSub?.unsubscribe();
         this.controlsSub?.unsubscribe();
+        this.previewMissingSub?.unsubscribe();
         if (this.model) {
             this.model.destroy();
         }
@@ -302,6 +321,10 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             this.navFields = [...(this.model?.controls || [])];
             this.changeDetectorRef.detectChanges();
         });
+        this.previewMissingSub?.unsubscribe();
+        this.previewMissingSub = this.requiredFields === null
+            ? undefined
+            : this.group.valueChanges.subscribe(() => this.updatePreviewMissingOptions());
         this.group.updateValueAndValidity();
         this.buildFormulaModel();
         this.form.emit(this.group);
@@ -418,6 +441,42 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             }
             return [];
         });
+        this.updatePreviewMissingOptions();
+    }
+
+    private updatePreviewMissingOptions(): void {
+        const options: { label: string; value: string }[] = [];
+        for (const path of this.requiredFields === null ? [] : this.previewMissingFields) {
+            const parts = path.split('.');
+            const labels: string[] = [];
+            let controls = this.model?.controls || [];
+            let field: IFieldControl<any> | undefined;
+            let control: AbstractControl | null = null;
+            for (let index = 0; index < parts.length; index++) {
+                field = controls.find(item => item.name === parts[index]);
+                if (!field) break;
+                labels.push(field.description || field.title || field.name);
+                control = field.control;
+                if (field.isArray && /^\d+$/.test(parts[index + 1] || '')) {
+                    const row = field.list?.[Number(parts[++index])];
+                    if (!row) {
+                        field = undefined;
+                        break;
+                    }
+                    labels.push(`#${Number(parts[index]) + 1}`);
+                    control = row.control;
+                    controls = row.model?.controls || [];
+                } else controls = field.model?.controls || [];
+            }
+            if (!field || (control && (control.disabled || !this.hasNoValue(control.value)))) continue;
+            options.push({ label: labels.join(' / '), value: path });
+        }
+        if (options.length === this.previewMissingOptions.length
+            && options.every((option, index) => option.value === this.previewMissingOptions[index].value)) {
+            return;
+        }
+        this.previewMissingOptions = options;
+        this.previewMissingOptionsChange.emit(options);
     }
 
     private schedulePreviewFocus(): void {
@@ -463,7 +522,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             if (targetId && attempts > 0) {
                 this.previewFocusTimer = setTimeout(() => {
                     this.previewFocusTimer = null;
-                    this.scrollToPreviewField(targetId, attempts - 1);
+                    this.scrollToPreviewField(targetId, this.isPreviewLocked ? attempts : attempts - 1);
                 }, 50);
             }
             return;

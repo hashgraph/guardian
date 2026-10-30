@@ -26,6 +26,7 @@ import {
 } from './geo-dependency-resolver';
 
 const EMPTY_FORMULAS: FormulaItem[] = [];
+const PREVIEW_RENDER_CHUNK = 10;
 
 enum PlaceholderByFieldType {
     Email = "example@email.com",
@@ -141,6 +142,8 @@ export class SchemaFormComponent implements OnInit {
     private entryScopes = new WeakMap<object, Record<string, number>>();
     private previewSections = new WeakSet<object>();
     private previewFrames = new Map<IFieldControl<any> | IFieldIndexControl<any>, number>();
+    public previewRenderLimit: number = Infinity;
+    private previewRenderFrame: number | null = null;
 
     constructor(
         private ipfs: IPFSService,
@@ -191,6 +194,35 @@ export class SchemaFormComponent implements OnInit {
         }));
     }
 
+    private stopPreviewRendering(): void {
+        if (this.previewRenderFrame !== null) {
+            cancelAnimationFrame(this.previewRenderFrame);
+            this.previewRenderFrame = null;
+            this.previewLoadingChange.emit(false);
+        }
+        this.previewRenderLimit = Infinity;
+    }
+
+    private startPreviewRendering(): void {
+        this.stopPreviewRendering();
+        if (!this.previewValidation || (this.formModel?.controls?.length || 0) <= PREVIEW_RENDER_CHUNK) return;
+        this.previewRenderLimit = PREVIEW_RENDER_CHUNK;
+        this.previewLoadingChange.emit(true);
+        const next = () => {
+            this.previewRenderLimit += PREVIEW_RENDER_CHUNK;
+            if (this.previewRenderLimit < (this.formModel?.controls?.length || 0)) {
+                this.changeDetectorRef.detectChanges();
+                this.previewRenderFrame = requestAnimationFrame(next);
+                return;
+            }
+            this.previewRenderFrame = null;
+            this.previewRenderLimit = Infinity;
+            this.changeDetectorRef.detectChanges();
+            this.previewLoadingChange.emit(false);
+        };
+        this.previewRenderFrame = requestAnimationFrame(next);
+    }
+
     public prepareOpenPreviewSections(): void {
         if (!this.previewValidation) return;
         for (const item of this.formModel?.controls || []) {
@@ -229,6 +261,7 @@ export class SchemaFormComponent implements OnInit {
         if (changes.formModel || changes.previewValidation) {
             if (this.previewValidation || this.previewFrames.size) this.cancelPreviewSections();
             if (this.previewValidation) this.prepareOpenPreviewSections();
+            if (this.previewValidation || this.previewRenderFrame !== null) this.startPreviewRendering();
         }
         if (this.formModel && this.formModel.controls) {
             for (const item of this.formModel.controls) {
@@ -296,6 +329,7 @@ export class SchemaFormComponent implements OnInit {
 
     ngOnDestroy() {
         this.cancelPreviewSections();
+        this.stopPreviewRendering();
         this.clearSuggestHideTimer();
         this.geoSubscriptions.unsubscribe();
         this.destroy.emit();

@@ -84,7 +84,7 @@
     }
   </div>
 </div>
-@if (loading || (requiredFields !== null && previewLoadingCount > 0)) {
+@if (requiredFields === null ? loading : !previewActionsDisabled && (loading || previewLoadingCount > 0)) {
   <div class="guardian-loading" [class.preview-loading-overlay]="requiredFields !== null">
     <div class="guardian-loading-image"></div>
   </div>

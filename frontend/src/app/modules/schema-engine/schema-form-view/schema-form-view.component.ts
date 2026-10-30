@@ -16,6 +16,8 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { isSafeHref, withNewTabLinks } from '../rich-text-editor/rich-text-sanitizer';
 import { collectImageReferences, markdownToHtml } from '../rich-text-editor/markdown';
 
+const PREVIEW_RENDER_CHUNK = 10;
+
 type SchemaFieldPredicate = { field: any; fieldValue: any } | { field: any; const: any };
 interface IFieldControl extends SchemaField {
     fullPath: string;
@@ -78,6 +80,8 @@ export class SchemaFormViewComponent implements OnInit {
     private imgRequests = new Map<string, Promise<string | null>>();
     private tableRows = new WeakMap<IFieldControl, { list: IFieldIndexControl[]; rows: any[] }>();
     private previewFrames = new Map<IFieldControl, number>();
+    public previewRenderLimit: number = Infinity;
+    private previewRenderFrame: number | null = null;
 
     constructor(
         private ipfs: IPFSService,
@@ -91,6 +95,36 @@ export class SchemaFormViewComponent implements OnInit {
 
     ngOnDestroy(): void {
         this.cancelPreviewSections();
+        this.stopPreviewRendering();
+    }
+
+    private stopPreviewRendering(): void {
+        if (this.previewRenderFrame !== null) {
+            cancelAnimationFrame(this.previewRenderFrame);
+            this.previewRenderFrame = null;
+            this.previewLoadingChange.emit(false);
+        }
+        this.previewRenderLimit = Infinity;
+    }
+
+    private startPreviewRendering(): void {
+        this.stopPreviewRendering();
+        if (!this.preview || (this.fields?.length || 0) <= PREVIEW_RENDER_CHUNK) return;
+        this.previewRenderLimit = PREVIEW_RENDER_CHUNK;
+        this.previewLoadingChange.emit(true);
+        const next = () => {
+            this.previewRenderLimit += PREVIEW_RENDER_CHUNK;
+            if (this.previewRenderLimit < (this.fields?.length || 0)) {
+                this.changeDetector.detectChanges();
+                this.previewRenderFrame = requestAnimationFrame(next);
+                return;
+            }
+            this.previewRenderFrame = null;
+            this.previewRenderLimit = Infinity;
+            this.changeDetector.detectChanges();
+            this.previewLoadingChange.emit(false);
+        };
+        this.previewRenderFrame = requestAnimationFrame(next);
     }
 
     private cancelPreviewSections(): void {
@@ -163,6 +197,7 @@ export class SchemaFormViewComponent implements OnInit {
             } else {
                 this.update();
             }
+            if (this.preview) this.startPreviewRendering();
         }
         if (changes.link) {
             this.openField(this.link);

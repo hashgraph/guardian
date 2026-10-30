@@ -9,7 +9,7 @@
     [attr.paginationHidden]="paginationHidden"
     >
     @for (item of formModel.controls; track item; let i = $index) {
-      @if (item.visibility) {
+      @if (item.visibility && i < previewRenderLimit) {
         <div
           [attr.showMobileField]="showPage(item, i)"
           [attr.inert]="previewBusy ? '' : null"

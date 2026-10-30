@@ -1,5 +1,5 @@
 <form>
-    <ng-container *ngFor="let item of fields">
+    <ng-container *ngFor="let item of fields; let i = index"><ng-container *ngIf="i < previewRenderLimit">
 
         <div *ngIf="ifFieldVisible(item) && this.values && this.values[item.name]" class="form-field-container" [attr.field-id]="item.fullPath">
 
@@ -505,5 +505,5 @@
 
         <div *ngIf="!delimiterHide" class="delimiter"></div>
 
-    </ng-container>
+    </ng-container></ng-container>
 </form>

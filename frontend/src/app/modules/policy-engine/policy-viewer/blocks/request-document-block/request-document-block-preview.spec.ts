@@ -1,3 +1,4 @@
+import { fakeAsync, tick } from '@angular/core/testing';
 import { FormControl, FormGroup } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { RequestDocumentBlockComponent } from './request-document-block.component';
@@ -253,6 +254,7 @@ describe('request document preview wiring', () => {
             const state = kind === 'page' ? page([]) : dialog([], pageParent());
             const component = state.component;
             component.previewRendering = false;
+            component.previewBusyHold = false;
             component.changeDetectorRef = { markForCheck: jasmine.createSpy('markForCheck') };
             component.previewMode = true;
             component.onPreviewRenderingChange(true);
@@ -285,6 +287,70 @@ describe('request document preview wiring', () => {
         });
     }
 
+    for (const kind of ['page', 'dialog']) {
+        it(`keeps ${kind} Preview controls busy across short gaps between loading phases`, fakeAsync(() => {
+            const { component } = kind === 'page' ? page([]) : dialog([], pageParent());
+            component.previewRendering = false;
+            component.changeDetectorRef = { markForCheck: jasmine.createSpy('markForCheck') };
+            if (kind === 'page') component.destroy = jasmine.createSpy('destroy');
+            component.previewMode = true;
+            component.loading = true;
+            component.ngDoCheck();
+            component.loading = false;
+            component.ngDoCheck();
+            expect(component.isPreviewBusy).toBeTrue();
+            tick(200);
+            component.previewRendering = true;
+            component.ngDoCheck();
+            tick(200);
+            component.previewRendering = false;
+            component.ngDoCheck();
+            tick(299);
+            expect(component.isPreviewBusy).toBeTrue();
+            tick(1);
+            expect(component.isPreviewBusy).toBeFalse();
+            component.ngOnDestroy();
+        }));
+
+        it(`does not hold ${kind} controls busy outside Preview`, fakeAsync(() => {
+            const { component } = kind === 'page' ? page([]) : dialog([], pageParent());
+            component.previewRendering = false;
+            if (kind === 'page') component.destroy = jasmine.createSpy('destroy');
+            component.loading = true;
+            component.ngDoCheck();
+            expect(component.isPreviewBusy).toBeFalse();
+            component.loading = false;
+            component.ngDoCheck();
+            expect(component.isPreviewBusy).toBeFalse();
+            expect(Reflect.get(component, 'previewBusyTimer')).toBeFalsy();
+            component.ngOnDestroy();
+        }));
+    }
+
+    for (const kind of ['page', 'dialog']) {
+        it(`shows the remaining missing fields in the ${kind} and scrolls to the chosen one`, () => {
+            const { component } = kind === 'page' ? page([]) : dialog([], pageParent());
+            component.changeDetectorRef = { markForCheck: jasmine.createSpy('markForCheck') };
+            component.formRoot = { focusPreviewField: jasmine.createSpy('focusPreviewField') };
+            component.previewMode = true;
+            component.previewMissingPath = null;
+            const options = [{ label: 'Amount', value: 'amount' }, { label: 'Rows / #2 / Rate', value: 'rows.1.rate' }];
+            component.onPreviewMissingOptionsChange(options);
+            expect(component.previewMissingOptions).toBe(options);
+            component.previewMissingPath = 'rows.1.rate';
+            component.onPreviewMissingSelect('rows.1.rate');
+            expect(component.formRoot.focusPreviewField).toHaveBeenCalledOnceWith('rows.1.rate');
+            component.onPreviewMissingOptionsChange([options[1]]);
+            expect(component.previewMissingOptions).toEqual([options[1]]);
+            expect(component.previewMissingPath).toBeNull();
+            component.onPreviewMissingOptionsChange([]);
+            expect(component.previewMissingOptions).toEqual([]);
+            component.previewMode = false;
+            component.onPreviewMissingOptionsChange(options);
+            expect(component.previewMissingOptions).toEqual([]);
+        });
+    }
+
     it('keeps the dirty Preview form close confirmation available during network loading', () => {
         const { component } = dialog([], pageParent());
         component.previewMode = true;
@@ -298,6 +364,27 @@ describe('request document preview wiring', () => {
         decision.next('Confirm');
         expect(component.dialogRef.close).toHaveBeenCalledWith(null);
     });
+
+    for (const preview of [false, true]) {
+        it(`asks before closing a clean form during loading with Preview ${preview}`, () => {
+            const { component } = dialog([], pageParent());
+            component.previewMode = preview;
+            component.previewRendering = preview;
+            component.dataForm = { dirty: false };
+            const decision = new Subject<string>();
+            component.dialogService = { open: jasmine.createSpy('open').and.returnValue({ onClose: decision }) };
+            component.dialogRef = { close: jasmine.createSpy('close') };
+            component.onClose();
+            if (preview) {
+                expect(component.dialogService.open).toHaveBeenCalledTimes(1);
+                expect(component.dialogRef.close).not.toHaveBeenCalled();
+                decision.next('Confirm');
+            } else {
+                expect(component.dialogService.open).not.toHaveBeenCalled();
+            }
+            expect(component.dialogRef.close).toHaveBeenCalledOnceWith(null);
+        });
+    }
 
     it('runs a preview from the dialog with its own document reference', async () => {
         const { component, calls, dialogs } = dialog([Promise.resolve(response(['amount']))], pageParent());

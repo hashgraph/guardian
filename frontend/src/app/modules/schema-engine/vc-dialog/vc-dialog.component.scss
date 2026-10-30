@@ -77,6 +77,10 @@
         z-index: 5;
         @include preview.overlay;
     }
+
+    .view-dialog-content {
+        height: calc(100vh - 415px);
+    }
 }
 
 .context {
@@ -157,6 +161,10 @@
         .json {
             max-height: calc(100vh - 265px);
         }
+    }
+
+    .dialog-body.preview-viewer .view-dialog-content {
+        height: calc(100vh - 255px);
     }
 }
 

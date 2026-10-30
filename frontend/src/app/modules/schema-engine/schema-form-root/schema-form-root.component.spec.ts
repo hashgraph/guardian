@@ -38,7 +38,13 @@ describe('SchemaFormRootComponent — required fields', () => {
         flush();
     };
 
-    const createRootWith = (document: ISchemaDocument, preset: unknown = null): SchemaFormRootComponent => {
+    const setRequiredWithoutWaiting = (root: SchemaFormRootComponent, requiredFields: string[] | null): void => {
+        const previous = root.requiredFields;
+        root.requiredFields = requiredFields;
+        root.ngOnChanges({ requiredFields: new SimpleChange(previous, requiredFields, false) });
+    };
+
+    const createRootWith =(document: ISchemaDocument, preset: unknown = null): SchemaFormRootComponent => {
         const changeDetector = jasmine.createSpyObj<ChangeDetectorRef>('ChangeDetectorRef', ['detectChanges', 'markForCheck']);
         const root = new SchemaFormRootComponent(new UntypedFormBuilder(), changeDetector);
         root.schema = new Schema({ iri: '#calc&1.0.0', document });
@@ -296,6 +302,58 @@ describe('SchemaFormRootComponent — required fields', () => {
         expect(root.loading).toBeFalse();
     }));
 
+    for (const change of ['previewActionsDisabled', 'requiredFields']) {
+        it(`keeps loading for a queued Preview preset rebuild when ${change} changes`, fakeAsync(() => {
+            const root = createRoot();
+            setRequired(root, ['rate']);
+            root.presetDocument = { amount: 7, rate: 2 };
+            root.ngOnChanges({ presetDocument: new SimpleChange(null, root.presetDocument, false) });
+            if (change === 'previewActionsDisabled') {
+                root.previewActionsDisabled = true;
+                root.ngOnChanges({ previewActionsDisabled: new SimpleChange(false, true, false) });
+            } else {
+                setRequiredWithoutWaiting(root, ['amount']);
+            }
+            expect(root.loading).toBeTrue();
+            tick(48);
+            expect(root.loading).toBeFalse();
+            expect(root.group.get('amount')?.value).toBe(7);
+        }));
+    }
+
+    it('holds the Preview form height while it is locked and releases it afterwards', fakeAsync(() => {
+        const root = createRoot();
+        setRequired(root, []);
+        const container = document.createElement('div');
+        Object.assign(root, { contentContainerRef: new ElementRef(container) });
+        spyOnProperty(container, 'offsetHeight').and.returnValue(640);
+        root.previewActionsDisabled = true;
+        root.ngAfterViewChecked();
+        expect(container.style.minHeight).toBe('640px');
+        root.previewActionsDisabled = false;
+        root.ngAfterViewChecked();
+        expect(container.style.minHeight).toBe('');
+    }));
+
+    it('holds the form height as soon as Preview starts, before its requirements arrive', fakeAsync(() => {
+        const root = createRoot();
+        const container = document.createElement('div');
+        Object.assign(root, { contentContainerRef: new ElementRef(container) });
+        spyOnProperty(container, 'offsetHeight').and.returnValue(480);
+        root.previewActionsDisabled = true;
+        root.ngAfterViewChecked();
+        expect(container.style.minHeight).toBe('480px');
+    }));
+
+    it('never holds the ordinary form height', fakeAsync(() => {
+        const root = createRoot();
+        const container = document.createElement('div');
+        Object.assign(root, { contentContainerRef: new ElementRef(container) });
+        root.loading = true;
+        root.ngAfterViewChecked();
+        expect(container.style.minHeight).toBe('');
+    }));
+
     it('cancels a pending Preview rebuild when another preset replaces it or the form closes', fakeAsync(() => {
         const root = createRoot();
         setRequired(root, []);
@@ -478,6 +536,29 @@ describe('SchemaFormRootComponent — required fields', () => {
         container.remove();
     }));
 
+    it('keeps waiting for a missing field while Preview rendering lasts longer than the retry budget', fakeAsync(() => {
+        const root = createRoot();
+        setRequired(root, ['rate']);
+        const container = document.createElement('div');
+        const target = document.createElement('div');
+        target.setAttribute('preview-field-id', root.model!.controls![1].id);
+        document.body.appendChild(container);
+        Object.assign(root, { contentContainerRef: new ElementRef(container) });
+        const scroll = spyOn(target, 'scrollIntoView');
+        root.onPreviewLoadingChange(true);
+        root.focusPreviewField('rate');
+        tick(5000);
+        container.appendChild(target);
+        tick(5000);
+        expect(scroll).not.toHaveBeenCalled();
+        root.onPreviewLoadingChange(false);
+        tick(50);
+        expect(scroll).toHaveBeenCalledOnceWith({ behavior: 'smooth', block: 'center' });
+        tick(2000);
+        flush();
+        container.remove();
+    }));
+
     it('stops looking for a missing field that never appears', fakeAsync(() => {
         const root = createRoot();
         const container = document.createElement('div');
@@ -557,6 +638,48 @@ describe('SchemaFormRootComponent — required fields', () => {
         tick(64);
         flush();
         expect(root.previewMissingFieldIds).toEqual([]);
+    }));
+
+    it('lists unfilled Preview missing fields, including a table cell, and drops each one once it has a value', fakeAsync(() => {
+        const root = createRoot();
+        root.schema = new Schema({ iri: '#calc&1.0.0', document: {
+            ...calcDocument,
+            properties: { ...calcDocument.properties, rows: { type: SchemaDataTypes.array, title: 'Rows', description: 'Rows', items: { $ref: '#row' } } },
+            $defs: { '#row': { type: SchemaDataTypes.object, $id: '#row', properties: { PEt: numberField('PEt') } } },
+        } });
+        root.presetDocument = { rows: [{ PEt: 4 }, {}] };
+        root.requiredFields = ['amount', 'rows.PEt'];
+        root.previewMissingFields = ['amount', 'rows.1.PEt', 'missing.path'];
+        root.ngOnChanges({ schema: new SimpleChange(null, root.schema, false) });
+        tick(64);
+        flush();
+        const emitted = jasmine.createSpy('emitted');
+        root.previewMissingOptionsChange.subscribe(emitted);
+        expect(root.previewMissingOptions).toEqual([
+            { label: 'amount', value: 'amount' },
+            { label: 'Rows / #2 / PEt', value: 'rows.1.PEt' },
+        ]);
+        root.group.get('rows.1.PEt')!.setValue(0);
+        expect(root.previewMissingOptions.map(option => option.value)).toEqual(['amount']);
+        root.group.get('amount')!.setValue('');
+        expect(root.previewMissingOptions.map(option => option.value)).toEqual(['amount']);
+        root.group.get('amount')!.setValue(5);
+        expect(root.previewMissingOptions).toEqual([]);
+        tick();
+        expect(emitted.calls.allArgs().map(args => args[0].length)).toEqual([1, 0]);
+    }));
+
+    it('never lists missing fields or watches values in ordinary mode', fakeAsync(() => {
+        const root = createRoot();
+        const emitted = jasmine.createSpy('emitted');
+        root.previewMissingOptionsChange.subscribe(emitted);
+        root.previewMissingFields = ['amount'];
+        root.ngOnChanges({ previewMissingFields: new SimpleChange([], root.previewMissingFields, false) });
+        root.group.get('rate')!.setValue(1);
+        tick(64);
+        expect(root.previewMissingOptions).toEqual([]);
+        expect(Reflect.get(root, 'previewMissingSub')).toBeUndefined();
+        expect(emitted).not.toHaveBeenCalled();
     }));
 
     const rowDocument: ISchemaDocument = {

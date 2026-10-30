@@ -2,6 +2,29 @@
   <div class="header-container">
     <div class="header-text">{{dialogTitle}}</div>
   </div>
+  @if (previewMode && previewMissingOptions.length) {
+    @for (options of [previewMissingOptions]; track options) {
+    <p-select
+      [options]="options"
+      [(ngModel)]="previewMissingPath"
+      (onChange)="onPreviewMissingSelect($event.value)"
+      optionLabel="label"
+      optionValue="value"
+      [placeholder]="'Missing fields: ' + previewMissingOptions.length"
+      class="guardian-dropdown preview-missing-dropdown"
+      panelStyleClass="guardian-dropdown-panel"
+      [disabled]="isPreviewBusy"
+      [appendTo]="'body'"
+      >
+      <ng-template pTemplate="selectedItem" let-item>
+        <div class="guardian-dropdown-selected" [title]="item?.label">
+          <span class="guardian-dropdown-label">Missing</span>
+          <span class="guardian-dropdown-item">{{ item?.label }}</span>
+        </div>
+      </ng-template>
+    </p-select>
+    }
+  }
   @if (restoreData) {
     <button
       class="guardian-button guardian-button-secondary header-action"
@@ -47,7 +70,7 @@
   </div>
 </div>
 <div class="dialog-body">
-  @if (loading) {
+  @if (loading || isPreviewBusy) {
     <div class="guardian-loading" [class.preview-loading-overlay]="previewMode">
       <div class="guardian-loading-image"></div>
     </div>
@@ -108,6 +131,7 @@
               (form)="initForm($event)"
               (presetApplied)="onPresetApplied()"
               (previewBusyChange)="onPreviewRenderingChange($event)"
+              (previewMissingOptionsChange)="onPreviewMissingOptionsChange($event)"
               (buttons)="onChangeButtons($event)"
               (cancelBtnEvent)="handleCancelBtnEvent($event, this)"
               (submitBtnEvent)="handleSubmitBtnEvent($event, this)"
@@ -278,7 +302,7 @@
       {{ minutesAgo$ | async }}
     </div>
   }
-  @if (!loading) {
+  @if (!loading || previewMode) {
     <request-draft-file-actions
       [attr.inert]="isPreviewBusy ? '' : null"
       [schema]="schema"

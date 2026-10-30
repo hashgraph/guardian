@@ -203,6 +203,62 @@ describe('SchemaFormComponent Preview table validation', () => {
         }));
     }
 
+    const renderLarge = (preview: boolean) => {
+        const { fixture } = render();
+        tick(48);
+        const properties = Object.fromEntries(Array.from({ length: 25 }, (_, index) =>
+            [`f${index}`, { type: SchemaDataTypes.number, title: `F${index}`, description: `F${index}` }]));
+        const model = new FieldForm(new UntypedFormGroup({}));
+        model.setData({
+            schema: new Schema({ iri: '#large', document: { $id: '#large', type: SchemaDataTypes.object, properties } }),
+            requiredFields: preview ? [] : null,
+        });
+        model.build();
+        const changes = spyOn(fixture.componentInstance.previewLoadingChange, 'emit');
+        fixture.componentRef.setInput('previewValidation', preview);
+        fixture.componentRef.setInput('form-model', model);
+        fixture.detectChanges();
+        const count = () => fixture.nativeElement.querySelectorAll('.form-field-container').length;
+        return { fixture, changes, count };
+    };
+
+    it('renders Preview input fields in parts across frames and reports loading until the last part', fakeAsync(() => {
+        const { fixture, changes, count } = renderLarge(true);
+        expect(count()).toBe(10);
+        expect(changes.calls.allArgs()).toEqual([[true]]);
+        tick(16);
+        expect(count()).toBe(20);
+        tick(16);
+        expect(count()).toBe(25);
+        expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+        tick(64);
+        expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+        fixture.destroy();
+    }));
+
+    it('renders every ordinary input field at once without loading notifications', fakeAsync(() => {
+        const { changes, count } = renderLarge(false);
+        expect(count()).toBe(25);
+        tick(64);
+        expect(changes).not.toHaveBeenCalled();
+    }));
+
+    for (const action of ['destroy', 'ordinary']) {
+        it(`balances Preview input loading when interrupted by ${action}`, fakeAsync(() => {
+            const { fixture, changes, count } = renderLarge(true);
+            tick(16);
+            if (action === 'destroy') {
+                fixture.destroy();
+            } else {
+                fixture.componentRef.setInput('previewValidation', false);
+                fixture.detectChanges();
+                expect(count()).toBe(25);
+            }
+            tick(64);
+            expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+        }));
+    }
+
     it('prepares a Preview input section opened from navigation', fakeAsync(() => {
         const fixture = renderSection(true);
         const view = fixture.componentInstance;
