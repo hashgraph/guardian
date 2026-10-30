@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { UntypedFormArray } from '@angular/forms';
 import {
     isGeoCustomType,
@@ -139,7 +139,8 @@ export class SchemaFormComponent implements OnInit {
     constructor(
         private ipfs: IPFSService,
         protected changeDetectorRef: ChangeDetectorRef,
-        private readonly dialog: DialogService
+        private readonly dialog: DialogService,
+        private readonly elementRef: ElementRef<HTMLElement>
     ) { }
 
     ngOnInit(): void {
@@ -1066,6 +1067,24 @@ export class SchemaFormComponent implements OnInit {
         if (invalid?.id) {
             this.openField(invalid.id);
         }
+        this.scrollToFirstInvalidLabel();
+    }
+
+    private scrollToFirstInvalidLabel(): void {
+        setTimeout(() => {
+            try {
+                this.changeDetectorRef.detectChanges();
+            } catch (e) { }
+            const labels = Array.from(this.elementRef.nativeElement.querySelectorAll('.invalid-field-label'))
+                .filter((label) => (label as HTMLElement).offsetParent) as HTMLElement[];
+            const label = labels.find((item) => !item.classList.contains('invalid-sub-schema')) || labels[0];
+            if (!label) {
+                return;
+            }
+            const container = (label.closest('.form-field-container') as HTMLElement | null) || label;
+            container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            (container.querySelector('input, textarea, [role="combobox"]') as HTMLElement | null)?.focus({ preventScroll: true });
+        }, 0);
     }
 
     private findAndOpen(controls: IFieldControl<any>[] | undefined | null, target: string): boolean {
