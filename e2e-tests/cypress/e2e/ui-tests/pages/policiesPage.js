@@ -54,7 +54,7 @@ const PoliciesPageLocators = {
     redo: "div[title='Redo']",
     successValidationElement: "[title='Validation Policy']",
     errorCountElement: '.error-count',
-    nextButton: "button[label='Next']",
+    nextButton: "button:contains('Continue')",
 
     // importBtn: '[label="Import"]',
     // importContinueBtn: 'p-button[label="Import"]',
@@ -460,8 +460,7 @@ export class PoliciesPage {
     }
 
     registerAs(role) {
-        cy.get(CommonElements.dropdown).first().click();
-        cy.contains(role).click();
+        cy.get(`[data-role="${role}"]`).click();
         cy.get(PoliciesPageLocators.nextButton).click();
         Checks.waitForLoading();
     }

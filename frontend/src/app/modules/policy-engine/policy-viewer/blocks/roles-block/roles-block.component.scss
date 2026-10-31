@@ -1,11 +1,6 @@
 .content {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    top: 0;
+    position: relative;
     display: block;
-    background: var(--guardian-background, #fff);
 }
 
 .loading {
@@ -29,45 +24,109 @@
 }
 
 
-h2 {
-    margin-bottom: 24px;
-    color: var(--color-grey-black-1, #181818);
-    font-family: Poppins;
-    font-size: 24px;
-    font-style: normal;
-    font-weight: 600;
-    line-height: 32px;
-}
-
-h3 {
-    color: var(--guardian-font-color, #23252E);
-}
-
-.title {
-    background: var(--guardian-background, #fff);
-    display: block;
-    margin-top: 20px;
-    text-align: center;
-    font-size: 40px;
-    padding-bottom: 30px;
-    font-weight: bold;
-}
-
-.description {
-    background: var(--guardian-background, #fff);
-    display: block;
-    text-align: center;
-    font-size: 20px;
-    padding-bottom: 30px;
-    color: #404040;
-}
-
-form {
+form.roles-card {
     max-width: 624px;
-    padding: 24px;
+}
+
+.role-desc {
+    margin: -4px 0 18px;
+    color: color-mix(in srgb, var(--guardian-font-color) 75%, transparent);
+    font-size: 14px;
+}
+
+.role-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.role-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
+    background: var(--guardian-background, #FFF);
+    color: var(--guardian-font-color);
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+
+    .role-radio {
+        flex: 0 0 16px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 1.5px solid var(--guardian-border-color);
+    }
+
+    .role-name {
+        font-weight: 600;
+    }
+
+    &:hover {
+        border-color: var(--guardian-border-color);
+    }
+
+    &.selected {
+        border-color: var(--color-primary);
+        background: color-mix(in srgb, var(--color-primary) 9%, transparent);
+
+        .role-radio {
+            border-color: var(--color-primary);
+            box-shadow: inset 0 0 0 3px var(--guardian-background, #FFF);
+            background: var(--color-primary);
+        }
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--color-primary);
+        outline-offset: 1px;
+    }
+}
+
+.group-type {
+    display: inline-flex;
+    align-self: flex-start;
+    padding: 3px;
+    gap: 2px;
     border-radius: 8px;
-    border: 1px solid var(--color-grey-3, #E1E7EF);
-    background: var(--color-grey-white, #FFF);
+    background: var(--guardian-grey-background);
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
+
+    .segment {
+        padding: 6px 14px;
+        border: none;
+        border-radius: 6px;
+        background: transparent;
+        color: var(--color-grey-5);
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+
+        &.selected {
+            background: var(--guardian-background, #FFF);
+            color: var(--color-primary);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+        }
+    }
+}
+
+.invite-details {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 6px 16px;
+    margin: 0 0 16px;
+
+    dt {
+        color: var(--color-grey-5);
+    }
+
+    dd {
+        margin: 0;
+        color: var(--guardian-font-color);
+    }
 }
 
 .roles-form {
@@ -75,25 +134,10 @@ form {
     flex-direction: column;
 }
 
-.btn-form {
-    display: flex;
-    flex-direction: column;
-}
-
-.group-name {
-    height: 30px;
-}
-
 .group-value {
     display: flex;
     flex-direction: column;
-    padding: 10px 50px 15px 50px;
-}
-
-.group-value[disabled="true"] {
-    user-select: none;
-    pointer-events: none;
-    opacity: 0.5;
+    padding: 16px 0 0;
 }
 
 .role-value {
@@ -119,21 +163,6 @@ form {
         background: var(--color-grey-white, #FFF);
         width: 100%;
     }
-}
-
-.progress-footer {
-    padding: 12px 48px;
-    display: flex;
-    justify-content: space-between;
-    position: fixed;
-    right: var(--first-steps-offset);
-    bottom: 0;
-    width: calc(100% - var(--first-steps-offset));
-    border-top: 1px solid var(--color-grey-3, #E1E7EF);
-    background: var(--guardian-background, #FFF);
-    padding-left: calc(var(--header-width, var(--header-width-expand)) + 48px);
-    transition: padding-left 0.125s ease-in-out;
-    z-index: 999;
 }
 
 :host ::ng-deep {
@@ -167,71 +196,11 @@ form {
             }
         }
     }
-
-    .p-button-outlined {
-        border-radius: 8px;
-        border: 1px solid var(--color-secondary, #CDDDFD);
-        background: var(--color-grey-white, #FFF);
-
-        .p-button-label {
-            font-family: Inter;
-            font-size: 14px;
-            font-style: normal;
-            font-weight: 500;
-            line-height: 30px;
-            color: var(--color-primary, #0031ff);
-        }
-    }
-}
-
-@media (max-width: 810px) {
-    .title {
-        display: block;
-        margin-top: 20px;
-        text-align: left;
-
-        font-size: 40px;
-        font-family: 'Roboto';
-        font-style: normal;
-        font-weight: 600;
-        line-height: 28px;
-
-        padding-bottom: 30px;
-        font-weight: bold;
-
-        flex: none;
-        order: 0;
-        flex-grow: 1;
-    }
-
-    .description {
-        text-align: left;
-    }
-
-    form {
-        width: 90%;
-        height: calc(1vh - var(--header-height));
-        margin: 20px auto;
-        border: none;
-        position: relative;
-    }
-
-    .btn-form {
-        position: fixed;
-        bottom: 0;
-        right: 0;
-        width: 90%;
-        margin: 20px 5% !important;
-    }
 }
 
 .groups-container {
     position: relative;
     margin-top: 5px;
-}
-
-::ng-deep p-radiobutton {
-    padding-right: 10px
 }
 
 .groups-container label,
@@ -252,8 +221,8 @@ form {
 }
 
 .group-label-container input,
-.invite-container input{
-    width: 474px;
+.invite-container input {
+    width: 100%;
 }
 
 .invite-container {
