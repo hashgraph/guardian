@@ -100,6 +100,9 @@ describe('Textarea layout in the request form and the document view', () => {
         await new Promise((resolve) => setTimeout(resolve, 50));
         fixture.detectChanges();
         expectLayout(fixture.nativeElement);
+        const textareas: HTMLTextAreaElement[] = Array.from(fixture.nativeElement.querySelectorAll('textarea'));
+        expect(textareas.map((textarea) => [textarea.readOnly, getComputedStyle(textarea).opacity, getComputedStyle(textarea).cursor]))
+            .toEqual(textareas.map(() => [true, '0.6', 'not-allowed']));
         style.remove();
         fixture.nativeElement.remove();
     });

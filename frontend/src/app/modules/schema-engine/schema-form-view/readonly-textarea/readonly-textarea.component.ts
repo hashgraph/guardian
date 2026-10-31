@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 @Component({
     selector: 'app-readonly-textarea',
     template: `<textarea pInputTextarea [class.textarea-resize-none]="resizeNone" [value]="value" [readonly]="true" type="text" [autoResize]="autoResize" rows="1"></textarea>`,
-    styles: [`:host { display: flex; flex-direction: column; }`],
+    styles: [`:host { display: flex; flex-direction: column; } textarea[readonly] { opacity: 0.6 !important; cursor: not-allowed !important; }`],
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: false
 })
