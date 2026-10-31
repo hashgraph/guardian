@@ -295,7 +295,9 @@ export class PolicyEngine extends NatsService {
 
         // Discontinued policies are started on demand (see ensureDiscontinuedRunning) and
         // stop themselves when idle. Processes left over from before this was introduced
-        // do not, so they are stopped here.
+        // do not, so they are stopped here. This runs on every boot, so a restart of
+        // guardian-service also stops discontinued policies that are in use: the next
+        // request starts them again.
         void this.stopRunningDiscontinued();
     }
 
