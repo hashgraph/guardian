@@ -1005,10 +1005,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     this.prefetchedVirtualUsers = users;
                     return of(null);
                 }
-                // login returns the refreshed list, with the new active user
-                return this.policyEngineService.loginVirtualUser(policyId, admin.did).pipe(
-                    tap((updated) => { this.prefetchedVirtualUsers = updated; })
-                );
+                return this.policyEngineService.loginVirtualUser(policyId, admin.did);
             }),
             catchError(() => of(null)),
             tap(() => {
