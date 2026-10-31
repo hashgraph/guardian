@@ -4,9 +4,9 @@ import * as Checks from '../../../support/checkingMethods';
 const d = new Date(2022, 3, 3);
 
 const UserPoliciesPageLocators = {
-    roleSelect: '[formcontrolname="roleOrGroup"]',
-    role: (roleName) => `li[aria-label="${roleName}"]`,
-    nextButton: "button[label='Next']",
+    roleSelect: '[data-role]',
+    role: (roleName) => `[data-role="${roleName}"]`,
+    nextButton: "button:contains('Continue')",
     requestDocumentBlock: 'request-document-block',
     nextButtonInApplicationRegister: "button:contains('Next ')",
     submitButton: "button:contains('Submit ')",
@@ -88,7 +88,7 @@ export class UserPoliciesPage {
     }
 
     registerInPolicy(role = 'Registrant') {
-        cy.get(UserPoliciesPageLocators.roleSelect).should('be.visible').click();
+        cy.get(UserPoliciesPageLocators.roleSelect).should('be.visible');
         cy.get(UserPoliciesPageLocators.role(role)).click();
         cy.get(UserPoliciesPageLocators.nextButton).click();
         if (role == 'Registrant') {
@@ -155,7 +155,7 @@ export class UserPoliciesPage {
     }
 
     registerInPolicySmall() {
-        cy.get(UserPoliciesPageLocators.roleSelect).should('be.visible').click();
+        cy.get(UserPoliciesPageLocators.roleSelect).should('be.visible');
         cy.get(UserPoliciesPageLocators.role('Registrant')).click();
         cy.get(UserPoliciesPageLocators.nextButton).click();
         Checks.waitForElement(UserPoliciesPageLocators.requestDocumentBlock);

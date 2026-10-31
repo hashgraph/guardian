@@ -1,0 +1,39 @@
+.policy-content,
+.pv-scope {
+    .pv-page-header {
+        margin: 0;
+
+        .pv-page-header-parent {
+            margin-bottom: 4px;
+            color: var(--color-grey-5);
+            font-size: 12px;
+        }
+
+        .pv-page-header-title {
+            margin: 0;
+            color: var(--guardian-font-color);
+            font-family: var(--font-family-inter, Inter, sans-serif);
+            font-size: 22px;
+            font-weight: 600;
+            line-height: 1.25;
+            letter-spacing: -0.01em;
+        }
+    }
+
+    .pv-card {
+        padding: 24px;
+        border-radius: 12px;
+        box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+        border: 1px solid var(--guardian-border-color, #E1E7EF);
+        background: var(--guardian-background, #FFF);
+    }
+
+    .pv-card-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 8px;
+        padding-top: 16px;
+        border-top: 1px solid var(--guardian-border-color, #E1E7EF);
+    }
+}

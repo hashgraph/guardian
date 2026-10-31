@@ -68,46 +68,7 @@
           <p-tabs [(value)]="activeTabIndex" (valueChange)="onTabChange($event)">
             <p-tabpanels>
               <p-tabpanel [value]="0">
-                <div class="policy-container {{!navigationFooterDisabled ? 'step-container' : 'no-step-container' }}">
-                  @if (steps && steps.length > 0) {
-                    <progress-tracker
-                      [steps]="steps"
-                    ></progress-tracker>
-                  }
-                  <div class="policy-container-body">
-                    <render-block
-                      [block]="policy"
-                      [dryRun]="isDryRun"
-                      [policyId]="policyId"
-                      [policyStatus]="policyInfo.status"
-                      style="width: 100%;"
-                      [savepointIds]="savepointIds"
-                    ></render-block>
-                    @if (!navigationFooterDisabled) {
-                      <div class="progress-footer-container">
-                        <div class="progress-footer">
-                          <button
-                            (click)="onNavigationPrevButton()"
-                            [disabled]="prevButtonDisabled"
-                            class="button"
-                            label="Previous"
-                            pButton
-                          type="button"></button>
-                          @if (!nextButtonDisabled) {
-                            <div>
-                              <button
-                                (click)="onNavigationNextButton()"
-                                class="p-button"
-                                label="Next"
-                                pButton
-                              type="button"></button>
-                            </div>
-                          }
-                        </div>
-                      </div>
-                    }
-                  </div>
-                </div>
+                <ng-container [ngTemplateOutlet]="policyContainer"></ng-container>
               </p-tabpanel>
               <p-tabpanel [value]="1">
                 <app-project-data-export></app-project-data-export>
@@ -120,46 +81,7 @@
             </p-tabpanels>
           </p-tabs>
         } @else {
-          <div class="policy-container {{!navigationFooterDisabled ? 'step-container' : 'no-step-container' }}">
-            @if (steps && steps.length > 0) {
-              <progress-tracker
-                [steps]="steps"
-              ></progress-tracker>
-            }
-            <div class="policy-container-body">
-              <render-block
-                [block]="policy"
-                [dryRun]="isDryRun"
-                [policyId]="policyId"
-                [policyStatus]="policyInfo.status"
-                style="width: 100%;"
-                [savepointIds]="savepointIds"
-              ></render-block>
-              @if (!navigationFooterDisabled) {
-                <div class="progress-footer-container">
-                  <div class="progress-footer">
-                    <button
-                      (click)="onNavigationPrevButton()"
-                      [disabled]="prevButtonDisabled"
-                      class="button"
-                      label="Previous"
-                      pButton
-                    type="button"></button>
-                    @if (!nextButtonDisabled) {
-                      <div>
-                        <button
-                          (click)="onNavigationNextButton()"
-                          class="p-button"
-                          label="Next"
-                          pButton
-                        type="button"></button>
-                      </div>
-                    }
-                  </div>
-                </div>
-              }
-            </div>
-          </div>
+          <ng-container [ngTemplateOutlet]="policyContainer"></ng-container>
         }
       </div>
     }
@@ -916,3 +838,44 @@
     }
   </div>
 }
+
+<ng-template #policyContainer>
+  <div class="policy-container">
+    @if (steps && steps.length > 0) {
+      <progress-tracker
+        class="policy-nav"
+        [steps]="steps"
+        [hidden]="navHidden"
+        (hiddenChange)="onNavHiddenChange($event)"
+        (activeStepChange)="activeStep = $event"
+      ></progress-tracker>
+    }
+    <div class="policy-container-body">
+      @if (steps && steps.length > 0) {
+        <div class="pv-page-header-row">
+          @if (navHidden) {
+            <button type="button" class="pv-show-menu" (click)="onNavHiddenChange(false)">
+              <i class="pi pi-angle-double-right"></i> Show menu
+            </button>
+          }
+          @if (activeStep) {
+            <div class="pv-page-header">
+              @if (activeStep.parentLabel) {
+                <div class="pv-page-header-parent">{{ activeStep.parentLabel }}</div>
+              }
+              <h2 class="pv-page-header-title">{{ activeStep.label }}</h2>
+            </div>
+          }
+        </div>
+      }
+      <render-block
+        [block]="policy"
+        [dryRun]="isDryRun"
+        [policyId]="policyId"
+        [policyStatus]="policyInfo.status"
+        style="width: 100%;"
+        [savepointIds]="savepointIds"
+      ></render-block>
+    </div>
+  </div>
+</ng-template>

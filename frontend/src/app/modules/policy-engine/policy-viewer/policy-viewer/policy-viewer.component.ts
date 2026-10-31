@@ -3,14 +3,15 @@ import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@ang
 import { ActivatedRoute, Router } from '@angular/router';
 import { IUser, PolicyStatus, UserPermissions } from '@guardian/interfaces';
 import { DialogService } from 'primeng/dynamicdialog';
-import { forkJoin, interval, Subject, Subscription, of } from 'rxjs';
-import { audit, takeUntil, map, catchError, switchMap, tap, finalize } from 'rxjs/operators';
+import { EMPTY, forkJoin, Subject, Subscription, of } from 'rxjs';
+import { takeUntil, map, catchError, switchMap, tap, finalize, debounceTime } from 'rxjs/operators';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { RecordControllerComponent } from '../../record/record-controller/record-controller.component';
-import { PolicyProgressService } from '../../services/policy-progress.service';
+import { ActiveStep, PolicyProgressService } from '../../services/policy-progress.service';
+import { BooleanProperty } from '../../structures/storage/boolean-prop';
 import { IStep } from '../../structures';
 import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
 import { RestoreSavepointDialog, IRestoreSavepointAction } from 'src/app/modules/policy-engine/policy-viewer/dialogs/restore-savepoint-dialog/restore-savepoint-dialog.component';
@@ -102,9 +103,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public userGroup!: string;
     public recordingActive: boolean = false;
     public steps: IStep[] = [];
-    public navigationFooterDisabled = false;
-    public prevButtonDisabled = false;
-    public nextButtonDisabled = false;
+    private navHiddenProp = new BooleanProperty('POLICY_VIEWER_NAV_HIDDEN');
+    public navHidden: boolean = this.navHiddenProp.load();
+    public activeStep: ActiveStep | null = null;
     public permissions: UserPermissions;
     public newRequestsExist: boolean = false;
     public newActionsExist: boolean = false;
@@ -235,9 +236,14 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         this.subscription.add(
             this.wsService.subscribeUserInfo((message) => {
                 const { userRole, userGroup, userGroups } = message;
+                const group = userGroup?.groupLabel || userGroup?.uuid;
+                const changed = this.userRole !== userRole || this.userGroup !== group;
                 this.userRole = userRole;
-                this.userGroup = userGroup?.groupLabel || userGroup?.uuid;
+                this.userGroup = group;
                 this.groups = userGroups;
+                if (changed && this.policyId && this.isConfirmed) {
+                    this.reloadNavigation();
+                }
             })
         );
         this.subscription.add(
@@ -256,7 +262,17 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             })
         );
 
-        this.updateNavigationButtons();
+        this.subscription.add(
+            this.policyProgressService.navigationInvalidated$
+                .pipe(
+                    debounceTime(50),
+                    switchMap(() => this.policyEngineService.getPolicyNavigation(this.policyId, this.savepointIds).pipe(
+                        // a failed reload keeps the current menu and must not end the subscription
+                        catchError(() => EMPTY)
+                    ))
+                )
+                .subscribe((data: any) => this.applyNavigation(data))
+        );
 
         this.timer = setInterval(() => {
             this.updateRemotePolicyRequests();
@@ -346,6 +362,10 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.policyEngineService.getGroups(policyId, this.savepointIds),
                 this.externalPoliciesService.getActionRequestsCount({ policyId }),
                 this.policyEngineService.getParametersConfig(policyId),
+                // navigation is optional: a failure must not stop the policy from loading
+                this.policyEngineService.getPolicyNavigation(policyId, this.savepointIds).pipe(
+                    catchError(() => of(null))
+                ),
             ])),
             finalize(() => {
                 this.isStarting = false;
@@ -357,6 +377,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.groups = value[2] || [];
                 const count: any = value[3]?.body || {};
                 this.editableParameters = value[4];
+                const navigation = value[5];
 
                 this.virtualUsers = [];
                 this.isMultipleGroups = !!(this.policyInfo?.policyGroups && this.groups?.length);
@@ -378,18 +399,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
                 this.refreshSavepointsCount();
 
-                this.policyProgressService.data$
-                    .pipe(audit(ev => interval(1000)), takeUntil(this.destroy$))
-                    .subscribe(() => {
-                        this.policyEngineService.getPolicyNavigation(this.policyId, this.savepointIds).subscribe((data: any) => {
-                            this.updatePolicyProgress(data);
-                            if (data && data.length > 0) {
-                                this.policyProgressService.setHasNavigation(true);
-                            } else {
-                                // this.policyProgressService.setHasNavigation(false);
-                            }
-                        })
-                    })
+                this.applyNavigation(navigation);
 
                 setTimeout(() => this.openOnLoadRestoreSavepointDialog(), 500);
 
@@ -427,7 +437,6 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     hasAction: false,
                 };
             })
-            this.updateNavigationButtons();
         } else {
             this.steps = [];
         }
@@ -628,65 +637,19 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             );
     }
 
-    updateNavigationButtons() {
-        const progressFooter = document.getElementById('block-progress-footer');
-        if (!progressFooter) {
-            this.navigationFooterDisabled = false;
-        } else {
-            this.navigationFooterDisabled = true;
-        }
-
-        this.prevButtonDisabled = true;
-        this.nextButtonDisabled = true;
-        const currentStepIndex = this.policyProgressService.getCurrentStepIndex();
-        for (let i = (currentStepIndex - 1); i >= 0; i--) {
-            const step = this.steps[i];
-            if (!step || !step.blockId) {
-                continue;
-            }
-            const hasAction = this.policyProgressService.stepHasAction(step.blockId);
-
-            if (step.level == 1 && hasAction) {
-                this.prevButtonDisabled = false;
-            }
-        }
-        for (let i = (currentStepIndex + 1); i < this.steps.length; i++) {
-            const step = this.steps[i];
-            if (!step.blockId) {
-                continue;
-            }
-            const hasAction = this.policyProgressService.stepHasAction(step.blockId);
-
-            if (step.level == 1 && hasAction) {
-                this.nextButtonDisabled = false;
-            }
-        }
+    private applyNavigation(navigation: any) {
+        this.updatePolicyProgress(navigation);
+        this.policyProgressService.setHasNavigation(!!navigation?.length);
     }
 
-    onNavigationPrevButton() {
-        const currentStepIndex = this.policyProgressService.getCurrentStepIndex();
-        for (let i = (currentStepIndex - 1); i >= 0; i--) {
-            const step = this.steps[i];
-            const hasAction = this.policyProgressService.stepHasAction(step.blockId);
-
-            if (step.level == 1 && hasAction) {
-                this.policyProgressService.runStepAction(step.blockId);
-                break;
-            }
-        }
+    reloadNavigation() {
+        this.policyProgressService.invalidateNavigation();
     }
 
-    onNavigationNextButton() {
-        const currentStepIndex = this.policyProgressService.getCurrentStepIndex();
-        for (let i = (currentStepIndex + 1); i < this.steps.length; i++) {
-            const step = this.steps[i];
-            const hasAction = this.policyProgressService.stepHasAction(step.blockId);
-
-            if (step.level == 1 && hasAction) {
-                this.policyProgressService.runStepAction(step.blockId);
-                break;
-            }
-        }
+    onNavHiddenChange(hidden: boolean) {
+        this.navHidden = hidden;
+        this.navHiddenProp.value = hidden;
+        this.navHiddenProp.save();
     }
 
     public updatePolicy() {
@@ -704,6 +667,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             this.userRole = this.policyInfo.userRole;
             this.userGroup = this.policyInfo.userGroup?.groupLabel || this.policyInfo.userGroup?.uuid;
             this.changeDetector.detectChanges();
+            this.reloadNavigation();
         }, (e) => {
             this.loading = false;
         });
