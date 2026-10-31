@@ -2,11 +2,11 @@
 <div class="btn-link" (click)="onFilters()">{{content}}</div>
 </div> -->
 
-<div class="content" [attr.readonly-block]="readonly">
-  <div class="grouped-content">
-    <div class="content-name" [title]="content">
-      {{content}}
-    </div>
+<div class="content" [class.has-value]="hasValue" [attr.readonly-block]="readonly">
+  <div class="content-name" [title]="content">
+    {{content}}
+  </div>
+  <div class="grouped-content" [attr.valid]="valid">
     @if (queryType === 'user_defined') {
       <div class="type-select user-defined-select">
         <p-select
@@ -15,11 +15,10 @@
           optionValue="value"
           [(ngModel)]="currentType"
           [appendTo]="'body'"
-          [style]="{'width':'100%', 'border-radius': '0 8px 8px 0'}"
+          [style]="{'width':'100%'}"
           class="w-full"
           (onChange)="onType($event)">
           <ng-template pTemplate="selectedItem" let-selectedOption>
-            <span class="prefix-dropdown">Type</span>
             @if (selectedOption) {
               <span>{{ selectedOption.name }}</span>
             }
@@ -109,8 +108,8 @@
     @if (type == 'datepicker') {
       <div class="content-select" [attr.valid]="valid">
         <p-datepicker
-          [style]="{'border-left': '0', 'border-radius': '0 8px 8px 0'}"
           [(ngModel)]="currentValue"
+          [appendTo]="'body'"
           (onSelect)="onFilters($event)"
           styleClass="calendar-filter"
           [showIcon]="true"
@@ -123,6 +122,16 @@
       <div class="content-select" [attr.valid]="valid">
         <input class="input-filter" [(ngModel)]="currentValue" (change)="onFilters($event)">
       </div>
+    }
+    @if (canBeEmpty && hasValue) {
+      <button
+        type="button"
+        class="clear-filter"
+        aria-label="Clear filter"
+        title="Clear filter"
+        (click)="onClear()">
+        <i class="pi pi-times" aria-hidden="true"></i>
+      </button>
     }
   </div>
 </div>

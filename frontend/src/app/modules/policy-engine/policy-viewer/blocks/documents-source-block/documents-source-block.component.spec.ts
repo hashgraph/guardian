@@ -338,4 +338,24 @@ describe('DocumentsSourceBlockComponent', () => {
             expect(component.richTextValue).toContain(`src="${dataUrl}"`);
         });
     });
+
+    describe('status pill tone', () => {
+        it('reads a waiting status as wait, not approved', () => {
+            expect(createComponent().getStatusTone('Waiting for approval')).toBe('wait');
+        });
+
+        it('reads a rejected status as bad', () => {
+            expect(createComponent().getStatusTone('Registry rejected')).toBe('bad');
+        });
+
+        it('reads a minted status as ok', () => {
+            expect(createComponent().getStatusTone('Minted')).toBe('ok');
+        });
+
+        it('reads any other status as neutral', () => {
+            const component = createComponent();
+            expect(component.getStatusTone('Created')).toBe('neutral');
+            expect(component.getStatusTone(undefined)).toBe('neutral');
+        });
+    });
 });

@@ -4,18 +4,30 @@
       @if (button.type == 'selector' && button.visible && button.name && isBtnVisible(button)) {
         <div>
           @if (button.name) {
-            <div class="btn-option {{button.uiClass}}" (click)="onSelect(button)">
+            <button type="button" class="btn-option {{button.uiClass}}" (click)="onSelect(button)">
+              @if (button.uiClass == 'btn-approve') {
+                <i class="pi pi-check" aria-hidden="true"></i>
+              }
+              @if (button.uiClass == 'btn-reject') {
+                <i class="pi pi-times" aria-hidden="true"></i>
+              }
               {{button.name}}
-            </div>
+            </button>
           }
         </div>
       }
       @if (button.type === 'selector-dialog' && button.visible && button.name && isBtnVisible(button)) {
         <div>
           @if (button.name) {
-            <div class="btn-option {{button.uiClass}}" (click)="onSelectDialog(button)">
+            <button type="button" class="btn-option {{button.uiClass}}" (click)="onSelectDialog(button)">
+              @if (button.uiClass == 'btn-approve') {
+                <i class="pi pi-check" aria-hidden="true"></i>
+              }
+              @if (button.uiClass == 'btn-reject') {
+                <i class="pi pi-times" aria-hidden="true"></i>
+              }
               {{button.name}}
-            </div>
+            </button>
           }
         </div>
       }

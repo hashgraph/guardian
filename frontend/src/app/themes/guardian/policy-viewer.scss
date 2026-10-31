@@ -36,4 +36,328 @@
         padding-top: 16px;
         border-top: 1px solid var(--guardian-border-color, #E1E7EF);
     }
+
+    // Action buttons rendered from a block's `uiClass`. Only <button> elements
+    // are matched, so blocks that still render a div (multi-sign) keep their own styles.
+    button.btn-option,
+    button.btn-field {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        box-sizing: border-box;
+        height: 36px;
+        margin: 0;
+        padding: 0 16px;
+        border: 1px solid var(--guardian-border-color, #E1E7EF);
+        border-radius: 8px;
+        box-shadow: none;
+        background: var(--guardian-background, #FFF);
+        color: var(--guardian-font-color, #23252E);
+        font-family: var(--font-family-inter, Inter, sans-serif);
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 16px;
+        white-space: nowrap;
+        cursor: pointer;
+        appearance: none;
+
+        .pi {
+            font-size: 12px;
+        }
+
+        &:hover {
+            background: var(--guardian-grey-background, #F9FAFC);
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--color-primary);
+            outline-offset: 2px;
+        }
+
+        &.btn-approve {
+            border-color: transparent;
+            background: var(--guardian-success-background, #CAFDD9);
+            color: var(--guardian-success-color, #19BE47);
+
+            &:hover {
+                filter: brightness(0.96);
+            }
+        }
+
+        &.btn-reject {
+            border-color: var(--guardian-failure-color, #FF432A);
+            background: transparent;
+            color: var(--guardian-failure-color, #FF432A);
+
+            &:hover {
+                background: var(--guardian-failure-background, #FFEAEA);
+            }
+        }
+
+        &.link {
+            border-color: transparent;
+            background: transparent;
+            color: var(--color-primary);
+
+            &:hover {
+                background: transparent;
+                text-decoration: underline;
+            }
+        }
+    }
+
+    td button.btn-option,
+    td button.btn-field {
+        height: 30px;
+        padding: 0 10px;
+        font-size: 12.5px;
+        border-radius: 7px;
+
+        &.link {
+            padding: 0 6px;
+        }
+    }
+
+    // A Create button right after a documents table joins the card as its bottom row.
+    .block-item:has(.pv-table-card):has(+ .block-item .create-button-container) .pv-table-card {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+    .block-item:has(.pv-table-card) + .block-item .create-button-container {
+        overflow: visible;
+        margin-top: -1px;
+        padding: 14px 16px;
+        border: 1px solid var(--guardian-border-color, #E1E7EF);
+        border-radius: 0 0 12px 12px;
+        background: var(--guardian-background, #FFF);
+    }
+
+    // Action-block dropdown (assign / select a value).
+    .content-dropdown .guardian-dropdown {
+        height: 36px;
+        font-family: var(--font-family-inter, Inter, sans-serif);
+        font-size: 13px;
+
+        &.p-select,
+        .p-select {
+            height: 36px;
+            border-radius: 8px;
+            font-size: inherit;
+        }
+
+        .p-select-label {
+            padding: 0 12px;
+            display: flex;
+            align-items: center;
+            font-family: inherit;
+            font-size: inherit;
+            font-weight: 400;
+            line-height: 16px;
+        }
+    }
+
+    td .content-dropdown .guardian-dropdown {
+        height: 30px;
+        font-size: 12.5px;
+
+        &.p-select,
+        .p-select {
+            height: 30px;
+            border-radius: 7px;
+        }
+    }
+
+    .pv-status {
+        display: inline-flex;
+        align-items: center;
+        max-width: 100%;
+        padding: 2px 10px;
+        border-radius: 999px;
+        background: var(--guardian-grey-color, #EFF3F7);
+        color: var(--guardian-font-color, #23252E);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 18px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        &::before {
+            content: "";
+            flex: none;
+            width: 6px;
+            height: 6px;
+            margin-right: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        &--ok {
+            background: var(--guardian-success-background, #CAFDD9);
+            color: var(--guardian-success-color, #19BE47);
+        }
+
+        &--wait {
+            background: var(--guardian-warning-background, #FFF6E3);
+            color: var(--guardian-warning-color, #DA9B22);
+        }
+
+        &--bad {
+            background: var(--guardian-failure-background, #FFEAEA);
+            color: var(--guardian-failure-color, #FF432A);
+        }
+    }
+
+    // The page header already names the step, so the Trust chain block drops its own title.
+    &:has(.pv-page-header) .trust-chain-label {
+        display: none;
+    }
+
+    .pv-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        max-width: 460px;
+        margin: 48px auto;
+        padding: 32px 24px;
+        text-align: center;
+
+        &__icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 56px;
+            height: 56px;
+            margin-bottom: 8px;
+            border-radius: 14px;
+            background: var(--guardian-grey-color, #EFF3F7);
+            color: var(--color-grey-5);
+
+            .pi {
+                font-size: 24px;
+            }
+        }
+
+        &__title {
+            color: var(--guardian-font-color, #23252E);
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        &__text {
+            color: var(--color-grey-5);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        &__actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .pv-state-button {
+            height: 36px;
+            padding: 0 20px;
+            border: 1px solid var(--color-primary);
+            border-radius: 8px;
+            background: var(--color-primary);
+            color: var(--guardian-secondary-color, #FFF);
+            font-family: var(--font-family-inter, Inter, sans-serif);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+
+            &:hover {
+                opacity: 0.9;
+            }
+
+            &--outlined {
+                background: transparent;
+                color: var(--color-primary);
+            }
+        }
+
+        &--info .pv-state__icon {
+            background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+            color: var(--color-primary);
+        }
+
+        &--wait .pv-state__icon {
+            background: var(--guardian-warning-background, #FFF6E3);
+            color: var(--guardian-warning-color, #DA9B22);
+        }
+
+        &--err .pv-state__icon {
+            background: var(--guardian-failure-background, #FFEAEA);
+            color: var(--guardian-failure-color, #FF432A);
+        }
+    }
+
+    .pv-banner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 16px;
+        padding: 12px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        line-height: 1.5;
+
+        p {
+            margin: 0;
+        }
+
+        &--info {
+            background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+            color: var(--guardian-font-color, #23252E);
+        }
+
+        &--warn {
+            background: var(--guardian-warning-background, #FFF6E3);
+            color: var(--guardian-font-color, #23252E);
+        }
+    }
+
+    .pv-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        padding: 40px 16px;
+        text-align: center;
+
+        &__icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            background: var(--guardian-grey-color, #EFF3F7);
+            color: var(--color-grey-5);
+
+            .pi {
+                font-size: 20px;
+            }
+        }
+
+        &__title {
+            color: var(--guardian-font-color, #23252E);
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        &__text {
+            color: var(--color-grey-5);
+            font-size: 13px;
+        }
+    }
 }
