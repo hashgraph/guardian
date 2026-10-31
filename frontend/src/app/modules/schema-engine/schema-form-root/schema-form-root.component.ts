@@ -424,16 +424,25 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
 
     public previewMissingFieldIds: string[] = [];
 
+    private previewMissingTargets: object[] = [];
+
     private updatePreviewMissingFieldIds(): void {
+        this.previewMissingTargets = [];
         this.previewMissingFieldIds = this.previewMissingFields.flatMap(path => {
             const parts = path.split('.');
             let controls = this.model?.controls || [];
             for (let index = 0; index < parts.length; index++) {
                 const field = controls.find(item => item.name === parts[index]);
                 if (!field) return [];
-                if (index === parts.length - 1) return [field.id];
+                if (index === parts.length - 1) {
+                    this.previewMissingTargets.push(field);
+                    return [field.id];
+                }
                 if (field.isArray && /^\d+$/.test(parts[index + 1] || '')) {
                     const row = field.list?.[Number(parts[++index])];
+                    if (row && index === parts.length - 1) {
+                        this.previewMissingTargets.push(row);
+                    }
                     controls = row?.model?.controls || [];
                 } else {
                     controls = field.model?.controls || [];
@@ -444,32 +453,41 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         this.updatePreviewMissingOptions();
     }
 
+    private collectPreviewTargets(
+        controls: IFieldControl<any>[],
+        path: string[],
+        labels: string[],
+        targets: Map<object, { path: string; labels: string[]; control: AbstractControl | null }>
+    ): void {
+        for (const field of controls) {
+            const fieldPath = [...path, field.name];
+            const fieldLabels = [...labels, field.description || field.title || field.name];
+            targets.set(field, { path: fieldPath.join('.'), labels: fieldLabels, control: field.control });
+            if (field.isArray) {
+                (field.list || []).forEach((row, index) => {
+                    const rowPath = [...fieldPath, String(index)];
+                    const rowLabels = [...fieldLabels, `#${index + 1}`];
+                    targets.set(row, { path: rowPath.join('.'), labels: rowLabels, control: row.control });
+                    this.collectPreviewTargets(row.model?.controls || [], rowPath, rowLabels, targets);
+                });
+            } else {
+                this.collectPreviewTargets(field.model?.controls || [], fieldPath, fieldLabels, targets);
+            }
+        }
+    }
+
     private updatePreviewMissingOptions(): void {
         const options: { label: string; value: string }[] = [];
-        for (const path of this.requiredFields === null ? [] : this.previewMissingFields) {
-            const parts = path.split('.');
-            const labels: string[] = [];
-            let controls = this.model?.controls || [];
-            let field: IFieldControl<any> | undefined;
-            let control: AbstractControl | null = null;
-            for (let index = 0; index < parts.length; index++) {
-                field = controls.find(item => item.name === parts[index]);
-                if (!field) break;
-                labels.push(field.description || field.title || field.name);
-                control = field.control;
-                if (field.isArray && /^\d+$/.test(parts[index + 1] || '')) {
-                    const row = field.list?.[Number(parts[++index])];
-                    if (!row) {
-                        field = undefined;
-                        break;
-                    }
-                    labels.push(`#${Number(parts[index]) + 1}`);
-                    control = row.control;
-                    controls = row.model?.controls || [];
-                } else controls = field.model?.controls || [];
+        const targets = new Map<object, { path: string; labels: string[]; control: AbstractControl | null }>();
+        if (this.requiredFields !== null && this.previewMissingTargets.length) {
+            this.collectPreviewTargets(this.model?.controls || [], [], [], targets);
+        }
+        for (const target of this.requiredFields === null ? [] : this.previewMissingTargets) {
+            const current = targets.get(target);
+            if (!current || (current.control && (current.control.disabled || !this.hasNoValue(current.control.value)))) {
+                continue;
             }
-            if (!field || (control && (control.disabled || !this.hasNoValue(control.value)))) continue;
-            options.push({ label: labels.join(' / '), value: path });
+            options.push({ label: current.labels.join(' / '), value: current.path });
         }
         if (options.length === this.previewMissingOptions.length
             && options.every((option, index) => option.value === this.previewMissingOptions[index].value)) {

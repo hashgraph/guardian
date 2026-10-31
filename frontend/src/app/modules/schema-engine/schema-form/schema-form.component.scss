@@ -702,7 +702,7 @@ form::ng-deep {
 }
 
 .preview-missing-field {
-    .form-field-input textarea {
+    .form-field-input ::ng-deep textarea {
         border-color: #f44336;
     }
 }

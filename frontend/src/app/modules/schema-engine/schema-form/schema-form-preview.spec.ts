@@ -1,22 +1,24 @@
 import { CommonModule } from '@angular/common';
 import { By } from '@angular/platform-browser';
 import { ChangeDetectorRef, ElementRef, NO_ERRORS_SCHEMA } from '@angular/core';
-import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { ReactiveFormsModule, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Schema, SchemaDataTypes } from '@guardian/interfaces';
 import { DialogService } from 'primeng/dynamicdialog';
 import { TableModule } from 'primeng/table';
+import { Textarea } from 'primeng/textarea';
 import { AccordionModule } from 'primeng/accordion';
 import { SchemaFormNavigationComponent } from '../schema-form-navigation/schema-form-navigation.component';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { FieldForm } from '../schema-form-model/field-form';
 import { SchemaFormComponent } from './schema-form.component';
+import { FormTextareaComponent } from './form-textarea/form-textarea.component';
 import { SchemaFormRootComponent } from '../schema-form-root/schema-form-root.component';
 
 describe('SchemaFormComponent Preview table validation', () => {
     const render = () => {
         TestBed.configureTestingModule({
-            declarations: [SchemaFormComponent],
+            declarations: [SchemaFormComponent, FormTextareaComponent],
             imports: [CommonModule, ReactiveFormsModule, TableModule],
             providers: [
                 { provide: IPFSService, useValue: {} },
@@ -272,7 +274,7 @@ describe('SchemaFormComponent Preview table validation', () => {
 
     it('shows root loading synchronously for a real Preview input accordion-header click', fakeAsync(() => {
         TestBed.configureTestingModule({
-            declarations: [SchemaFormRootComponent, SchemaFormComponent, SchemaFormNavigationComponent],
+            declarations: [SchemaFormRootComponent, SchemaFormComponent, FormTextareaComponent, SchemaFormNavigationComponent],
             imports: [CommonModule, ReactiveFormsModule, AccordionModule, TableModule],
             providers: [
                 UntypedFormBuilder,
@@ -412,4 +414,102 @@ describe('SchemaFormComponent Preview table validation', () => {
         expect(fixture.nativeElement.querySelector('.preview-missing-field')).toBeNull();
     });
 
+});
+
+describe('SchemaFormComponent large tables inside opened sections', () => {
+    const frames = async (count: number) => {
+        for (let index = 0; index < count; index++) {
+            await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+        }
+    };
+
+    const render = (preview: boolean) => {
+        TestBed.configureTestingModule({
+            declarations: [SchemaFormComponent, FormTextareaComponent],
+            imports: [CommonModule, ReactiveFormsModule, TableModule, Textarea],
+            providers: [
+                { provide: IPFSService, useValue: {} },
+                { provide: DialogService, useValue: {} },
+            ],
+            schemas: [NO_ERRORS_SCHEMA],
+        });
+        const columns = Array.from({ length: 5 }, (_, index) => `c${index}`);
+        const definitions: Record<string, any> = {
+            '#row': {
+                $id: '#row', type: SchemaDataTypes.object,
+                properties: Object.fromEntries(columns.map((name) => [name, { type: SchemaDataTypes.string, title: name, description: name }])),
+            },
+            '#s0': {
+                $id: '#s0', type: SchemaDataTypes.object,
+                properties: { rows: { type: SchemaDataTypes.array, title: 'Rows', description: 'Rows', items: { $ref: '#row' } } },
+            },
+        };
+        let preset: any = { rows: Array.from({ length: 120 }, (_, row) => Object.fromEntries(columns.map((name) => [name, `${row}-${name}`]))) };
+        for (let depth = 1; depth < 4; depth++) {
+            definitions[`#s${depth}`] = {
+                $id: `#s${depth}`, type: SchemaDataTypes.object,
+                properties: { [`s${depth - 1}`]: { $ref: `#s${depth - 1}`, title: `Section ${depth - 1}`, description: `Section ${depth - 1}` } },
+            };
+            preset = { [`s${depth - 1}`]: preset };
+        }
+        const schema = new Schema({ iri: '#large&1.0.0', document: {
+            $id: '#large&1.0.0',
+            $comment: JSON.stringify({ '@id': 'ctx:#large&1.0.0', term: 'large&1.0.0' }),
+            type: SchemaDataTypes.object,
+            properties: { s3: { $ref: '#s3', title: 'Section 3', description: 'Section 3' } },
+            $defs: definitions,
+        } } as any);
+        const model = new FieldForm(new UntypedFormGroup({}));
+        model.setData({ schema, preset: { s3: preset }, requiredFields: preview ? [] : null });
+        model.build();
+        const fixture = TestBed.createComponent(SchemaFormComponent);
+        fixture.componentRef.setInput('form-model', model);
+        fixture.componentRef.setInput('showButtons', false);
+        fixture.componentRef.setInput('previewValidation', preview);
+        return fixture;
+    };
+
+    const openAll = async (fixture: ComponentFixture<SchemaFormComponent>) => {
+        for (let round = 0; round < 6; round++) {
+            const elements = [fixture.debugElement, ...fixture.debugElement.queryAll(By.directive(SchemaFormComponent))];
+            for (const element of elements) {
+                const form: SchemaFormComponent = element.componentInstance;
+                form.isShown = form.isShown.map(() => true);
+                for (const item of form.formModel?.controls || []) {
+                    if (item.isRef && !item.isArray && !item.open) {
+                        item.open = true;
+                        form.preparePreviewSection(item);
+                        element.injector.get(ChangeDetectorRef).markForCheck();
+                    }
+                }
+            }
+            fixture.detectChanges();
+            await frames(6);
+        }
+    };
+
+    [true, false].forEach((preview) => {
+        it(`opens every section and shows the table without a stack overflow with Preview ${preview}`, async () => {
+            const errors: string[] = [];
+            const onError = (event: ErrorEvent) => {
+                errors.push(event.message);
+                event.preventDefault();
+            };
+            window.addEventListener('error', onError);
+            const fixture = render(preview);
+            try {
+                fixture.detectChanges();
+                await frames(4);
+                await openAll(fixture);
+            } catch (caught: any) {
+                errors.push(String(caught?.message || caught));
+            }
+            window.removeEventListener('error', onError);
+            expect(errors).toEqual([]);
+            const cells = fixture.debugElement.queryAll(By.css('td textarea'));
+            expect(cells.length).toBe(600);
+            expect(cells[0].nativeElement.value).toBe('0-c0');
+            expect(cells.every((cell) => !!cell.injector.get(Textarea, null))).toBeTrue();
+        });
+    });
 });

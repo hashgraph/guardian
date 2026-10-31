@@ -8,6 +8,7 @@ import { CommonModule } from '@angular/common';
 import { AccordionModule } from 'primeng/accordion';
 import { DocumentViewComponent } from '../document-view/document-view.component';
 import { SchemaFormViewComponent } from '../schema-form-view/schema-form-view.component';
+import { ReadonlyTextareaComponent } from '../schema-form-view/readonly-textarea/readonly-textarea.component';
 import { SchemaFormViewNavigationComponent } from '../schema-form-view-navigation/schema-form-view-navigation.component';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { FormulasService } from 'src/app/services/formulas.service';
@@ -251,7 +252,7 @@ describe('VCViewerDialog preview documents', () => {
                 properties: { rate: { type: 'number', title: 'Rate', description: 'Rate' } } } },
         } };
         TestBed.configureTestingModule({
-            declarations: [VCViewerDialog, DocumentViewComponent, SchemaFormViewComponent, SchemaFormViewNavigationComponent],
+            declarations: [VCViewerDialog, DocumentViewComponent, SchemaFormViewComponent, ReadonlyTextareaComponent, SchemaFormViewNavigationComponent],
             imports: [CommonModule, AccordionModule],
             providers: [
                 { provide: DynamicDialogRef, useValue: { close: () => undefined } },

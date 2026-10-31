@@ -26,15 +26,7 @@
                     </div>
 
                     <div *ngIf="isInput(item) && !isIPFS(item)" class="form-field-input guardian-input-container">
-                        <textarea
-                            pInputTextarea
-                            [value]="displayValue(item)"
-                            [readonly]="true"
-                            type="text"
-                            [autoResize]="true"
-                            rows="1"
-                        >
-                        </textarea>
+                        <app-readonly-textarea [value]="displayValue(item)" [autoResize]="true"></app-readonly-textarea>
                     </div>
 
                     <div *ngIf="isInput(item) && isIPFS(item)" class="form-field-ipfs guardian-input-container">
@@ -182,15 +174,7 @@
                             </div>
 
                             <div *ngIf="isInput(item) && !isIPFS(item)" class="form-field-input guardian-input-container">
-                                <textarea
-                                    pInputTextarea
-                                    [value]="listItem.value"
-                                    [readonly]="true"
-                                    type="text"
-                                    [autoResize]="true"
-                                    rows="1"
-                                >
-                                </textarea>
+                                <app-readonly-textarea [value]="listItem.value" [autoResize]="true"></app-readonly-textarea>
                             </div>
 
                             <div *ngIf="isInput(item) && isIPFS(item)" class="form-field-ipfs guardian-input-container">
@@ -328,15 +312,7 @@
                                         </div>
 
                                         <div *ngIf="isInput(field) && !isIPFS(field)" class="form-field-input guardian-input-container">
-                                            <textarea
-                                                pInputTextarea
-                                                class="textarea-resize-none"
-                                                [value]="field.value ?? ''"
-                                                [readonly]="true"
-                                                type="text"
-                                                rows="1"
-                                            >
-                                            </textarea>
+                                            <app-readonly-textarea [value]="field.value ?? ''" [resizeNone]="true"></app-readonly-textarea>
                                         </div>
 
                                         <div

@@ -1,10 +1,12 @@
-import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ChangeDetectorRef, NO_ERRORS_SCHEMA } from '@angular/core';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { CommonModule } from '@angular/common';
 import { By } from '@angular/platform-browser';
 import { DialogService } from 'primeng/dynamicdialog';
 import { TableModule } from 'primeng/table';
+import { Textarea } from 'primeng/textarea';
 import { SchemaFormViewComponent } from './schema-form-view.component';
+import { ReadonlyTextareaComponent } from './readonly-textarea/readonly-textarea.component';
 import { IPFSService } from 'src/app/services/ipfs.service';
 
 describe('SchemaFormViewComponent', () => {
@@ -381,7 +383,7 @@ describe('SchemaFormViewComponent', () => {
         const render = (preview: boolean, options: { fields?: any[]; values?: any; hide?: any } = {}) => {
             TestBed.resetTestingModule();
             TestBed.configureTestingModule({
-                declarations: [SchemaFormViewComponent],
+                declarations: [SchemaFormViewComponent, ReadonlyTextareaComponent],
                 imports: [TableModule],
                 providers: [
                     { provide: IPFSService, useValue: ipfs },
@@ -486,6 +488,101 @@ describe('SchemaFormViewComponent', () => {
             const item = view.fields![0];
             expect(view.getTableHRowFields(item)).toEqual([]);
             expect(view.getTableHRowFields(item)).toBe(view.getTableHRowFields(item));
+        });
+    });
+
+    describe('large tables inside opened sections', () => {
+        const text = (name: string) => ({ name, description: name, type: 'string', isArray: false, isRef: false, fullPath: name });
+        const frames = async (count: number) => {
+            for (let index = 0; index < count; index++) {
+                await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+            }
+        };
+
+        const render = (preview: boolean) => {
+            TestBed.resetTestingModule();
+            TestBed.configureTestingModule({
+                declarations: [SchemaFormViewComponent, ReadonlyTextareaComponent],
+                imports: [CommonModule, TableModule, Textarea],
+                providers: [
+                    { provide: IPFSService, useValue: ipfs },
+                    { provide: DialogService, useValue: dialogService },
+                ],
+                schemas: [NO_ERRORS_SCHEMA],
+            });
+            const columns = Array.from({ length: 5 }, (_, index) => text(`c${index}`));
+            const rows = Array.from({ length: 120 }, (_, row) => Object.fromEntries(columns.map((column) => [column.name, `${row}-${column.name}`])));
+            let fields: any[] = [{ name: 'rows', description: 'Rows', type: '#Row', isArray: true, isRef: true, fullPath: 'rows', fields: columns }];
+            let values: any = { rows };
+            for (let depth = 0; depth < 4; depth++) {
+                fields = [{ name: `s${depth}`, description: `Section ${depth}`, type: `#S${depth}`, isArray: false, isRef: true, fullPath: `s${depth}`, fields }];
+                values = { [`s${depth}`]: values };
+            }
+            const fixture = TestBed.createComponent(SchemaFormViewComponent);
+            fixture.componentRef.setInput('private-fields', {});
+            fixture.componentRef.setInput('values', values);
+            fixture.componentRef.setInput('fields', fields);
+            fixture.componentRef.setInput('preview', preview);
+            return fixture;
+        };
+
+        const openAll = async (fixture: ComponentFixture<SchemaFormViewComponent>) => {
+            for (let round = 0; round < 6; round++) {
+                const views = [fixture.componentInstance, ...fixture.debugElement.queryAll(By.directive(SchemaFormViewComponent)).map((element) => element.componentInstance)];
+                for (const view of views) {
+                    for (const item of view.fields || []) {
+                        if (item.isRef && !item.isArray && !item.open) {
+                            item.open = true;
+                            view.preparePreviewSection(item);
+                        }
+                    }
+                }
+                fixture.detectChanges();
+                await frames(8);
+            }
+        };
+
+        it('opens every section of a calculation preview and shows the table without a stack overflow or a stuck loading count', async () => {
+            const errors: string[] = [];
+            const onError = (event: ErrorEvent) => {
+                errors.push(event.message);
+                event.preventDefault();
+            };
+            window.addEventListener('error', onError);
+            const fixture = render(true);
+            const loading: boolean[] = [];
+            fixture.componentInstance.previewLoadingChange.subscribe((value: boolean) => loading.push(value));
+            fixture.detectChanges();
+            await frames(4);
+            await openAll(fixture);
+            window.removeEventListener('error', onError);
+            expect(errors).toEqual([]);
+            expect(fixture.nativeElement.querySelectorAll('td textarea').length).toBe(125);
+            expect(loading.filter(Boolean).length).toBe(loading.filter((value) => !value).length);
+            expect(fixture.debugElement.queryAll(By.css('td textarea')).every((cell) => !!cell.injector.get(Textarea, null))).toBeTrue();
+        });
+
+        it('opens every section of the ordinary view and shows the table without a stack overflow', () => {
+            const fixture = render(false);
+            let error = '';
+            try {
+                fixture.detectChanges();
+                let view = fixture.debugElement;
+                for (let depth = 0; depth < 4; depth++) {
+                    view.componentInstance.fields[0].open = true;
+                    view.injector.get(ChangeDetectorRef).markForCheck();
+                    fixture.detectChanges();
+                    view = view.query(By.directive(SchemaFormViewComponent));
+                }
+            } catch (caught: any) {
+                error = String(caught?.message || caught);
+            }
+            expect(error).toBe('');
+            const cells = fixture.debugElement.queryAll(By.css('td textarea'));
+            expect(cells.length).toBe(600);
+            expect(cells[0].nativeElement.value).toBe('0-c0');
+            expect(cells[0].nativeElement.classList).toContain('p-textarea');
+            expect(cells.every((cell) => !!cell.injector.get(Textarea, null))).toBeTrue();
         });
     });
 });

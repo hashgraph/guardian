@@ -166,16 +166,13 @@
                         [ngClass]="{ 'ipfs-url': isIPFS(item) }"
                         [attr.readonly-field]="isEditMode && !item.isUpdatable"
                         >
-                        <textarea
-                          pInputTextarea
-                          [formControl]="item.control"
-                          (focus)="onFocusField(item.format, item)"
-                          (blur)="onUnfocusField(item.format, item)"
+                        <app-form-textarea
+                          [control]="item.control"
+                          (fieldFocus)="onFocusField(item.format, item)"
+                          (fieldBlur)="onUnfocusField(item.format, item)"
                           [placeholder]="getPlaceholderByFieldType(item)"
-                          type="text"
                           [autoResize]="true"
-                          rows="1"
-                        ></textarea>
+                        ></app-form-textarea>
                         @if (isIPFS(item)) {
                           <div>
                             <div class="file-upload">
@@ -429,16 +426,13 @@
                                       class="form-field-input guardian-input-container"
                                       [attr.readonly-field]="isEditMode && !itemControl.isUpdatable"
                                       >
-                                      <textarea
-                                        pInputTextarea
-                                        class="textarea-resize-none"
-                                        [formControl]="itemControl.control"
-                                        (focus)="onFocusField(itemControl.format, itemControl)"
-                                        (blur)="onUnfocusField(itemControl.format, itemControl)"
+                                      <app-form-textarea
+                                        [resizeNone]="true"
+                                        [control]="itemControl.control"
+                                        (fieldFocus)="onFocusField(itemControl.format, itemControl)"
+                                        (fieldBlur)="onUnfocusField(itemControl.format, itemControl)"
                                         [placeholder]="getPlaceholderByFieldType(itemControl)"
-                                        type="text"
-                                        rows="1"
-                                      ></textarea>
+                                      ></app-form-textarea>
                                       @if (isIPFS(itemControl)) {
                                         <div>
                                           <div class="file-upload">
@@ -774,22 +768,13 @@
                                     isEditMode && !item.isUpdatable
                                 "
                                 >
-                                <textarea
-                                  pInputTextarea
-                                  [formControl]="listItem.control"
-                                    [placeholder]="
-                                        getPlaceholderByFieldType(item)
-                                    "
-                                    (focus)="
-                                        onFocusField(item.format, listItem)
-                                    "
-                                    (blur)="
-                                        onUnfocusField(item.format, listItem)
-                                    "
-                                  type="text"
+                                <app-form-textarea
+                                  [control]="listItem.control"
+                                  [placeholder]="getPlaceholderByFieldType(item)"
+                                  (fieldFocus)="onFocusField(item.format, listItem)"
+                                  (fieldBlur)="onUnfocusField(item.format, listItem)"
                                   [autoResize]="true"
-                                  rows="1"
-                                ></textarea>
+                                ></app-form-textarea>
                                 @if (isIPFS(item)) {
                                   <div
                                     [attr.readonly-field]="

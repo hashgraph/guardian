@@ -669,6 +669,64 @@ describe('SchemaFormRootComponent — required fields', () => {
         expect(emitted.calls.allArgs().map(args => args[0].length)).toEqual([1, 0]);
     }));
 
+    describe('missing table cells after a row is deleted', () => {
+        const createAreaRoot = (missing: string[]): SchemaFormRootComponent => {
+            const root = createRoot();
+            root.schema = new Schema({ iri: '#calc&1.0.0', document: {
+                ...calcDocument,
+                properties: { rows: { type: SchemaDataTypes.array, title: 'Rows', description: 'Rows', items: { $ref: '#row' } } },
+                $defs: { '#row': { type: SchemaDataTypes.object, $id: '#row', properties: { PEt: numberField('PEt'), PBt: numberField('PBt') } } },
+            } });
+            root.presetDocument = { rows: [{ PEt: 4, PBt: 0 }, { PEt: 5 }, { PEt: 6 }] };
+            root.requiredFields = ['rows.PEt', 'rows.PBt'];
+            root.previewMissingFields = missing;
+            root.ngOnChanges({ schema: new SimpleChange(null, root.schema, false) });
+            tick(64);
+            flush();
+            return root;
+        };
+        const removeRow = (root: SchemaFormRootComponent, index: number): void => {
+            const rows = root.model!.controls![0];
+            root.model!.removeItem(rows, rows.list![index]);
+            root.model!.updateValueAndValidity();
+        };
+
+        it('moves the link to the new row number when an earlier row is deleted', fakeAsync(() => {
+            const root = createAreaRoot(['rows.1.PBt']);
+            expect(root.previewMissingOptions).toEqual([{ label: 'Rows / #2 / PBt', value: 'rows.1.PBt' }]);
+            removeRow(root, 0);
+            expect(root.previewMissingOptions).toEqual([{ label: 'Rows / #1 / PBt', value: 'rows.0.PBt' }]);
+            const focus = spyOn(root, 'focusPreviewField').and.callThrough();
+            root.focusPreviewField(root.previewMissingOptions[0].value);
+            expect(focus).toHaveBeenCalledWith('rows.0.PBt');
+            expect(root.model!.controls![0].list![0].open).toBeTrue();
+        }));
+
+        it('keeps the link after another cell of the moved row changes, until the cell is filled', fakeAsync(() => {
+            const root = createAreaRoot(['rows.1.PBt']);
+            removeRow(root, 0);
+            root.group.get('rows.0.PEt')!.setValue(7);
+            expect(root.previewMissingOptions).toEqual([{ label: 'Rows / #1 / PBt', value: 'rows.0.PBt' }]);
+            root.group.get('rows.0.PBt')!.setValue(0);
+            expect(root.previewMissingOptions).toEqual([]);
+        }));
+
+        it('drops the link of a deleted row and keeps the others in their new places', fakeAsync(() => {
+            const root = createAreaRoot(['rows.1.PBt', 'rows.2.PBt']);
+            expect(root.previewMissingOptions.map(option => option.value)).toEqual(['rows.1.PBt', 'rows.2.PBt']);
+            removeRow(root, 1);
+            expect(root.previewMissingOptions).toEqual([{ label: 'Rows / #2 / PBt', value: 'rows.1.PBt' }]);
+            const cell = root.model!.controls![0].list![1].model.controls.find((field: { name: string }) => field.name === 'PBt');
+            expect(root.previewMissingFieldIds).toContain(cell.id);
+        }));
+
+        it('keeps a later row link unchanged when a later row is deleted', fakeAsync(() => {
+            const root = createAreaRoot(['rows.1.PBt']);
+            removeRow(root, 2);
+            expect(root.previewMissingOptions).toEqual([{ label: 'Rows / #2 / PBt', value: 'rows.1.PBt' }]);
+        }));
+    });
+
     it('never lists missing fields or watches values in ordinary mode', fakeAsync(() => {
         const root = createRoot();
         const emitted = jasmine.createSpy('emitted');
