@@ -290,14 +290,6 @@ tr.detailed-row {
         text-align: right;
     }
 
-    thead th:first-child {
-        border-top-left-radius: 11px;
-    }
-
-    thead th:last-child {
-        border-top-right-radius: 11px;
-    }
-
     th .p-sortable-column-icon {
         width: 12px;
         height: 12px;
@@ -545,4 +537,15 @@ tr.revoked td {
 
 .pagination {
     margin-left: auto;
+}
+
+// Round the header corners only when no filter toolbar sits above the table.
+.pv-table-card:not(.has-filters) ::ng-deep .p-datatable thead {
+    th:first-child {
+        border-top-left-radius: 11px;
+    }
+
+    th:last-child {
+        border-top-right-radius: 11px;
+    }
 }

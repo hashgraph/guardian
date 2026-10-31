@@ -1,6 +1,6 @@
 <div class="content" [hidden]="!isActive" [attr.readonly-block]="readonly">
   @if (fields && documents) {
-    <div class="pv-table-card">
+    <div class="pv-table-card" [class.has-filters]="addons && addons.length">
       @if (addons && addons.length) {
         <div class="grid-filters">
           @for (block of addons; track block) {
