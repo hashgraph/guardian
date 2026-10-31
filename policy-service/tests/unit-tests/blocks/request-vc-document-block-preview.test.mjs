@@ -296,7 +296,7 @@ describe('@unit RequestVcDocumentBlock preview', () => {
         assert.ok(response instanceof MessageError);
         assert.equal(response.code, 422);
         assert.equal(response.body, null);
-        assert.deepEqual(response.data, { preview: true, notLogged: true, fields: ['amount', 'rate'], missingFields: ['rate'] });
+        assert.deepEqual(response.data, { preview: true, notLogged: true, sticky: false, fields: ['amount', 'rate'], missingFields: ['rate'] });
         assert.equal('rate' in document, false);
         assert.equal('total' in document, false);
         assert.deepEqual(events, []);

@@ -329,8 +329,8 @@ describe('SchemaFormComponent Preview table validation', () => {
         const table = fixture.nativeElement.querySelector('p-table').parentElement;
         expect(table.classList.contains('table-validation-error')).toBeTrue();
         expect(getComputedStyle(table).outlineColor).toBe('rgb(244, 67, 54)');
-        expect(getComputedStyle(target).outlineColor).toBe('rgb(244, 67, 54)');
-        expect(getComputedStyle(target).outlineStyle).toBe('solid');
+        expect(getComputedStyle(target).outlineStyle).toBe('none');
+        expect(getComputedStyle(target.querySelector('textarea')).borderColor).toBe('rgb(244, 67, 54)');
         expect(target.textContent).not.toContain('Required for calculation preview');
         expect(target.querySelector('textarea')).not.toBeNull();
         expect(fixture.nativeElement.querySelector(`[preview-field-id="${first.id}"]`).classList.contains('preview-missing-field')).toBeFalse();

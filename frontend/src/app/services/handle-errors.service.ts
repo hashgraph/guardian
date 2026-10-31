@@ -122,7 +122,7 @@ export class HandleErrorsService implements HttpInterceptor {
                 !this.excludeErrorTexts.includes(String(result.text))
             ) {
                 const logMessage = result.blockErrorData?.notLogged ? undefined : result.text;
-                this.toastService.error(result.text, result.header, { sticky: true, logMessage, blockErrorData: result.blockErrorData });
+                this.toastService.error(result.text, result.header, { sticky: result.blockErrorData?.sticky ?? true, logMessage, blockErrorData: result.blockErrorData });
             }
         }
     }
