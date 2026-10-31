@@ -2826,6 +2826,12 @@ export class DatabaseServer extends AbstractDatabaseServer {
         filters: FilterObject<DocumentState>,
         documentSubpaths: string[],
     ): Promise<{ createDate: Date, document: any }[]> {
+        if (this.dryRun) {
+            // Dry-run rows keep `document` in a file that only the entity loader
+            // reads back, so a raw projection would return no document at all.
+            const states = await this.getDocumentStates(filters);
+            return states.map((state) => ({ createDate: state.createDate, document: state.document }));
+        }
         const topLevelKeys = Array.from(new Set(
             documentSubpaths.map(p => (p || '').split('.', 1)[0])
         ));
