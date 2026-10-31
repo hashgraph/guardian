@@ -27,6 +27,7 @@ import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from 'src/a
 import { MockDialog } from '../../dialogs/mock-dialog/mock-dialog.component';
 import { PolicyTestAutomationService } from '../policy-test-automation/policy-test-automation.service';
 import { shortDid } from 'src/app/utils/short-did';
+import { ViewerProfileService } from '../viewer-profile.service';
 
 type MockItemType = 'IPFS' | 'MESSAGE' | 'TOKEN' | 'ACCOUNT' | 'API';
 const MockTabs = ['API', 'IPFS', 'Topics'];
@@ -42,6 +43,7 @@ const MockTabs = ['API', 'IPFS', 'Topics'];
         '../../styles/top-toolbar.scss',
         './policy-viewer.component.scss'
     ],
+    providers: [ViewerProfileService],
     standalone: false
 })
 export class PolicyViewerComponent implements OnInit, OnDestroy {
@@ -55,6 +57,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public isStarting: boolean = false;
     public isConfirmed: boolean = false;
     public virtualUsers: any[] = [];
+    private prefetchedVirtualUsers: any[] | null = null;
     public view: string = 'policy';
     public documents: any[] = [];
     public columns: string[] = [];
@@ -145,7 +148,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         private router: Router,
         private savepointFlow: SavepointFlowService,
         private indexedDb: IndexedDbRegistryService,
-        private policyTest: PolicyTestAutomationService
+        private policyTest: PolicyTestAutomationService,
+        private viewerProfile: ViewerProfileService
     ) {
         this.policy = null;
         this.pageIndex = 0;
@@ -309,7 +313,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         this.isConfirmed = false;
         this.loading = true;
         this.recordingActive = false;
-        this.profileService.getProfile().subscribe(
+        this.viewerProfile.profile$.subscribe(
             (profile: IUser | null) => {
                 this.permissions = new UserPermissions(profile);
                 this.isConfirmed = !!(profile && profile.confirmed);
@@ -347,6 +351,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         this.loading = true;
 
         this.isStarting = false;
+        this.prefetchedVirtualUsers = null;
         this.ensureAdminIfNeeded(policyId).pipe(
             switchMap(() => forkJoin([
                 // A discontinued policy that is stopped starts on demand by the requests below,
@@ -415,6 +420,14 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     }
 
     loadDryRunOptions() {
+        if (this.prefetchedVirtualUsers) {
+            this.virtualUsers = this.prefetchedVirtualUsers;
+            this.prefetchedVirtualUsers = null;
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
+            return;
+        }
         this.policyEngineService.getVirtualUsers(this.policyInfo.id, this.savepointIds).subscribe((value) => {
             this.virtualUsers = value;
             setTimeout(() => {
@@ -445,6 +458,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     setGroup(item: any, group: any) {
         group?.toggle(false);
         this.loading = true;
+        this.viewerProfile.reset();
         this.policyEngineService
             .setGroup(this.policyInfo.id, item ? item.uuid : null)
             .subscribe(
@@ -475,6 +489,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     setVirtualUser(item: any, menu: any) {
         menu?.toggle(false)
         this.loading = true;
+        this.viewerProfile.reset();
         this.policyEngineService
             .loginVirtualUser(this.policyInfo.id, item.did)
             .subscribe(
@@ -491,6 +506,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
     restartDryRun() {
         this.loading = true;
+        this.viewerProfile.reset();
 
         this.policyEngineService.restartDryRun(this.policyInfo.id).subscribe(
             (users) => {
@@ -862,6 +878,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                         this.currentSavepoint = result.savepoint;
 
                         this.forceAdminAfterReload = true;
+                        this.viewerProfile.reset();
                         this.policy = null;
                         this.groups = [];
                         this.changeDetector.detectChanges();
@@ -906,6 +923,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
                         this.currentSavepoint = items[0];
                         this.forceAdminAfterReload = true;
+                        this.viewerProfile.reset();
                         this.policy = null;
                         this.groups = [];
                         this.changeDetector.detectChanges();
@@ -940,6 +958,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                             this.currentSavepoint = res.savepoint;
 
                             this.forceAdminAfterReload = true;
+
+                            this.viewerProfile.reset();
                             this.policy = null;
                             this.groups = [];
                             this.changeDetector.detectChanges();
@@ -955,6 +975,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                             if (current) {
                                 this.currentSavepoint = current;
                                 this.forceAdminAfterReload = true;
+                                this.viewerProfile.reset();
                                 this.policy = null;
                                 this.groups = [];
                                 this.changeDetector.detectChanges();
@@ -989,11 +1010,17 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         }
 
         return this.policyEngineService.getVirtualUsers(policyId, this.savepointIds).pipe(
-            map(users => this.findAdminUser(users)),
-            switchMap(admin => admin?.did
-                ? this.policyEngineService.loginVirtualUser(policyId, admin.did)
-                : of(null)
-            ),
+            switchMap((users) => {
+                const admin = this.findAdminUser(users);
+                if (!admin?.did) {
+                    this.prefetchedVirtualUsers = users;
+                    return of(null);
+                }
+                // login returns the refreshed list, with the new active user
+                return this.policyEngineService.loginVirtualUser(policyId, admin.did).pipe(
+                    tap((updated) => { this.prefetchedVirtualUsers = updated; })
+                );
+            }),
             catchError(() => of(null)),
             tap(() => { this.forceAdminAfterReload = false; })
         );
