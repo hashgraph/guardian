@@ -47,37 +47,6 @@
     overflow: visible;
 }
 
-.create-button-container {
-    ::ng-deep {
-        .p-button {
-            height: 36px;
-            border-radius: 8px;
-            border-color: var(--color-primary);
-            background: var(--color-primary);
-            padding: 0 14px;
-            font-family: var(--font-family-inter, Inter, sans-serif);
-            font-size: 13px;
-            font-weight: 600;
-        }
-    }
-}
-
-// uiClass "link" renders as a text button; an empty class keeps the primary button.
-.btn-block-link {
-    ::ng-deep {
-        .p-button,
-        .p-button:not(:disabled):hover {
-            height: 36px;
-            border-color: transparent;
-            background: transparent;
-            color: var(--color-primary);
-        }
-
-        .p-button:not(:disabled):hover {
-            text-decoration: underline;
-        }
-    }
-}
 
 .dialog-actions-container {
     background: var(--color-grey-white);

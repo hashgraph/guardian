@@ -16,8 +16,7 @@
           <div class="pv-empty__title">No documents yet</div>
           <div class="pv-empty__text">Documents will appear here once they are created in this step.</div>
         </div>
-      }
-      @if (documents.length > 0) {
+      } @else {
       <div class="table-container">
         <p-table
           [value]="documents"
@@ -32,7 +31,7 @@
                 @if (field.__sortable) {
                   <th
                     [pSortableColumn]="field.name"
-                    [class.col-actions]="isActionField(field)"
+                    [class.col-actions]="field.__isAction"
                     [style.width]="field.__width"
                     [style.min-width]="field.__minWidth"
                     >{{ field.title }}
@@ -44,7 +43,7 @@
                 }
                 @if (!field.__sortable) {
                   <th
-                    [class.col-actions]="isActionField(field)"
+                    [class.col-actions]="field.__isAction"
                     [style.width]="field.__width"
                     [style.min-width]="field.__minWidth"
                     >{{ field.title }}
@@ -65,7 +64,7 @@
               @for (field of fields; track field) {
                 <td
                   class="col-{{field.title}}"
-                  [class.col-actions]="isActionField(field)"
+                  [class.col-actions]="field.__isAction"
                   [attr.data-label]="field.title"
                   [style.width]="field.__width"
                   [style.min-width]="field.__minWidth"
@@ -87,20 +86,21 @@
                   @if (getGroup(element, field); as option) {
                     <div class="col-container">
                       <div [style.width]="field.width" [class]="getClass(option.type)">
-                        @if (option.type == 'text' && option.name === 'option.status') {
-                          @let statusText = getText(element, option);
-                          @if (statusText) {
+                        @if (option.type == 'text') {
+                          @let cellText = getText(element, option);
+                          @if (option.name === 'option.status') {
+                            @if (cellText) {
+                              <span
+                                [title]="cellText"
+                                class="pv-status pv-status--{{ getStatusTone(cellText) }}"
+                              >{{ cellText }}</span>
+                            }
+                          } @else {
                             <span
-                              [title]="statusText"
-                              class="pv-status pv-status--{{ getStatusTone(statusText) }}"
-                            >{{ statusText }}</span>
+                              [title]="cellText"
+                              class="text"
+                            >{{ cellText }}</span>
                           }
-                        }
-                        @if (option.type == 'text' && option.name !== 'option.status') {
-                          <span
-                            [title]="getText(element, option)"
-                            class="text"
-                          >{{ getText(element, option) }}</span>
                         }
                         @if (option.type == 'richText') {
                           @let richTextCellText = getRichTextCellText(element, option);
@@ -238,8 +238,9 @@
                             <span class="history-entry__latest">Latest</span>
                           }
                         </div>
-                        @if (parseArrayValue(historyElem.comment)) {
-                          <blockquote class="history-entry__comment">{{ parseArrayValue(historyElem.comment) }}</blockquote>
+                        @let historyComment = parseArrayValue(historyElem.comment);
+                        @if (historyComment) {
+                          <blockquote class="history-entry__comment">{{ historyComment }}</blockquote>
                         }
                       </li>
                     }
@@ -253,13 +254,12 @@
       }
       @if (documents.length > 0 || paginationAddon) {
         <div class="table-footer">
-          @if (!paginationAddon) {
-            <div class="table-count">{{ documents.length }} {{ documents.length === 1 ? 'document' : 'documents' }}</div>
-          }
           @if (paginationAddon) {
             <div class="pagination">
               <render-block [block]="paginationAddon" [policyId]="policyId" [dryRun]="dryRun" [savepointIds]="savepointIds" [policyStatus]="policyStatus"></render-block>
             </div>
+          } @else {
+            <div class="table-count">{{ documents.length }} {{ documents.length === 1 ? 'document' : 'documents' }}</div>
           }
         </div>
       }

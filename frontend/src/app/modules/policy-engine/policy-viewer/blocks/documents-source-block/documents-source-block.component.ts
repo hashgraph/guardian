@@ -211,6 +211,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
         const autoSize = Math.round((100 - minCol) / autoCol);
         for (const field of this.fields) {
             field.__sortable = field.type === 'text' && field.name;
+            field.__isAction = this.isActionField(field);
             if (field.width) {
                 field.__width = field.width;
                 field.__minWidth = field.width;

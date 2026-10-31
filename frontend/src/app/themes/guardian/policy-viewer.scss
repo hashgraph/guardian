@@ -169,6 +169,39 @@
         }
     }
 
+    // Create-type buttons and the action-block transformation button.
+    .create-button-container .p-button,
+    .transformation-button .p-button {
+        height: 36px;
+        padding: 0 14px;
+        border-radius: 8px;
+        border-color: var(--color-primary);
+        background: var(--color-primary);
+        font-family: var(--font-family-inter, Inter, sans-serif);
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 16px;
+    }
+
+    td .transformation-button .p-button {
+        height: 30px;
+        padding: 0 10px;
+        border-radius: 7px;
+        font-size: 12.5px;
+    }
+
+    // uiClass "link" renders a Create-type button as text; an empty class keeps it primary.
+    .btn-block-link .p-button,
+    .btn-block-link .p-button:not(:disabled):hover {
+        border-color: transparent;
+        background: transparent;
+        color: var(--color-primary);
+    }
+
+    .btn-block-link .p-button:not(:disabled):hover {
+        text-decoration: underline;
+    }
+
     .pv-status {
         display: inline-flex;
         align-items: center;
@@ -275,11 +308,6 @@
 
             &:hover {
                 opacity: 0.9;
-            }
-
-            &--outlined {
-                background: transparent;
-                color: var(--color-primary);
             }
         }
 
