@@ -2594,7 +2594,7 @@
     [style]="{ width: 'min(760px, 95vw)' }"
     [closeOnEscape]="!isRichTextPresetBusy()"
     [styleClass]="isRichTextPresetBusy() ? 'sc-rte-preset-dialog sc-rte-preset-dialog--locked' : 'sc-rte-preset-dialog'"
-    (onHide)="closeRichTextPresetDialog()">
+    (onHide)="cancelRichTextPresetDialog()">
     <div class="sc-rte-preset-dialog-body">
         <app-rich-text-editor
             #richTextPresetEditor

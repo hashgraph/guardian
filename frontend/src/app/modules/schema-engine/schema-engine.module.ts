@@ -9,6 +9,7 @@ import { MaterialModule } from '../common/material.module';
 import { CommonComponentsModule } from '../common/common-components.module';
 import { ArtifactEngineModule } from '../artifact-engine/artifact-engine.module';
 import { DynamicDialogModule } from 'primeng/dynamicdialog';
+import { DialogModule } from 'primeng/dialog';
 import { AgGridModule } from 'ag-grid-angular';
 //Components
 import { SchemaFormComponent } from './schema-form/schema-form.component';
@@ -118,6 +119,7 @@ import { RichTextClipDirective } from './rich-text-editor/rich-text-clip.directi
         FormulasModule,
         AngularSvgIconModule.forRoot(),
         DynamicDialogModule,
+        DialogModule,
     ],
     exports: [
         SchemaFormComponent,
