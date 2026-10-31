@@ -7,7 +7,6 @@ import { EMPTY, forkJoin, Subject, Subscription, of } from 'rxjs';
 import { takeUntil, map, catchError, switchMap, tap, finalize, debounceTime } from 'rxjs/operators';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { ProfileService } from 'src/app/services/profile.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { RecordControllerComponent } from '../../record/record-controller/record-controller.component';
 import { ActiveStep, PolicyProgressService } from '../../services/policy-progress.service';
@@ -137,7 +136,6 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
 
     constructor(
-        private profileService: ProfileService,
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
         private route: ActivatedRoute,
@@ -420,15 +418,11 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     }
 
     loadDryRunOptions() {
-        if (this.prefetchedVirtualUsers) {
-            this.virtualUsers = this.prefetchedVirtualUsers;
-            this.prefetchedVirtualUsers = null;
-            setTimeout(() => {
-                this.loading = false;
-            }, 500);
-            return;
-        }
-        this.policyEngineService.getVirtualUsers(this.policyInfo.id, this.savepointIds).subscribe((value) => {
+        const users$ = this.prefetchedVirtualUsers
+            ? of(this.prefetchedVirtualUsers)
+            : this.policyEngineService.getVirtualUsers(this.policyInfo.id, this.savepointIds);
+        this.prefetchedVirtualUsers = null;
+        users$.subscribe((value) => {
             this.virtualUsers = value;
             setTimeout(() => {
                 this.loading = false;
@@ -878,7 +872,6 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                         this.currentSavepoint = result.savepoint;
 
                         this.forceAdminAfterReload = true;
-                        this.viewerProfile.reset();
                         this.policy = null;
                         this.groups = [];
                         this.changeDetector.detectChanges();
@@ -923,7 +916,6 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
                         this.currentSavepoint = items[0];
                         this.forceAdminAfterReload = true;
-                        this.viewerProfile.reset();
                         this.policy = null;
                         this.groups = [];
                         this.changeDetector.detectChanges();
@@ -958,8 +950,6 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                             this.currentSavepoint = res.savepoint;
 
                             this.forceAdminAfterReload = true;
-
-                            this.viewerProfile.reset();
                             this.policy = null;
                             this.groups = [];
                             this.changeDetector.detectChanges();
@@ -975,7 +965,6 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                             if (current) {
                                 this.currentSavepoint = current;
                                 this.forceAdminAfterReload = true;
-                                this.viewerProfile.reset();
                                 this.policy = null;
                                 this.groups = [];
                                 this.changeDetector.detectChanges();
@@ -1022,7 +1011,10 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 );
             }),
             catchError(() => of(null)),
-            tap(() => { this.forceAdminAfterReload = false; })
+            tap(() => {
+                this.forceAdminAfterReload = false;
+                this.viewerProfile.reset();
+            })
         );
     }
 
