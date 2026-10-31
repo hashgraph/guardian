@@ -210,7 +210,10 @@ export class DocumentsSourceBlockComponent implements OnInit {
         }
         const autoSize = Math.round((100 - minCol) / autoCol);
         for (const field of this.fields) {
-            field.__sortable = field.type === 'text' && field.name;
+            // Sorting reorders only the rows loaded in the browser, so it is offered
+            // without pagination, and not for paths PrimeNG cannot resolve ('L').
+            field.__sortable = field.type === 'text' && !!field.name
+                && !this.paginationAddon && !field.names?.includes('L');
             field.__isAction = this.isActionField(field);
             if (field.width) {
                 field.__width = field.width;

@@ -13,8 +13,13 @@
       @if (documents.length === 0) {
         <div class="pv-empty">
           <div class="pv-empty__icon"><i class="pi pi-inbox" aria-hidden="true"></i></div>
-          <div class="pv-empty__title">No documents yet</div>
-          <div class="pv-empty__text">Documents will appear here once they are created in this step.</div>
+          @if (addons && addons.length) {
+            <div class="pv-empty__title">No documents found</div>
+            <div class="pv-empty__text">Nothing matches the current filters, or no documents have been created in this step yet.</div>
+          } @else {
+            <div class="pv-empty__title">No documents yet</div>
+            <div class="pv-empty__text">Documents will appear here once they are created in this step.</div>
+          }
         </div>
       } @else {
       <div class="table-container">

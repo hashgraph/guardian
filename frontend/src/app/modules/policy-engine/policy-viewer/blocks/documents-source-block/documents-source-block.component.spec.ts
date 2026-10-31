@@ -358,4 +358,30 @@ describe('DocumentsSourceBlockComponent', () => {
             expect(component.getStatusTone(undefined)).toBe('neutral');
         });
     });
+
+    describe('column sorting', () => {
+        function columns(paginationAddon: any, fields: any[]): any[] {
+            const component = createComponent();
+            component.paginationAddon = paginationAddon;
+            component.hasHistory = false;
+            component.fields = fields;
+            component.updateColumns();
+            return component.fields;
+        }
+
+        it('makes a text column sortable when the table is not paginated', () => {
+            const [field] = columns(null, [{ type: 'text', name: 'option.status', names: ['option', 'status'] }]);
+            expect(field.__sortable).toBeTrue();
+        });
+
+        it('does not offer sorting when the rows are paginated', () => {
+            const [field] = columns({}, [{ type: 'text', name: 'option.status', names: ['option', 'status'] }]);
+            expect(field.__sortable).toBeFalse();
+        });
+
+        it('does not offer sorting on a path ending in the last array element', () => {
+            const [field] = columns(null, [{ type: 'text', name: 'document.L.value', names: ['document', 'L', 'value'] }]);
+            expect(field.__sortable).toBeFalse();
+        });
+    });
 });
