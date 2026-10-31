@@ -197,8 +197,8 @@ jobs:
           name: cypress-screenshots
           path: e2e-tests/cypress/screenshots
 
-      - name: Publish API Test Results
+      - name: Publish Test Results
         uses: step-security/publish-unit-test-result-action@8cf946dca1a299ebf36dff640273fda13717050a # v2.24.0
-        if: always()
+        if: (!cancelled())
         with:
           files: e2e-tests/cypress/test_results/**/*.xml

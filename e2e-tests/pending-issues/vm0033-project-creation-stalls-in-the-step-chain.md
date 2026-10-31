@@ -1,6 +1,6 @@
 # VM0033: a created project never leaves the `new_project` step chain
 
-**Status:** open
+**Status:** open — re-verified 31 Oct 2026, still open (see "Re-verified")
 **Component:** `policy-service` — `interfaceStepBlock` / `tool` block execution
 **Severity:** medium — the API reports success, the document is issued, and it then reaches no grid
 **Found by:** `e2e-tests/cypress/e2e/api-tests/009_policies/VM033.cy.js` — `Create application`
@@ -55,6 +55,36 @@ a half-finished row.
 `GET /policies/{id}/documents?type=VC` on a freshly published copy confirms it: three VC documents,
 all belonging to the registrant/VVB flow, none carrying a `projectTitle`.
 
+## Re-verified (31 Oct 2026)
+
+Still open: `tool.ts`, `step-block.ts`, `requestVcDocumentBlock.ts` and `sendToGuardianBlock.ts`
+are all unchanged since this note, and so are the fixture and the spec. No fix has landed. Two
+refinements to "Where it stops", from a static reading of the current code:
+
+1. **The reset to 0 is a fingerprint, not a coincidence.** In `step-block.ts`, a cyclic step is
+   reset to index 0 by exactly two paths: `releaseChild` from an *end* child — the step declares no
+   `finalBlocks`, so only the last child (index 7), a path that saves the `project` document and
+   would fill the grids, and is ruled out by their being empty — and `unparkStalledChild` from a
+   *non-UI* child. The two `tool` children are `defaultActive: true`, so `unparkStalledChild`
+   never acts on them; a chain that died on a tool would leave `index` parked at 2, not 0. The
+   non-UI children are indices 1, 2, 5, 6 — so the observed 0 → 1 → 2 → 0 points at
+   `calculate_project_fields` (5): its `runAction` (the 31 Jul `unparkStalledChild` fix in
+   `custom-logic-block.ts`) rewinds the cyclic step to 0 both when the script returns an empty
+   result and when it throws. The original "stops on the tool" conclusion is consistent with a
+   few-second poll missing the fast 3–5 pass-through.
+2. **The tool wiring is not what the fixture shows.** `RegeneratePolicyComponents`
+   (`policy-components-utils.ts`) replaces each `tool` block's `inputEvents`/`outputEvents`/
+   `children` with the *published tool entity's* config (matched by `messageId` + `hash`) at
+   publish time, overwriting the fixture's `input_ar_tool_14`/`input_ar_tool_05` names. If the
+   imported tools' event names do not match the policy's link names, `ToolBlock.onAction` forwards
+   nothing and the chain dies on the tool — which would leave the index parked at 2,
+   distinguishable by polling `index` at sub-second resolution.
+
+Cheapest next step is the policy-service log: `unparkStalledChild` logs
+`step stalled on non-UI child "<tag>" (index <n>); rewinding to index 0` and the custom-logic
+empty-result branch logs `custom logic returned an empty result` — either line names the child the
+chain actually died on.
+
 ## Reproduction
 
 Against a published VM0033 with the Project Proponent registered in the policy:
@@ -97,15 +127,18 @@ curl -H "authorization: $SR" "$API/policies/$P/tag/project_grid_verra/blocks"  #
 ## Scope
 
 `VM033.cy.js` is tagged `['policies', 'secondPool', 'VM0033']` — no `all`, no `all-no-mgs`, no
-`smoke` — so no CI tag scope selects it. It is reached only by a bare `--spec` run over
-`009_policies` (which ignores tags) or by asking for `VM0033`/`policies` explicitly.
+`smoke` — so no CI tag scope selects it. The scheduled VM0033 CI run
+(`.github/workflows/api-schedule-vm0033.yml`) was removed in `537be6f9e`, so nothing in CI/CD
+reaches it any more: only a bare `--spec` run over `009_policies` (which ignores tags) or asking
+for `VM0033`/`policies` explicitly does.
 
 ## Cost note
 
 The spec imports and publishes a fresh VM0033 on every run, which is what makes it self-contained
 and keeps role registration working. That costs roughly **15 HBAR** and ~77 s per run (observed:
-Standard Registry `31.36 → 16.38` Hbar for a single run). If that becomes a problem, the alternative
-is a `getOrCreate`-style lookup like `getOrCreateIRec4Policy` in `cypress/support/commands.js`, at
+Standard Registry `31.36 → 16.38` Hbar for a single run) on manual runs — the CI schedule that
+used to pay it was removed in `537be6f9e`. If that becomes a problem, the alternative is a
+`getOrCreate`-style lookup like `getOrCreateIRec4Policy` in `cypress/support/commands.js`, at
 the price of reintroducing cross-run state — and of the `NO_ROLE` refusal above, since the users
 would already hold their roles on the reused policy.
 

@@ -199,6 +199,8 @@ export function resolveDraftTokensToDelete(
  */
 @Singleton
 export class PolicyEngine extends NatsService {
+    private readonly pendingDiscontinuedStarts = new Map<string, Promise<boolean>>();
+
     constructor(private readonly logger: PinoLogger) {
         super();
     }
@@ -274,7 +276,6 @@ export class PolicyEngine extends NatsService {
                 $in: [
                     PolicyStatus.PUBLISH,
                     PolicyStatus.DRY_RUN,
-                    PolicyStatus.DISCONTINUED,
                     PolicyStatus.DEMO,
                     PolicyStatus.VIEW,
                 ]
@@ -287,6 +288,98 @@ export class PolicyEngine extends NatsService {
                 await this.logger.error(error, ['GUARDIAN_SERVICE'], policy.ownerId);
             }
         }));
+
+        new GuardiansService().setPolicyHooks({
+            ensureRunning: (policyId) => this.ensureDiscontinuedRunning(policyId)
+        });
+
+        // Discontinued policies are started on demand (see ensureDiscontinuedRunning) and
+        // stop themselves when idle. Processes left over from before this was introduced
+        // do not, so they are stopped here. This runs on every boot, so a restart of
+        // guardian-service also stops discontinued policies that are in use: the next
+        // request starts them again.
+        void this.stopRunningDiscontinued();
+    }
+
+    /**
+     * Stop discontinued policies whose process is still alive
+     * @private
+     */
+    private async stopRunningDiscontinued(): Promise<void> {
+        try {
+            const policies = await DatabaseServer.getPolicies(
+                { status: PolicyStatus.DISCONTINUED },
+                { fields: ['id', 'ownerId'] }
+            );
+            await Promise.all(policies.map((policy) =>
+                this.stopDiscontinued(policy.id.toString(), policy.ownerId)
+            ));
+        } catch (error) {
+            await this.logger.error(error, ['GUARDIAN_SERVICE'], null);
+        }
+    }
+
+    /**
+     * Set `isRunning` on discontinued policies, so the UI can tell a stopped one
+     * (it starts on demand and may take a while) from a running one
+     * @param policies
+     */
+    public async setRunningState(policies: any[]): Promise<void> {
+        const guardians = new GuardiansService();
+        await Promise.all(policies.map(async (policy) => {
+            if (policy?.status === PolicyStatus.DISCONTINUED) {
+                policy.isRunning = await guardians.checkIfPolicyAlive(policy.id.toString());
+            }
+        }));
+    }
+
+    /**
+     * Stop the process of a discontinued policy. Failures are logged, not thrown:
+     * the status is already saved and the process is only an optimization.
+     * @param policyId
+     * @param policyOwnerId
+     */
+    public async stopDiscontinued(policyId: string, policyOwnerId: string | null): Promise<void> {
+        try {
+            await this.withPolicyRestartLock(policyId, () =>
+                this.destroyModelForMigration(policyId, policyOwnerId)
+            );
+        } catch (error) {
+            await this.logger.error(error, ['GUARDIAN_SERVICE'], policyOwnerId || null);
+        }
+    }
+
+    /**
+     * Start a discontinued policy if it is stopped. The process stops itself when idle.
+     * @param policyId
+     * @returns false if the policy is not discontinued (nothing is started)
+     */
+    public ensureDiscontinuedRunning(policyId: string): Promise<boolean> {
+        // A viewer opens several blocks at once: they all share one start
+        let pending = this.pendingDiscontinuedStarts.get(policyId);
+        if (!pending) {
+            pending = this.startDiscontinued(policyId).finally(() => {
+                this.pendingDiscontinuedStarts.delete(policyId);
+            });
+            this.pendingDiscontinuedStarts.set(policyId, pending);
+        }
+        return pending;
+    }
+
+    private async startDiscontinued(policyId: string): Promise<boolean> {
+        // Checked before taking the lock: most callers here are not discontinued policies
+        const policy = await DatabaseServer.getPolicy(
+            { id: policyId, status: PolicyStatus.DISCONTINUED },
+            { fields: ['id'] } as any
+        );
+        if (!policy) {
+            return false;
+        }
+        return await this.withPolicyRestartLock(policyId, async () => {
+            // startModel returns at once when the process is already alive
+            await this.generateModel(policyId, false);
+            return true;
+        });
     }
 
     /**

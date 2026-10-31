@@ -622,6 +622,12 @@
     line-height: 16px;
 }
 
+// Same width as the status dropdown (150px, see policy-status-select in the theme)
+.cell-status .disabled-status {
+    width: 150px;
+    min-width: 150px;
+}
+
 .operations-icon-container {
     cursor: pointer;
 }
@@ -895,6 +901,12 @@
 .chip-color-yellow {
     color: var(--color-accent-yellow-1);
     background: var(--color-accent-yellow-2);
+}
+
+.stopped-icon {
+    margin-left: auto;
+    padding-left: 8px;
+    font-size: 14px;
 }
 
 .btn-go-policy {

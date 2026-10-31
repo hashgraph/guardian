@@ -546,11 +546,12 @@
                       >
                       @if (!user.POLICIES_POLICY_REVIEW) {
                         <div
-                          [pTooltip]="getDiscontinuedTooltip(policy.discontinuedDate)"
+                          [pTooltip]="getStatusTooltip(policy)"
                           tooltipPosition="bottom"
-                          [tooltipDisabled]="!policy.discontinuedDate"
+                          [tooltipDisabled]="!getStatusTooltip(policy)"
                           class="chip chip-color-{{getColor(policy.status, !!policy.discontinuedDate)}}"
                           >{{ getLabelStatus(policy.status, !!policy.discontinuedDate) }}
+                          <ng-container *ngTemplateOutlet="runStateIcon; context: { $implicit: policy }"></ng-container>
                         </div>
                       }
                       @if (user.POLICIES_POLICY_REVIEW) {
@@ -585,9 +586,11 @@
                           @if (!showStatus(policy)) {
                             <div
                               class="{{policy.status}}-status disabled-status"
-                              [pTooltip]="getDiscontinuedTooltip(policy.discontinuedDate)"
-                              tooltipPosition="bottom">
+                              [pTooltip]="getStatusTooltip(policy)"
+                              tooltipPosition="bottom"
+                              [tooltipDisabled]="!getStatusTooltip(policy)">
                               {{ getStatusName(policy) }}
+                              <ng-container *ngTemplateOutlet="runStateIcon; context: { $implicit: policy }"></ng-container>
                             </div>
                           }
                         </div>
@@ -838,3 +841,11 @@
       <div class="preloader-image preloader-image-l-size"></div>
     </div>
   }
+
+<ng-template #runStateIcon let-policy>
+  @if (isStoppedDiscontinued(policy)) {
+    <i class="pi pi-stop-circle stopped-icon"></i>
+  } @else if (policy.isRunning) {
+    <i class="pi pi-clock stopped-icon"></i>
+  }
+</ng-template>

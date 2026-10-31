@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { UntypedFormArray } from '@angular/forms';
 import {
     isGeoCustomType,
@@ -8,7 +8,7 @@ import {
     UnitSystem
 } from '@guardian/interfaces';
 import { DialogService } from 'primeng/dynamicdialog';
-import { Subject, Subscription, firstValueFrom, takeUntil } from 'rxjs';
+import { Observable, Subject, Subscription, concat, filter, firstValueFrom, from, map, of, startWith, switchMap, takeUntil } from 'rxjs';
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from '../../../services/api';
@@ -17,7 +17,8 @@ import { FormulaItem } from 'src/app/modules/formulas/models/formula-tree';
 import { FieldForm, IFieldControl, IFieldIndexControl } from '../schema-form-model/field-form';
 import { getMinutesAgoStream } from 'src/app/utils/autosave-utils';
 import { withNewTabLinks } from '../rich-text-editor/rich-text-sanitizer';
-import { markdownToHtml } from '../rich-text-editor/markdown';
+import { collectImageReferences, markdownToHtml } from '../rich-text-editor/markdown';
+import { RichTextEditorComponent } from '../rich-text-editor/rich-text-editor.component';
 import {
     GeoOption,
     GeoResolverField,
@@ -794,6 +795,138 @@ export class SchemaFormComponent implements OnInit {
             clearTimeout(this.suggestHideTimer);
             this.suggestHideTimer = null;
         }
+    }
+
+    @ViewChild('richTextDialogEditor') public richTextDialogEditor?: RichTextEditorComponent;
+
+    public richTextDialogControl: IFieldControl<any> | null = null;
+
+    private richTextImages = new Map<string, string | null>();
+
+    private richTextImageRequests = new Map<string, Promise<string | null>>();
+
+    private richTextHoverItem: IFieldControl<any> | null = null;
+
+    private getRichTextMarkdown(item: IFieldControl<any>): string {
+        const value = item.control?.value;
+        return typeof value === 'string' ? value : '';
+    }
+
+    private getRichTextHtml(item: IFieldControl<any>): string {
+        const markdown = this.getRichTextMarkdown(item);
+        const resolved = new Map<string, string>();
+        for (const reference of collectImageReferences(markdown)) {
+            const source = this.richTextImages.get(reference);
+            if (source) {
+                resolved.set(reference, source);
+            }
+        }
+        return markdownToHtml(markdown, resolved);
+    }
+
+    private async loadRichTextImages(item: IFieldControl<any>): Promise<boolean> {
+        const missing = collectImageReferences(this.getRichTextMarkdown(item))
+            .filter((reference) => !this.richTextImages.has(reference));
+        if (!missing.length) {
+            return false;
+        }
+        await Promise.all(missing.map((reference) => {
+            let request = this.richTextImageRequests.get(reference);
+            if (!request) {
+                request = Promise.resolve()
+                    .then(() => this.resolveRichTextImage(reference))
+                    .then((source) => {
+                        this.richTextImages.set(reference, source);
+                        return source;
+                    })
+                    .catch(() => null)
+                    .finally(() => this.richTextImageRequests.delete(reference));
+                this.richTextImageRequests.set(reference, request);
+            }
+            return request;
+        }));
+        return missing.some((reference) => this.richTextImages.has(reference));
+    }
+
+    private richTextCellHtml = new WeakMap<IFieldControl<any>, Observable<string>>();
+
+    public getRichTextCellHtml$(item: IFieldControl<any>): Observable<string> {
+        const cached = this.richTextCellHtml.get(item);
+        if (cached) {
+            return cached;
+        }
+        const html$ = item.control.valueChanges.pipe(
+            startWith(item.control.value),
+            switchMap(() => concat(
+                of(this.getRichTextHtml(item)),
+                from(this.loadRichTextImages(item)).pipe(
+                    filter((loaded) => loaded),
+                    map(() => this.getRichTextHtml(item))
+                )
+            ))
+        );
+        this.richTextCellHtml.set(item, html$);
+        return html$;
+    }
+
+    public clearRichTextCell(item: IFieldControl<any>, popover: any): void {
+        this.clearSuggestHideTimer();
+        popover.hide();
+        item.control.setValue('');
+        item.control.markAsDirty();
+    }
+
+    public onRichTextCellEnter(event: Event, item: IFieldControl<any>, popover: any): void {
+        this.clearSuggestHideTimer();
+        this.richTextHoverItem = item;
+        this.suggestPopoverValue = withNewTabLinks(this.getRichTextHtml(item));
+        if (this.suggestPopoverValue) {
+            const visible = !!popover.overlayVisible;
+            popover.show(event);
+            if (visible) {
+                this.changeDetectorRef.detectChanges();
+                popover.align();
+            }
+        } else {
+            popover.hide();
+        }
+        this.loadRichTextImages(item).then((loaded) => {
+            if (loaded && this.richTextHoverItem === item) {
+                this.suggestPopoverValue = withNewTabLinks(this.getRichTextHtml(item));
+                this.changeDetectorRef.detectChanges();
+            }
+        });
+    }
+
+    private richTextDialogInitial: any = null;
+
+    public openRichTextDialog(item: IFieldControl<any>, popover: any): void {
+        this.clearSuggestHideTimer();
+        popover.hide();
+        this.richTextDialogInitial = item.control.value;
+        this.richTextDialogControl = item;
+    }
+
+    public cancelRichTextDialog(): void {
+        const item = this.richTextDialogControl;
+        if (!item || this.isRichTextDialogBusy()) {
+            return;
+        }
+        item.control.setValue(this.richTextDialogInitial);
+        this.closeRichTextDialog();
+    }
+
+    public isRichTextDialogBusy(): boolean {
+        return !!this.richTextDialogEditor?.showLinkDialog || !!this.richTextDialogEditor?.imageLoading;
+    }
+
+    public closeRichTextDialog(): void {
+        if (this.isRichTextDialogBusy()) {
+            return;
+        }
+        this.richTextDialogEditor?.cancelLink();
+        this.richTextDialogControl = null;
+        this.changeDetectorRef.detectChanges();
     }
 
     private findString(item: any): string {

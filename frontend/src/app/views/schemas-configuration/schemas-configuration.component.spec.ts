@@ -1,4 +1,5 @@
 import { of, Subject, throwError } from 'rxjs';
+import { Schema } from '@guardian/interfaces';
 import { SchemasConfigurationComponent } from './schemas-configuration.component';
 import { FIELD_TYPES_UI } from 'src/app/modules/schema-engine/field-type-ui';
 
@@ -100,6 +101,40 @@ describe('SchemasConfigurationComponent', () => {
         return component;
     }
 
+    describe('removing a condition', () => {
+        it('keeps the branch fields in the schema as ordinary fields', () => {
+            const a: any = { name: 'a', conditionUserOrdered: true };
+            const b: any = { name: 'b', conditionUserOrdered: true };
+            const schema: any = {
+                fields: [a, b],
+                conditions: [{ thenFields: [a], elseFields: [b] }],
+            };
+            const component = createComponent({ selectedSchema: schema });
+            component.markDirty = () => {};
+            component.condThenRefVal = {};
+            component.condElseRefVal = {};
+            component.removeConditionAt(0);
+            expect(schema.conditions).toEqual([]);
+            expect(schema.fields).toEqual([a, b]);
+            expect(a.conditionUserOrdered).toBeFalse();
+            expect(b.conditionUserOrdered).toBeFalse();
+        });
+
+        it('keeps the ordering flag of a field still owned by another condition', () => {
+            const a: any = { name: 'a', conditionUserOrdered: true };
+            const schema: any = {
+                fields: [a],
+                conditions: [{ thenFields: [a] }, { elseFields: [a] }],
+            };
+            const component = createComponent({ selectedSchema: schema });
+            component.markDirty = () => {};
+            component.condThenRefVal = {};
+            component.condElseRefVal = {};
+            component.removeConditionAt(0);
+            expect(a.conditionUserOrdered).toBeTrue();
+        });
+    });
+
     describe('Rich Text preset dialog', () => {
         it('opens the requested preset and routes its value back to the selected field', () => {
             const component = createComponent();
@@ -114,6 +149,45 @@ describe('SchemasConfigurationComponent', () => {
             expect(component.getRichTextPresetValue()).toBe('<p>Changed</p>');
             expect(component.selectedField.default).toBe('<p>Changed</p>');
             expect(component.markDirty).toHaveBeenCalled();
+        });
+
+        it('restores the previous preset value when the dialog is cancelled', () => {
+            const component = createComponent();
+            component.selectedField = makeField({ default: '<p>Default</p>' });
+            component.markDirty = jasmine.createSpy('markDirty');
+
+            component.openRichTextPresetDialog('default');
+            component.setRichTextPresetValue('<p>Changed</p>');
+            component.cancelRichTextPresetDialog();
+
+            expect(component.selectedField.default).toBe('<p>Default</p>');
+            expect(component.richTextPresetTarget).toBeNull();
+        });
+
+        it('restores an absent test value when the dialog is cancelled', () => {
+            const component = createComponent();
+            component.selectedField = makeField();
+            component.markDirty = jasmine.createSpy('markDirty');
+            const before = component.selectedField.examples;
+
+            component.openRichTextPresetDialog('test');
+            component.setRichTextPresetValue('<p>Example</p>');
+            component.cancelRichTextPresetDialog();
+
+            expect(component.selectedField.examples).toEqual(before);
+        });
+
+        it('keeps the preset value on Done and ignores the hide event that follows', () => {
+            const component = createComponent();
+            component.selectedField = makeField({ default: '<p>Default</p>' });
+            component.markDirty = jasmine.createSpy('markDirty');
+
+            component.openRichTextPresetDialog('default');
+            component.setRichTextPresetValue('<p>Changed</p>');
+            component.closeRichTextPresetDialog();
+            component.cancelRichTextPresetDialog();
+
+            expect(component.selectedField.default).toBe('<p>Changed</p>');
         });
 
         it('writes a Rich Text test value through the existing example value flow', () => {
@@ -2118,6 +2192,303 @@ describe('SchemasConfigurationComponent', () => {
 
             expect(calls).toEqual([]);
             expect(component.toasts.length).toBe(1);
+        });
+    });
+
+    describe('a sidebar list copy arriving after the full schema load', () => {
+
+        function makeFullSchema(id: string): any {
+            return new Schema({
+                id, _id: id, uuid: `u-${id}`, status: 'DRAFT', topicId: 'topic-1', name: `Schema ${id}`,
+                document: {
+                    $id: `#u-${id}`, title: `Schema ${id}`, description: '', type: 'object',
+                    properties: {
+                        field_1: {
+                            title: 'field_1', description: 'd', readOnly: false, type: 'string',
+                            $comment: '{"term":"field_1","@id":"https://www.schema.org/text","orderPosition":0}'
+                        }
+                    },
+                    required: [], additionalProperties: false, $defs: {}
+                }
+            } as any);
+        }
+
+        function listItem(id: string): any {
+            return { id, _id: id, uuid: `u-${id}`, status: 'DRAFT', topicId: 'topic-1', name: `Schema ${id}` };
+        }
+
+        function loadList(component: any, ids: string[]): void {
+            component.schemaService.getSchemasByPage = () => of({
+                body: ids.map(listItem),
+                headers: { get: () => String(ids.length) }
+            });
+            component.loadSchemas('topic-1');
+        }
+
+        it('does not replace the saved baseline of the open schema', () => {
+            const full = makeFullSchema('a');
+            const component = createComponent({ schemas: [full], selectedSchema: full });
+            component.loadedSchemaId = 'a';
+            component.snapshotSchema(full);
+            const baseline = component.savedSignatures.get('a');
+
+            loadList(component, ['a']);
+
+            expect(component.savedSignatures.get('a')).toBe(baseline);
+            component.deleteField(full.fields[0], { stopPropagation: () => {} });
+            expect(full.fields.length).toBe(0);
+            expect(component.hasUnsavedChanges).toBeTrue();
+        });
+
+        it('still records a baseline for the schemas that are not open', () => {
+            const full = makeFullSchema('a');
+            const component = createComponent({ schemas: [full], selectedSchema: full });
+            component.loadedSchemaId = 'a';
+            component.snapshotSchema(full);
+
+            loadList(component, ['a', 'b']);
+
+            expect(component.savedSignatures.has('b')).toBeTrue();
+        });
+    });
+
+    describe('field paths for the preview', () => {
+        it('gives new and renamed fields the path the formula links use', () => {
+            const added: any = makeField({ name: 'field_2' });
+            const nested: any = makeField({ name: 'inner' });
+            const group: any = makeField({ name: 'group', fields: [nested] });
+            const component = createComponent();
+
+            component.refreshFieldPaths([added, group], '', '#root/');
+
+            expect(added.path).toBe('field_2');
+            expect(added.fullPath).toBe('#root/field_2');
+            expect(nested.path).toBe('group.inner');
+            expect(nested.fullPath).toBe('#root/group.inner');
+
+            added.name = 'renamed';
+            component.refreshFieldPaths([added, group], '', '#root/');
+            expect(added.fullPath).toBe('#root/renamed');
+        });
+
+        it('sets them for the submitter view too, which builds no preset', () => {
+            const field: any = makeField({ name: 'field_1' });
+            const schema: any = makeSchema({ id: 'a', iri: '#root', fields: [field] });
+            const component = createComponent({ schemas: [schema], selectedSchema: schema });
+            component.rebuildPreview = SchemasConfigurationComponent.prototype['rebuildPreview'];
+            component.previewPill = 'submitter';
+
+            component.rebuildPreview();
+
+            expect(field.fullPath).toBe('#root/field_1');
+        });
+    });
+
+    describe('Private flag on entity change', () => {
+        function schemaWithPrivateFields(entity: string): any {
+            const child = makeField({ name: 'child' });
+            child.isPrivate = true;
+            const parent = makeField({ name: 'parent' });
+            parent.isPrivate = true;
+            parent.fields = [child];
+            const inCondition = makeField({ name: 'cond' });
+            inCondition.isPrivate = true;
+            const schema = makeSchema({ entity, fields: [parent] });
+            schema.conditions = [{ thenFields: [inCondition], elseFields: [] }];
+            return schema;
+        }
+
+        it('clears the flag of the top-level and condition fields when the schema leaves Encrypted VC', () => {
+            const component = createComponent();
+            component.markDirty = () => {};
+            const schema = schemaWithPrivateFields('EVC');
+            schema.entity = 'VC';
+            component.onSchemaEntityChange(schema);
+            expect(schema.fields[0].isPrivate).toBeUndefined();
+            expect(schema.conditions[0].thenFields[0].isPrivate).toBeUndefined();
+        });
+
+        it('leaves the fields shared with a referenced sub-schema untouched', () => {
+            const component = createComponent();
+            component.markDirty = () => {};
+            const schema = schemaWithPrivateFields('EVC');
+            schema.entity = 'VC';
+            component.onSchemaEntityChange(schema);
+            expect(schema.fields[0].fields[0].isPrivate).toBe(true);
+        });
+
+        it('offers Private for top-level fields of an Encrypted VC schema only', () => {
+            const schema = makeSchema({ entity: 'EVC' });
+            const component = createComponent({ selectedSchema: schema });
+            component.selectedField = makeField();
+            expect(component.selectedFieldCanBePrivate).toBe(true);
+
+            component.drillStack = [{ fieldName: 'sub', schemaIri: '#sub', fields: [] }];
+            expect(component.selectedFieldCanBePrivate).toBe(false);
+
+            component.drillStack = [];
+            schema.entity = 'VC';
+            expect(component.selectedFieldCanBePrivate).toBe(false);
+        });
+
+        it('keeps the flags while the schema stays Encrypted VC', () => {
+            const component = createComponent();
+            component.markDirty = () => {};
+            const schema = schemaWithPrivateFields('EVC');
+            component.onSchemaEntityChange(schema);
+            expect(schema.fields[0].isPrivate).toBe(true);
+        });
+    });
+
+    describe('Parameter label', () => {
+        function unused(typeKey: string, extra: any = {}): boolean {
+            const component = createComponent();
+            component.selectedField = makeField(extra);
+            component.getFieldCurrentType = () => typeKey;
+            Object.defineProperty(component, 'selectedFieldHasGeoAncestors', { value: false });
+            return component.selectedFieldParameterUnused;
+        }
+
+        it('is unused for plain types', () => {
+            expect(unused('number')).toBe(true);
+            expect(unused('boolean')).toBe(true);
+        });
+
+        it('is used by types whose value lives in a labelled control', () => {
+            for (const key of ['string', 'prefix', 'postfix', 'table', 'helptext', 'sub-schema']) {
+                expect(unused(key)).toBe(false);
+            }
+            expect(unused('number', { autocalculate: true })).toBe(false);
+            expect(unused('number', { dependency: { on: 'x', kind: 'geo' } })).toBe(false);
+            expect(unused('string', { customType: 'enum' })).toBe(false);
+        });
+    });
+
+    describe('Auto Calculate validation', () => {
+        it('reports an empty expression and clears once it is set', () => {
+            const component = createComponent();
+            component.getFieldCurrentType = () => 'number';
+            const field = makeField({ autocalculate: true });
+            field.expression = '  ';
+            expect(component.getFieldErrors(field, [field])).toContain('Auto Calculate requires an expression');
+            field.expression = 'a + b';
+            expect(component.getFieldErrors(field, [field])).not.toContain('Auto Calculate requires an expression');
+        });
+    });
+
+    describe('Auto Calculate on geographic types', () => {
+        function component(typeKey: string): any {
+            const c = createComponent();
+            c.selectedField = makeField();
+            c.getFieldCurrentType = () => typeKey;
+            c.markDirty = () => {};
+            c.requiredModeOptions = [
+                { label: 'None', value: 'none' },
+                { label: 'Hidden', value: 'hidden' },
+                { label: 'Required', value: 'required' },
+                { label: 'Auto Calculate', value: 'autocalculate' },
+            ];
+            return c;
+        }
+
+        it('hides the option for every type that uses Parameter, and for geographic types', () => {
+            for (const key of ['enum', 'table', 'helptext', 'prefix', 'postfix', 'sub-schema', 'continent', 'country', 'state', 'image', 'file', 'hederaAccount']) {
+                const values = component(key).selectedFieldRequiredModes.map((o: any) => o.value);
+                expect(values).not.toContain('autocalculate');
+            }
+        });
+
+        it('keeps the option for number', () => {
+            const values = component('number').selectedFieldRequiredModes.map((o: any) => o.value);
+            expect(values).toContain('autocalculate');
+        });
+
+        it('reports the type error, not the pattern error, for image, file and Hedera account', () => {
+            for (const key of ['image', 'file', 'hederaAccount']) {
+                const field = makeField({ autocalculate: true });
+                field.expression = 'a';
+                const errors = component(key).getFieldErrors(field, [field]);
+                expect(errors).toContain('Auto Calculate is not available for this type');
+                expect(errors).not.toContain('Auto Calculate cannot be used with a pattern');
+            }
+        });
+
+        it('reports an error for an already auto calculated geographic field', () => {
+            const c = component('country');
+            const field = makeField({ autocalculate: true });
+            field.expression = 'a';
+            expect(c.getFieldErrors(field, [field])).toContain('Auto Calculate is not available for this type');
+        });
+    });
+
+    describe('Auto Calculate and multiple answers', () => {
+        it('clears the array flag when Auto Calculate is selected', () => {
+            const component = createComponent();
+            component.markDirty = () => {};
+            component.selectedField = makeField({ isArray: true });
+            component.setFieldRequiredMode('autocalculate');
+            expect(component.selectedField.isArray).toBe(false);
+        });
+
+        it('reports an already saved auto calculated array field', () => {
+            const component = createComponent();
+            component.getFieldCurrentType = () => 'number';
+            const field = makeField({ autocalculate: true, isArray: true });
+            field.expression = 'a';
+            expect(component.getFieldErrors(field, [field])).toContain('Auto Calculate cannot allow multiple answers');
+        });
+    });
+
+    describe('Auto Calculate with a pattern and Help Text rules', () => {
+        function component(typeKey: string): any {
+            const c = createComponent();
+            c.getFieldCurrentType = () => typeKey;
+            c.markDirty = () => {};
+            c.requiredModeOptions = [
+                { label: 'None', value: 'none' },
+                { label: 'Hidden', value: 'hidden' },
+                { label: 'Required', value: 'required' },
+                { label: 'Auto Calculate', value: 'autocalculate' },
+            ];
+            return c;
+        }
+
+        it('reports Auto Calculate on a string with a pattern', () => {
+            const c = component('string');
+            const field = makeField({ autocalculate: true });
+            field.expression = 'a';
+            field.pattern = '^[0-9]+$';
+            expect(c.getFieldErrors(field, [field])).toContain('Auto Calculate cannot be used with a pattern');
+        });
+
+        it('hides Required / Visibility for Help Text', () => {
+            const c = component('helptext');
+            c.selectedField = makeField();
+            expect(c.selectedFieldShowsRequiredModes).toBe(false);
+        });
+
+        it('keeps Required / Visibility visible for a Help Text saved as required, without Required as a choice', () => {
+            const c = component('helptext');
+            c.selectedField = makeField({ required: true });
+            expect(c.selectedFieldShowsRequiredModes).toBe(true);
+            expect(c.selectedFieldRequiredModes.map((o: any) => o.value)).toEqual(['none', 'hidden']);
+            expect(c.getFieldErrors(c.selectedField, [c.selectedField])).toContain('Help Text cannot be required');
+        });
+
+        it('resets required, hidden and auto calculate when a field becomes Help Text', () => {
+            const c = component('string');
+            const field = makeField({ required: true, hidden: true, autocalculate: true });
+            field.expression = 'a';
+            c.selectedField = field;
+            const ft = FIELD_TYPES_UI.find((t: any) => t.key === 'helptext') as any;
+            if (ft) {
+                c.fieldTypes = FIELD_TYPES_UI;
+                c._rebuildRefPreset = () => {};
+                c.changeFieldType(ft);
+                expect(field.required).toBe(false);
+                expect(field.hidden).toBe(false);
+                expect(field.autocalculate).toBe(false);
+            }
         });
     });
 });

@@ -301,7 +301,7 @@
             <!-- array of objects as table -->
             <div *ngIf="canDrawTable(item)">
                 <p-table
-                    [value]="getTableRows(item) || []"
+                    [value]="getTableHRowFields(item) || []"
                     [paginator]="preview && item.list.length > 25"
                     [rows]="preview ? 25 : undefined">
                     <ng-template pTemplate="header">
@@ -331,12 +331,37 @@
                                             <textarea
                                                 pInputTextarea
                                                 class="textarea-resize-none"
-                                                [value]="field.value"
+                                                [value]="field.value ?? ''"
                                                 [readonly]="true"
                                                 type="text"
                                                 rows="1"
                                             >
                                             </textarea>
+                                        </div>
+
+                                        <div
+                                            *ngIf="isRichText(field)"
+                                            class="rich-text-table-card"
+                                            (mouseenter)="onRichTextCellEnter($event, field, richTextPopover)"
+                                            (mouseleave)="onRichTextCellLeave(richTextPopover)"
+                                        >
+                                            <div
+                                                *ngIf="field.value; else richTextCellEmpty"
+                                                class="rich-text-table-preview"
+                                                appRichTextClip
+                                                [innerHTML]="getRichTextValue(field.value)"
+                                            ></div>
+                                            <ng-template #richTextCellEmpty>
+                                                <span class="rich-text-table-empty">No text</span>
+                                            </ng-template>
+                                            <button
+                                                *ngIf="field.value"
+                                                type="button"
+                                                class="rich-text-table-view"
+                                                [title]="'View ' + field.description"
+                                                [attr.aria-label]="'View ' + field.description"
+                                                (click)="openRichTextDialog(field, richTextPopover)"
+                                            ><i class="pi pi-eye"></i></button>
                                         </div>
 
                                         <div *ngIf="isInput(field) && isIPFS(field)" class="form-field-ipfs guardian-input-container">
@@ -507,3 +532,31 @@
 
     </ng-container></ng-container>
 </form>
+
+<p-popover #richTextPopover styleClass="rich-text-view-popover">
+    <div
+        class="rich-text-view-popover-content"
+        (mouseenter)="onRichTextPopoverEnter()"
+        (mouseleave)="onRichTextCellLeave(richTextPopover)"
+        (click)="onRichTextLinkClick($event)"
+        [innerHTML]="richTextPopoverValue"
+    ></div>
+</p-popover>
+
+<p-dialog
+    [header]="richTextDialogField?.description || ''"
+    [visible]="!!richTextDialogField"
+    [modal]="true"
+    [draggable]="false"
+    [resizable]="false"
+    [style]="{ width: 'min(760px, 95vw)' }"
+    styleClass="schema-form-view-rich-text-dialog"
+    (onHide)="closeRichTextDialog()"
+>
+    <div
+        *ngIf="richTextDialogField"
+        class="rte-view-content"
+        [innerHTML]="getRichTextValue(richTextDialogField.value)"
+        (click)="onRichTextLinkClick($event)"
+    ></div>
+</p-dialog>

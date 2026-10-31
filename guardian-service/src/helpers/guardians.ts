@@ -10,6 +10,10 @@ class MessageError extends Error {
     }
 }
 
+interface PolicyHooks {
+    ensureRunning: (policyId: string) => Promise<boolean>;
+}
+
 /**
  * Guardians service
  */
@@ -33,6 +37,47 @@ export class GuardiansService extends NatsService {
      */
     registerListener(event: string, cb: Function, noCompress = false): void {
         this.getMessages(event, cb);
+    }
+
+    /**
+     * Hooks for policies that are started on demand
+     */
+    private policyHooks: PolicyHooks | null = null;
+
+    /**
+     * Lifecycle subjects that must never trigger an on-demand start
+     */
+    private static readonly NO_START_SUBJECTS: string[] = [
+        PolicyEvents.DELETE_POLICY,
+        PolicyEvents.REFRESH_MODEL
+    ];
+
+    /**
+     * Set hooks for policies that are started on demand
+     * @param hooks
+     */
+    public setPolicyHooks(hooks: PolicyHooks | null): void {
+        this.policyHooks = hooks;
+    }
+
+    /**
+     * Start the policy if it is stopped on purpose (discontinued)
+     * @param subject
+     * @param policyId
+     * @returns true if the policy was started
+     */
+    private async startOnDemand(subject: string, policyId: string): Promise<boolean> {
+        if (!this.policyHooks || GuardiansService.NO_START_SUBJECTS.includes(subject)) {
+            return false;
+        }
+        try {
+            return await this.policyHooks.ensureRunning(policyId);
+        } catch (error: any) {
+            throw new MessageError(
+                `Policy is discontinued and could not be started: ${error?.message || error}`,
+                503
+            );
+        }
     }
 
     /**
@@ -66,14 +111,23 @@ export class GuardiansService extends NatsService {
      */
     public async sendPolicyMessage<T>(subject: string, policyId: string, data: unknown, awaitInterval: number = 100000): Promise<T> {
         const full = [policyId, subject].join('-');
-        try {
-            return await this.requestOrThrow<T>(full, data, awaitInterval, { policyId });
-        } catch (error: any) {
-            // No host / slow -> null (soft contract); responder error propagates.
-            if (error?.code === 'NO_RESPONDERS' || error?.code === 'REQUEST_TIMEOUT') {
-                return null;
+        let startTried = false;
+        for (; ;) {
+            try {
+                return await this.requestOrThrow<T>(full, data, awaitInterval, { policyId });
+            } catch (error: any) {
+                if (error?.code === 'NO_RESPONDERS' && !startTried) {
+                    startTried = true;
+                    if (await this.startOnDemand(subject, policyId)) {
+                        continue;
+                    }
+                }
+                // No host / slow -> null (soft contract); responder error propagates.
+                if (error?.code === 'NO_RESPONDERS' || error?.code === 'REQUEST_TIMEOUT') {
+                    return null;
+                }
+                throw error;
             }
-            throw error;
         }
     }
 
@@ -93,6 +147,7 @@ export class GuardiansService extends NatsService {
         const full = [policyId, subject].join('-');
         const deadline = Date.now() + awaitInterval;
         const retryDelay = 500;
+        let startTried = false;
 
         for (; ;) {
             const remaining = deadline - Date.now();
@@ -104,6 +159,12 @@ export class GuardiansService extends NatsService {
             } catch (error: any) {
                 // No host -> not delivered, safe to retry until the deadline.
                 if (error?.code === 'NO_RESPONDERS') {
+                    if (!startTried) {
+                        startTried = true;
+                        if (await this.startOnDemand(subject, policyId)) {
+                            continue;
+                        }
+                    }
                     if (Date.now() + retryDelay >= deadline) {
                         throw new MessageError('Block Timeout', 504);
                     }

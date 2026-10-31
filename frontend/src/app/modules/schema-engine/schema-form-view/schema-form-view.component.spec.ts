@@ -355,19 +355,30 @@ describe('SchemaFormViewComponent', () => {
         }));
     });
 
-    describe('tables in a calculation preview', () => {
-        const table = {
-            name: 'rows',
-            description: 'Rows',
+    describe('table rows', () => {
+        const column = (name: string, extra: any = {}) => ({
+            name,
+            description: name,
+            type: 'string',
+            isArray: false,
+            isRef: false,
+            fullPath: `rows.${name}`,
+            ...extra
+        });
+        const tableOf = (name: string, fields: any[] = [column('value')]) => ({
+            name,
+            description: name,
             type: '#Row',
             isArray: true,
             isRef: true,
-            fullPath: 'rows',
-            fields: [{ name: 'value', description: 'Value', type: 'string', isArray: false, isRef: false, fullPath: 'rows.value' }]
-        } as any;
-        const values = { rows: Array.from({ length: 30 }, (_, index) => ({ value: `row ${index}` })) };
+            fullPath: name,
+            fields
+        } as any);
+        const table = tableOf('rows');
+        const rowsOf = (count: number, prefix = 'row') => Array.from({ length: count }, (_, index) => ({ value: `${prefix} ${index}` }));
+        const values = { rows: rowsOf(30) };
 
-        const render = (preview: boolean) => {
+        const render = (preview: boolean, options: { fields?: any[]; values?: any; hide?: any } = {}) => {
             TestBed.resetTestingModule();
             TestBed.configureTestingModule({
                 declarations: [SchemaFormViewComponent],
@@ -379,40 +390,102 @@ describe('SchemaFormViewComponent', () => {
                 schemas: [NO_ERRORS_SCHEMA],
             });
             const fixture = TestBed.createComponent(SchemaFormViewComponent);
-            fixture.componentRef.setInput('private-fields', {});
-            fixture.componentRef.setInput('values', values);
-            fixture.componentRef.setInput('fields', [table]);
+            fixture.componentRef.setInput('private-fields', options.hide || {});
+            fixture.componentRef.setInput('values', options.values || values);
+            fixture.componentRef.setInput('fields', options.fields || [table]);
             fixture.componentRef.setInput('preview', preview);
             fixture.detectChanges();
             return fixture;
         };
+        const cellValues = (rows: any[]) => rows.map((row) => row.map((cell: any) => cell.value));
 
-        it('builds the rows once and shows them 25 per page', () => {
+        it('builds the rows once and shows them 25 per page in a calculation preview', () => {
             const fixture = render(true);
             const view = fixture.componentInstance;
             const item = view.fields![0];
-            expect(view.getTableRows(item)).toBe(view.getTableRows(item));
+            expect(view.getTableHRowFields(item)).toBe(view.getTableHRowFields(item));
             expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(25);
             expect(fixture.nativeElement.querySelector('.p-paginator')).not.toBeNull();
         });
 
-        it('builds the rows again for another list', () => {
-            const fixture = render(true);
-            const view = fixture.componentInstance;
-            const item = view.fields![0];
-            const rows = view.getTableRows(item);
-            item.list = values.rows.slice(0, 2) as any;
-            expect(view.getTableRows(item)).not.toBe(rows);
-            expect(view.getTableRows(item).length).toBe(2);
-        });
-
-        it('keeps the ordinary view unchanged', () => {
+        it('keeps the same rows in the ordinary view and shows every row without a paginator', () => {
             const fixture = render(false);
             const view = fixture.componentInstance;
             const item = view.fields![0];
-            expect(view.getTableRows(item)).not.toBe(view.getTableRows(item));
+            expect(view.getTableHRowFields(item)).toBe(view.getTableHRowFields(item));
             expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(30);
             expect(fixture.nativeElement.querySelector('.p-paginator')).toBeNull();
+        });
+
+        [true, false].forEach((preview) => {
+            it(`does not build the rows again on later change detection with Preview ${preview}`, () => {
+                const fixture = render(preview);
+                const view = fixture.componentInstance;
+                const rows = view.getTableHRowFields(view.fields![0]);
+                const build = spyOn<any>(view, 'buildTableRowFields').and.callThrough();
+                fixture.detectChanges();
+                fixture.detectChanges();
+                expect(build).not.toHaveBeenCalled();
+                expect(view.getTableHRowFields(view.fields![0])).toBe(rows);
+            });
+        });
+
+        it('fills the rows from the values in their order', () => {
+            const fixture = render(true);
+            const view = fixture.componentInstance;
+            expect(cellValues(view.getTableHRowFields(view.fields![0]))).toEqual(values.rows.map((row) => [row.value]));
+        });
+
+        it('leaves out hidden, private and null columns', () => {
+            const fields = [tableOf('rows', [
+                column('value'),
+                column('secret'),
+                column('internal', { hidden: true }),
+                column('empty', { type: 'null' })
+            ])];
+            const fixture = render(true, {
+                fields,
+                hide: { secret: true },
+                values: { rows: [{ value: 'a', secret: 's', internal: 'i', empty: null }] }
+            });
+            const view = fixture.componentInstance;
+            const rows = view.getTableHRowFields(view.fields![0]);
+            expect(rows.map((row) => row.map((cell: any) => cell.name))).toEqual([['value']]);
+            expect(cellValues(rows)).toEqual([['a']]);
+        });
+
+        it('builds new rows when the view gets a new document', () => {
+            const fixture = render(true);
+            const view = fixture.componentInstance;
+            const rows = view.getTableHRowFields(view.fields![0]);
+            fixture.componentRef.setInput('values', { rows: rowsOf(2, 'next') });
+            fixture.componentRef.setInput('fields', [table]);
+            fixture.detectChanges();
+            const next = view.getTableHRowFields(view.fields![0]);
+            expect(next).not.toBe(rows);
+            expect(cellValues(next)).toEqual([['next 0'], ['next 1']]);
+            expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(2);
+            expect(fixture.nativeElement.querySelector('.p-paginator')).toBeNull();
+        });
+
+        it('keeps separate rows for two tables in one view', () => {
+            const fixture = render(true, {
+                fields: [tableOf('first'), tableOf('second')],
+                values: { first: rowsOf(1, 'first'), second: rowsOf(2, 'second') }
+            });
+            const view = fixture.componentInstance;
+            const [first, second] = view.fields!;
+            expect(cellValues(view.getTableHRowFields(first))).toEqual([['first 0']]);
+            expect(cellValues(view.getTableHRowFields(second))).toEqual([['second 0'], ['second 1']]);
+            expect(view.getTableHRowFields(first)).not.toBe(view.getTableHRowFields(second));
+        });
+
+        it('returns the same empty rows for a table without values', () => {
+            const fixture = render(true, { values: { rows: [] } });
+            const view = fixture.componentInstance;
+            const item = view.fields![0];
+            expect(view.getTableHRowFields(item)).toEqual([]);
+            expect(view.getTableHRowFields(item)).toBe(view.getTableHRowFields(item));
         });
     });
 });

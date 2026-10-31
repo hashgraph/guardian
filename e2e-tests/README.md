@@ -17,7 +17,7 @@ npm run guardian:test:smoke  # only the tests tagged smoke
 SOLO_EXTRA_CA_CERT=/path/to/proxy-ca.pem npm run solo:up
 ```
 
-```
+```bash
 # Other commands
 npm run guardian:test        # the whole suite
 npm run guardian:test -- cypress/e2e/api-tests/001_demo/getRandomKey.cy.js   # a single spec
