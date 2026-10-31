@@ -586,9 +586,9 @@ export class PoliciesComponent implements OnInit {
         }
     }
 
-    public readonly stoppedTooltip = 'Discontinued policy is stopped. It starts automatically when opened and may take a minute.';
+    public readonly stoppedTooltip = 'Stopped – starts automatically when opened and may take a minute.';
 
-    public readonly runningTooltip = 'Discontinued policy is running. It stops automatically after a period of inactivity.';
+    public readonly runningTooltip = 'Running – stops automatically after a period of inactivity.';
 
     public isStoppedDiscontinued(policy: any): boolean {
         // isRunning is only set for discontinued policies
@@ -597,6 +597,19 @@ export class PoliciesComponent implements OnInit {
 
     public getDiscontinuedTooltip(date: Date) {
         return date ? `Discontinue date is ${date.toLocaleString()}` : '';
+    }
+
+    public getStatusTooltip(policy: any): string {
+        const lines: string[] = [];
+        if (policy.discontinuedDate) {
+            lines.push(`Discontinued on ${policy.discontinuedDate.toLocaleString()}`);
+        }
+        if (this.isStoppedDiscontinued(policy)) {
+            lines.push(this.stoppedTooltip);
+        } else if (policy.isRunning) {
+            lines.push(this.runningTooltip);
+        }
+        return lines.join('. ');
     }
 
     public getMenu(policy: any) {

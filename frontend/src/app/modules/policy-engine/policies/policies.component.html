@@ -546,9 +546,9 @@
                       >
                       @if (!user.POLICIES_POLICY_REVIEW) {
                         <div
-                          [pTooltip]="getDiscontinuedTooltip(policy.discontinuedDate)"
+                          [pTooltip]="getStatusTooltip(policy)"
                           tooltipPosition="bottom"
-                          [tooltipDisabled]="!policy.discontinuedDate"
+                          [tooltipDisabled]="!getStatusTooltip(policy)"
                           class="chip chip-color-{{getColor(policy.status, !!policy.discontinuedDate)}}"
                           >{{ getLabelStatus(policy.status, !!policy.discontinuedDate) }}
                           <ng-container *ngTemplateOutlet="runStateIcon; context: { $implicit: policy }"></ng-container>
@@ -586,8 +586,9 @@
                           @if (!showStatus(policy)) {
                             <div
                               class="{{policy.status}}-status disabled-status"
-                              [pTooltip]="getDiscontinuedTooltip(policy.discontinuedDate)"
-                              tooltipPosition="bottom">
+                              [pTooltip]="getStatusTooltip(policy)"
+                              tooltipPosition="bottom"
+                              [tooltipDisabled]="!getStatusTooltip(policy)">
                               {{ getStatusName(policy) }}
                               <ng-container *ngTemplateOutlet="runStateIcon; context: { $implicit: policy }"></ng-container>
                             </div>
@@ -843,12 +844,8 @@
 
 <ng-template #runStateIcon let-policy>
   @if (isStoppedDiscontinued(policy)) {
-    <i class="pi pi-stop-circle stopped-icon"
-      [pTooltip]="stoppedTooltip"
-      tooltipPosition="bottom"></i>
+    <i class="pi pi-stop-circle stopped-icon"></i>
   } @else if (policy.isRunning) {
-    <i class="pi pi-clock stopped-icon"
-      [pTooltip]="runningTooltip"
-      tooltipPosition="bottom"></i>
+    <i class="pi pi-clock stopped-icon"></i>
   }
 </ng-template>
