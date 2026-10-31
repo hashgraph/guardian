@@ -477,4 +477,30 @@ describe('DatabaseServer', function () {
 			});
 		});
 	});
+	describe('getDocumentStateHistory', function () {
+		afterEach(() => sinon.restore());
+
+		it('reads dry-run states through the entity loader so the document is present', async function () {
+			const server = new DatabaseServer('dry-1');
+			const states = [{ createDate: new Date(1), document: { option: { status: 'Approved' } }, extra: 'x' }];
+			const find = sinon.stub(server, 'getDocumentStates').resolves(states);
+			const aggregate = sinon.stub(server, 'aggregate');
+
+			const result = await server.getDocumentStateHistory({ documentId: 'd' }, ['option.status']);
+
+			assert.deepEqual(result, [{ createDate: new Date(1), document: { option: { status: 'Approved' } } }]);
+			assert.isTrue(find.calledOnceWith({ documentId: 'd' }));
+			assert.isFalse(aggregate.called);
+		});
+
+		it('projects only the requested top-level keys outside dry run', async function () {
+			const server = new DatabaseServer();
+			const aggregate = sinon.stub(server, 'aggregate').resolves([]);
+
+			await server.getDocumentStateHistory({ documentId: 'd' }, ['option.status', 'option.comment']);
+
+			const pipeline = aggregate.firstCall.args[1];
+			assert.deepEqual(pipeline[1], { $project: { _id: 0, createDate: 1, 'document.option': 1 } });
+		});
+	});
 });
