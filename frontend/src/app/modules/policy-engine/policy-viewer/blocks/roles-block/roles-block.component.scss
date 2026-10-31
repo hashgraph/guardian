@@ -28,6 +28,14 @@ form.roles-card {
     max-width: 624px;
 }
 
+.role-title {
+    margin: 0 0 8px;
+    color: var(--guardian-font-color);
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 28px;
+}
+
 .role-desc {
     margin: -4px 0 18px;
     color: color-mix(in srgb, var(--guardian-font-color) 75%, transparent);

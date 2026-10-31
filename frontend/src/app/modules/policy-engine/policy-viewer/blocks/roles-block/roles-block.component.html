@@ -1,11 +1,14 @@
 <div class="content" [hidden]="!isActive" [attr.readonly-block]="readonly">
   <form class="pv-card roles-card" [formGroup]="roleForm" (ngSubmit)="onSubmit()">
+    @if (title && !hasNavigation) {
+      <h2 class="role-title">{{ title }}</h2>
+    }
     <p class="role-desc">{{ description || 'Choose how you take part in this policy.' }}</p>
     <div class="roles-form">
 
       @if (!isGroup) {
         <div class="role-value">
-          <label class="form-label" id="role-label" for="role">Role</label>
+          <label class="form-label" id="role-label" [attr.for]="roles.length > 6 ? 'role' : null">Role</label>
           @if (roles.length <= 6) {
             <div class="role-cards" role="radiogroup" aria-labelledby="role-label">
               @for (role of roles; track role) {

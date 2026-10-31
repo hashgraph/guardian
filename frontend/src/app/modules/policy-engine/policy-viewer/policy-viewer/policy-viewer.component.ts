@@ -3,7 +3,7 @@ import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@ang
 import { ActivatedRoute, Router } from '@angular/router';
 import { IUser, PolicyStatus, UserPermissions } from '@guardian/interfaces';
 import { DialogService } from 'primeng/dynamicdialog';
-import { forkJoin, Subject, Subscription, of } from 'rxjs';
+import { EMPTY, forkJoin, Subject, Subscription, of } from 'rxjs';
 import { takeUntil, map, catchError, switchMap, tap, finalize, debounceTime } from 'rxjs/operators';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -266,7 +266,10 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             this.policyProgressService.navigationInvalidated$
                 .pipe(
                     debounceTime(50),
-                    switchMap(() => this.policyEngineService.getPolicyNavigation(this.policyId, this.savepointIds))
+                    switchMap(() => this.policyEngineService.getPolicyNavigation(this.policyId, this.savepointIds).pipe(
+                        // a failed reload keeps the current menu and must not end the subscription
+                        catchError(() => EMPTY)
+                    ))
                 )
                 .subscribe((data: any) => this.applyNavigation(data))
         );
@@ -359,7 +362,10 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.policyEngineService.getGroups(policyId, this.savepointIds),
                 this.externalPoliciesService.getActionRequestsCount({ policyId }),
                 this.policyEngineService.getParametersConfig(policyId),
-                this.policyEngineService.getPolicyNavigation(policyId, this.savepointIds),
+                // navigation is optional: a failure must not stop the policy from loading
+                this.policyEngineService.getPolicyNavigation(policyId, this.savepointIds).pipe(
+                    catchError(() => of(null))
+                ),
             ])),
             finalize(() => {
                 this.isStarting = false;

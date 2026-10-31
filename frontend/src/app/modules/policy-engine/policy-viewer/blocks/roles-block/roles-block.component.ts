@@ -29,6 +29,7 @@ export class RolesBlockComponent implements OnInit {
 
     roles: string[] = [];
     groups?: string[];
+    title?: any;
     description?: any;
     roleForm: UntypedFormGroup;
     type: any = 'new';
@@ -124,6 +125,7 @@ export class RolesBlockComponent implements OnInit {
             this.roles = data.roles;
             this.groupMap = data.groupMap || {};
 
+            this.title = uiMetaData.title;
             this.description = uiMetaData.description;
             this.isGroup = !!(this.groups && this.groups.length);
 
@@ -170,6 +172,11 @@ export class RolesBlockComponent implements OnInit {
                     }
                 );
         }
+    }
+
+    // with navigation the step name is already the page title
+    get hasNavigation(): boolean {
+        return !!this.policyProgressService.getHasNavigation();
     }
 
     get submitLabel(): string {

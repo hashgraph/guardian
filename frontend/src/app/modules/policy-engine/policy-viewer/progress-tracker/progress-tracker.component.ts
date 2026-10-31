@@ -28,7 +28,7 @@ export class ProgressTrackerComponent implements OnInit, OnChanges, OnDestroy {
     @Input('steps') steps!: IStep[];
     @Input() hidden: boolean = false;
     @Output() hiddenChange = new EventEmitter<boolean>();
-    @Output() activeStepChange = new EventEmitter<ActiveStep>();
+    @Output() activeStepChange = new EventEmitter<ActiveStep | null>();
 
     activeSteps: IStep[] = [];
     drawerOpen: boolean = false;
@@ -73,6 +73,9 @@ export class ProgressTrackerComponent implements OnInit, OnChanges, OnDestroy {
 
         const last = this.activeSteps[this.activeSteps.length - 1];
         if (!last) {
+            this.currentLabel = '';
+            this.currentSubLabel = '';
+            this.emitActive(null);
             return;
         }
         const parent = this.getParent(last);
@@ -81,10 +84,14 @@ export class ProgressTrackerComponent implements OnInit, OnChanges, OnDestroy {
         const active: ActiveStep = parent
             ? { label: last.label, parentLabel: parent.label }
             : { label: last.label };
-        if (active.label === this.lastActive?.label && active.parentLabel === this.lastActive?.parentLabel) {
+        this.emitActive(active);
+    }
+
+    private emitActive(active: ActiveStep | null): void {
+        if (active?.label === this.lastActive?.label && active?.parentLabel === this.lastActive?.parentLabel) {
             return;
         }
-        this.lastActive = active;
+        this.lastActive = active ?? undefined;
         this.policyProgressService.setActiveStep(active);
         Promise.resolve().then(() => this.activeStepChange.emit(active));
     }
