@@ -209,7 +209,11 @@ export class DocumentsSourceBlockComponent implements OnInit {
         }
         const autoSize = Math.round((100 - minCol) / autoCol);
         for (const field of this.fields) {
-            field.__sortable = field.type === 'text' && field.name;
+            // Sorting reorders only the rows loaded in the browser, so it is offered
+            // without pagination, and not for paths PrimeNG cannot resolve ('L').
+            field.__sortable = field.type === 'text' && !!field.name
+                && !this.paginationAddon && !field.names?.includes('L');
+            field.__isAction = this.isActionField(field);
             if (field.width) {
                 field.__width = field.width;
                 field.__minWidth = field.width;
@@ -293,6 +297,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
         if (field._block) {
             const dialogRef = this.dialog.open(DialogBlock, {
                 width: '90%',
+                styleClass: 'pv-scope',
                 data: {
                     data: data,
                     document: document,
@@ -714,6 +719,29 @@ export class DocumentsSourceBlockComponent implements OnInit {
         if (element.history && element.history.length) {
             this.statusDetailed = this.statusDetailed === element ? null : element;
         }
+    }
+
+    private static readonly STATUS_TONES: { tone: 'bad' | 'wait' | 'ok', keywords: string[] }[] = [
+        { tone: 'bad', keywords: ['reject', 'revok', 'fail', 'declin', 'cancel'] },
+        { tone: 'wait', keywords: ['waiting', 'pending', 'minting', 'submitted', 'review', 'resubmit', 'revision'] },
+        { tone: 'ok', keywords: ['approv', 'minted', 'verified', 'validated', 'issued', 'registered', 'published', 'complete'] }
+    ];
+
+    public getStatusTone(value: any): 'ok' | 'wait' | 'bad' | 'neutral' {
+        const text = String(value ?? '').toLowerCase();
+        for (const { tone, keywords } of DocumentsSourceBlockComponent.STATUS_TONES) {
+            if (keywords.some((keyword) => text.includes(keyword))) {
+                return tone;
+            }
+        }
+        return 'neutral';
+    }
+
+    public isActionField(field: any): boolean {
+        if (field.type === 'button') {
+            return field.uiClass !== 'link';
+        }
+        return field.type === 'block' || field.type === 'blocks';
     }
 
     getClass(type: string): string {

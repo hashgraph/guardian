@@ -36,7 +36,7 @@ const UserPoliciesPageLocators = {
     projectTab: 'Projects',
     validated: "span[title='Validated']",
     verified: "span[title='Verified']",
-    approveButton: 'div.btn-approve',
+    approveButton: 'button.btn-approve',
     createReportButton: "button:contains(' Add Report ')",
     monitoringReports: "p:contains('Monitoring reports')",
     revokeButton: "button-block div:contains(' Revoke ')",
