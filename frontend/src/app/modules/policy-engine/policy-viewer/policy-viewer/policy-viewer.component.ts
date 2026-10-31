@@ -7,7 +7,6 @@ import { EMPTY, forkJoin, Subject, Subscription, of } from 'rxjs';
 import { takeUntil, map, catchError, switchMap, tap, finalize, debounceTime } from 'rxjs/operators';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { ProfileService } from 'src/app/services/profile.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { RecordControllerComponent } from '../../record/record-controller/record-controller.component';
 import { ActiveStep, PolicyProgressService } from '../../services/policy-progress.service';
@@ -27,6 +26,7 @@ import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from 'src/a
 import { MockDialog } from '../../dialogs/mock-dialog/mock-dialog.component';
 import { PolicyTestAutomationService } from '../policy-test-automation/policy-test-automation.service';
 import { shortDid } from 'src/app/utils/short-did';
+import { ViewerProfileService } from '../viewer-profile.service';
 
 type MockItemType = 'IPFS' | 'MESSAGE' | 'TOKEN' | 'ACCOUNT' | 'API';
 const MockTabs = ['API', 'IPFS', 'Topics'];
@@ -42,6 +42,7 @@ const MockTabs = ['API', 'IPFS', 'Topics'];
         '../../styles/top-toolbar.scss',
         './policy-viewer.component.scss'
     ],
+    providers: [ViewerProfileService],
     standalone: false
 })
 export class PolicyViewerComponent implements OnInit, OnDestroy {
@@ -55,6 +56,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public isStarting: boolean = false;
     public isConfirmed: boolean = false;
     public virtualUsers: any[] = [];
+    private prefetchedVirtualUsers: any[] | null = null;
     public view: string = 'policy';
     public documents: any[] = [];
     public columns: string[] = [];
@@ -134,7 +136,6 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
 
     constructor(
-        private profileService: ProfileService,
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
         private route: ActivatedRoute,
@@ -145,7 +146,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         private router: Router,
         private savepointFlow: SavepointFlowService,
         private indexedDb: IndexedDbRegistryService,
-        private policyTest: PolicyTestAutomationService
+        private policyTest: PolicyTestAutomationService,
+        private viewerProfile: ViewerProfileService
     ) {
         this.policy = null;
         this.pageIndex = 0;
@@ -309,7 +311,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         this.isConfirmed = false;
         this.loading = true;
         this.recordingActive = false;
-        this.profileService.getProfile().subscribe(
+        this.viewerProfile.profile$.subscribe(
             (profile: IUser | null) => {
                 this.permissions = new UserPermissions(profile);
                 this.isConfirmed = !!(profile && profile.confirmed);
@@ -347,6 +349,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         this.loading = true;
 
         this.isStarting = false;
+        this.prefetchedVirtualUsers = null;
         this.ensureAdminIfNeeded(policyId).pipe(
             switchMap(() => forkJoin([
                 // A discontinued policy that is stopped starts on demand by the requests below,
@@ -415,7 +418,11 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     }
 
     loadDryRunOptions() {
-        this.policyEngineService.getVirtualUsers(this.policyInfo.id, this.savepointIds).subscribe((value) => {
+        const users$ = this.prefetchedVirtualUsers
+            ? of(this.prefetchedVirtualUsers)
+            : this.policyEngineService.getVirtualUsers(this.policyInfo.id, this.savepointIds);
+        this.prefetchedVirtualUsers = null;
+        users$.subscribe((value) => {
             this.virtualUsers = value;
             setTimeout(() => {
                 this.loading = false;
@@ -445,6 +452,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     setGroup(item: any, group: any) {
         group?.toggle(false);
         this.loading = true;
+        this.viewerProfile.reset();
         this.policyEngineService
             .setGroup(this.policyInfo.id, item ? item.uuid : null)
             .subscribe(
@@ -475,6 +483,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     setVirtualUser(item: any, menu: any) {
         menu?.toggle(false)
         this.loading = true;
+        this.viewerProfile.reset();
         this.policyEngineService
             .loginVirtualUser(this.policyInfo.id, item.did)
             .subscribe(
@@ -491,6 +500,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
     restartDryRun() {
         this.loading = true;
+        this.viewerProfile.reset();
 
         this.policyEngineService.restartDryRun(this.policyInfo.id).subscribe(
             (users) => {
@@ -989,13 +999,19 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         }
 
         return this.policyEngineService.getVirtualUsers(policyId, this.savepointIds).pipe(
-            map(users => this.findAdminUser(users)),
-            switchMap(admin => admin?.did
-                ? this.policyEngineService.loginVirtualUser(policyId, admin.did)
-                : of(null)
-            ),
+            switchMap((users) => {
+                const admin = this.findAdminUser(users);
+                if (!admin?.did) {
+                    this.prefetchedVirtualUsers = users;
+                    return of(null);
+                }
+                return this.policyEngineService.loginVirtualUser(policyId, admin.did);
+            }),
             catchError(() => of(null)),
-            tap(() => { this.forceAdminAfterReload = false; })
+            tap(() => {
+                this.forceAdminAfterReload = false;
+                this.viewerProfile.reset();
+            })
         );
     }
 
