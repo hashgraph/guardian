@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { RemotePolicyInvite } from '@guardian/interfaces';
 import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
 
 @Component({
@@ -27,6 +28,15 @@ export class SearchExternalPolicyDialog {
     ngOnInit() {
         this.loading = false;
         this.step = 1;
+        const messageId = this.config.data?.messageId;
+        if (messageId) {
+            this.timestamp = messageId;
+            this.onSearch();
+        }
+    }
+
+    private getMessageId(): string {
+        return RemotePolicyInvite.decode(this.timestamp) || this.timestamp?.trim();
     }
 
     ngOnDestroy(): void {
@@ -39,7 +49,7 @@ export class SearchExternalPolicyDialog {
     public onSubmit(): void {
         this.loading = true;
         this.externalPoliciesService
-            .import(this.timestamp?.trim())
+            .import(this.getMessageId())
             .subscribe((response) => {
                 this.ref.close(response);
             }, (e) => {
@@ -53,7 +63,7 @@ export class SearchExternalPolicyDialog {
     public onSearch(): void {
         this.loading = true;
         this.externalPoliciesService
-            .preview(this.timestamp?.trim())
+            .preview(this.getMessageId())
             .subscribe((response) => {
                 this.policy = response;
                 if (this.policy) {

@@ -4,7 +4,7 @@ import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { LocationType, Permissions, TaskAction, UserPermissions } from '@guardian/interfaces';
 import { ApiAcceptedResponse, ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, pageHeader, TaskDTO, ExternalPolicyDTO, ImportMessageDTO, PolicyPreviewDTO, PolicyRequestDTO, PolicyRequestCountDTO, UnprocessableEntityErrorDTO } from '#middlewares';
+import { Examples, InternalServerErrorDTO, pageHeader, TaskDTO, ExternalPolicyDTO, ImportMessageDTO, PolicyPreviewDTO, PolicyRequestDTO, PolicyRequestCountDTO, RemoteParticipantDTO, UnprocessableEntityErrorDTO } from '#middlewares';
 import { Guardians, InternalException, EntityOwner, TaskManager, ServiceError, PolicyEngine } from '#helpers';
 import { AuthUser, Auth, AuthAndLocation } from '#auth';
 
@@ -635,6 +635,141 @@ export class ExternalPoliciesApi {
             const guardians = new Guardians();
             const _full = full === 'true' || full === true;
             return await guardians.disconnectPolicy(messageId, _full, new EntityOwner(user));
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Get remote participants
+     */
+    @Get('/participants/:policyId')
+    @Auth(Permissions.PERMISSIONS_ROLE_MANAGE)
+    @ApiOperation({
+        summary: 'Returns the users of other instances who asked to take part in the policy.',
+        description: 'Returns the users of other instances who asked to take part in the policy. Only for the owner of the policy.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: pageHeader,
+        type: RemoteParticipantDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Policy does not exist.' }
+    })
+    @ApiExtraModels(RemoteParticipantDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getRemoteParticipants(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Param('policyId') policyId: string,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
+    ): Promise<RemoteParticipantDTO[]> {
+        try {
+            const { items, count } = await new Guardians()
+                .getRemoteParticipants(policyId, pageIndex, pageSize, new EntityOwner(user));
+            return res.header('X-Total-Count', count).send(items);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Approve remote participant
+     */
+    @Post('/participants/:participantId/approve')
+    @Auth(Permissions.PERMISSIONS_ROLE_MANAGE)
+    @ApiOperation({
+        summary: 'Approves a remote participant.',
+        description: 'Assigns the policy to the remote user and publishes the answer for the home instance of the user.',
+    })
+    @ApiParam({
+        name: 'participantId',
+        type: String,
+        description: 'Participant ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: RemoteParticipantDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Participant does not exist.' }
+    })
+    @ApiExtraModels(RemoteParticipantDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async approveRemoteParticipant(
+        @AuthUser() user: IAuthUser,
+        @Param('participantId') participantId: string
+    ): Promise<RemoteParticipantDTO> {
+        try {
+            return await new Guardians().approveRemoteParticipant(participantId, new EntityOwner(user));
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Reject remote participant
+     */
+    @Post('/participants/:participantId/reject')
+    @Auth(Permissions.PERMISSIONS_ROLE_MANAGE)
+    @ApiOperation({
+        summary: 'Rejects a remote participant.',
+        description: 'Leaves the policy unassigned and publishes the answer for the home instance of the user.',
+    })
+    @ApiParam({
+        name: 'participantId',
+        type: String,
+        description: 'Participant ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: RemoteParticipantDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Participant does not exist.' }
+    })
+    @ApiExtraModels(RemoteParticipantDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async rejectRemoteParticipant(
+        @AuthUser() user: IAuthUser,
+        @Param('participantId') participantId: string
+    ): Promise<RemoteParticipantDTO> {
+        try {
+            return await new Guardians().rejectRemoteParticipant(participantId, new EntityOwner(user));
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

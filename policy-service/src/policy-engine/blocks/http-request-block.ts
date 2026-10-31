@@ -220,7 +220,8 @@ export class HttpRequestBlock {
 
         const variablesObj: any = {
             did: event?.user?.did,
-            username: event?.user.username
+            // a remote user has no username, the DID stands in for it
+            username: event?.user?.username || event?.user?.did
         }
 
         let inputObject;
