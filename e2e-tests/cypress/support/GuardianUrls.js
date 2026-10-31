@@ -22,6 +22,8 @@ const URL = {
 	Status: '/admin/status',
 	Settings: '/admin/settings',
 	Logs: '/admin/logs',
+	UserManagement: '/user-management',
+	TokensUser: '/tokens-user',
 };
 
 export default URL;

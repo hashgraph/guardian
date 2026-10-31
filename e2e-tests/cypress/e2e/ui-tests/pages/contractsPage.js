@@ -1,5 +1,5 @@
+import URL from '../../../support/GuardianUrls';
 import * as Checks from '../../../support/checkingMethods';
-import CommonElements from '../../../support/defaultUIElements';
 
 const ContractsPageLocators = {
     createContractBtn: 'Create Contract',
@@ -22,12 +22,7 @@ const ContractsPageLocators = {
 export class ContractsPage {
 
     openContractsTab() {
-        cy.get(CommonElements.navBar).should('exist')
-        cy.get('body').then(($body) => {
-            if ($body.find(`span:contains(${CommonElements.contractsTab})`).length == 0)
-                {cy.get(CommonElements.navBar).contains(CommonElements.tokensTab).click();}
-        })
-        cy.get(CommonElements.navBar).contains(CommonElements.contractsTab).click();
+        cy.visit(URL.Root + URL.Contracts);
         Checks.waitForLoading();
     }
 

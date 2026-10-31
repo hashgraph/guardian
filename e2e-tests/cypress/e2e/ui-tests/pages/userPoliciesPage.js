@@ -1,3 +1,4 @@
+import URL from '../../../support/GuardianUrls';
 import CommonElements from '../../../support/defaultUIElements';
 import * as Checks from '../../../support/checkingMethods';
 
@@ -79,12 +80,7 @@ const UserPoliciesPageLocators = {
 export class UserPoliciesPage {
 
     openPoliciesTab() {
-        cy.get(CommonElements.navBar).should('exist')
-        cy.get('body').then(($body) => {
-            if ($body.find(`span:contains(${CommonElements.userPoliciesTab})`).length == 0)
-                {cy.get(CommonElements.navBar).contains(CommonElements.mainPoliciesTab).click();}
-        })
-        cy.get(CommonElements.navBar).contains(CommonElements.userPoliciesTab).click();
+        cy.visit(URL.Root + URL.Policies);
     }
 
     registerInPolicy(role = 'Registrant') {

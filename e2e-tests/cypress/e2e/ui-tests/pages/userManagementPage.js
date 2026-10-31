@@ -1,3 +1,4 @@
+import URL from '../../../support/GuardianUrls';
 import * as Checks from '../../../support/checkingMethods';
 import CommonElements from '../../../support/defaultUIElements';
 
@@ -10,12 +11,7 @@ const userManagementPageLocators = {
 export class UserManagementPage {
 
     openUserManagementTab() {
-        cy.get(CommonElements.navBar).should('exist')
-        cy.get('body').then(($body) => {
-            if ($body.find(`span:contains(${CommonElements.userManagementTab})`).length==0)
-                {cy.get(CommonElements.navBar).contains(CommonElements.administrationTab).click();}
-        })
-        cy.get(CommonElements.navBar).contains(CommonElements.userManagementTab).click();
+        cy.visit(URL.Root + URL.UserManagement);
     }
 
     assignPolicyToUser(userName, policyName) {

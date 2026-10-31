@@ -1,3 +1,4 @@
+import URL from '../../../support/GuardianUrls';
 import CommonElements from '../../../support/defaultUIElements';
 import * as Checks from '../../../support/checkingMethods';
 
@@ -41,21 +42,11 @@ const TokensPageLocators = {
 export class TokensPage {
 
 	openTokensTab() {
-		cy.get(CommonElements.navBar).should('exist')
-		cy.get('body').then(($body) => {
-			if ($body.find(`span:contains(${CommonElements.manageTokens})`).length == 0)
-				{cy.get(CommonElements.navBar).contains(CommonElements.tokensTab).click();}
-		})
-		cy.get(CommonElements.navBar).contains(CommonElements.manageTokens).click();
+		cy.visit(URL.Root + URL.Tokens);
 	}
 
 	openUserTokensTab() {
-		cy.get(CommonElements.navBar).should('exist')
-		cy.get('body').then(($body) => {
-			if ($body.find(`span:contains(${CommonElements.listOfTokensTab})`).length == 0)
-				{cy.get(CommonElements.navBar).contains(CommonElements.tokensTab).click();}
-		})
-		cy.get(CommonElements.navBar).contains(CommonElements.listOfTokensTab).click();
+		cy.visit(URL.Root + URL.TokensUser);
 	}
 
 	associatePolicyToken(name) {
