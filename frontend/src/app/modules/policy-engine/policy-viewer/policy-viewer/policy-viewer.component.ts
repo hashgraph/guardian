@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { IUser, PolicyStatus, UserPermissions } from '@guardian/interfaces';
 import { DialogService } from 'primeng/dynamicdialog';
 import { forkJoin, interval, Subject, Subscription, of } from 'rxjs';
-import { audit, takeUntil, map, catchError, switchMap, tap } from 'rxjs/operators';
+import { audit, takeUntil, map, catchError, switchMap, tap, finalize } from 'rxjs/operators';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -51,6 +51,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public policyInfo: any | null;
     public role!: any;
     public loading: boolean = true;
+    public isStarting: boolean = false;
     public isConfirmed: boolean = false;
     public virtualUsers: any[] = [];
     public view: string = 'policy';
@@ -329,14 +330,26 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     async loadPolicyById(policyId: string) {
         this.loading = true;
 
+        this.isStarting = false;
         this.ensureAdminIfNeeded(policyId).pipe(
             switchMap(() => forkJoin([
-                this.policyEngineService.policy(policyId),
+                // A discontinued policy that is stopped starts on demand by the requests below,
+                // which can take a while. policy() does not start it and answers first, so the
+                // flag is set while the other requests are still pending.
+                this.policyEngineService.policy(policyId).pipe(
+                    tap((policyInfo: any) => {
+                        // isRunning is only set for discontinued policies
+                        this.isStarting = policyInfo?.isRunning === false;
+                    })
+                ),
                 this.policyEngineService.policyBlock(policyId, null),
                 this.policyEngineService.getGroups(policyId, this.savepointIds),
                 this.externalPoliciesService.getActionRequestsCount({ policyId }),
                 this.policyEngineService.getParametersConfig(policyId),
-            ]))
+            ])),
+            finalize(() => {
+                this.isStarting = false;
+            })
         ).subscribe(
             (value) => {
                 this.policyInfo = value[0];

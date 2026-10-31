@@ -907,7 +907,12 @@
 </ng-template>
 
 @if (loading) {
-  <div class="loading">
+  <div class="loading" [class.loading-starting]="isStarting">
     <div class="preloader-image preloader-image-l-size"></div>
+    @if (isStarting) {
+      <div class="loading-message">
+        This policy is discontinued and currently stopped. Starting it may take a minute.
+      </div>
+    }
   </div>
 }
