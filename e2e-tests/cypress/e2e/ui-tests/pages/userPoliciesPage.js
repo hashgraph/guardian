@@ -8,8 +8,7 @@ const UserPoliciesPageLocators = {
     role: (roleName) => `[data-role="${roleName}"]`,
     nextButton: "button:contains('Continue')",
     requestDocumentBlock: 'request-document-block',
-    nextButtonInApplicationRegister: "button:contains('Next ')",
-    submitButton: "button:contains('Submit ')",
+    submitButton: "button:contains('Validate & Create')",
     divTitle: 'div.title',
     waitingForApprovalTitle: "span[title='Waiting for approval']",
     signedStatus: 'div.status-SIGNED',
@@ -93,8 +92,7 @@ export class UserPoliciesPage {
         cy.get(UserPoliciesPageLocators.nextButton).click();
         if (role == 'Registrant') {
             Checks.waitForElement(UserPoliciesPageLocators.requestDocumentBlock);
-            cy.get(UserPoliciesPageLocators.nextButtonInApplicationRegister).click();
-            cy.get(UserPoliciesPageLocators.nextButtonInApplicationRegister).click();
+            cy.contains('button', 'Start').click();
             cy.get(UserPoliciesPageLocators.submitButton).click();
             Checks.waitForElement(UserPoliciesPageLocators.divTitle);
         }

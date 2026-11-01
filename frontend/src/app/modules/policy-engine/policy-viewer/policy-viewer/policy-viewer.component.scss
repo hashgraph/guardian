@@ -318,6 +318,15 @@
     align-self: stretch;
 }
 
+// The request-document form takes over the content area. The blocks stay rendered
+// underneath, because the form keeps a live reference to its block.
+.policy-container[takeover] {
+    .policy-nav,
+    .policy-container-body {
+        display: none;
+    }
+}
+
 .policy-body {
     height: 100%;
     width: 100%;

@@ -1,45 +1,58 @@
-<div #dialogHeader class="dialog-header">
-  <div class="header-container">
-    <div class="header-text">{{dialogTitle}}</div>
+<div class="form-header">
+  <button type="button" class="form-back" (click)="onClose()">
+    <i class="pi pi-arrow-left" aria-hidden="true"></i>
+    <span>Back</span>
+  </button>
+  <div class="form-heading">
+    @if ((activeStep$ | async); as step) {
+      <div class="form-heading-step">{{ step.label }}</div>
+    }
+    <h2 class="form-heading-title">{{ dialogTitle || parent?.title }}</h2>
   </div>
-  @if (restoreData) {
+  <div class="form-draft">
     <button
-      class="guardian-button guardian-button-secondary header-action"
-      (click)="onRestoreClick()"
-      title="Restore the latest saved values">
-      <svg-icon class="icon-btn svg-icon"
-        src="/assets/images/icons/16/refresh.svg"
-        svgClass="icon-color-primary">
-      </svg-icon>
-      <span>Restore values</span>
+      type="button"
+      class="form-draft-toggle"
+      aria-haspopup="true"
+      [attr.aria-expanded]="draftMenuOpen"
+      (click)="draftMenuOpen = !draftMenuOpen">
+      <span>Draft</span>
+      <i class="pi pi-angle-down" aria-hidden="true"></i>
     </button>
-  }
-  @if (dryRun) {
-    <button
-      class="guardian-button guardian-button-secondary header-action"
-      (click)="onDryRun()"
-      title="Fill this document with test data">
-      <svg-icon class="icon-btn svg-icon"
-        src="/assets/images/icons/16/refresh.svg"
-        svgClass="icon-color-primary">
-      </svg-icon>
-      <span>Fill with test data</span>
-    </button>
-  }
-  <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
-    <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
-  </div>
-  <div class="header-icon" (click)="onClose()">
-    <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    <div class="form-draft-menu" [hidden]="!draftMenuOpen" (click)="draftMenuOpen = false">
+      <request-draft-file-actions
+        [schema]="schema"
+        [policyId]="policyId"
+        [blockId]="id"
+        [dataForm]="dataForm"
+        (draftImported)="onDraftImported($event)">
+      </request-draft-file-actions>
+    </div>
   </div>
 </div>
-<div class="dialog-body">
+<div class="form-body">
   @if (loading) {
     <div class="guardian-loading">
-      <div class="guardian-loading-image"></div>
+      <div class="form-spinner"></div>
     </div>
   }
-  <div class="dialog-body-container">
+  <div class="form-body-container">
+    @if (dryRun) {
+      <div class="form-notice">
+        <i class="pi pi-info-circle" aria-hidden="true"></i>
+        <span class="form-notice-text">Dry run – you can fill this form with test data.</span>
+        <button type="button" class="guardian-button guardian-button-secondary" (click)="onDryRun()">Fill with test data</button>
+        @if (restoreData) {
+          <button type="button" class="guardian-button guardian-button-secondary" (click)="onRestoreClick()">Restore values</button>
+        }
+      </div>
+    } @else if (restoreData) {
+      <div class="form-notice">
+        <i class="pi pi-info-circle" aria-hidden="true"></i>
+        <span class="form-notice-text">There is some data to restore.</span>
+        <button type="button" class="guardian-button guardian-button-secondary" (click)="onRestoreClick()">Restore values</button>
+      </div>
+    }
     @if (relayerAccount || enableAdditionalData) {
       <div class="relayer-account-steps">
         <div class="guardian-step-container">
@@ -69,7 +82,7 @@
     @if (schema) {
       <div class="body-dialog-template">
         <form (ngSubmit)="onStep()" [formGroup]="dataForm" [attr.visibility]="isStep(0)">
-          <div class="form-dialog" [attr.dry-run]="!!dryRun" [attr.restore]="!!restoreData">
+          <div class="form-card">
             <app-schema-form-root
               #formRoot
               tabindex="0"
@@ -83,7 +96,7 @@
               [rules]="rulesResults"
               [formulas]="formulas"
               [isFormForRequestBlock]="true"
-              [saveShown]="!edit || draft"
+              [saveShown]="allowDraft"
               [comesFromDialog]="true"
               [showButtons]="false"
               cancelText = "Cancel"
@@ -235,14 +248,15 @@
     }
   </div>
 </div>
-<div class="dialog-footer">
+<div class="form-footer">
   <div class="action-buttons">
   @for (config of buttons; track config) {
     <div
       [attr.visible]="config.visible()"
       [attr.id]="config.id"
-      class="dialog-button">
+      class="form-button">
       <button
+        type="button"
         (click)="config.fn()"
         [disabled]="ifDisabledBtn(config)"
         class="guardian-button guardian-button-{{config.type}}"
@@ -259,15 +273,6 @@
     <div class="last-autosave">
       {{ minutesAgo$ | async }}
     </div>
-  }
-  @if (!loading) {
-    <request-draft-file-actions
-      [schema]="schema"
-      [policyId]="policyId"
-      [blockId]="id"
-      [dataForm]="dataForm"
-      (draftImported)="onDraftImported($event)">
-    </request-draft-file-actions>
   }
   </div>
 </div>

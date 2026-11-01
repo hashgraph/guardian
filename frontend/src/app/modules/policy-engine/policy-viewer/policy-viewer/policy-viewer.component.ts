@@ -1,5 +1,5 @@
 import { HttpResponse } from '@angular/common/http';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, ViewContainerRef, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IUser, PolicyStatus, UserPermissions } from '@guardian/interfaces';
 import { DialogService } from 'primeng/dynamicdialog';
@@ -27,6 +27,7 @@ import { MockDialog } from '../../dialogs/mock-dialog/mock-dialog.component';
 import { PolicyTestAutomationService } from '../policy-test-automation/policy-test-automation.service';
 import { shortDid } from 'src/app/utils/short-did';
 import { ViewerProfileService } from '../viewer-profile.service';
+import { FormTakeoverService } from '../form-takeover/form-takeover.service';
 
 type MockItemType = 'IPFS' | 'MESSAGE' | 'TOKEN' | 'ACCOUNT' | 'API';
 const MockTabs = ['API', 'IPFS', 'Topics'];
@@ -42,7 +43,7 @@ const MockTabs = ['API', 'IPFS', 'Topics'];
         '../../styles/top-toolbar.scss',
         './policy-viewer.component.scss'
     ],
-    providers: [ViewerProfileService],
+    providers: [ViewerProfileService, FormTakeoverService],
     standalone: false
 })
 export class PolicyViewerComponent implements OnInit, OnDestroy {
@@ -165,6 +166,15 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         );
     }
 
+    private formTakeover = inject(FormTakeoverService);
+
+    @ViewChild('takeoverHost', { read: ViewContainerRef })
+    public set takeoverHost(vcr: ViewContainerRef | undefined) {
+        this.formTakeover.setHost(vcr ?? null);
+    }
+
+    public takeoverActive$ = this.formTakeover.active$;
+
     private _recordController!: RecordControllerComponent | undefined;
 
     @ViewChild('recordController')
@@ -282,6 +292,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy() {
+        this.formTakeover.close();
         this.subscription.unsubscribe();
         clearInterval(this.timer);
         this.destroy$.next(true);
@@ -346,6 +357,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     }
 
     async loadPolicyById(policyId: string) {
+        this.formTakeover.close();
         this.loading = true;
 
         this.isStarting = false;
@@ -533,6 +545,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
     onView(view: string, menu?: any) {
         if (menu) { menu.hide(); }
+        if (view !== 'policy') {
+            this.formTakeover.close();
+        }
         this.view = view;
         this.columns = this.columnsMap[this.view];
         if (this.view === 'mock_config' || this.view === 'mock_data') {
@@ -777,6 +792,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     }
 
     public onTabChange(index: string | number | undefined) {
+        this.formTakeover.close();
         const tabIndex = typeof index === 'number' ? index : 0;
         this.router.navigate([], {
             relativeTo: this.route,

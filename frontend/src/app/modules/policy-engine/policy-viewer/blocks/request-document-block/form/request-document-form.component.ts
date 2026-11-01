@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, HostBinding, Output, ViewChild, inject } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { RequestDocumentBlockComponent } from '../request-document-block.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -23,16 +23,32 @@ import { FormulasTree } from 'src/app/modules/formulas/models/formula-tree';
 import { SchemaFormRootComponent } from 'src/app/modules/schema-engine/schema-form-root/schema-form-root.component';
 import { ToastService } from 'src/app/services/toast.service';
 import { PolicyTestAutomationService } from '../../../policy-test-automation/policy-test-automation.service';
+import { PolicyProgressService } from '../../../../services/policy-progress.service';
 
 @Component({
-    selector: 'request-document-block-dialog',
-    templateUrl: './request-document-block-dialog.component.html',
-    styleUrls: ['./request-document-block-dialog.component.scss'],
+    selector: 'request-document-form',
+    templateUrl: './request-document-form.component.html',
+    styleUrls: ['./request-document-form.component.scss'],
     standalone: false
 })
-export class RequestDocumentBlockDialog {
+export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     public loading: boolean = true;
-    public parent: RequestDocumentBlockComponent | RequestDocumentBlockAddonComponent;
+    @Input() parent: RequestDocumentBlockComponent | RequestDocumentBlockAddonComponent;
+    @Input() allowDraft: boolean;
+    @Output() closed = new EventEmitter<void>();
+
+    public draftMenuOpen: boolean = false;
+
+    @HostBinding('attr.modal')
+    public get isModal(): boolean | null {
+        return this.dialogRef ? true : null;
+    }
+
+    // The form is opened either as a content-area takeover or, outside the viewer, as a modal
+    public dialogRef = inject(DynamicDialogRef, { optional: true });
+    public config = inject(DynamicDialogConfig, { optional: true });
+    private policyProgressService = inject(PolicyProgressService, { optional: true });
+    public activeStep$ = this.policyProgressService?.activeStep$;
 
     public get id() { return this.parent?.id; }
     public get dryRun() { return this.parent?.dryRun; }
@@ -106,13 +122,9 @@ export class RequestDocumentBlockDialog {
         return this.needRemoteWarning && !this.remoteWarning;
     }
 
-    public isLargeSize: boolean = true;
-    @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
     @ViewChild('formRoot') formRoot?: SchemaFormRootComponent;
 
     constructor(
-        public dialogRef: DynamicDialogRef,
-        public config: DynamicDialogConfig,
         private dialogService: DialogService,
         private policyEngineService: PolicyEngineService,
         private schemaRulesService: SchemaRulesService,
@@ -127,16 +139,17 @@ export class RequestDocumentBlockDialog {
         private formulasService: FormulasService,
         private toastService: ToastService,
     ) {
-        this.parent = this.config.data;
         this.dataForm = this.fb.group({});
         this.storage = new DocumentAutosaveStorage(indexedDb);
-        if (this.parent) {
-            this.parent.dialog = this;
-            this.enableAdditionalData = !!(this.parent as any).enableAdditionalData;
-        }
     }
 
     ngOnInit() {
+        this.parent ??= this.config?.data;
+        this.allowDraft ??= (this.parent as any)?.allowDraft;
+        if (this.parent) {
+            this.parent.form = this;
+            this.enableAdditionalData = !!(this.parent as any).enableAdditionalData;
+        }
         this.loading = true;
         this.loadRules();
         this.loadFormulas();
@@ -158,6 +171,14 @@ export class RequestDocumentBlockDialog {
         this.destroy$.next(true);
         this.destroy$.unsubscribe();
         this.sub?.unsubscribe();
+        if (this.parent?.form === this) {
+            this.parent.form = null;
+        }
+    }
+
+    public close(): void {
+        this.closed?.emit();
+        this.dialogRef?.close(null);
     }
 
     public initForm($event: any) {
@@ -232,7 +253,7 @@ export class RequestDocumentBlockDialog {
         if (this.dataForm.dirty && !this.dataSaved) {
             this.showUnsavedChangesDialog();
         } else {
-            this.dialogRef.close(null);
+            this.close();
         }
     }
 
@@ -359,7 +380,7 @@ export class RequestDocumentBlockDialog {
                 setTimeout(() => {
                     this.loading = false;
                     if (!draft) {
-                        this.dialogRef.close(null);
+                        this.close();
                     } else {
                         this.dataSaved = true;
                     }
@@ -420,7 +441,7 @@ export class RequestDocumentBlockDialog {
 
             dialogOptionRef.onClose.subscribe((result: string) => {
                 if (result == 'Confirm') {
-                    this.dialogRef.close(null);
+                    this.close();
                 }
             });
         }
@@ -434,15 +455,15 @@ export class RequestDocumentBlockDialog {
         this.parent.onRestoreClick();
     }
 
-    public handleCancelBtnEvent($event: any, data: RequestDocumentBlockDialog) {
+    public handleCancelBtnEvent($event: any, data: RequestDocumentFormComponent) {
         data.onClose();
     }
 
-    public handleSubmitBtnEvent($event: any, data: RequestDocumentBlockDialog) {
+    public handleSubmitBtnEvent($event: any, data: RequestDocumentFormComponent) {
         data.onStep();
     }
 
-    public handleSaveBtnEvent($event: any, data: RequestDocumentBlockDialog) {
+    public handleSaveBtnEvent($event: any, data: RequestDocumentFormComponent) {
         if (!this.loading) {
             data.onStep(true);
         }
@@ -538,26 +559,5 @@ export class RequestDocumentBlockDialog {
             }, (e) => {
                 this.loading = false;
             });
-    }
-
-    public toggleSize(): void {
-        this.isLargeSize = !this.isLargeSize;
-        setTimeout(() => {
-            if (this.dialogHeader) {
-                const dialogEl = this.dialogHeader.nativeElement.closest('.p-dynamic-dialog, .guardian-dialog') as HTMLElement;
-                if (dialogEl) {
-                    if (this.isLargeSize) {
-                        dialogEl.style.width = '90vw';
-                        dialogEl.style.maxWidth = '90vw';
-                    } else {
-                        dialogEl.style.width = '50vw';
-                        dialogEl.style.maxWidth = '50vw';
-                    }
-                    dialogEl.style.maxHeight = '90vh'
-                    dialogEl.style.margin = 'auto';
-                    dialogEl.style.transition = 'all 0.3s ease';
-                }
-            }
-        }, 100);
     }
 }
