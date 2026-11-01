@@ -843,7 +843,7 @@
 }
 
 <ng-template #policyContainer>
-  <div class="policy-container">
+  <div class="policy-container" [attr.takeover]="(takeoverActive$ | async) || null">
     @if (steps && steps.length > 0) {
       <progress-tracker
         class="policy-nav"
@@ -880,5 +880,6 @@
         [savepointIds]="savepointIds"
       ></render-block>
     </div>
+    <ng-container #takeoverHost></ng-container>
   </div>
 </ng-template>

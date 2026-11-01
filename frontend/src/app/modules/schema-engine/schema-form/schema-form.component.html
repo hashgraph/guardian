@@ -171,7 +171,8 @@
                           (blur)="onUnfocusField(item.format, item)"
                           [placeholder]="getPlaceholderByFieldType(item)"
                           type="text"
-                          [autoResize]="true"
+                          [autoResize]="scriptAutoResize"
+                          class="auto-grow"
                           rows="1"
                         ></textarea>
                         @if (isIPFS(item)) {
@@ -780,7 +781,8 @@
                                         onUnfocusField(item.format, listItem)
                                     "
                                   type="text"
-                                  [autoResize]="true"
+                                  [autoResize]="scriptAutoResize"
+                                  class="auto-grow"
                                   rows="1"
                                 ></textarea>
                                 @if (isIPFS(item)) {

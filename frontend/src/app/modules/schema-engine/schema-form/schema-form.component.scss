@@ -700,3 +700,7 @@ form::ng-deep {
         pointer-events: none;
     }
 }
+
+textarea.auto-grow {
+    field-sizing: content;
+}
