@@ -10,17 +10,12 @@
   }
   @if (type == 'page') {
     @if (schema) {
-      <div class="pv-card launch-card">
-        <div class="launch-card-text">
-          @if (title) {
-            <h3 class="launch-card-title">{{ title }}</h3>
-          }
-          @if (description) {
-            <div class="launch-card-description">{{ description }}</div>
-          }
-        </div>
-        <div class="pv-card-actions">
-          <button type="button" class="guardian-button guardian-button-primary" (click)="onDialogOpen()">Start</button>
+      <div class="pv-card pv-state pv-state--info">
+        <div class="pv-state__icon"><i class="pi pi-file" aria-hidden="true"></i></div>
+        <div class="pv-state__title">{{ title || 'Complete the form' }}</div>
+        <div class="pv-state__text">{{ description || 'Fill in the required details and submit them to continue.' }}</div>
+        <div class="pv-state__actions">
+          <button type="button" class="pv-state-button" (click)="onDialogOpen()">Start</button>
         </div>
       </div>
     }

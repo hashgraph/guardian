@@ -7,6 +7,11 @@
     display: block;
     background: var(--guardian-background, #fff);
     //width: fit-content;
+
+    // A launch card sits on the page background, not on a white sheet
+    &:has(.pv-state--info) {
+        background: transparent;
+    }
 }
 
 .loading {

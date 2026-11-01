@@ -92,7 +92,6 @@ export class UserPoliciesPage {
         cy.get(UserPoliciesPageLocators.nextButton).click();
         if (role == 'Registrant') {
             Checks.waitForElement(UserPoliciesPageLocators.requestDocumentBlock);
-            cy.contains('button', 'Start').click();
             cy.get(UserPoliciesPageLocators.submitButton).click();
             Checks.waitForElement(UserPoliciesPageLocators.divTitle);
         }

@@ -16,22 +16,8 @@
     overflow: hidden;
 }
 
-.launch-card {
-    .launch-card-title {
-        margin: 0 0 8px;
-        font-size: 18px;
-        font-weight: 600;
-    }
-
-    .launch-card-description {
-        color: var(--color-grey-4);
-        font-size: 14px;
-        white-space: pre-line;
-    }
-
-    .pv-card-actions {
-        margin-top: 16px;
-    }
+.pv-state__text {
+    white-space: pre-line;
 }
 
 @media (max-width: 810px) {

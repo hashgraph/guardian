@@ -81,7 +81,6 @@ export class RequestDocumentBlockComponent
     public dialogTitle: any;
     public dialogClass: any;
     public hideWhenDiscontinued: any;
-    public dialogRef: any;
     public buttonClass: any;
     public restoreData: any;
     public readonly: boolean = false;
@@ -96,6 +95,7 @@ export class RequestDocumentBlockComponent
 
     // Only inside the policy viewer; the block is also rendered in modals outside of it
     private formTakeover = inject(FormTakeoverService, { optional: true });
+    private pageFormOpened = false;
     private takeoverRef: ComponentRef<RequestDocumentFormComponent> | null = null;
 
     constructor(
@@ -227,6 +227,7 @@ export class RequestDocumentBlockComponent
                 this.description = uiMetaData.description;
             }
             this.disabled = active === false;
+            this.openPageFormOnce();
             this.isExist = true;
             this.needPreset = !!data.presetSchema;
             this.presetFields = data.presetFields || [];
@@ -245,6 +246,16 @@ export class RequestDocumentBlockComponent
             this.disabled = false;
             this.isExist = false;
         }
+    }
+
+    // A page-type block is the form itself, so it opens on first render. After the user
+    // closes the form, the "Start" card lets them reopen it.
+    private openPageFormOnce() {
+        if (this.type !== 'page' || this.pageFormOpened || !this.formTakeover || this.disabled || this.readonly) {
+            return;
+        }
+        this.pageFormOpened = true;
+        setTimeout(() => this.onDialogOpen());
     }
 
     isBtnVisible() {
@@ -360,14 +371,12 @@ export class RequestDocumentBlockComponent
             });
             return;
         }
-        this.dialogRef = this.dialogService.open(RequestDocumentFormComponent, {
+        this.dialogService.open(RequestDocumentFormComponent, {
             showHeader: false,
             width: '90%',
             styleClass: 'guardian-dialog without-padding pv-scope',
             data: this
         });
-
-        this.dialogRef && this.dialogRef.onClose.subscribe(async (result: any) => { });
     }
 
     private showAutosaveDialog(autosaveDocument: string, callback?: any) {
