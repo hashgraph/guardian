@@ -42,9 +42,13 @@ export class FormTakeoverService {
         return ref;
     }
 
-    public close(): void {
+    /**
+     * Closes the open form. With `expected`, only closes it if that is still the open one,
+     * so an owner holding a stale reference cannot close somebody else's form.
+     */
+    public close(expected?: ComponentRef<any> | null): void {
         const ref = this.ref;
-        if (!ref) {
+        if (!ref || (expected !== undefined && expected !== ref)) {
             return;
         }
         this.release();

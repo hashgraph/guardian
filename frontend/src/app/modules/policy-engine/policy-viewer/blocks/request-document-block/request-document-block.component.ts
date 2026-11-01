@@ -124,7 +124,7 @@ export class RequestDocumentBlockComponent
 
     ngOnDestroy(): void {
         if (this.takeoverRef) {
-            this.formTakeover?.close();
+            this.formTakeover?.close(this.takeoverRef);
         }
         this.destroy();
     }
