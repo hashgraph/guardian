@@ -487,12 +487,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
 
     public onChangeButtons($event: any) {
         setTimeout(() => {
-            this.buttons = [];
-            if (Array.isArray($event)) {
-                for (const item of $event) {
-                    this.buttons.push({ ...item });
-                }
-            }
+            this.buttons = Array.isArray($event) ? $event.map((item) => ({ ...item })) : [];
         }, 0);
     }
 

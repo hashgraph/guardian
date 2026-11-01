@@ -197,6 +197,11 @@ form {
     padding: 16px 32px;
     border-top: 1px solid var(--guardian-border-color);
     background: var(--guardian-background);
+
+    // Buttons are created and enabled as the form loads, so they stay hidden until then
+    &[loading] .action-buttons {
+        visibility: hidden;
+    }
 }
 
 .action-buttons {

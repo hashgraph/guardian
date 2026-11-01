@@ -405,6 +405,9 @@ export class RequestDocumentBlockComponent
 
         dialogOptionRef.onClose.subscribe(async (result: string) => {
             if (result != 'Cancel') {
+                // Opening the form blocks the main thread. Wait for the dialog mask to finish
+                // fading out, or it stays frozen on screen while the form is built.
+                await new Promise((resolve) => setTimeout(resolve, 300));
 
                 if (result === 'Restore') {
                     this.preset(autosaveDocument);
