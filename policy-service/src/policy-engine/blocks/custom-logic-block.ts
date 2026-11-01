@@ -1,3 +1,4 @@
+import { findPreviewScriptFields } from '../helpers/preview-script-fields.js';
 import { Worker } from 'node:worker_threads';
 import path from 'node:path';
 import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
@@ -18,6 +19,30 @@ import { BlockActionError } from '../errors/index.js';
 import { collectTablesPack, hydrateTablesInObject, loadFileTextById } from '../helpers/table-field.js';
 import { RecordActionStep } from '../record-action-step.js';
 import { buildSandboxWorkerEnv } from '../helpers/workers/sandbox-worker-env.js';
+import {
+    PreviewScope,
+    assertPreviewCalculationResult,
+    getPreviewChangedPaths,
+    getPreviewComputed,
+    getPreviewDocumentSchema,
+    getPreviewSubject,
+    isPreviewComputedRead,
+    keepPreviewDocumentOrigins,
+    getPreviewCopyTargets,
+    normalizePreviewPath,
+    recoverPreviewCopiedFields,
+    resolvePreviewDocumentRead,
+    setPreviewComputed,
+    setPreviewDocumentSchema
+} from '../helpers/preview.js';
+import {
+    collectPreviewNonFiniteNames,
+    IPreviewCopyDiagnosis,
+    IPreviewCopyTarget,
+    isPreviewFieldFailure,
+    isPreviewFiniteResult
+} from '../helpers/workers/preview-copy-diagnosis.js';
+import type { IPreviewWriteRecord } from '../helpers/workers/preview-read-tracker.js';
 import { isPythonSandboxDisabled, PYTHON_DISABLED_MESSAGE } from '../helpers/workers/python-sandbox-mode.js';
 
 const filename = fileURLToPath(import.meta.url);
@@ -137,6 +162,9 @@ export class CustomLogicBlock {
         try {
             const triggerEvents = async (documents: IPolicyDocument | IPolicyDocument[]) => {
                 if (!documents) {
+                    if (event.actionStatus?.preview) {
+                        return;
+                    }
                     // An empty result is a legitimate script outcome (`done(null)`, or a bare
                     // `return` when a source lookup misses), but it must not silently kill the
                     // workflow. Skipping every event left an interfaceStepBlock parked on this
@@ -161,6 +189,13 @@ export class CustomLogicBlock {
             await this.execute(event.data, event.user, triggerEvents, event?.user?.userId, event.actionStatus);
             ref.backup();
         } catch (error) {
+            if (event.actionStatus?.preview) {
+                event.actionStatus.addError(error, ref.blockType);
+                if (!event.actionStatus.getPreviewSource()?.discovery) {
+                    await ref.triggerEvents(PolicyOutputEventType.ErrorEvent, event.user, event.data, event.actionStatus);
+                }
+                return event.data;
+            }
             const message = PolicyUtils.getErrorMessage(error);
             ref.error(message);
             // Also surface to the UI: this local catch pre-empts @CatchErrors, which would
@@ -247,8 +282,15 @@ export class CustomLogicBlock {
                     }
                     metadata = await this.aggregateMetadata(documents, user, ref, userId);
                 }
+                let readDocuments = documents;
                 const didBatch: IGenerateDidBatch = {};
+                const scriptReads = new Set<string>();
+                const scriptWrites: { path: string; document: number | null }[] = [];
+                const scriptSources = new Map<unknown, number>();
                 const done = async (result: any | any[], final: boolean) => {
+                    if (actionStatus?.preview && !actionStatus.getPreviewSource()?.discovery) {
+                        assertPreviewCalculationResult(result);
+                    }
                     if (!result) {
                         await triggerEvents(null);
                         if (final) {
@@ -262,7 +304,7 @@ export class CustomLogicBlock {
                         }
                         return;
                     }
-                    const processing = async (json: any): Promise<IPolicyDocument> => {
+                    const createItem = async (json: any): Promise<IPolicyDocument> => {
                         if (options.passOriginal) {
                             return json;
                         }
@@ -271,6 +313,30 @@ export class CustomLogicBlock {
                         } else {
                             return await this.createDocument(json, metadata, ref, userId, actionStatus?.id, user, didBatch);
                         }
+                    }
+                    const processing = async (json: any): Promise<IPolicyDocument> => {
+                        const item = await createItem(json);
+                        if (!actionStatus?.preview) {
+                            return item;
+                        }
+                        const found = scriptSources.get(json) ?? -1;
+                        const source = found >= 0 ? readDocuments[found] : documents[documents.length === 1 ? 0 : -1];
+                        if (found >= 0) {
+                            keepPreviewDocumentOrigins(source, item);
+                        }
+                        if (options.passOriginal) {
+                            const schemas = new Set((source ? [source] : documents).map(getPreviewDocumentSchema));
+                            setPreviewDocumentSchema(item, schemas.size === 1 ? [...schemas][0] : null);
+                        } else if (options.unsigned) {
+                            setPreviewDocumentSchema(item, options.outputSchema);
+                        }
+                        const output = options.passOriginal ? getPreviewSubject(json) : json;
+                        const reads = scriptSources.has(json) && found < 0 && !options.passOriginal ? scriptReads : null;
+                        return setPreviewComputed(item, [
+                            ...getPreviewComputed(source),
+                            ...scriptWrites.filter((write) => found >= 0 && write.document === found).map((write) => write.path),
+                            ...getPreviewChangedPaths(source ? getPreviewSubject(source) : output, output, reads)
+                        ]);
                     }
                     if (Array.isArray(result)) {
                         const items = await this.processItems(result, processing, ref);
@@ -316,6 +382,9 @@ export class CustomLogicBlock {
                 }
 
                 const sources: IPolicyDocument[] = await this.getSources(user);
+                if (actionStatus?.preview) {
+                    readDocuments = [...documents, ...sources];
+                }
 
                 const context = await ref.debugContext({ documents, sources });
 
@@ -329,6 +398,23 @@ export class CustomLogicBlock {
                 collectTablesPack(context.documents, tablesPack);
 
                 const expression = options.expression || '';
+                const previewSource = actionStatus?.preview ? actionStatus.getPreviewSource() : null;
+                const addScriptFields = (data: any) => {
+                    if (!previewSource || !Array.isArray(data?.sites)) {
+                        return;
+                    }
+                    const form = readDocuments.some((document) => [previewSource.schema, null].includes(getPreviewDocumentSchema(document)));
+                    const fields = findPreviewScriptFields(`${execCode}${expression}`, data.sites, data.unexecuted || [], previewSource.schema, form ? previewSource.paths : []);
+                    for (const read of fields) {
+                        const document = typeof read.document === 'number' ? readDocuments[read.document] : undefined;
+                        const origin = document
+                            ? resolvePreviewDocumentRead(document, read.fullPath ?? read.path)
+                            : !isPreviewComputedRead(documents, read.schema, read.path) ? { schema: read.schema, path: read.fullPath ?? read.path } : null;
+                        if (origin) {
+                            actionStatus.addPreviewRead(origin.schema, origin.path);
+                        }
+                    }
+                };
                 if (options.selectedScriptLanguage === ScriptLanguageOption.PYTHON) {
                     if (isPythonSandboxDisabled()) {
                         try { disposeTables(); } catch { /* */ }
@@ -466,19 +552,47 @@ export class CustomLogicBlock {
                         });
                     }
                 } else {
-                    const worker = new Worker(
-                        path.join(path.dirname(filename), '..', 'helpers', 'workers', 'custom-logic-worker.js'),
-                        {
-                            workerData: {
-                                execFunc: `${execCode}${expression}`,
-                                user,
-                                artifacts,
-                                documents: context.documents,
-                                sources: context.sources,
-                                tablesPack
-                            },
-                            env: buildSandboxWorkerEnv()
+                    const workerFile = path.join(path.dirname(filename), '..', 'helpers', 'workers', 'custom-logic-worker.js');
+                    const workerData = {
+                        execFunc: `${execCode}${expression}`,
+                        user,
+                        artifacts,
+                        documents: context.documents,
+                        sources: context.sources,
+                        tablesPack,
+                        trackReads: !!actionStatus?.preview,
+                        schemas: actionStatus?.preview
+                            ? readDocuments.map(getPreviewDocumentSchema)
+                            : []
+                    };
+                    const enumerated: IPreviewWriteRecord[] = [];
+                    const diagnose = (targets: IPreviewCopyTarget[]) => new Promise<IPreviewCopyDiagnosis | null>((resolveDiagnosis) => {
+                        const diagnostic = new Worker(workerFile, { workerData: { ...workerData, diagnose: targets }, env: buildSandboxWorkerEnv() });
+                        const finish = (value: IPreviewCopyDiagnosis | null) => {
+                            clearTimeout(timer);
+                            diagnostic.terminate().catch(() => undefined);
+                            resolveDiagnosis(value);
+                        };
+                        const timer = setTimeout(() => finish(null), 30000);
+                        diagnostic.on('message', (message) => {
+                            if (message?.type === 'diagnosis') {
+                                finish(message.diagnosis);
+                            }
                         });
+                        diagnostic.on('error', () => finish(null));
+                        diagnostic.on('exit', () => finish(null));
+                    });
+                    let recovering = false;
+                    const fail = async (error: unknown, fieldFailure: boolean, outputs: string[] = []) => {
+                        recovering = true;
+                        if (actionStatus?.preview && fieldFailure) {
+                            const targets = getPreviewCopyTargets(actionStatus, enumerated,
+                                (record) => typeof record.document === 'number' ? readDocuments[record.document] : null);
+                            await recoverPreviewCopiedFields(actionStatus, targets, workerData.execFunc, diagnose, [], undefined, outputs);
+                        }
+                        reject(error);
+                    };
+                    const worker = new Worker(workerFile, { workerData, env: buildSandboxWorkerEnv() });
                     // Release the worker's V8 isolate; without this each invocation leaks ~30 MB.
                     const cleanup = () => {
                         worker.terminate().catch(() => {
@@ -487,20 +601,38 @@ export class CustomLogicBlock {
                     };
                     worker.on('exit', (code) => {
                         cleanup();
-                        if (code !== 0 && code !== null) {
+                        if (code !== 0 && code !== null && !recovering) {
                             reject(new Error(`Custom logic worker exited with code ${code}`));
                         }
                     });
                     worker.on('error', (error) => {
                         cleanup();
-                        reject(error);
+                        if (!recovering) {
+                            reject(error);
+                        }
                     });
                     worker.on('message', async (data) => {
+                        addScriptFields(data);
+                        if (Array.isArray(data?.reads)) {
+                            for (const read of data.reads) {
+                                scriptReads.add(normalizePreviewPath(read.path));
+                            }
+                        }
+                        if (Array.isArray(data?.writes)) {
+                            scriptWrites.push(...data.writes);
+                        }
+                        if (Array.isArray(data?.enumerated)) {
+                            enumerated.push(...data.enumerated);
+                        }
+                        if (Array.isArray(data?.sources)) {
+                            const results = Array.isArray(data.result) ? data.result : [data.result];
+                            results.forEach((item: unknown, index: number) => scriptSources.set(item, data.sources[index]));
+                        }
                         // A thrown script posts an 'error' sentinel; reject so runAction's catch
                         // surfaces it (BlockErrorFn + log) instead of silently parking the step.
                         if (data?.error) {
                             cleanup();
-                            reject(new Error(data.error));
+                            await fail(new Error(data.error), isPreviewFieldFailure(data.errorName, data.error));
                             return;
                         }
                         try {
@@ -513,7 +645,7 @@ export class CustomLogicBlock {
                             }
                         } catch (error) {
                             cleanup();
-                            reject(error);
+                            await fail(error, data?.type === 'done' && !isPreviewFiniteResult(data.result), collectPreviewNonFiniteNames(data?.result));
                         }
                     });
                 }
@@ -688,9 +820,11 @@ export class CustomLogicBlock {
         if (ref.dryRun) {
             VCHelper.addDryRunContext(vcSubject);
         }
-        const res = await VCHelper.verifySubject(vcSubject);
-        if (!res.ok) {
-            throw new Error(JSON.stringify(res.error));
+        if (!PreviewScope.current()?.preview) {
+            const res = await VCHelper.verifySubject(vcSubject);
+            if (!res.ok) {
+                throw new Error(JSON.stringify(res.error));
+            }
         }
 
         const uuid = await ref.components.generateUUID(actionStatusId);

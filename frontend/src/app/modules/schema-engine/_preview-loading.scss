@@ -1,0 +1,21 @@
+@mixin overlay {
+    background: var(--guardian-background, #fff);
+    opacity: 0.5;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .guardian-loading-image {
+        border: 3px solid transparent;
+        border-top-color: var(--guardian-primary-color, #6000ff);
+        filter: none;
+        animation: preview-loading-spin 0.8s linear infinite;
+        will-change: transform;
+    }
+
+    @keyframes preview-loading-spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+}

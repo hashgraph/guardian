@@ -8,11 +8,12 @@ import { TableModule } from 'primeng/table';
 import { Textarea } from 'primeng/textarea';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { SchemaFormViewComponent } from './schema-form-view.component';
+import { ReadonlyTextareaComponent } from './readonly-textarea/readonly-textarea.component';
 
 describe('SchemaFormViewComponent Rich Text table cell', () => {
     const render = (rows: any[], ipfs: any = {}, beforeRender?: (component: SchemaFormViewComponent) => void, extraImports: any[] = []) => {
         TestBed.configureTestingModule({
-            declarations: [SchemaFormViewComponent],
+            declarations: [SchemaFormViewComponent, ReadonlyTextareaComponent],
             imports: [CommonModule, TableModule, PopoverModule, ...extraImports],
             providers: [
                 { provide: IPFSService, useValue: ipfs },

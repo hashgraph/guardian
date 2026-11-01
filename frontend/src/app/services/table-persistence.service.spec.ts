@@ -125,3 +125,67 @@ describe('TablePersistenceService rollback of a failed submit', () => {
         expect(deleteFile).toHaveBeenCalledWith('f1');
     });
 });
+
+describe('TablePersistenceService — tables inline for a preview', () => {
+    const blob = new Blob(['zipped']);
+    let service: TablePersistenceService;
+    let upsertFile: jasmine.Spy;
+    let addFileDirect: jasmine.Spy;
+
+    beforeEach(() => {
+        upsertFile = jasmine.createSpy('upsertFile');
+        addFileDirect = jasmine.createSpy('addFileDirect');
+        TestBed.configureTestingModule({
+            providers: [
+                TablePersistenceService,
+                { provide: ArtifactService, useValue: { upsertFile } },
+                { provide: IPFSService, useValue: { addFileDirect } },
+                {
+                    provide: IndexedDbRegistryService,
+                    useValue: {
+                        get: async (_db: string, _store: string, key: string) =>
+                            key === 'k1' ? { blob, originalName: 'table.csv.gz' } : null,
+                    },
+                },
+                { provide: GzipService, useValue: { gunzipToText: async () => 'Year\r\n2020' } },
+            ],
+        });
+        service = TestBed.inject(TablePersistenceService);
+    });
+
+    it('replaces a local table with its CSV and uploads nothing', async () => {
+        const document: Record<string, unknown> = {
+            field0: JSON.stringify({
+                type: 'table',
+                idbKey: 'k1',
+                columnKeys: ['year'],
+                columnNames: ['Year'],
+            }),
+            nested: { list: [JSON.stringify({ type: 'table', idbKey: 'k1' })] },
+        };
+
+        await service.inlineTablesForPreview(document);
+
+        expect(JSON.parse(String(document['field0']))).toEqual({
+            type: 'table',
+            fileId: 'preview-k1',
+            csv: 'Year\r\n2020',
+            columnNames: ['Year'],
+            columnKeys: ['year'],
+        });
+        const nested = document['nested'] as { list: string[] };
+        expect(JSON.parse(nested.list[0])).toEqual({ type: 'table', fileId: 'preview-k1', csv: 'Year\r\n2020' });
+        expect(upsertFile).not.toHaveBeenCalled();
+        expect(addFileDirect).not.toHaveBeenCalled();
+    });
+
+    it('leaves a stored table, a missing local file and plain text as they are', async () => {
+        const stored = JSON.stringify({ type: 'table', fileId: 'f1' });
+        const missing = JSON.stringify({ type: 'table', idbKey: 'gone' });
+        const document: Record<string, unknown> = { stored, missing, text: 'hello' };
+
+        await service.inlineTablesForPreview(document);
+
+        expect(document).toEqual({ stored, missing, text: 'hello' });
+    });
+});

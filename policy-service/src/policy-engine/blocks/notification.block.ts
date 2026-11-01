@@ -30,6 +30,7 @@ import {
     UserOption,
 } from '@guardian/interfaces';
 import { PolicyUser } from '@policy-engine/policy-user.js';
+import { PreviewScope } from '../helpers/preview.js';
 
 /**
  * Notification block
@@ -214,7 +215,8 @@ export class NotificationBlock {
 
         const options = await ref.getOptions(event.user);
 
-        const notify = await this.getNotificationFunction(ref, event.user);
+        const send = await this.getNotificationFunction(ref, event.user);
+        const notify = PreviewScope.current() ? async () => undefined : send;
 
         switch (options.user) {
             case UserOption.ALL: {

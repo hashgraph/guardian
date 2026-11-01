@@ -1,3 +1,5 @@
+@use '../preview-loading' as preview;
+
 .header-container .tags-container {
     display: flex;
     justify-content: flex-start;
@@ -63,6 +65,21 @@
     .primary-color {
         fill: var(--color-primary, #0031ff);
         color: var(--color-primary, #0031ff);
+    }
+}
+
+.dialog-body.preview-viewer {
+    position: relative;
+
+    .preview-loading-overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 5;
+        @include preview.overlay;
+    }
+
+    .view-dialog-content {
+        height: calc(100vh - 415px);
     }
 }
 
@@ -145,6 +162,10 @@
             max-height: calc(100vh - 265px);
         }
     }
+
+    .dialog-body.preview-viewer .view-dialog-content {
+        height: calc(100vh - 255px);
+    }
 }
 
 .dialog-header .header-container {
@@ -179,4 +200,24 @@
             color: var(--guardian-primary-color);
         }
     }
+
+    .preview-document-dropdown.p-select {
+        margin-right: 16px;
+        max-width: 320px;
+
+        .guardian-dropdown-selected .guardian-dropdown-label {
+            color: var(--color-grey-6);
+        }
+
+        .guardian-dropdown-selected .guardian-dropdown-item {
+            color: var(--guardian-font-color);
+        }
+    }
+}
+
+
+.header-icon.resize[aria-disabled='true'],
+request-draft-file-actions[inert] {
+    pointer-events: none;
+    opacity: 0.5;
 }

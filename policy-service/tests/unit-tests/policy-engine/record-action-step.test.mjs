@@ -152,6 +152,22 @@ describe('RecordActionStep', () => {
             assert.equal(step.counter, 1);
         });
 
+        it('passes only message and stack of each error to the callback', () => {
+            const calls = [];
+            const step = new RecordActionStep((id, ts, errors) => calls.push(errors), 1);
+            const error = Object.assign(new Error('Invalid document'), { data: { type: 'documentValidatorBlockError' } });
+            step.addError(error, 'documentValidatorBlock');
+            step.dec();
+            flush();
+            assert.deepEqual(calls, [[{ message: 'Invalid document', stack: error.stack }]]);
+            assert.deepEqual(step.getErrors(), [{
+                message: 'Invalid document',
+                stack: error.stack,
+                blockType: 'documentValidatorBlock',
+                errorData: { type: 'documentValidatorBlockError' }
+            }]);
+        });
+
         it('fires the callback at most once', () => {
             const calls = [];
             const step = new RecordActionStep(() => calls.push(1), 1);

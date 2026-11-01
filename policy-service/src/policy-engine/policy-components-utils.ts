@@ -45,6 +45,7 @@ import { PolicyActionsService } from './actions-service.js';
 import { PolicyActionsUtils } from './policy-actions/utils.js';
 import { PolicyUtils } from './helpers/utils.js';
 import { RecordActionStep } from './record-action-step.js';
+import { createPreviewRelayerAccount, PreviewScope } from './helpers/preview.js';
 
 /**
  * Policy tag helper
@@ -261,6 +262,9 @@ export class PolicyComponentsUtils {
      * Block error function
      */
     public static async BlockErrorFn(blockType: string, message: any, user: PolicyUser, data?: any) {
+        if (PreviewScope.current()) {
+            return;
+        }
         errorBlockEvent(blockType, message, user, data);
     };
     /**
@@ -273,6 +277,9 @@ export class PolicyComponentsUtils {
      * External Event function
      */
     public static async ExternalEventFn(event: ExternalEvent<any>) {
+        if (PreviewScope.current()) {
+            return;
+        }
         externalBlockEvent(event);
     };
 
@@ -1564,6 +1571,9 @@ export class PolicyComponentsUtils {
      * @param policyId
      */
     public static backup(policyId: string) {
+        if (PreviewScope.current()) {
+            return;
+        }
         if (PolicyComponentsUtils.BackupControllers.has(policyId)) {
             PolicyComponentsUtils.BackupControllers.get(policyId).backup();
         }
@@ -1686,7 +1696,8 @@ export class PolicyComponentsUtils {
     private static async _checkRelayerAccount(
         ref: IPolicyInterfaceBlock,
         user: PolicyUser,
-        data: any
+        data: any,
+        preview: boolean = false
     ): Promise<string> {
         if (!data.relayerAccount || ref.dryRun) {
             return;
@@ -1702,7 +1713,7 @@ export class PolicyComponentsUtils {
 
         const relayerAccountConfig = data.relayerAccount;
 
-        const balance = await PolicyUtils.checkAccountBalance(ref, relayerAccountConfig, user.userId);
+        const balance = preview || await PolicyUtils.checkAccountBalance(ref, relayerAccountConfig, user.userId);
         if (balance === false) {
             return 'The relayer account has insufficient balance.';
         }
@@ -1714,6 +1725,8 @@ export class PolicyComponentsUtils {
         let relayerAccount: any;
         if (typeof relayerAccountConfig === 'string') {
             relayerAccount = await (new Users()).getUserRelayerAccount(user.did, relayerAccountConfig, user.userId);
+        } else if (preview) {
+            relayerAccount = { account: createPreviewRelayerAccount(user.did) };
         } else {
             relayerAccount = await (new Users()).createRelayerAccount({ did: user.did, id: user.userId }, relayerAccountConfig, user.userId);
         }
@@ -1747,7 +1760,7 @@ export class PolicyComponentsUtils {
         waitRemotePolicy?: boolean,
         waitUntil?: number
     ): Promise<MessageResponse<any> | MessageError<any>> {
-        const error = await PolicyComponentsUtils._checkRelayerAccount(block, user, data);
+        const error = await PolicyComponentsUtils._checkRelayerAccount(block, user, data, !!actionStatus?.preview);
         if (error) {
             return new MessageError(error, 500);
         }

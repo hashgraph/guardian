@@ -1,3 +1,4 @@
+import { getPreviewBlockState, recordPreviewWait } from '../helpers/preview.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
@@ -296,7 +297,10 @@ export class TokenConfirmationBlock {
                 relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, doc, userId);
             }
 
-            this.state[id] = {
+            const state = event.actionStatus?.preview
+                ? getPreviewBlockState(event.actionStatus, ref.uuid, () => this.state)
+                : this.state;
+            state[id] = {
                 accountId: relayerAccount,
                 data: event.data,
                 user: event.user,
@@ -307,6 +311,7 @@ export class TokenConfirmationBlock {
 
         ref.backup();
 
+        recordPreviewWait(event, ref);
         return event.data;
     }
 }

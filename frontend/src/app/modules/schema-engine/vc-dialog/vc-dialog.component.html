@@ -1,5 +1,5 @@
 <div #dialogHeader class="dialog-header">
-  <div class="header-container">
+  <div class="header-container" [attr.inert]="isPreviewBusy ? '' : null">
     <div class="header-text">{{title}}</div>
     @if (tags && tags.length > 0) {
       <div class="tags-container">
@@ -18,16 +18,21 @@
       </div>
     }
   </div>
-  <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
+  <div class="header-icon resize" (click)="!isPreviewBusy && toggleSize()" [attr.aria-disabled]="isPreviewBusy ? true : null" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
     <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
   </div>
   <div class="header-icon" (click)="onClose()">
     <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
   </div>
 </div>
-<div class="dialog-body">
+<div class="dialog-body" [class.preview-viewer]="previewDocuments.length > 0">
+  @if (isPreviewBusy) {
+    <div class="guardian-loading preview-loading-overlay" role="status" aria-label="Loading calculation preview">
+      <div class="guardian-loading-image"></div>
+    </div>
+  }
   <div class="context">
-    @if (loading) {
+    @if (loading && previewDocuments.length === 0) {
       <div class="guardian-loading">
         <div class="guardian-loading-image"></div>
       </div>
@@ -42,6 +47,7 @@
             optionLabel="label"
             optionValue="value"
             [unselectable]="true"
+            [disabled]="false"
             >
             <ng-template let-item pTemplate>
               <div class="guardian-select-button-item">
@@ -73,15 +79,50 @@
               (onChange)="onVersionChange($event)"
               placeholder="Select Revision"
               class="version-dropdown"
+              [disabled]="isPreviewBusy"
               [appendTo]="'body'"
               styleClass="guardian-dropdown"
             ></p-select>
           }
+          @if (previewOptions.length > 1) {
+            <p-select
+              [options]="previewOptions"
+              [(ngModel)]="selectedPreviewIndex"
+              (onChange)="onPreviewDocumentChange($event)"
+              class="guardian-dropdown preview-document-dropdown"
+              panelStyleClass="guardian-dropdown-panel"
+              [disabled]="isPreviewBusy"
+              [appendTo]="'body'"
+              >
+              <ng-template pTemplate="selectedItem" let-item>
+                <div class="guardian-dropdown-selected" [truncateTooltip]="item?.label" tooltipPosition="bottom">
+                  <span class="guardian-dropdown-label">Document</span>
+                  <span class="guardian-dropdown-item">{{ item?.label }}</span>
+                </div>
+              </ng-template>
+            </p-select>
+          }
         </div>
       </div>
     }
-    <div class="view-dialog-content">
-      @if (viewDocument === true) {
+    <div class="view-dialog-content" [attr.inert]="isPreviewBusy ? '' : null">
+      @if (previewDocuments.length > 0 && (isVcDocument || isVpDocument)) {
+        @if (previewPrepared) {
+          <app-document-view
+            [hidden]="viewDocument !== true"
+            [policyId]="policyId"
+            [documentId]="documentId"
+            [schemaId]="schemaId"
+            [document]="document"
+            [dryRun]="dryRun"
+            [getByUser]="getByUser"
+            [schema]="schema"
+            [type]="type"
+            [preview]="true"
+            (previewLoadingChange)="onPreviewLoadingChange($event)"
+          [dialogContext]="'viewer'"></app-document-view>
+        }
+      } @else if (viewDocument === true) {
         @if (!loading) {
           <app-document-view
             [policyId]="policyId"

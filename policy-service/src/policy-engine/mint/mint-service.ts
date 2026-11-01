@@ -23,6 +23,7 @@ import { TokenConfig } from './configs/token-config.js';
 import { MintNFT } from './types/mint-nft.js';
 import { MintFT } from './types/mint-ft.js';
 import { FilterObject } from '@mikro-orm/core';
+import { PreviewScope } from '../helpers/preview.js';
 
 /**
  * Mint Service
@@ -136,6 +137,28 @@ export class MintService {
         } = options;
 
         const multipleConfig = await MintService.getMultipleConfig(ref, documentOwner);
+        if (PreviewScope.current()) {
+            if (!multipleConfig) {
+                const tokenConfig = await MintService.getTokenConfig(ref, token, userId);
+                const isTransferNeeded = targetAccount !== tokenConfig.treasuryId;
+                await ref.databaseServer.saveMintRequest({
+                    target: targetAccount,
+                    amount: tokenValue,
+                    vpMessageId,
+                    tokenId: token.tokenId,
+                    tokenType: token.tokenType,
+                    decimals: token.decimals,
+                    memo: transactionMemo,
+                    policyId: ref.policyId,
+                    owner: documentOwner.did,
+                    relayerAccount,
+                    ...(token.tokenType === 'non-fungible' ? { metadata: vpMessageId } : {}),
+                    isTransferNeeded,
+                    wasTransferNeeded: isTransferNeeded
+                });
+            }
+            return;
+        }
         const users = new Users();
         const documentOwnerUser = await users.getUserById(documentOwner.did, userId);
         const policyOwner = await users.getUserById(ref.policyOwner, userId);
@@ -718,6 +741,9 @@ export class MintService {
         serialNumbers?: number[]
     }): Promise<void> {
         const { ref, token, tokenValue, root, targetAccount, uuid, userId, serialNumbers } = options;
+        if (PreviewScope.current()) {
+            return;
+        }
         const workers = new Workers();
         if (token.wipeContractId) {
             await workers.addNonRetryableTask(

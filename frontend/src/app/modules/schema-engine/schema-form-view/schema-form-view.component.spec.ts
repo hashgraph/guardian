@@ -1,4 +1,12 @@
+import { ChangeDetectorRef, NO_ERRORS_SCHEMA } from '@angular/core';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { CommonModule } from '@angular/common';
+import { By } from '@angular/platform-browser';
+import { DialogService } from 'primeng/dynamicdialog';
+import { TableModule } from 'primeng/table';
+import { Textarea } from 'primeng/textarea';
 import { SchemaFormViewComponent } from './schema-form-view.component';
+import { ReadonlyTextareaComponent } from './readonly-textarea/readonly-textarea.component';
 import { IPFSService } from 'src/app/services/ipfs.service';
 
 describe('SchemaFormViewComponent', () => {
@@ -196,6 +204,385 @@ describe('SchemaFormViewComponent', () => {
 
             expect(event.defaultPrevented).toBeFalse();
             expect(openSpy).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('sections in a calculation preview', () => {
+        const render = (preview: boolean, array = false) => {
+            const fields = [{
+                name: 'section', fullPath: 'section', description: 'Section', type: '#Section',
+                isRef: true, isArray: array,
+                fields: [{ name: 'details', fullPath: 'section.details', description: 'Details', type: '#Details', isRef: true, isArray: false,
+                    fields: [{ name: 'amount', fullPath: 'section.details.amount', description: 'Amount', type: 'number', isRef: false, isArray: false }] }],
+            }];
+            TestBed.configureTestingModule({
+                declarations: [SchemaFormViewComponent],
+                imports: [CommonModule],
+                providers: [
+                    { provide: IPFSService, useValue: ipfs },
+                    { provide: DialogService, useValue: dialogService },
+                ],
+                schemas: [NO_ERRORS_SCHEMA],
+            });
+            const fixture = TestBed.createComponent(SchemaFormViewComponent);
+            fixture.componentRef.setInput('private-fields', {});
+            fixture.componentRef.setInput('fields', fields);
+            fixture.componentRef.setInput('values', { section: array ? [{ details: { amount: 3 } }] : { details: { amount: 3 } } });
+            fixture.componentRef.setInput('preview', preview);
+            fixture.detectChanges();
+            return fixture;
+        };
+
+        for (const array of [false, true]) {
+            it(`reports loading before rendering a Preview section with array ${array}`, fakeAsync(() => {
+                const fixture = render(true, array);
+                const view = fixture.componentInstance;
+                const changes = spyOn(view.previewLoadingChange, 'emit');
+                fixture.debugElement.query(By.css('p-accordion')).triggerEventHandler('valueChange', 0);
+                fixture.detectChanges();
+                expect(changes).toHaveBeenCalledOnceWith(true);
+                expect(fixture.debugElement.queryAll(By.directive(SchemaFormViewComponent)).length).toBe(0);
+                tick(16);
+                expect(view.fields![0].previewReady).not.toBeTrue();
+                tick(16);
+                fixture.detectChanges();
+                const child = fixture.debugElement.query(By.directive(SchemaFormViewComponent));
+                expect(child).not.toBeNull();
+                expect(changes.calls.allArgs()).toEqual([[true]]);
+                child.componentInstance.previewLoadingChange.emit(true);
+                expect(changes.calls.allArgs()).toEqual([[true], [true]]);
+                child.componentInstance.previewLoadingChange.emit(false);
+                tick(16);
+                expect(changes.calls.allArgs()).toEqual([[true], [true], [false], [false]]);
+            }));
+        }
+
+        it('keeps ordinary section opening immediate without loading notifications or frames', fakeAsync(() => {
+            const fixture = render(false);
+            const view = fixture.componentInstance;
+            const changes = spyOn(view.previewLoadingChange, 'emit');
+            fixture.debugElement.query(By.css('p-accordion')).triggerEventHandler('valueChange', 0);
+            fixture.detectChanges();
+            expect(fixture.debugElement.query(By.directive(SchemaFormViewComponent))).not.toBeNull();
+            expect(view.fields![0].previewReady).toBeUndefined();
+            expect(changes).not.toHaveBeenCalled();
+            tick(64);
+            expect(changes).not.toHaveBeenCalled();
+        }));
+
+        it('prepares Preview sections opened from navigation', fakeAsync(() => {
+            const fixture = render(true);
+            const view = fixture.componentInstance;
+            const changes = spyOn(view.previewLoadingChange, 'emit');
+            view.openAccordion('section');
+            expect(changes).toHaveBeenCalledOnceWith(true);
+            tick(48);
+            expect(view.fields![0].previewReady).toBeTrue();
+            expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+        }));
+
+        for (const action of ['close', 'destroy', 'replace']) {
+            it(`balances Preview loading when interrupted by ${action}`, fakeAsync(() => {
+                const fixture = render(true);
+                const view = fixture.componentInstance;
+                const changes = spyOn(view.previewLoadingChange, 'emit');
+                view.openAccordion('section');
+                if (action === 'close') {
+                    fixture.debugElement.query(By.css('p-accordion')).triggerEventHandler('valueChange', null);
+                } else if (action === 'destroy') {
+                    fixture.destroy();
+                } else {
+                    fixture.componentRef.setInput('fields', []);
+                    fixture.detectChanges();
+                }
+                tick(64);
+                expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+            }));
+        }
+    });
+
+    describe('large sections in a calculation preview', () => {
+        const render = (preview: boolean) => {
+            const fields = Array.from({ length: 25 }, (_, index) => ({
+                name: `f${index}`, fullPath: `f${index}`, description: `F${index}`, type: 'number', isRef: false, isArray: false,
+            }));
+            const values = Object.fromEntries(fields.map((field, index) => [field.name, index + 1]));
+            TestBed.configureTestingModule({
+                declarations: [SchemaFormViewComponent],
+                imports: [CommonModule],
+                providers: [
+                    { provide: IPFSService, useValue: ipfs },
+                    { provide: DialogService, useValue: dialogService },
+                ],
+                schemas: [NO_ERRORS_SCHEMA],
+            });
+            const fixture = TestBed.createComponent(SchemaFormViewComponent);
+            const changes = spyOn(fixture.componentInstance.previewLoadingChange, 'emit');
+            fixture.componentRef.setInput('private-fields', {});
+            fixture.componentRef.setInput('fields', fields);
+            fixture.componentRef.setInput('values', values);
+            fixture.componentRef.setInput('preview', preview);
+            fixture.detectChanges();
+            const count = () => fixture.nativeElement.querySelectorAll('[field-id]').length;
+            return { fixture, changes, count };
+        };
+
+        it('renders Preview fields in parts across frames and reports loading until the last part', fakeAsync(() => {
+            const { fixture, changes, count } = render(true);
+            expect(count()).toBe(10);
+            expect(changes.calls.allArgs()).toEqual([[true]]);
+            tick(16);
+            expect(count()).toBe(20);
+            tick(16);
+            expect(count()).toBe(25);
+            expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+            tick(64);
+            expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+            fixture.destroy();
+        }));
+
+        it('renders every ordinary field at once without loading notifications or frames', fakeAsync(() => {
+            const { changes, count } = render(false);
+            expect(count()).toBe(25);
+            tick(64);
+            expect(changes).not.toHaveBeenCalled();
+        }));
+
+        it('balances Preview loading when destroyed before the last part', fakeAsync(() => {
+            const { fixture, changes } = render(true);
+            tick(16);
+            fixture.destroy();
+            tick(64);
+            expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+        }));
+    });
+
+    describe('table rows', () => {
+        const column = (name: string, extra: any = {}) => ({
+            name,
+            description: name,
+            type: 'string',
+            isArray: false,
+            isRef: false,
+            fullPath: `rows.${name}`,
+            ...extra
+        });
+        const tableOf = (name: string, fields: any[] = [column('value')]) => ({
+            name,
+            description: name,
+            type: '#Row',
+            isArray: true,
+            isRef: true,
+            fullPath: name,
+            fields
+        } as any);
+        const table = tableOf('rows');
+        const rowsOf = (count: number, prefix = 'row') => Array.from({ length: count }, (_, index) => ({ value: `${prefix} ${index}` }));
+        const values = { rows: rowsOf(30) };
+
+        const render = (preview: boolean, options: { fields?: any[]; values?: any; hide?: any } = {}) => {
+            TestBed.resetTestingModule();
+            TestBed.configureTestingModule({
+                declarations: [SchemaFormViewComponent, ReadonlyTextareaComponent],
+                imports: [TableModule],
+                providers: [
+                    { provide: IPFSService, useValue: ipfs },
+                    { provide: DialogService, useValue: dialogService },
+                ],
+                schemas: [NO_ERRORS_SCHEMA],
+            });
+            const fixture = TestBed.createComponent(SchemaFormViewComponent);
+            fixture.componentRef.setInput('private-fields', options.hide || {});
+            fixture.componentRef.setInput('values', options.values || values);
+            fixture.componentRef.setInput('fields', options.fields || [table]);
+            fixture.componentRef.setInput('preview', preview);
+            fixture.detectChanges();
+            return fixture;
+        };
+        const cellValues = (rows: any[]) => rows.map((row) => row.map((cell: any) => cell.value));
+
+        it('builds the rows once and shows them 25 per page in a calculation preview', () => {
+            const fixture = render(true);
+            const view = fixture.componentInstance;
+            const item = view.fields![0];
+            expect(view.getTableHRowFields(item)).toBe(view.getTableHRowFields(item));
+            expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(25);
+            expect(fixture.nativeElement.querySelector('.p-paginator')).not.toBeNull();
+        });
+
+        it('keeps the same rows in the ordinary view and shows every row without a paginator', () => {
+            const fixture = render(false);
+            const view = fixture.componentInstance;
+            const item = view.fields![0];
+            expect(view.getTableHRowFields(item)).toBe(view.getTableHRowFields(item));
+            expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(30);
+            expect(fixture.nativeElement.querySelector('.p-paginator')).toBeNull();
+        });
+
+        [true, false].forEach((preview) => {
+            it(`does not build the rows again on later change detection with Preview ${preview}`, () => {
+                const fixture = render(preview);
+                const view = fixture.componentInstance;
+                const rows = view.getTableHRowFields(view.fields![0]);
+                const build = spyOn<any>(view, 'buildTableRowFields').and.callThrough();
+                fixture.detectChanges();
+                fixture.detectChanges();
+                expect(build).not.toHaveBeenCalled();
+                expect(view.getTableHRowFields(view.fields![0])).toBe(rows);
+            });
+        });
+
+        it('fills the rows from the values in their order', () => {
+            const fixture = render(true);
+            const view = fixture.componentInstance;
+            expect(cellValues(view.getTableHRowFields(view.fields![0]))).toEqual(values.rows.map((row) => [row.value]));
+        });
+
+        it('leaves out hidden, private and null columns', () => {
+            const fields = [tableOf('rows', [
+                column('value'),
+                column('secret'),
+                column('internal', { hidden: true }),
+                column('empty', { type: 'null' })
+            ])];
+            const fixture = render(true, {
+                fields,
+                hide: { secret: true },
+                values: { rows: [{ value: 'a', secret: 's', internal: 'i', empty: null }] }
+            });
+            const view = fixture.componentInstance;
+            const rows = view.getTableHRowFields(view.fields![0]);
+            expect(rows.map((row) => row.map((cell: any) => cell.name))).toEqual([['value']]);
+            expect(cellValues(rows)).toEqual([['a']]);
+        });
+
+        it('builds new rows when the view gets a new document', () => {
+            const fixture = render(true);
+            const view = fixture.componentInstance;
+            const rows = view.getTableHRowFields(view.fields![0]);
+            fixture.componentRef.setInput('values', { rows: rowsOf(2, 'next') });
+            fixture.componentRef.setInput('fields', [table]);
+            fixture.detectChanges();
+            const next = view.getTableHRowFields(view.fields![0]);
+            expect(next).not.toBe(rows);
+            expect(cellValues(next)).toEqual([['next 0'], ['next 1']]);
+            expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(2);
+            expect(fixture.nativeElement.querySelector('.p-paginator')).toBeNull();
+        });
+
+        it('keeps separate rows for two tables in one view', () => {
+            const fixture = render(true, {
+                fields: [tableOf('first'), tableOf('second')],
+                values: { first: rowsOf(1, 'first'), second: rowsOf(2, 'second') }
+            });
+            const view = fixture.componentInstance;
+            const [first, second] = view.fields!;
+            expect(cellValues(view.getTableHRowFields(first))).toEqual([['first 0']]);
+            expect(cellValues(view.getTableHRowFields(second))).toEqual([['second 0'], ['second 1']]);
+            expect(view.getTableHRowFields(first)).not.toBe(view.getTableHRowFields(second));
+        });
+
+        it('returns the same empty rows for a table without values', () => {
+            const fixture = render(true, { values: { rows: [] } });
+            const view = fixture.componentInstance;
+            const item = view.fields![0];
+            expect(view.getTableHRowFields(item)).toEqual([]);
+            expect(view.getTableHRowFields(item)).toBe(view.getTableHRowFields(item));
+        });
+    });
+
+    describe('large tables inside opened sections', () => {
+        const text = (name: string) => ({ name, description: name, type: 'string', isArray: false, isRef: false, fullPath: name });
+        const frames = async (count: number) => {
+            for (let index = 0; index < count; index++) {
+                await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+            }
+        };
+
+        const render = (preview: boolean) => {
+            TestBed.resetTestingModule();
+            TestBed.configureTestingModule({
+                declarations: [SchemaFormViewComponent, ReadonlyTextareaComponent],
+                imports: [CommonModule, TableModule, Textarea],
+                providers: [
+                    { provide: IPFSService, useValue: ipfs },
+                    { provide: DialogService, useValue: dialogService },
+                ],
+                schemas: [NO_ERRORS_SCHEMA],
+            });
+            const columns = Array.from({ length: 5 }, (_, index) => text(`c${index}`));
+            const rows = Array.from({ length: 120 }, (_, row) => Object.fromEntries(columns.map((column) => [column.name, `${row}-${column.name}`])));
+            let fields: any[] = [{ name: 'rows', description: 'Rows', type: '#Row', isArray: true, isRef: true, fullPath: 'rows', fields: columns }];
+            let values: any = { rows };
+            for (let depth = 0; depth < 4; depth++) {
+                fields = [{ name: `s${depth}`, description: `Section ${depth}`, type: `#S${depth}`, isArray: false, isRef: true, fullPath: `s${depth}`, fields }];
+                values = { [`s${depth}`]: values };
+            }
+            const fixture = TestBed.createComponent(SchemaFormViewComponent);
+            fixture.componentRef.setInput('private-fields', {});
+            fixture.componentRef.setInput('values', values);
+            fixture.componentRef.setInput('fields', fields);
+            fixture.componentRef.setInput('preview', preview);
+            return fixture;
+        };
+
+        const openAll = async (fixture: ComponentFixture<SchemaFormViewComponent>) => {
+            for (let round = 0; round < 6; round++) {
+                const views = [fixture.componentInstance, ...fixture.debugElement.queryAll(By.directive(SchemaFormViewComponent)).map((element) => element.componentInstance)];
+                for (const view of views) {
+                    for (const item of view.fields || []) {
+                        if (item.isRef && !item.isArray && !item.open) {
+                            item.open = true;
+                            view.preparePreviewSection(item);
+                        }
+                    }
+                }
+                fixture.detectChanges();
+                await frames(8);
+            }
+        };
+
+        it('opens every section of a calculation preview and shows the table without a stack overflow or a stuck loading count', async () => {
+            const errors: string[] = [];
+            const onError = (event: ErrorEvent) => {
+                errors.push(event.message);
+                event.preventDefault();
+            };
+            window.addEventListener('error', onError);
+            const fixture = render(true);
+            const loading: boolean[] = [];
+            fixture.componentInstance.previewLoadingChange.subscribe((value: boolean) => loading.push(value));
+            fixture.detectChanges();
+            await frames(4);
+            await openAll(fixture);
+            window.removeEventListener('error', onError);
+            expect(errors).toEqual([]);
+            expect(fixture.nativeElement.querySelectorAll('td textarea').length).toBe(125);
+            expect(loading.filter(Boolean).length).toBe(loading.filter((value) => !value).length);
+            expect(fixture.debugElement.queryAll(By.css('td textarea')).every((cell) => !!cell.injector.get(Textarea, null))).toBeTrue();
+        });
+
+        it('opens every section of the ordinary view and shows the table without a stack overflow', () => {
+            const fixture = render(false);
+            let error = '';
+            try {
+                fixture.detectChanges();
+                let view = fixture.debugElement;
+                for (let depth = 0; depth < 4; depth++) {
+                    view.componentInstance.fields[0].open = true;
+                    view.injector.get(ChangeDetectorRef).markForCheck();
+                    fixture.detectChanges();
+                    view = view.query(By.directive(SchemaFormViewComponent));
+                }
+            } catch (caught: any) {
+                error = String(caught?.message || caught);
+            }
+            expect(error).toBe('');
+            const cells = fixture.debugElement.queryAll(By.css('td textarea'));
+            expect(cells.length).toBe(600);
+            expect(cells[0].nativeElement.value).toBe('0-c0');
+            expect(cells[0].nativeElement.classList).toContain('p-textarea');
+            expect(cells.every((cell) => !!cell.injector.get(Textarea, null))).toBeTrue();
         });
     });
 });

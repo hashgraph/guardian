@@ -76,3 +76,20 @@ export function buildCompactTableJson(
     compact.columnKeys = columns.map((column) => column.key);
     return JSON.stringify(compact);
 }
+
+/**
+ * Builds the Table value of a preview: the CSV travels inline under a placeholder file id.
+ */
+export function buildPreviewTableJson(
+    fileId: string,
+    csv: string,
+    columns: ITableOutputColumn[]
+): string {
+    return JSON.stringify({
+        type: 'table',
+        fileId,
+        csv,
+        columnNames: columns.map((column) => column.name),
+        columnKeys: columns.map((column) => column.key)
+    });
+}

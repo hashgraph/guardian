@@ -1,3 +1,5 @@
+@use '../../../../../schema-engine/preview-loading' as preview;
+
 :host {
     display: flex;
     flex-direction: column;
@@ -128,6 +130,10 @@ form {
     justify-items: center;
     justify-content: center;
     align-content: center;
+}
+
+.guardian-loading.preview-loading-overlay {
+    @include preview.overlay;
 }
 
 // Rotates with transform only, so it keeps spinning while the main thread builds the form
@@ -435,5 +441,55 @@ form {
         font-size: 12px;
         line-height: 14px;
         letter-spacing: 0%;
+    }
+}
+
+.form-header .calculation-preview-toggle {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    color: var(--guardian-font-color);
+}
+
+.form-draft[inert] {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+:host ::ng-deep .preview-missing-dropdown.p-select {
+    margin-right: 16px;
+    width: 320px;
+    max-width: 320px;
+
+    .guardian-dropdown-selected .guardian-dropdown-label {
+        color: var(--color-grey-6);
+    }
+
+    .guardian-dropdown-selected .guardian-dropdown-item {
+        color: var(--guardian-font-color);
+    }
+}
+
+.form-header .preview-missing-dropdown {
+    flex: 0 1 auto;
+    align-self: center;
+    min-width: 0;
+}
+
+.preview-missing-option {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+::ng-deep .preview-missing-panel.p-select-overlay {
+    width: 320px;
+    max-width: 320px;
+
+    .p-select-option {
+        overflow: hidden;
     }
 }

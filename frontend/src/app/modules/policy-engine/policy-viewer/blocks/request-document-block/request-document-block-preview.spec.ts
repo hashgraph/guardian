@@ -1,0 +1,645 @@
+import { fakeAsync, tick } from '@angular/core/testing';
+import { FormControl, FormGroup } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { RequestDocumentBlockComponent } from './request-document-block.component';
+import { RequestDocumentFormComponent } from './form/request-document-form.component';
+import { HttpErrorResponse } from '@angular/common/http';
+import { CalculationPreviewService, normalizePreviewResult } from 'src/app/services/calculation-preview.service';
+import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
+
+describe('request document preview wiring', () => {
+    const saved = [{ source: 'form', target: 'save', document: { document: { id: 'vc-1' } } }];
+    const scriptError = { message: 'rate is required', blockType: 'customLogicBlock', errorData: null };
+    const response = (fields: string[], missingFields: string[] = [], documents: unknown[] = saved, errors: unknown[] = []) =>
+        normalizePreviewResult({ fields, missingFields, documents, errors });
+
+    const preview = (results: Promise<unknown>[]) => {
+        const calls: { previewFields: boolean; ref: unknown }[] = [];
+        const errors: unknown[] = [];
+        const warnings: unknown[] = [];
+        return {
+            calls,
+            errors,
+            warnings,
+            service: {
+                run: (_policyId: string, _blockId: string, _value: unknown, ref: unknown, previewFields: boolean) => {
+                    calls.push({ previewFields, ref });
+                    return results.shift();
+                },
+                loadMode: jasmine.createSpy('loadMode').and.returnValue(false),
+                saveMode: jasmine.createSpy('saveMode'),
+                getInputValidation: CalculationPreviewService.prototype.getInputValidation,
+                updateRequiredFields: CalculationPreviewService.prototype.updateRequiredFields,
+                getViewerDocuments: (result: any) => result.documents.map((item: any, index: number) => ({
+                    label: `${index + 1}. ${item.target}`,
+                    document: item.document.document,
+                })),
+                showErrors: (result: any) => errors.push(...result.errors),
+                showDiscoveryWarning: (result: any) => {
+                    if (result.errors.length || result.incomplete.length) {
+                        warnings.push(result);
+                    }
+                },
+            },
+        };
+    };
+
+    const form = (results: Promise<unknown>[], parent: unknown) => {
+        const component = Object.create(RequestDocumentFormComponent.prototype) as any;
+        const fake = preview(results);
+        const uploads: string[] = [];
+        const dialogs: { type: unknown; config: any }[] = [];
+        component.calculationPreview = fake.service;
+        component.parent = parent;
+        component.destroy$ = new Subject<void>();
+        component.dataForm = { valid: true, getRawValue: () => ({ amount: 5 }) };
+        component.toastService = { error: jasmine.createSpy('error') };
+        component.dialogService = { open: (type: unknown, config: any) => dialogs.push({ type, config }) };
+        component.tablePersist = {
+            persistTablesInDocument: async () => uploads.push('tables'),
+            rollbackIpfsUploads: async () => undefined,
+        };
+        component.geoFilePersist = {
+            persistGeoFilesInDocument: async () => uploads.push('geo'),
+            rollbackGridFsUploads: async () => undefined,
+        };
+        component.storage = { delete: () => undefined };
+        component.policyEngineService = { setBlockDataWithResult: () => ({ subscribe: () => uploads.push('submit') }) };
+        component.policyTest = { state: { captureNextFormSubmit: false } };
+        component.stepper = [true, false, false];
+        component.enableAdditionalData = false;
+        component.evidenceFiles = [];
+        component.evidenceText = '';
+        component.buttonNames = { submit: 'Validate & Create' };
+        component.loading = false;
+        component.previewMode = false;
+        component.previewRequiredFields = null;
+        component.previewRequest = 0;
+        return { component, calls: fake.calls, errors: fake.errors, warnings: fake.warnings, uploads, dialogs };
+    };
+
+    const blockParent = () => {
+        const parent = Object.create(RequestDocumentBlockComponent.prototype) as any;
+        parent.user = { id: 'user-1' };
+        parent.id = 'block-1';
+        parent.policyId = 'policy-1';
+        parent.disabled = false;
+        parent.relayerAccount = false;
+        parent.getRef = () => ({ id: 'ref-2' });
+        parent.getAutosaveId = () => 'autosave';
+        return parent;
+    };
+
+    const settle = () => new Promise((resolve) => setTimeout(resolve));
+
+    it('forwards already selected metadata from the form', async () => {
+        const { component } = form([], blockParent());
+        component.enableAdditionalData = true;
+        component.evidenceText = 'selected proof';
+        component.evidenceFiles = [];
+        component.relayerAccountType = 'relayerAccount';
+        component.currentRelayerAccount = '0.0.999';
+        component.parent.relayerAccount = true;
+        const run = jasmine.createSpy('run').and.resolveTo(response([]));
+        component.calculationPreview.run = run;
+        component.previewMode = true;
+        await component.runPreview(true);
+        expect(run.calls.mostRecent().args[5]).toEqual({ relayerAccount: '0.0.999',
+            evidence: [{ dataType: 'message', data: 'selected proof' }] });
+    });
+
+    it('asks the backend for the calculation fields when the toggle is switched on', async () => {
+        const { component, calls, dialogs } = form([Promise.resolve(response(['amount', 'rate'], ['rate']))], blockParent());
+        await component.onPreviewModeChange(true);
+        expect(calls).toEqual([{ previewFields: true, ref: { id: 'ref-2' } }]);
+        expect(component.previewRequiredFields).toEqual(['amount', 'rate']);
+        expect(dialogs.length).toBe(0);
+        expect(component.loading).toBeFalse();
+    });
+
+    it('runs a preview instead of the evidence and relayer steps and uploads nothing', async () => {
+        const { component, calls, uploads, dialogs } = form([Promise.resolve(response(['amount']))], blockParent());
+        component.enableAdditionalData = true;
+        component.parent.relayerAccount = true;
+        component.previewMode = true;
+        await component.onStep();
+        expect(calls).toEqual([{ previewFields: false, ref: { id: 'ref-2' } }]);
+        expect(uploads).toEqual([]);
+        expect(component.isStep(0)).toBeTrue();
+        expect(dialogs.length).toBe(1);
+    });
+
+    it('opens the result in the normal document viewer', async () => {
+        const { component, dialogs } = form([Promise.resolve(response(['amount']))], blockParent());
+        component.previewMode = true;
+        component.parent.dryRun = true;
+        await component.onStep();
+        expect(dialogs.length).toBe(1);
+        expect(dialogs[0].type).toBe(VCViewerDialog);
+        expect(dialogs[0].config.data.type).toBe('VC');
+        expect(dialogs[0].config.data.viewDocument).toBeTrue();
+        expect(dialogs[0].config.data.dryRun).toBeTrue();
+        expect(dialogs[0].config.data.document).toEqual({ id: 'vc-1' });
+        expect(dialogs[0].config.data.previewDocuments).toEqual([{ label: '1. save', document: { id: 'vc-1' } }]);
+    });
+
+    it('shows block errors and opens the documents that were still calculated', async () => {
+        const { component, errors, dialogs } = form([Promise.resolve(response(['amount'], [], saved, [scriptError]))], blockParent());
+        component.previewMode = true;
+        await component.onStep();
+        expect(errors).toEqual([scriptError]);
+        expect(dialogs.length).toBe(1);
+    });
+
+    it('shows block errors and opens nothing when no document was calculated', async () => {
+        const { component, errors, dialogs } = form([Promise.resolve(response(['amount'], [], [], [scriptError]))], blockParent());
+        component.previewMode = true;
+        await component.onStep();
+        expect(errors).toEqual([scriptError]);
+        expect(dialogs.length).toBe(0);
+    });
+
+    it('keeps ordinary file handling and payload without preview flags when the toggle is off', async () => {
+        const { component, calls, uploads } = form([], blockParent());
+        component.previewMode = false;
+        const send = spyOn(component.policyEngineService, 'setBlockDataWithResult').and.callThrough();
+        await component.onStep();
+        expect(calls).toEqual([]);
+        expect(uploads).toEqual(['tables', 'geo', 'submit']);
+        const payload = send.calls.mostRecent().args[2];
+        expect(payload).toEqual(jasmine.objectContaining({ document: { amount: 5 } }));
+        expect(Object.prototype.hasOwnProperty.call(payload, 'preview')).toBeFalse();
+        expect(Object.prototype.hasOwnProperty.call(payload, 'previewFields')).toBeFalse();
+    });
+
+    it('saves a draft the normal way while the toggle is on', async () => {
+        const { component, calls, uploads } = form([], blockParent());
+        component.previewMode = true;
+        await component.onStep(true);
+        expect(calls).toEqual([]);
+        expect(uploads).toEqual(['tables', 'geo', 'submit']);
+    });
+
+    it('clears the field list when the toggle is switched off', async () => {
+        const { component } = form([], blockParent());
+        component.previewMode = true;
+        component.previewRequiredFields = ['amount'];
+        await component.onPreviewModeChange(false);
+        expect(component.previewRequiredFields).toBeNull();
+    });
+
+    it('does not ask for fields after loaded values when the toggle is off, and preset alone asks nothing', async () => {
+        const parent = blockParent();
+        parent.changeDetectorRef = { detectChanges: () => undefined };
+        parent.form = { detectChanges: () => undefined };
+        const { component, calls } = form([], parent);
+        component.onPresetApplied();
+        component.previewMode = true;
+        parent.preset({ amount: 7 });
+        await settle();
+        expect(calls).toEqual([]);
+    });
+
+    it('blocks Preview controls for network or form rendering only in Preview', () => {
+        const { component } = form([], blockParent());
+        component.previewRendering = false;
+        component.previewBusyHold = false;
+        component.changeDetectorRef = { markForCheck: jasmine.createSpy('markForCheck') };
+        component.previewMode = true;
+        component.onPreviewRenderingChange(true);
+        expect(component.isPreviewBusy).toBeTrue();
+        expect(component.ifDisabledBtn({ id: 'cancel' })).toBeFalse();
+        expect(component.ifDisabledBtn({ id: 'submit' })).toBeTrue();
+        component.onPreviewRenderingChange(false);
+        expect(component.isPreviewBusy).toBeFalse();
+        component.loading = true;
+        expect(component.isPreviewBusy).toBeTrue();
+        component.previewMode = false;
+        component.onPreviewRenderingChange(true);
+        expect(component.isPreviewBusy).toBeFalse();
+        expect(component.ifDisabledBtn({ id: 'cancel' })).toBeFalse();
+    });
+
+    it('does not open a late Preview result after the form closes', async () => {
+        let resolve!: (value: unknown) => void;
+        const responsePromise = new Promise<unknown>(done => resolve = done);
+        const state = form([responsePromise], blockParent());
+        state.component.previewMode = true;
+        const pending = state.component.runPreview(false);
+        state.component.ngOnDestroy();
+        resolve(response(['amount']));
+        await pending;
+        expect(state.dialogs).toEqual([]);
+    });
+
+    it('keeps Preview controls busy across short gaps between loading phases', fakeAsync(() => {
+        const { component } = form([], blockParent());
+        component.previewRendering = false;
+        component.changeDetectorRef = { markForCheck: jasmine.createSpy('markForCheck') };
+        component.previewMode = true;
+        component.loading = true;
+        component.ngDoCheck();
+        component.loading = false;
+        component.ngDoCheck();
+        expect(component.isPreviewBusy).toBeTrue();
+        tick(200);
+        component.previewRendering = true;
+        component.ngDoCheck();
+        tick(200);
+        component.previewRendering = false;
+        component.ngDoCheck();
+        tick(299);
+        expect(component.isPreviewBusy).toBeTrue();
+        tick(1);
+        expect(component.isPreviewBusy).toBeFalse();
+        component.ngOnDestroy();
+    }));
+
+    it('does not hold controls busy outside Preview', fakeAsync(() => {
+        const { component } = form([], blockParent());
+        component.previewRendering = false;
+        component.loading = true;
+        component.ngDoCheck();
+        expect(component.isPreviewBusy).toBeFalse();
+        component.loading = false;
+        component.ngDoCheck();
+        expect(component.isPreviewBusy).toBeFalse();
+        expect(Reflect.get(component, 'previewBusyTimer')).toBeFalsy();
+        component.ngOnDestroy();
+    }));
+
+    it('shows the remaining missing fields and scrolls to the chosen one', () => {
+        const { component } = form([], blockParent());
+        component.changeDetectorRef = { markForCheck: jasmine.createSpy('markForCheck') };
+        component.formRoot = { focusPreviewField: jasmine.createSpy('focusPreviewField') };
+        component.previewMode = true;
+        component.previewMissingPath = null;
+        const options = [{ label: 'Amount', value: 'amount' }, { label: 'Rows / #2 / Rate', value: 'rows.1.rate' }];
+        component.onPreviewMissingOptionsChange(options);
+        expect(component.previewMissingOptions).toBe(options);
+        component.previewMissingPath = 'rows.1.rate';
+        component.onPreviewMissingSelect('rows.1.rate');
+        expect(component.formRoot.focusPreviewField).toHaveBeenCalledOnceWith('rows.1.rate');
+        component.onPreviewMissingOptionsChange([options[1]]);
+        expect(component.previewMissingOptions).toEqual([options[1]]);
+        expect(component.previewMissingPath).toBeNull();
+        component.onPreviewMissingOptionsChange([]);
+        expect(component.previewMissingOptions).toEqual([]);
+        component.previewMode = false;
+        component.onPreviewMissingOptionsChange(options);
+        expect(component.previewMissingOptions).toEqual([]);
+    });
+
+    it('keeps the dirty Preview form close confirmation available during network loading', () => {
+        const { component } = form([], blockParent());
+        component.previewMode = true;
+        component.loading = true;
+        component.dataForm = { dirty: true };
+        const decision = new Subject<string>();
+        component.dialogService = { open: jasmine.createSpy('open').and.returnValue({ onClose: decision }) };
+        component.dialogRef = { close: jasmine.createSpy('close') };
+        component.onClose();
+        expect(component.dialogService.open).toHaveBeenCalledTimes(1);
+        decision.next('Confirm');
+        expect(component.dialogRef.close).toHaveBeenCalledWith(null);
+    });
+
+    for (const preview of [false, true]) {
+        it(`asks before closing a clean form during loading with Preview ${preview}`, () => {
+            const { component } = form([], blockParent());
+            component.previewMode = preview;
+            component.previewRendering = preview;
+            component.dataForm = { dirty: false };
+            const decision = new Subject<string>();
+            component.dialogService = { open: jasmine.createSpy('open').and.returnValue({ onClose: decision }) };
+            component.dialogRef = { close: jasmine.createSpy('close') };
+            component.onClose();
+            if (preview) {
+                expect(component.dialogService.open).toHaveBeenCalledTimes(1);
+                expect(component.dialogRef.close).not.toHaveBeenCalled();
+                decision.next('Confirm');
+            } else {
+                expect(component.dialogService.open).not.toHaveBeenCalled();
+            }
+            expect(component.dialogRef.close).toHaveBeenCalledOnceWith(null);
+        });
+    }
+
+    it('runs a preview from the form with its own document reference', async () => {
+        const { component, calls, dialogs } = form([Promise.resolve(response(['amount']))], blockParent());
+        component.previewMode = true;
+        await component.onStep();
+        expect(calls).toEqual([{ previewFields: false, ref: { id: 'ref-2' } }]);
+        expect(dialogs.length).toBe(1);
+        expect(dialogs[0].type).toBe(VCViewerDialog);
+        expect(dialogs[0].config.data.previewDocuments).toEqual([{ label: '1. save', document: { id: 'vc-1' } }]);
+        component.ngDoCheck();
+        expect(component.getButtonName({ id: 'submit' })).toBe('Preview');
+    });
+
+    it('renames the submit button only while the buttons are shown', async () => {
+        let answer: (value: unknown) => void = () => undefined;
+        const { component } = form([new Promise((resolve) => { answer = resolve; })], blockParent());
+        component.ngDoCheck();
+        const pending = component.onPreviewModeChange(true);
+        component.ngDoCheck();
+        expect(component.loading).toBeTrue();
+        expect(component.getButtonName({ id: 'submit' })).toBe('Validate & Create');
+        answer(response(['amount']));
+        await pending;
+        component.ngDoCheck();
+        expect(component.getButtonName({ id: 'submit' })).toBe('Preview');
+        component.loading = true;
+        component.ngDoCheck();
+        expect(component.getButtonName({ id: 'submit' })).toBe('Preview');
+        component.loading = false;
+        await component.onPreviewModeChange(false);
+        component.ngDoCheck();
+        expect(component.getButtonName({ id: 'submit' })).toBe('Validate & Create');
+        component.ngOnDestroy();
+    });
+
+    it('asks for the calculation fields again when the rebuilt form reports new loaded values', async () => {
+        const { component, calls } = form([Promise.resolve(response(['amount', 'fuel'], ['fuel']))], blockParent());
+        component.previewMode = true;
+        component.previewRequiredFields = ['amount', 'rate'];
+        component.onPresetApplied();
+        await settle();
+        expect(calls).toEqual([{ previewFields: true, ref: { id: 'ref-2' } }]);
+        expect(component.previewRequiredFields).toEqual(['amount', 'fuel']);
+    });
+
+    it('ignores an older answer after another operation cleared loading and Preview was switched off and on', async () => {
+        let answerA: (value: unknown) => void = () => undefined;
+        let answerB: (value: unknown) => void = () => undefined;
+        const results = [new Promise((resolve) => { answerA = resolve; }), new Promise((resolve) => { answerB = resolve; })];
+        const { component, warnings } = form(results, blockParent());
+        const first = component.onPreviewModeChange(true);
+        component.loading = false;
+        await component.onPreviewModeChange(false);
+        const second = component.onPreviewModeChange(true);
+        answerA(response(['rate'], ['rate'], saved, [scriptError]));
+        await first;
+        expect(component.previewRequiredFields).toBeNull();
+        expect(warnings.length).toBe(0);
+        expect(component.loading).toBeTrue();
+        answerB(response(['fuel'], ['fuel']));
+        await second;
+        expect(component.previewRequiredFields).toEqual(['fuel']);
+        expect(component.loading).toBeFalse();
+    });
+
+    it('drops an older form answer once the block loads new values, before the form is rebuilt', async () => {
+        let answerA: (value: unknown) => void = () => undefined;
+        const parent = blockParent();
+        parent.changeDetectorRef = { detectChanges: () => undefined };
+        parent.form = { detectChanges: () => undefined };
+        const { component } = form([new Promise((resolve) => { answerA = resolve; })], parent);
+        component.previewMode = true;
+        component.previewRequiredFields = ['amount'];
+        const pending = component.runPreview(true);
+        parent.preset({ amount: 9 });
+        answerA(response(['rate'], ['rate']));
+        await pending;
+        expect(component.previewRequiredFields).toEqual(['amount']);
+        expect(component.loading).toBeTrue();
+    });
+
+    it('ignores a late answer in the form after the toggle was switched off', async () => {
+        let answer: (value: unknown) => void = () => undefined;
+        const { component, dialogs } = form([new Promise((resolve) => { answer = resolve; })], blockParent());
+        const pending = component.onPreviewModeChange(true);
+        await component.onPreviewModeChange(false);
+        answer(response(['amount']));
+        await pending;
+        expect(component.previewMode).toBeFalse();
+        expect(component.previewRequiredFields).toBeNull();
+        expect(dialogs.length).toBe(0);
+        expect(component.getButtonName({ id: 'submit' })).toBe('Validate & Create');
+    });
+
+    for (const discovery of [false, true]) {
+        it(`keeps the loading indicator active while the form waits, discovery=${discovery}`, async () => {
+            let answer: (value: unknown) => void = () => undefined;
+            const responsePromise = new Promise(resolve => { answer = resolve; });
+            const { component, dialogs } = form([responsePromise], blockParent());
+            if (!discovery) component.previewMode = true;
+            const pending = discovery ? component.onPreviewModeChange(true) : component.onStep();
+            expect(component.loading).toBeTrue();
+            expect(dialogs.length).toBe(0);
+            answer(response(['amount']));
+            await pending;
+            expect(component.loading).toBeFalse();
+            expect(dialogs.length).toBe(discovery ? 0 : 1);
+        });
+    }
+
+    it('warns calmly when field discovery stopped on an error', async () => {
+        const state = form([Promise.resolve(response(['amount'], ['amount'], [], [scriptError]))], blockParent());
+        await state.component.onPreviewModeChange(true);
+        expect(state.component.previewRequiredFields).toEqual(['amount']);
+        expect(state.warnings.length).toBe(1);
+        expect(state.errors).toEqual([]);
+        expect(state.dialogs.length).toBe(0);
+        expect(state.component.loading).toBeFalse();
+    });
+
+    it('shows no discovery warning when field discovery finished cleanly', async () => {
+        const state = form([Promise.resolve(response(['amount'], ['amount']))], blockParent());
+        await state.component.onPreviewModeChange(true);
+        expect(state.warnings).toEqual([]);
+        expect(state.errors).toEqual([]);
+    });
+
+    it('updates missing fields after API rejection and opens no result', async () => {
+        const failure = new HttpErrorResponse({ status: 422, error: { data: {
+            preview: true, fields: ['amount', 'bonus'], missingFields: ['bonus']
+        } } });
+        const state = form([Promise.reject(failure)], blockParent());
+        const { component, dialogs } = state;
+        component.previewMode = true;
+        component.previewRequiredFields = ['amount'];
+        spyOn(console, 'error');
+        await component.onStep();
+        expect(component.previewRequiredFields).toEqual(['amount', 'bonus']);
+        expect(dialogs.length).toBe(0);
+        expect(component.loading).toBeFalse();
+        expect(state.calls.length).toBe(1);
+    });
+
+    it(`keeps the server's indexed PEt error when requirements stay unchanged`, async () => {
+        const path = 'vcs_project_description.estimatedGHG.exAnteCSVArea.0.PEt';
+        const field = 'vcs_project_description.estimatedGHG.exAnteCSVArea.PEt';
+        const failure = new HttpErrorResponse({ status: 422, error: {
+            statusCode: 422,
+            message: 'Missing calculation inputs',
+            data: { preview: true, fields: [field], missingFields: [path] }
+        } });
+        const state = form([Promise.reject(failure)], blockParent());
+        const { component } = state;
+        const values = { vcs_project_description: { estimatedGHG: {
+            exAnteCSVArea: [{ PBt: 0.1, LKt: 2, PEt: null, UNCt: 0.05 }]
+        } } };
+        component.dataForm.getRawValue = () => values;
+        component.previewMode = true;
+        const required = [path, field];
+        component.previewRequiredFields = required;
+        spyOn(console, 'error');
+        await component.runPreview(false);
+        expect(component.previewMissingFields).toEqual([path]);
+        expect(component.previewRequiredFields).toEqual(required);
+        expect(component.dataForm.getRawValue()).toEqual(values);
+        expect(component.loading).toBeFalse();
+        expect(state.dialogs.length).toBe(0);
+        await component.onPreviewModeChange(false);
+        expect(component.previewMissingFields).toEqual([]);
+        expect(component.previewRequiredFields).toBeNull();
+        component.destroy$.next();
+    });
+
+    it('ignores late missing-field rejection after switching preview off', async () => {
+        let reject: (error: unknown) => void = () => undefined;
+        const pendingResult = new Promise((_resolve, fail) => { reject = fail; });
+        const { component, dialogs } = form([pendingResult], blockParent());
+        spyOn(console, 'error');
+        const pending = component.onPreviewModeChange(true);
+        await component.onPreviewModeChange(false);
+        reject(new HttpErrorResponse({ status: 422, error: { data: {
+            preview: true, fields: ['amount'], missingFields: ['amount']
+        } } }));
+        await pending;
+        expect(component.previewRequiredFields).toBeNull();
+        expect(dialogs.length).toBe(0);
+        expect(component.loading).toBeFalse();
+    });
+
+    it('keeps discovery requirements and normal validity gating, then takes the latest requirements', async () => {
+        const results = [Promise.resolve(response(['amount', 'bonus'], ['bonus'])),
+            Promise.resolve(response(['later']))];
+        const state = form(results, blockParent());
+        const { component, dialogs } = state;
+        component.parent.isLocalUser = true;
+        component.ifRelayerAccountDisabled = () => false;
+        await component.onPreviewModeChange(true);
+        expect(component.previewRequiredFields).toEqual(['amount', 'bonus']);
+        component.dataForm.valid = false;
+        expect(component.ifDisabledBtn({ id: 'submit' })).toBeFalse();
+        await component.onStep();
+        expect(component.toastService.error).toHaveBeenCalledTimes(1);
+        expect(state.calls.length).toBe(1);
+        expect(dialogs.length).toBe(0);
+        component.dataForm.valid = true;
+        expect(component.ifDisabledBtn({ id: 'submit' })).toBeFalse();
+        await component.onStep();
+        expect(state.calls.map((call) => call.previewFields)).toEqual([true, false]);
+        expect(component.previewRequiredFields).toEqual(['later']);
+        expect(dialogs.length).toBe(1);
+    });
+
+    it('keeps ordinary validation after switching preview off', async () => {
+        const state = form([Promise.resolve(response(['amount']))], blockParent());
+        await state.component.onPreviewModeChange(true);
+        expect(state.component.previewRequiredFields).toEqual(['amount']);
+        await state.component.onPreviewModeChange(false);
+        expect(state.component.previewRequiredFields).toBeNull();
+        state.component.dataForm.valid = false;
+        state.component.parent.isLocalUser = true;
+        state.component.ifRelayerAccountDisabled = () => false;
+        expect(state.component.ifDisabledBtn({ id: 'submit' })).toBeFalse();
+        await state.component.onStep();
+        expect(state.component.toastService.error).toHaveBeenCalledTimes(1);
+        expect(state.calls.length).toBe(1);
+        expect(state.dialogs.length).toBe(0);
+    });
+
+    it('persists both toggle values using the current user/policy/block', async () => {
+        const { component } = form([Promise.resolve(response(['amount']))], blockParent());
+        await component.onPreviewModeChange(true);
+        await component.onPreviewModeChange(false);
+        expect(component.calculationPreview.saveMode.calls.allArgs()).toEqual([
+            ['user-1', 'policy-1', 'block-1', true], ['user-1', 'policy-1', 'block-1', false]
+        ]);
+        expect(component.previewRequiredFields).toBeNull();
+    });
+
+    it('restores a saved flag only when the real form is ready and discovers fresh requirements once', async () => {
+        const { component, calls, dialogs } = form([Promise.resolve(response(['fresh']))], blockParent());
+        component.parent.schema = {};
+        component.calculationPreview.loadMode.and.returnValue(true);
+        const group = new FormGroup({ amount: new FormControl(5) });
+        const run = spyOn(component.calculationPreview, 'run').and.callThrough();
+        component.initForm(group, false);
+        expect(component.calculationPreview.loadMode).not.toHaveBeenCalled();
+        component.initForm(group);
+        await Promise.resolve();
+        expect(component.previewMode).toBeTrue();
+        expect(component.previewRequiredFields).toEqual(['fresh']);
+        expect(component.calculationPreview.loadMode).toHaveBeenCalledOnceWith('user-1', 'policy-1', 'block-1');
+        expect(run).toHaveBeenCalledWith('policy-1', 'block-1', { amount: 5 },
+            { id: 'ref-2' }, true, { relayerAccount: null, evidence: undefined });
+        expect(dialogs.length).toBe(0);
+        component.initForm(group);
+        await Promise.resolve();
+        expect(calls.length).toBe(1);
+        expect(group.getRawValue()).toEqual({ amount: 5 });
+        await component.onPreviewModeChange(false);
+        component.initForm(group);
+        expect(calls.length).toBe(1);
+        expect(component.previewRequiredFields).toBeNull();
+        component.destroy$.next();
+    });
+
+    it('does not start saved preview for a disabled form', () => {
+        const { component, calls } = form([], blockParent());
+        component.parent.schema = {};
+        component.parent.disabled = true;
+        component.calculationPreview.loadMode.and.returnValue(true);
+        component.initForm(new FormGroup({ amount: new FormControl(5) }));
+        expect(component.calculationPreview.loadMode).not.toHaveBeenCalled();
+        expect(component.previewMode).toBeFalse();
+        expect(calls.length).toBe(0);
+        component.destroy$.next();
+    });
+
+    it('keeps the normal mode and sends no discovery when no saved flag exists', () => {
+        const { component, calls } = form([], blockParent());
+        component.parent.schema = {};
+        component.initForm(new FormGroup({ amount: new FormControl(5) }));
+        expect(component.previewMode).toBeFalse();
+        expect(component.previewRequiredFields).toBeNull();
+        expect(calls.length).toBe(0);
+        expect(component.calculationPreview.saveMode).not.toHaveBeenCalled();
+        component.destroy$.next();
+    });
+
+    it('does not restore a preview flag for a Request Addon form', () => {
+        const { component, calls } = form([], { user: { id: 'user-1' }, id: 'addon-1', policyId: 'policy-1', schema: {} });
+        component.calculationPreview.loadMode.and.returnValue(true);
+        component.initForm(new FormGroup({ amount: new FormControl(5) }));
+        expect(component.calculationPreview.loadMode).not.toHaveBeenCalled();
+        expect(component.previewMode).toBeFalse();
+        expect(calls.length).toBe(0);
+        component.destroy$.next();
+    });
+
+    it('offers the toggle only for a Request document block', () => {
+        expect(form([], blockParent()).component.previewAvailable).toBeTrue();
+        expect(form([], { id: 'addon-1' }).component.previewAvailable).toBeFalse();
+    });
+
+    it('keeps every missing address without opening results', async () => {
+        const error = new HttpErrorResponse({ status: 422, error: { data: {
+            preview: true, fields: ['amount'], missingFields: ['rows.1.bonus','rows.3.rate']
+        } } });
+        const { component, dialogs } = form([Promise.reject(error)], blockParent());
+        component.previewMode = true;
+        component.previewRequiredFields = ['amount'];
+        await component.runPreview(false);
+        expect(component.previewMissingFields).toEqual(['rows.1.bonus','rows.3.rate']);
+        expect(component.previewRequiredFields).toEqual(['amount','rows.1.bonus','rows.3.rate']);
+        expect(component.dataForm.getRawValue()).toEqual({ amount: 5 });
+        expect(dialogs.length).toBe(0);
+        component.destroy$.next();
+    });
+
+});

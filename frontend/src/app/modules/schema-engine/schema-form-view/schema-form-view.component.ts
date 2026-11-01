@@ -16,6 +16,8 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { isSafeHref, withNewTabLinks } from '../rich-text-editor/rich-text-sanitizer';
 import { collectImageReferences, markdownToHtml } from '../rich-text-editor/markdown';
 
+const PREVIEW_RENDER_CHUNK = 10;
+
 type SchemaFieldPredicate = { field: any; fieldValue: any } | { field: any; const: any };
 interface IFieldControl extends SchemaField {
     fullPath: string;
@@ -32,6 +34,7 @@ interface IFieldControl extends SchemaField {
     link?: string | undefined;
     accordionLink?: string | undefined;
     open: boolean;
+    previewReady?: boolean;
 }
 
 interface IFieldIndexControl {
@@ -64,15 +67,20 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
     @Input('discussion-view') discussionView: boolean = false;
     @Input() link?: string | undefined;
     @Input() accordionLink?: string | undefined;
+    @Input() preview: boolean = false;
 
     @Output('discussion-action') discussionActionEvent = new EventEmitter<any>();
     @Output('onAccordionSelect') onAccordionSelect = new EventEmitter<{path: string, isOpen: boolean}>();
+    @Output() previewLoadingChange = new EventEmitter<boolean>();
 
     public fields: IFieldControl[] | undefined = [];
     private pageSize: number = 25;
     // Resolved images by link; null marks a link that failed to resolve.
     private imgCache = new Map<string, string | null>();
     private imgRequests = new Map<string, Promise<string | null>>();
+    private previewFrames = new Map<IFieldControl, number>();
+    public previewRenderLimit: number = Infinity;
+    private previewRenderFrame: number | null = null;
 
     constructor(
         private ipfs: IPFSService,
@@ -82,6 +90,71 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.init();
+    }
+
+    private stopPreviewRendering(): void {
+        if (this.previewRenderFrame !== null) {
+            cancelAnimationFrame(this.previewRenderFrame);
+            this.previewRenderFrame = null;
+            this.previewLoadingChange.emit(false);
+        }
+        this.previewRenderLimit = Infinity;
+    }
+
+    private startPreviewRendering(): void {
+        this.stopPreviewRendering();
+        if (!this.preview || (this.fields?.length || 0) <= PREVIEW_RENDER_CHUNK) return;
+        this.previewRenderLimit = PREVIEW_RENDER_CHUNK;
+        this.previewLoadingChange.emit(true);
+        const next = () => {
+            this.previewRenderLimit += PREVIEW_RENDER_CHUNK;
+            if (this.previewRenderLimit < (this.fields?.length || 0)) {
+                this.changeDetector.detectChanges();
+                this.previewRenderFrame = requestAnimationFrame(next);
+                return;
+            }
+            this.previewRenderFrame = null;
+            this.previewRenderLimit = Infinity;
+            this.changeDetector.detectChanges();
+            this.previewLoadingChange.emit(false);
+        };
+        this.previewRenderFrame = requestAnimationFrame(next);
+    }
+
+    private cancelPreviewSections(): void {
+        for (const [item, frame] of this.previewFrames) {
+            cancelAnimationFrame(frame);
+            item.previewReady = false;
+            this.previewLoadingChange.emit(false);
+        }
+        this.previewFrames.clear();
+    }
+
+    public preparePreviewSection(item: IFieldControl): void {
+        if (!this.preview || !item.isRef) return;
+        const pending = this.previewFrames.get(item);
+        if (pending !== undefined) {
+            if (item.open) return;
+            cancelAnimationFrame(pending);
+            this.previewFrames.delete(item);
+            this.previewLoadingChange.emit(false);
+        }
+        if (!item.open) {
+            item.previewReady = false;
+            return;
+        }
+        if (item.previewReady) return;
+        this.previewLoadingChange.emit(true);
+        this.previewFrames.set(item, requestAnimationFrame(() => {
+            this.previewFrames.set(item, requestAnimationFrame(() => {
+                item.previewReady = true;
+                this.changeDetector.detectChanges();
+                this.previewFrames.set(item, requestAnimationFrame(() => {
+                    this.previewFrames.delete(item);
+                    this.previewLoadingChange.emit(false);
+                }));
+            }));
+        }));
     }
 
     isBooleanView(item: boolean | any): string {
@@ -109,6 +182,7 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
             changes.schemaFields ||
             changes.hide
         ) {
+            if (this.preview) this.cancelPreviewSections();
             this.hide = this.hide || {};
             if (this.schemaFields) {
                 this.update(this.schemaFields);
@@ -117,6 +191,7 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
             } else {
                 this.update();
             }
+            if (this.preview) this.startPreviewRendering();
         }
         if (changes.link) {
             this.openField(this.link);
@@ -448,6 +523,8 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
 
     ngOnDestroy(): void {
         this.clearRichTextHideTimer();
+        this.cancelPreviewSections();
+        this.stopPreviewRendering();
     }
 
     private loadImgs(items: IFieldIndexControl[]) {
@@ -680,9 +757,11 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
             for (const field of this.fields) {
                 if (field.fullPath === _rootLink) {
                     field.open = true;
+                    if (this.preview) this.preparePreviewSection(field);
                     field.link = _subLink;
                 } else if (field.name === _rootLink) {
                     field.open = true;
+                    if (this.preview) this.preparePreviewSection(field);
                     field.link = _subLink;
                 } else {
                     field.link = undefined;
@@ -712,6 +791,7 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
             for (const field of this.fields) {
                 if (field.fullPath === _rootLink) {
                     field.open = true;
+                    if (this.preview) this.preparePreviewSection(field);
                     field.accordionLink = _subLink;
                 } else {
                     field.accordionLink = undefined;
@@ -748,6 +828,7 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
             }
 
             field.open = true;
+            if (this.preview) this.preparePreviewSection(field);
             const remaining = segments.slice(i + 1).join(";") || null;
             field.accordionLink = remaining;
 
