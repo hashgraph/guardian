@@ -15,7 +15,7 @@
         <div class="pv-state__title">{{ title || 'Complete the form' }}</div>
         <div class="pv-state__text">{{ description || 'Fill in the required details and submit them to continue.' }}</div>
         <div class="pv-state__actions">
-          <button type="button" class="pv-state-button" (click)="onDialogOpen()">Start</button>
+          <button type="button" class="pv-state-button" [disabled]="disabled" (click)="onDialogOpen()">Start</button>
         </div>
       </div>
     }

@@ -96,6 +96,7 @@ export class RequestDocumentBlockComponent
     // Only inside the policy viewer; the block is also rendered in modals outside of it
     private formTakeover = inject(FormTakeoverService, { optional: true });
     private pageFormOpened = false;
+    private destroyed = false;
     private takeoverRef: ComponentRef<RequestDocumentFormComponent> | null = null;
 
     constructor(
@@ -123,6 +124,7 @@ export class RequestDocumentBlockComponent
     }
 
     ngOnDestroy(): void {
+        this.destroyed = true;
         if (this.takeoverRef) {
             this.formTakeover?.close(this.takeoverRef);
         }
@@ -358,6 +360,10 @@ export class RequestDocumentBlockComponent
     }
 
     private showDocumentDialog() {
+        // The open is async (timers, autosave lookup), so the block may be gone by now
+        if (this.destroyed) {
+            return;
+        }
         if (this.formTakeover) {
             this.takeoverRef = this.formTakeover.open(RequestDocumentFormComponent, {
                 parent: this,
