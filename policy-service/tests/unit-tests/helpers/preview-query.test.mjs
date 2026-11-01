@@ -257,9 +257,110 @@ const matchCases = [
     }
 ];
 
+const arrayPathCases = [
+    {
+        rule: 'a numeric segment also looks for a field named "0" in each element, so null matches an element without it',
+        source: `${MANUAL}/tutorial/query-for-null-fields/`,
+        record: { document: { credentialSubject: [{ amount: 20 }] } },
+        filter: { 'document.credentialSubject.0.amount': null },
+        expected: true
+    },
+    {
+        rule: '$ne: null fails for the same reason',
+        source: `${MANUAL}/reference/operator/query/ne/`,
+        record: { document: { credentialSubject: [{ amount: 20 }] } },
+        filter: { 'document.credentialSubject.0.amount': { $ne: null } },
+        expected: false
+    },
+    {
+        rule: 'an element with a real field named "0" is matched through it',
+        source: `${MANUAL}/tutorial/query-array-of-documents/`,
+        record: { items: [{ x: 15, '0': { x: 25 } }] },
+        filter: { 'items.0.x': 25 },
+        expected: true
+    },
+    {
+        rule: 'an index that points at an element without the field matches null',
+        source: `${MANUAL}/tutorial/query-for-null-fields/`,
+        record: { items: [{ y: 1 }, { x: 7 }] },
+        filter: { 'items.0.x': null },
+        expected: true
+    },
+    {
+        rule: 'an empty array gives no value, so null does not match a path below it',
+        source: `${MANUAL}/tutorial/query-for-null-fields/`,
+        record: { items: [] },
+        filter: { 'items.x': null },
+        expected: false
+    },
+    {
+        rule: '$ne: null matches a path below an empty array',
+        source: `${MANUAL}/reference/operator/query/ne/`,
+        record: { items: [] },
+        filter: { 'items.x': { $ne: null } },
+        expected: true
+    },
+    {
+        rule: '$exists: false matches a path below an empty array',
+        source: `${MANUAL}/reference/operator/query/exists/`,
+        record: { items: [] },
+        filter: { 'items.x': { $exists: false } },
+        expected: true
+    },
+    {
+        rule: 'plain values in an array give no value for a deeper path',
+        source: `${MANUAL}/tutorial/query-for-null-fields/`,
+        record: { items: [1, 2] },
+        filter: { 'items.x': null },
+        expected: false
+    },
+    {
+        rule: 'an index that points at a plain value gives no value for a deeper path',
+        source: `${MANUAL}/tutorial/query-for-null-fields/`,
+        record: { items: [1, 2] },
+        filter: { 'items.0.x': null },
+        expected: false
+    },
+    {
+        rule: 'an index past the end gives no value when no element is an object',
+        source: `${MANUAL}/tutorial/query-for-null-fields/`,
+        record: { items: [[{ x: 40 }]] },
+        filter: { 'items.1.x': null },
+        expected: false
+    },
+    {
+        rule: 'an index that points at a nested array follows into it',
+        source: `${MANUAL}/tutorial/query-array-of-documents/`,
+        record: { items: [[{ x: 40 }]] },
+        filter: { 'items.0.x': 40 },
+        expected: true
+    },
+    {
+        rule: 'a path below a plain value outside an array still matches null',
+        source: `${MANUAL}/tutorial/query-for-null-fields/`,
+        record: { items: 5 },
+        filter: { 'items.x': null },
+        expected: true
+    }
+];
+
+function sortedBy(records, path, direction) {
+    const order = normalizePreviewOrder({ [path]: direction });
+    return [...records].sort((a, b) => comparePreviewRecords(a, b, order));
+}
+
 describe('@unit preview query matcher', () => {
     describe('matches as MongoDB 6.0', () => {
         for (const item of matchCases) {
+            it(`${item.rule} (${item.source})`, () => {
+                const filter = normalizePreviewFilter(item.filter);
+                assert.equal(matchesPreviewFilter(item.record, filter), item.expected);
+            });
+        }
+    });
+
+    describe('follows array paths as MongoDB does', () => {
+        for (const item of arrayPathCases) {
             it(`${item.rule} (${item.source})`, () => {
                 const filter = normalizePreviewFilter(item.filter);
                 assert.equal(matchesPreviewFilter(item.record, filter), item.expected);
@@ -377,6 +478,34 @@ describe('@unit preview query matcher', () => {
         it(`compares strings by their bytes, so "B" sorts before "a" (${sortSource})`, () => {
             const order = normalizePreviewOrder({ value: 'ASC' });
             assert.ok(comparePreviewRecords({ value: 'B' }, { value: 'a' }, order) < 0);
+        });
+
+        it(`sorts by the element an index points at (${MANUAL}/reference/method/cursor.sort/)`, () => {
+            const path = 'document.credentialSubject.0.amount';
+            const records = [20, 10, 30].map((amount) => ({ document: { credentialSubject: [{ amount }] } }));
+            const amounts = (list) => list.map((record) => record.document.credentialSubject[0].amount);
+            assert.deepEqual(amounts(sortedBy(records, path, 'ASC')), [10, 20, 30]);
+            assert.deepEqual(amounts(sortedBy(records, path, 'DESC')), [30, 20, 10]);
+        });
+
+        it('does not look for a field named "0" in the elements when it sorts by an index', () => {
+            const order = normalizePreviewOrder({ 'items.1.x': 'ASC' });
+            assert.ok(comparePreviewRecords({ items: [{ x: 1 }] }, { items: [{ y: 1 }, { x: 7 }] }, order) < 0);
+            assert.ok(comparePreviewRecords({ items: [{ y: 1 }, { x: 7 }] }, { items: [{ x: 1 }, { x: 8 }] }, order) < 0);
+        });
+
+        it('sorts an element without the field, an index past the end and an index on a plain value as null', () => {
+            const order = normalizePreviewOrder({ 'items.0.x': 'ASC' });
+            for (const record of [{ items: [{ y: 1 }, { x: 7 }] }, { items: [] }, { items: [1, 2] }]) {
+                assert.equal(comparePreviewRecords(record, { items: [{ x: null }] }, order), 0);
+                assert.ok(comparePreviewRecords(record, { items: [{ x: 0 }] }, order) < 0);
+            }
+        });
+
+        it('sorts a plain value inside an array as null under a deeper path', () => {
+            const order = normalizePreviewOrder({ 'items.x': 'ASC' });
+            assert.equal(comparePreviewRecords({ items: [{ x: 1 }, 'text'] }, { items: [] }, order), 0);
+            assert.ok(comparePreviewRecords({ items: [{ x: 1 }, 'text'] }, { items: [{ x: 1 }] }, order) < 0);
         });
 
         it('renames id to _id in a sort and refuses an unknown direction', () => {

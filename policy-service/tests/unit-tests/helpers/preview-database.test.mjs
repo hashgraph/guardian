@@ -207,6 +207,27 @@ describe('@unit preview database wrapper', () => {
         assert.equal(one, ID_C);
     });
 
+    it('sorts stored and preview records by an indexed document field, and picks the first one after it', async () => {
+        const step = previewStep();
+        const path = 'document.credentialSubject.0.area';
+        const [ascending, descending, first] = await inPreview(step, async () => {
+            for (const area of [25, 5]) {
+                const { _id, ...row } = vc(ID_A, 'did:a', area);
+                await server.saveVC(row);
+            }
+            return [
+                await server.getVcDocuments({ policyId }, { orderBy: { [path]: 'ASC' } }),
+                await server.getVcDocuments({ policyId }, { orderBy: { [path]: 'DESC' }, limit: 2 }),
+                await server.findOne(VcDocument, { policyId }, { orderBy: { [path]: 'ASC' } })
+            ];
+        });
+        const areas = (list) => list.map((item) => item.document.credentialSubject[0].area);
+        assert.deepEqual(areas(ascending), [5, 10, 20, 25, 30]);
+        assert.deepEqual(areas(descending), [30, 25]);
+        assert.equal(first.document.credentialSubject[0].area, 5);
+        assert.equal(db.records(VcDocument).length, 3);
+    });
+
     it('gives a preview record the normal id and dates, never an artificial order', async () => {
         const step = previewStep();
         const before = Date.now();

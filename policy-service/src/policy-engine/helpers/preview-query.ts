@@ -148,19 +148,16 @@ function collectPathValues(node: unknown, parts: string[], index: number, out: u
     }
     const part = parts[index];
     if (Array.isArray(node)) {
-        let reached = false;
         if (/^\d+$/.test(part) && Number(part) < node.length) {
-            reached = true;
-            collectPathValues(node[Number(part)], parts, index + 1, out);
+            const element = node[Number(part)];
+            if (index + 1 === parts.length || isPlainRecord(element) || Array.isArray(element)) {
+                collectPathValues(element, parts, index + 1, out);
+            }
         }
         for (const element of node) {
             if (isPlainRecord(element)) {
-                reached = true;
                 collectPathValues(element, parts, index, out);
             }
-        }
-        if (!reached) {
-            out.push(MISSING);
         }
         return;
     }
@@ -456,9 +453,45 @@ export function normalizePreviewOrder(orderBy: unknown): PreviewSortOrder {
     return order;
 }
 
+function collectSortValues(node: unknown, parts: string[], index: number, out: unknown[]): void {
+    if (index === parts.length) {
+        out.push(node);
+        return;
+    }
+    const part = parts[index];
+    if (Array.isArray(node)) {
+        if (/^\d+$/.test(part)) {
+            if (Number(part) < node.length) {
+                collectSortValues(node[Number(part)], parts, index + 1, out);
+            } else {
+                out.push(MISSING);
+            }
+            return;
+        }
+        if (!node.length) {
+            out.push(MISSING);
+        }
+        for (const element of node) {
+            if (isPlainRecord(element)) {
+                collectSortValues(element, parts, index, out);
+            } else {
+                out.push(MISSING);
+            }
+        }
+        return;
+    }
+    if (isPlainRecord(node) && Object.prototype.hasOwnProperty.call(node, part) && node[part] !== undefined) {
+        collectSortValues(node[part], parts, index + 1, out);
+        return;
+    }
+    out.push(MISSING);
+}
+
 function getSortKey(record: unknown, path: string, direction: 1 | -1): unknown {
     const values: unknown[] = [];
-    for (const candidate of getPathValues(record, path)) {
+    const candidates: unknown[] = [];
+    collectSortValues(record, path.split('.'), 0, candidates);
+    for (const candidate of candidates) {
         if (Array.isArray(candidate)) {
             values.push(...(candidate.length ? candidate : [EMPTY_ARRAY]));
         } else {
