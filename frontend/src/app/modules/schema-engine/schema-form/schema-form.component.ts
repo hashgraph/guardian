@@ -90,6 +90,9 @@ const FILE_EXTENSIONS = '.txt, .pdf, .doc, .docx, .xls, .csv, .kml, .geoJSON';
     standalone: false
 })
 export class SchemaFormComponent implements OnInit {
+    // The PrimeNG auto-resize reads scrollHeight on every change detection, which forces a layout
+    // for each textarea. Browsers with `field-sizing` grow the textarea in CSS instead.
+    public readonly scriptAutoResize = !CSS.supports('field-sizing', 'content');
     @Input('form-model') formModel!: FieldForm;
     @Input('private-fields') hide!: { [x: string]: boolean };
     @Input('readonly-fields') readonly?: any;

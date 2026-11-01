@@ -108,6 +108,19 @@
       </div>
     }
   </div>
+  @if (showNextButton) {
+    <div class="ger-actions">
+      <button
+        type="button"
+        pButton
+        class="p-button"
+        label="Next"
+        (click)="onNext()"
+        [disabled]="loading"
+        >
+      </button>
+    </div>
+  }
 </div>
 
 <app-add-global-event-topic
@@ -117,24 +130,6 @@
   (add)="confirmAddTopicModal($event)"
   >
 </app-add-global-event-topic>
-
-@if (showNextButton) {
-  <div class="progress-footer" id="block-progress-footer">
-    <div></div>
-    <div>
-      <button
-        type="button"
-        pButton
-        class="p-button"
-        label="Next"
-        (click)="onNext()"
-        [disabled]="loading"
-        form="roles-form"
-        >
-      </button>
-    </div>
-  </div>
-}
 
 @if (loading) {
   <div class="loading">

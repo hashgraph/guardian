@@ -1,16 +1,16 @@
 import { HttpResponse } from '@angular/common/http';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild, ViewContainerRef, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IUser, PolicyStatus, UserPermissions } from '@guardian/interfaces';
 import { DialogService } from 'primeng/dynamicdialog';
-import { forkJoin, interval, Subject, Subscription, of } from 'rxjs';
-import { audit, takeUntil, map, catchError, switchMap, tap, finalize } from 'rxjs/operators';
+import { EMPTY, forkJoin, Subject, Subscription, of } from 'rxjs';
+import { takeUntil, map, catchError, switchMap, tap, finalize, debounceTime } from 'rxjs/operators';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { ProfileService } from 'src/app/services/profile.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { RecordControllerComponent } from '../../record/record-controller/record-controller.component';
-import { PolicyProgressService } from '../../services/policy-progress.service';
+import { ActiveStep, PolicyProgressService } from '../../services/policy-progress.service';
+import { BooleanProperty } from '../../structures/storage/boolean-prop';
 import { IStep } from '../../structures';
 import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
 import { RestoreSavepointDialog, IRestoreSavepointAction } from 'src/app/modules/policy-engine/policy-viewer/dialogs/restore-savepoint-dialog/restore-savepoint-dialog.component';
@@ -26,6 +26,8 @@ import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from 'src/a
 import { MockDialog } from '../../dialogs/mock-dialog/mock-dialog.component';
 import { PolicyTestAutomationService } from '../policy-test-automation/policy-test-automation.service';
 import { shortDid } from 'src/app/utils/short-did';
+import { ViewerProfileService } from '../viewer-profile.service';
+import { FormTakeoverService } from '../form-takeover/form-takeover.service';
 
 type MockItemType = 'IPFS' | 'MESSAGE' | 'TOKEN' | 'ACCOUNT' | 'API';
 const MockTabs = ['API', 'IPFS', 'Topics'];
@@ -41,6 +43,7 @@ const MockTabs = ['API', 'IPFS', 'Topics'];
         '../../styles/top-toolbar.scss',
         './policy-viewer.component.scss'
     ],
+    providers: [ViewerProfileService, FormTakeoverService],
     standalone: false
 })
 export class PolicyViewerComponent implements OnInit, OnDestroy {
@@ -54,6 +57,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public isStarting: boolean = false;
     public isConfirmed: boolean = false;
     public virtualUsers: any[] = [];
+    private prefetchedVirtualUsers: any[] | null = null;
     public view: string = 'policy';
     public documents: any[] = [];
     public columns: string[] = [];
@@ -102,9 +106,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public userGroup!: string;
     public recordingActive: boolean = false;
     public steps: IStep[] = [];
-    public navigationFooterDisabled = false;
-    public prevButtonDisabled = false;
-    public nextButtonDisabled = false;
+    private navHiddenProp = new BooleanProperty('POLICY_VIEWER_NAV_HIDDEN');
+    public navHidden: boolean = this.navHiddenProp.load();
+    public activeStep: ActiveStep | null = null;
     public permissions: UserPermissions;
     public newRequestsExist: boolean = false;
     public newActionsExist: boolean = false;
@@ -133,7 +137,6 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
 
     constructor(
-        private profileService: ProfileService,
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
         private route: ActivatedRoute,
@@ -144,7 +147,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         private router: Router,
         private savepointFlow: SavepointFlowService,
         private indexedDb: IndexedDbRegistryService,
-        private policyTest: PolicyTestAutomationService
+        private policyTest: PolicyTestAutomationService,
+        private viewerProfile: ViewerProfileService
     ) {
         this.policy = null;
         this.pageIndex = 0;
@@ -161,6 +165,15 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             )
         );
     }
+
+    private formTakeover = inject(FormTakeoverService);
+
+    @ViewChild('takeoverHost', { read: ViewContainerRef })
+    public set takeoverHost(vcr: ViewContainerRef | undefined) {
+        this.formTakeover.setHost(vcr ?? null);
+    }
+
+    public takeoverActive$ = this.formTakeover.active$;
 
     private _recordController!: RecordControllerComponent | undefined;
 
@@ -235,9 +248,14 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         this.subscription.add(
             this.wsService.subscribeUserInfo((message) => {
                 const { userRole, userGroup, userGroups } = message;
+                const group = userGroup?.groupLabel || userGroup?.uuid;
+                const changed = this.userRole !== userRole || this.userGroup !== group;
                 this.userRole = userRole;
-                this.userGroup = userGroup?.groupLabel || userGroup?.uuid;
+                this.userGroup = group;
                 this.groups = userGroups;
+                if (changed && this.policyId && this.isConfirmed) {
+                    this.reloadNavigation();
+                }
             })
         );
         this.subscription.add(
@@ -256,7 +274,17 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             })
         );
 
-        this.updateNavigationButtons();
+        this.subscription.add(
+            this.policyProgressService.navigationInvalidated$
+                .pipe(
+                    debounceTime(50),
+                    switchMap(() => this.policyEngineService.getPolicyNavigation(this.policyId, this.savepointIds).pipe(
+                        // a failed reload keeps the current menu and must not end the subscription
+                        catchError(() => EMPTY)
+                    ))
+                )
+                .subscribe((data: any) => this.applyNavigation(data))
+        );
 
         this.timer = setInterval(() => {
             this.updateRemotePolicyRequests();
@@ -264,6 +292,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy() {
+        this.formTakeover.close();
         this.subscription.unsubscribe();
         clearInterval(this.timer);
         this.destroy$.next(true);
@@ -293,7 +322,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         this.isConfirmed = false;
         this.loading = true;
         this.recordingActive = false;
-        this.profileService.getProfile().subscribe(
+        this.viewerProfile.profile$.subscribe(
             (profile: IUser | null) => {
                 this.permissions = new UserPermissions(profile);
                 this.isConfirmed = !!(profile && profile.confirmed);
@@ -328,9 +357,11 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     }
 
     async loadPolicyById(policyId: string) {
+        this.formTakeover.close();
         this.loading = true;
 
         this.isStarting = false;
+        this.prefetchedVirtualUsers = null;
         this.ensureAdminIfNeeded(policyId).pipe(
             switchMap(() => forkJoin([
                 // A discontinued policy that is stopped starts on demand by the requests below,
@@ -346,6 +377,10 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.policyEngineService.getGroups(policyId, this.savepointIds),
                 this.externalPoliciesService.getActionRequestsCount({ policyId }),
                 this.policyEngineService.getParametersConfig(policyId),
+                // navigation is optional: a failure must not stop the policy from loading
+                this.policyEngineService.getPolicyNavigation(policyId, this.savepointIds).pipe(
+                    catchError(() => of(null))
+                ),
             ])),
             finalize(() => {
                 this.isStarting = false;
@@ -357,6 +392,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.groups = value[2] || [];
                 const count: any = value[3]?.body || {};
                 this.editableParameters = value[4];
+                const navigation = value[5];
 
                 this.virtualUsers = [];
                 this.isMultipleGroups = !!(this.policyInfo?.policyGroups && this.groups?.length);
@@ -378,18 +414,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
                 this.refreshSavepointsCount();
 
-                this.policyProgressService.data$
-                    .pipe(audit(ev => interval(1000)), takeUntil(this.destroy$))
-                    .subscribe(() => {
-                        this.policyEngineService.getPolicyNavigation(this.policyId, this.savepointIds).subscribe((data: any) => {
-                            this.updatePolicyProgress(data);
-                            if (data && data.length > 0) {
-                                this.policyProgressService.setHasNavigation(true);
-                            } else {
-                                // this.policyProgressService.setHasNavigation(false);
-                            }
-                        })
-                    })
+                this.applyNavigation(navigation);
 
                 setTimeout(() => this.openOnLoadRestoreSavepointDialog(), 500);
 
@@ -405,7 +430,11 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     }
 
     loadDryRunOptions() {
-        this.policyEngineService.getVirtualUsers(this.policyInfo.id, this.savepointIds).subscribe((value) => {
+        const users$ = this.prefetchedVirtualUsers
+            ? of(this.prefetchedVirtualUsers)
+            : this.policyEngineService.getVirtualUsers(this.policyInfo.id, this.savepointIds);
+        this.prefetchedVirtualUsers = null;
+        users$.subscribe((value) => {
             this.virtualUsers = value;
             setTimeout(() => {
                 this.loading = false;
@@ -427,7 +456,6 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     hasAction: false,
                 };
             })
-            this.updateNavigationButtons();
         } else {
             this.steps = [];
         }
@@ -436,6 +464,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     setGroup(item: any, group: any) {
         group?.toggle(false);
         this.loading = true;
+        this.viewerProfile.reset();
         this.policyEngineService
             .setGroup(this.policyInfo.id, item ? item.uuid : null)
             .subscribe(
@@ -466,6 +495,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     setVirtualUser(item: any, menu: any) {
         menu?.toggle(false)
         this.loading = true;
+        this.viewerProfile.reset();
         this.policyEngineService
             .loginVirtualUser(this.policyInfo.id, item.did)
             .subscribe(
@@ -482,6 +512,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
     restartDryRun() {
         this.loading = true;
+        this.viewerProfile.reset();
 
         this.policyEngineService.restartDryRun(this.policyInfo.id).subscribe(
             (users) => {
@@ -514,6 +545,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
     onView(view: string, menu?: any) {
         if (menu) { menu.hide(); }
+        if (view !== 'policy') {
+            this.formTakeover.close();
+        }
         this.view = view;
         this.columns = this.columnsMap[this.view];
         if (this.view === 'mock_config' || this.view === 'mock_data') {
@@ -628,65 +662,19 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             );
     }
 
-    updateNavigationButtons() {
-        const progressFooter = document.getElementById('block-progress-footer');
-        if (!progressFooter) {
-            this.navigationFooterDisabled = false;
-        } else {
-            this.navigationFooterDisabled = true;
-        }
-
-        this.prevButtonDisabled = true;
-        this.nextButtonDisabled = true;
-        const currentStepIndex = this.policyProgressService.getCurrentStepIndex();
-        for (let i = (currentStepIndex - 1); i >= 0; i--) {
-            const step = this.steps[i];
-            if (!step || !step.blockId) {
-                continue;
-            }
-            const hasAction = this.policyProgressService.stepHasAction(step.blockId);
-
-            if (step.level == 1 && hasAction) {
-                this.prevButtonDisabled = false;
-            }
-        }
-        for (let i = (currentStepIndex + 1); i < this.steps.length; i++) {
-            const step = this.steps[i];
-            if (!step.blockId) {
-                continue;
-            }
-            const hasAction = this.policyProgressService.stepHasAction(step.blockId);
-
-            if (step.level == 1 && hasAction) {
-                this.nextButtonDisabled = false;
-            }
-        }
+    private applyNavigation(navigation: any) {
+        this.updatePolicyProgress(navigation);
+        this.policyProgressService.setHasNavigation(!!navigation?.length);
     }
 
-    onNavigationPrevButton() {
-        const currentStepIndex = this.policyProgressService.getCurrentStepIndex();
-        for (let i = (currentStepIndex - 1); i >= 0; i--) {
-            const step = this.steps[i];
-            const hasAction = this.policyProgressService.stepHasAction(step.blockId);
-
-            if (step.level == 1 && hasAction) {
-                this.policyProgressService.runStepAction(step.blockId);
-                break;
-            }
-        }
+    reloadNavigation() {
+        this.policyProgressService.invalidateNavigation();
     }
 
-    onNavigationNextButton() {
-        const currentStepIndex = this.policyProgressService.getCurrentStepIndex();
-        for (let i = (currentStepIndex + 1); i < this.steps.length; i++) {
-            const step = this.steps[i];
-            const hasAction = this.policyProgressService.stepHasAction(step.blockId);
-
-            if (step.level == 1 && hasAction) {
-                this.policyProgressService.runStepAction(step.blockId);
-                break;
-            }
-        }
+    onNavHiddenChange(hidden: boolean) {
+        this.navHidden = hidden;
+        this.navHiddenProp.value = hidden;
+        this.navHiddenProp.save();
     }
 
     public updatePolicy() {
@@ -704,6 +692,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             this.userRole = this.policyInfo.userRole;
             this.userGroup = this.policyInfo.userGroup?.groupLabel || this.policyInfo.userGroup?.uuid;
             this.changeDetector.detectChanges();
+            this.reloadNavigation();
         }, (e) => {
             this.loading = false;
         });
@@ -803,6 +792,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     }
 
     public onTabChange(index: string | number | undefined) {
+        this.formTakeover.close();
         const tabIndex = typeof index === 'number' ? index : 0;
         this.router.navigate([], {
             relativeTo: this.route,
@@ -1025,13 +1015,19 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         }
 
         return this.policyEngineService.getVirtualUsers(policyId, this.savepointIds).pipe(
-            map(users => this.findAdminUser(users)),
-            switchMap(admin => admin?.did
-                ? this.policyEngineService.loginVirtualUser(policyId, admin.did)
-                : of(null)
-            ),
+            switchMap((users) => {
+                const admin = this.findAdminUser(users);
+                if (!admin?.did) {
+                    this.prefetchedVirtualUsers = users;
+                    return of(null);
+                }
+                return this.policyEngineService.loginVirtualUser(policyId, admin.did);
+            }),
             catchError(() => of(null)),
-            tap(() => { this.forceAdminAfterReload = false; })
+            tap(() => {
+                this.forceAdminAfterReload = false;
+                this.viewerProfile.reset();
+            })
         );
     }
 

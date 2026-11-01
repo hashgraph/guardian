@@ -171,7 +171,8 @@
                           (fieldFocus)="onFocusField(item.format, item)"
                           (fieldBlur)="onUnfocusField(item.format, item)"
                           [placeholder]="getPlaceholderByFieldType(item)"
-                          [autoResize]="true"
+                          [autoResize]="scriptAutoResize"
+                          class="auto-grow"
                         ></app-form-textarea>
                         @if (isIPFS(item)) {
                           <div>
@@ -773,7 +774,8 @@
                                   [placeholder]="getPlaceholderByFieldType(item)"
                                   (fieldFocus)="onFocusField(item.format, listItem)"
                                   (fieldBlur)="onUnfocusField(item.format, listItem)"
-                                  [autoResize]="true"
+                                  [autoResize]="scriptAutoResize"
+                                  class="auto-grow"
                                 ></app-form-textarea>
                                 @if (isIPFS(item)) {
                                   <div

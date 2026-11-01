@@ -71,94 +71,12 @@
     align-content: center;
 }
 
-.not-exist {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 20px;
-    color: darkgrey;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-    .info-text {
-        color: var(--color-grey-5, #848FA9);
-        text-align: center;
-        font-family: Inter, sans-serif;
-        font-size: 16px;
-        font-style: normal;
-        font-weight: 400;
-        line-height: normal;
-        margin-bottom: 16px;
-    }
-
-    .info-text-strong {
-        color: var(--color-grey-5, #848FA9);
-        text-align: center;
-        font-family: Inter, sans-serif;
-        font-size: 16px;
-        font-style: normal;
-        font-weight: 600;
-        line-height: normal;
-        margin-bottom: 16px;
-    }
-
-    button {
-        width: 124px;
-        height: 28px;
-    }
-}
-
-.new-requests-exist {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 18px;
-    color: var(--color-grey-5);
-    background-color: #ffffffa9;
-    z-index: 3000;
-
-    p {
-        max-width: 500px;
-        text-align: center;
-    }
-
-    div {
-        padding: 24px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-
-        background-color: #eff3f77d;
-        border-radius: 8px;
-        border: 1px solid var(--color-grey-2);
-    }
-
-    ::ng-deep {
-        .p-button {
-            border-radius: 8px;
-            background-color: var(--color-primary);
-        }
-    }
-}
-
 .policy-container {
     height: 100%;
     display: flex;
     //flex-direction: column;
-    gap: 24px;
-    padding: 24px 20px 24px 48px;
     background: var(--guardian-grey-background, #f9fafc);
-    overflow: auto;
+    overflow: hidden;
 }
 
 .policy-container[policy-status="DEMO"],
@@ -382,103 +300,85 @@
     /* 114.286% */
 }
 
-.progress-container {
-    display: flex;
-    flex-direction: column;
-    width: 264px;
-    padding: 8px 0;
-    border-radius: 8px;
-    border: 1px solid var(--color-grey-3, #E1E7EF);
-    background: var(--color-grey-white, #FFF);
-}
-
-.progress-footer-container {
-    position: relative;
-    height: 0px;
-}
-
-.progress-footer {
-    padding: 12px 48px;
-    padding-left: calc(var(--header-width, var(--header-width-expand)) + 48px);
-    display: flex;
-    justify-content: space-between;
-    position: fixed;
-    bottom: 0;
-    right: var(--first-steps-offset);
-    width: calc(100% - var(--first-steps-offset));
-    border-top: 1px solid var(--color-grey-3, #E1E7EF);
-    background: var(--guardian-background, #FFF);
-
-    ::ng-deep {
-        .p-button {
-            padding: 5px 12px;
-            min-width: 120px;
-            border-radius: 8px;
-            background: var(--color-primary, #0031ff);
-
-            .p-button-label {
-                font-family: Inter;
-                font-size: 14px;
-                font-style: normal;
-                font-weight: 500;
-                line-height: 30px;
-                color: var(--guardian-on-primary-color, #FFF);
-            }
-
-            &:disabled {
-                border-radius: 8px;
-                border: 1px solid var(--color-grey-3, #E1E7EF);
-                background: var(--color-grey-1, #F9FAFC);
-
-                .p-button-label {
-                    font-family: Inter;
-                    font-size: 14px;
-                    font-style: normal;
-                    font-weight: 500;
-                    line-height: 30px;
-                    color: var(--color-grey-4, #AAB7C4);
-                }
-            }
-        }
-
-        .p-button-outlined {
-            border-radius: 8px;
-            border: 1px solid var(--color-secondary, #CDDDFD);
-            background: var(--color-color-grey-white, #FFF);
-
-            .p-button-label {
-                font-family: Inter;
-                font-size: 14px;
-                font-style: normal;
-                font-weight: 500;
-                line-height: 30px;
-                color: var(--color-primary, #0031ff);
-            }
-        }
-    }
-}
-
 :host ::ng-deep .content {
     right: auto !important;
     min-width: 100% !important;
 }
 
-.step-container {
-    height: calc(100% - 66px) !important;
+.policy-container-body {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 100%;
+    overflow: auto;
+    padding: 24px 32px 40px;
 }
 
-.no-step-container {}
+.policy-nav {
+    flex: 0 0 auto;
+    align-self: stretch;
+}
 
-.policy-container-body {
-    width: 100%;
-    height: 100%;
-    // overflow: auto;
+// The request-document form takes over the content area. The blocks stay rendered
+// underneath, because the form keeps a live reference to its block.
+.policy-container[takeover] {
+    .policy-nav,
+    .policy-container-body {
+        display: none;
+    }
 }
 
 .policy-body {
     height: 100%;
     width: 100%;
     overflow: hidden;
+    position: relative;
+    container: pv-content / inline-size;
+}
+
+.pv-page-header-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    margin-bottom: 20px;
+
+    .pv-page-header {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+}
+
+.pv-show-menu {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
+    background: var(--guardian-background, #FFF);
+    color: var(--guardian-font-color);
+    font-size: 13px;
+    cursor: pointer;
+
+    &:hover {
+        background: var(--guardian-hover);
+    }
+}
+
+@container pv-content (max-width: 1000px) {
+    .policy-container {
+        flex-direction: column;
+    }
+
+    .policy-container-body {
+        flex: 1 1 0;
+        min-height: 0;
+        height: auto;
+        padding: 16px;
+    }
+
+    .pv-show-menu {
+        display: none;
+    }
 }
 
 .mock-tabs-nav {
@@ -512,7 +412,6 @@
         height: 32px;
     }
 }
-
 
 .input-document-open {
     width: 40px;
@@ -638,7 +537,6 @@
     &:first {
         border-top: none !important;
     }
-
 
     &:first-child {
         border-top: none !important;
@@ -823,7 +721,6 @@
         }
     }
 
-
     .record-btn i {
         color: var(--color-accent-red-1, #FF432A);
         font-size: 16px;
@@ -992,4 +889,21 @@
     text-align: center;
     font-size: 14px;
     color: var(--color-grey-6, #848fa9);
+}
+
+.policy-state-wrap {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+}
+
+.policy-state-wrap .pv-state {
+    margin: 0;
+}
+
+.policy-content > .pv-banner {
+    flex: none;
+    margin: 16px 24px 0;
 }

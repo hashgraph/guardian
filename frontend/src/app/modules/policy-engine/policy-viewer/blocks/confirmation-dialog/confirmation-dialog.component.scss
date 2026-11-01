@@ -2,15 +2,34 @@
     overflow: visible;
 }
 
+.dialog-title {
+    margin-bottom: 8px;
+    padding-left: 4px;
+    color: var(--guardian-font-color, #23252E);
+    font-family: Inter, sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 24px;
+}
+
 .description {
     word-wrap: break-word;
-    color: var(--color-grey-black-1);
+    color: var(--color-grey-5);
     font-family: Inter, sans-serif;
-    font-size: 12px;
+    font-size: 14px;
     font-style: normal;
-    font-weight: 500;
-    line-height: 14px;
+    font-weight: 400;
+    line-height: 20px;
     padding-left: 4px;
+}
+
+.textarea-label {
+    margin-bottom: 6px;
+    color: var(--guardian-font-color, #23252E);
+    font-family: Inter, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 16px;
 }
 
 .textarea {
@@ -27,8 +46,12 @@
 }
 
 .dialog-body {
-    height: 35vh;
+    max-height: 50vh;
     overflow-y: auto;
+}
+
+.dialog-footer {
+    margin-top: 16px;
 }
 
 ::ng-deep {

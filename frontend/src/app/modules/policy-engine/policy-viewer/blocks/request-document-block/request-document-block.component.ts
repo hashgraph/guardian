@@ -1,21 +1,14 @@
-import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { FormControl, FormGroup, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { DocumentGenerator, DocumentValidators, ISchema, LocationType, Schema } from '@guardian/interfaces';
+import { ChangeDetectorRef, Component, ComponentRef, Input, OnInit, TemplateRef, ViewChild, inject } from '@angular/core';
+import { DocumentGenerator, ISchema, LocationType, Schema } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
-import { Router } from '@angular/router';
 import { DialogService } from 'primeng/dynamicdialog';
 import { AbstractUIBlockComponent } from '../models/abstract-ui-block.component';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
-import { RequestDocumentBlockDialog } from './dialog/request-document-block-dialog.component';
-import { SchemaRulesService } from 'src/app/services/schema-rules.service';
+import { RequestDocumentFormComponent } from './form/request-document-form.component';
+import { FormTakeoverService } from '../../form-takeover/form-takeover.service';
 import { SchemaService } from 'src/app/services/schema.service';
-import { FormulasService } from 'src/app/services/formulas.service';
-import { FormulasTree } from 'src/app/modules/formulas/models/formula-tree';
-import { audit, finalize, takeUntil } from 'rxjs/operators';
-import { interval, Subject, Subscription, firstValueFrom } from 'rxjs';
-import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { SavepointFlowService } from 'src/app/services/savepoint-flow.service';
 import { DocumentAutosaveStorage } from '../../../structures';
@@ -23,14 +16,6 @@ import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.s
 import { TablePersistenceService } from 'src/app/services/table-persistence.service';
 import { GeoFilePersistenceService } from 'src/app/services/geo-file-persistence.service';
 import { PolicyStatus } from '@guardian/interfaces';
-import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
-import { AttachedFile } from 'src/app/modules/common/policy-comments/attached-file';
-import { IPFSService } from 'src/app/services/ipfs.service';
-import { SchemaFormRootComponent } from 'src/app/modules/schema-engine/schema-form-root/schema-form-root.component';
-import { ToastService } from 'src/app/services/toast.service';
-import { PolicyTestAutomationService } from '../../policy-test-automation/policy-test-automation.service';
-import { CalculationPreviewService, ICalculationPreviewResult } from 'src/app/services/calculation-preview.service';
-import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 
 interface IRequestDocumentData {
     readonly: boolean;
@@ -78,12 +63,10 @@ export class RequestDocumentBlockComponent
     @Input('policyStatus') policyStatus!: string;
 
     @ViewChild('dialogTemplate') dialogTemplate!: TemplateRef<any>;
-    @ViewChild('formRoot') formRoot?: SchemaFormRootComponent;
 
     public isExist = false;
     public disabled = false;
     public schema: Schema | null;
-    public dataForm: UntypedFormGroup;
     public hideFields: any;
     public type!: string;
     public content: any;
@@ -98,126 +81,38 @@ export class RequestDocumentBlockComponent
     public dialogTitle: any;
     public dialogClass: any;
     public hideWhenDiscontinued: any;
-    public dialogRef: any;
     public buttonClass: any;
     public restoreData: any;
-    public rules: DocumentValidators;
-    public rulesResults: any;
-    public destroy$: Subject<boolean> = new Subject<boolean>();
-    public formulas: FormulasTree | null = null;
-    private formulasSchemaIri?: string;
     public readonly: boolean = false;
     public draft: boolean;
     public relayerAccount: boolean;
     public draftId?: string;
-    public dialog: RequestDocumentBlockDialog;
+    public form: RequestDocumentFormComponent | null = null;
     public edit: boolean;
     private storage: DocumentAutosaveStorage;
-    private stepper = [true, false, false];
-    public relayerAccountType: string = 'account';
-    public currentRelayerAccount: string;
-    public relayerAccounts: any[] = [];
-    public relayerAccountForm = new FormGroup({
-        name: new FormControl<string>('', Validators.required),
-        account: new FormControl<string>('', Validators.required),
-        key: new FormControl<string>('', Validators.required),
-    });
-    public submitText: string = 'Validate & Create';
     public isLocalUser: boolean = true;
-    public remoteWarning: boolean = false;
     public enableAdditionalData: boolean = false;
-    public evidenceText: string = '';
-    public evidenceFiles: AttachedFile[] = [];
-    private _evidenceFileMap = new WeakMap<AttachedFile, File>();
-    public previewMode: boolean = false;
-    public previewRendering: boolean = false;
-    private previewBusyHold: boolean = false;
-    private previewBusyTimer: ReturnType<typeof setTimeout> | null = null;
 
-    public get isPreviewBusy(): boolean {
-        return this.previewMode && (this.loading || this.previewRendering || this.previewBusyHold);
-    }
-
-    ngDoCheck(): void {
-        if (!this.previewMode || this.loading || this.previewRendering) {
-            if (this.previewBusyTimer !== null) {
-                clearTimeout(this.previewBusyTimer);
-                this.previewBusyTimer = null;
-            }
-            this.previewBusyHold = this.previewMode;
-            return;
-        }
-        if (this.previewBusyHold && this.previewBusyTimer === null) {
-            this.previewBusyTimer = setTimeout(() => {
-                this.previewBusyTimer = null;
-                this.previewBusyHold = false;
-                this.changeDetectorRef.markForCheck();
-            }, 300);
-        }
-    }
-
-    public previewMissingOptions: { label: string; value: string }[] = [];
-    public previewMissingPath: string | null = null;
-
-    public onPreviewMissingOptionsChange(options: { label: string; value: string }[]): void {
-        this.previewMissingOptions = this.previewMode ? options : [];
-        this.previewMissingPath = null;
-        this.changeDetectorRef.markForCheck();
-    }
-
-    public onPreviewMissingSelect(path: string): void {
-        this.formRoot?.focusPreviewField(path);
-    }
-
-    public onPreviewRenderingChange(rendering: boolean): void {
-        this.previewRendering = this.previewMode && rendering;
-        this.changeDetectorRef.markForCheck();
-    }
-    public previewRequiredFields: string[] | null = null;
-    private previewRequest: number = 0;
-    public previewMissingFields: string[] = [];
-    private previewPreferenceLoaded: boolean = false;
-
-    public get isEvidenceUploading(): boolean {
-        return this.evidenceFiles.some(f => !f.loaded && !f.error);
-    }
-
-    public get evidenceStepIndex(): number {
-        return 1;
-    }
-
-    public get needRemoteWarning () {
-        return !this.isLocalUser && this.relayerAccountType !== 'account';
-    }
-
-    public get isRemoteWarning() {
-        return this.needRemoteWarning && !this.remoteWarning;
-    }
+    // Only inside the policy viewer; the block is also rendered in modals outside of it
+    private formTakeover = inject(FormTakeoverService, { optional: true });
+    private pageFormOpened = false;
+    private destroyed = false;
+    private takeoverRef: ComponentRef<RequestDocumentFormComponent> | null = null;
 
     constructor(
         policyEngineService: PolicyEngineService,
         wsService: WebSocketService,
         profile: ProfileService,
         policyHelper: PolicyHelper,
-        private schemaRulesService: SchemaRulesService,
-        private relayerAccountsService: RelayerAccountsService,
-        private fb: UntypedFormBuilder,
         private dialogService: DialogService,
-        private router: Router,
         private changeDetectorRef: ChangeDetectorRef,
         private savepointFlow: SavepointFlowService,
         private indexedDb: IndexedDbRegistryService,
         private tablePersist: TablePersistenceService,
         private geoFilePersist: GeoFilePersistenceService,
-        private ipfsService: IPFSService,
-        private policyTest: PolicyTestAutomationService,
         private schemaService: SchemaService,
-        private formulasService: FormulasService,
-        private calculationPreview: CalculationPreviewService,
-        private toastService: ToastService,
     ) {
         super(policyEngineService, profile, wsService);
-        this.dataForm = this.fb.group({});
         this.storage = new DocumentAutosaveStorage(indexedDb);
     }
 
@@ -226,21 +121,21 @@ export class RequestDocumentBlockComponent
         (window as any).__requestLast = this;
         (window as any).__request = (window as any).__request || {};
         (window as any).__request[this.id] = this;
-        this.initForm(this.dataForm, false);
     }
 
     ngOnDestroy(): void {
-        if (this.previewBusyTimer !== null) clearTimeout(this.previewBusyTimer);
-        if (this.previewMode) this.previewRequest++;
-        this.destroy$.next(true);
-        this.destroy$.unsubscribe();
+        this.destroyed = true;
+        if (this.takeoverRef) {
+            this.formTakeover?.close(this.takeoverRef);
+        }
         this.destroy();
     }
 
     public __validate() {
         const errors: string[] = [];
-        const dataForm = this.dialog?.dataForm || this.dataForm;
-        this.__findError(dataForm, errors, '');
+        if (this.form?.dataForm) {
+            this.__findError(this.form.dataForm, errors, '');
+        }
         console.log(errors);
     }
 
@@ -254,33 +149,6 @@ export class RequestDocumentBlockComponent
                 }
             }
         });
-    }
-
-    public initForm($event: any, restorePreview: boolean = true) {
-        this.dataForm = $event;
-        this.dataForm.valueChanges
-            .pipe(takeUntil(this.destroy$))
-            .pipe(audit(ev => interval(1000)))
-            .subscribe(val => {
-                this.validate();
-            });
-        if (restorePreview) {
-            this.restorePreviewMode();
-        }
-    }
-
-    public onPresetApplied(): void {
-        if (this.previewMode) {
-            void this.runPreview(true);
-        }
-    }
-
-    private validate() {
-        if (!this.rules) {
-            return;
-        }
-        const data = this.dataForm.getRawValue();
-        this.rulesResults = this.rules.validateForm(this.schema?.iri, data);
     }
 
     protected override _onSuccess(data: any) {
@@ -304,18 +172,9 @@ export class RequestDocumentBlockComponent
 
     private _applyBlockData(data: any) {
         this.setData(data);
-        if (this.type === 'dialog') {
-            setTimeout(() => {
-                this.loading = false;
-            }, 500);
-        } else if (this.type === 'page') {
-            this.loadRules();
-            this.loadFormulas();
-        } else {
-            setTimeout(() => {
-                this.loading = false;
-            }, 500);
-        }
+        setTimeout(() => {
+            this.loading = false;
+        }, 500);
     }
 
     async showAutosaveDiag() {
@@ -370,6 +229,7 @@ export class RequestDocumentBlockComponent
                 this.description = uiMetaData.description;
             }
             this.disabled = active === false;
+            this.openPageFormOnce();
             this.isExist = true;
             this.needPreset = !!data.presetSchema;
             this.presetFields = data.presetFields || [];
@@ -388,13 +248,16 @@ export class RequestDocumentBlockComponent
             this.disabled = false;
             this.isExist = false;
         }
-        if (this.enableAdditionalData) {
-            this.submitText = 'Add Evidence Attachments';
-        } else if (this.relayerAccount) {
-            this.submitText = 'Select Relayer Account';
-        } else {
-            this.submitText = (this.edit && !this.draft) ? 'Validate & Update' : 'Validate & Create';
+    }
+
+    // A page-type block is the form itself, so it opens on first render. After the user
+    // closes the form, the "Start" card lets them reopen it.
+    private openPageFormOnce() {
+        if (this.type !== 'page' || this.pageFormOpened || !this.formTakeover || this.disabled || this.readonly) {
+            return;
         }
+        this.pageFormOpened = true;
+        setTimeout(() => this.onDialogOpen());
     }
 
     isBtnVisible() {
@@ -403,56 +266,6 @@ export class RequestDocumentBlockComponent
         }
 
         return true;
-    }
-
-    private loadRules() {
-        this.schemaRulesService
-            .getSchemaRuleData({
-                policyId: this.policyId,
-                schemaId: this.schema?.iri,
-                parentId: this.ref?.id
-            })
-            .subscribe((rules) => {
-                this.rules = new DocumentValidators(rules);
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
-            }, (e) => {
-                this.loading = false;
-            });
-    }
-
-
-    private loadFormulas() {
-        const schemaIri = this.schema?.iri;
-        if (!this.policyId || !schemaIri || this.formulasSchemaIri === schemaIri) {
-            return;
-        }
-        this.formulasSchemaIri = schemaIri;
-        this.formulasService
-            .getFormTree(this.policyId, schemaIri)
-            .pipe(takeUntil(this.destroy$))
-            .subscribe((formulas) => {
-                this.formulas = formulas;
-                this.changeDetectorRef.markForCheck();
-            }, () => {
-                this.formulas = null;
-            });
-    }
-
-    private loadRelayerAccounts() {
-        this.loading = true;
-        this.relayerAccountsService
-            .getRelayerAccountsAll()
-            .pipe(takeUntil(this.destroy$))
-            .subscribe((relayerAccounts: any[]) => {
-                this.relayerAccounts = relayerAccounts;
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
-            }, (e) => {
-                this.loading = false;
-            });
     }
 
     private getJson(data: any, presetFields: any[]) {
@@ -486,289 +299,14 @@ export class RequestDocumentBlockComponent
         return null;
     }
 
-    private reportInvalid() {
-        this.setStep(0);
-        this.toastService.error('Please fix the highlighted fields before continuing');
-        this.formRoot?.focusFirstInvalid();
-    }
-
-    public async onStep(draft?: boolean) {
-        if (this.disabled || this.loading) {
-            return;
-        }
-        if (!this.dataForm.valid && !draft) {
-            this.reportInvalid();
-            return;
-        }
-        if (this.previewMode && !draft) {
-            await this.runPreview(false);
-            return;
-        }
-        if (this.enableAdditionalData && this.isStep(0)) {
-            this.setStep(1);
-        } else if (this.enableAdditionalData && this.isStep(1) && this.relayerAccount) {
-            this.setStep(2);
-            this.loadRelayerAccounts();
-        } else if (!this.enableAdditionalData && this.relayerAccount && this.isStep(0)) {
-            this.setStep(1);
-            this.loadRelayerAccounts();
-        } else {
-            await this.onSubmit(draft);
-        }
-    }
-
-    private restorePreviewMode(): void {
-        if (this.previewPreferenceLoaded || this.disabled || !this.schema || !this.user?.id || !this.policyId || !this.id) {
-            return;
-        }
-        this.previewPreferenceLoaded = true;
-        if (this.calculationPreview.loadMode(this.user?.id, this.policyId, this.id)) {
-            void this.onPreviewModeChange(true);
-        }
-    }
-
-    public async onPreviewModeChange(enabled: boolean): Promise<void> {
-        this.previewPreferenceLoaded = true;
-        this.calculationPreview.saveMode(this.user?.id, this.policyId, this.id, enabled);
-        this.previewMode = enabled;
-        if (!enabled) this.previewRendering = false;
-        if (!enabled) {
-            this.previewRequest++;
-            this.loading = false;
-            this.previewRequiredFields = null;
-            this.previewMissingFields = [];
-            return;
-        }
-        this.setStep(0);
-        await this.runPreview(true);
-    }
-
-    private async runPreview(previewFields: boolean): Promise<void> {
-        const request = ++this.previewRequest;
-        const preset = this.presetDocument;
-        const current = () => request === this.previewRequest && preset === this.presetDocument;
-        this.loading = true;
-        try {
-            const result = await this.calculationPreview.run(
-                this.policyId,
-                this.id,
-                this.dataForm.getRawValue(),
-                this.ref,
-                previewFields,
-                {
-                    relayerAccount: this.relayerAccountType === 'new' ? null : this.getRelayerAccount(),
-                    evidence: this.enableAdditionalData ? this.buildEvidence() : undefined
-                }
-            );
-            if (!this.previewMode || !current()) {
-                return;
-            }
-            this.previewRequiredFields = this.calculationPreview.updateRequiredFields(this.previewRequiredFields, result);
-            this.previewMissingFields = [];
-            if (previewFields) {
-                this.calculationPreview.showDiscoveryWarning(result);
-            } else {
-                this.showPreviewResult(result);
-            }
-        } catch (error) {
-            const validation = this.calculationPreview.getInputValidation(error);
-            if (this.previewMode && validation && current()) {
-                this.previewRequiredFields = this.calculationPreview.updateRequiredFields(this.previewRequiredFields, validation);
-                this.previewMissingFields = [...validation.missingFields];
-            }
-            console.error(error);
-        } finally {
-            if (current()) {
-                this.loading = false;
-            }
-        }
-    }
-
-    private showPreviewResult(result: ICalculationPreviewResult): void {
-        this.calculationPreview.showErrors(result);
-        const documents = this.calculationPreview.getViewerDocuments(result);
-        if (!documents.length) {
-            return;
-        }
-        this.dialogService.open(VCViewerDialog, {
-            showHeader: false,
-            width: '90%',
-            styleClass: 'guardian-dialog',
-            data: {
-                title: 'Calculation preview',
-                type: 'VC',
-                viewDocument: true,
-                dryRun: !!this.dryRun,
-                document: documents[0].document,
-                previewDocuments: documents
-            }
-        });
-    }
-
-    private getRelayerAccount() {
-        if (this.relayerAccount) {
-            if (this.relayerAccountType === 'account') {
-                return null;
-            } else if (this.relayerAccountType === 'relayerAccount') {
-                return this.currentRelayerAccount;
-            } else if (this.relayerAccountType === 'new') {
-                return this.relayerAccountForm.value;
-            } else {
-                return null;
-            }
-        } else {
-            return null;
-        }
-    }
-
-    private async onSubmit(draft?: boolean) {
-        const data = this.dataForm.getRawValue();
-        this.loading = true;
-
-        let geoPersistStarted = false;
-        try {
-            await this.tablePersist.persistTablesInDocument(data, !!this.dryRun, this.policyId, this.id, draft);
-            geoPersistStarted = true;
-            await this.geoFilePersist.persistGeoFilesInDocument(data, !!this.dryRun, !!draft);
-        } catch (error) {
-            await this.tablePersist.rollbackIpfsUploads();
-            if (geoPersistStarted) await this.geoFilePersist.rollbackGridFsUploads();
-            console.error(error);
-            this.loading = false;
-            return;
-        }
-        this.storage.delete(this.getAutosaveId());
-
-        prepareVcData(data);
-
-        const evidence = this.enableAdditionalData ? this.buildEvidence() : undefined;
-
-        const payload = {
-            document: data,
-            ref: this.ref,
-            draft,
-            draftId: this.draftId,
-            relayerAccount: this.getRelayerAccount(),
-            ...(evidence?.length ? { evidence } : {})
-        };
-
-        const captureOutput = this.dryRun && !draft && this.policyTest.state.captureNextFormSubmit;
-
-        let requestSucceeded = false;
-
-        this.policyEngineService
-            .setBlockDataWithResult(this.id, this.policyId, payload)
-            .pipe(
-                finalize(async () => {
-                    try {
-                        if (!requestSucceeded) {
-                            await this.tablePersist.rollbackIpfsUploads();
-                            await this.geoFilePersist.rollbackGridFsUploads();
-                        }
-                    } finally {
-                        this.loading = false;
-                    }
-                })
-            )
-            .subscribe((result) => {
-                requestSucceeded = true;
-                if (captureOutput) {
-                    this.policyTest.captureTestCase({
-                        policyId: this.policyId,
-                        blockId: this.id,
-                        blockType: 'requestDocumentBlock',
-                        ...payload,
-                        result: result?.result || result?.response
-                    });
-                }
-
-                setTimeout(() => {
-                    this.loading = false;
-                    if (!draft && this.dialogRef) {
-                        this.dialogRef.close(null);
-
-                    }
-                }, 1000);
-            }, (e) => {
-                console.error(e.error);
-                this.loading = false;
-            });
-    }
-
-    public handleSaveBtnEvent($event: any) {
-        if (!this.loading) {
-            this.onStep(true);
-        }
-    }
-
     public onDraftImported(doc: any): void {
         this.preset(doc);
-    }
-
-    public onEvidenceDrop($event: DragEvent) {
-        $event.preventDefault();
-        const files = $event.dataTransfer?.files;
-        if (files?.length) {
-            this.addEvidenceFiles(Array.from(files));
-        }
-    }
-
-    public onEvidenceAttach($event: any) {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.multiple = true;
-        input.onchange = (e: any) => {
-            const files: File[] = Array.from(e.target.files || []);
-            if (files.length) {
-                this.addEvidenceFiles(files);
-            }
-        };
-        input.click();
-    }
-
-    public onDeleteEvidenceFile(file: AttachedFile) {
-        const index = this.evidenceFiles.indexOf(file);
-        if (index !== -1) {
-            this.evidenceFiles.splice(index, 1);
-            this._evidenceFileMap.delete(file);
-        }
-    }
-
-    private addEvidenceFiles(files: File[]) {
-        for (const rawFile of files) {
-            if (this.evidenceFiles.some(f => this._evidenceFileMap.get(f)?.name === rawFile.name)) {
-                continue;
-            }
-            const af = AttachedFile.fromFile('', '', '', rawFile);
-            this._evidenceFileMap.set(af, rawFile);
-            this.evidenceFiles.push(af);
-            this.ipfsService.addFile(rawFile).subscribe((cid: string) => {
-                af.cid = cid;
-                af.link = 'ipfs://' + cid;
-                af.loaded = true;
-            }, () => {
-                af.error = true;
-            });
-        }
-    }
-
-    private buildEvidence(): Array<{ dataType: 'message' | 'file'; data: string }> {
-        const entries: Array<{ dataType: 'message' | 'file'; data: string }> = [];
-        if (this.evidenceText?.trim()) {
-            entries.push({ dataType: 'message', data: this.evidenceText.trim() });
-        }
-        for (const file of this.evidenceFiles.filter(f => f.loaded && !f.error)) {
-            entries.push({ dataType: 'file', data: file.link });
-        }
-        return entries;
     }
 
     public preset(document: any) {
         this.presetDocument = document;
         this.changeDetectorRef.detectChanges();
-        if (this.dialog) {
-            this.dialog.detectChanges();
-        }
+        this.form?.detectChanges();
     }
 
     public getRef() {
@@ -817,15 +355,34 @@ export class RequestDocumentBlockComponent
         this.showDocumentDialog();
     }
 
+    public get allowDraft(): boolean {
+        return this.type === 'page' ? false : (!this.edit || this.draft);
+    }
+
     private showDocumentDialog() {
-        this.dialogRef = this.dialogService.open(RequestDocumentBlockDialog, {
+        // The open is async (timers, autosave lookup), so the block may be gone by now
+        if (this.destroyed) {
+            return;
+        }
+        if (this.formTakeover) {
+            this.takeoverRef = this.formTakeover.open(RequestDocumentFormComponent, {
+                parent: this,
+                allowDraft: this.allowDraft
+            });
+            const ref = this.takeoverRef;
+            ref.instance.closed.subscribe(() => {
+                if (this.takeoverRef === ref) {
+                    this.takeoverRef = null;
+                }
+            });
+            return;
+        }
+        this.dialogService.open(RequestDocumentFormComponent, {
             showHeader: false,
             width: '90%',
-            styleClass: 'guardian-dialog without-padding',
+            styleClass: 'guardian-dialog without-padding pv-scope',
             data: this
         });
-
-        this.dialogRef && this.dialogRef.onClose.subscribe(async (result: any) => { });
     }
 
     private showAutosaveDialog(autosaveDocument: string, callback?: any) {
@@ -854,6 +411,9 @@ export class RequestDocumentBlockComponent
 
         dialogOptionRef.onClose.subscribe(async (result: string) => {
             if (result != 'Cancel') {
+                // Opening the form blocks the main thread. Wait for the dialog mask to finish
+                // fading out, or it stays frozen on screen while the form is built.
+                await new Promise((resolve) => setTimeout(resolve, 300));
 
                 if (result === 'Restore') {
                     this.preset(autosaveDocument);
@@ -862,11 +422,9 @@ export class RequestDocumentBlockComponent
                     await this.geoFilePersist.restoreGeoFilesFromDraft(autosaveDocument);
 
                     this.savepointFlow.setSkipOnce();
-                    if (this.type == 'dialog') {
-                        this.showDocumentDialog();
-                    }
+                    this.showDocumentDialog();
                 }
-                else if (result === 'No' && this.type === 'dialog') {
+                else if (result === 'No') {
                     this.onDialog();
                 }
 
@@ -927,76 +485,4 @@ export class RequestDocumentBlockComponent
         }
     }
 
-    public onCancelPage(value: boolean) {
-        this.router.navigate(['/policy-viewer']);
-    }
-
-    public onChangeButtons($event: any) {
-        if (Array.isArray($event)) {
-            for (const item of $event) {
-                if (item.id === 'submit') {
-                    item.disabled = () => {
-                        return this.loading;
-                    }
-                }
-            }
-        }
-    }
-
-    public isStep(index: number) {
-        return this.stepper[index];
-    }
-
-    public setStep(index: number) {
-        for (let i = 0; i < this.stepper.length; i++) {
-            this.stepper[i] = false;
-        }
-        this.stepper[index] = true;
-    }
-
-    public isActionStep(index: number): boolean {
-        return this.stepper[index];
-    }
-
-    public onGenerateRelayerAccount() {
-        this.loading = true;
-        this.relayerAccountsService
-            .generateRelayerAccount()
-            .subscribe((account) => {
-                const data = this.relayerAccountForm.value;
-                this.relayerAccountForm.setValue({
-                    name: data.name || '',
-                    account: account.id || '',
-                    key: account.key || ''
-                })
-                this.loading = false;
-            }, (e) => {
-                this.loading = false;
-            });
-    }
-
-    public ifRelayerAccountDisabled() {
-        if (this.relayerAccount) {
-            const relayerStep = this.enableAdditionalData ? 2 : 1;
-            if (this.isStep(relayerStep)) {
-                if (this.relayerAccountType === 'account') {
-                    return false;
-                } else if (this.relayerAccountType === 'relayerAccount') {
-                    return !this.currentRelayerAccount;
-                } else if (this.relayerAccountType === 'new') {
-                    return this.relayerAccountForm.invalid;
-                } else {
-                    return null;
-                }
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
-    }
-
-    public ifDisabledBtn() {
-        return this.loading || this.ifRelayerAccountDisabled() || this.isRemoteWarning;
-    }
 }

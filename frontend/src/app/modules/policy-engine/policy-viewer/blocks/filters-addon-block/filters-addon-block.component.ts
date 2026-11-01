@@ -198,6 +198,19 @@ export class FiltersAddonBlockComponent implements OnInit {
         }
     }
 
+    get hasValue(): boolean {
+        const value = this.currentValue;
+        if (Array.isArray(value)) {
+            return value.length > 0;
+        }
+        return value !== null && value !== undefined && value !== '';
+    }
+
+    onClear() {
+        this.currentValue = Array.isArray(this.currentValue) ? [] : null;
+        this.onFilters(null);
+    }
+
     onType(event: any) {
         if (this.currentType === 'in' || this.currentType === 'not_in' || this.currentType === 'nin') {
             this.currentValue = [];
@@ -211,7 +224,7 @@ export class FiltersAddonBlockComponent implements OnInit {
         this.valid = true;
         this.loading = true;
         let value = this.currentValue;
-        if (this.type === 'datepicker') {
+        if (this.type === 'datepicker' && value) {
             value = moment(value).format('YYYY-MM-DD');
         }
         if (Array.isArray(value)) {

@@ -1,15 +1,27 @@
 <div class="content" [hidden]="!isActive" [attr.readonly-block]="readonly">
-  @if (addons && addons.length) {
-    <div class="grid-filters">
-      @for (block of addons; track block) {
-        <div class="grid-filter">
-          <render-block [block]="block" [policyId]="policyId" [dryRun]="dryRun" [savepointIds]="savepointIds" [policyStatus]="policyStatus"></render-block>
+  @if (fields && documents) {
+    <div class="pv-table-card" [class.has-filters]="addons && addons.length">
+      @if (addons && addons.length) {
+        <div class="grid-filters">
+          @for (block of addons; track block) {
+            <div class="grid-filter">
+              <render-block [block]="block" [policyId]="policyId" [dryRun]="dryRun" [savepointIds]="savepointIds" [policyStatus]="policyStatus"></render-block>
+            </div>
+          }
         </div>
       }
-    </div>
-  }
-  @if (fields && documents) {
-    <div style="background: var(--grey-grey-1, #F9FAFC);">
+      @if (documents.length === 0) {
+        <div class="pv-empty">
+          <div class="pv-empty__icon"><i class="pi pi-inbox" aria-hidden="true"></i></div>
+          @if (addons && addons.length) {
+            <div class="pv-empty__title">No documents found</div>
+            <div class="pv-empty__text">Nothing matches the current filters, or no documents have been created in this step yet.</div>
+          } @else {
+            <div class="pv-empty__title">No documents yet</div>
+            <div class="pv-empty__text">Documents will appear here once they are created in this step.</div>
+          }
+        </div>
+      } @else {
       <div class="table-container">
         <p-table
           [value]="documents"
@@ -23,17 +35,20 @@
               @for (field of fields; track field) {
                 @if (field.__sortable) {
                   <th
-                    pSortableColumn="{{ field.index }}"
+                    [pSortableColumn]="field.name"
+                    [class.col-actions]="field.__isAction"
                     [style.width]="field.__width"
                     [style.min-width]="field.__minWidth"
                     >{{ field.title }}
                     @if (field.tooltip) {
                       <help-icon [text]="field.tooltip"></help-icon>
                     }
+                    <p-sortIcon [field]="field.name"></p-sortIcon>
                   </th>
                 }
                 @if (!field.__sortable) {
                   <th
+                    [class.col-actions]="field.__isAction"
                     [style.width]="field.__width"
                     [style.min-width]="field.__minWidth"
                     >{{ field.title }}
@@ -54,24 +69,43 @@
               @for (field of fields; track field) {
                 <td
                   class="col-{{field.title}}"
+                  [class.col-actions]="field.__isAction"
+                  [attr.data-label]="field.title"
                   [style.width]="field.__width"
                   [style.min-width]="field.__minWidth"
                   >
                   @if (field.type === 'history') {
                     @if (element.history && element.history.length) {
-                      <div>
-                        <i [ngClass]="statusDetailed === element ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"></i>
-                      </div>
+                      <button
+                        type="button"
+                        class="history-toggle"
+                        [class.open]="statusDetailed === element"
+                        [attr.aria-expanded]="statusDetailed === element"
+                        [attr.aria-label]="'Status history, ' + element.history.length + ' entries'"
+                        (click)="$event.stopPropagation(); onRowClick(element)">
+                        <span class="history-count">{{ element.history.length }}</span>
+                        <i class="pi pi-chevron-right" aria-hidden="true"></i>
+                      </button>
                     }
                   }
                   @if (getGroup(element, field); as option) {
                     <div class="col-container">
                       <div [style.width]="field.width" [class]="getClass(option.type)">
                         @if (option.type == 'text') {
-                          <span
-                            [title]="getText(element, option)"
-                            class="text"
-                          >{{ getText(element, option) }}</span>
+                          @let cellText = getText(element, option);
+                          @if (option.name === 'option.status') {
+                            @if (cellText) {
+                              <span
+                                [title]="cellText"
+                                class="pv-status pv-status--{{ getStatusTone(cellText) }}"
+                              >{{ cellText }}</span>
+                            }
+                          } @else {
+                            <span
+                              [title]="cellText"
+                              class="text"
+                            >{{ cellText }}</span>
+                          }
                         }
                         @if (option.type == 'richText') {
                           @let richTextCellText = getRichTextCellText(element, option);
@@ -121,14 +155,27 @@
                             class="col-btn buttons"
                             (click)="$event.stopImmediatePropagation()"
                             >
-                            <div
+                            <button
+                              type="button"
                               (click)="onButton($event, element, option)"
                               class="btn-field {{ option.uiClass }}">
+                              @if (option.uiClass == 'btn-approve') {
+                                <i class="pi pi-check" aria-hidden="true"></i>
+                              }
+                              @if (option.uiClass == 'btn-reject') {
+                                <i class="pi pi-times" aria-hidden="true"></i>
+                              }
+                              @if (option.uiClass == 'link') {
+                                <i class="pi pi-eye" aria-hidden="true"></i>
+                              }
                               {{ getText(element, option) }}
-                            </div>
+                            </button>
                             @if (option.action == 'dialog' && !dryRun) {
-                              <div
+                              <button
+                                type="button"
                                 class="comments-button"
+                                aria-label="Comments"
+                                title="Comments"
                                 (click)="onButton($event, element, option, true)"
                                 >
                                 <svg-icon
@@ -136,11 +183,10 @@
                                   src="/assets/images/icons/chat-fill.svg"
                                   [svgClass]="'icon-color-grey-color-3'">
                                 </svg-icon>
-                                @if (option.action == 'dialog') {
-                                  <div
-                                  class="comments-count">{{element.comments}}</div>
+                                @if (element.comments) {
+                                  <span class="comments-count">{{element.comments}}</span>
                                 }
-                              </div>
+                              </button>
                             }
                           </div>
                         }
@@ -182,25 +228,44 @@
             </tr>
             @if (statusDetailed === element) {
               <tr>
-                <td [attr.colspan]="fields.length + 1" class="expanded-detail">
-                  <div class="timeline-container">
-                    @for (historyElem of element.history; track historyElem) {
-                      <div [attr.date-is]="historyElem.created"
-                        class="timeline-item">
-                        <h1 class="timeline-header-title">{{ historyElem.labelValue }}</h1>
-                        <p>{{ parseArrayValue(historyElem.comment) }}</p>
-                      </div>
+                <td [attr.colspan]="fields.length + 1" class="history-detail">
+                  <ol class="history-timeline">
+                    @for (historyElem of element.history; track historyElem; let first = $first) {
+                      <li class="history-entry">
+                        <div class="history-entry__head">
+                          @if (historyElem.labelValue) {
+                            <span class="pv-status pv-status--{{ getStatusTone(historyElem.labelValue) }}">{{ historyElem.labelValue }}</span>
+                          } @else {
+                            <span class="history-entry__empty">No status information</span>
+                          }
+                          <span class="history-entry__date">{{ historyElem.created }}</span>
+                          @if (first) {
+                            <span class="history-entry__latest">Latest</span>
+                          }
+                        </div>
+                        @let historyComment = parseArrayValue(historyElem.comment);
+                        @if (historyComment) {
+                          <blockquote class="history-entry__comment">{{ historyComment }}</blockquote>
+                        }
+                      </li>
                     }
-                  </div>
+                  </ol>
                 </td>
               </tr>
             }
           </ng-template>
         </p-table>
       </div>
-      @if (paginationAddon) {
-        <div class="pagination">
-          <render-block [block]="paginationAddon" [policyId]="policyId" [dryRun]="dryRun" [savepointIds]="savepointIds" [policyStatus]="policyStatus"></render-block>
+      }
+      @if (documents.length > 0 || paginationAddon) {
+        <div class="table-footer">
+          @if (paginationAddon) {
+            <div class="pagination">
+              <render-block [block]="paginationAddon" [policyId]="policyId" [dryRun]="dryRun" [savepointIds]="savepointIds" [policyStatus]="policyStatus"></render-block>
+            </div>
+          } @else {
+            <div class="table-count">{{ documents.length }} {{ documents.length === 1 ? 'document' : 'documents' }}</div>
+          }
         </div>
       }
     </div>

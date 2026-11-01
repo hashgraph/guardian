@@ -312,15 +312,38 @@ a[disabled="true"] {
     align-content: center;
 }
 
+.filters > .p-fluid {
+    width: 1080px;
+    max-width: 100%;
+}
+
 .search-input {
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
     background: var(--color-grey-white);
 
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-sizing: border-box;
     overflow: hidden;
-    width: 40vw;
-    min-width: 400px;
-    padding: 24px;
+    width: 100%;
+    padding: 16px;
+
+    input {
+        flex: 1;
+        min-width: 0;
+        height: 40px;
+    }
+
+    .p-button {
+        flex: none;
+        width: 40px;
+        height: 40px;
+        border-color: var(--color-primary);
+        background: var(--color-primary);
+        color: var(--guardian-secondary-color, #FFF);
+    }
 
     ::ng-deep {
         .mat-form-field-wrapper {

@@ -4,12 +4,11 @@ import * as Checks from '../../../support/checkingMethods';
 const d = new Date(2022, 3, 3);
 
 const UserPoliciesPageLocators = {
-    roleSelect: '[formcontrolname="roleOrGroup"]',
-    role: (roleName) => `li[aria-label="${roleName}"]`,
-    nextButton: "button[label='Next']",
+    roleSelect: '[data-role]',
+    role: (roleName) => `[data-role="${roleName}"]`,
+    nextButton: "button:contains('Continue')",
     requestDocumentBlock: 'request-document-block',
-    nextButtonInApplicationRegister: "button:contains('Next ')",
-    submitButton: "button:contains('Submit ')",
+    submitButton: "button:contains('Validate & Create')",
     divTitle: 'div.title',
     waitingForApprovalTitle: "span[title='Waiting for approval']",
     signedStatus: 'div.status-SIGNED',
@@ -36,7 +35,7 @@ const UserPoliciesPageLocators = {
     projectTab: 'Projects',
     validated: "span[title='Validated']",
     verified: "span[title='Verified']",
-    approveButton: 'div.btn-approve',
+    approveButton: 'button.btn-approve',
     createReportButton: "button:contains(' Add Report ')",
     monitoringReports: "p:contains('Monitoring reports')",
     revokeButton: "button-block div:contains(' Revoke ')",
@@ -88,13 +87,11 @@ export class UserPoliciesPage {
     }
 
     registerInPolicy(role = 'Registrant') {
-        cy.get(UserPoliciesPageLocators.roleSelect).should('be.visible').click();
+        cy.get(UserPoliciesPageLocators.roleSelect).should('be.visible');
         cy.get(UserPoliciesPageLocators.role(role)).click();
         cy.get(UserPoliciesPageLocators.nextButton).click();
         if (role == 'Registrant') {
             Checks.waitForElement(UserPoliciesPageLocators.requestDocumentBlock);
-            cy.get(UserPoliciesPageLocators.nextButtonInApplicationRegister).click();
-            cy.get(UserPoliciesPageLocators.nextButtonInApplicationRegister).click();
             cy.get(UserPoliciesPageLocators.submitButton).click();
             Checks.waitForElement(UserPoliciesPageLocators.divTitle);
         }
@@ -155,7 +152,7 @@ export class UserPoliciesPage {
     }
 
     registerInPolicySmall() {
-        cy.get(UserPoliciesPageLocators.roleSelect).should('be.visible').click();
+        cy.get(UserPoliciesPageLocators.roleSelect).should('be.visible');
         cy.get(UserPoliciesPageLocators.role('Registrant')).click();
         cy.get(UserPoliciesPageLocators.nextButton).click();
         Checks.waitForElement(UserPoliciesPageLocators.requestDocumentBlock);

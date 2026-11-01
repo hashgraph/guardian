@@ -1,5 +1,4 @@
-import { RequestDocumentBlockComponent } from '../../policy-engine/policy-viewer/blocks/request-document-block/request-document-block.component';
-import { RequestDocumentBlockDialog } from '../../policy-engine/policy-viewer/blocks/request-document-block/dialog/request-document-block-dialog.component';
+import { RequestDocumentFormComponent } from '../../policy-engine/policy-viewer/blocks/request-document-block/form/request-document-form.component';
 import { UntypedFormGroup } from '@angular/forms';
 import { ISchemaDocument, Schema, SchemaDataTypes } from '@guardian/interfaces';
 import { FieldForm, IFieldControl, IFieldIndexControl } from './field-form';
@@ -645,8 +644,7 @@ describe('indexed Preview requirements', () => {
         expect(form.form.valid).toBeTrue();
         const gate = { dataForm: form.form, loading: false, isRemoteWarning: false,
             ifRelayerAccountDisabled: () => false };
-        expect(Reflect.apply(RequestDocumentBlockComponent.prototype.ifDisabledBtn, gate, [])).toBeFalse();
-        expect(Reflect.apply(RequestDocumentBlockDialog.prototype.ifDisabledBtn, gate, [{ id: 'submit' }])).toBeFalse();
+        expect(Reflect.apply(RequestDocumentFormComponent.prototype.ifDisabledBtn, gate, [{ id: 'submit' }])).toBeFalse();
         form.form.get('rows.0.amount')?.setValue(null);
         expect(!!form.form.get('rows.0.amount')?.errors?.['required']).toBeTrue();
         expect(!!form.form.get('rows.1.amount')?.errors?.['required']).toBeFalse();
