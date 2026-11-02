@@ -1,7 +1,6 @@
 const optionKey = 'option';
 import { STATUS_CODE, METHOD } from '../support/api/api-const';
 import API from '../support/ApiUrls';
-import CommonElements from '../support/defaultUIElements';
 
 export const whileRequestProccessing = (request, dataToCompare, source, attempts = 0) => {
     if (attempts < 100) {
@@ -338,18 +337,38 @@ export const waitForTaskComplete = (maxAttempts = 200, interval = 2000) => {
     }
 }
 
+/**
+ * Waits until the `username` row in the open per-token user view shows a balance of at
+ * least `balance`. The balance cell (`div.user-balance`) renders only once the account is
+ * associated with the token and the mint has landed, so each retry re-requests the row
+ * through the per-row refresh button. `balance` is the expected value as the spec writes it
+ * (e.g. `' 85 '`); it is parsed to a number and compared, so a row still loading or not yet
+ * associated reads as "not reached" and is retried.
+ */
 export const waitForBalanceIncrease = (balance, username, maxAttempts = 200, interval = 10000) => {
-    if (maxAttempts > 0) {
-        maxAttempts--;
-        cy.get('body', { log: false }).then((body) => {
-            cy.log(body.find(`td:contains(${balance})`));
-            if (body.find(`td:contains(${balance})`).length === 0) {
-                cy.contains('td', username).siblings().find(CommonElements.svg).click();
-                cy.wait(interval, { log: false });
-                waitForBalanceIncrease(balance, username, maxAttempts, interval);
-            }
-        })
+    const expected = parseFloat(String(balance).replace(/[^0-9.]/g, ''));
+    if (maxAttempts <= 0) {
+        throw new Error(`Balance for ${username} never reached ${expected}`);
     }
+    maxAttempts--;
+    cy.get('body', { log: false }).then((body) => {
+        const parse = (text) => parseFloat(String(text || '').replace(/[^0-9.]/g, ''));
+        const row = Array.from(body.querySelectorAll('tr.guardian-grid-row')).find((r) => {
+            const cells = Array.from(r.querySelectorAll('span.text-truncate'));
+            return cells.length > 0 && cells[0].textContent.trim() === username;
+        });
+        const balanceCell = row ? row.querySelector('div.user-balance') : null;
+        const current = balanceCell ? parse(balanceCell.textContent) : NaN;
+        if (Number.isNaN(current) || current < expected) {
+            cy.log(`Balance for ${username}: ${Number.isNaN(current) ? 'not loaded yet' : current} (< ${expected}); refreshing`);
+            const refresh = row ? row.querySelector('div.guardian-icon-button svg-icon[src*="refresh-2"]') : null;
+            if (refresh) {
+                refresh.click();
+            }
+            cy.wait(interval, { log: false });
+            waitForBalanceIncrease(balance, username, maxAttempts, interval);
+        }
+    })
 }
 
 export const waitForLoading = (maxAttempts = 200, interval = 2000) => {

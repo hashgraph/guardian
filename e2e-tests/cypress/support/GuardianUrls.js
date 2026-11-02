@@ -12,6 +12,7 @@ const URL = {
 
 	//Tabs
 	Policies: '/policy-viewer',
+	Tools: '/tools',
 	Tokens: '/tokens',
 	Contracts: '/contracts',
 	Modules: '/modules',

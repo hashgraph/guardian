@@ -203,6 +203,82 @@ npx cypress run --spec "path/to/file.cy.js"
 npx cypress run --env "grepTags=ui,grepFilterSpecs=true"
 ```
 
+##### Preparing the app for UI tests
+
+UI tests drive the real frontend, so the app must be running where `CYPRESS_baseUrl` points:
+
+```bash
+cd frontend
+UI_GATEWAY_ORIGIN=http://host.docker.internal:3002/ \
+  ng serve --host 127.0.0.1 --port 4200 --proxy-config ./proxy.hostdocker.js
+```
+
+- `UI_GATEWAY_ORIGIN` is where the dev server proxies `/api/v1` and the WebSocket to.
+  `yarn start` uses `proxy.conf.json`, which assumes a gateway on `localhost:3002`;
+  `proxy.hostdocker.js` exists for the common case of running the suite in a container
+  (or a VM) that reaches the host's Guardian stack through `host.docker.internal`.
+- Pass `CYPRESS_baseUrl=http://127.0.0.1:4200` to the Cypress run (the `entrypoint.sh`
+  examples above do this).
+- The `[proxy]` lines the logger in `proxy.hostdocker.js` prints are the only request-level
+  trace of a UI run — the Angular dev server does not log proxied requests even at
+  `logLevel: "debug"`. See [Diagnosing a hung request](#diagnosing-a-hung-request-ui-runs).
+- If a suite keeps hitting odd bootstrap states (page stuck on a spinner even after the
+  tests reload it), restart `ng serve` before re-running: a long-lived dev server
+  accumulates state (stale incremental builds, dead WebSocket pairings) that a fresh one
+  does not have.
+
+##### UI suite patterns (idempotent re-runs)
+
+`ui`-tagged specs drive the real frontend in a persistent browser profile, and the backend
+state they create (users, tools, policies, tokens) survives the run. Suites 00–02 are
+idempotent — every spec passes on repeated runs against the same workspace; suite 03 uses
+the same per-run naming isolation; 04 and later are not converted yet. The patterns they
+share, worth knowing before extending a UI suite, live in `cypress/support/` and
+`ui-tests/pages/`:
+
+- **Clean boot** (`homePage.js` → `visit()`): the profile persists `accessToken`,
+  `refreshToken` and `username` in `localStorage`, so a failed run would auto-log the next
+  one in and skip the login page the Sign Up / login flows depend on. `visit()` wipes those
+  keys in `onBeforeLoad`, then waits for the app shell's loader to release before the first
+  assertion.
+- **Settled-phase waits** (`homePage.js` → `_settledUserProfilePhase()`): the user-profile
+  view flashes through several render states as its first load settles, so a one-shot read
+  mis-branches. The helper polls with a real timer until a terminal state (`wizard` or
+  `ready`) has *held* for a short while, resolves with the settled phase, and rejects with
+  the last phase seen on the deadline, so a stuck load fails loudly instead of hanging. The
+  same idiom backs the Sign Up settle wait in `ensureAccount`, which always ends logged out
+  on a known state.
+- **Task round trips** (`importFlow.js` → `waitForTaskRoundtrip()`): import, create,
+  publish and dry-run actions run as backend tasks — the app navigates to `/task/:id` and
+  redirects back on completion, and lists do not refresh on their own. Flows wait for the
+  full round trip, then re-land with a fresh `cy.visit`.
+- **Import-preview tool checks** (`importFlow.js` → `settleToolRowChecks()` /
+  `replaceInaccessibleTools()`): a preview row settles to valid/invalid when its per-row
+  check request answers, but that request has no client-side timeout — one check the
+  gateway never answers pins its row at `load`, which keeps the Import button disabled
+  forever. The helper waits with a deadline, re-issues the checks for rows still loading
+  (the row's change handler re-runs them), and after the last attempt fails the test with
+  the stuck `messageIds`. Rows pointing at tool messages this gateway cannot resolve are
+  re-pointed at the same-named workspace tool through the row's search picker — and the
+  picker only lists *published* tools, which is why `toolsPage.js` →
+  `ensureToolPublished()` imports the Methodology Library tools and publishes them on
+  demand first (published ones are left alone, drafts are published, missing ones imported).
+- **Background-window visibility** (`homePage.js` → `logOut()`): `getClientRects()` and
+  `getBoundingClientRect()` can report zero for genuinely rendered elements in the
+  backgrounded electron window, so branch signals must be DOM presence, not layout metrics.
+  The new header renders the sign-out icon and the hover flyout in mutually exclusive
+  `@if` states (and the flyout only shows on a real `:hover` a test cannot produce), so
+  `logOut()` branches on which of the two is in the DOM and expands a collapsed menu first
+  rather than trying to hover it.
+- **Wizard navigation without position assumptions** (`wizardSteps.js`): a policy opens on
+  whichever step the viewer last visited for that user, and step bodies may contain nested
+  tab containers. `clickButtonInWizardSteps` probes the visible step body for the control,
+  then walks the visible tabs, then the step items — throwing a listing of everything it
+  explored when the control is nowhere — and `clickWizardTab` steers a flow to a named tab.
+
+Product bugs surfaced while making the suites idempotent are documented in
+[`pending-issues/`](pending-issues/), one file per issue.
+
 ##### Run smoke tests
 
 ```bash
@@ -212,6 +288,8 @@ npx cypress run --env "grepTags=smoke,grepFilterSpecs=true"
 #### Running Tests with Tags
 
 Tags allow you to run specific test subsets. For local CLI runs using `--env "grepTags=..."`, pass multiple tags as a **space-separated** list. For Docker runs, `CYPRESS_grepTags` accepts both spaces and commas (the entrypoint normalizes them).
+
+Tests are tagged on the Mocha context object: `context('...', { tags: ['ui', 'smoke'] }, ...)`. A tag on the context covers every test in it; there is no per-`it()` tagging in this suite, and title-text `@tag` markers are not matched.
 
 ##### Verified tag examples
 
@@ -861,9 +939,27 @@ If you see **"Cannot parse as valid JSON"** when using `--env`, you are on Cypre
 
 ##### No Tests Found
 
-- Verify tags are spelled correctly
-- Ensure tests are tagged in test files with `@tag` syntax
-- Check that `grepFilterSpecs=true` is set
+- Verify tags are spelled correctly (see [Available Tags](#available-tags)).
+- Tests are tagged on the **Mocha context object**, e.g. `context('...', { tags: ['ui'] }, ...)`.
+  `@cypress/grep` reads the tags from the context object; `@tag` markers in a test *title* are
+  not picked up, so a title like `it('@ui ...')` will not be selected by `grepTags=ui`.
+- Check that `grepFilterSpecs=true` is set: without it every spec file is loaded and the tags
+  only filter the tests inside each file, which for a whole suite is slow and muddies the
+  "no tests found" signal.
+
+##### Diagnosing a hung request (UI runs)
+
+Start the app with the `proxy.hostdocker.js` logger (see [Preparing the app for UI tests](#preparing-the-app-for-ui-tests)). It traces every request the app makes to the backend on stderr:
+
+```
+[proxy] GET /profiles/StandardRegistry (auth)
+[proxy] GET /profiles/StandardRegistry <- 200
+[proxy] POST /accounts/login (NO-AUTH)
+```
+
+- `(auth)` / `(NO-AUTH)` is the presence of the `Authorization` header, so a tokenless call stands out.
+- A request that is logged as sent but **never gets a `<- <status>` line** was accepted by the gateway and is hanging — the typical cause is the gateway auth guard waiting forever on a NATS reply from the auth service (see `pending-issues/gateway-auth-guard-hangs-*.md`). In the UI this shows as a page stuck on a spinner; a page reload is the workaround the UI tests apply.
+- `WS-UPGRADE` lines without a follow-up indicate the WebSocket was accepted but never used by the app.
 
 ##### Docker Connection Issues
 
