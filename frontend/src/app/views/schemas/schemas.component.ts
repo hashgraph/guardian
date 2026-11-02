@@ -149,7 +149,7 @@ export class SchemaConfigComponent implements OnInit {
             ]
         },
         {
-            label: 'Inside documents – slower',
+            label: 'Documents content (slower)',
             items: [
                 { label: 'References', value: 'references' },
                 { label: 'Fields', value: 'fields' }

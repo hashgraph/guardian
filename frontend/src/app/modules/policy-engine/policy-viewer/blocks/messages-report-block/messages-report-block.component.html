@@ -37,17 +37,9 @@
   @if (!status) {
     <div class="dashboard">
       <form (ngSubmit)="onSearch()" [formGroup]="searchForm" class="filters">
-        <div class="p-fluid search-input">
-          <div class="p-inputgroup">
-            <span class="p-inputgroup-addon">
-              HASH/Message ID:
-            </span>
-            <input
-              formControlName="value"
-              pInputText
-              placeholder="HASH/ID"
-              type="text"
-              />
+        <div class="p-fluid">
+          <div class="p-inputgroup search-input">
+            <input formControlName="value" pInputText placeholder="HASH/ID" type="text" />
             <button
               [disabled]="!searchForm.valid"
               class="p-button-icon-only"
