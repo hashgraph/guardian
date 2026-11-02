@@ -1075,8 +1075,8 @@ __metadata:
   linkType: hard
 
 "@azure/keyvault-secrets@npm:^4.9.0":
-  version: 4.11.2
-  resolution: "@azure/keyvault-secrets@npm:4.11.2"
+  version: 4.12.0
+  resolution: "@azure/keyvault-secrets@npm:4.12.0"
   dependencies:
     "@azure-rest/core-client": "npm:^2.3.3"
     "@azure/abort-controller": "npm:^2.1.2"
@@ -1089,7 +1089,7 @@ __metadata:
     "@azure/keyvault-common": "npm:^2.1.0"
     "@azure/logger": "npm:^1.1.4"
     tslib: "npm:^2.8.1"
-  checksum: 10c0/a3f1cc6b2c9892bebfeaa534959d0a5fd5180b303795263e6aa1aa753a2c8b040995a57aeb7496c570a43fa7b7e22fc4fa1d330045c451d3778a548614b359ef
+  checksum: 10c0/a6815f1c65ed80848bc5ef53bfcf77e2acee171f0035ecf9ec69532a73fb49b30b357e907c4cad303aa39da80c50ba449ef098676a24230dc9da447c29c5e746
   languageName: node
   linkType: hard
 
