@@ -1,0 +1,17 @@
+name: Suggestion, idea, or support request
+description: Share a general idea, suggestion, or support request.
+labels: ["needs: triage"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What's the idea, suggestion, or request?
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: What else will help with shared understanding? Links, screenshots, or why this matters to you.
