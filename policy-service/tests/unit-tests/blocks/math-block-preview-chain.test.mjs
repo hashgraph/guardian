@@ -476,7 +476,7 @@ describe('@unit mathBlock preview chain with real workers', function () {
         assert.deepEqual(filled.fields, { fields: ['amount', 'rate'], missingFields: [] });
     });
 
-    it('still asks for a field read from a copy whose schema is unknown', async () => {
+    describe('a field read from a copy whose schema is unknown', () => {
         const other = () => ({ schema: '#R', owner: 'did:user', document: PolicyUtils.createVcFromSubject({ note: 1 }).toJsonTree() });
         const run = async (values, document, script, otherSchema = true) => {
             const step = previewStep(['amount', 'temp', 'rate', 'final'], document);
@@ -490,21 +490,29 @@ describe('@unit mathBlock preview chain with real workers', function () {
         };
         const copy = 'done(JSON.parse(JSON.stringify(documents[0])));';
 
-        const missing = await run({}, { amount: 2 }, copy);
-        assert.equal(getPreviewDocumentSchema(missing.passed), null);
-        assert.deepEqual(missing.fields, { fields: ['amount', 'rate'], missingFields: ['rate'] });
+        it('is still asked for when the copy loses the schema', async () => {
+            const missing = await run({}, { amount: 2 }, copy);
+            assert.equal(getPreviewDocumentSchema(missing.passed), null);
+            assert.deepEqual(missing.fields, { fields: ['amount', 'rate'], missingFields: ['rate'] });
+        });
 
-        const filled = await run({ rate: 3 }, { amount: 2, rate: 3 }, copy);
-        assert.equal(subject(filled.math).final, 6);
-        assert.deepEqual(filled.fields, { fields: ['amount', 'rate'], missingFields: [] });
+        it('is no longer missing once the user fills it', async () => {
+            const filled = await run({ rate: 3 }, { amount: 2, rate: 3 }, copy);
+            assert.equal(subject(filled.math).final, 6);
+            assert.deepEqual(filled.fields, { fields: ['amount', 'rate'], missingFields: [] });
+        });
 
-        const matched = await run({}, { amount: 2 }, 'done(documents[0]);');
-        assert.equal(getPreviewDocumentSchema(matched.passed), '#S');
-        assert.deepEqual(matched.fields, { fields: ['amount', 'rate'], missingFields: ['rate'] });
+        it('keeps the schema when the script passes the document itself', async () => {
+            const matched = await run({}, { amount: 2 }, 'done(documents[0]);');
+            assert.equal(getPreviewDocumentSchema(matched.passed), '#S');
+            assert.deepEqual(matched.fields, { fields: ['amount', 'rate'], missingFields: ['rate'] });
+        });
 
-        const same = await run({}, { amount: 2 }, copy, false);
-        assert.equal(getPreviewDocumentSchema(same.passed), '#S');
-        assert.deepEqual(same.fields, { fields: ['amount', 'rate'], missingFields: ['rate'] });
+        it('keeps the schema of a copy when every input has the same schema', async () => {
+            const same = await run({}, { amount: 2 }, copy, false);
+            assert.equal(getPreviewDocumentSchema(same.passed), '#S');
+            assert.deepEqual(same.fields, { fields: ['amount', 'rate'], missingFields: ['rate'] });
+        });
     });
 
     it('does not ask the next block for a field the code of an earlier Math block wrote', async () => {

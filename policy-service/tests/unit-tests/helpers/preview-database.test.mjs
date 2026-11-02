@@ -3,11 +3,12 @@ import esmock from 'esmock';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { createInMemoryDatabaseHelper } from './in-memory-database-helper.mjs';
 import { RecordActionStep } from '../../../dist/policy-engine/record-action-step.js';
-import { PreviewScope, getPreviewComputed, getPreviewDocumentSchema, setPreviewComputed, setPreviewDocumentSchema } from '../../../dist/policy-engine/helpers/preview.js';
+import { PreviewScope, buildPreviewResponse, getPreviewComputed, getPreviewDocumentSchema, setPreviewComputed, setPreviewDocumentSchema } from '../../../dist/policy-engine/helpers/preview.js';
 import {
     PreviewIncompleteError,
     createPreviewDatabaseServer,
-    getPreviewIncomplete
+    getPreviewIncomplete,
+    getPreviewSavedDocuments
 } from '../../../dist/policy-engine/helpers/preview-database.js';
 
 const db = createInMemoryDatabaseHelper();
@@ -386,5 +387,63 @@ describe('@unit preview database wrapper', () => {
             assert.equal(await server.count(DidDocument, { did: 'did:x' }), 0);
         });
         assert.deepEqual(db.calls.filter(([, name]) => name === 'DidDocument').map(([call]) => call), ['count']);
+    });
+
+    it('lists the documents a preview wrote in write order, with their last version and without stored ones', async () => {
+        const step = previewStep();
+        await inPreview(step, async () => {
+            const first = await server.saveVC({ policyId, owner: 'did:a', tag: 'save_first', document: { credentialSubject: [{ area: 1 }] } });
+            const stored = await server.getVcDocument({ _id: new ObjectId(ID_A) });
+            await server.updateVC({ ...stored, document: { credentialSubject: [{ area: 11, approved: true }] } });
+            await server.saveVP({ policyId, owner: 'did:a', tag: 'save_vp', document: { verifiableCredential: [] } });
+            const removed = await server.saveVC({ policyId, owner: 'did:a', tag: 'save_removed', document: { credentialSubject: [{ area: 3 }] } });
+            await server.remove(VcDocument, removed);
+            await server.updateVC({ ...first, document: { credentialSubject: [{ area: 2 }] } });
+        });
+        const saved = getPreviewSavedDocuments(step);
+        assert.deepEqual(saved.map((item) => item.tag), ['save_first', 'save_vp']);
+        assert.equal(saved[0].document.credentialSubject[0].area, 2);
+        saved[0].document.credentialSubject[0].area = 99;
+        assert.equal(getPreviewSavedDocuments(step)[0].document.credentialSubject[0].area, 2);
+        assert.deepEqual(getPreviewSavedDocuments(previewStep()), []);
+        assert.equal(db.records(VcDocument).length, 3);
+    });
+
+    it('returns the saved documents before the end documents and marks only the end documents final', async () => {
+        const step = previewStep();
+        const saved = await inPreview(step, async () => ({
+            intermediate: await server.saveVC({ policyId, owner: 'did:a', tag: 'save_intermediate', document: { credentialSubject: [{ area: 1 }] } }),
+            final: await server.saveVC({ policyId, owner: 'did:a', tag: 'save_final', document: { credentialSubject: [{ total: 2 }] } })
+        }));
+        const unsaved = { tag: 'math_end', document: { credentialSubject: [{ total: 3 }] } };
+        step.addPreviewDocument('save_final', { tag: 'wait', blockType: 'interfaceActionBlock' }, { data: saved.final });
+        step.addPreviewDocument('math_end', null, { data: [unsaved, null] });
+        const response = buildPreviewResponse(step, {});
+        assert.deepEqual(response.documents.map(({ source, target, final }) => ({ source, target, final })), [
+            { source: 'save_intermediate', target: null, final: false },
+            { source: 'save_final', target: 'wait', final: true },
+            { source: 'math_end', target: null, final: true }
+        ]);
+        assert.equal(response.documents[0].document.id, saved.intermediate.id);
+        assert.equal(response.documents[1].document.id, saved.final.id);
+        assert.deepEqual(response.documents[2].document, [unsaved, null]);
+    });
+
+    it('returns the end version of a saved document that a later block changed without saving it again', async () => {
+        const step = previewStep();
+        const saved = await inPreview(step, () =>
+            server.saveVC({ policyId, owner: 'did:a', tag: 'save_parent', document: { credentialSubject: [{ section: { total: 1 } }] } }));
+        const changed = { ...saved, document: { credentialSubject: [{ section: { total: 10 } }] } };
+        step.addPreviewDocument('extract_set', null, { data: changed });
+        const response = buildPreviewResponse(step, {});
+        assert.equal(response.documents.length, 1);
+        assert.equal(response.documents[0].final, true);
+        assert.equal(response.documents[0].source, 'extract_set');
+        assert.equal(response.documents[0].document.document.credentialSubject[0].section.total, 10);
+        assert.equal(getPreviewSavedDocuments(step)[0].document.credentialSubject[0].section.total, 1);
+    });
+
+    it('returns no documents when the preview wrote nothing and reached no end', () => {
+        assert.deepEqual(buildPreviewResponse(previewStep(), {}).documents, []);
     });
 });

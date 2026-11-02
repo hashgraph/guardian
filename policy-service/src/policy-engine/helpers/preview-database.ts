@@ -33,6 +33,7 @@ export interface IPreviewIncomplete {
 interface IPreviewEntry {
     record: Record<string, unknown> | null;
     stored: boolean;
+    order: number;
 }
 
 type EntityClass = new () => unknown;
@@ -40,6 +41,11 @@ type EntityClass = new () => unknown;
 class PreviewDatabaseStore {
     public readonly entities: Map<string, Map<string, IPreviewEntry>> = new Map();
     public readonly incomplete: string[] = [];
+    private writes = 0;
+
+    public nextOrder(): number {
+        return this.writes++;
+    }
 
     public bucket(entityClass: EntityClass): Map<string, IPreviewEntry> {
         let bucket = this.entities.get(entityClass.name);
@@ -58,6 +64,8 @@ class PreviewDatabaseStore {
 const stores = new WeakMap<RecordActionStep, PreviewDatabaseStore>();
 
 const CACHED_DOCUMENT_ENTITIES = new Set(['VcDocument', 'VpDocument', 'ApprovalDocument', 'AggregateVC']);
+
+const SAVED_DOCUMENT_ENTITIES = ['VcDocument', 'VpDocument'];
 
 const READ_METHODS = new Set(['find', 'findOne', 'count', 'findAndCount', 'findAll', 'aggregate']);
 
@@ -456,7 +464,7 @@ class PreviewDatabase {
             bucket.delete(id);
             return;
         }
-        bucket.set(id, { record, stored });
+        bucket.set(id, { record, stored, order: previous ? previous.order : this.store.nextOrder() });
     }
 
     private async exists(entityClass: EntityClass, id: string): Promise<boolean> {
@@ -593,6 +601,18 @@ export function createPreviewDatabaseServer(target: DatabaseServer, dryRunId: st
             };
         }
     });
+}
+
+export function getPreviewSavedDocuments(actionStatus: RecordActionStep): Record<string, unknown>[] {
+    const store = stores.get(actionStatus);
+    if (!store) {
+        return [];
+    }
+    return SAVED_DOCUMENT_ENTITIES
+        .flatMap((name) => [...(store.entities.get(name)?.values() ?? [])])
+        .filter((entry) => !entry.stored && !!entry.record)
+        .sort((left, right) => left.order - right.order)
+        .map((entry) => toRecord(entry.record));
 }
 
 export function getPreviewIncomplete(actionStatus: RecordActionStep): IPreviewIncomplete[] {

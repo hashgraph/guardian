@@ -206,10 +206,23 @@ describe('CalculationPreviewService', () => {
             ],
         });
         expect(service.getViewerDocuments(preview)).toEqual([
-            { label: '1. t09_save_a', document: { id: 'vc-a' } },
-            { label: '2. t09_save_b', document: { id: 'vc-b1' } },
-            { label: '3. t09_save_b', document: { id: 'vc-b2' } },
-            { label: '4. t09_end', document: { id: 'vc-end' } },
+            { label: '1. t09_save_a', document: { id: 'vc-a' }, final: false },
+            { label: '2. t09_save_b', document: { id: 'vc-b1' }, final: false },
+            { label: '3. t09_save_b', document: { id: 'vc-b2' }, final: false },
+            { label: '4. t09_end', document: { id: 'vc-end' }, final: false },
+        ]);
+    });
+
+    it('keeps the final flag of each returned document for the viewer', () => {
+        const preview = normalizePreviewResult({
+            documents: [
+                { source: 'save_intermediate', target: null, blockType: null, final: false, document: { document: { id: 'vc-a' } } },
+                { source: 'save_final', target: 'wait', blockType: 'interfaceActionBlock', final: true, document: [{ document: { id: 'vc-b' } }] },
+            ],
+        });
+        expect(service.getViewerDocuments(preview)).toEqual([
+            { label: '1. save_intermediate', document: { id: 'vc-a' }, final: false },
+            { label: '2. wait', document: { id: 'vc-b' }, final: true },
         ]);
     });
 

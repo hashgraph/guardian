@@ -58,8 +58,8 @@ export class VCViewerDialog {
     public versionOptions: { label: string; value: number }[] = [];
     public selectedVersionIndex: number = 0;
 
-    public previewDocuments: { label: string; document: any }[] = [];
-    public previewOptions: { label: string; value: number }[] = [];
+    public previewDocuments: { label: string; document: any; final?: boolean }[] = [];
+    public previewOptions: { label: string; value: number; final: boolean }[] = [];
     public selectedPreviewIndex: number = 0;
     public previewLoadingCount: number = 0;
     public previewPreparing: boolean = false;
@@ -163,7 +163,8 @@ export class VCViewerDialog {
         this.viewDocumentOptions = [...this.viewDocumentOptions, ...additionalOptions];
         this.additionalOptionsData = additionalOptionsData;
         this.previewDocuments = Array.isArray(previewDocuments) ? previewDocuments : [];
-        this.previewOptions = this.previewDocuments.map((item, index) => ({ label: item.label, value: index }));
+        this.previewOptions = this.previewDocuments.map((item, index) => ({ label: item.label, value: index, final: item.final === true }));
+        this.selectedPreviewIndex = Math.max(0, this.previewDocuments.findIndex((item) => item.document === document));
         if (this.previewDocuments.length) {
             this.previewPrepared = true;
             this.preparePreviewDocument();

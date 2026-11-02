@@ -580,7 +580,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
                 type: 'VC',
                 viewDocument: true,
                 dryRun: !!this.dryRun,
-                document: documents[0].document,
+                document: (documents.find((item) => item.final) ?? documents[0]).document,
                 previewDocuments: documents
             }
         });

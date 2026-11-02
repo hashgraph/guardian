@@ -215,6 +215,15 @@
     }
 }
 
+.preview-final-option {
+    font-weight: 600;
+}
+
+.preview-final-mark {
+    margin-left: 8px;
+    font-weight: 600;
+    color: var(--guardian-primary-color);
+}
 
 .header-icon.resize[aria-disabled='true'],
 request-draft-file-actions[inert] {
