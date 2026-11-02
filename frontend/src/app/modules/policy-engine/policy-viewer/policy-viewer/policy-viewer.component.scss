@@ -593,8 +593,10 @@
         display: flex;
         align-items: center;
         height: 44px;
+        // Never shrink: Safari collapses the chip's ellipsized text below its content width.
+        // The policy name next to it shrinks instead, and the value is capped by its own max-width.
+        flex-shrink: 0;
         min-width: 140px;
-        flex-shrink: 3;
         margin: 0 4px 0 8px;
         padding: 0 18px 0 8px;
         gap: 10px;
@@ -633,8 +635,8 @@
 
         .user-chip-text {
             display: flex;
+            flex: 0 0 auto;
             flex-direction: column;
-            min-width: 0;
             line-height: 1.2;
         }
 
