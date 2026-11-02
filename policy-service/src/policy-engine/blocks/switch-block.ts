@@ -8,6 +8,9 @@ import { PolicyUser } from '../policy-user.js';
 import { IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { LocationType } from '@guardian/interfaces';
+import { getPreviewDocumentPaths, getPreviewDocumentSchema, evaluatePreviewSwitchFormula, isPreviewStoredDocument, resolvePreviewDocumentRead, trackPreviewFormulaScope } from '../helpers/preview.js';
+import { findPreviewScriptFields } from '../helpers/preview-script-fields.js';
+import { PreviewReadTracker, type IPreviewReadSite } from '../helpers/workers/preview-read-tracker.js';
 
 /**
  * Switch block
@@ -182,6 +185,58 @@ export class SwitchBlock {
         const scope = this.getScope(docs);
 
         const { conditions, executionFlow } = options;
+        const previewSource = event.actionStatus?.preview ? event.actionStatus.getPreviewSource() : null;
+        const previewDocuments = (Array.isArray(docs) ? docs : [docs]).filter((doc) => !!doc);
+        const scopedDocuments = Array.isArray(docs)
+            ? docs.filter((doc) => doc.document && doc.document.type.includes('VerifiableCredential'))
+            : previewDocuments;
+        const formSchema = previewDocuments.some((doc) => {
+            const schema = getPreviewDocumentSchema(doc);
+            return !isPreviewStoredDocument(doc) && (schema === null || schema === previewSource?.schema);
+        });
+        const previewPaths = previewSource
+            ? [...new Set(previewDocuments.flatMap((doc) => getPreviewDocumentPaths(doc, previewSource.paths)))]
+            : [];
+        const recordReads = (formula: string, sites: IPreviewReadSite[], elementsRead: Map<string, Set<number> | null>) => {
+            for (const read of findPreviewScriptFields(formula, sites, [], previewSource.schema, previewPaths, false, '', [], 'mathjs')) {
+                const path = read.fullPath ?? read.path;
+                const parts = path.split('.');
+                const key = parts[0];
+                const elements = elementsRead.get(key);
+                const documentIndex = Array.isArray(docs) && /^\d+$/.test(parts[1] ?? '') ? Number(parts[1]) : null;
+                const consumed = documentIndex !== null
+                    ? (elements === null || elements === undefined || elements.has(documentIndex) ? [scopedDocuments[documentIndex]] : []).filter((doc) => !!doc)
+                    : Array.isArray(docs) && elements !== null && elements !== undefined
+                        ? [...elements].map((index) => scopedDocuments[index]).filter((doc) => !!doc) : scopedDocuments;
+                const documentPath = documentIndex !== null ? [key, ...parts.slice(2)].join('.') : path;
+                for (const doc of consumed) {
+                    const origin = resolvePreviewDocumentRead(doc, documentPath);
+                    if (origin && (origin.schema === null || origin.schema === previewSource.schema)) {
+                        event.actionStatus.addPreviewRead(origin.schema === null ? read.schema : origin.schema, origin.path);
+                    }
+                }
+            }
+        };
+        const evaluateFormula = (formula: string) => {
+            if (!previewSource || !formSchema) {
+                return PolicyUtils.evaluateCustomFormula(formula, scope);
+            }
+            const tracker = new PreviewReadTracker();
+            tracker.configure(formula);
+            const elementsRead = new Map<string, Set<number> | null>();
+            const trackedScope = trackPreviewFormulaScope(tracker, scope, previewSource.schema, previewPaths);
+            const result = Array.isArray(docs) ? evaluatePreviewSwitchFormula(formula, trackedScope, (key, index) => {
+                if (index === null) {
+                    elementsRead.set(key, null);
+                } else if (elementsRead.get(key) !== null) {
+                    const elements = elementsRead.get(key) ?? new Set<number>();
+                    elements.add(index);
+                    elementsRead.set(key, elements);
+                }
+            }, () => tracker.takeSites()) : PolicyUtils.evaluateCustomFormula(formula, trackedScope);
+            recordReads(formula, tracker.takeSites(), elementsRead);
+            return result;
+        };
         const tags: string[] = [];
         for (const condition of conditions) {
             const type = condition.type as string;
@@ -192,7 +247,7 @@ export class SwitchBlock {
             let result = false;
             if (type === 'equal') {
                 if (scope) {
-                    const formulaResult = PolicyUtils.evaluateCustomFormula(value, scope);
+                    const formulaResult = evaluateFormula(value);
                     if (formulaResult === 'Incorrect formula') {
                         ref.error(`expression: ${result}, ${JSON.stringify(scope)}`);
                         result = false;
@@ -204,7 +259,7 @@ export class SwitchBlock {
                 }
             } else if (type === 'not_equal') {
                 if (scope) {
-                    const formulaResult = PolicyUtils.evaluateCustomFormula(value, scope);
+                    const formulaResult = evaluateFormula(value);
                     if (formulaResult === 'Incorrect formula') {
                         ref.error(`expression: ${result}, ${JSON.stringify(scope)}`);
                         result = false;

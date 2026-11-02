@@ -1,3 +1,4 @@
+import { PolicyCredential } from '../helpers/policy-credential.js';
 import { TokenAddon } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { AnyBlockType } from '../policy-engine.interface.js';
@@ -127,7 +128,8 @@ export class TokenOperationAddon {
         }
         const didDocument = await root.loadDidDocument(ref, userId);
         const uuid = await ref.components.generateUUID();
-        const vc = await vcHelper.createVerifiableCredential(
+        const vc = await PolicyCredential.createVC(
+            vcHelper,
             vcSubject,
             didDocument,
             null,

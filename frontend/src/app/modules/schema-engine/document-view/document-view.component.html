@@ -30,6 +30,7 @@
         [dialogContext]="dialogContext"
         [groupBaseTitle]="type === 'VC' ? 'Credential Subject' : 'Verifiable Credential'"
         [private-fields]="hideFields"
+        [preview]="preview"
         (selectEvent)="navigateToField($event)"
         >
       </app-schema-form-view-navigation>
@@ -42,8 +43,8 @@
     ></div>
   }
   <div class="schema-form-content">
-    <form>
-      @if (loading) {
+    <form [class.preview-loading]="preview && (loading || previewRendering)">
+      @if (!preview && loading) {
         <div class="guardian-loading">
           <div class="guardian-loading-image"></div>
         </div>
@@ -194,7 +195,7 @@
               </p-accordion-panel>
             </p-accordion>
           </div>
-          @if (type === 'VC' && subjects.length > 0) {
+          @if (type === 'VC' && subjects.length > 0 && (!preview || previewReady)) {
             <div class="group-container">
               @if (subjects.length > 1) {
                 <div class="group-multiple-header">Credential Subjects</div>
@@ -214,6 +215,8 @@
                           [values]="item"
                           [rules]="rulesResults"
                           [formulas]="formulasFor(item)"
+                          [preview]="preview"
+                          (previewLoadingChange)="preview && previewLoadingChange.emit($event)"
                           [link]="link"
                           [discussion]="discussionData"
                           [discussion-view]="discussionView"
@@ -237,7 +240,7 @@
               }
             </div>
           }
-          @if (type === 'VP' && subjects.length > 0) {
+          @if (type === 'VP' && subjects.length > 0 && (!preview || previewReady)) {
             <div class="group-container">
               @if (subjects.length > 1) {
                 <div class="group-multiple-header">Verifiable Credentials</div>
@@ -255,6 +258,8 @@
                           [dryRun]="dryRun"
                           [hide-fields]="hideFields"
                           type="VC"
+                          [preview]="preview"
+                          (previewLoadingChange)="preview && previewLoadingChange.emit($event)"
                           [dialogContext]="dialogContext"
                           [discussion]="discussionData"
                           [discussion-view]="discussionView"

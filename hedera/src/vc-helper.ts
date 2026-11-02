@@ -395,6 +395,25 @@ export class VcHelper extends VCJS {
         return await super.createVerifiableCredential(subject, didDocument, signatureType, documentOptions);
     }
 
+    public override async createUnsignedCredential(
+        subject: ICredentialSubject,
+        issuer: string,
+        signatureType: SignatureType,
+        documentOptions?: IDocumentOptions
+    ): Promise<VcDocument> {
+        signatureType = await this.getSignatureTypeBySchema(subject);
+        subject = this.prepareSubject(subject, signatureType);
+        return await super.createUnsignedCredential(subject, issuer, signatureType, documentOptions);
+    }
+
+    public override async createUnsignedPresentation(vcs: VcDocument[], documentOptions?: IDocumentOptions): Promise<VpDocument> {
+        const documents: VcDocument[] = [];
+        for (const vc of vcs) {
+            documents.push(...(vc.getProof() ? await this.prepareVCs([vc]) : [vc]));
+        }
+        return await super.createUnsignedPresentation(documents, documentOptions);
+    }
+
     /**
      * Create VP Document
      *

@@ -48,7 +48,7 @@ export class DraftFileActionsComponent {
             if (!result) {
                 return;
             }
-            this.draftFileService.confirmDraftImport(result.warnings, () => this.applyImportedDraft(result.document));
+            this.draftFileService.confirmDraftImport(result, () => this.applyImportedDraft(result.document));
         });
     }
 

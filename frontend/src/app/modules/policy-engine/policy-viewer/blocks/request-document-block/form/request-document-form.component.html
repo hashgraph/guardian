@@ -9,7 +9,44 @@
     }
     <h2 class="form-heading-title">{{ dialogTitle || parent?.title }}</h2>
   </div>
-  <div class="form-draft">
+  @if (previewMode && previewMissingOptions.length) {
+    @for (options of [previewMissingOptions]; track options) {
+    <p-select
+      [options]="options"
+      [(ngModel)]="previewMissingPath"
+      (onChange)="onPreviewMissingSelect($event.value)"
+      optionLabel="label"
+      optionValue="value"
+      [placeholder]="'Missing fields: ' + previewMissingOptions.length"
+      class="guardian-dropdown preview-missing-dropdown"
+      panelStyleClass="guardian-dropdown-panel preview-missing-panel"
+      [disabled]="isPreviewBusy"
+      [appendTo]="'body'"
+      >
+      <ng-template pTemplate="selectedItem" let-item>
+        <div class="guardian-dropdown-selected" [truncateTooltip]="item?.label" tooltipPosition="bottom">
+          <span class="guardian-dropdown-label">Missing</span>
+          <span class="guardian-dropdown-item">{{ item?.label }}</span>
+        </div>
+      </ng-template>
+      <ng-template pTemplate="item" let-item>
+        <div class="preview-missing-option" [truncateTooltip]="item.label" tooltipPosition="bottom">{{ item.label }}</div>
+      </ng-template>
+    </p-select>
+    }
+  }
+  @if (previewAvailable) {
+    <div class="calculation-preview-toggle">
+      <p-toggleswitch
+        inputId="calculationPreview_{{ id }}"
+        [ngModel]="previewMode"
+        [disabled]="loading || isPreviewBusy"
+        (onChange)="onPreviewModeChange($event.checked)">
+      </p-toggleswitch>
+      <label for="calculationPreview_{{ id }}">Calculation preview</label>
+    </div>
+  }
+  <div class="form-draft" [attr.inert]="isPreviewBusy ? '' : null">
     <button
       type="button"
       class="form-draft-toggle"
@@ -19,7 +56,7 @@
       <span>Draft</span>
       <i class="pi pi-angle-down" aria-hidden="true"></i>
     </button>
-    <div class="form-draft-menu" [hidden]="!draftMenuOpen" (click)="draftMenuOpen = false">
+    <div class="form-draft-menu" [hidden]="!draftMenuOpen" (click)="closeDraftMenu()">
       <request-draft-file-actions
         [schema]="schema"
         [policyId]="policyId"
@@ -31,26 +68,26 @@
   </div>
 </div>
 <div class="form-body">
-  @if (loading) {
-    <div class="guardian-loading">
+  @if (loading || isPreviewBusy) {
+    <div class="guardian-loading" [class.preview-loading-overlay]="previewMode">
       <div class="form-spinner"></div>
     </div>
   }
-  <div class="form-body-container">
+  <div class="form-body-container" [attr.inert]="isPreviewBusy ? '' : null">
     @if (dryRun) {
       <div class="form-notice">
         <i class="pi pi-info-circle" aria-hidden="true"></i>
         <span class="form-notice-text">Dry run – you can fill this form with test data.</span>
-        <button type="button" class="guardian-button guardian-button-secondary" (click)="onDryRun()">Fill with test data</button>
+        <button type="button" class="guardian-button guardian-button-secondary" [disabled]="isPreviewBusy" (click)="onDryRun()">Fill with test data</button>
         @if (restoreData) {
-          <button type="button" class="guardian-button guardian-button-secondary" (click)="onRestoreClick()">Restore values</button>
+          <button type="button" class="guardian-button guardian-button-secondary" [disabled]="isPreviewBusy" (click)="onRestoreClick()">Restore values</button>
         }
       </div>
     } @else if (restoreData) {
       <div class="form-notice">
         <i class="pi pi-info-circle" aria-hidden="true"></i>
         <span class="form-notice-text">There is some data to restore.</span>
-        <button type="button" class="guardian-button guardian-button-secondary" (click)="onRestoreClick()">Restore values</button>
+        <button type="button" class="guardian-button guardian-button-secondary" [disabled]="isPreviewBusy" (click)="onRestoreClick()">Restore values</button>
       </div>
     }
     @if (relayerAccount || enableAdditionalData) {
@@ -96,6 +133,9 @@
               [rules]="rulesResults"
               [formulas]="formulas"
               [isFormForRequestBlock]="true"
+              [requiredFields]="previewRequiredFields"
+              [previewMissingFields]="previewMissingFields"
+              [previewActionsDisabled]="isPreviewBusy"
               [saveShown]="allowDraft"
               [comesFromDialog]="true"
               [showButtons]="false"
@@ -103,6 +143,9 @@
               submitText = "Validate & Create"
               saveText = "Save Draft"
               (form)="initForm($event)"
+              (presetApplied)="onPresetApplied()"
+              (previewBusyChange)="onPreviewRenderingChange($event)"
+              (previewMissingOptionsChange)="onPreviewMissingOptionsChange($event)"
               (buttons)="onChangeButtons($event)"
               (cancelBtnEvent)="handleCancelBtnEvent($event, this)"
               (submitBtnEvent)="handleSubmitBtnEvent($event, this)"

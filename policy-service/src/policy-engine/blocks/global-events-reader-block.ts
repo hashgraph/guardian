@@ -1,3 +1,4 @@
+import { recordPreviewWait } from '../helpers/preview.js';
 import { CronJob } from 'cron';
 import { ActionCallback, EventBlock } from '../helpers/decorators/index.js';
 import { BlockActionError } from '../errors/index.js';
@@ -1122,6 +1123,7 @@ class GlobalEventsReaderBlock {
             return;
         }
 
+        recordPreviewWait(event, ref);
         return;
     }
 

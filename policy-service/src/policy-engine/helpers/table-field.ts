@@ -5,6 +5,7 @@ import { PolicyUtils } from '../helpers/utils.js';
 import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import { decodeGridFileText, hasDeclaredTableColumns, isPlainObject, isTableValue, isTableWithFileId, parseCsvToTable, parseIfJson } from '@guardian/common/helpers/table-csv';
 import { ITableField } from '@guardian/interfaces';
+import { PreviewScope } from './preview.js';
 
 export {
     decodeGridFileText,
@@ -76,7 +77,8 @@ export async function hydrateTablesInObject(
         const hasDeclaredColumns = hasDeclaredTableColumns(table);
         const declaredColumnKeys = hasDeclaredColumns ? table.columnKeys : undefined;
 
-        const csvText = await loadFileText(table.fileId);
+        const previewCsv = PreviewScope.current() ? Reflect.get(table, 'csv') : undefined;
+        const csvText = typeof previewCsv === 'string' ? previewCsv : await loadFileText(table.fileId);
         const parsed = parseCsvToTable(csvText, delimiter, declaredColumnKeys);
 
         if (!hasDeclaredColumns) {

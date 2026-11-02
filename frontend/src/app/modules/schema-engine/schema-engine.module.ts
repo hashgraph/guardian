@@ -15,6 +15,8 @@ import { AgGridModule } from 'ag-grid-angular';
 import { SchemaFormComponent } from './schema-form/schema-form.component';
 import { ImportSchemaDialog } from './import-schema/import-schema-dialog.component';
 import { SchemaFormViewComponent } from './schema-form-view/schema-form-view.component';
+import { ReadonlyTextareaComponent } from './schema-form-view/readonly-textarea/readonly-textarea.component';
+import { FormTextareaComponent } from './schema-form/form-textarea/form-textarea.component';
 import { DocumentViewComponent } from './document-view/document-view.component';
 import { SetVersionDialog } from './set-version-dialog/set-version-dialog.component';
 import { VCViewerDialog } from './vc-dialog/vc-dialog.component';
@@ -46,6 +48,7 @@ import { AccordionModule } from 'primeng/accordion';
 import { TableModule } from 'primeng/table';
 import { DateTimeComponent } from './schema-form/controls/date-time/date-time.component';
 import { FormulasModule } from '../formulas/formulas.module';
+import { TruncateTooltipDirective } from '../formulas/truncate-tooltip.directive';
 import { DialogService } from 'primeng/dynamicdialog';
 import { GuardianDialogService } from '../../services/guardian-dialog.service';
 import { SchemaFormRootComponent } from './schema-form-root/schema-form-root.component';
@@ -66,6 +69,8 @@ import { RichTextClipDirective } from './rich-text-editor/rich-text-clip.directi
         CopySchemaDialog,
         ImportSchemaDialog,
         SchemaFormViewComponent,
+        ReadonlyTextareaComponent,
+        FormTextareaComponent,
         DocumentViewComponent,
         SetVersionDialog,
         VCViewerDialog,
@@ -122,6 +127,7 @@ import { RichTextClipDirective } from './rich-text-editor/rich-text-clip.directi
         DialogModule,
     ],
     exports: [
+        TruncateTooltipDirective,
         SchemaFormComponent,
         ImportSchemaDialog,
         SchemaFormViewComponent,

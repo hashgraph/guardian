@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 
 export interface NavItem {
     title: string;
@@ -19,13 +19,40 @@ export class SchemaFormViewNavigationComponent implements OnInit, OnChanges {
     @Input() groupBaseTitle: string | null = null;
     @Input('private-fields') privateFields: { [x: string]: boolean } | null = null;
     @Input() dialogContext?: 'fullscreen' | 'viewer' = 'fullscreen';
+    @Input() preview: boolean = false;
 
     @Output() selectEvent = new EventEmitter<string>();
     @Output() hasItemsChangeEvent = new EventEmitter<boolean>();
 
     public expanded = new Set<string>();
+    private previewNavigation?: {
+        subjects: any[] | null;
+        schemas: any[];
+        privateFields: { [x: string]: boolean } | null;
+        title: string | null;
+        tree: NavItem[];
+    };
+
+    constructor(private changeDetector: ChangeDetectorRef) { }
 
     public get navTree(): NavItem[] {
+        if (this.preview) {
+            const schemas = (this.subjects || []).map((subject, index) =>
+                this.schemaMap?.[subject?.type || `subject-${index}`]
+            );
+            const cached = this.previewNavigation;
+            if (cached && cached.subjects === this.subjects && cached.privateFields === this.privateFields
+                && cached.title === this.groupBaseTitle && cached.schemas.length === schemas.length
+                && cached.schemas.every((schema, index) => schema === schemas[index])) {
+                return cached.tree;
+            }
+            const tree = this.buildNavTree(this.getSourceControls());
+            this.previewNavigation = {
+                subjects: this.subjects, schemas, privateFields: this.privateFields,
+                title: this.groupBaseTitle, tree
+            };
+            return tree;
+        }
         const controls = this.getSourceControls();
         return this.buildNavTree(controls || []);
     }
@@ -154,6 +181,9 @@ export class SchemaFormViewNavigationComponent implements OnInit, OnChanges {
             this.expanded.delete(path);
         } else {
             this.expanded.add(path);
+        }
+        if (this.preview) {
+            this.changeDetector.markForCheck();
         }
     }
 

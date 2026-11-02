@@ -1,3 +1,4 @@
+import { recordPreviewWait } from '../helpers/preview.js';
 import { ActionCallback, EventBlock } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyUtils } from '../helpers/utils.js';
@@ -399,6 +400,9 @@ export class MultiSignBlock {
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
+        if (event.actionStatus?.preview) {
+            recordPreviewWait(event, PolicyComponentsUtils.GetBlockRef(this));
+        }
         return;
     }
 }

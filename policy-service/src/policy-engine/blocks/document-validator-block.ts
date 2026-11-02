@@ -11,6 +11,7 @@ import { FilterQuery } from '@mikro-orm/core';
 import { VcDocument } from '@guardian/common/entity/vc-document';
 import { VpDocument } from '@guardian/common/entity/vp-document';
 import { resolveOrgMemberDids } from '../helpers/org-utils.js';
+import { resolvePreviewDocumentRead, toPreviewFormPath } from '../helpers/preview.js';
 import { BlockErrorType, IBlockErrorData, IDocumentValidatorBlockError, LocationType, Schema, SchemaCondition, SchemaField, SchemaHelper } from '@guardian/interfaces';
 
 /**
@@ -418,8 +419,12 @@ export class DocumentValidatorBlock {
         sourceValidation: any,
         document: IPolicyDocument,
         user: any,
-        documentSchema: Schema | null
+        documentSchema: Schema | null,
+        recordReads: (readDocument: IPolicyDocument, paths: unknown[]) => void
     ): Promise<{ message: string; data?: IDocumentValidatorBlockError } | null> {
+        recordReads(document, (sourceValidation.filters || [])
+            .filter((sourceFilter: any) => sourceFilter.typeValue === 'variable')
+            .map((sourceFilter: any) => sourceFilter.value));
         const filter = this.buildSourceFilter(sourceValidation, ref, document, user);
 
         const sourceDocuments: any[] = sourceValidation.dbCollection === 'VpDocument'
@@ -485,6 +490,14 @@ export class DocumentValidatorBlock {
                 if (skipLeft || skipRight) {
                     continue;
                 }
+                recordReads(document, [
+                    condition.fieldSource === 'document' ? condition.field : null,
+                    condition.valueSource === 'document' ? condition.value : null
+                ]);
+                recordReads(sourceDoc, [
+                    condition.fieldSource === 'source' ? condition.field : null,
+                    condition.valueSource === 'source' ? condition.value : null
+                ]);
                 const left  = this.resolveConditionSide(condition.field, condition.fieldSource, condition.type, document, [sourceDoc]);
                 const right = this.resolveConditionSide(condition.value, condition.valueSource, condition.type, document, [sourceDoc]);
                 if (!PolicyUtils.evaluateFieldCondition(left, condition.type, right)) {
@@ -567,6 +580,7 @@ export class DocumentValidatorBlock {
             return { message: 'Invalid document' };
         }
 
+        const recordReads = (readDocument: IPolicyDocument, paths: unknown[]) => this.addPreviewReads(event, readDocument, paths);
         const documentRef = PolicyUtils.getDocumentRef(document);
 
         const options = await ref.getOptions(event.user);
@@ -674,6 +688,7 @@ export class DocumentValidatorBlock {
                         continue;
                     }
                 }
+                recordReads(document, [filter.field, filter.valueSource === 'document' ? filter.value : null]);
                 if (!PolicyUtils.checkDocumentField(document, filter)) {
                     const actual = PolicyUtils.resolveFieldPath(document, filter.field);
                     const expected = filter.valueSource === 'document'
@@ -695,7 +710,7 @@ export class DocumentValidatorBlock {
 
         if (options.sourceValidations?.length) {
             for (const sourceValidation of options.sourceValidations) {
-                const error = await this.runSourceValidation(ref, sourceValidation, document, event.user, schemaModel);
+                const error = await this.runSourceValidation(ref, sourceValidation, document, event.user, schemaModel, recordReads);
                 if (error) {
                     return error;
                 }
@@ -732,6 +747,22 @@ export class DocumentValidatorBlock {
     }
 
     /**
+     * Records form fields read by validator conditions and source filters during preview.
+     */
+    private addPreviewReads(event: IPolicyEvent<IPolicyEventState>, document: IPolicyDocument, paths: unknown[]): void {
+        if (!event.actionStatus?.preview) {
+            return;
+        }
+        for (const path of paths) {
+            const field = toPreviewFormPath(path);
+            const read = field ? resolvePreviewDocumentRead(document, field) : null;
+            if (read && (read.schema === null || read.schema === event.actionStatus.getPreviewSource()?.schema)) {
+                event.actionStatus.addPreviewRead(read.schema, read.path);
+            }
+        }
+    }
+
+    /**
      * Run block action
      * @event PolicyEventType.Run
      * @param {IPolicyEvent} event
@@ -749,7 +780,7 @@ export class DocumentValidatorBlock {
         ref.log(`runAction`);
 
         const error = await ref.run(event);
-        if (error) {
+        if (error && !event.actionStatus?.getPreviewSource()?.discovery) {
             throw new BlockActionError(error.message, ref.blockType, ref.uuid, error.data);
         }
         // event.actionStatus.saveResult(event.data);

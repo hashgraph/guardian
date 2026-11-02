@@ -1,4 +1,9 @@
+@use '../preview-loading' as preview;
 @import '../nav-collapse';
+
+.preview-loading-overlay {
+    @include preview.overlay;
+}
 
 .schema-form-root {
     display: flex;

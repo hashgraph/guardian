@@ -15,6 +15,7 @@ import { ComponentsService } from '../components-service.js';
 import { IDebugContext } from '../../block-engine/block-result.js';
 import { RecordActionStep } from '../../record-action-step.js';
 import { PolicyUtils } from '../utils.js';
+import { isPreviewInputAllowed, recordPreviewWait, PreviewScope } from '../preview.js';
 
 /**
  * Basic block decorator
@@ -392,8 +393,13 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                     actionStatus.saveResult(data);
                 }
 
+                let linked = false;
                 for (const link of this.sourceLinks) {
                     if (link.outputType === output) {
+                        if (actionStatus?.preview && !isPreviewInputAllowed(link.inputType)) {
+                            continue;
+                        }
+                        linked = true;
                         if (output === PolicyOutputEventType.RunEvent && actionStatus) {
                             actionStatus.checkCycle(link);
                         }
@@ -408,6 +414,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                             link.run(user, data, actionStatus);
                         }
                     }
+                }
+
+                if (actionStatus?.preview && !linked && output === PolicyOutputEventType.RunEvent) {
+                    actionStatus.addPreviewDocument(this.tag, null, data);
                 }
 
                 return results;
@@ -429,6 +439,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
 
                 for (const link of this.sourceLinks) {
                     if (link.outputType === output) {
+                        if (status?.preview && !isPreviewInputAllowed(link.inputType)) {
+                            return null;
+                        }
                         return await link.runSync(user, data, status);
                     }
                 }
@@ -461,12 +474,14 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                     return;
                 }
                 const parent = this.parent as any;
-                if (parent && (typeof parent.changeStep === 'function')) {
+                if (parent && (typeof parent.changeStep === 'function') && !event.actionStatus?.preview) {
                     await parent.changeStep(event.user, event.data, this, event.actionStatus);
                 }
                 let result: any;
                 if (typeof super.runAction === 'function') {
                     result = await super.runAction(event);
+                } else {
+                    recordPreviewWait(event, this);
                 }
                 return result;
             }
@@ -508,6 +523,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param userId
              */
             public async updateBlock(state: any, user: PolicyUser, tag: string, userId: string | null) {
+                if (PreviewScope.current()) {
+                    return;
+                }
                 await this.saveState();
                 const users: Map<string, PolicyUser> = new Map<string, PolicyUser>();
                 if (this.options.followUser) {
@@ -850,7 +868,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @protected
              */
             protected async debugContext(context: IDebugContext): Promise<IDebugContext> {
-                if (this._dryRun) {
+                if (this._dryRun && !PreviewScope.current()) {
                     return await this.components.debugContext(this.tag, context);
                 } else {
                     return context;
@@ -863,7 +881,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @protected
              */
             protected debugError(error: any): void {
-                if (this._dryRun) {
+                if (this._dryRun && !PreviewScope.current()) {
                     this.components.debugError(this.tag, error);
                 }
             }

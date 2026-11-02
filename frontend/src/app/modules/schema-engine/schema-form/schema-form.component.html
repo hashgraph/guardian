@@ -9,9 +9,10 @@
     [attr.paginationHidden]="paginationHidden"
     >
     @for (item of formModel.controls; track item; let i = $index) {
-      @if (item.visibility) {
+      @if (item.visibility && i < previewRenderLimit) {
         <div
           [attr.showMobileField]="showPage(item, i)"
+          [attr.inert]="previewBusy ? '' : null"
           class="form-field-container"
           >
           <!-- simple field -->
@@ -24,6 +25,7 @@
                         item.default && !item.isPreset && !item.control.dirty
                     "
                   [attr.field-path]="item?.path"
+                  [attr.preview-field-id]="item.id"
                   >
                   @if (ifRequiredField(item)) {
                     <span class="required-field"
@@ -164,17 +166,14 @@
                         [ngClass]="{ 'ipfs-url': isIPFS(item) }"
                         [attr.readonly-field]="isEditMode && !item.isUpdatable"
                         >
-                        <textarea
-                          pInputTextarea
-                          [formControl]="item.control"
-                          (focus)="onFocusField(item.format, item)"
-                          (blur)="onUnfocusField(item.format, item)"
+                        <app-form-textarea
+                          [control]="item.control"
+                          (fieldFocus)="onFocusField(item.format, item)"
+                          (fieldBlur)="onUnfocusField(item.format, item)"
                           [placeholder]="getPlaceholderByFieldType(item)"
-                          type="text"
                           [autoResize]="scriptAutoResize"
                           class="auto-grow"
-                          rows="1"
-                        ></textarea>
+                        ></app-form-textarea>
                         @if (isIPFS(item)) {
                           <div>
                             <div class="file-upload">
@@ -349,7 +348,7 @@
               }
               <!-- array of objects as table -->
               @if (canDrawTable(item)) {
-                <div>
+                <div [class.table-validation-error]="hasInvalidTableFields(item)">
                   <p-table [value]="item.list || []">
                     <ng-template pTemplate="header">
                       <tr [attr.accordiontabid]="item.id">
@@ -375,7 +374,10 @@
                         }
                         @for (itemControl of getTableRowFields(rowData, item); track itemControl) {
                           <td>
-                            <div class="table-content form-field-value">
+                            <div
+                              class="table-content form-field-value"
+                              [attr.preview-field-id]="previewMissingFieldIds.length ? itemControl.id : null"
+                              [class.preview-missing-field]="isInvalidTableField(itemControl)">
                               @if (ifRequiredField(itemControl)) {
                                 <span class="required-field">*</span>
                               }
@@ -425,16 +427,13 @@
                                       class="form-field-input guardian-input-container"
                                       [attr.readonly-field]="isEditMode && !itemControl.isUpdatable"
                                       >
-                                      <textarea
-                                        pInputTextarea
-                                        class="textarea-resize-none"
-                                        [formControl]="itemControl.control"
-                                        (focus)="onFocusField(itemControl.format, itemControl)"
-                                        (blur)="onUnfocusField(itemControl.format, itemControl)"
+                                      <app-form-textarea
+                                        [resizeNone]="true"
+                                        [control]="itemControl.control"
+                                        (fieldFocus)="onFocusField(itemControl.format, itemControl)"
+                                        (fieldBlur)="onUnfocusField(itemControl.format, itemControl)"
                                         [placeholder]="getPlaceholderByFieldType(itemControl)"
-                                        type="text"
-                                        rows="1"
-                                      ></textarea>
+                                      ></app-form-textarea>
                                       @if (isIPFS(itemControl)) {
                                         <div>
                                           <div class="file-upload">
@@ -637,6 +636,7 @@
                             !item.control.dirty
                         "
                       [attr.field-path]="item?.path"
+                  [attr.preview-field-id]="item.id"
                       >
                       @if (ifRequiredField(item)) {
                         <span
@@ -710,6 +710,7 @@
                         class="form-field-array-item-container"
                         [attr.required]="item.required"
                         [attr.index]="listItem.index"
+                        [attr.preview-field-id]="listItem.id"
                         [formGroup]="item.control"
                         >
                         <div class="form-field-array-item">
@@ -768,23 +769,14 @@
                                     isEditMode && !item.isUpdatable
                                 "
                                 >
-                                <textarea
-                                  pInputTextarea
-                                  [formControl]="listItem.control"
-                                    [placeholder]="
-                                        getPlaceholderByFieldType(item)
-                                    "
-                                    (focus)="
-                                        onFocusField(item.format, listItem)
-                                    "
-                                    (blur)="
-                                        onUnfocusField(item.format, listItem)
-                                    "
-                                  type="text"
+                                <app-form-textarea
+                                  [control]="listItem.control"
+                                  [placeholder]="getPlaceholderByFieldType(item)"
+                                  (fieldFocus)="onFocusField(item.format, listItem)"
+                                  (fieldBlur)="onUnfocusField(item.format, listItem)"
                                   [autoResize]="scriptAutoResize"
                                   class="auto-grow"
-                                  rows="1"
-                                ></textarea>
+                                ></app-form-textarea>
                                 @if (isIPFS(item)) {
                                   <div
                                     [attr.readonly-field]="
@@ -1030,7 +1022,7 @@
                     }}"
                             [value]="item.open ? 0 : null"
                             [motionOptions]="{ disabled: true }"
-                            (valueChange)="item.open = ($event === 0); onAccordionSelectEvent(item.open, item)"
+                            (valueChange)="item.open = ($event === 0); previewValidation && preparePreviewSection(item); onAccordionSelectEvent(item.open, item)"
                             >
                             <p-accordion-panel [value]="0">
                               <p-accordion-header>
@@ -1054,6 +1046,7 @@
                                         !item.control.dirty
                                     "
                                     [attr.field-path]="item?.path"
+                  [attr.preview-field-id]="item.id"
                                     >
                                     @if (ifRequiredField(item)) {
                                       <span
@@ -1103,7 +1096,7 @@
                                   </div>
                                 </p-accordion-header>
                                 <p-accordion-content>
-                                  @if (item.open) {
+                                  @if (item.open && isPreviewSectionReady(item)) {
                                     @if (
                                       !isFormForFinishSetup &&
                                       item.suggest &&
@@ -1172,6 +1165,10 @@
                                                 <app-schema-form
                                                   [form-model]="item.model"
                                                   [formulas]="formulas"
+                                                  [previewMissingFieldIds]="previewMissingFieldIds"
+                                                  [previewValidation]="previewValidation"
+                                                  [previewBusy]="previewBusy"
+                                                  (previewLoadingChange)="previewValidation && previewLoadingChange.emit($event)"
                                                   [formulaEntries]="formulaEntries"
                                                   [private-fields]="hide"
                                                   [rules]="rules"
@@ -1229,7 +1226,7 @@
                     }}"
                                 [value]="item.open ? 0 : null"
                                 [motionOptions]="{ disabled: true }"
-                                (valueChange)="item.open = ($event === 0); onAccordionSelectEvent(item.open, item)"
+                                (valueChange)="item.open = ($event === 0); previewValidation && preparePreviewSection(item); onAccordionSelectEvent(item.open, item)"
                                 >
                                 <p-accordion-panel [value]="0">
                                   <p-accordion-header>
@@ -1248,6 +1245,7 @@
                                         !item.control.dirty
                                     "
                                         [attr.field-path]="item?.path"
+                  [attr.preview-field-id]="item.id"
                                         >
                                         @if (ifRequiredField(item)) {
                                           <span
@@ -1280,7 +1278,7 @@
                                       </div>
                                     </p-accordion-header>
                                     <p-accordion-content>
-                                      @if (item.open) {
+                                      @if (item.open && isPreviewSectionReady(item)) {
                                         @if (
                                           !isFormForFinishSetup &&
                                           item.suggest &&
@@ -1319,6 +1317,7 @@
                                             <div
                                               class="accordion-container form-field-array-item-container"
                                               [attr.index]="listItem.index"
+                        [attr.preview-field-id]="listItem.id"
                                               [attr.required]="item.required"
                                               >
                                               <p-accordion
@@ -1329,7 +1328,7 @@
                                     }}"
                                                 [value]="listItem.open ? 0 : null"
                                                 [motionOptions]="{ disabled: true }"
-                                                (valueChange)="listItem.open = ($event === 0); onAccordionSelectEvent(listItem.open, item, listItem.index2)"
+                                                (valueChange)="listItem.open = ($event === 0); previewValidation && preparePreviewSection(listItem); onAccordionSelectEvent(listItem.open, item, listItem.index2)"
                                                 >
                                                 <p-accordion-panel [value]="0">
                                                   <p-accordion-header>
@@ -1372,7 +1371,7 @@
                                                     </div>
                                                   </p-accordion-header>
                                                   <p-accordion-content>
-                                                    @if (listItem.open) {
+                                                    @if (listItem.open && isPreviewSectionReady(listItem)) {
                                                       <div class="form-field-array-item">
                                                         <div
                                                           class="form-field-group"
@@ -1424,6 +1423,10 @@
                                                                 listItem.model
                                                             "
                                                             [formulas]="formulas"
+                                                            [previewMissingFieldIds]="previewMissingFieldIds"
+                                                  [previewValidation]="previewValidation"
+                                                  [previewBusy]="previewBusy"
+                                                  (previewLoadingChange)="previewValidation && previewLoadingChange.emit($event)"
                                                             [formulaEntries]="getEntryFormulaScope(item, listItem)"
                                                                 [dryRun]="dryRun"
                                                             [policyId]="
@@ -1537,7 +1540,7 @@
                               @if (config.visible()) {
                                 <button
                                   (click)="config.fn()"
-                                  [disabled]="config.disabled()"
+                                  [disabled]="config.disabled() || (previewBusy && config.id !== 'cancel')"
                                   type="button"
                                   class="guardian-button guardian-button-{{ config.type }}"
                                   >
@@ -1561,7 +1564,7 @@
                         editButtonConfig.type
                     }}"
                                 (click)="editButtonConfig.fn()"
-                                [disabled]="editButtonConfig.disabled()"
+                                [disabled]="editButtonConfig.disabled() || previewBusy"
                                 >
                                 {{ editButtonConfig.text }}
                               </button>

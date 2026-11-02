@@ -44,6 +44,14 @@ export function CatchErrors() {
                     try {
                         return await target.apply(thisArg, argArray);
                     } catch (error) {
+                        const actionStatus = argArray[0]?.actionStatus;
+                        if (actionStatus?.preview) {
+                            actionStatus.addError(error, thisArg.blockType);
+                            if (thisArg.options.onErrorAction !== BlockErrorActions.DEBUG && !actionStatus.getPreviewSource()?.discovery) {
+                                await thisArg.triggerEvents(PolicyOutputEventType.ErrorEvent, user, data, actionStatus);
+                            }
+                            return;
+                        }
                         switch (thisArg.options.onErrorAction) {
                             case BlockErrorActions.RETRY: {
                                 await new PinoLogger().error(error, ['guardian-service', thisArg.uuid, thisArg.blockType, 'block-runtime', thisArg.policyId], userId);

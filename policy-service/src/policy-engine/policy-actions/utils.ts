@@ -1,13 +1,16 @@
+import { VcHelper } from '@guardian/hedera/vc-helper';
 import { PolicyAction } from '@guardian/common/entity/policy-action';
 import { PolicyComment } from '@guardian/common/entity/policy-comment';
 import { PolicyDiscussion } from '@guardian/common/entity/policy-discussion';
 import { Token } from '@guardian/common/entity/token';
 import { IDocumentOptions } from '@guardian/hedera/vcjs/vcjs';
 import { Message } from '@guardian/hedera/message/message';
+import { DIDMessage } from '@guardian/hedera/message/did-message';
+import { MessageAction } from '@guardian/hedera/message/message-action';
 import { RoleMessage } from '@guardian/hedera/message/role-message';
 import { TopicConfig } from '@guardian/hedera/topic';
 import { VcDocument as VcDocumentDefinition } from '@guardian/hedera/vcjs/vc-document';
-import { LocationType, PolicyActionStatus, PolicyAvailability, PolicyStatus, TopicType } from '@guardian/interfaces';
+import { DidDocumentStatus, LocationType, PolicyActionStatus, PolicyAvailability, PolicyStatus, TopicType } from '@guardian/interfaces';
 import { AnyBlockType } from '../policy-engine.interface.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
@@ -26,6 +29,7 @@ import { RelayerAccountAction } from './relayer-account.js';
 import { PolicyDiscussionAction } from './policy-discussion.js';
 import { PolicyCommentAction } from './policy-comment.js';
 import { PolicyDisconnectAction } from './policy-disconnect.js';
+import { PreviewScope, createPreviewEntityId, registerPreviewMessage } from '../helpers/preview.js';
 
 export class PolicyActionsUtils {
     public static needKey(status: PolicyStatus, availability: PolicyAvailability): boolean {
@@ -238,6 +242,28 @@ export class PolicyActionsUtils {
     }, actionStatusId?: string, batch?: IGenerateDidBatch): Promise<string> {
         const { ref, type, user, userId } = options;
         try {
+            const actionStatus = PreviewScope.current();
+            if (actionStatus?.preview && type === 'DID') {
+                const topic = await ref.databaseServer.getTopic({
+                    policyId: ref.policyId,
+                    type: TopicType.InstancePolicyTopic
+                });
+                if (!topic) {
+                    throw new Error('Policy root topic not found');
+                }
+                const document = await ref.components.generateDID(topic.topicId, actionStatusId);
+                const message = new DIDMessage(MessageAction.CreateDID);
+                message.setDocument(document);
+                registerPreviewMessage(actionStatus, message, topic.topicId);
+                await ref.databaseServer.saveDid({
+                    ...PolicyUtils.createDID(ref, user, document),
+                    status: DidDocumentStatus.CREATE,
+                    messageId: message.getId(),
+                    topicId: topic.topicId,
+                    verificationMethods: Object.fromEntries(document.getPrivateKeys().map(({ type: methodType, id }) => [methodType, id]))
+                });
+                return document.getDid();
+            }
             if (type === 'UUID') {
                 return await ref.components.generateUUID(actionStatusId);
             }
@@ -281,6 +307,9 @@ export class PolicyActionsUtils {
         userId: string | null
     }): Promise<VcDocumentDefinition> {
         const { ref, issuer, userId } = options;
+        if (PreviewScope.current()?.preview) {
+            return await new VcHelper().createUnsignedCredential(options.subject, issuer, null, options.options);
+        }
         const userCred = await PolicyUtils.getUserCredentials(ref, issuer, userId);
         if (userCred.location === LocationType.LOCAL) {
             return await SignVC.local(options);
@@ -307,6 +336,10 @@ export class PolicyActionsUtils {
     }): Promise<Message> {
         const { ref, owner, userId } = options;
         const userCred = await PolicyUtils.getUserCredentials(ref, owner, userId);
+        const actionStatus = PreviewScope.current();
+        if (actionStatus) {
+            return registerPreviewMessage(actionStatus, options.message, options.topic?.topicId);
+        }
         if (userCred.location === LocationType.LOCAL) {
             return await SendMessage.local(options);
         } else {
@@ -330,6 +363,9 @@ export class PolicyActionsUtils {
     }): Promise<Message[]> {
         const { ref, owner, userId } = options;
         const userCred = await PolicyUtils.getUserCredentials(ref, owner, userId);
+        if (PreviewScope.current()) {
+            return options.messages;
+        }
         if (userCred.location === LocationType.LOCAL) {
             return await SendMessages.local(options);
         } else {
@@ -480,6 +516,24 @@ export class PolicyActionsUtils {
         const { ref, owner, userId } = options;
         const needKey = PolicyActionsUtils.needKey(ref.policyStatus, ref.policyAvailability);
         const userCred = await PolicyUtils.getUserCredentials(ref, owner, userId);
+        if (PreviewScope.current()) {
+            const rootTopic = await ref.databaseServer.getTopic({
+                policyId: ref.policyId,
+                type: TopicType.InstancePolicyTopic
+            });
+            const topic = new TopicConfig({
+                topicId: createPreviewEntityId(),
+                name: options.config.name,
+                description: options.config.description,
+                owner,
+                type: options.type,
+                policyId: ref.policyId,
+                policyUUID: null
+            }, null, null);
+            topic.parent = rootTopic?.topicId;
+            await ref.databaseServer.saveTopic(topic.toObject());
+            return topic;
+        }
         if (userCred.location === LocationType.LOCAL) {
             return await CreateTopic.local({ ...options, needKey });
         } else {

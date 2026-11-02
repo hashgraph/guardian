@@ -14,6 +14,8 @@ import { IPolicyBlock } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
 import { Recording, Running } from '../record/index.js';
 import { IDebugContext } from '../block-engine/block-result.js';
+import { createPreviewDatabaseServer } from './preview-database.js';
+import { PreviewScope } from './preview.js';
 
 export class ComponentsService {
     /**
@@ -111,7 +113,7 @@ export class ComponentsService {
         } else {
             this.dryRunId = null;
         }
-        this.databaseServer = new DatabaseServer(this.dryRunId);
+        this.databaseServer = createPreviewDatabaseServer(new DatabaseServer(this.dryRunId), this.dryRunId);
         this.policyTokens = [];
         this.policyGroups = [];
         this.policyRoles = [];
@@ -338,6 +340,9 @@ export class ComponentsService {
      * Generate new UUID
      */
     public async generateUUID(actionStatusId?: string): Promise<string> {
+        if (PreviewScope.current()) {
+            return GenerateUUIDv4();
+        }
         if (this._runningController) {
             return await this._runningController.nextUUID();
         }
@@ -352,13 +357,13 @@ export class ComponentsService {
      * Generate new DID
      */
     public async generateDID(topicId: string, actionStatusId?: string): Promise<HederaDidDocument> {
-        if (this._runningController) {
+        if (this._runningController && !PreviewScope.current()?.preview) {
             return await this._runningController.nextDID(topicId);
         } else {
             const privateKey = PrivateKey.generate();
             const vcHelper = new VcHelper();
             const didDocument = await vcHelper.generateNewDid(topicId, privateKey);
-            if (this._recordingController) {
+            if (this._recordingController && !PreviewScope.current()?.preview) {
                 await this._recordingController.generateDidDocument(didDocument, actionStatusId);
             }
             return didDocument;

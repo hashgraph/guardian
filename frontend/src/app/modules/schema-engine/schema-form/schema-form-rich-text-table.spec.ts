@@ -9,12 +9,13 @@ import { TableModule } from 'primeng/table';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { FieldForm } from '../schema-form-model/field-form';
 import { SchemaFormComponent } from './schema-form.component';
+import { FormTextareaComponent } from './form-textarea/form-textarea.component';
 import { RichTextEditorComponent } from '../rich-text-editor/rich-text-editor.component';
 
 describe('SchemaFormComponent Rich Text table cell', () => {
     const render = (ipfs: any = {}, outcome = '# Title\n\nSome **bold** text') => {
         TestBed.configureTestingModule({
-            declarations: [SchemaFormComponent, RichTextEditorComponent],
+            declarations: [SchemaFormComponent, FormTextareaComponent, RichTextEditorComponent],
             imports: [CommonModule, ReactiveFormsModule, TableModule, PopoverModule],
             providers: [
                 { provide: IPFSService, useValue: ipfs },
