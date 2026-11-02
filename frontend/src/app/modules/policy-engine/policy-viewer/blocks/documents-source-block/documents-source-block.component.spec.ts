@@ -338,4 +338,50 @@ describe('DocumentsSourceBlockComponent', () => {
             expect(component.richTextValue).toContain(`src="${dataUrl}"`);
         });
     });
+
+    describe('status pill tone', () => {
+        it('reads a waiting status as wait, not approved', () => {
+            expect(createComponent().getStatusTone('Waiting for approval')).toBe('wait');
+        });
+
+        it('reads a rejected status as bad', () => {
+            expect(createComponent().getStatusTone('Registry rejected')).toBe('bad');
+        });
+
+        it('reads a minted status as ok', () => {
+            expect(createComponent().getStatusTone('Minted')).toBe('ok');
+        });
+
+        it('reads any other status as neutral', () => {
+            const component = createComponent();
+            expect(component.getStatusTone('Created')).toBe('neutral');
+            expect(component.getStatusTone(undefined)).toBe('neutral');
+        });
+    });
+
+    describe('column sorting', () => {
+        function columns(paginationAddon: any, fields: any[]): any[] {
+            const component = createComponent();
+            component.paginationAddon = paginationAddon;
+            component.hasHistory = false;
+            component.fields = fields;
+            component.updateColumns();
+            return component.fields;
+        }
+
+        it('makes a text column sortable when the table is not paginated', () => {
+            const [field] = columns(null, [{ type: 'text', name: 'option.status', names: ['option', 'status'] }]);
+            expect(field.__sortable).toBeTrue();
+        });
+
+        it('does not offer sorting when the rows are paginated', () => {
+            const [field] = columns({}, [{ type: 'text', name: 'option.status', names: ['option', 'status'] }]);
+            expect(field.__sortable).toBeFalse();
+        });
+
+        it('does not offer sorting on a path ending in the last array element', () => {
+            const [field] = columns(null, [{ type: 'text', name: 'document.L.value', names: ['document', 'L', 'value'] }]);
+            expect(field.__sortable).toBeFalse();
+        });
+    });
 });

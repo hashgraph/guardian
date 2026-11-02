@@ -12,17 +12,25 @@ const PLACEHOLDER_NUMBER = '123';
 const PLACEHOLDER_EMAIL = 'example@email.com';
 
 const L = {
-    // Registration step
+    // Registration step. 7252 renders six or fewer roles as role cards
+    // (data-role buttons) and a larger role list as the classic p-select
+    // dropdown; the pre-7252 app is dropdown-only. Role selection therefore
+    // tries the card first and falls back to the dropdown.
+    rolesForm: 'div.roles-form',
+    roleCard: 'div.roles-form button[data-role]',
     roleSelect: 'div.roles-form p-select',
     roleOption: 'li[role="option"]',
-    wizardNext: "button[label='Next']",
+    wizardNext: "button:contains('Continue')",
 
-    // Request forms (request-document-block)
-    pageForm: 'div.form.form-page',
-    pageSubmit: 'div.page-btns button.guardian-button-primary',
-    requestFormDialog: 'div.guardian-dialog',
+    // Request forms (request-document-block). Since 7252 the form opens on top
+    // of the viewer's content area (a FormTakeover, or a dialog outside the
+    // viewer) as the request-document-form component; both presentations share
+    // its form-card body and action-buttons footer.
+    pageForm: 'request-document-form',
+    pageSubmit: 'request-document-form div.action-buttons button.guardian-button-primary',
+    requestFormDialog: 'request-document-form',
     dialogTitle: 'div.header-text',
-    dialogSubmit: 'div.action-buttons button.guardian-button-primary',
+    dialogSubmit: 'request-document-form div.action-buttons button.guardian-button-primary',
     dialogTrigger: (text) => `p-button:contains('${text}')`,
 
     // Wizard structures
@@ -32,9 +40,9 @@ const L = {
     // Statuses
     informationTitle: 'div.title',
     status: (title) => `span[title='${title}']`,
-    signButton: 'div.btn-option.btn-SIGN',
+    signButton: 'button.btn-option.btn-SIGN',
     signedStatus: 'div.status.status-SIGNED',
-    approveButton: 'div.btn-option.btn-approve',
+    approveButton: 'button.btn-option.btn-approve',
 
     // IPFS field
     ipfsField: 'div.form-field-input.ipfs-url',
@@ -59,7 +67,7 @@ const L = {
     actionDropdown: 'div.content-dropdown p-select',
 
     // Button blocks
-    revokeButton: "div.btn-option:contains('Revoke')",
+    revokeButton: "button.btn-option:contains('Revoke')",
 };
 
 export class UserPoliciesPage {
@@ -73,25 +81,34 @@ export class UserPoliciesPage {
     }
 
     /**
-     * Chooses the role in the registration step and advances. The role select is a
-     * PrimeNG p-select; the option overlay appends to the body.
+     * Chooses the role in the registration step and advances. 7252 renders six
+     * or fewer roles as role cards (data-role buttons); a larger role list - and
+     * the pre-7252 app - uses the p-select dropdown, whose option overlay
+     * appends to the body.
      */
     chooseRole(role = 'Registrant') {
-        cy.get(L.roleSelect, { timeout: 30000 }).first().click();
-        cy.get(L.roleOption, { timeout: 30000 }).then(($options) => {
-            const options = $options.toArray();
-            const option =
-                options.find((el) => (el.textContent || '').trim() === role) ||
-                options.find((el) => (el.textContent || '').includes(role));
-            if (!option) {
-                throw new Error(
-                    `No role option "${role}". Options: ` +
-                    options.map((el) => (el.textContent || '').trim()).join(' | ')
-                );
+        cy.get(L.rolesForm, { timeout: 30000 }).then(($form) => {
+            const card = $form.find(`button[data-role="${role}"]`).first();
+            if (card.length) {
+                cy.wrap(card).click();
+            } else {
+                cy.get(L.roleSelect, { timeout: 30000 }).first().click();
+                cy.get(L.roleOption, { timeout: 30000 }).then(($options) => {
+                    const options = $options.toArray();
+                    const option =
+                        options.find((el) => (el.textContent || '').trim() === role) ||
+                        options.find((el) => (el.textContent || '').includes(role));
+                    if (!option) {
+                        throw new Error(
+                            `No role option "${role}". Options: ` +
+                                options.map((el) => (el.textContent || '').trim()).join(' | ')
+                        );
+                    }
+                    cy.wrap(option).click();
+                });
             }
-            cy.wrap(option).click();
+            cy.get(L.wizardNext, { timeout: 30000 }).click();
         });
-        cy.get(L.wizardNext, { timeout: 30000 }).click();
     }
 
     /**

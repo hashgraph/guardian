@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import {
     getAllContinents,
     getAllCountries,
@@ -50,7 +50,7 @@ interface IFieldIndexControl {
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: false
 })
-export class SchemaFormViewComponent implements OnInit {
+export class SchemaFormViewComponent implements OnInit, OnDestroy {
     @Input('private-fields') hide!: { [x: string]: boolean };
     @Input('schema') schema: Schema | null | undefined;
     @Input('fields') schemaFields!: SchemaField[] | undefined;
@@ -318,6 +318,7 @@ export class SchemaFormViewComponent implements OnInit {
                 item.count = item.list?.length;
                 item.pageIndex = 0;
                 item.pageSize = this.pageSize;
+                this.loadTableRichTextImages(item);
             }
             fields.push(item);
         }
@@ -381,6 +382,74 @@ export class SchemaFormViewComponent implements OnInit {
         Promise.all(references.map((reference) => this.loadImgReference(reference, true)))
             .finally(() => this.changeDetector.detectChanges());
     }
+    private loadTableRichTextImages(item: IFieldControl): void {
+        const richTextFields = (item.fields || []).filter((field) => field.customType === 'richText');
+        if (!richTextFields.length || !Array.isArray(item.list)) {
+            return;
+        }
+        for (const row of item.list as any[]) {
+            for (const field of richTextFields) {
+                this.loadRichTextImages(row?.[field.name]);
+            }
+        }
+    }
+
+    public richTextPopoverValue = '';
+
+    public richTextDialogField: IFieldControl | null = null;
+
+    private richTextHideTimer: any = null;
+
+    public onRichTextCellEnter(event: Event, field: IFieldControl, popover: any): void {
+        this.clearRichTextHideTimer();
+        this.richTextPopoverValue = this.getRichTextValue(field.value);
+        if (this.richTextPopoverValue) {
+            const visible = !!popover.overlayVisible;
+            popover.show(event);
+            if (visible) {
+                this.changeDetector.detectChanges();
+                popover.align();
+            }
+        } else {
+            popover.hide();
+        }
+    }
+
+    public onRichTextCellLeave(popover: any): void {
+        this.clearRichTextHideTimer();
+        this.richTextHideTimer = setTimeout(() => {
+            this.richTextHideTimer = null;
+            popover.hide();
+        }, 250);
+    }
+
+    public onRichTextPopoverEnter(): void {
+        this.clearRichTextHideTimer();
+    }
+
+    public openRichTextDialog(field: IFieldControl, popover: any): void {
+        this.clearRichTextHideTimer();
+        popover.hide();
+        this.richTextDialogField = field;
+        this.changeDetector.detectChanges();
+    }
+
+    public closeRichTextDialog(): void {
+        this.richTextDialogField = null;
+        this.changeDetector.detectChanges();
+    }
+
+    private clearRichTextHideTimer(): void {
+        if (this.richTextHideTimer) {
+            clearTimeout(this.richTextHideTimer);
+            this.richTextHideTimer = null;
+        }
+    }
+
+    ngOnDestroy(): void {
+        this.clearRichTextHideTimer();
+    }
+
     private loadImgs(items: IFieldIndexControl[]) {
         Promise.all(
             items.map(async (fieldItem: IFieldIndexControl) => {
@@ -769,7 +838,19 @@ export class SchemaFormViewComponent implements OnInit {
         return item.fields?.filter(f => f.type !== 'null' && !f.hidden);
     }
 
+   private tableRows = new WeakMap<IFieldControl, any[]>();
+
    public getTableHRowFields(item: IFieldControl): any[] {
+        const cached = this.tableRows.get(item);
+        if (cached) {
+            return cached;
+        }
+        const rows = this.buildTableRowFields(item);
+        this.tableRows.set(item, rows);
+        return rows;
+    }
+
+    private buildTableRowFields(item: IFieldControl): any[] {
         if (!item.list?.length || !item.fields?.length) {
             return [];
         }

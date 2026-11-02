@@ -39,9 +39,9 @@ const L = {
     viewerIdentity: 'div.policy-identity',
     stepItem: 'div.step-item',
     wizardTab: 'div.policy-content p-tab',
-    approveButton: 'div.btn-approve',
-    rejectButton: 'div.btn-reject',
-    signButton: 'div.btn-SIGN',
+    approveButton: 'button.btn-approve',
+    rejectButton: 'button.btn-reject',
+    signButton: 'button.btn-SIGN',
     signedStatus: 'div.status.status-SIGNED',
     informationTitle: 'div.title',
 
@@ -83,9 +83,15 @@ const L = {
     settingsClose: '.psd-close',
 
     // Wizard user blocks
+    // 7252 renders six or fewer roles as role cards (data-role buttons) and a
+    // larger role list as the classic p-select dropdown; the pre-7252 app is
+    // dropdown-only. Role selection therefore tries the card first and falls
+    // back to the dropdown.
+    rolesForm: 'div.roles-form',
+    roleCard: 'div.roles-form button[data-role]',
     roleSelect: 'div.roles-form p-select',
     roleOption: 'li[role="option"]',
-    wizardNext: "button[label='Next']",
+    wizardNext: "button:contains('Continue')",
     wizardSubmit: "button:contains('Validate & Create')",
     dialogCreateButton: 'div.action-buttons button.guardian-button-primary',
     requestFormDialog: 'div.guardian-dialog',
@@ -107,7 +113,7 @@ const L = {
     geoLocationPanel: 'div.location-control',
     geoFileSwitch: 'div.switch-btn label.guardian-switch-button',
     actionDropdown: 'div.content-dropdown p-select',
-    revokeButton: "div.btn-option:contains('Revoke')",
+    revokeButton: "button.btn-option:contains('Revoke')",
 
     // Export dialog footer
     exportFileButton: 'button:contains("Save to file")',
@@ -696,9 +702,16 @@ export class PoliciesPage {
     }
 
     registerAs(role) {
-        cy.get(CommonElements.dropdown).first().click();
-        cy.get(L.roleOption).contains(role).click();
-        cy.get(L.wizardNext).click();
+        cy.get(L.rolesForm, { timeout: 30000 }).then(($form) => {
+            const card = $form.find(`button[data-role="${role}"]`).first();
+            if (card.length) {
+                cy.wrap(card).click();
+            } else {
+                cy.get(L.roleSelect).first().click();
+                cy.get(L.roleOption).contains(role).click();
+            }
+            cy.get(L.wizardNext).click();
+        });
         Checks.waitForLoading();
     }
 

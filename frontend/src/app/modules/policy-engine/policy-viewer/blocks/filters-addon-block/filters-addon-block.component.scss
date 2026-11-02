@@ -19,176 +19,119 @@
 }
 
 .content {
-    flex-wrap: nowrap;
-    background: var(--guardian-background, #ffffff);
     display: inline-flex;
+    flex-direction: column;
+    gap: 4px;
     max-width: 100%;
     min-width: 0;
-    margin-left: 14px;
 }
 
 .content-name {
-    display: inline-flex;
-    align-items: center;
-    height: 40px;
     max-width: clamp(88px, 22vw, 220px);
-    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     color: var(--color-grey-5);
-    font-family: Inter, serif;
-    font-size: 14px;
-    font-weight: 400;
+    font-family: Inter, sans-serif;
+    font-size: 12px;
+    font-weight: 500;
     line-height: 16px;
-    background-color: var(--guardian-background, white);
-    border: 1px solid var(--guardian-grid-color, #ced4da);
-    border-right: 1px solid var(--guardian-grid-color, #ced4da);
-    border-top-left-radius: 8px;
-    border-bottom-left-radius: 8px;
-    box-sizing: border-box;
-    padding: 2px 4.5px 0 12px;
-}
-
-.content-select {
-    min-width: 265px;
-    max-width: 265px;
-    display: flex;
-    flex-direction: column;
-    align-self: flex-end;
-    flex: 1;
-    height: 40px;
-
-    &[valid="false"] ::ng-deep {
-        .p-multiselect {
-            border-color: #f00;
-        }
-
-        .p-select {
-            border-color: #f00;
-        }
-
-        .p-inputtext {
-            border-color: #f00;
-        }
-
-        .input-filter {
-            border-color: #f00;
-        }
-    }
 }
 
 .grouped-content {
     display: flex;
-    align-items: flex-start;
+    align-items: stretch;
+    height: 36px;
     max-width: 100%;
     min-width: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
+    border-radius: 8px;
+    background: var(--guardian-background, #fff);
+
+    &[valid="false"] {
+        border-color: var(--guardian-failure-color, #FF432A);
+    }
+}
+
+.content.has-value .grouped-content {
+    border-color: var(--color-primary);
 }
 
 .type-select {
-    min-width: 265px;
     display: flex;
-    flex-direction: column;
-    align-self: flex-end;
-    flex: 1;
-    height: 38px;
+    min-width: 120px;
+    border-right: 1px solid var(--guardian-border-color, #E1E7EF);
+    background: var(--guardian-grey-color, #EFF3F7);
 }
 
-p-select,
-p-datepicker {
-    height: 40px;
+.content-type {
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    border-right: 1px solid var(--guardian-border-color, #E1E7EF);
+    background: var(--guardian-grey-color, #EFF3F7);
 }
 
 .common-prefix-dropdown {
-    background-color: var(--guardian-background, white);
-    display: inline-flex;
-    align-items: center;
-    height: 40px;
-    border: 1px solid var(--guardian-grid-color, #ced4da);
-    padding: 2px 6px 0 4.5px;
-    color: var(--color-grey-5);
-    font-family: Inter, serif;
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 16px;
-    box-sizing: border-box;
-    border-left: 0;
-    border-right: 0;
     max-width: clamp(80px, 20vw, 180px);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    color: var(--color-grey-5);
+    font-family: Inter, sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 16px;
 }
 
-.prefix-dropdown {
-    font-size: 14px;
-    color: #848FA9;
-    display: inline-block;
-    margin-right: 5px;
+.content-select {
+    display: flex;
+    flex: 1;
+    min-width: 180px;
+    max-width: 265px;
+}
+
+p-select,
+p-datepicker {
+    height: 100%;
 }
 
 .content ::ng-deep .p-component {
-    border-radius: 8px;
     outline: none;
     box-shadow: none;
 }
 
-.content ::ng-deep .filter-dropdown.p-select {
-    border-radius: 0 8px 8px 0;
-    border-color: var(--guardian-grid-color, #ced4da);
-    border-left: 0;
-
-    .p-select-label {
-        display: flex;
-        align-items: center;
-        height: 40px;
-        font-family: Inter, serif;
-        font-size: 14px;
-        font-weight: 400;
-        line-height: 16px;
-        color: var(--color-grey-black-2);
-    }
-
-    .p-select-dropdown-icon {
-        color: var(--guardian-font-color, #23252E);
-    }
-
-    .p-select-dropdown {
-        border-color: var(--guardian-grid-color, #ced4da);
-    }
+.content ::ng-deep .p-select,
+.content ::ng-deep .p-multiselect,
+.content ::ng-deep .p-datepicker .p-inputtext {
+    height: 100%;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
 }
 
-.content ::ng-deep .filter-dropdown.p-multiselect {
-    border-radius: 0 8px 8px 0;
-    border-color: var(--guardian-grid-color, #ced4da);
-    border-left: 0;
+.content ::ng-deep .p-datepicker {
+    width: 100%;
+}
 
+.content ::ng-deep .filter-dropdown {
+    .p-select-label,
     .p-multiselect-label {
         display: flex;
         align-items: center;
-        height: 40px;
-        font-family: Inter, serif;
+        font-family: Inter, sans-serif;
         font-size: 14px;
         font-weight: 400;
         line-height: 16px;
         color: var(--color-grey-black-2);
     }
 
+    .p-select-dropdown-icon,
     .p-multiselect-dropdown-icon {
         color: var(--guardian-font-color, #23252E);
     }
-
-    .p-multiselect-dropdown {
-        border-color: var(--guardian-grid-color, #ced4da);
-    }
-}
-
-.content ::ng-deep .calendar-filter .p-inputtext {
-    padding: 8px 8px 11px 16px;
-    border-radius: 0 8px 8px 0;
-    border-color: var(--guardian-grid-color, #ced4da);
-    border-left: 0;
-    height: 37px;
 }
 
 .content ::ng-deep .calendar-filter .p-datepicker-dropdown {
@@ -197,24 +140,45 @@ p-datepicker {
     right: 8px;
     transform: translateY(-50%);
     pointer-events: none;
-    background-color: var(--guardian-background, white);
+    background-color: transparent;
     color: gray;
     border: none;
     padding: 0;
 }
 
 .input-filter {
-    background-color: var(--guardian-background, white);
     display: block;
-    height: 38px;
-    border: 1px solid var(--guardian-grid-color, #ced4da);
-    padding: 9px 6px 9px 12px;
-    font-size: 14px;
-    box-sizing: border-box;
-    border-top-right-radius: 8px;
-    border-bottom-right-radius: 8px;
-    border-left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0 12px;
+    border: 0;
     outline: none;
+    box-sizing: border-box;
+    background: transparent;
+    color: var(--guardian-font-color);
+    font-size: 14px;
+}
+
+.clear-filter {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    border: 0;
+    border-left: 1px solid var(--guardian-border-color, #E1E7EF);
+    background: transparent;
+    color: var(--color-grey-5);
+    cursor: pointer;
+
+    .pi {
+        font-size: 12px;
+    }
+
+    &:hover {
+        background: var(--guardian-grey-color, #EFF3F7);
+        color: var(--guardian-font-color);
+    }
 }
 
 *[readonly-block="true"] {

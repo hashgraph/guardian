@@ -4,7 +4,8 @@ import { Subscription, Observable, of } from "rxjs";
 import { PolicyEngineService } from "src/app/services/policy-engine.service";
 import { ProfileService } from "src/app/services/profile.service";
 import { WebSocketService } from "src/app/services/web-socket.service";
-import { Directive, Input } from '@angular/core';
+import { Directive, Input, inject } from '@angular/core';
+import { ViewerProfileService } from '../../viewer-profile.service';
 
 @Directive({
     standalone: false
@@ -19,6 +20,8 @@ export abstract class AbstractUIBlockComponent<T> {
 
     @Input('savepointIds') savepointIds?: string[] | null = null;
 
+    private readonly viewerProfile = inject(ViewerProfileService, { optional: true });
+
     constructor(
         protected policyEngineService: PolicyEngineService,
         protected profile: ProfileService,
@@ -32,7 +35,7 @@ export abstract class AbstractUIBlockComponent<T> {
                 this.onUpdate.bind(this)
             );
         }
-        this.profile.getProfile().subscribe((user: IUser) => {
+        (this.viewerProfile?.profile$ ?? this.profile.getProfile()).subscribe((user: IUser) => {
             this.user = user;
             this.loadData();
         });

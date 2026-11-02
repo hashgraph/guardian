@@ -34,7 +34,7 @@ import { MessageServer } from '@guardian/hedera/message/message-server';
 import { TopicMemo } from '@guardian/hedera/memo-mappings/topic-memo';
 import { TransactionLogger, TransactionLogLvl } from '@guardian/hedera/transaction-logger';
 import { entities } from '@guardian/common/entities';
-import { ApplicationStates, PolicyEvents, PolicyStatus, WorkerTaskType } from '@guardian/interfaces';
+import { ApplicationStates, PolicyStatus, WorkerTaskType } from '@guardian/interfaces';
 import { AccountId, PrivateKey, TopicId } from '@hiero-ledger/sdk';
 import { ipfsAPI } from './api/ipfs.service.js';
 import { artifactAPI } from './api/artifact.service.js';
@@ -384,8 +384,8 @@ Promise.all([
                 policy.status = PolicyStatus.DISCONTINUED;
                 return policy;
             }));
-            await Promise.all(policiesToDiscontunie.map(policy =>
-                new GuardiansService().sendPolicyMessage(PolicyEvents.REFRESH_MODEL, policy.id, {})
+            await Promise.all(policiesToDiscontunie.map((policy) =>
+                policyEngine.stopDiscontinued(policy.id, policy.ownerId)
             ));
         },
         '0 * * * *',

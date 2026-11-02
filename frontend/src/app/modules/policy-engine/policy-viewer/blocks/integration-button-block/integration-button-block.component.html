@@ -1,8 +1,8 @@
 @if (isBtnVisible()) {
   <div class="content" [attr.readonly-block]="readonly">
-    <div class="btn-option" (click)="onClick()">
+    <button type="button" class="btn-option" (click)="onClick()">
       {{buttonName}}
-    </div>
+    </button>
   </div>
 }
 

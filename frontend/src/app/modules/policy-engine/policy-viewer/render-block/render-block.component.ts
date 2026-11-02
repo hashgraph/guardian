@@ -49,7 +49,14 @@ export class RenderBlockComponent {
     }
 
     ngOnDestroy() {
+        this.destroyComponent();
+    }
+
+    private registeredId!: string;
+
+    private destroyComponent() {
         if (this.componentRef) {
+            this.policyProgressService.removeComponentRef(this.registeredId, this.componentRef);
             this.componentRef.destroy();
         }
     }
@@ -80,9 +87,7 @@ export class RenderBlockComponent {
     }
 
     loadComponent() {
-        if (this.componentRef) {
-            this.componentRef.destroy();
-        }
+        this.destroyComponent();
         this.target.clear();
         const factory: any = this.registeredService.getFactory(this.blockType);
         if (factory) {
@@ -97,6 +102,7 @@ export class RenderBlockComponent {
 
             this.componentRef.changeDetectorRef.detectChanges();
 
+            this.registeredId = this.id;
             this.policyProgressService.addComponentRef(this.id, this.componentRef);
         } else if (this.empty) {
             this.target.createEmbeddedView(this.empty);

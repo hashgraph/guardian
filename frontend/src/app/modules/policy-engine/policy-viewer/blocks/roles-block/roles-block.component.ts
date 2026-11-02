@@ -164,6 +164,7 @@ export class RolesBlockComponent implements OnInit {
                 .subscribe(
                     () => {
                         this.policyProgressService.updateData(data);
+                        this.policyProgressService.invalidateNavigation();
                     },
                     (e) => {
                         console.error(e.error);
@@ -173,8 +174,35 @@ export class RolesBlockComponent implements OnInit {
         }
     }
 
-    onChange(event: any) {
-        this.type = event.value;
+    // with navigation the step name is already the page title
+    get hasNavigation(): boolean {
+        return !!this.policyProgressService.getHasNavigation();
+    }
+
+    get submitLabel(): string {
+        if (!this.isGroup) {
+            return 'Continue';
+        }
+        return this.type === 'invite' ? 'Join group' : 'Create group';
+    }
+
+    onSelectRole(role: string) {
+        this.roleForm.patchValue({ roleOrGroup: role });
+        this.roleForm.get('roleOrGroup')?.markAsDirty();
+    }
+
+    onArrow(event: Event, role: string, step: number) {
+        event.preventDefault();
+        const index = this.roles.indexOf(role);
+        const next = this.roles[(index + step + this.roles.length) % this.roles.length];
+        this.onSelectRole(next);
+        const group = (event.target as HTMLElement).parentElement;
+        const buttons = group?.querySelectorAll<HTMLElement>('[data-role]');
+        buttons?.[this.roles.indexOf(next)]?.focus();
+    }
+
+    onChange(type: 'new' | 'invite') {
+        this.type = type;
         this.inviteRole = '';
         this.policyName = '';
         this.groupName = '';

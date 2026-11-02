@@ -56,24 +56,17 @@ export class AppComponent implements OnInit {
     }
 
     resizeMenu(type: 'COLLAPSE' | 'EXPAND' | 'NO_MARGIN' | 'HORIZONTAL') {
-        const progressFooter = document.getElementById('block-progress-footer');
         switch (type) {
             case 'HORIZONTAL': {
                 // Rail width is zeroed by the `layout-horizontal` root class, so the page
                 // only needs its left gutter removed; the top offset comes from --header-height.
                 document.body.style.setProperty('--header-width', '0px');
                 document.getElementById('main-content')!.removeAttribute('main-collapse-menu');
-                if (progressFooter) {
-                    progressFooter.style.paddingLeft = '48px';
-                }
                 break;
             }
             case 'COLLAPSE': {
                 document.body.style.setProperty('--header-width', 'var(--header-width-collapse)');
                 document.getElementById('main-content')!.setAttribute('main-collapse-menu', 'true');
-                if (progressFooter) {
-                    progressFooter.style.paddingLeft = 'calc(var(--header-width-collapse) + 48px)';
-                }
                 break;
             }
             case 'NO_MARGIN':
@@ -85,9 +78,6 @@ export class AppComponent implements OnInit {
             case 'EXPAND': {
                 document.body.style.setProperty('--header-width', 'var(--header-width-expand)');
                 document.getElementById('main-content')!.setAttribute('main-collapse-menu', 'false');
-                if (progressFooter) {
-                    progressFooter.style.paddingLeft = 'calc(var(--header-width-expand) + 48px)';
-                }
                 break;
             }
         }

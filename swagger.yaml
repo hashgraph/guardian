@@ -55155,6 +55155,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/IgnoreRuleDTO'
+        isRunning:
+          type: boolean
+          description: >-
+            Discontinued policies only: whether the policy process is running. A
+            stopped one starts on demand.
       required:
         - id
         - uuid

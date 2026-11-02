@@ -1,8 +1,14 @@
 @if (isBtnVisible()) {
   <div class="content" [style.visibility]="visible ? 'visible' : 'hidden' " [attr.readonly-block]="readonly">
-    <div class="btn-option {{uiClass}}" (click)="dialog ? onSelectDialog() : onSelect()">
+    <button type="button" class="btn-option {{uiClass}}" (click)="dialog ? onSelectDialog() : onSelect()">
+      @if (uiClass == 'btn-approve') {
+        <i class="pi pi-check" aria-hidden="true"></i>
+      }
+      @if (uiClass == 'btn-reject') {
+        <i class="pi pi-times" aria-hidden="true"></i>
+      }
       {{name}}
-    </div>
+    </button>
   </div>
 }
 

@@ -1,6 +1,11 @@
 import { ComponentRef, Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { IBlock } from '../structures';
+
+export interface ActiveStep {
+    label: string;
+    parentLabel?: string;
+}
 
 @Injectable()
 export class PolicyProgressService {
@@ -11,11 +16,15 @@ export class PolicyProgressService {
     private _componentRefsMap: Map<string, ComponentRef<any>> = new Map();
     private _role: string;
     private _hasNavigation: boolean;
-    private _currentStepIndex: number;
-    private _currentStepBlockId: string;
 
     private dataSubject: BehaviorSubject<any> = new BehaviorSubject(null);
     data$: Observable<any> = this.dataSubject.asObservable();
+
+    private navigationInvalidatedSubject: Subject<void> = new Subject<void>();
+    navigationInvalidated$: Observable<void> = this.navigationInvalidatedSubject.asObservable();
+
+    private activeStepSubject: BehaviorSubject<ActiveStep | null> = new BehaviorSubject<ActiveStep | null>(null);
+    activeStep$: Observable<ActiveStep | null> = this.activeStepSubject.asObservable();
 
     constructor() {
     }
@@ -70,6 +79,12 @@ export class PolicyProgressService {
         this._componentRefsMap.set(id, component);
     }
 
+    removeComponentRef(id: string, component: ComponentRef<any>) {
+        if (this._componentRefsMap.get(id) === component) {
+            this._componentRefsMap.delete(id);
+        }
+    }
+
     getComponentRefById(id: string): ComponentRef<any> | undefined {
         return this._componentRefsMap.get(id);
     }
@@ -113,16 +128,11 @@ export class PolicyProgressService {
         }
     }
 
-    updateCurrentStep(index: number, blockId: string): void {
-        this._currentStepIndex = index;
-        this._currentStepBlockId = blockId;
+    invalidateNavigation(): void {
+        this.navigationInvalidatedSubject.next();
     }
 
-    getCurrentStepIndex(): number {
-        return this._currentStepIndex;
-    }
-
-    getCurrentStepBlockId(): string {
-        return this._currentStepBlockId;
+    setActiveStep(step: ActiveStep | null): void {
+        this.activeStepSubject.next(step);
     }
 }
