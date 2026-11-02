@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, QueryList, SimpleChanges, ViewChild, ViewChildren } from '@angular/core';
 import { UntypedFormArray } from '@angular/forms';
 import {
     isGeoCustomType,
@@ -236,6 +236,7 @@ export class SchemaFormComponent implements OnInit {
                 if (row.open) this.preparePreviewSection(row);
             }
         }
+        this.childForms?.forEach((form) => form.prepareOpenPreviewSections());
     }
 
     public getFieldFormulas(item: IFieldControl<any>): FormulaItem[] {
@@ -801,6 +802,7 @@ export class SchemaFormComponent implements OnInit {
     }
 
     @ViewChild('richTextDialogEditor') public richTextDialogEditor?: RichTextEditorComponent;
+    @ViewChildren(SchemaFormComponent) public childForms?: QueryList<SchemaFormComponent>;
 
     public richTextDialogControl: IFieldControl<any> | null = null;
 

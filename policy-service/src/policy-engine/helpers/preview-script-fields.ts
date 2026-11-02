@@ -416,6 +416,12 @@ class Resolver {
     }
 }
 
+function readAllSites(sites: IPreviewReadSite[]): IPreviewReadRecord[] {
+    return sites.map(({ schema: readSchema, path, fullPath, document }) => document === undefined
+        ? { schema: readSchema, path, fullPath }
+        : { schema: readSchema, path, fullPath, document });
+}
+
 export function findPreviewScriptFields(
     source: string,
     sites: IPreviewReadSite[],
@@ -427,6 +433,27 @@ export function findPreviewScriptFields(
     roots: string[] = [],
     language: 'javascript' | 'mathjs' = 'javascript'
 ): IPreviewReadRecord[] {
+    try {
+        return findScriptFields(source, sites, unexecuted, schema, paths, expression, prefix, roots, language);
+    } catch (error) {
+        if (error instanceof RangeError) {
+            return readAllSites(sites);
+        }
+        throw error;
+    }
+}
+
+function findScriptFields(
+    source: string,
+    sites: IPreviewReadSite[],
+    unexecuted: [number, number][],
+    schema: string | null,
+    paths: string[],
+    expression: boolean,
+    prefix: string,
+    roots: string[],
+    language: 'javascript' | 'mathjs'
+): IPreviewReadRecord[] {
     if (language === 'mathjs') {
         return findPreviewFormulaFields(sites, schema, paths);
     }
@@ -434,9 +461,7 @@ export function findPreviewScriptFields(
     try {
         script = collect(source, expression);
     } catch {
-        return sites.map(({ schema: readSchema, path, fullPath, document }) => document === undefined
-            ? { schema: readSchema, path, fullPath }
-            : { schema: readSchema, path, fullPath, document });
+        return readAllSites(sites);
     }
     const known = new Set(paths);
     const byKey = new Map<string, string[]>();

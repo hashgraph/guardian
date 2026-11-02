@@ -350,15 +350,29 @@ class PreviewDatabase {
         const base = toFilterObject(filters);
         const ids = this.storedIds(bucket);
         const storedFilter = ids.length ? { $or: [base, { _id: { $in: ids } }] } : base;
-        const stored: unknown[] = await this.call('find', [entityClass, storedFilter, forStoredRead(options)]);
+        const offset = Number(settings.offset) || 0;
+        const limit = Number(settings.limit) || 0;
+        const read = limit ? { ...withoutPaging(options), limit: offset + limit + ids.length } : forStoredRead(options);
+        const stored: unknown[] = await this.call('find', [entityClass, storedFilter, read]);
         const records: { value: unknown; view: Record<string, unknown> }[] = [];
+        const returned = new Set<string>();
         for (const item of stored) {
             const id = getRecordId(item);
             const entry = id ? bucket.get(id) : undefined;
             if (!entry) {
                 records.push({ value: markPreviewStoredDocuments(item), view: getStoredView(entityClass, toRecord(item), this.dryRun) });
-            } else if (entry.record && this.matches(entityClass, entry.record, filter)) {
-                records.push({ value: toRecord(entry.record), view: getStoredView(entityClass, entry.record, this.dryRun) });
+            } else {
+                returned.add(id);
+                if (entry.record && this.matches(entityClass, entry.record, filter)) {
+                    records.push({ value: toRecord(entry.record), view: getStoredView(entityClass, entry.record, this.dryRun) });
+                }
+            }
+        }
+        if (limit) {
+            for (const [id, entry] of bucket) {
+                if (entry.stored && !returned.has(id) && entry.record && this.matches(entityClass, entry.record, filter)) {
+                    records.push({ value: toRecord(entry.record), view: getStoredView(entityClass, entry.record, this.dryRun) });
+                }
             }
         }
         for (const entry of bucket.values()) {
@@ -378,8 +392,6 @@ class PreviewDatabase {
             }
             records.sort((a, b) => comparePreviewRecords(a.view, b.view, order));
         }
-        const offset = Number(settings.offset) || 0;
-        const limit = Number(settings.limit) || 0;
         const values = records.map((record) => record.value);
         return limit ? values.slice(offset, offset + limit) : values.slice(offset);
     }

@@ -228,6 +228,94 @@ describe('@unit preview database wrapper', () => {
         assert.equal(db.records(VcDocument).length, 3);
     });
 
+    it('reads only the requested window plus the changed records from the database for a limited read', async () => {
+        const path = 'document.credentialSubject.0.area';
+        db.seed(VcDocument, Array.from({ length: 40 }, (_, index) => vc(new ObjectId().toHexString(), 'did:c', 100 + index)));
+        const [first, page] = await inPreview(previewStep(), async () => {
+            const stored = await server.getVcDocument({ _id: new ObjectId(ID_A) });
+            await server.updateVC({ ...stored, document: { credentialSubject: [{ area: 11, approved: true }] } });
+            await server.saveVC({ ...vc(ID_B, 'did:new', 500), _id: undefined });
+            db.calls.length = 0;
+            return [
+                await server.findOne(VcDocument, { policyId }, { orderBy: { [path]: 'DESC' } }),
+                await server.getVcDocuments({ policyId }, { orderBy: { [path]: 'ASC' }, offset: 1, limit: 2 })
+            ];
+        });
+        const limits = db.calls.filter(([name]) => name === 'find').map(([, , options]) => options?.limit);
+        assert.deepEqual(limits, [2, 4]);
+        assert.equal(first.document.credentialSubject[0].area, 500);
+        assert.deepEqual(page.map((item) => item.document.credentialSubject[0].area), [20, 30]);
+    });
+
+    it('returns a stored record that a preview update moves into the limited window', async () => {
+        const path = 'document.credentialSubject.0.area';
+        const ids = Array.from({ length: 10 }, () => new ObjectId().toHexString());
+        db.seed(VcDocument, ids.map((id, index) => vc(id, 'did:c', 40 + index)));
+        const [top, rest] = await inPreview(previewStep(), async () => {
+            const stored = await server.getVcDocument({ _id: new ObjectId(ID_A) });
+            await server.updateVC({ ...stored, document: { credentialSubject: [{ area: 99, approved: true }] } });
+            await server.remove(VcDocument, await server.getVcDocument({ _id: new ObjectId(ids[9]) }));
+            return [
+                await server.findOne(VcDocument, { policyId }, { orderBy: { [path]: 'DESC' } }),
+                await server.getVcDocuments({ policyId }, { orderBy: { [path]: 'DESC' }, offset: 1, limit: 3 })
+            ];
+        });
+        assert.equal(top.id, ID_A);
+        assert.equal(top.document.credentialSubject[0].area, 99);
+        assert.deepEqual(rest.map((item) => item.document.credentialSubject[0].area), [48, 47, 46]);
+    });
+
+    it('gives a limited read the same records as a full read cut to the same window', async () => {
+        const path = 'document.credentialSubject.0.area';
+        let state = 7;
+        const random = (size) => {
+            state = (Math.imul(state, 1103515245) + 12345) >>> 0;
+            return (state >>> 16) % size;
+        };
+        const executed = { save: 0, area: 0, owner: 0, remove: 0 };
+        for (let round = 0; round < 40; round++) {
+            db.reset();
+            const ids = Array.from({ length: 12 }, () => new ObjectId().toHexString());
+            db.seed(VcDocument, ids.map((id, index) => vc(id, index % 2 ? 'did:a' : 'did:b', index * 10 + 1)));
+            let area = 1000;
+            await inPreview(previewStep(), async () => {
+                for (let step = 0; step < 6; step++) {
+                    const id = ids[random(ids.length)];
+                    const stored = await server.getVcDocument({ _id: new ObjectId(id) });
+                    const action = random(4);
+                    if (action === 0 || !stored) {
+                        const { _id, ...row } = vc(id, random(2) ? 'did:a' : 'did:b', area++);
+                        await server.saveVC(row);
+                        executed.save++;
+                    } else if (action === 1) {
+                        await server.updateVC({ ...stored, document: { credentialSubject: [{ area: random(2) ? area++ : -area++, approved: true }] } });
+                        executed.area++;
+                    } else if (action === 2) {
+                        await server.updateVC({ ...stored, owner: stored.owner === 'did:a' ? 'did:b' : 'did:a' });
+                        executed.owner++;
+                    } else {
+                        await server.remove(VcDocument, stored);
+                        executed.remove++;
+                    }
+                }
+                for (const filter of [{ policyId }, { policyId, owner: 'did:a' }]) {
+                    for (const orderBy of [undefined, { [path]: 'ASC' }, { [path]: 'DESC' }, { owner: 'DESC', [path]: 'ASC' }]) {
+                        const options = orderBy ? { orderBy } : {};
+                        const all = (await server.getVcDocuments(filter, options)).map((item) => item.id);
+                        const offset = random(5);
+                        const limit = random(5) + 1;
+                        const window = await server.getVcDocuments(filter, { ...options, offset, limit });
+                        assert.deepEqual(window.map((item) => item.id), all.slice(offset, offset + limit),
+                            `round ${round}, ${JSON.stringify(filter)}, ${JSON.stringify(orderBy)}, offset ${offset}, limit ${limit}`);
+                    }
+                }
+            });
+        }
+        for (const [name, count] of Object.entries(executed)) {
+            assert.ok(count >= 20, `${name} ran ${count} times`);
+        }
+    });
+
     it('gives a preview record the normal id and dates, never an artificial order', async () => {
         const step = previewStep();
         const before = Date.now();

@@ -327,4 +327,11 @@ describe('@unit getField path bindings', () => {
             assert.deepEqual(getterReads(script), expected);
         });
     }
+
+    it('falls back to every read site when a fallback chain is too deep to resolve', () => {
+        const chain = Array.from({ length: 5000 }, (_, index) => `doc.a${index}`).join(' || ');
+        const script = `const doc = documents[0].document.credentialSubject[0];\nconst x = ${chain};\nconst y = x.z;\ndone({ t: y });`;
+        const site = { schema: '#S', path: 'a0', fullPath: 'a0', site: script.indexOf('doc.a0'), listed: false };
+        assert.deepEqual(findPreviewScriptFields(script, [site], [], '#S', ['a0']), [{ schema: '#S', path: 'a0', fullPath: 'a0' }]);
+    });
 });

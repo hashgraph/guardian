@@ -272,6 +272,23 @@ describe('SchemaFormComponent Preview table validation', () => {
         expect(view.isPreviewSectionReady(view.formModel.controls![0])).toBeTrue();
     }));
 
+    it('prepares a section opened inside an already open Preview input section', fakeAsync(() => {
+        const fixture = renderSection(true);
+        fixture.debugElement.query(By.css('p-accordion')).triggerEventHandler('valueChange', 0);
+        tick(1200);
+        fixture.detectChanges();
+        const view = fixture.componentInstance;
+        const nested: SchemaFormComponent = fixture.debugElement.query(By.directive(SchemaFormComponent)).componentInstance;
+        const details = view.formModel.controls![0].model!.controls![0];
+        details.open = false;
+        nested.preparePreviewSection(details);
+        expect(nested.isPreviewSectionReady(details)).toBeFalse();
+        details.open = true;
+        view.prepareOpenPreviewSections();
+        tick(1200);
+        expect(nested.isPreviewSectionReady(details)).toBeTrue();
+    }));
+
     it('shows root loading synchronously for a real Preview input accordion-header click', fakeAsync(() => {
         TestBed.configureTestingModule({
             declarations: [SchemaFormRootComponent, SchemaFormComponent, FormTextareaComponent, SchemaFormNavigationComponent],

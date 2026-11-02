@@ -106,4 +106,62 @@ describe('Textarea layout in the request form and the document view', () => {
         style.remove();
         fixture.nativeElement.remove();
     });
+
+    it('fits a document-view textarea to its text again after it is shown and after its width changes', async () => {
+        const style = environment();
+        TestBed.configureTestingModule({
+            declarations: [ReadonlyTextareaComponent],
+            imports: [Textarea],
+        });
+        const frames = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve, 20))));
+        const wrapper = document.createElement('div');
+        wrapper.style.width = '900px';
+        wrapper.hidden = true;
+        document.body.appendChild(wrapper);
+        const fixture = TestBed.createComponent(ReadonlyTextareaComponent);
+        fixture.componentRef.setInput('value', long);
+        fixture.componentRef.setInput('autoResize', true);
+        wrapper.appendChild(fixture.nativeElement);
+        fixture.detectChanges();
+        await frames();
+        const textarea: HTMLTextAreaElement = fixture.nativeElement.querySelector('textarea');
+        wrapper.hidden = false;
+        await frames();
+        const wide = parseFloat(textarea.style.height);
+        expect(wide).toBeGreaterThan(40);
+        wrapper.style.width = '600px';
+        await frames();
+        expect(parseFloat(textarea.style.height)).toBeGreaterThan(wide);
+        style.remove();
+        wrapper.remove();
+    });
+
+    it('fits a document-view textarea measured while hidden and shown before the first size notification', async () => {
+        const style = environment();
+        TestBed.configureTestingModule({
+            declarations: [ReadonlyTextareaComponent],
+            imports: [Textarea],
+        });
+        const frames = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve, 20))));
+        const wrapper = document.createElement('div');
+        wrapper.style.width = '900px';
+        wrapper.hidden = true;
+        document.body.appendChild(wrapper);
+        const fixture = TestBed.createComponent(ReadonlyTextareaComponent);
+        fixture.componentRef.setInput('value', long);
+        fixture.componentRef.setInput('autoResize', true);
+        wrapper.appendChild(fixture.nativeElement);
+        fixture.detectChanges();
+        const textarea: HTMLTextAreaElement = fixture.nativeElement.querySelector('textarea');
+        expect(textarea.style.height).toBe('0px');
+        wrapper.hidden = false;
+        await frames();
+        const wide = parseFloat(textarea.style.height);
+        expect(wide).toBeGreaterThan(40);
+        wrapper.style.width = '600px';
+        await frames();
+        expect(parseFloat(textarea.style.height)).toBeGreaterThan(wide);
+        style.remove();
+        wrapper.remove();
+    });
 });

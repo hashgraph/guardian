@@ -21,7 +21,11 @@ function readPath(record, path) {
 	let node = record;
 	for (const part of path.split('.')) {
 		if (Array.isArray(node)) {
-			throw new Error(`in-memory database stub: the path "${path}" crosses an array`);
+			if (!/^\d+$/.test(part)) {
+				throw new Error(`in-memory database stub: the path "${path}" crosses an array`);
+			}
+			node = node[Number(part)];
+			continue;
 		}
 		if (!node || typeof node !== 'object') {
 			return undefined;
@@ -76,30 +80,37 @@ function matchesValue(value, condition) {
 }
 
 function checkOptions(options) {
-	const unsupported = Object.keys(options || {}).filter((key) => key !== 'orderBy');
+	const unsupported = Object.keys(options || {}).filter((key) => key !== 'orderBy' && key !== 'limit');
 	if (unsupported.length) {
 		throw new Error(`in-memory database stub: unsupported options ${unsupported.join(', ')}`);
 	}
 }
 
+function sortValue(record, field) {
+	const value = readPath(record, field);
+	if (value instanceof Date) {
+		return value.getTime();
+	}
+	if (value !== null && value !== undefined && typeof value === 'object') {
+		throw new Error(`in-memory database stub: orderBy on a non-scalar field ${field}`);
+	}
+	return value ?? null;
+}
+
 function ordered(items, options) {
 	const entries = Object.entries(options?.orderBy || {});
-	if (entries.length > 1) {
-		throw new Error('in-memory database stub: orderBy supports one field');
-	}
-	if (!entries.length) {
-		return items;
-	}
-	const [[field, direction]] = entries;
-	const sign = direction === 'DESC' || direction === 'desc' || direction === -1 ? -1 : 1;
-	return [...items].sort((a, b) => {
-		const left = readPath(a, field);
-		const right = readPath(b, field);
-		if ((left !== null && typeof left === 'object') || (right !== null && typeof right === 'object')) {
-			throw new Error(`in-memory database stub: orderBy on a non-scalar field ${field}`);
+	const sorted = !entries.length ? items : [...items].sort((a, b) => {
+		for (const [field, direction] of entries) {
+			const sign = direction === 'DESC' || direction === 'desc' || direction === -1 ? -1 : 1;
+			const left = sortValue(a, field);
+			const right = sortValue(b, field);
+			if (left !== right) {
+				return (left === null || (right !== null && left < right)) ? -sign : sign;
+			}
 		}
-		return left === right ? 0 : (left < right ? -sign : sign);
+		return 0;
 	});
+	return options?.limit ? sorted.slice(0, options.limit) : sorted;
 }
 
 function clone(value) {
@@ -144,7 +155,7 @@ export function createInMemoryDatabaseHelper() {
 		}
 
 		async find(filters, options) {
-			calls.push(['find', this.entityClass.name]);
+			calls.push(['find', this.entityClass.name, options]);
 			checkOptions(options);
 			return ordered(collection(this.entityClass).filter((item) => matches(item, filters || {})), options).map(clone);
 		}
