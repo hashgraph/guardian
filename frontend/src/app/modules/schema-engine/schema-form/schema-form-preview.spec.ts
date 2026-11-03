@@ -19,7 +19,7 @@ describe('SchemaFormComponent Preview table validation', () => {
     beforeEach(() => document.documentElement.style.setProperty('--guardian-failure-color', '#FF432A'));
     afterEach(() => document.documentElement.style.removeProperty('--guardian-failure-color'));
 
-    const render = () => {
+    const render = (ready = true) => {
         TestBed.configureTestingModule({
             declarations: [SchemaFormComponent, FormTextareaComponent],
             imports: [CommonModule, ReactiveFormsModule, TableModule],
@@ -47,6 +47,12 @@ describe('SchemaFormComponent Preview table validation', () => {
         fixture.componentRef.setInput('form-model', model);
         fixture.componentRef.setInput('showButtons', false);
         fixture.componentRef.setInput('previewValidation', true);
+        for (const target of [model.controls![0], ...model.controls![0].list!]) {
+            target.open = true;
+        }
+        if (ready) {
+            spyOn(fixture.componentInstance, 'isPreviewSectionReady').and.returnValue(true);
+        }
         fixture.detectChanges();
         const first = model.controls![0].list![0].model.controls[0];
         const second = model.controls![0].list![1].model.controls[0];
@@ -72,17 +78,27 @@ describe('SchemaFormComponent Preview table validation', () => {
         fixture.componentRef.setInput('form-model', model);
         expect(() => fixture.detectChanges()).not.toThrow();
         const header = fixture.nativeElement.querySelector(`[data-field-id="${section.id}"]`);
-        expect(header.querySelector('.required-field')).not.toBeNull();
+        expect(header.querySelector('.sf-req')).not.toBeNull();
         fixture.componentInstance.addGroup(section);
         expect(() => fixture.detectChanges()).not.toThrow();
         expect(section.control.get('rate')?.errors?.['required']).toBeTrue();
         section.control.disable();
         fixture.detectChanges();
-        expect(header.querySelector('.required-field')).toBeNull();
+        expect(header.querySelector('.sf-req')).toBeNull();
     });
 
+    const setOpen = (fixture: ComponentFixture<SchemaFormComponent>, open: boolean) => {
+        fixture.detectChanges();
+        const toggle = fixture.debugElement.query(By.css('.sf-card-toggle')).nativeElement as HTMLElement;
+        if ((toggle.getAttribute('aria-expanded') === 'true') !== open) {
+            toggle.click();
+        } else {
+            fixture.componentInstance.toggleOpen(fixture.componentInstance.formModel.controls![0], open);
+        }
+    };
+
     const renderSection = (preview: boolean, array = false) => {
-        const { fixture } = render();
+        const { fixture } = render(false);
         tick(48);
         const model = new FieldForm(new UntypedFormGroup({}));
         model.setData({
@@ -105,7 +121,7 @@ describe('SchemaFormComponent Preview table validation', () => {
         fixture.detectChanges();
         tick(128);
         fixture.detectChanges();
-        fixture.debugElement.query(By.css('p-accordion')).triggerEventHandler('valueChange', null);
+        setOpen(fixture, false);
         fixture.detectChanges();
         tick(0);
         return fixture;
@@ -116,7 +132,7 @@ describe('SchemaFormComponent Preview table validation', () => {
             const fixture = renderSection(true, array);
             const view = fixture.componentInstance;
             const changes = spyOn(view.previewLoadingChange, 'emit');
-            fixture.debugElement.query(By.css('p-accordion')).triggerEventHandler('valueChange', 0);
+            setOpen(fixture, true);
             fixture.detectChanges();
             expect(changes).toHaveBeenCalledOnceWith(true);
             expect(fixture.debugElement.query(By.directive(SchemaFormComponent))).toBeNull();
@@ -135,7 +151,7 @@ describe('SchemaFormComponent Preview table validation', () => {
         const fixture = renderSection(false);
         const view = fixture.componentInstance;
         const changes = spyOn(view.previewLoadingChange, 'emit');
-        fixture.debugElement.query(By.css('p-accordion')).triggerEventHandler('valueChange', 0);
+        setOpen(fixture, true);
         fixture.detectChanges();
         expect(fixture.debugElement.query(By.directive(SchemaFormComponent))).not.toBeNull();
         expect(changes).not.toHaveBeenCalled();
@@ -145,10 +161,9 @@ describe('SchemaFormComponent Preview table validation', () => {
         const fixture = renderSection(true);
         const view = fixture.componentInstance;
         const changes = spyOn(view.previewLoadingChange, 'emit');
-        const accordion = fixture.debugElement.query(By.css('p-accordion'));
-        accordion.triggerEventHandler('valueChange', 0);
+        setOpen(fixture, true);
         tick(16);
-        accordion.triggerEventHandler('valueChange', null);
+        setOpen(fixture, false);
         tick(64);
         expect(changes.calls.allArgs()).toEqual([[true], [false]]);
         expect(view.isPreviewSectionReady(view.formModel.controls![0])).toBeFalse();
@@ -158,7 +173,7 @@ describe('SchemaFormComponent Preview table validation', () => {
         const fixture = renderSection(true);
         const view = fixture.componentInstance;
         const changes = spyOn(view.previewLoadingChange, 'emit');
-        fixture.debugElement.query(By.css('p-accordion')).triggerEventHandler('valueChange', 0);
+        setOpen(fixture, true);
         tick(16);
         fixture.componentRef.setInput('previewValidation', false);
         fixture.detectChanges();
@@ -277,7 +292,7 @@ describe('SchemaFormComponent Preview table validation', () => {
 
     it('prepares a section opened inside an already open Preview input section', fakeAsync(() => {
         const fixture = renderSection(true);
-        fixture.debugElement.query(By.css('p-accordion')).triggerEventHandler('valueChange', 0);
+        setOpen(fixture, true);
         tick(1200);
         fixture.detectChanges();
         const view = fixture.componentInstance;
@@ -317,7 +332,7 @@ describe('SchemaFormComponent Preview table validation', () => {
         tick(256);
         fixture.detectChanges();
         const form = fixture.debugElement.query(By.directive(SchemaFormComponent));
-        const header = form.query(By.css('p-accordion-header'));
+        const header = form.query(By.css('.sf-card-toggle'));
         header.nativeElement.click();
         fixture.detectChanges();
         tick(64);
@@ -345,26 +360,24 @@ describe('SchemaFormComponent Preview table validation', () => {
         const { fixture, first, second } = render();
         fixture.componentRef.setInput('previewMissingFieldIds', [second.id]);
         fixture.detectChanges();
-        const target = fixture.nativeElement.querySelector(`[data-field-id="${second.id}"]`);
-        expect(target).not.toBeNull();
+        const label = fixture.nativeElement.querySelector(`[data-field-id="${second.id}"]`);
+        expect(label).not.toBeNull();
+        const target = label.closest('.form-field').querySelector('.form-field-value');
         expect(target.classList.contains('preview-missing-field')).toBeTrue();
-        const table = fixture.nativeElement.querySelector('p-table').parentElement;
-        expect(table.classList.contains('table-validation-error')).toBeTrue();
-        expect(getComputedStyle(table).outlineColor).toBe('rgb(255, 67, 42)');
         expect(getComputedStyle(target).outlineStyle).toBe('none');
         expect(getComputedStyle(target.querySelector('textarea')).borderColor).toBe('rgb(255, 67, 42)');
         expect(target.textContent).not.toContain('Required for calculation preview');
         expect(target.querySelector('textarea')).not.toBeNull();
-        expect(fixture.nativeElement.querySelector(`[data-field-id="${first.id}"]`).classList.contains('preview-missing-field')).toBeFalse();
+        const firstField = fixture.nativeElement.querySelector(`[data-field-id="${first.id}"]`).closest('.form-field');
+        expect(firstField.querySelector('.form-field-value').classList.contains('preview-missing-field')).toBeFalse();
         expect(first.control.value).toBe(0);
         second.control.setValue(3);
         fixture.detectChanges();
         expect(target.classList.contains('preview-missing-field')).toBeFalse();
-        expect(table.classList.contains('table-validation-error')).toBeFalse();
         expect(target.querySelector('[role="alert"]')).toBeNull();
     });
 
-    it('scrolls and focuses the actual indexed cell rendered by the table', () => {
+    it('scrolls and focuses the actual indexed field rendered in the row', () => {
         const { fixture, first, second } = render();
         fixture.componentRef.setInput('previewMissingFieldIds', [second.id]);
         fixture.detectChanges();
@@ -380,7 +393,7 @@ describe('SchemaFormComponent Preview table validation', () => {
         const neighbour = fixture.nativeElement.querySelector(`[data-field-id="${first.id}"]`);
         const scroll = spyOn(target, 'scrollIntoView');
         const otherScroll = spyOn(neighbour, 'scrollIntoView');
-        const focus = spyOn(target.querySelector('textarea'), 'focus');
+        const focus = spyOn(target.closest('.form-field').querySelector('textarea'), 'focus');
         root.focusField('rows.1.rate');
         expect(scroll).toHaveBeenCalledOnceWith({ behavior: 'smooth', block: 'center' });
         expect(otherScroll).not.toHaveBeenCalled();
@@ -408,14 +421,12 @@ describe('SchemaFormComponent Preview table validation', () => {
         fixture.componentRef.changeDetectorRef.markForCheck();
         fixture.detectChanges();
         expect(fixture.nativeElement.querySelectorAll('.preview-missing-field').length).toBe(1);
-        expect(fixture.nativeElement.querySelector('.table-validation-error')).not.toBeNull();
         expect(fixture.nativeElement.textContent).not.toContain('Required for calculation preview');
         expect(first.control.valid).toBeTrue();
         second.control.setValue(0);
         fixture.detectChanges();
         expect(fixture.nativeElement.querySelector('.preview-missing-field')).toBeNull();
         expect(second.control.valid).toBeTrue();
-        expect(fixture.nativeElement.querySelector('.table-validation-error')).toBeNull();
     });
 
     it('shows an optional ordinary field validator error and ignores disabled cells', () => {
@@ -426,11 +437,10 @@ describe('SchemaFormComponent Preview table validation', () => {
         first.control.updateValueAndValidity();
         second.control.disable();
         fixture.detectChanges();
-        const rows = fixture.nativeElement.querySelectorAll('tbody tr');
+        const rows = fixture.nativeElement.querySelectorAll('.sf-record');
         expect(first.control.invalid).toBeTrue();
         expect(rows[0].querySelector('.preview-missing-field')).not.toBeNull();
         expect(rows[1].querySelector('.preview-missing-field')).toBeNull();
-        expect(fixture.nativeElement.querySelector('.table-validation-error')).not.toBeNull();
         first.control.setValue(2);
         fixture.detectChanges();
         expect(fixture.nativeElement.querySelector('.preview-missing-field')).toBeNull();
@@ -498,7 +508,14 @@ describe('SchemaFormComponent large tables inside opened sections', () => {
                 const form: SchemaFormComponent = element.componentInstance;
                 form.isShown = form.isShown.map(() => true);
                 for (const item of form.formModel?.controls || []) {
-                    if (item.isRef && !item.isArray && !item.open) {
+                    for (const row of item.isRef && item.isArray ? item.list || [] : []) {
+                        if (!row.open) {
+                            row.open = true;
+                            form.preparePreviewSection(row);
+                            element.injector.get(ChangeDetectorRef).markForCheck();
+                        }
+                    }
+                    if (item.isRef && !item.open) {
                         item.open = true;
                         form.preparePreviewSection(item);
                         element.injector.get(ChangeDetectorRef).markForCheck();
@@ -511,7 +528,7 @@ describe('SchemaFormComponent large tables inside opened sections', () => {
     };
 
     [true, false].forEach((preview) => {
-        it(`opens every section and shows the table without a stack overflow with Preview ${preview}`, async () => {
+        it(`opens every section and shows the rows without a stack overflow with Preview ${preview}`, async () => {
             const errors: string[] = [];
             const onError = (event: ErrorEvent) => {
                 errors.push(event.message);
@@ -528,7 +545,7 @@ describe('SchemaFormComponent large tables inside opened sections', () => {
             }
             window.removeEventListener('error', onError);
             expect(errors).toEqual([]);
-            const cells = fixture.debugElement.queryAll(By.css('td textarea'));
+            const cells = fixture.debugElement.queryAll(By.css('.sf-record-body textarea'));
             expect(cells.length).toBe(600);
             expect(cells[0].nativeElement.value).toBe('0-c0');
             expect(cells.every((cell) => !!cell.injector.get(Textarea, null))).toBeTrue();

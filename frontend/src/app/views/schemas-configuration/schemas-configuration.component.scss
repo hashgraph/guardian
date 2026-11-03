@@ -2421,13 +2421,11 @@
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    align-items: center;
     padding: 24px 16px;
 
     ::ng-deep app-schema-form-root {
         display: block;
         width: 100%;
-        max-width: 720px;
 
         .schema-form-root {
             display: block;

@@ -8,7 +8,7 @@ import {
     UnitSystem
 } from '@guardian/interfaces';
 import { DialogService } from 'primeng/dynamicdialog';
-import { Observable, Subject, Subscription, concat, filter, firstValueFrom, from, map, of, startWith, switchMap, takeUntil } from 'rxjs';
+import { Subject, Subscription, firstValueFrom, takeUntil } from 'rxjs';
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from '../../../services/api';
@@ -16,10 +16,10 @@ import { FormFormulas } from 'src/app/modules/formulas/models/form-formulas';
 import { FormulaItem } from 'src/app/modules/formulas/models/formula-tree';
 import { FieldForm, IFieldControl, IFieldIndexControl } from '../schema-form-model/field-form';
 import { getErrorMessage, showError } from './schema-form-errors';
+import { countRequired } from './schema-form-completion';
 import { getMinutesAgoStream } from 'src/app/utils/autosave-utils';
 import { withNewTabLinks } from '../rich-text-editor/rich-text-sanitizer';
 import { collectImageReferences, markdownToHtml } from '../rich-text-editor/markdown';
-import { RichTextEditorComponent } from '../rich-text-editor/rich-text-editor.component';
 import {
     GeoOption,
     GeoResolverField,
@@ -255,22 +255,6 @@ export class SchemaFormComponent implements OnInit {
             this.buildControlsIndex();
         } catch (e) {
              console.error('[schema-form] buildControlsIndex failed', e);
-        }
-        if (changes.rules && this.rules) {
-            for (const value of Object.values(this.rules)) {
-                if (value.status === 'Failure' || value.status === 'Error') {
-                    value.tooltip = 'Failure: ' + value.rules
-                        .filter((r) => r.status === 'Failure' || r.status === 'Error')
-                        .map((r) => r.name)
-                        .join(', ');
-                } else {
-                    value.tooltip = 'Success: ' + value.rules
-                        .filter((r) => r.status === 'Success')
-                        .map((r) => r.name)
-                        .join(', ');
-                }
-
-            }
         }
         if (!this.isEditMode) {
             this.createButtons();
@@ -533,13 +517,7 @@ export class SchemaFormComponent implements OnInit {
         return item.isArray && item.isRef;
     }
 
-    public hasInvalidTableFields(item: IFieldControl<any>): boolean {
-        return this.isInvalidTableField(item) || (item.list || []).some(row =>
-            (this.getTableRowFields(row, item) || []).some(field => this.isInvalidTableField(field))
-        );
-    }
-
-    public isInvalidTableField(item: IFieldControl<any>): boolean {
+    public isInvalidField(item: IFieldControl<any>): boolean {
         return this.previewValidation
             ? this.isPreviewMissingField(item)
             : this.showError(item);
@@ -560,6 +538,148 @@ export class SchemaFormComponent implements OnInit {
 
     public isRules(item: IFieldControl<any>) {
         return this.rules ? this.rules[item.fullPath] : undefined;
+    }
+
+    public ruleLine(item: IFieldControl<any>): { failed: boolean; text: string } | null {
+        const rule = this.isRules(item);
+        if (!rule) {
+            return null;
+        }
+        const failed = rule.status === 'Failure' || rule.status === 'Error';
+        const names = (rule.rules || [])
+            .filter((r) => failed ? (r.status === 'Failure' || r.status === 'Error') : r.status === 'Success')
+            .map((r) => r.name)
+            .join(', ');
+        if (!failed && rule.status !== 'Success') {
+            return null;
+        }
+        return { failed, text: `${failed ? 'Rule check failed' : 'Rule check passed'}: ${names}` };
+    }
+
+    public isLoneField(index: number): boolean {
+        const list = this.formModel?.controls;
+        const item = list?.[index];
+        if (!list || !item || this.isFullRow(item)) {
+            return false;
+        }
+        return this.neighbourIsFullRow(list, index, -1) && this.neighbourIsFullRow(list, index, 1);
+    }
+
+    private neighbourIsFullRow(list: IFieldControl<any>[], from: number, step: number): boolean {
+        for (let i = from + step; i >= 0 && i < list.length && i < this.previewRenderLimit; i += step) {
+            if (list[i].visibility) {
+                return this.isFullRow(list[i]);
+            }
+        }
+        return true;
+    }
+
+    public isFullRow(item: IFieldControl<any>): boolean {
+        if (item.isArray || item.isRef || this.isHelpText(item) || this.isRichText(item)) {
+            return true;
+        }
+        const customType = item.customType || '';
+        if (customType === 'table' || customType === 'geo' || customType === 'sentinel' || this.isIPFS(item)) {
+            return true;
+        }
+        if (this.isEnum(item)) {
+            return this.enumMode(item) === 'cards';
+        }
+        if (this.isGeoLocation(item) || this.isBoolean(item)) {
+            return false;
+        }
+        if (item.type === 'string' && !item.format) {
+            return true;
+        }
+        return false;
+    }
+
+    public enumMode(item: IFieldControl<any>): 'seg' | 'cards' | 'select' {
+        const values: any[] = Array.isArray(item.enumValues) ? item.enumValues : [];
+        if (!values.length || values.length > 4) {
+            return 'select';
+        }
+        const chars = values.reduce((sum, value) => sum + String(value ?? '').length, 0);
+        return chars + 4 * values.length <= 30 ? 'seg' : 'cards';
+    }
+
+    public isDefaultValue(item: IFieldControl<any>): boolean {
+        return item.default !== undefined && !!item.control
+            && item.control.value === item.default && !item.control.touched;
+    }
+
+    public setChoice(item: IFieldControl<any>, value: any): void {
+        const control = item.control;
+        if (!control || control.disabled) {
+            return;
+        }
+        control.setValue(value);
+        control.markAsDirty();
+        control.markAsTouched();
+    }
+
+    public showOptionalChip(item: IFieldControl<any>): boolean {
+        return !item.required && !item.readonly && !this.isHelpText(item) && !this.isBoolean(item);
+    }
+
+    public isChosen(item: IFieldControl<any>): boolean {
+        const value = item.control?.value;
+        return value !== undefined && value !== null && value !== '';
+    }
+
+    public get errorsRevealed(): boolean {
+        return !!this.formModel?.rootForm?.errorsRevealed;
+    }
+
+    public showLockRow(item: IFieldControl<any>): boolean {
+        if (!item.readonly || !item.control) {
+            return false;
+        }
+        const customType = item.customType || '';
+        const value = item.control.value;
+        return customType !== 'table' && customType !== 'richText' && !this.isBoolean(item)
+            && !this.isGeoLocation(item) && value !== undefined && value !== null && value !== ''
+            && typeof value !== 'object';
+    }
+
+    public copyValue(item: IFieldControl<any>): void {
+        const value = item.control?.value;
+        if (value !== undefined && value !== null && typeof navigator !== 'undefined' && navigator.clipboard) {
+            navigator.clipboard.writeText(String(value)).catch(() => { });
+        }
+    }
+
+    public requiredLeft(item: IFieldControl<any>, model: any = item.model): { left: number; total: number } {
+        const { answered, total } = countRequired(model?.controls);
+        return { left: total - answered, total };
+    }
+
+    public recordText(item: IFieldControl<any>, listItem: IFieldIndexControl<any>): { title: string; sub: string } {
+        if (this.isManagedArray(item)) {
+            return { title: this.entryTitle(item, listItem) || `${item.description} #${listItem.index2}`, sub: '' };
+        }
+        const values: string[] = [];
+        for (const field of listItem.model?.controls || []) {
+            const value = field.control?.value;
+            if (field.isRef || field.isArray || value === null || value === undefined || value === '' || typeof value === 'object') {
+                continue;
+            }
+            values.push(String(value));
+            if (values.length === 4) {
+                break;
+            }
+        }
+        if (!values.length) {
+            const geo = ['geo', 'sentinel'].includes(item.customType || '');
+            return { title: geo ? `${item.description} #${listItem.index2}` : `New ${item.description}`, sub: geo ? '' : 'Not filled in yet' };
+        }
+        return { title: values[0], sub: values.slice(1).join(' · ') };
+    }
+
+    public toggleOpen(item: IFieldControl<any> | IFieldIndexControl<any>, open: boolean, owner?: IFieldControl<any>, index?: string): void {
+        item.open = open;
+        this.preparePreviewSection(item);
+        this.onAccordionSelectEvent(open, owner || (item as IFieldControl<any>), index);
     }
 
     public isRulesStatus(item: IFieldControl<any>) {
@@ -774,16 +894,11 @@ export class SchemaFormComponent implements OnInit {
         }
     }
 
-    @ViewChild('richTextDialogEditor') public richTextDialogEditor?: RichTextEditorComponent;
     @ViewChildren(SchemaFormComponent) public childForms?: QueryList<SchemaFormComponent>;
-
-    public richTextDialogControl: IFieldControl<any> | null = null;
 
     private richTextImages = new Map<string, string | null>();
 
     private richTextImageRequests = new Map<string, Promise<string | null>>();
-
-    private richTextHoverItem: IFieldControl<any> | null = null;
 
     private getRichTextMarkdown(item: IFieldControl<any>): string {
         const value = item.control?.value;
@@ -824,87 +939,6 @@ export class SchemaFormComponent implements OnInit {
             return request;
         }));
         return missing.some((reference) => this.richTextImages.has(reference));
-    }
-
-    private richTextCellHtml = new WeakMap<IFieldControl<any>, Observable<string>>();
-
-    public getRichTextCellHtml$(item: IFieldControl<any>): Observable<string> {
-        const cached = this.richTextCellHtml.get(item);
-        if (cached) {
-            return cached;
-        }
-        const html$ = item.control.valueChanges.pipe(
-            startWith(item.control.value),
-            switchMap(() => concat(
-                of(this.getRichTextHtml(item)),
-                from(this.loadRichTextImages(item)).pipe(
-                    filter((loaded) => loaded),
-                    map(() => this.getRichTextHtml(item))
-                )
-            ))
-        );
-        this.richTextCellHtml.set(item, html$);
-        return html$;
-    }
-
-    public clearRichTextCell(item: IFieldControl<any>, popover: any): void {
-        this.clearSuggestHideTimer();
-        popover.hide();
-        item.control.setValue('');
-        item.control.markAsDirty();
-    }
-
-    public onRichTextCellEnter(event: Event, item: IFieldControl<any>, popover: any): void {
-        this.clearSuggestHideTimer();
-        this.richTextHoverItem = item;
-        this.suggestPopoverValue = withNewTabLinks(this.getRichTextHtml(item));
-        if (this.suggestPopoverValue) {
-            const visible = !!popover.overlayVisible;
-            popover.show(event);
-            if (visible) {
-                this.changeDetectorRef.detectChanges();
-                popover.align();
-            }
-        } else {
-            popover.hide();
-        }
-        this.loadRichTextImages(item).then((loaded) => {
-            if (loaded && this.richTextHoverItem === item) {
-                this.suggestPopoverValue = withNewTabLinks(this.getRichTextHtml(item));
-                this.changeDetectorRef.detectChanges();
-            }
-        });
-    }
-
-    private richTextDialogInitial: any = null;
-
-    public openRichTextDialog(item: IFieldControl<any>, popover: any): void {
-        this.clearSuggestHideTimer();
-        popover.hide();
-        this.richTextDialogInitial = item.control.value;
-        this.richTextDialogControl = item;
-    }
-
-    public cancelRichTextDialog(): void {
-        const item = this.richTextDialogControl;
-        if (!item || this.isRichTextDialogBusy()) {
-            return;
-        }
-        item.control.setValue(this.richTextDialogInitial);
-        this.closeRichTextDialog();
-    }
-
-    public isRichTextDialogBusy(): boolean {
-        return !!this.richTextDialogEditor?.showLinkDialog || !!this.richTextDialogEditor?.imageLoading;
-    }
-
-    public closeRichTextDialog(): void {
-        if (this.isRichTextDialogBusy()) {
-            return;
-        }
-        this.richTextDialogEditor?.cancelLink();
-        this.richTextDialogControl = null;
-        this.changeDetectorRef.detectChanges();
     }
 
     private findString(item: any): string {
@@ -1414,47 +1448,4 @@ export class SchemaFormComponent implements OnInit {
             }
         }
     }
-
-    public canDrawTable(item: IFieldControl<any>): boolean {
-        const customTypes = ['geo', 'table', 'sentinel', 'country', 'continent', 'state'];
-
-        if (!item.isArray || !item.isRef || item.hidden) {
-            return false;
-        }
-
-        if (customTypes.includes(item.customType || '')) {
-            return false;
-        }
-        
-        const visibleFields = item.fields?.filter(f => !f.hidden) || [];
-        if (visibleFields.length === 0) {
-            return false;
-        }
-        
-        return !visibleFields.some(f => 
-            f.isArray || f.isRef || 
-            customTypes.includes(f.customType || '')
-        );
-    }
-
-    private getTitleMappedNames(item: IFieldControl<any>): Set<string> {
-        return this.formModel?.getTitleMappedNames(item) || new Set<string>();
-    }
-
-    public getTableHeaderFields(item: IFieldControl<any>): any[] | undefined {
-        const mapped = this.getTitleMappedNames(item);
-        if (this.hide) {
-            return item.fields?.filter(f => f.type !== 'null' && !this.hide[f.name] && !f.hidden && !mapped.has(f.name));
-        }
-        return item.fields?.filter(f => f.type !== 'null' && !f.hidden && !mapped.has(f.name));
-    }
-
-    public getTableRowFields(item: IFieldIndexControl<any>, owner?: IFieldControl<any>): any[] | undefined {
-        const mapped = owner ? this.getTitleMappedNames(owner) : new Set<string>();
-        if (this.hide) {
-            return item.model.controls?.filter((f: any) => f.type !== 'null' && !this.hide[f.name] && !f.hidden && !mapped.has(f.name));
-        }
-        return item.model.controls?.filter((f: any) => f.type !== 'null' && !f.hidden && !mapped.has(f.name));
-    }
 }
-

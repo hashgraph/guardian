@@ -545,7 +545,9 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             return;
         }
         target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        target.querySelector<HTMLElement>('input,select,textarea,button,[tabindex]')?.focus({ preventScroll: true });
+        const focusable = 'input,select,textarea,button,[tabindex]';
+        (target.querySelector<HTMLElement>(focusable)
+            ?? target.closest('.form-field')?.querySelector<HTMLElement>(focusable))?.focus({ preventScroll: true });
         this.keepPreviewFieldInView(targetId, 5);
     }
 
