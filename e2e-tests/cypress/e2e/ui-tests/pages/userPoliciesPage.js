@@ -8,6 +8,7 @@ const UserPoliciesPageLocators = {
     role: (roleName) => `[data-role="${roleName}"]`,
     nextButton: "button:contains('Continue')",
     requestDocumentBlock: 'request-document-block',
+    requestForm: 'request-document-form',
     submitButton: "button:contains('Validate & Create')",
     divTitle: 'div.title',
     waitingForApprovalTitle: "span[title='Waiting for approval']",
@@ -202,7 +203,7 @@ export class UserPoliciesPage {
         Checks.waitForLoading();
         cy.contains(UserPoliciesPageLocators.deviceTab).click();
         cy.contains(UserPoliciesPageLocators.createDeviceButton).click();
-        cy.get('request-document-form').find(UserPoliciesPageLocators.createButton).click();
+        cy.get(UserPoliciesPageLocators.requestForm).find(UserPoliciesPageLocators.createButton).click();
         Checks.waitForElement(UserPoliciesPageLocators.waitingForApprovalTitle);
     }
 
@@ -210,10 +211,10 @@ export class UserPoliciesPage {
         Checks.waitForLoading();
         cy.contains(UserPoliciesPageLocators.deviceTab).click();
         cy.contains(UserPoliciesPageLocators.createIssueRequestButton).click();
-        cy.get('request-document-form date-time-control input').eq(0).type('2025-01-03', { force: true })
-        cy.get('request-document-form date-time-control input').eq(1).type('2025-01-05', { force: true })
-        cy.get('request-document-form [placeholder="123"]').type(ammount)
-        cy.get('request-document-form').find(UserPoliciesPageLocators.createButton).click();
+        cy.get(`${UserPoliciesPageLocators.requestForm} date-time-control input`).eq(0).type('2025-01-03', { force: true })
+        cy.get(`${UserPoliciesPageLocators.requestForm} date-time-control input`).eq(1).type('2025-01-05', { force: true })
+        cy.get(`${UserPoliciesPageLocators.requestForm} [placeholder="123"]`).type(ammount)
+        cy.get(UserPoliciesPageLocators.requestForm).find(UserPoliciesPageLocators.createButton).click();
         cy.get(CommonElements.Loading).should('not.exist');
         cy.contains(UserPoliciesPageLocators.issueRequestsTab).click();
         Checks.waitForElement(UserPoliciesPageLocators.waitingForApprovalTitle);

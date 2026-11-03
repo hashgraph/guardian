@@ -616,7 +616,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
             this.formRoot?.revealErrors();
             return;
         }
-        if (this.hederaForm.valid && this.vcForm.valid) {
+        if (this.hederaForm.valid) {
             const hederaForm = this.hederaForm.value;
             const vcDocument = this.vcForm.value;
             const didDocument = this.didDocumentType.value ?

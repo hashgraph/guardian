@@ -4,6 +4,8 @@ import { IFieldControl, IFieldIndexControl } from '../schema-form-model/field-fo
 const IPFS_GATEWAY_PATTERN = '^((https):\/\/)?ipfs.io\/ipfs\/.+';
 const IPFS_SCHEME_PATTERN = '^ipfs:\/\/.+';
 
+const URI_MESSAGE = 'Enter a valid URI, for example example:uri';
+
 const FORMAT_MESSAGES: Record<string, string> = {
     email: 'Enter a valid email address',
     url: 'Enter a valid URL, for example https://example.com',
@@ -45,14 +47,11 @@ export function getErrorMessage(item: IFieldControl<any>, listItem?: IFieldIndex
     if (errors['isNotNumber']) {
         return type === 'integer' ? 'Enter a whole number' : 'Enter a number';
     }
-    if (errors['uri']) {
-        return 'Enter a valid URI, for example example:uri';
+    if (errors['uri'] || (type === 'uri' && !errors['pattern'])) {
+        return URI_MESSAGE;
     }
     if (errors['pattern']) {
         return FORMAT_MESSAGES[type] || 'Doesn\'t match the required format';
-    }
-    if (type === 'uri') {
-        return 'Enter a valid URI, for example example:uri';
     }
     return FORMAT_MESSAGES[type] || (type === 'integer' ? 'Enter a whole number' : 'Enter a valid value');
 }

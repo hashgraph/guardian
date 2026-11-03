@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, QueryList, SimpleChanges, ViewChild, ViewChildren } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, QueryList, SimpleChanges, ViewChild, ViewChildren } from '@angular/core';
 import { UntypedFormArray } from '@angular/forms';
 import {
     isGeoCustomType,
@@ -129,8 +129,7 @@ export class SchemaFormComponent implements OnInit {
     constructor(
         private ipfs: IPFSService,
         protected changeDetectorRef: ChangeDetectorRef,
-        private readonly dialog: DialogService,
-        private readonly elementRef: ElementRef<HTMLElement>
+        private readonly dialog: DialogService
     ) { }
 
     ngOnInit(): void {
@@ -532,10 +531,6 @@ export class SchemaFormComponent implements OnInit {
 
     public ifSubSchemaArray(item: IFieldControl<any>): boolean {
         return item.isArray && item.isRef;
-    }
-
-    public ifInvalidField(item: IFieldControl<any> | IFieldIndexControl<any>): boolean {
-        return (item.control && !item.control.valid && !item.control.disabled);
     }
 
     public hasInvalidTableFields(item: IFieldControl<any>): boolean {

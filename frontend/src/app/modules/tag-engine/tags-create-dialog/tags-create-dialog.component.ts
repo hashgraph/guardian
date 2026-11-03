@@ -57,14 +57,12 @@ export class TagCreateDialog {
             this.formRoot?.revealErrors();
             return;
         }
-        if (this.dataForm.valid) {
-            const data = this.dataForm.value;
-            if (this.schema) {
-                data.document = this.schemaForm.value;
-                data.schema = this.schema?.iri;
-            }
-            this.dialogRef.close(data);
+        const data = this.dataForm.value;
+        if (this.schema) {
+            data.document = this.schemaForm.value;
+            data.schema = this.schema?.iri;
         }
+        this.dialogRef.close(data);
     }
 
     onAddArtifact(selector: any) {

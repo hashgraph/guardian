@@ -527,10 +527,14 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         this.scrollToPreviewField(targetId, 20);
     }
 
-    private scrollToPreviewField(targetId: string | undefined, attempts: number): void {
+    private findFieldElement(targetId: string | undefined): HTMLElement | null {
+        if (!targetId) return null;
         const container: HTMLElement | undefined = this.contentContainerRef?.nativeElement;
-        const target = Array.from(container?.querySelectorAll<HTMLElement>('[data-field-id]') || [])
-            .find(element => element.getAttribute('data-field-id') === targetId);
+        return container?.querySelector<HTMLElement>(`[data-field-id="${CSS.escape(targetId)}"]`) ?? null;
+    }
+
+    private scrollToPreviewField(targetId: string | undefined, attempts: number): void {
+        const target = this.findFieldElement(targetId);
         if (!target || this.isPreviewLocked) {
             if (targetId && attempts > 0) {
                 this.previewFocusTimer = setTimeout(() => {
@@ -548,9 +552,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     private keepPreviewFieldInView(targetId: string | undefined, attempts: number): void {
         this.previewFocusTimer = setTimeout(() => {
             this.previewFocusTimer = null;
-            const container: HTMLElement | undefined = this.contentContainerRef?.nativeElement;
-            const target = Array.from(container?.querySelectorAll<HTMLElement>('[data-field-id]') || [])
-                .find(element => element.getAttribute('data-field-id') === targetId);
+            const target = this.findFieldElement(targetId);
             if (!target) return;
             const rect = target.getBoundingClientRect();
             if (rect.top >= 0 && rect.bottom <= window.innerHeight) return;
