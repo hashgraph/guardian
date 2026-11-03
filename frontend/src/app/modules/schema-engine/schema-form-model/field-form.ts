@@ -1272,6 +1272,9 @@ export class FieldForm {
             if (field.enum) {
                 item.enumValues = field.enum;
             }
+            if (item.required && field.enum?.length === 1 && isEmptyValue(item.control.value)) {
+                item.control.setValue(field.enum[0]);
+            }
             this.postFormat(item, item.control);
             item.model = null;
         }
