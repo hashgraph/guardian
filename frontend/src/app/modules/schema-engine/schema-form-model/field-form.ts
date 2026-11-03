@@ -115,6 +115,7 @@ export class FieldForm {
     private readonly ancestorChildPaths: Map<string, Set<string>>;
     public rootForm: FieldForm;
     public keepDefaultLabels: boolean = false;
+    private arrayDependencies: ReturnType<typeof SchemaHelper.collectArrayDependencies> = [];
     private arrayGroupCache: Map<IFieldControl<any>, IArrayGroupEntry[]> | null = null;
     private fieldOrder: Map<string, number> | null = null;
 
@@ -190,6 +191,9 @@ export class FieldForm {
         }
         if (data.schema) {
             this.schema = data.schema;
+            this.arrayDependencies = SchemaHelper.collectArrayDependencies(
+                data.schema.document, data.schema.arrayDependencies
+            );
         }
         if (data.fields) {
             this.fields = data.fields;
@@ -231,7 +235,7 @@ export class FieldForm {
         this.fieldOrder = fields ? new Map(fields.map((f, index) => [f.name, index])) : null;
         this.fieldControls = this.buildFields(fields);
         this.conditionControls = this.buildConditions(conditions);
-        if (this.schema?.arrayDependencies?.length) {
+        if (this.arrayDependencies?.length) {
             this.alignArrayGroups();
             this.syncArrayDependencyValues();
             this.subscribeArrayDependencyValues();
@@ -586,7 +590,7 @@ export class FieldForm {
                 }
             }
         }
-        if (this.rootForm.schema?.arrayDependencies?.length) {
+        if (this.rootForm.arrayDependencies?.length) {
             this.rootForm.syncArrayDependencyValues();
         }
     }
@@ -607,7 +611,7 @@ export class FieldForm {
 
     private buildArrayGroups(): Map<IFieldControl<any>, IArrayGroupEntry[]> {
         const map = new Map<IFieldControl<any>, IArrayGroupEntry[]>();
-        for (const dependency of (this.schema?.arrayDependencies || [])) {
+        for (const dependency of (this.arrayDependencies || [])) {
             const source = this.resolveArrayEntry(dependency.on);
             const target = this.resolveArrayEntry(dependency.field);
             if (!source || !target || source.control === target.control) { continue; }
@@ -658,7 +662,7 @@ export class FieldForm {
     }
 
     private syncArrayDependencyValues(): void {
-        for (const dependency of (this.schema?.arrayDependencies || [])) {
+        for (const dependency of (this.arrayDependencies || [])) {
             if (!dependency.valueMappings?.length) { continue; }
             const source = this.resolveArrayEntry(dependency.on);
             const target = this.resolveArrayEntry(dependency.field);
@@ -677,7 +681,7 @@ export class FieldForm {
     }
 
     private subscribeArrayDependencyValues(): void {
-        for (const dependency of (this.schema?.arrayDependencies || [])) {
+        for (const dependency of (this.arrayDependencies || [])) {
             if (!dependency.valueMappings?.length) { continue; }
             this.resolveArrayEntry(dependency.on)?.control.control.valueChanges
                 .pipe(takeUntil(this.destroy$))
@@ -694,7 +698,7 @@ export class FieldForm {
     public getEntryTitle(item: IFieldControl<any>, listItem: IFieldIndexControl<any>): string {
         const fallback = `${item.description} #${listItem.index2}`;
         const index = Number(listItem.index);
-        for (const dependency of (this.rootForm.schema?.arrayDependencies || [])) {
+        for (const dependency of (this.rootForm.arrayDependencies || [])) {
             if (!dependency.title?.length) { continue; }
             const titlePath = dependency.title.join('.');
             const source = this.rootForm.resolveArrayEntry(dependency.on);
@@ -712,7 +716,7 @@ export class FieldForm {
     }
 
     public getEntryTitleLabel(item: IFieldControl<any>): string | null {
-        for (const dependency of (this.rootForm.schema?.arrayDependencies || [])) {
+        for (const dependency of (this.rootForm.arrayDependencies || [])) {
             if (!dependency.title?.length) { continue; }
             const source = this.rootForm.resolveArrayEntry(dependency.on);
             const dependent = this.rootForm.resolveArrayEntry(dependency.field);
@@ -726,7 +730,7 @@ export class FieldForm {
 
     public getTitleMappedNames(item: IFieldControl<any>): Set<string> {
         const names = new Set<string>();
-        for (const dependency of (this.rootForm.schema?.arrayDependencies || [])) {
+        for (const dependency of (this.rootForm.arrayDependencies || [])) {
             if (!dependency.title?.length || !dependency.valueMappings?.length) { continue; }
             const dependent = this.rootForm.resolveArrayEntry(dependency.field);
             if (dependent?.control !== item) { continue; }
@@ -1484,7 +1488,7 @@ export class FieldForm {
             item.name,
         )
         this.form.addControl(item.name, item.control);
-        if (this.rootForm.schema?.arrayDependencies?.length) {
+        if (this.rootForm.arrayDependencies?.length) {
             this.rootForm.arrayGroupCache = null;
             this.rootForm.alignArrayGroups();
         }
@@ -1492,7 +1496,7 @@ export class FieldForm {
         if (this.rootForm !== this) {
             this.rootForm.rebuildCrossSchemaConditions(true);
         }
-        if (this.rootForm.schema?.arrayDependencies?.length) {
+        if (this.rootForm.arrayDependencies?.length) {
             this.rootForm.syncArrayDependencyValues();
         }
     }

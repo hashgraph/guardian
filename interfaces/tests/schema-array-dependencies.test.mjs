@@ -180,3 +180,110 @@ describe('SchemaHelper version paths — the declaration survives', () => {
         assert.equal(readDependencies(data), undefined);
     });
 });
+
+
+describe('collectArrayDependencies includes declarations in non-repeatable sub-schemas', () => {
+    const links = [{ on: ['sources'], field: ['targets'], kind: 'array', title: ['name'],
+        valueMappings: [{ source: ['name'], target: ['copied'] }] }];
+    const child = { type: 'object', $comment: JSON.stringify({ arrayDependencies: links }), properties: {} };
+    const root = () => ({ type: 'object', properties: { first: { $ref: '#child' }, second: { $ref: '#child' } },
+        $defs: { '#child': child } });
+    const chain = [
+        { on: ['locations'], field: ['instances'], kind: 'array', title: ['name'] },
+        { on: ['instances'], field: ['reports'], kind: 'array', title: ['label'] }
+    ];
+    const section = (ownLinks = chain) => ({ type: 'object', properties: { section: { $ref: '#section' } },
+        $defs: { '#section': { type: 'object', $comment: JSON.stringify({ arrayDependencies: ownLinks }), properties: {} } } });
+
+    it('prefixes both endpoints separately for each use and keeps entry paths relative', () => {
+        const doc = root();
+        const before = JSON.stringify(doc);
+        assert.deepEqual(SchemaHelper.collectArrayDependencies(doc), ['first', 'second'].map(name => ({
+            ...links[0], on: [name, 'sources'], field: [name, 'targets']
+        })));
+        assert.equal(JSON.stringify(doc), before);
+    });
+
+    it('does not follow a repeated container', () => {
+        const doc = root();
+        doc.properties.first = { type: 'array', items: { $ref: '#child' } };
+        assert.equal(SchemaHelper.collectArrayDependencies(doc).length, 1);
+    });
+
+    it('follows object nesting and conditional branches', () => {
+        const doc = root();
+        doc.properties = { outer: { type: 'object', properties: { nested: { $ref: '#child' } } } };
+        doc.allOf = [{ then: { properties: { conditional: { $ref: '#child' } } } }];
+        assert.deepEqual(SchemaHelper.collectArrayDependencies(doc).map(link => link.on), [
+            ['outer', 'nested', 'sources'], ['conditional', 'sources']
+        ]);
+    });
+
+    it('ends a reference cycle and keeps independent branches', () => {
+        const doc = root();
+        doc.$defs['#child'] = { ...child, properties: { self: { $ref: '#child' } } };
+        assert.equal(SchemaHelper.collectArrayDependencies(doc).length, 2);
+    });
+
+    it('keeps unsaved root declarations without writing them into the document', () => {
+        const doc = { type: 'object', properties: {}, $defs: {} };
+        assert.deepEqual(SchemaHelper.collectArrayDependencies(doc, links), links);
+        assert.equal(doc.$comment, undefined);
+    });
+
+    it('skips an identical copy of a sub-schema link already declared by the parent', () => {
+        const copy = { ...chain[0], on: ['section', 'locations'], field: ['section', 'instances'] };
+        const result = SchemaHelper.collectArrayDependencies(section([chain[0]]), [copy]);
+        assert.deepEqual(result, [copy]);
+    });
+
+    it('lets the parent source win and links that source to the top of the sub-schema chain', () => {
+        const parent = { on: ['regions'], field: ['section', 'reports'], kind: 'array', title: ['region'] };
+        const result = SchemaHelper.collectArrayDependencies(section(), [parent]);
+        assert.deepEqual(result, [
+            parent,
+            { on: ['section', 'locations'], field: ['section', 'instances'], kind: 'array', title: ['name'] },
+            { on: ['regions'], field: ['section', 'locations'], kind: 'array' }
+        ]);
+    });
+
+    it('adds no automatic link when the top of the chain already has a parent source', () => {
+        const parent = [
+            { on: ['regions'], field: ['section', 'reports'], kind: 'array' },
+            { on: ['areas'], field: ['section', 'locations'], kind: 'array' }
+        ];
+        const result = SchemaHelper.collectArrayDependencies(section(), parent);
+        assert.deepEqual(result, [
+            ...parent,
+            { on: ['section', 'locations'], field: ['section', 'instances'], kind: 'array', title: ['name'] }
+        ]);
+    });
+
+    it('skips a sub-schema link that would close a cycle with the parent links', () => {
+        const parent = { on: ['section', 'instances'], field: ['section', 'locations'], kind: 'array' };
+        const result = SchemaHelper.collectArrayDependencies(section([chain[0]]), [parent]);
+        assert.deepEqual(result, [parent]);
+    });
+
+    it('adds no automatic link that would close a cycle', () => {
+        const extra = { on: ['locations'], field: ['extra'], kind: 'array' };
+        const parent = { on: ['section', 'extra'], field: ['section', 'reports'], kind: 'array' };
+        const result = SchemaHelper.collectArrayDependencies(section([...chain, extra]), [parent]);
+        assert.deepEqual(result, [
+            parent,
+            { on: ['section', 'locations'], field: ['section', 'instances'], kind: 'array', title: ['name'] },
+            { on: ['section', 'locations'], field: ['section', 'extra'], kind: 'array' }
+        ]);
+    });
+
+    it('lets an outer sub-schema win over a deeper one for the same array', () => {
+        const inner = { type: 'object', $comment: JSON.stringify({ arrayDependencies: [chain[0]] }), properties: {} };
+        const outer = { type: 'object', properties: { inner: { $ref: '#inner' } },
+            $comment: JSON.stringify({ arrayDependencies: [{ on: ['zones'], field: ['inner', 'instances'], kind: 'array' }] }) };
+        const doc = { type: 'object', properties: { outer: { $ref: '#outer' } }, $defs: { '#outer': outer, '#inner': inner } };
+        assert.deepEqual(SchemaHelper.collectArrayDependencies(doc), [
+            { on: ['outer', 'zones'], field: ['outer', 'inner', 'instances'], kind: 'array' },
+            { on: ['outer', 'zones'], field: ['outer', 'inner', 'locations'], kind: 'array' }
+        ]);
+    });
+});

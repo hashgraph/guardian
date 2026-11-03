@@ -670,3 +670,70 @@ describe('indexed Preview requirements', () => {
         }
     });
 });
+
+
+describe('FieldForm links declared in a non-repeatable sub-schema', () => {
+    let form: FieldForm;
+    afterEach(() => form?.destroy());
+
+    const parentDocument = (): any => {
+        const child = documentOf([link]);
+        return {
+            $id: '#parent', type: 'object', properties: {
+                first: { $ref: child.$id }, second: { $ref: child.$id }
+            }, required: ['first', 'second'], $defs: { [child.$id]: child, ...child.$defs }
+        };
+    };
+
+    it('adds, copies, titles and removes within the selected occurrence only', () => {
+        form = buildForm(parentDocument());
+        const first = controlOf(form, 'first').model;
+        const second = controlOf(form, 'second').model;
+        if (!(first instanceof FieldForm) || !(second instanceof FieldForm)) {
+            throw new Error('Expected two independent sub-schema forms');
+        }
+        const source = controlOf(first, 'locations');
+        const target = controlOf(first, 'instances');
+        const before = target.list?.length || 0;
+        first.addItem(source);
+        expect(target.list?.length).toBe(before + 1);
+        expect(form.isManagedArray(controlOf(second, 'instances'))).toBe(true);
+        expect(form.isManagedArray(target)).toBe(true);
+        const index = (source.list?.length || 1) - 1;
+        setEntryValue(source, index, 'instanceName', 'North');
+        expect(entryValue(target, index, 'copiedName')).toBe('North');
+        expect(first.getEntryTitle(target, target.list![index])).toBe('North');
+        const otherLength = controlOf(second, 'instances').list?.length || 0;
+        first.removeItem(source, source.list![index]);
+        expect(target.list?.length).toBe(before);
+        expect(controlOf(second, 'instances').list?.length || 0).toBe(otherLength);
+    });
+
+    it('follows the parent source when the parent links an array the sub-schema also links', () => {
+        const child = documentOf([link]);
+        const document: any = {
+            $id: '#parent', $comment: comment([{ on: ['regions'], field: ['section', 'instances'], kind: 'array' }]),
+            type: 'object', properties: { regions: arrayOf('#reg'), section: { $ref: child.$id } }, required: ['section'],
+            $defs: { [child.$id]: child, ...child.$defs, '#reg': subSchema('#reg', 'regionName') }
+        };
+        form = buildForm(document);
+        const section = controlOf(form, 'section').model;
+        if (!(section instanceof FieldForm)) { throw new Error('Expected a sub-schema form'); }
+        const regions = controlOf(form, 'regions');
+        form.addItem(regions);
+        expect(controlOf(section, 'locations').list?.length).toBe(1);
+        expect(controlOf(section, 'instances').list?.length).toBe(1);
+        expect(form.isManagedArray(controlOf(section, 'locations'))).toBe(true);
+        expect(form.isManagedArray(controlOf(section, 'instances'))).toBe(true);
+        expect(document.$comment).toBe(comment([{ on: ['regions'], field: ['section', 'instances'], kind: 'array' }]));
+    });
+
+    it('aligns existing source records when the parent form is opened', () => {
+        form = buildForm(parentDocument(), { first: { locations: [{ instanceName: 'East' }] } });
+        const first = controlOf(form, 'first').model;
+        if (!(first instanceof FieldForm)) { throw new Error('Expected a sub-schema form'); }
+        const target = controlOf(first, 'instances');
+        expect(target.list?.length).toBe(1);
+        expect(entryValue(target, 0, 'copiedName')).toBe('East');
+    });
+});
