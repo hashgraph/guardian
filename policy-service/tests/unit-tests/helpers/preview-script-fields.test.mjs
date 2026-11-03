@@ -328,10 +328,14 @@ describe('@unit getField path bindings', () => {
         });
     }
 
-    it('falls back to every read site when a fallback chain is too deep to resolve', () => {
-        const chain = Array.from({ length: 5000 }, (_, index) => `doc.a${index}`).join(' || ');
-        const script = `const doc = documents[0].document.credentialSubject[0];\nconst x = ${chain};\nconst y = x.z;\ndone({ t: y });`;
+    it('falls back to every read site when the analysis runs out of stack after parsing', () => {
+        const script = 'const doc = documents[0].document.credentialSubject[0];\nconst x = doc.a0 || doc.a1;\nconst y = x.z;\ndone({ t: y });';
         const site = { schema: '#S', path: 'a0', fullPath: 'a0', site: script.indexOf('doc.a0'), listed: false };
-        assert.deepEqual(findPreviewScriptFields(script, [site], [], '#S', ['a0']), [{ schema: '#S', path: 'a0', fullPath: 'a0' }]);
+        const overflowingPaths = {
+            [Symbol.iterator]() {
+                throw new RangeError('Maximum call stack size exceeded');
+            }
+        };
+        assert.deepEqual(findPreviewScriptFields(script, [site], [], '#S', overflowingPaths), [{ schema: '#S', path: 'a0', fullPath: 'a0' }]);
     });
 });
