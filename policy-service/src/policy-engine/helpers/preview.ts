@@ -15,7 +15,7 @@ import { IPreviewWriteRecord, PREVIEW_SCRIPT_FILE, PreviewReadTracker } from './
 import { hasPreviewPresenceCheck, IPreviewCopyDiagnosis, IPreviewCopyTarget, isPreviewFieldFailure, isPreviewFiniteResult, startPreviewCopyDiagnosis } from './workers/preview-copy-diagnosis.js';
 import { findPreviewScriptFields } from './preview-script-fields.js';
 import { buildTableHelper } from './table-field-core.js';
-import { getPreviewIncomplete } from './preview-database.js';
+import { getPreviewIncomplete, getPreviewSavedDocuments } from './preview-database.js';
 import { BlockActionError } from '../errors/index.js';
 
 export const PREVIEW_SKIPPED_INPUTS: ReadonlySet<string> = new Set<string>([
@@ -1223,9 +1223,32 @@ export async function recoverPreviewCopiedFields(
     }
 }
 
+export interface IPreviewResponseDocument extends IPreviewDocument {
+    final: boolean;
+}
+
+function getPreviewRecordId(record: unknown): string | null {
+    if (!record || typeof record !== 'object') {
+        return null;
+    }
+    const id = Reflect.get(record, 'id') ?? Reflect.get(record, '_id');
+    return id === undefined || id === null ? null : String(id);
+}
+
+function buildPreviewResponseDocuments(actionStatus: RecordActionStep, documents: IPreviewDocument[], ended: boolean): IPreviewResponseDocument[] {
+    const finalIds = new Set(documents
+        .flatMap((item) => (Array.isArray(item.document) ? item.document : [item.document]).map(getPreviewRecordId))
+        .filter((id) => id !== null));
+    const saved = getPreviewSavedDocuments(actionStatus)
+        .filter((record) => !finalIds.has(getPreviewRecordId(record)))
+        .map((record) => ({ source: typeof record.tag === 'string' ? record.tag : null, target: null, blockType: null, document: record, final: false }));
+    return [...saved, ...documents.map((item) => ({ ...item, final: ended }))];
+}
+
 export function buildPreviewResponse(actionStatus: RecordActionStep, input: unknown, history: boolean = false) {
     const { fields, missingFields } = resolvePreviewFields(actionStatus.getPreviewSource(), actionStatus.getPreviewReads());
     let documents = actionStatus.getPreviewDocuments();
+    const ended = documents.length > 0;
     if (!documents.length) {
         const recorded = new Map<string, IPreviewDocument>();
         for (const step of actionStatus.getResults()) {
@@ -1251,7 +1274,7 @@ export function buildPreviewResponse(actionStatus: RecordActionStep, input: unkn
         trackingId: actionStatus.id,
         preview: true,
         input,
-        documents,
+        documents: buildPreviewResponseDocuments(actionStatus, documents, ended),
         calculations: actionStatus.getPreviewCalculations(),
         fields,
         missingFields,

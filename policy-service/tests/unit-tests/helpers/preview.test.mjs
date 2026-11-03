@@ -144,7 +144,7 @@ describe('@unit preview helpers', function () {
             assert.equal(res.body.trackingId, seen.step.id);
             assert.deepEqual(res.body.input, { id: 'input-1' });
             assert.deepEqual(res.body.documents, [
-                { source: 'form', target: 'save', blockType: 'sendToGuardianBlock', document: { id: 'doc-1' } }
+                { source: 'form', target: 'save', blockType: 'sendToGuardianBlock', document: { id: 'doc-1' }, final: true }
             ]);
             assert.deepEqual(res.body.calculations, []);
             assert.deepEqual(res.body.fields, []);
@@ -338,6 +338,7 @@ describe('@unit preview helpers', function () {
             action.saveResult({ data: null });
             const response = buildPreviewResponse(action, {});
             assert.deepEqual(response.documents.map((item) => item.document), [input, calculated]);
+            assert.deepEqual(response.documents.map((item) => item.final), [false, false]);
             assert.equal(firstSubject(response.documents[1].document).total, 42);
             assert.deepEqual(action.getPreviewDocuments(), []);
         });
@@ -349,7 +350,7 @@ describe('@unit preview helpers', function () {
             action.saveResult({ data: calculated });
             action.saveResult({ data: saved });
             const response = buildPreviewResponse(action, {});
-            assert.deepEqual(response.documents, [{ source: 'save', target: null, blockType: null, document: saved }]);
+            assert.deepEqual(response.documents, [{ source: 'save', target: null, blockType: null, document: saved, final: false }]);
         });
 
         it('retains separate VCs from a batch and ignores empty or non-VC steps', () => {
@@ -366,7 +367,7 @@ describe('@unit preview helpers', function () {
             const document = vc('urn:uuid:final', 42);
             action.saveResult({ data: document });
             action.addPreviewDocument('math', { tag: 'wait', blockType: 'buttonBlock' }, { data: document });
-            assert.deepEqual(buildPreviewResponse(action, {}).documents, action.getPreviewDocuments());
+            assert.deepEqual(buildPreviewResponse(action, {}).documents, action.getPreviewDocuments().map((item) => ({ ...item, final: true })));
             assert.equal(buildPreviewResponse(action, {}).documents.length, 1);
         });
 

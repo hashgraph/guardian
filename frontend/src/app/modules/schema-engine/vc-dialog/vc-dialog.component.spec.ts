@@ -44,11 +44,19 @@ describe('VCViewerDialog preview documents', () => {
     it('offers one option per returned document and shows the first one', fakeAsync(() => {
         const dialog = open({ type: 'VC', viewDocument: true, document: documents[0].document, previewDocuments: documents });
         expect(dialog.previewOptions).toEqual([
-            { label: '1. t09_save_a', value: 0 },
-            { label: '2. t09_save_b', value: 1 },
+            { label: '1. t09_save_a', value: 0, final: false },
+            { label: '2. t09_save_b', value: 1, final: false },
         ]);
         expect(dialog.document).toEqual({ id: 'vc-a' });
         expect(dialog.viewDocument).toBeTrue();
+    }));
+
+    it('marks final documents and selects the document it was opened with', fakeAsync(() => {
+        const marked = [documents[0], { ...documents[1], final: true }];
+        const dialog = open({ type: 'VC', viewDocument: true, document: marked[1].document, previewDocuments: marked });
+        expect(dialog.previewOptions.map((item: any) => item.final)).toEqual([false, true]);
+        expect(dialog.selectedPreviewIndex).toBe(1);
+        expect(dialog.document).toEqual({ id: 'vc-b' });
     }));
 
     it('switches the shown document when another option is chosen', fakeAsync(() => {
