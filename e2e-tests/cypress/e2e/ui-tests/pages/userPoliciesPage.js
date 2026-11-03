@@ -19,7 +19,7 @@ const UserPoliciesPageLocators = {
     createIssueRequestButton: ' Create Issue Request ',
     createButton: 'button:contains("Create")',
     signButton: 'div.btn-SIGN',
-    vvbName: 'div:contains(" VVB Name ")',
+    vvbName: 'div:contains("VVB Name")',
     ppName: 'h1:contains("New PP")',
     newVerraProjectButton: 'button:contains(" New Project ")',
     newProjectButton: 'button:contains(" New project ")',
@@ -27,6 +27,7 @@ const UserPoliciesPageLocators = {
     enterNumInput: '[placeholder="123"]',
     enterEmailInput: '[placeholder="example@email.com"]',
     chooseOptionInput: '[placeholder="Not selected"] span:contains("Not selected")',
+    chooseChoiceGroup: '.sf-choice',
     enterPosInputVerra: '[placeholder="[1.23,4.56]"]',
     enterPosInput: '[id="coordinatesInput"]',
     waitingForAdded: "span[title='Waiting to be Added']",
@@ -73,6 +74,20 @@ const UserPoliciesPageLocators = {
     tokenId: 'hedera-explorer > a',
     tokenIdByHistory: 'td.cdk-column-1',
 };
+
+// Short enums and booleans render as segmented choices instead of dropdowns:
+// pick the first option of every group that has none selected. Queries through
+// jQuery so that a form without such groups does not fail.
+function chooseChoiceGroups() {
+    cy.get('body').then(($body) => {
+        $body.find(UserPoliciesPageLocators.chooseChoiceGroup).each((_, group) => {
+            const $group = Cypress.$(group);
+            if (!$group.find('[role="radio"][aria-checked="true"]').length) {
+                cy.wrap($group.find('[role="radio"]').first()).click();
+            }
+        });
+    });
+}
 
 export class UserPoliciesPage {
 
@@ -126,11 +141,13 @@ export class UserPoliciesPage {
                     cy.get(CommonElements.dropdownOption);
                 });
             });
+            chooseChoiceGroups();
             cy.get(UserPoliciesPageLocators.enterPosInput).then((els) => {
                 [...els].forEach((el) => {
                     cy.wrap(el).type('[1.23,4.56]')
                 });
             });
+            chooseChoiceGroups();
             cy.get(UserPoliciesPageLocators.createButton).click();
             Checks.waitForElement(UserPoliciesPageLocators.waitingForAdded);
         }
@@ -276,24 +293,28 @@ export class UserPoliciesPage {
                 cy.get(CommonElements.dropdownOption).first().click();
             });
         });
+        chooseChoiceGroups();
         cy.get(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
             [...els].forEach((el) => {
                 cy.wrap(el).click();
                 cy.get(CommonElements.dropdownOption).first().click();
             });
         });
+        chooseChoiceGroups();
         cy.get(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
             [...els].forEach((el) => {
                 cy.wrap(el).click();
                 cy.get(CommonElements.dropdownOption).first().click();
             });
         });
+        chooseChoiceGroups();
         cy.get(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
             [...els].forEach((el) => {
                 cy.wrap(el).click();
                 cy.get(CommonElements.dropdownOption).first().click();
             });
         });
+        chooseChoiceGroups();
         cy.get(UserPoliciesPageLocators.enterTextInput).then((els) => {
             [...els].forEach((el) =>
                 cy.wrap(el).type('Test text', { force: true })
@@ -344,11 +365,13 @@ export class UserPoliciesPage {
                 cy.get(CommonElements.dropdownOption);
             });
         });
+        chooseChoiceGroups();
         cy.get(UserPoliciesPageLocators.enterPosInput).then((els) => {
             [...els].forEach((el) => {
                 cy.wrap(el).type('[1.23,4.56]')
             });
         });
+        chooseChoiceGroups();
         cy.get(UserPoliciesPageLocators.createButton).click();
         cy.get(CommonElements.Loading).should('not.exist');
         cy.get('.preloader-image').should('not.exist');
@@ -381,6 +404,7 @@ export class UserPoliciesPage {
                 cy.get(CommonElements.dropdownOption).first().click();
             });
         });
+        chooseChoiceGroups();
         cy.get(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
             cy.log(els.length);
             [...els].forEach((el) => {
@@ -388,6 +412,7 @@ export class UserPoliciesPage {
                 cy.get(CommonElements.dropdownOption).first().click();
             });
         });
+        chooseChoiceGroups();
         cy.get(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
             cy.log(els.length);
             [...els].forEach((el) => {
@@ -395,6 +420,7 @@ export class UserPoliciesPage {
                 cy.get(CommonElements.dropdownOption).first().click();
             });
         });
+        chooseChoiceGroups();
         cy.get(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
             cy.log(els.length);
             [...els].forEach((el) => {
@@ -402,6 +428,7 @@ export class UserPoliciesPage {
                 cy.get(CommonElements.dropdownOption).first().click();
             });
         });
+        chooseChoiceGroups();
         cy.get(UserPoliciesPageLocators.enterTextInput).then((els) => {
             [...els].forEach((el) =>
                 cy.wrap(el).type('Test text', { force: true })
