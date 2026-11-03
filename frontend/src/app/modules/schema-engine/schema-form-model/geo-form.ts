@@ -93,6 +93,7 @@ export class GeoForm {
         this.form?.patchValue(value);
         if (dirty) {
             this.form?.markAsDirty();
+            this.form?.markAsTouched();
         }
     }
 

@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators, } from '@angular/forms';
 import { forkJoin, Subscription } from 'rxjs';
 import { IPolicy, IStandardRegistryResponse, IUser, LocationType, Schema, SchemaEntity, UserPermissions, } from '@guardian/interfaces';
@@ -31,6 +31,7 @@ import { MenuLayout, MenuLayoutOption, MenuLayoutService } from '../../services/
 import { DocWidgetService } from '../../services/doc-widget.service';
 import { FirstStepsService } from '../../services/first-steps.service';
 import { formatBalance, getUserInitials } from '../../utils';
+import { SchemaFormRootComponent } from '../../modules/schema-engine/schema-form-root/schema-form-root.component';
 
 
 enum OperationMode {
@@ -71,6 +72,7 @@ interface IColumn {
     standalone: false
 })
 export class UserProfileComponent implements OnInit {
+    @ViewChild(SchemaFormRootComponent) formRoot?: SchemaFormRootComponent;
     public loading: boolean = true;
     public subLoading: boolean = false;
     public taskId: string | undefined = undefined;
@@ -629,6 +631,26 @@ export class UserProfileComponent implements OnInit {
         if (this.currentStep?.canPrev()) {
             this.currentStep.prev();
         }
+    }
+
+    public onConfirm(): void {
+        if (!this.validForm) {
+            for (const form of [
+                this.standardRegistryForm,
+                this.hederaCredentialsForm,
+                this.didDocumentForm,
+                this.didKeysForm,
+                this.vcDocumentForm,
+                this.remoteCredentialsForm,
+                this.remoteDidDocumentForm,
+                this.remoteProofForm
+            ]) {
+                form.markAllAsTouched();
+            }
+            this.formRoot?.revealErrors();
+            return;
+        }
+        this.onNext();
     }
 
     public onNext(): void {

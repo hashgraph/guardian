@@ -131,7 +131,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     }
 
     public onPreviewMissingSelect(path: string): void {
-        this.formRoot?.focusPreviewField(path);
+        this.formRoot?.focusField(path);
     }
 
     public onPreviewRenderingChange(rendering: boolean): void {
@@ -470,7 +470,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     private reportInvalid() {
         this.setStep(0);
         this.toastService.error('Please fix the highlighted fields before continuing');
-        this.formRoot?.focusFirstInvalid();
+        this.formRoot?.revealErrors();
     }
 
     public async onStep(draft?: boolean) {

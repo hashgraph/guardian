@@ -907,8 +907,7 @@
 
                     <div *ngIf="isFinish()" class="confirm-button">
                         <p-button
-                            (click)="onNext()"
-                            [disabled]="!validForm"
+                            (click)="onConfirm()"
                             label="Confirm"
                         >
                         </p-button>

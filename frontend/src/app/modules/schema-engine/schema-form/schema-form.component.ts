@@ -15,6 +15,7 @@ import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from '../../../services/api';
 import { FormFormulas } from 'src/app/modules/formulas/models/form-formulas';
 import { FormulaItem } from 'src/app/modules/formulas/models/formula-tree';
 import { FieldForm, IFieldControl, IFieldIndexControl } from '../schema-form-model/field-form';
+import { getErrorMessage, showError } from './schema-form-errors';
 import { getMinutesAgoStream } from 'src/app/utils/autosave-utils';
 import { withNewTabLinks } from '../rich-text-editor/rich-text-sanitizer';
 import { collectImageReferences, markdownToHtml } from '../rich-text-editor/markdown';
@@ -43,30 +44,6 @@ enum PlaceholderByFieldType {
 enum PresetPrefixByFieldType {
     URL = "https://"
 }
-
-enum ErrorFieldMessageByFieldType {
-    Email = "Please make sure the field contain a valid email address",
-    Number = "Please make sure the field contain a valid number value",
-    Duration = "Please make sure the field contain a valid duration value",
-    Integer = "Please make sure the field contain a valid integer value",
-    URL = "Please make sure the field contain a valid URL value",
-    URI = "Please make sure the field contain a valid URI value",
-    DateTime = "Please make sure the field contain a valid datetime value",
-    Date = "Please make sure the field contain a valid date value",
-    Other = "Please make sure the field contain a valid value"
-};
-
-enum ErrorArrayMessageByFieldType {
-    Email = "Please make sure all fields contain a valid email address",
-    Number = "Please make sure all fields contain a valid number value",
-    Duration = "Please make sure all fields contain a valid duration value",
-    Integer = "Please make sure all fields contain a valid integer value",
-    URL = "Please make sure all fields contain a valid URL value",
-    URI = "Please make sure all fields contain a valid URI value",
-    DateTime = "Please make sure all fields contain a valid datetime value",
-    Date = "Please make sure all fields contain a valid date value",
-    Other = "Please make sure all fields contain a valid value"
-};
 
 class IButton {
     id: string;
@@ -536,6 +513,7 @@ export class SchemaFormComponent implements OnInit {
 
     public patchSuggestValue(item: IFieldControl<any>) {
         this.formModel?.patchSuggestValue(item);
+        item.control?.markAsTouched();
         this.changeDetectorRef.detectChanges();
         this.change.emit();
     }
@@ -569,7 +547,7 @@ export class SchemaFormComponent implements OnInit {
     public isInvalidTableField(item: IFieldControl<any>): boolean {
         return this.previewValidation
             ? this.isPreviewMissingField(item)
-            : this.ifInvalidField(item);
+            : this.showError(item);
     }
 
     public isPreviewMissingField(item: IFieldControl<any>): boolean {
@@ -1005,6 +983,7 @@ export class SchemaFormComponent implements OnInit {
                     } else {
                         control.patchValue(IPFS_SCHEMA + res);
                     }
+                    control.markAsTouched();
                     listItem.fileUploading = false;
                 }, (error) => {
                     listItem.fileUploading = false;
@@ -1027,38 +1006,12 @@ export class SchemaFormComponent implements OnInit {
         this.ipfs.getImageWithDryRunFallback(reference, !!(this.dryRun && this.policyId));
 
 
-    public getInvalidMessageByFieldType(item: IFieldControl<any>, itemFromList?: IFieldIndexControl<any>): string {
-        const type = item.format || item.type;
-        const messages = item.isArray
-            ? ErrorArrayMessageByFieldType
-            : ErrorFieldMessageByFieldType;
+    public showError(item: IFieldControl<any>, listItem?: IFieldIndexControl<any>): boolean {
+        return showError(item, !!this.formModel?.rootForm?.errorsRevealed, listItem);
+    }
 
-        if (item.control?.errors?.[item.id]) {
-            return item.control.errors[item.id];
-        } else if (itemFromList?.control?.errors?.[item.id]) {
-            return itemFromList.control.errors[item.id];
-        }
-
-        switch (type) {
-            case 'email':
-                return messages.Email;
-            case 'number':
-                return messages.Number;
-            case 'duration':
-                return messages.Duration;
-            case 'integer':
-                return messages.Integer;
-            case 'url':
-                return messages.URL;
-            case 'uri':
-                return messages.URI;
-            case 'date-time':
-                return messages.DateTime;
-            case 'date':
-                return messages.Date;
-            default:
-                return messages.Other;
-        }
+    public getErrorMessage(item: IFieldControl<any>, listItem?: IFieldIndexControl<any>): string {
+        return getErrorMessage(item, listItem);
     }
 
     public getPlaceholderByFieldType(item: IFieldControl<any>): string {
@@ -1290,52 +1243,6 @@ export class SchemaFormComponent implements OnInit {
                 this.scrollToAccordionAttr(parts[parts.length - 1]);
             }
         }
-    }
-
-    public focusFirstInvalid(): void {
-        const controls = this.formModel?.controls;
-        if (!controls) {
-            return;
-        }
-        const findInvalid = (items: IFieldControl<any>[] | undefined | null): IFieldControl<any> | undefined => {
-            const field = items?.find((item) => this.ifInvalidField(item));
-            return field && (findInvalid((field as any).model?.controls) || field);
-        };
-        let invalid: IFieldControl<any> | undefined;
-        const topIndex = controls.findIndex((field) => invalid = findInvalid([field]));
-        if (!invalid) {
-            return;
-        }
-        if (!this.isShown[topIndex]) {
-            // Previous does not retrace the pages Next shows, so restart from the first page.
-            this.isShown = new Array(controls.length).fill(false);
-            this.currentIndex = 0;
-            this.updatePages();
-            while (!this.isShown[topIndex] && !this.isShown[controls.length - 1]) {
-                const index = this.currentIndex;
-                this.getNextShownFields(controls, false);
-                if (this.currentIndex === index) {
-                    break;
-                }
-            }
-        }
-        if (invalid.id) {
-            this.openField(invalid.id, false);
-        }
-        this.changeDetectorRef.detectChanges();
-        setTimeout(() => this.scrollToFirstInvalidLabel());
-    }
-
-    private scrollToFirstInvalidLabel(): void {
-        const labels = Array.from(this.elementRef.nativeElement.querySelectorAll<HTMLElement>('.invalid-field-label'))
-            .filter((label) => label.offsetParent);
-        const label = labels.find((item) => !item.classList.contains('invalid-sub-schema')) || labels[0];
-        if (!label) {
-            return;
-        }
-        const container = label.closest<HTMLElement>('.form-field-container') || label;
-        container.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        container.querySelector<HTMLElement>('input, textarea, [role="combobox"]')?.focus({ preventScroll: true });
     }
 
     private findAndOpen(controls: IFieldControl<any>[] | undefined | null, target: string): boolean {

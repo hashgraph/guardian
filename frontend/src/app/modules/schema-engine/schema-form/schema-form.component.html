@@ -25,7 +25,7 @@
                         item.default && !item.isPreset && !item.control.dirty
                     "
                   [attr.field-path]="item?.path"
-                  [attr.preview-field-id]="item.id"
+                  [attr.data-field-id]="item.id"
                   >
                   @if (ifRequiredField(item)) {
                     <span class="required-field"
@@ -99,9 +99,7 @@
                   }
                   <div
                     class="form-field-value"
-                    [attr.invalid-required-field]="
-                        ifRequiredField(item) && !item.control.valid
-                    "
+                    [attr.sf-invalid]="showError(item)"
                     [attr.rules-status]="isRulesStatus(item)"
                     >
                     @if (isPrefix(item)) {
@@ -339,9 +337,10 @@
                       </div>
                     }
                   </div>
-                  @if (ifInvalidField(item)) {
-                    <div class="invalid-field-label">
-                      {{ getInvalidMessageByFieldType(item) }}
+                  @if (showError(item)) {
+                    <div class="sf-error">
+                      <svg-icon src="/assets/images/icons/warning.svg" svgClass="sf-error-icon"></svg-icon>
+                      {{ getErrorMessage(item) }}
                     </div>
                   }
                 </div>
@@ -376,7 +375,7 @@
                           <td>
                             <div
                               class="table-content form-field-value"
-                              [attr.preview-field-id]="previewMissingFieldIds.length ? itemControl.id : null"
+                              [attr.data-field-id]="itemControl.id"
                               [class.preview-missing-field]="isInvalidTableField(itemControl)">
                               @if (ifRequiredField(itemControl)) {
                                 <span class="required-field">*</span>
@@ -620,7 +619,7 @@
               }
               <!-- array of simple fields -->
               @if (ifSimpleArray(item)) {
-                <div class="form-field-array" [attr.array-invalid]="item.control?.invalid">
+                <div class="form-field-array" [attr.array-invalid]="showError(item)">
                   <div class="label-field" id="detail-section">
                     @if (!isChildSchema && formModel.controls && !isEditMode) {
                       <div
@@ -636,7 +635,7 @@
                             !item.control.dirty
                         "
                       [attr.field-path]="item?.path"
-                  [attr.preview-field-id]="item.id"
+                  [attr.data-field-id]="item.id"
                       >
                       @if (ifRequiredField(item)) {
                         <span
@@ -710,15 +709,13 @@
                         class="form-field-array-item-container"
                         [attr.required]="item.required"
                         [attr.index]="listItem.index"
-                        [attr.preview-field-id]="listItem.id"
+                        [attr.data-field-id]="listItem.id"
                         [formGroup]="item.control"
                         >
                         <div class="form-field-array-item">
                           <div
                             class="form-field-value"
-                            [attr.invalid-required-field]="
-                                ifRequiredField(item) && !listItem.control.valid
-                            "
+                            [attr.sf-invalid]="showError(item, listItem)"
                             >
                             @if (isPrefix(item)) {
                               <div
@@ -981,11 +978,10 @@
                                   </div>
                                 }
                               </div>
-                              @if (ifInvalidField(listItem)) {
-                                <div
-                                  class="invalid-field-label"
-                                  >
-                                  {{ getInvalidMessageByFieldType(item, listItem) }}
+                              @if (showError(item, listItem)) {
+                                <div class="sf-error">
+                                  <svg-icon src="/assets/images/icons/warning.svg" svgClass="sf-error-icon"></svg-icon>
+                                  {{ getErrorMessage(item, listItem) }}
                                 </div>
                               }
                             </div>
@@ -1018,7 +1014,7 @@
                           >
                           <p-accordion
                     class="guardian-accordion {{
-                        item.control?.invalid ? 'guardian-accordion-error' : ''
+                        showError(item) ? 'guardian-accordion-error' : ''
                     }}"
                             [value]="item.open ? 0 : null"
                             [motionOptions]="{ disabled: true }"
@@ -1046,7 +1042,7 @@
                                         !item.control.dirty
                                     "
                                     [attr.field-path]="item?.path"
-                  [attr.preview-field-id]="item.id"
+                  [attr.data-field-id]="item.id"
                                     >
                                     @if (ifRequiredField(item)) {
                                       <span
@@ -1123,13 +1119,13 @@
                                           </button>
                                         </div>
                                       }
-                                      @if (ifInvalidField(item)) {
+                                      @if (showError(item)) {
                                         <div
-                                          class="invalid-field-label invalid-sub-schema"
+                                          class="sf-error invalid-sub-schema"
                                           [class.invalid-geo-field]="item.customType === 'geo'"
                                           >
-                                          Please make sure all fields in schema contain a
-                                          valid value
+                                          <svg-icon src="/assets/images/icons/warning.svg" svgClass="sf-error-icon"></svg-icon>
+                                          {{ getErrorMessage(item) }}
                                         </div>
                                       }
                                       @if (item.control) {
@@ -1222,7 +1218,7 @@
                               >
                               <p-accordion
                     class="guardian-accordion {{
-                        item.control?.invalid ? 'guardian-accordion-error' : ''
+                        showError(item) ? 'guardian-accordion-error' : ''
                     }}"
                                 [value]="item.open ? 0 : null"
                                 [motionOptions]="{ disabled: true }"
@@ -1245,7 +1241,7 @@
                                         !item.control.dirty
                                     "
                                         [attr.field-path]="item?.path"
-                  [attr.preview-field-id]="item.id"
+                  [attr.data-field-id]="item.id"
                                         >
                                         @if (ifRequiredField(item)) {
                                           <span
@@ -1305,24 +1301,24 @@
                                               </button>
                                             </div>
                                           }
-                                          @if (ifInvalidField(item)) {
+                                          @if (showError(item)) {
                                             <div
-                                              class="invalid-field-label invalid-sub-schema"
+                                              class="sf-error invalid-sub-schema"
                                               >
-                                              Please make sure all fields in schemas contain a
-                                              valid value
+                                              <svg-icon src="/assets/images/icons/warning.svg" svgClass="sf-error-icon"></svg-icon>
+                                              {{ getErrorMessage(item) }}
                                             </div>
                                           }
                                           @for (listItem of item.list; track listItem) {
                                             <div
                                               class="accordion-container form-field-array-item-container"
                                               [attr.index]="listItem.index"
-                        [attr.preview-field-id]="listItem.id"
+                        [attr.data-field-id]="listItem.id"
                                               [attr.required]="item.required"
                                               >
                                               <p-accordion
                                     class="guardian-accordion {{
-                                        listItem.control?.invalid
+                                        showError(item, listItem)
                                             ? 'guardian-accordion-error'
                                             : ''
                                     }}"

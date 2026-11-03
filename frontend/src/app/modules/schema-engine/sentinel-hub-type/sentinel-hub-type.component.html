@@ -26,11 +26,11 @@
 }
 <div class="type-selector">
   <label for="from">From</label>
-  <p-datepicker #dateFrom id="from" [formControl]="fromControl" [showTime]="false" appendTo="body"></p-datepicker>
+  <p-datepicker #dateFrom id="from" [formControl]="fromControl" [showTime]="false" appendTo="body" (onBlur)="formModel?.markAsTouched()"></p-datepicker>
 </div>
 <div class="type-selector">
   <label for="to">To</label>
-  <p-datepicker #dateTo id="to" [formControl]="toControl" [showTime]="false" appendTo="body"></p-datepicker>
+  <p-datepicker #dateTo id="to" [formControl]="toControl" [showTime]="false" appendTo="body" (onBlur)="formModel?.markAsTouched()"></p-datepicker>
 </div>
 @if (formattedImageLink) {
   <img [src]="formattedImageLink" class="image" />

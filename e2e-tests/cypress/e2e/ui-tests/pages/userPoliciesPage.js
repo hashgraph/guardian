@@ -17,8 +17,6 @@ const UserPoliciesPageLocators = {
     createDeviceButton: ' Create New Device ',
     createIssueRequestButton: ' Create Issue Request ',
     createButton: 'button:contains("Create")',
-    requiredFillDateLabel: 'Please make sure the field contain a valid date value',
-    requiredFillNumberLabel: 'Please make sure the field contain a valid number value',
     signButton: 'div.btn-SIGN',
     vvbName: 'div:contains(" VVB Name ")',
     ppName: 'h1:contains("New PP")',
@@ -41,7 +39,7 @@ const UserPoliciesPageLocators = {
     revokeButton: "button-block div:contains(' Revoke ')",
     waitingForValidation: "span[title = 'Waiting for Validation']",
     waitingForVerification: "span[title = 'Waiting for Verification']",
-    IPFSInput: 'div.ipfs-url input',
+    IPFSInput: 'div.ipfs-url textarea',
     IPFSErrorLabel: ' Invalid IPFS CID/URL ',
     addLocButton: 'button.add-btn',
     addGeoButton: 'Add Geometry',
@@ -159,7 +157,7 @@ export class UserPoliciesPage {
     }
 
     typeBadIPFS(IPFS) {
-        cy.get(UserPoliciesPageLocators.IPFSInput).type(IPFS);
+        cy.get(UserPoliciesPageLocators.IPFSInput).type(IPFS).blur();
         cy.contains(UserPoliciesPageLocators.IPFSErrorLabel).should('exist');
     }
 
@@ -204,7 +202,7 @@ export class UserPoliciesPage {
         Checks.waitForLoading();
         cy.contains(UserPoliciesPageLocators.deviceTab).click();
         cy.contains(UserPoliciesPageLocators.createDeviceButton).click();
-        cy.get(CommonElements.dialogWindow).find(UserPoliciesPageLocators.createButton).click();
+        cy.get('request-document-form').find(UserPoliciesPageLocators.createButton).click();
         Checks.waitForElement(UserPoliciesPageLocators.waitingForApprovalTitle);
     }
 
@@ -212,10 +210,10 @@ export class UserPoliciesPage {
         Checks.waitForLoading();
         cy.contains(UserPoliciesPageLocators.deviceTab).click();
         cy.contains(UserPoliciesPageLocators.createIssueRequestButton).click();
-        cy.contains(UserPoliciesPageLocators.requiredFillDateLabel).parent().parent().find('input').type('2025-01-03', { force: true })
-        cy.contains(UserPoliciesPageLocators.requiredFillDateLabel).parent().parent().find('input').type('2025-01-05', { force: true })
-        cy.contains(UserPoliciesPageLocators.requiredFillNumberLabel).parent().parent().find('input').type(ammount)
-        cy.get(CommonElements.dialogWindow).find(UserPoliciesPageLocators.createButton).click();
+        cy.get('request-document-form date-time-control input').eq(0).type('2025-01-03', { force: true })
+        cy.get('request-document-form date-time-control input').eq(1).type('2025-01-05', { force: true })
+        cy.get('request-document-form [placeholder="123"]').type(ammount)
+        cy.get('request-document-form').find(UserPoliciesPageLocators.createButton).click();
         cy.get(CommonElements.Loading).should('not.exist');
         cy.contains(UserPoliciesPageLocators.issueRequestsTab).click();
         Checks.waitForElement(UserPoliciesPageLocators.waitingForApprovalTitle);
