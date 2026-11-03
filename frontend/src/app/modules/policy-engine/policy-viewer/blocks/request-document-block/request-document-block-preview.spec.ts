@@ -54,7 +54,10 @@ describe('request document preview wiring', () => {
         component.parent = parent;
         component.destroy$ = new Subject<void>();
         component.dataForm = { valid: true, getRawValue: () => ({ amount: 5 }) };
-        component.toastService = { error: jasmine.createSpy('error') };
+        component.changeDetectorRef = { markForCheck: () => undefined, detectChanges: () => undefined };
+        component.formRoot = { revealErrors: jasmine.createSpy('revealErrors'), getIssues: () => [], focusField: () => undefined };
+        component.issues = [];
+        component.ruleIssues = [];
         component.dialogService = { open: (type: unknown, config: any) => dialogs.push({ type, config }) };
         component.tablePersist = {
             persistTablesInDocument: async () => uploads.push('tables'),
@@ -67,7 +70,8 @@ describe('request document preview wiring', () => {
         component.storage = { delete: () => undefined };
         component.policyEngineService = { setBlockDataWithResult: () => ({ subscribe: () => uploads.push('submit') }) };
         component.policyTest = { state: { captureNextFormSubmit: false } };
-        component.stepper = [true, false, false];
+        component.step = 'fill';
+        component.screen = 'form';
         component.enableAdditionalData = false;
         component.evidenceFiles = [];
         component.evidenceText = '';
@@ -126,7 +130,7 @@ describe('request document preview wiring', () => {
         await component.onStep();
         expect(calls).toEqual([{ previewFields: false, ref: { id: 'ref-2' } }]);
         expect(uploads).toEqual([]);
-        expect(component.isStep(0)).toBeTrue();
+        expect(component.step).toBe('fill');
         expect(dialogs.length).toBe(1);
     });
 
@@ -539,7 +543,8 @@ describe('request document preview wiring', () => {
         component.dataForm.valid = false;
         expect(component.ifDisabledBtn({ id: 'submit' })).toBeFalse();
         await component.onStep();
-        expect(component.toastService.error).toHaveBeenCalledTimes(1);
+        expect(component.screen).toBe('results');
+        expect(component.formRoot.revealErrors).toHaveBeenCalledWith(false);
         expect(state.calls.length).toBe(1);
         expect(dialogs.length).toBe(0);
         component.dataForm.valid = true;
@@ -561,7 +566,8 @@ describe('request document preview wiring', () => {
         state.component.ifRelayerAccountDisabled = () => false;
         expect(state.component.ifDisabledBtn({ id: 'submit' })).toBeFalse();
         await state.component.onStep();
-        expect(state.component.toastService.error).toHaveBeenCalledTimes(1);
+        expect(state.component.screen).toBe('results');
+        expect(state.component.formRoot.revealErrors).toHaveBeenCalledWith(false);
         expect(state.calls.length).toBe(1);
         expect(state.dialogs.length).toBe(0);
     });

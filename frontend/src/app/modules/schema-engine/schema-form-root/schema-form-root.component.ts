@@ -578,8 +578,8 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
                 withInvalidRows.add(target.field);
             }
         }
-        for (const { path, labels, field, row, control } of targets) {
-            if (field.visibility === false || !control || control.disabled || !control.invalid) {
+        for (const { path, labels, field, row, control, hidden } of targets) {
+            if (hidden || field.visibility === false || !control || control.disabled || !control.invalid) {
                 continue;
             }
             if (!row && field.isRef && !field.isArray) {
