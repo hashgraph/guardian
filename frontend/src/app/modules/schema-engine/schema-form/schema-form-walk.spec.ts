@@ -60,4 +60,18 @@ describe('walkFields', () => {
         expect(units).not.toContain('name');
         form.destroy();
     });
+
+    it('marks the fields under a hidden or disabled field as hidden', () => {
+        const form = build();
+        const group = form.controls!.find(item => item.name === 'group')!;
+        group.visibility = false;
+        let hidden = walkFields(form.controls).filter(target => target.hidden).map(target => target.path);
+        expect(hidden).toEqual(['group', 'group.inner']);
+
+        group.visibility = true;
+        form.form.get('optional')?.disable();
+        hidden = walkFields(form.controls).filter(target => target.hidden).map(target => target.path);
+        expect(hidden).toEqual(['optional']);
+        form.destroy();
+    });
 });

@@ -546,8 +546,10 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         }
         target.scrollIntoView({ behavior: 'smooth', block: 'center' });
         const focusable = 'input,select,textarea,button,[tabindex]';
-        (target.querySelector<HTMLElement>(focusable)
-            ?? target.closest('.form-field')?.querySelector<HTMLElement>(focusable))?.focus({ preventScroll: true });
+        // A simple field keeps its id on the label row, so its input is in the sibling value block.
+        // Rows and cells hold their own inputs: search only inside them, never the whole array.
+        const scope = target.classList.contains('sf-label') ? target.closest('.form-field') : target;
+        scope?.querySelector<HTMLElement>(focusable)?.focus({ preventScroll: true });
         this.keepPreviewFieldInView(targetId, 5);
     }
 
@@ -569,17 +571,16 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         }
     }
 
-    public getIssues(): IFormIssue[] {
+    public getIssues(targets: IFormTarget[] = walkFields(this.model?.controls)): IFormIssue[] {
         const issues: IFormIssue[] = [];
-        const targets = walkFields(this.model?.controls);
         const withInvalidRows = new Set<object>();
         for (const target of targets) {
             if (target.row && target.control?.invalid && !target.control.disabled) {
                 withInvalidRows.add(target.field);
             }
         }
-        for (const { path, labels, field, row, control } of targets) {
-            if (field.visibility === false || !control || control.disabled || !control.invalid) {
+        for (const { path, labels, field, row, control, hidden } of targets) {
+            if (hidden || !control || !control.invalid) {
                 continue;
             }
             if (!row && field.isRef && !field.isArray) {

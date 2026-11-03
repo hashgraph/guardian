@@ -100,6 +100,12 @@ export class UserPoliciesPage {
         cy.get(CommonElements.navBar).contains(CommonElements.userPoliciesTab).click();
     }
 
+    // After a successful submit the form stays open on its Submitted screen
+    closeSubmitted() {
+        Checks.waitForElement(`${UserPoliciesPageLocators.requestForm} .form-submitted-banner`);
+        cy.get(`${UserPoliciesPageLocators.requestForm} button.form-back`).click();
+    }
+
     registerInPolicy(role = 'Registrant') {
         cy.get(UserPoliciesPageLocators.roleSelect).should('be.visible');
         cy.get(UserPoliciesPageLocators.role(role)).click();
@@ -107,6 +113,7 @@ export class UserPoliciesPage {
         if (role == 'Registrant') {
             Checks.waitForElement(UserPoliciesPageLocators.requestDocumentBlock);
             cy.get(UserPoliciesPageLocators.submitButton).click();
+            this.closeSubmitted();
             Checks.waitForElement(UserPoliciesPageLocators.divTitle);
         }
         if (role == 'Project_Proponent') {
@@ -149,18 +156,21 @@ export class UserPoliciesPage {
             });
             chooseChoiceGroups();
             cy.get(UserPoliciesPageLocators.createButton).click();
+            this.closeSubmitted();
             Checks.waitForElement(UserPoliciesPageLocators.waitingForAdded);
         }
         if (role == 'VVB') {
             Checks.waitForElement(UserPoliciesPageLocators.vvbName);
             cy.get('div.form-field-value').find(CommonElements.Input).type('VVBName');
             cy.get(UserPoliciesPageLocators.submitButton).click();
+            this.closeSubmitted();
             Checks.waitForElement(UserPoliciesPageLocators.divTitle);
         }
         if (role == 'Project Participant') {
             Checks.waitForElement(UserPoliciesPageLocators.ppName);
             cy.get('div.form-field-value').find(CommonElements.Input).type('PPName');
             cy.get(UserPoliciesPageLocators.submitButton).click();
+            this.closeSubmitted();
             Checks.waitForElement(UserPoliciesPageLocators.divTitle);
         }
         if (role == 'Approvers')
@@ -221,6 +231,7 @@ export class UserPoliciesPage {
         cy.contains(UserPoliciesPageLocators.deviceTab).click();
         cy.contains(UserPoliciesPageLocators.createDeviceButton).click();
         cy.get(UserPoliciesPageLocators.requestForm).find(UserPoliciesPageLocators.createButton).click();
+        this.closeSubmitted();
         Checks.waitForElement(UserPoliciesPageLocators.waitingForApprovalTitle);
     }
 
@@ -232,6 +243,7 @@ export class UserPoliciesPage {
         cy.get(`${UserPoliciesPageLocators.requestForm} date-time-control input`).eq(1).type('2025-01-05', { force: true })
         cy.get(`${UserPoliciesPageLocators.requestForm} [placeholder="123"]`).type(ammount)
         cy.get(UserPoliciesPageLocators.requestForm).find(UserPoliciesPageLocators.createButton).click();
+        this.closeSubmitted();
         cy.get(CommonElements.Loading).should('not.exist');
         cy.contains(UserPoliciesPageLocators.issueRequestsTab).click();
         Checks.waitForElement(UserPoliciesPageLocators.waitingForApprovalTitle);

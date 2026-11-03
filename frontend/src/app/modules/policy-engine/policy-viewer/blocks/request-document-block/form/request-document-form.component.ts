@@ -20,12 +20,34 @@ import { AttachedFile } from 'src/app/modules/common/policy-comments/attached-fi
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { FormulasService } from 'src/app/services/formulas.service';
 import { FormulasTree } from 'src/app/modules/formulas/models/formula-tree';
-import { SchemaFormRootComponent } from 'src/app/modules/schema-engine/schema-form-root/schema-form-root.component';
-import { ToastService } from 'src/app/services/toast.service';
+import { IFormIssue, SchemaFormRootComponent } from 'src/app/modules/schema-engine/schema-form-root/schema-form-root.component';
 import { PolicyTestAutomationService } from '../../../policy-test-automation/policy-test-automation.service';
 import { CalculationPreviewService, ICalculationPreviewResult } from 'src/app/services/calculation-preview.service';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
+import { IFormTarget, walkFields } from 'src/app/modules/schema-engine/schema-form/schema-form-walk';
+import { FormTakeoverService } from '../../../form-takeover/form-takeover.service';
 import { PolicyProgressService } from '../../../../services/policy-progress.service';
+
+export type FormStep = 'fill' | 'evidence' | 'relayer';
+export type FormScreen = 'form' | 'results' | 'submitted';
+
+/**
+ * Everything the Submitted screen shows. The block underneath can change or disappear
+ * (step change, ws refresh), so the screen reads only this copy.
+ */
+export interface ISubmittedSnapshot {
+    document: any | null;
+    vcId: string | null;
+    issuedAt: string | null;
+    role: string | null;
+    title: string;
+    schemaName: string;
+    stepLabel: string | null;
+    policyId: string;
+    dryRun: boolean;
+    edit: boolean;
+    payload: any;
+}
 
 @Component({
     selector: 'request-document-form',
@@ -37,12 +59,13 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     public loading: boolean = true;
     @Input() parent: RequestDocumentBlockComponent | RequestDocumentBlockAddonComponent;
     @Input() allowDraft: boolean;
+    @Input() duplicatedFrom: string | null = null;
     @Output() closed = new EventEmitter<void>();
 
-    public draftMenuOpen: boolean = false;
+    public menuOpen: boolean = false;
 
-    public closeDraftMenu(): void {
-        this.draftMenuOpen = false;
+    public closeMenu(): void {
+        this.menuOpen = false;
     }
 
     @HostBinding('attr.modal')
@@ -54,7 +77,8 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     public dialogRef = inject(DynamicDialogRef, { optional: true });
     public config = inject(DynamicDialogConfig, { optional: true });
     private policyProgressService = inject(PolicyProgressService, { optional: true });
-    public activeStep$ = this.policyProgressService?.activeStep$;
+    private formTakeover = inject(FormTakeoverService, { optional: true });
+    private activeStepLabel: string | null = null;
 
     public get id() { return this.parent?.id; }
     public get dryRun() { return this.parent?.dryRun; }
@@ -84,8 +108,15 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     private storage: DocumentAutosaveStorage;
     private sub?: Subscription;
     private readonly AUTOSAVE_INTERVAL = 120000;
-    private dataSaved: boolean = false;
-    private stepper = [true, false, false];
+    public dataSaved: boolean = false;
+    public step: FormStep = 'fill';
+    public screen: FormScreen = 'form';
+    public issues: IFormIssue[] = [];
+    public requiredValid: number = 0;
+    public ruleIssues: IFormIssue[] = [];
+    public submitted: ISubmittedSnapshot | null = null;
+    public docTab: 'doc' | 'json' = 'doc';
+    public submittedJson = '';
     public relayerAccountType: string = 'account';
     public currentRelayerAccount: string;
     public relayerAccounts: any[] = [];
@@ -156,8 +187,83 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         return this.evidenceFiles.some(f => !f.loaded && !f.error);
     }
 
-    public get evidenceStepIndex(): number {
-        return 1;
+    public get headerStepLabel(): string | null {
+        return this.submitted ? this.submitted.stepLabel : this.activeStepLabel;
+    }
+
+    public get headerTitle(): string {
+        return this.submitted ? this.submitted.title : (this.dialogTitle || this.parent?.title);
+    }
+
+    public get resultsEyebrow(): string {
+        return this.buttonNames['submit'];
+    }
+
+    public get resultsHeading(): string {
+        const count = this.issues.length;
+        if (!count) {
+            return 'Fix the highlighted fields before creating the document';
+        }
+        return `Fix ${count} ${count === 1 ? 'problem' : 'problems'} before creating the document`;
+    }
+
+    public get isSubmitted(): boolean {
+        return this.screen === 'submitted';
+    }
+
+    // The 'Validation results' step is red while errors remain after going back to the form
+    public get hasOpenIssues(): boolean {
+        return this.issues.length > 0;
+    }
+
+    public get stepperSteps(): { id: string; label: string }[] {
+        const steps = [{ id: 'fill', label: 'Fill form' }, { id: 'results', label: 'Validation results' }];
+        if (this.enableAdditionalData) {
+            steps.push({ id: 'evidence', label: 'Evidence attachments' });
+        }
+        if (this.relayerAccount) {
+            steps.push({ id: 'relayer', label: 'Relayer account' });
+        }
+        steps.push({ id: 'submitted', label: 'Submitted' });
+        return steps;
+    }
+
+    public get currentStepId(): string {
+        if (this.screen === 'submitted') return 'submitted';
+        if (this.screen === 'results') return 'results';
+        return this.step;
+    }
+
+    public stepState(id: string): { current: boolean; done: boolean; bad: boolean; clickable: boolean } {
+        const steps = this.stepperSteps.map((item) => item.id);
+        const index = steps.indexOf(id);
+        const currentIndex = steps.indexOf(this.currentStepId);
+        const current = index === currentIndex;
+        const bad = id === 'results' && this.hasOpenIssues && index >= currentIndex;
+        const done = index < currentIndex && !bad;
+        const clickable = !this.isSubmitted && !current && !this.loading
+            && (id === 'fill' || (id === 'evidence' && this.step === 'relayer' && this.screen === 'form')
+                || (id === 'results' && bad));
+        return { current, done, bad, clickable };
+    }
+
+    public onStepperClick(id: string): void {
+        if (id === 'fill') {
+            this.showForm();
+        } else if (id === 'evidence') {
+            this.step = 'evidence';
+        } else if (id === 'results') {
+            this.revalidate();
+        }
+    }
+
+    public get backLabel(): string {
+        const label = this.submitted?.stepLabel;
+        return label ? `Back to ${label}` : 'Back';
+    }
+
+    public get canDuplicate(): boolean {
+        return !!this.submitted && !this.submitted.edit && !this.parent?.isDestroyed;
     }
 
     public minutesAgo$ = getMinutesAgoStream(() => this.lastSavedAt);
@@ -200,7 +306,6 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         private policyTest: PolicyTestAutomationService,
         private formulasService: FormulasService,
         private calculationPreview: CalculationPreviewService,
-        private toastService: ToastService,
     ) {
         this.dataForm = this.fb.group({});
         this.storage = new DocumentAutosaveStorage(indexedDb);
@@ -216,6 +321,9 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         this.loading = true;
         this.loadRules();
         this.loadFormulas();
+        this.policyProgressService?.activeStep$?.pipe(takeUntil(this.destroy$)).subscribe((step) => {
+            this.activeStepLabel = step?.label ?? null;
+        });
         this.initForm(this.dataForm, false);
         this.sub = interval(this.AUTOSAVE_INTERVAL).subscribe(async () => {
             const data = this.dataForm.getRawValue();
@@ -254,6 +362,9 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
             .subscribe(val => {
                 this.validate();
                 this.dataSaved = false;
+                if (this.issues.length) {
+                    this.refreshIssues();
+                }
             });
         if (restorePreview) {
             this.restorePreviewMode();
@@ -324,7 +435,9 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     }
 
     public onClose(): void {
-        if ((this.dataForm.dirty && !this.dataSaved) || this.isPreviewBusy) {
+        if (this.submitted) {
+            this.close();
+        } else if ((this.dataForm.dirty && !this.dataSaved) || this.isPreviewBusy) {
             this.showUnsavedChangesDialog();
         } else {
             this.close();
@@ -454,7 +567,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
                 setTimeout(() => {
                     this.loading = false;
                     if (!draft) {
-                        this.close();
+                        this.showSubmitted(result, data);
                     } else {
                         this.dataSaved = true;
                     }
@@ -467,34 +580,185 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
             });
     }
 
-    private reportInvalid() {
-        this.setStep(0);
-        this.toastService.error('Please fix the highlighted fields before continuing');
-        this.formRoot?.revealErrors();
+    private showSubmitted(result: any, payload: any): void {
+        const document = result?.response?.document ?? null;
+        this.submitted = {
+            document,
+            vcId: document?.id ?? null,
+            issuedAt: document?.issuanceDate ?? null,
+            role: this.policyProgressService?.getCurrentRole() ?? null,
+            title: this.dialogTitle || this.parent?.title,
+            schemaName: this.schema?.name || '',
+            stepLabel: this.policyProgressService?.getHasNavigation() === false ? null : this.activeStepLabel,
+            policyId: this.policyId,
+            dryRun: !!this.dryRun,
+            edit: !!this.edit && !this.draft,
+            payload
+        };
+        this.docTab = 'doc';
+        this.submittedJson = JSON.stringify(document ?? null, null, 2);
+        this.clearIssues();
+        this.screen = 'submitted';
+        this.dataSaved = true;
+        this.sub?.unsubscribe();
+        this.formTakeover?.keep(this);
+        this.changeDetectorRef.markForCheck();
+    }
+
+
+    public onDuplicate(): void {
+        const submitted = this.submitted;
+        if (!submitted || !this.canDuplicate) {
+            return;
+        }
+        const parent = this.parent;
+        this.dialogRef?.close(null);
+        void parent.duplicateSubmitted(submitted.payload, submitted.vcId);
+    }
+
+    public onCreateAnother(): void {
+        if (!this.canDuplicate) {
+            return;
+        }
+        const parent = this.parent;
+        this.dialogRef?.close(null);
+        if (parent instanceof RequestDocumentBlockComponent) {
+            void parent.onDialogOpen();
+        } else {
+            parent.onDialog();
+        }
+    }
+
+    /** Row title: the field name only (the last part of the label path). */
+    public issueName(issue: IFormIssue): string {
+        return issue.label.split(' / ').pop() || issue.label;
+    }
+
+    /** Row subtitle: where the field lives, then the message. */
+    public issueDetail(issue: IFormIssue): string {
+        const trail = issue.label.split(' / ').slice(0, -1).join(' / ');
+        return trail ? `${trail} · ${issue.message}` : issue.message;
+    }
+
+    private computeRuleIssues(targets: IFormTarget[]): IFormIssue[] {
+        const iri = this.schema?.iri;
+        if (!this.rules || !iri) {
+            return [];
+        }
+        const results = this.rules.validateForm(iri, this.dataForm.getRawValue());
+        if (!results) {
+            return [];
+        }
+        const labels = new Map<string, string>();
+        for (const target of targets) {
+            labels.set(target.path, target.labels.join(' / '));
+        }
+        const prefix = `${iri}/`;
+        const issues: IFormIssue[] = [];
+        for (const [key, value] of Object.entries<any>(results)) {
+            if (value?.status !== 'Failure' && value?.status !== 'Error') {
+                continue;
+            }
+            const path = key.startsWith(prefix) ? key.slice(prefix.length) : key;
+            const names = (value.rules || [])
+                .filter((rule: any) => rule.status === 'Failure' || rule.status === 'Error')
+                .map((rule: any) => rule.name)
+                .join(', ');
+            issues.push({ path, label: labels.get(path) || path, message: names ? `Rule failed: ${names}` : 'Rule failed' });
+        }
+        return issues;
+    }
+
+    // Required answers that are filled in and valid (F5: a required array needs a row and valid rows)
+    private countRequiredValid(targets: IFormTarget[]): number {
+        return targets.filter((target) => {
+            if (!target.requiredUnit || !target.control?.valid) {
+                return false;
+            }
+            return !target.field.isArray || (target.field.list?.length ?? 0) > 0;
+        }).length;
+    }
+
+    private clearIssues(): void {
+        this.issues = [];
+        this.ruleIssues = [];
+    }
+
+    private refreshIssues(): void {
+        const targets = walkFields(this.formRoot?.model?.controls);
+        this.issues = this.formRoot?.getIssues(targets) ?? [];
+        this.requiredValid = this.countRequiredValid(targets);
+        this.ruleIssues = this.computeRuleIssues(targets);
+        this.changeDetectorRef.markForCheck();
+    }
+
+    /** Reveals every error and opens the results screen. Does not touch the API. */
+    private showResults(): void {
+        this.formRoot?.revealErrors(false);
+        this.refreshIssues();
+        this.screen = 'results';
+    }
+
+    /** Stepper click on 'Validation results': checks again and never submits. */
+    public revalidate(): void {
+        if (this.dataForm.valid) {
+            this.issues = [];
+            this.ruleIssues = [];
+            this.screen = 'form';
+            this.step = 'fill';
+            return;
+        }
+        this.showResults();
+    }
+
+    public showForm(): void {
+        this.screen = 'form';
+        this.step = 'fill';
+        this.changeDetectorRef.detectChanges();
+    }
+
+    public goToField(path: string): void {
+        this.showForm();
+        this.formRoot?.focusField(path);
+    }
+
+    public fixFirstError(): void {
+        const first = this.issues[0] ?? this.ruleIssues[0];
+        if (first) {
+            this.goToField(first.path);
+        } else {
+            this.showForm();
+        }
     }
 
     public async onStep(draft?: boolean) {
         if (this.disabled || this.loading) {
             return;
         }
-        if (!this.dataForm.valid && !draft) {
-            this.reportInvalid();
+        if (draft) {
+            await this.onSubmit(true);
             return;
         }
-        if (this.previewMode && !draft) {
+        if (!this.dataForm.valid) {
+            this.showResults();
+            return;
+        }
+        this.clearIssues();
+        this.screen = 'form';
+        if (this.previewMode) {
             await this.runPreview(false);
             return;
         }
-        if (this.enableAdditionalData && this.isStep(0)) {
-            this.setStep(1);
-        } else if (this.enableAdditionalData && this.isStep(1) && this.relayerAccount) {
-            this.setStep(2);
+        if (this.enableAdditionalData && this.step === 'fill') {
+            this.step = 'evidence';
+        } else if (this.enableAdditionalData && this.step === 'evidence' && this.relayerAccount) {
+            this.step = 'relayer';
             this.loadRelayerAccounts();
-        } else if (!this.enableAdditionalData && this.relayerAccount && this.isStep(0)) {
-            this.setStep(1);
+        } else if (!this.enableAdditionalData && this.relayerAccount && this.step === 'fill') {
+            this.step = 'relayer';
             this.loadRelayerAccounts();
         } else {
-            await this.onSubmit(draft);
+            await this.onSubmit(false);
         }
     }
 
@@ -520,7 +784,8 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
             this.previewMissingFields = [];
             return;
         }
-        this.setStep(0);
+        this.screen = 'form';
+        this.step = 'fill';
         await this.runPreview(true);
     }
 
@@ -645,9 +910,9 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
             if (this.previewSubmitLabel) {
                 return 'Preview';
             }
-            if (this.enableAdditionalData && this.isStep(0)) {
+            if (this.enableAdditionalData && this.step === 'fill') {
                 return 'Add Evidence Attachments';
-            } else if (this.relayerAccount && (this.isStep(this.enableAdditionalData ? 1 : 0))) {
+            } else if (this.relayerAccount && this.step === (this.enableAdditionalData ? 'evidence' : 'fill')) {
                 return this.buttonNames['relayerAccount'];
             }
         }
@@ -662,8 +927,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
 
     public ifRelayerAccountDisabled() {
         if (this.relayerAccount) {
-            const relayerStep = this.enableAdditionalData ? 2 : 1;
-            if (this.isStep(relayerStep)) {
+            if (this.step === 'relayer') {
                 if (this.relayerAccountType === 'account') {
                     return false;
                 } else if (this.relayerAccountType === 'relayerAccount') {
@@ -692,21 +956,6 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
 
     public detectChanges() {
         this.changeDetectorRef.detectChanges();
-    }
-
-    public isStep(index: number) {
-        return this.stepper[index];
-    }
-
-    public setStep(index: number) {
-        for (let i = 0; i < this.stepper.length; i++) {
-            this.stepper[i] = false;
-        }
-        this.stepper[index] = true;
-    }
-
-    public isActionStep(index: number): boolean {
-        return this.stepper[index];
     }
 
     public onGenerateRelayerAccount() {

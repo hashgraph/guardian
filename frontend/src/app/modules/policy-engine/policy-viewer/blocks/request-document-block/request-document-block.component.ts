@@ -97,6 +97,7 @@ export class RequestDocumentBlockComponent
     private formTakeover = inject(FormTakeoverService, { optional: true });
     private pageFormOpened = false;
     private destroyed = false;
+    // Handed to a modal form (opened with this block as its data) on its first render
     private takeoverRef: ComponentRef<RequestDocumentFormComponent> | null = null;
 
     constructor(
@@ -121,6 +122,10 @@ export class RequestDocumentBlockComponent
         (window as any).__requestLast = this;
         (window as any).__request = (window as any).__request || {};
         (window as any).__request[this.id] = this;
+    }
+
+    public get isDestroyed(): boolean {
+        return this.destroyed;
     }
 
     ngOnDestroy(): void {
@@ -256,8 +261,11 @@ export class RequestDocumentBlockComponent
         if (this.type !== 'page' || this.pageFormOpened || !this.formTakeover || this.disabled || this.readonly) {
             return;
         }
+        // A Submitted form that outlived its block is still open
         this.pageFormOpened = true;
-        setTimeout(() => this.onDialogOpen());
+        if (!this.formTakeover.active$.value) {
+            setTimeout(() => this.onDialogOpen());
+        }
     }
 
     isBtnVisible() {
@@ -359,7 +367,7 @@ export class RequestDocumentBlockComponent
         return this.type === 'page' ? false : (!this.edit || this.draft);
     }
 
-    private showDocumentDialog() {
+    private showDocumentDialog(duplicatedFrom: string | null = null) {
         // The open is async (timers, autosave lookup), so the block may be gone by now
         if (this.destroyed) {
             return;
@@ -367,7 +375,8 @@ export class RequestDocumentBlockComponent
         if (this.formTakeover) {
             this.takeoverRef = this.formTakeover.open(RequestDocumentFormComponent, {
                 parent: this,
-                allowDraft: this.allowDraft
+                allowDraft: this.allowDraft,
+                duplicatedFrom
             });
             const ref = this.takeoverRef;
             ref.instance.closed.subscribe(() => {
@@ -381,7 +390,8 @@ export class RequestDocumentBlockComponent
             showHeader: false,
             width: '90%',
             styleClass: 'guardian-dialog without-padding pv-scope',
-            data: this
+            data: this,
+            inputValues: { duplicatedFrom }
         });
     }
 
@@ -416,13 +426,7 @@ export class RequestDocumentBlockComponent
                 await new Promise((resolve) => setTimeout(resolve, 300));
 
                 if (result === 'Restore') {
-                    this.preset(autosaveDocument);
-
-                    await this.tablePersist.restoreTablesFromDraft(autosaveDocument);
-                    await this.geoFilePersist.restoreGeoFilesFromDraft(autosaveDocument);
-
-                    this.savepointFlow.setSkipOnce();
-                    this.showDocumentDialog();
+                    await this.openWithValues(autosaveDocument, null, true);
                 }
                 else if (result === 'No') {
                     this.onDialog();
@@ -436,6 +440,26 @@ export class RequestDocumentBlockComponent
 
             this.savepointFlow.markReady();
         });
+    }
+
+    private async openWithValues(doc: any, duplicatedFrom: string | null = null, skipSavepoint = false) {
+        this.preset(doc);
+
+        await this.tablePersist.restoreTablesFromDraft(doc);
+        await this.geoFilePersist.restoreGeoFilesFromDraft(doc);
+
+        if (skipSavepoint) {
+            this.savepointFlow.setSkipOnce();
+        }
+        this.showDocumentDialog(duplicatedFrom);
+    }
+
+    /**
+     * Opens a new form with the values of a submitted document. It keeps the same `ref`
+     * and the links to the uploaded files and tables.
+     */
+    public async duplicateSubmitted(values: any, sourceId: string | null) {
+        await this.openWithValues(values, sourceId);
     }
 
     public draftRestore() {

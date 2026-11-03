@@ -253,6 +253,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.userRole = userRole;
                 this.userGroup = group;
                 this.groups = userGroups;
+                this.policyProgressService.setRole(userRole);
                 if (changed && this.policyId && this.isConfirmed) {
                     this.reloadNavigation();
                 }

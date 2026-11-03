@@ -8,6 +8,8 @@ export interface IFormTarget {
     row?: IFieldIndexControl<any>;
     control: AbstractControl | null;
     requiredUnit: boolean;
+    /** The field, or a field above it, is not shown or is disabled. */
+    hidden: boolean;
 }
 
 /**
@@ -17,7 +19,7 @@ export interface IFormTarget {
  */
 export function walkFields(controls: IFieldControl<any>[] | null | undefined): IFormTarget[] {
     const targets: IFormTarget[] = [];
-    walk(controls || [], [], [], false, targets);
+    walk(controls || [], [], [], false, false, targets);
     return targets;
 }
 
@@ -26,6 +28,7 @@ function walk(
     path: string[],
     labels: string[],
     insideRequiredArray: boolean,
+    ancestorHidden: boolean,
     targets: IFormTarget[]
 ): void {
     for (const field of controls) {
@@ -34,12 +37,14 @@ function walk(
         const visible = field.visibility !== false;
         const enabled = !!field.control && !field.control.disabled;
         const isUnit = !field.isRef || !!field.isArray;
+        const hidden = ancestorHidden || !visible || !!field.control?.disabled;
         targets.push({
             path: fieldPath.join('.'),
             labels: fieldLabels,
             field,
             control: field.control,
-            requiredUnit: !insideRequiredArray && visible && enabled && !!field.required && isUnit
+            requiredUnit: !insideRequiredArray && !hidden && !!field.required && isUnit,
+            hidden
         });
         if (field.isArray) {
             const inside = insideRequiredArray || (!!field.required && visible && enabled);
@@ -52,12 +57,13 @@ function walk(
                     field,
                     row,
                     control: row.control,
-                    requiredUnit: false
+                    requiredUnit: false,
+                    hidden
                 });
-                walk(row.model?.controls || [], rowPath, rowLabels, inside, targets);
+                walk(row.model?.controls || [], rowPath, rowLabels, inside, hidden, targets);
             });
         } else {
-            walk(field.model?.controls || [], fieldPath, fieldLabels, insideRequiredArray, targets);
+            walk(field.model?.controls || [], fieldPath, fieldLabels, insideRequiredArray, hidden, targets);
         }
     }
 }
