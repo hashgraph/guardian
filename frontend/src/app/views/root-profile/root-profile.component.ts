@@ -22,6 +22,7 @@ import { OtpCodesDialogComponent } from '../login/otp-codes-dialog/otp-codes-dia
 import { OtpConfigDialogComponent } from '../login/otp-config-dialog/otp-config-dialog.component';
 import { OtpDisableDialogComponent } from '../login/otp-disable-dialog/otp-disable-dialog.component';
 import moment from 'moment';
+import { SchemaFormRootComponent } from '../../modules/schema-engine/schema-form-root/schema-form-root.component';
 import { AppTheme, AppThemeOption, AppThemeService } from '../../services/app-theme.service';
 import { MenuLayout, MenuLayoutOption, MenuLayoutService } from '../../services/menu-layout.service';
 import { DocWidgetService } from '../../services/doc-widget.service';
@@ -62,6 +63,7 @@ interface IColumn {
 })
 export class RootProfileComponent implements OnInit, OnDestroy {
     @ViewChild('actionMenu') actionMenu: any;
+    @ViewChild(SchemaFormRootComponent) formRoot?: SchemaFormRootComponent;
 
     public loading: boolean = true;
     public subLoading: boolean = false;
@@ -610,7 +612,11 @@ export class RootProfileComponent implements OnInit, OnDestroy {
     }
 
     public onSubmit() {
-        if (this.hederaForm.valid && this.vcForm.valid) {
+        if (!this.vcForm.valid) {
+            this.formRoot?.revealErrors();
+            return;
+        }
+        if (this.hederaForm.valid) {
             const hederaForm = this.hederaForm.value;
             const vcDocument = this.vcForm.value;
             const didDocument = this.didDocumentType.value ?

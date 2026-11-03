@@ -6,11 +6,19 @@ import { equalsLoosely, FieldForm, IFieldControl } from '../schema-form-model/fi
 import { Subscription } from 'rxjs';
 import { FormulasTree } from 'src/app/modules/formulas/models/formula-tree';
 import { FormFormulas, IFormulaLinkScope } from 'src/app/modules/formulas/models/form-formulas';
+import { getErrorMessage } from '../schema-form/schema-form-errors';
+import { IFormTarget, walkFields } from '../schema-form/schema-form-walk';
 import { SchemaFormNavigationComponent } from '../schema-form-navigation/schema-form-navigation.component';
 
 /**
  * Form built by schema
  */
+export interface IFormIssue {
+    path: string;
+    label: string;
+    message: string;
+}
+
 @Component({
     selector: 'app-schema-form-root',
     templateUrl: './schema-form-root.component.html',
@@ -205,12 +213,16 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         }
         let keepDirty = false;
         const dirtyPaths: string[][] = [];
+        const touchedPaths: string[][] = [];
         if (requiredChanged && !changes.requiredFields.firstChange && this.model && !changes.presetDocument
             && this.previewBuildFrame === null) {
             keepDirty = this.group.dirty;
             const collectDirty = (control: AbstractControl, path: string[]): void => {
                 if (control.dirty && path.length) {
                     dirtyPaths.push(path);
+                }
+                if (control.touched && path.length) {
+                    touchedPaths.push(path);
                 }
                 if (control instanceof UntypedFormGroup || control instanceof UntypedFormArray) {
                     for (const [key, child] of Object.entries(control.controls)) {
@@ -235,6 +247,9 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
                 this.buildFields();
                 for (const path of dirtyPaths) {
                     this.group.get(path)?.markAsDirty();
+                }
+                for (const path of touchedPaths) {
+                    this.group.get(path)?.markAsTouched();
                 }
                 if (keepDirty) {
                     this.group.markAsDirty();
@@ -314,6 +329,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             requiredFields: this.requiredFields,
             keepDefaultLabels: !this.userPreset,
         });
+        this.model.errorsRevealed = this.errorsRevealed;
         this.model.build();
         this.updatePreviewMissingFieldIds();
         this.navFields = [...(this.model.controls || [])];
@@ -422,6 +438,8 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
 
     private userPreset = false;
 
+    private errorsRevealed = false;
+
     public previewMissingFieldIds: string[] = [];
 
     private previewMissingTargets: object[] = [];
@@ -453,34 +471,13 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         this.updatePreviewMissingOptions();
     }
 
-    private collectPreviewTargets(
-        controls: IFieldControl<any>[],
-        path: string[],
-        labels: string[],
-        targets: Map<object, { path: string; labels: string[]; control: AbstractControl | null }>
-    ): void {
-        for (const field of controls) {
-            const fieldPath = [...path, field.name];
-            const fieldLabels = [...labels, field.description || field.title || field.name];
-            targets.set(field, { path: fieldPath.join('.'), labels: fieldLabels, control: field.control });
-            if (field.isArray) {
-                (field.list || []).forEach((row, index) => {
-                    const rowPath = [...fieldPath, String(index)];
-                    const rowLabels = [...fieldLabels, `#${index + 1}`];
-                    targets.set(row, { path: rowPath.join('.'), labels: rowLabels, control: row.control });
-                    this.collectPreviewTargets(row.model?.controls || [], rowPath, rowLabels, targets);
-                });
-            } else {
-                this.collectPreviewTargets(field.model?.controls || [], fieldPath, fieldLabels, targets);
-            }
-        }
-    }
-
     private updatePreviewMissingOptions(): void {
         const options: { label: string; value: string }[] = [];
-        const targets = new Map<object, { path: string; labels: string[]; control: AbstractControl | null }>();
+        const targets = new Map<object, IFormTarget>();
         if (this.requiredFields !== null && this.previewMissingTargets.length) {
-            this.collectPreviewTargets(this.model?.controls || [], [], [], targets);
+            for (const target of walkFields(this.model?.controls)) {
+                targets.set(target.row ?? target.field, target);
+            }
         }
         for (const target of this.requiredFields === null ? [] : this.previewMissingTargets) {
             const current = targets.get(target);
@@ -502,11 +499,11 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         if (!this.previewMissingFields.length) return;
         this.previewFocusTimer = setTimeout(() => {
             this.previewFocusTimer = null;
-            this.focusPreviewField(this.previewMissingFields[0]);
+            this.focusField(this.previewMissingFields[0]);
         }, 0);
     }
 
-    public focusPreviewField(path: string): void {
+    public focusField(path: string): void {
         const parts = path.split('.');
         let controls = this.model?.controls || [];
         let targetId: string | undefined;
@@ -525,17 +522,19 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
                 controls = row.model?.controls || [];
             } else controls = field.model?.controls || [];
         }
-        if (this.requiredFields !== null && this.childForm?.prepareOpenPreviewSections) {
-            this.childForm.prepareOpenPreviewSections();
-        }
+        this.childForm?.prepareOpenPreviewSections?.();
         this.changeDetectorRef.detectChanges();
         this.scrollToPreviewField(targetId, 20);
     }
 
-    private scrollToPreviewField(targetId: string | undefined, attempts: number): void {
+    private findFieldElement(targetId: string | undefined): HTMLElement | null {
+        if (!targetId) return null;
         const container: HTMLElement | undefined = this.contentContainerRef?.nativeElement;
-        const target = Array.from(container?.querySelectorAll<HTMLElement>('[preview-field-id]') || [])
-            .find(element => element.getAttribute('preview-field-id') === targetId);
+        return container?.querySelector<HTMLElement>(`[data-field-id="${CSS.escape(targetId)}"]`) ?? null;
+    }
+
+    private scrollToPreviewField(targetId: string | undefined, attempts: number): void {
+        const target = this.findFieldElement(targetId);
         if (!target || this.isPreviewLocked) {
             if (targetId && attempts > 0) {
                 this.previewFocusTimer = setTimeout(() => {
@@ -553,9 +552,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     private keepPreviewFieldInView(targetId: string | undefined, attempts: number): void {
         this.previewFocusTimer = setTimeout(() => {
             this.previewFocusTimer = null;
-            const container: HTMLElement | undefined = this.contentContainerRef?.nativeElement;
-            const target = Array.from(container?.querySelectorAll<HTMLElement>('[preview-field-id]') || [])
-                .find(element => element.getAttribute('preview-field-id') === targetId);
+            const target = this.findFieldElement(targetId);
             if (!target) return;
             const rect = target.getBoundingClientRect();
             if (rect.top >= 0 && rect.bottom <= window.innerHeight) return;
@@ -570,8 +567,45 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         }
     }
 
-    public focusFirstInvalid(): void {
-        this.childForm?.focusFirstInvalid();
+    public getIssues(): IFormIssue[] {
+        const issues: IFormIssue[] = [];
+        const targets = walkFields(this.model?.controls);
+        const withInvalidRows = new Set<object>();
+        for (const target of targets) {
+            if (target.row && target.control?.invalid && !target.control.disabled) {
+                withInvalidRows.add(target.field);
+            }
+        }
+        for (const { path, labels, field, row, control } of targets) {
+            if (field.visibility === false || !control || control.disabled || !control.invalid) {
+                continue;
+            }
+            if (!row && field.isRef && !field.isArray) {
+                continue;
+            }
+            if (!row && field.isArray && withInvalidRows.has(field)) {
+                continue;
+            }
+            if (row && field.isRef) {
+                continue;
+            }
+            issues.push({ path, label: labels.join(' / '), message: getErrorMessage(field, row) });
+        }
+        return issues;
+    }
+
+    public revealErrors(focus = true): void {
+        this.errorsRevealed = true;
+        if (this.model) {
+            this.model.errorsRevealed = true;
+        }
+        this.changeDetectorRef.detectChanges();
+        if (focus) {
+            const first = this.getIssues()[0];
+            if (first) {
+                this.focusField(first.path);
+            }
+        }
     }
 
     public onNavHasItemsEvent(hasItems: boolean): void {

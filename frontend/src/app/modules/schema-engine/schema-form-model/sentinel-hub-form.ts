@@ -37,6 +37,10 @@ export class SentinelHubForm {
         return this.form.get(name) as UntypedFormControl;
     }
 
+    public markAsTouched() {
+        this.form.markAsTouched();
+    }
+
     public setValue(name: string, value: any) {
         this.getControlByName(name).setValue(value);
     }

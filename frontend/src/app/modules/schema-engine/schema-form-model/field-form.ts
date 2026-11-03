@@ -23,6 +23,19 @@ export function equalsLoosely(a: any, b: any): boolean {
     return as === bs;
 }
 
+function isEmptyValue(value: any): boolean {
+    if (value === null || value === undefined || value === '') {
+        return true;
+    }
+    if (Array.isArray(value)) {
+        return value.length === 0;
+    }
+    if (typeof value === 'object') {
+        return Object.keys(value).length === 0;
+    }
+    return false;
+}
+
 export interface IFieldControl<T extends UntypedFormControl | UntypedFormGroup | UntypedFormArray> extends SchemaField {
     id: string;
     hide: boolean;
@@ -32,6 +45,7 @@ export interface IFieldControl<T extends UntypedFormControl | UntypedFormGroup |
     control: T;
     preset?: any;
     isPreset?: boolean;
+    prefilled?: boolean;
     fileUploading?: boolean;
     enumValues?: any;
     displayRequired?: boolean;
@@ -115,6 +129,7 @@ export class FieldForm {
     private readonly ancestorChildPaths: Map<string, Set<string>>;
     public rootForm: FieldForm;
     public keepDefaultLabels: boolean = false;
+    public errorsRevealed = false;
     private arrayGroupCache: Map<IFieldControl<any>, IArrayGroupEntry[]> | null = null;
     private fieldOrder: Map<string, number> | null = null;
 
@@ -1260,6 +1275,7 @@ export class FieldForm {
         if (preset) {
             item.isPreset = !this.rootForm.keepDefaultLabels;
             item.preset = preset[field.name];
+            item.prefilled = !this.rootForm.keepDefaultLabels && !isEmptyValue(preset[field.name]);
         }
 
         // ifSimpleField

@@ -285,7 +285,7 @@ describe('request document preview wiring', () => {
     it('shows the remaining missing fields and scrolls to the chosen one', () => {
         const { component } = form([], blockParent());
         component.changeDetectorRef = { markForCheck: jasmine.createSpy('markForCheck') };
-        component.formRoot = { focusPreviewField: jasmine.createSpy('focusPreviewField') };
+        component.formRoot = { focusField: jasmine.createSpy('focusField') };
         component.previewMode = true;
         component.previewMissingPath = null;
         const options = [{ label: 'Amount', value: 'amount' }, { label: 'Rows / #2 / Rate', value: 'rows.1.rate' }];
@@ -293,7 +293,7 @@ describe('request document preview wiring', () => {
         expect(component.previewMissingOptions).toBe(options);
         component.previewMissingPath = 'rows.1.rate';
         component.onPreviewMissingSelect('rows.1.rate');
-        expect(component.formRoot.focusPreviewField).toHaveBeenCalledOnceWith('rows.1.rate');
+        expect(component.formRoot.focusField).toHaveBeenCalledOnceWith('rows.1.rate');
         component.onPreviewMissingOptionsChange([options[1]]);
         expect(component.previewMissingOptions).toEqual([options[1]]);
         expect(component.previewMissingPath).toBeNull();

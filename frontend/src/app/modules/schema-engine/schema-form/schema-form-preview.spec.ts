@@ -16,6 +16,9 @@ import { FormTextareaComponent } from './form-textarea/form-textarea.component';
 import { SchemaFormRootComponent } from '../schema-form-root/schema-form-root.component';
 
 describe('SchemaFormComponent Preview table validation', () => {
+    beforeEach(() => document.documentElement.style.setProperty('--guardian-failure-color', '#FF432A'));
+    afterEach(() => document.documentElement.style.removeProperty('--guardian-failure-color'));
+
     const render = () => {
         TestBed.configureTestingModule({
             declarations: [SchemaFormComponent, FormTextareaComponent],
@@ -68,7 +71,7 @@ describe('SchemaFormComponent Preview table validation', () => {
         expect(section.required).toBeTrue();
         fixture.componentRef.setInput('form-model', model);
         expect(() => fixture.detectChanges()).not.toThrow();
-        const header = fixture.nativeElement.querySelector(`[preview-field-id="${section.id}"]`);
+        const header = fixture.nativeElement.querySelector(`[data-field-id="${section.id}"]`);
         expect(header.querySelector('.required-field')).not.toBeNull();
         fixture.componentInstance.addGroup(section);
         expect(() => fixture.detectChanges()).not.toThrow();
@@ -342,17 +345,17 @@ describe('SchemaFormComponent Preview table validation', () => {
         const { fixture, first, second } = render();
         fixture.componentRef.setInput('previewMissingFieldIds', [second.id]);
         fixture.detectChanges();
-        const target = fixture.nativeElement.querySelector(`[preview-field-id="${second.id}"]`);
+        const target = fixture.nativeElement.querySelector(`[data-field-id="${second.id}"]`);
         expect(target).not.toBeNull();
         expect(target.classList.contains('preview-missing-field')).toBeTrue();
         const table = fixture.nativeElement.querySelector('p-table').parentElement;
         expect(table.classList.contains('table-validation-error')).toBeTrue();
-        expect(getComputedStyle(table).outlineColor).toBe('rgb(244, 67, 54)');
+        expect(getComputedStyle(table).outlineColor).toBe('rgb(255, 67, 42)');
         expect(getComputedStyle(target).outlineStyle).toBe('none');
-        expect(getComputedStyle(target.querySelector('textarea')).borderColor).toBe('rgb(244, 67, 54)');
+        expect(getComputedStyle(target.querySelector('textarea')).borderColor).toBe('rgb(255, 67, 42)');
         expect(target.textContent).not.toContain('Required for calculation preview');
         expect(target.querySelector('textarea')).not.toBeNull();
-        expect(fixture.nativeElement.querySelector(`[preview-field-id="${first.id}"]`).classList.contains('preview-missing-field')).toBeFalse();
+        expect(fixture.nativeElement.querySelector(`[data-field-id="${first.id}"]`).classList.contains('preview-missing-field')).toBeFalse();
         expect(first.control.value).toBe(0);
         second.control.setValue(3);
         fixture.detectChanges();
@@ -373,12 +376,12 @@ describe('SchemaFormComponent Preview table validation', () => {
             contentContainerRef: new ElementRef(fixture.nativeElement),
             childForm: fixture.componentInstance,
         });
-        const target = fixture.nativeElement.querySelector(`[preview-field-id="${second.id}"]`);
-        const neighbour = fixture.nativeElement.querySelector(`[preview-field-id="${first.id}"]`);
+        const target = fixture.nativeElement.querySelector(`[data-field-id="${second.id}"]`);
+        const neighbour = fixture.nativeElement.querySelector(`[data-field-id="${first.id}"]`);
         const scroll = spyOn(target, 'scrollIntoView');
         const otherScroll = spyOn(neighbour, 'scrollIntoView');
         const focus = spyOn(target.querySelector('textarea'), 'focus');
-        root.focusPreviewField('rows.1.rate');
+        root.focusField('rows.1.rate');
         expect(scroll).toHaveBeenCalledOnceWith({ behavior: 'smooth', block: 'center' });
         expect(otherScroll).not.toHaveBeenCalled();
         expect(focus).toHaveBeenCalledOnceWith({ preventScroll: true });
@@ -388,7 +391,6 @@ describe('SchemaFormComponent Preview table validation', () => {
     it('keeps Preview hints off without missing ids and treats supplied zero as a value', () => {
         const { fixture, first, second } = render();
         expect(fixture.nativeElement.querySelector('.preview-missing-field')).toBeNull();
-        expect(fixture.nativeElement.querySelector(`[preview-field-id="${second.id}"]`)).toBeNull();
         fixture.componentRef.setInput('previewMissingFieldIds', [first.id, second.id]);
         fixture.detectChanges();
         expect(fixture.nativeElement.querySelectorAll('.preview-missing-field').length).toBe(1);
@@ -401,10 +403,13 @@ describe('SchemaFormComponent Preview table validation', () => {
         const { fixture, first, second } = render();
         fixture.componentRef.setInput('previewValidation', false);
         fixture.detectChanges();
+        expect(fixture.nativeElement.querySelectorAll('.preview-missing-field').length).toBe(0);
+        fixture.componentInstance.formModel.rootForm.errorsRevealed = true;
+        fixture.componentRef.changeDetectorRef.markForCheck();
+        fixture.detectChanges();
         expect(fixture.nativeElement.querySelectorAll('.preview-missing-field').length).toBe(1);
         expect(fixture.nativeElement.querySelector('.table-validation-error')).not.toBeNull();
         expect(fixture.nativeElement.textContent).not.toContain('Required for calculation preview');
-        expect(fixture.nativeElement.querySelector(`[preview-field-id="${second.id}"]`)).toBeNull();
         expect(first.control.valid).toBeTrue();
         second.control.setValue(0);
         fixture.detectChanges();
@@ -528,5 +533,56 @@ describe('SchemaFormComponent large tables inside opened sections', () => {
             expect(cells[0].nativeElement.value).toBe('0-c0');
             expect(cells.every((cell) => !!cell.injector.get(Textarea, null))).toBeTrue();
         });
+    });
+});
+
+describe('SchemaFormComponent error timing', () => {
+    const render = (preset?: any) => {
+        TestBed.configureTestingModule({
+            declarations: [SchemaFormComponent, FormTextareaComponent],
+            imports: [CommonModule, ReactiveFormsModule],
+            providers: [
+                { provide: IPFSService, useValue: {} },
+                { provide: DialogService, useValue: {} },
+            ],
+            schemas: [NO_ERRORS_SCHEMA],
+        });
+        const schema = new Schema({ iri: '#flat&1.0.0', document: {
+            $id: '#flat&1.0.0',
+            $comment: JSON.stringify({ '@id': 'ctx:#flat&1.0.0', term: 'flat&1.0.0' }),
+            type: SchemaDataTypes.object,
+            properties: { code: { type: SchemaDataTypes.string, title: 'Code', description: 'Code', pattern: '^[a-z]+$' } },
+            required: ['code'],
+        } });
+        const model = new FieldForm(new UntypedFormGroup({}));
+        model.setData({ schema, preset });
+        model.build();
+        const fixture = TestBed.createComponent(SchemaFormComponent);
+        fixture.componentRef.setInput('form-model', model);
+        fixture.componentRef.setInput('showButtons', false);
+        fixture.detectChanges();
+        return { fixture, model, field: model.controls![0] };
+    };
+
+    it('shows no error until the field is left', () => {
+        const { fixture, field } = render();
+        expect(fixture.nativeElement.querySelector('.sf-error')).toBeNull();
+        field.control.markAsTouched();
+        fixture.detectChanges();
+        expect(fixture.nativeElement.querySelector('.sf-error').textContent).toContain('Enter a value');
+        expect(fixture.nativeElement.querySelector('.form-field-value').getAttribute('sf-invalid')).toBe('true');
+    });
+
+    it('shows every error once a submit attempt revealed them', () => {
+        const { fixture, model } = render();
+        model.errorsRevealed = true;
+        fixture.componentRef.changeDetectorRef.markForCheck();
+        fixture.detectChanges();
+        expect(fixture.nativeElement.querySelector('.sf-error')).not.toBeNull();
+    });
+
+    it('shows the error of a prefilled value at once', () => {
+        const { fixture } = render({ code: 'ABC' });
+        expect(fixture.nativeElement.querySelector('.sf-error').textContent).toContain('required format');
     });
 });
