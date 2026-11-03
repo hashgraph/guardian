@@ -8,7 +8,7 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { TableModule } from 'primeng/table';
 import { Textarea } from 'primeng/textarea';
 import { AccordionModule } from 'primeng/accordion';
-import { SchemaFormNavigationComponent } from '../schema-form-navigation/schema-form-navigation.component';
+import { SchemaFormRailComponent } from '../schema-form-rail/schema-form-rail.component';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { FieldForm } from '../schema-form-model/field-form';
 import { SchemaFormComponent } from './schema-form.component';
@@ -279,11 +279,12 @@ describe('SchemaFormComponent Preview table validation', () => {
         }));
     }
 
-    it('prepares a Preview input section opened from navigation', fakeAsync(() => {
+    it('prepares a Preview input section opened from outside, like a rail card or Jump to next missing', fakeAsync(() => {
         const fixture = renderSection(true);
         const view = fixture.componentInstance;
         const changes = spyOn(view.previewLoadingChange, 'emit');
-        view.openField(view.formModel.controls![0].id);
+        view.formModel.controls![0].open = true;
+        view.prepareOpenPreviewSections();
         expect(changes).toHaveBeenCalledOnceWith(true);
         tick(1200);
         expect(changes.calls.allArgs()).toEqual([[true], [false]]);
@@ -309,7 +310,7 @@ describe('SchemaFormComponent Preview table validation', () => {
 
     it('shows root loading synchronously for a real Preview input accordion-header click', fakeAsync(() => {
         TestBed.configureTestingModule({
-            declarations: [SchemaFormRootComponent, SchemaFormComponent, FormTextareaComponent, SchemaFormNavigationComponent],
+            declarations: [SchemaFormRootComponent, SchemaFormComponent, FormTextareaComponent, SchemaFormRailComponent],
             imports: [CommonModule, ReactiveFormsModule, AccordionModule, TableModule],
             providers: [
                 UntypedFormBuilder,
@@ -328,6 +329,11 @@ describe('SchemaFormComponent Preview table validation', () => {
         fixture.componentRef.setInput('preset', { section: { rate: 3 } });
         fixture.componentRef.setInput('requiredFields', []);
         fixture.componentRef.setInput('showButtons', true);
+        fixture.detectChanges();
+        tick(256);
+        fixture.detectChanges();
+        // A sectioned form opens on the overview; open its only section
+        fixture.componentInstance.openSection(0);
         fixture.detectChanges();
         tick(256);
         fixture.detectChanges();
@@ -506,7 +512,6 @@ describe('SchemaFormComponent large tables inside opened sections', () => {
             const elements = [fixture.debugElement, ...fixture.debugElement.queryAll(By.directive(SchemaFormComponent))];
             for (const element of elements) {
                 const form: SchemaFormComponent = element.componentInstance;
-                form.isShown = form.isShown.map(() => true);
                 for (const item of form.formModel?.controls || []) {
                     for (const row of item.isRef && item.isArray ? item.list || [] : []) {
                         if (!row.open) {

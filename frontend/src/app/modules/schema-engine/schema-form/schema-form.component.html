@@ -6,13 +6,11 @@
     [attr.showButtons]="showButtons"
     [attr.pageButtons]="formModel.controls && showButtons && !isChildSchema"
     [attr.example]="example"
-    [attr.paginationHidden]="paginationHidden"
     class="sf-grid"
     >
-    @for (item of formModel.controls; track item; let i = $index) {
+    @for (item of renderedControls; track item; let i = $index) {
       @if (item.visibility && i < previewRenderLimit) {
         <div
-          [attr.showMobileField]="showPage(item, i)"
           [attr.inert]="previewBusy ? '' : null"
           class="form-field-container"
           [class.sf-full]="isFullRow(item)"
@@ -711,7 +709,7 @@
                           [class.sf-card-error]="showError(item)"
                           [class.sf-card-open]="item.open"
                           >
-                          <div class="sf-card-head" [attr.accordiontabid]="item.id">
+                          <div class="sf-card-head">
                             <button
                               type="button"
                               class="sf-card-toggle"
@@ -820,7 +818,6 @@
                                           [isChildSchema]="true"
                                           [isFormForRequestBlock]="isFormForRequestBlock"
                                           [isEditMode]="isEditMode"
-                                          (onAccordionSelect)="onAccordionSelectEvent($event.isOpen, item, '', $event.path)"
                                           >
                                         </app-schema-form>
                                       }
@@ -858,7 +855,7 @@
                           [class.sf-card-error]="showError(item)"
                           [class.sf-card-open]="item.open"
                           >
-                          <div class="sf-card-head" [attr.accordiontabid]="item.id">
+                          <div class="sf-card-head">
                             <button
                               type="button"
                               class="sf-card-toggle"
@@ -912,7 +909,7 @@
                                   [attr.data-field-id]="listItem.id"
                                   [attr.required]="item.required"
                                   >
-                                  <div class="sf-record-head" [attr.accordiontabid]="item.id + '-' + listItem.index2">
+                                  <div class="sf-record-head">
                                     <span class="sf-record-ix">{{ listItem.index2 }}</span>
                                     @let rt = recordText(item, listItem);
                                     <div class="sf-record-text">
@@ -928,7 +925,7 @@
                                       type="button"
                                       class="sf-link"
                                       [attr.aria-expanded]="!!listItem.open"
-                                      (click)="toggleOpen(listItem, !listItem.open, item, listItem.index2)"
+                                      (click)="toggleOpen(listItem, !listItem.open)"
                                       >
                                       {{ listItem.open ? 'Close' : 'Edit' }}
                                     </button>
@@ -989,9 +986,7 @@
                                               [delimiter-hide]="true"
                                               [isChildSchema]="true"
                                               [isFormForRequestBlock]="isFormForRequestBlock"
-                                              [paginationHidden]="paginationHidden"
                                               [isEditMode]="isEditMode"
-                                              (onAccordionSelect)="onAccordionSelectEvent($event.isOpen, item, listItem.index2, $event.path)"
                                               >
                                             </app-schema-form>
                                           }

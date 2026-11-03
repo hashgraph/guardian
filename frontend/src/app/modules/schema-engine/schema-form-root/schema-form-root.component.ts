@@ -3,12 +3,14 @@ import { SchemaFormComponent } from '../schema-form/schema-form.component';
 import { AbstractControl, UntypedFormArray, UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { Schema, SchemaField, SchemaRuleValidateResult } from '@guardian/interfaces';
 import { equalsLoosely, FieldForm, IFieldControl } from '../schema-form-model/field-form';
-import { Subscription } from 'rxjs';
+import { Subscription, audit, timer } from 'rxjs';
 import { FormulasTree } from 'src/app/modules/formulas/models/formula-tree';
 import { FormFormulas, IFormulaLinkScope } from 'src/app/modules/formulas/models/form-formulas';
 import { getErrorMessage } from '../schema-form/schema-form-errors';
 import { IFormTarget, walkFields } from '../schema-form/schema-form-walk';
-import { SchemaFormNavigationComponent } from '../schema-form-navigation/schema-form-navigation.component';
+import { IFormCompletion, ISectionCompletion, computeCompletion, isAnswered } from '../schema-form/schema-form-completion';
+import { BooleanProperty } from '../../policy-engine/structures/storage/boolean-prop';
+import { IFormSection, buildSections, promotedRootName } from './schema-form-sections';
 
 /**
  * Form built by schema
@@ -17,6 +19,33 @@ export interface IFormIssue {
     path: string;
     label: string;
     message: string;
+    /** Title of the section that holds the field; absent on a single page. */
+    section?: string;
+}
+
+export type SchemaFormLayout = 'sections' | 'single';
+
+const RAIL_HIDDEN_KEY = 'SCHEMA_FORM_RAIL_HIDDEN';
+
+function sameSections(a: IFormSection[], b: IFormSection[]): boolean {
+    return a.length === b.length && a.every((item, index) => {
+        const other = b[index];
+        return item.id === other.id
+            && item.title === other.title
+            && item.owner === other.owner
+            && item.controls.length === other.controls.length
+            && item.controls.every((control, i) => control === other.controls[i]);
+    });
+}
+
+function sameCompletion(a: IFormCompletion | null, b: IFormCompletion): boolean {
+    return !!a && a.answered === b.answered && a.total === b.total
+        && a.sections.length === b.sections.length
+        && a.sections.every((item, index) => {
+            const other = b.sections[index];
+            return item.id === other.id && item.title === other.title && item.answered === other.answered
+                && item.total === other.total && item.hasErrors === other.hasErrors;
+        });
 }
 
 @Component({
@@ -29,26 +58,34 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     public group: UntypedFormGroup;
     public model: FieldForm | null;
     public loading: boolean = true;
-    public hasNavigation = true;
-    public navCollapsed = false;
-    public navFields: IFieldControl<any>[] = [];
+    public sections: IFormSection[] = [];
+    public completion: IFormCompletion | null = null;
+    public screen: 'overview' | 'section' = 'overview';
+    public activeIndex = 0;
+    public drawerOpen = false;
+    public promotedName: string | null = null;
+    public readonly bigRingRadius = 42;
+    public readonly bigRingLength = 2 * Math.PI * this.bigRingRadius;
+    public readonly cardRingRadius = 10;
+    public readonly cardRingLength = 2 * Math.PI * this.cardRingRadius;
+    private readonly railHiddenProp = new BooleanProperty(RAIL_HIDDEN_KEY, false);
     public formulaModel: FormFormulas | null = null;
     private formulaSub?: Subscription;
     private controlsSub?: Subscription;
     private previewMissingSub?: Subscription;
+    private completionSub?: Subscription;
 
-    private startX: number = 0;
-    private startWidthPercent: number = 25;
-    private containerWidth: number = 0;
-    private readonly MIN_WIDTH_PERCENT = 0;
-    private readonly MAX_WIDTH_PERCENT = 75;
-    private rafId: number | null = null;
-    private navScrollParent: HTMLElement | null = null;
-    private navResizeObserver: ResizeObserver | null = null;
+    private railElement: HTMLElement | null = null;
+    private railScrollParent: HTMLElement | null = null;
+    private railResizeObserver: ResizeObserver | null = null;
 
     @ViewChild('childForm') private childForm?: SchemaFormComponent;
-    @ViewChild('schemaNav') private schemaNav?: SchemaFormNavigationComponent;
-    @ViewChild('navContainer') navContainerRef?: ElementRef;
+    @ViewChild('railContainer') set railContainer(ref: ElementRef<HTMLElement> | undefined) {
+        const element = ref?.nativeElement ?? null;
+        if (element === this.railElement) return;
+        this.railElement = element;
+        this.setupRailHeightSync();
+    }
     @ViewChild('contentContainer') contentContainerRef?: ElementRef;
 
     @Input('schema') schema: Schema;
@@ -74,7 +111,8 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     @Input() policyId: string = '';
     @Input() blockId: string = '';
     @Input() rules: SchemaRuleValidateResult;
-    @Input() paginationHidden: boolean = true;
+    @Input() layout: SchemaFormLayout = 'sections';
+    @Input() overviewHint: string | null = null;
     @Input() isFormForFinishSetup: boolean = false;
     @Input() isFormForRequestBlock: boolean = false;
     @Input() lastSavedAt?: Date;
@@ -109,6 +147,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     @Output('presetApplied') presetApplied = new EventEmitter<UntypedFormGroup>();
     @Output() previewMissingOptionsChange = new EventEmitter<{ label: string; value: string }[]>(true);
     public previewMissingOptions: { label: string; value: string }[] = [];
+    @Output() completionChange = new EventEmitter<IFormCompletion>(true);
     @Output('change') change = new EventEmitter<Schema | null>();
     @Output('destroy') destroy = new EventEmitter<void>();
     @Output('buttons') buttons = new EventEmitter<any>();
@@ -123,6 +162,48 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     ) {
         this.group = this.fb.group({});
         this.model = null;
+        this.railHiddenProp.load();
+    }
+
+    public get railHidden(): boolean {
+        return this.railHiddenProp.value;
+    }
+
+    public get hasSections(): boolean {
+        return this.layout === 'sections' && this.sections.length > 0;
+    }
+
+    public get activeSection(): IFormSection | null {
+        return this.hasSections ? this.sections[this.activeIndex] ?? null : null;
+    }
+
+    /** Sub-schema controls of the active section. */
+    public get activeCards(): IFieldControl<any>[] {
+        const section = this.activeSection;
+        const visible = (section?.controls ?? []).filter(item => item.isRef);
+        const same = visible.length === this.cardsCache.length && visible.every((item, index) => item === this.cardsCache[index]);
+        if (!same) {
+            this.cardsCache = visible;
+        }
+        return this.cardsCache;
+    }
+
+    private cardsCache: IFieldControl<any>[] = [];
+
+    public get formOwner(): FieldForm | null {
+        return this.activeSection?.owner ?? this.model;
+    }
+
+    public get formControls(): IFieldControl<any>[] | null {
+        return this.activeSection?.controls ?? null;
+    }
+
+    public get showChildForm(): boolean {
+        return !this.hasSections || this.screen === 'section';
+    }
+
+    public get schemaName(): string {
+        return this.schema?.name || this.schema?.description || '';
     }
 
     ngOnInit(): void {
@@ -143,33 +224,36 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     }
 
     ngAfterViewInit(): void {
-        // Inside a dialog the navigation panel is sticky within a scrollable
-        // body whose height depends on the dialog size and the banners shown
-        // above the form. Sync its height to that container so it fills the
-        // available space instead of relying on a fixed viewport calculation.
-        if (this.comesFromDialog) {
-            setTimeout(() => this.setupNavHeightSync(), 0);
-        }
     }
 
-    private setupNavHeightSync(): void {
-        if (!this.navContainerRef) {
+    // The rail is sticky inside the host's scroll container, whose height depends on the dialog
+    // size and the banners shown above the form. Sync the rail height to that container.
+    private setupRailHeightSync(): void {
+        this.railResizeObserver?.disconnect();
+        this.railResizeObserver = null;
+        this.railScrollParent = null;
+        if (!this.railElement) {
             return;
         }
-        this.navScrollParent = this.getScrollParent(this.navContainerRef.nativeElement);
-        if (!this.navScrollParent) {
+        this.railScrollParent = this.getScrollParent(this.railElement);
+        if (!this.railScrollParent) {
             return;
         }
-        this.navResizeObserver = new ResizeObserver(() => this.updateNavHeight());
-        this.navResizeObserver.observe(this.navScrollParent);
-        this.updateNavHeight();
+        this.railResizeObserver = new ResizeObserver(() => this.updateRailHeight());
+        this.railResizeObserver.observe(this.railScrollParent);
+        this.updateRailHeight();
     }
 
-    private updateNavHeight(): void {
-        if (!this.navContainerRef || !this.navScrollParent) {
+    private updateRailHeight(): void {
+        if (!this.railElement || !this.railScrollParent) {
             return;
         }
-        this.navContainerRef.nativeElement.style.maxHeight = `${this.navScrollParent.clientHeight}px`;
+        // The rail fills the visible height of the scroll area, however short the section is
+        const style = getComputedStyle(this.railScrollParent);
+        const padding = (parseFloat(style.paddingTop) || 0) + (parseFloat(style.paddingBottom) || 0);
+        const height = `${Math.max(0, this.railScrollParent.clientHeight - padding)}px`;
+        this.railElement.style.maxHeight = height;
+        this.railElement.style.minHeight = height;
     }
 
     private getScrollParent(element: HTMLElement): HTMLElement | null {
@@ -191,6 +275,21 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         if (changes.requiredFields && this.requiredFields === null) {
             this.previewLoadingCount = 0;
             if (!changes.requiredFields.firstChange && changes.requiredFields.previousValue !== null) this.previewBusyChange.emit(false);
+        }
+        if (changes.schema && !changes.schema.firstChange) {
+            this.screen = 'overview';
+            this.activeIndex = 0;
+            this.drawerOpen = false;
+        }
+        if (this.model && !changes.schema && !changes.fields && !changes.hide && !changes.readonly
+            && !changes.conditions && !changes.presetDocument && !changes.requiredFields) {
+            if (changes.layout) {
+                this.recompute();
+            }
+            if (changes.cancelText || changes.saveText || changes.submitText || changes.saveShown
+                || changes.cancelHidden || changes.submitHidden || changes.isEditMode) {
+                this.emitButtons();
+            }
         }
         this.loading = true;
         const requiredChanged = !!changes.requiredFields
@@ -259,6 +358,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
                 }
                 const finish = () => {
                     this.loading = false;
+                    this.emitButtons();
                     if (this.requiredFields !== null) this.previewBusyChange.emit(this.isPreviewBusy);
                     this.schedulePreviewFocus();
                 };
@@ -293,22 +393,12 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         this.formulaSub?.unsubscribe();
         this.controlsSub?.unsubscribe();
         this.previewMissingSub?.unsubscribe();
+        this.completionSub?.unsubscribe();
         if (this.model) {
             this.model.destroy();
         }
-        document.removeEventListener('mousemove', this.onResizeMove);
-        document.removeEventListener('mouseup', this.onResizeEnd);
-
-        if (this.navResizeObserver) {
-            this.navResizeObserver.disconnect();
-            this.navResizeObserver = null;
-        }
-
-        if (this.rafId) {
-            cancelAnimationFrame(this.rafId);
-        }
-
-        document.body.classList.remove('resizing');
+        this.railResizeObserver?.disconnect();
+        this.railResizeObserver = null;
     }
 
     private buildFields() {
@@ -332,17 +422,24 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         this.model.errorsRevealed = this.errorsRevealed;
         this.model.build();
         this.updatePreviewMissingFieldIds();
-        this.navFields = [...(this.model.controls || [])];
         this.controlsSub = this.model.controlsChanged$.subscribe(() => {
-            this.navFields = [...(this.model?.controls || [])];
+            this.recompute();
             this.changeDetectorRef.detectChanges();
         });
+        this.completionSub?.unsubscribe();
+        this.completionSub = this.group.statusChanges
+            .pipe(audit(() => timer(300)))
+            .subscribe(() => {
+                this.recompute();
+                this.changeDetectorRef.markForCheck();
+            });
         this.previewMissingSub?.unsubscribe();
         this.previewMissingSub = this.requiredFields === null
             ? undefined
             : this.group.valueChanges.subscribe(() => this.updatePreviewMissingOptions());
         this.group.updateValueAndValidity();
         this.buildFormulaModel();
+        this.recompute();
         this.form.emit(this.group);
     }
 
@@ -364,9 +461,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     }
 
     public onChange($event: Schema | null) {
-        if (this.model?.controls) {
-            this.navFields = [...this.model.controls];
-        }
+        this.recompute();
         this.change.emit($event);
     }
 
@@ -380,7 +475,12 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         this.cancelBtnEvent.emit($event);
     }
     public onButtons($event: any) {
-        this.buttons.emit($event);
+        // The form builds its list for its own inner footer. The footer list is built here, so it
+        // survives the form being replaced when the screen changes; only the edit button passes.
+        if (!Array.isArray($event)) {
+            this.editButtonConfig = $event;
+            this.buttons.emit($event);
+        }
     }
     public onDestroy($event: void) {
         this.destroy.emit($event);
@@ -431,14 +531,9 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         return result;
     }
 
-    public toggleNav(): void {
-        this.navCollapsed = !this.navCollapsed;
-        this.changeDetectorRef.detectChanges();
-    }
-
     private userPreset = false;
 
-    private errorsRevealed = false;
+    public errorsRevealed = false;
 
     public previewMissingFieldIds: string[] = [];
 
@@ -507,8 +602,6 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         const parts = path.split('.');
         let controls = this.model?.controls || [];
         let targetId: string | undefined;
-        const first = controls.findIndex(item => item.name === parts[0]);
-        if (first >= 0 && this.childForm) this.childForm.isShown[first] = true;
         for (let index = 0; index < parts.length; index++) {
             const field = controls.find(item => item.name === parts[index]);
             if (!field) break;
@@ -522,6 +615,14 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
                 controls = row.model?.controls || [];
             } else controls = field.model?.controls || [];
         }
+        const sectionIndex = this.sectionIndexOf(path);
+        if (this.hasSections && sectionIndex >= 0 && (this.screen !== 'section' || this.activeIndex !== sectionIndex)) {
+            this.switchScreen(() => {
+                this.screen = 'section';
+                this.activeIndex = sectionIndex;
+            });
+        }
+        this.changeDetectorRef.detectChanges();
         this.childForm?.prepareOpenPreviewSections?.();
         this.changeDetectorRef.detectChanges();
         this.scrollToPreviewField(targetId, 20);
@@ -565,12 +666,6 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         }, 300);
     }
 
-    public onNavSelectEvent(link: string) {
-        if (this.childForm && typeof this.childForm.openField === 'function') {
-            this.childForm.openField(link);
-        }
-    }
-
     public getIssues(targets: IFormTarget[] = walkFields(this.model?.controls)): IFormIssue[] {
         const issues: IFormIssue[] = [];
         const withInvalidRows = new Set<object>();
@@ -592,7 +687,8 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             if (row && field.isRef) {
                 continue;
             }
-            issues.push({ path, label: labels.join(' / '), message: getErrorMessage(field, row) });
+            const section = this.sectionTitleOf(path);
+            issues.push({ path, label: labels.join(' / '), message: getErrorMessage(field, row), ...(section ? { section } : {}) });
         }
         return issues;
     }
@@ -602,6 +698,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         if (this.model) {
             this.model.errorsRevealed = true;
         }
+        this.recompute();
         this.changeDetectorRef.detectChanges();
         if (focus) {
             const first = this.getIssues()[0];
@@ -611,82 +708,276 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         }
     }
 
-    public onNavHasItemsEvent(hasItems: boolean): void {
-        this.hasNavigation = hasItems;
+    /** Title of the section that holds the field at a dot path; undefined on a single page. */
+    public sectionTitleOf(path: string): string | undefined {
+        return this.sections[this.sectionIndexOf(path)]?.title;
+    }
+
+    /**
+     * Index of the section that holds the field at a dot path, -1 on a single page. With a
+     * promoted root sub-schema every path starts with the root's name, which is skipped.
+     */
+    private sectionIndexOf(path: string): number {
+        if (!this.sections.length) {
+            return -1;
+        }
+        const parts = path.split('.');
+        if (this.sections[0].owner !== this.model) {
+            parts.shift();
+        }
+        return this.sections.findIndex(section => section.controls.some(item => item.name === parts[0]));
+    }
+
+    /**
+     * Moves to the first required answer that is still missing, starting at the current section
+     * and wrapping, so it matches the progress counter. False when nothing is missing.
+     */
+    public focusNextMissing(): boolean {
+        const missing = walkFields(this.model?.controls)
+            .filter(target => target.requiredUnit && !target.row && !isAnswered(target));
+        if (!missing.length) {
+            return false;
+        }
+        const start = this.hasSections && this.screen === 'section' ? this.activeIndex : 0;
+        const indexOf = (path: string) => Math.max(0, this.sectionIndexOf(path));
+        const next = missing.find(target => indexOf(target.path) >= start) ?? missing[0];
+        this.focusField(next.path);
+        return true;
+    }
+
+    private recompute(): void {
+        const model = this.model;
+        if (!model) {
+            this.sections = [];
+            this.completion = null;
+            this.promotedName = null;
+            return;
+        }
+        const sections = this.layout === 'sections' ? buildSections(model) : [];
+        if (!sameSections(sections, this.sections)) {
+            const title = this.sections[this.activeIndex]?.title;
+            this.sections = sections;
+            const kept = title ? sections.findIndex(item => item.title === title) : -1;
+            this.activeIndex = kept >= 0 ? kept : Math.min(this.activeIndex, Math.max(0, sections.length - 1));
+            if (!sections.length) {
+                this.screen = 'overview';
+                this.drawerOpen = false;
+            }
+        }
+        this.promotedName = sections.length ? promotedRootName(model) : null;
+        const completion = computeCompletion(model.controls, sections);
+        if (!sameCompletion(this.completion, completion)) {
+            this.completion = completion;
+            this.completionChange.emit(completion);
+        }
+    }
+
+    /** The footer list: cancel, previous/next section, submit and save, owned by this root. */
+    private buildButtons(): any[] {
+        const shown = () => !!this.model?.controls && !this.isChildSchema;
+        return [{
+            id: 'cancel',
+            visible: () => shown() && !this.cancelHidden,
+            disabled: () => false,
+            text: this.cancelText,
+            class: 'p-button-outlined',
+            type: 'ghost',
+            fn: () => this.cancelBtnEvent.emit(false)
+        }, {
+            id: 'prev',
+            visible: () => shown() && this.hasSections && this.screen === 'section' && this.activeIndex > 0,
+            disabled: () => false,
+            text: 'Previous',
+            class: 'p-button-outlined',
+            type: 'secondary',
+            fn: () => this.openSection(this.activeIndex - 1)
+        }, {
+            id: 'next',
+            visible: () => shown() && this.hasSections && this.screen === 'section'
+                && this.activeIndex < this.sections.length - 1,
+            disabled: () => false,
+            text: 'Next',
+            class: 'p-button-outlined',
+            type: 'secondary',
+            fn: () => this.openSection(this.activeIndex + 1)
+        }, {
+            id: 'save',
+            visible: () => this.saveShown,
+            disabled: () => false,
+            text: this.saveText,
+            class: 'p-button-outlined',
+            type: 'secondary',
+            fn: () => this.saveBtnEvent.emit(this.model?.controls)
+        }, {
+            id: 'submit',
+            visible: () => shown() && !this.submitHidden,
+            disabled: () => false,
+            text: this.submitText,
+            class: 'p-button',
+            type: 'primary',
+            fn: () => this.submitBtnEvent.emit(this.model?.controls)
+        }];
+    }
+
+    private emitButtons(): void {
+        if (this.model && !this.isEditMode) {
+            this.buttons.emit(this.buildButtons());
+        }
+    }
+
+    private editButtonConfig?: { text: string; disabled: () => boolean };
+
+    public openOverview(): void {
+        this.switchScreen(() => {
+            this.screen = 'overview';
+        });
+        this.scrollToTop();
+    }
+
+    public openSection(index: number): void {
+        if (index < 0 || index >= this.sections.length) {
+            return;
+        }
+        this.switchScreen(() => {
+            this.screen = 'section';
+            this.activeIndex = index;
+        });
+        this.childForm?.prepareOpenPreviewSections?.();
+        this.scrollToTop();
+    }
+
+    /**
+     * Changes what the form draws and renders it at once. In Preview the form draws a section with
+     * loading counts that change while it is created, so the loading overlay is raised first and
+     * released a frame later; the counts then change under an overlay that is already up.
+     */
+    private switchScreen(change: () => void): void {
+        const preview = this.requiredFields !== null && this.previewBuildFrame === null;
+        if (preview) {
+            this.loading = true;
+            this.previewBusyChange.emit(true);
+        }
+        this.drawerOpen = false;
+        change();
+        this.changeDetectorRef.detectChanges();
+        if (preview) {
+            requestAnimationFrame(() => {
+                this.loading = this.previewBuildFrame !== null;
+                this.previewBusyChange.emit(this.isPreviewBusy);
+                this.changeDetectorRef.markForCheck();
+            });
+        }
+    }
+
+    public onRailSelect(target: number | 'overview'): void {
+        if (target === 'overview') {
+            this.openOverview();
+        } else {
+            this.openSection(target);
+        }
+    }
+
+    public onRailCard(card: IFieldControl<any>): void {
+        card.open = true;
+        this.drawerOpen = false;
+        this.childForm?.preparePreviewSection(card);
+        this.changeDetectorRef.detectChanges();
+        this.scrollToField(card.id);
+    }
+
+    public toggleRail(): void {
+        this.railHiddenProp.value = !this.railHiddenProp.value;
+        this.railHiddenProp.save();
+        this.drawerOpen = false;
         this.changeDetectorRef.detectChanges();
     }
 
-    public onAccordionSelect(accordionInfo: {path: string, isOpen: boolean}) {
-        if (this.schemaNav && typeof this.schemaNav.expandedByAccordionId === 'function') {
-            this.schemaNav.expandedByAccordionId(accordionInfo);
-        }
+    public setDrawer(open: boolean): void {
+        this.drawerOpen = open;
     }
 
-        public onResizeStart(event: MouseEvent): void {
-        event.preventDefault();
-        event.stopPropagation();
-
-        this.startX = event.clientX;
-
-        if (this.contentContainerRef) {
-            this.containerWidth = this.contentContainerRef.nativeElement.offsetWidth;
-        }
-
-        if (this.navContainerRef) {
-            const currentWidth = this.navContainerRef.nativeElement.offsetWidth;
-            this.startWidthPercent = (currentWidth / this.containerWidth) * 100;
-        }
-
-        document.body.classList.add('resizing');
-        document.addEventListener('mousemove', this.onResizeMove);
-        document.addEventListener('mouseup', this.onResizeEnd);
+    /** First section with required answers left; the primary Overview action opens it. */
+    public get firstIncomplete(): number {
+        const index = (this.completion?.sections ?? []).findIndex(item => item.answered < item.total);
+        return Math.max(0, index);
     }
 
-    private onResizeMove = (event: MouseEvent): void => {
-        event.preventDefault();
-
-        if (this.rafId) {
-            cancelAnimationFrame(this.rafId);
+    public get overviewTitle(): string {
+        const { answered = 0, total = 0 } = this.completion ?? {};
+        if (answered >= total) {
+            return 'Ready to validate';
         }
+        return answered === 0 ? 'Get started' : 'Continue your document';
+    }
 
-        this.rafId = requestAnimationFrame(() => {
-            if (!this.navContainerRef || !this.contentContainerRef)
-                return;
+    public get overviewComplete(): boolean {
+        return !!this.completion && this.completion.answered >= this.completion.total;
+    }
 
-            const navElement = this.navContainerRef.nativeElement;
-            const contentElement = this.contentContainerRef.nativeElement;
+    public get overviewPrimaryText(): string {
+        return (this.completion?.answered ?? 0) === 0 ? 'Start' : 'Continue';
+    }
 
-            this.containerWidth = contentElement.offsetWidth;
-            const deltaX = event.clientX - this.startX;
-            const deltaPercent = (deltaX / this.containerWidth) * 100;
-            let newWidthPercent = this.startWidthPercent + deltaPercent;
+    /** The submit action on the Overview, only when the host listens for it (N6). */
+    public get overviewSubmit(): { text: string; disabled: boolean; run: () => void } | null {
+        if (this.isEditMode) {
+            if (!this.updatableBtnEvent.observed || !this.showButtons || this.comesFromDialog) {
+                return null;
+            }
+            return {
+                text: this.editButtonConfig?.text ?? 'Save Changes',
+                disabled: this.isPreviewLocked || !!this.editButtonConfig?.disabled?.(),
+                run: () => this.updatableBtnEvent.emit()
+            };
+        }
+        if (!this.submitBtnEvent.observed || this.submitHidden) {
+            return null;
+        }
+        return {
+            text: this.submitText,
+            disabled: this.isPreviewLocked,
+            run: () => this.submitBtnEvent.emit(this.model?.controls)
+        };
+    }
 
-            newWidthPercent = Math.max(
-                this.MIN_WIDTH_PERCENT,
-                Math.min(this.MAX_WIDTH_PERCENT, newWidthPercent)
-            );
+    public sectionState(stats: ISectionCompletion): 'Complete' | 'In progress' | 'Not started' {
+        if (stats.total > 0 && stats.answered >= stats.total) return 'Complete';
+        return stats.answered > 0 ? 'In progress' : 'Not started';
+    }
 
-            navElement.style.width = `${newWidthPercent}%`;
+    public sectionAction(stats: ISectionCompletion): string {
+        if (stats.total > 0 && stats.answered >= stats.total) return 'Review';
+        return stats.answered > 0 ? 'Continue' : 'Start';
+    }
 
-            this.startWidthPercent = newWidthPercent;
-            this.startX = event.clientX;
+    public ringOffset(stats: ISectionCompletion, length: number): number {
+        return length * (1 - (stats.total ? Math.min(1, stats.answered / stats.total) : 0));
+    }
 
-            this.changeDetectorRef.detectChanges();
-            this.rafId = null;
+    public get percent(): number {
+        const { answered = 0, total = 0 } = this.completion ?? {};
+        return total ? Math.round((answered / total) * 100) : 0;
+    }
+
+    public setAllOpen(open: boolean): void {
+        for (const card of this.activeCards) {
+            card.open = open;
+        }
+        this.changeDetectorRef.detectChanges();
+        this.childForm?.prepareOpenPreviewSections?.();
+        this.changeDetectorRef.detectChanges();
+    }
+
+    private scrollToTop(): void {
+        setTimeout(() => {
+            const container: HTMLElement | undefined = this.contentContainerRef?.nativeElement;
+            if (container) {
+                this.getScrollParent(container)?.scrollTo({ top: 0 });
+            }
         });
     }
 
-    private onResizeEnd = (event: MouseEvent): void => {
-        document.body.classList.remove('resizing');
-
-        if (this.rafId) {
-            cancelAnimationFrame(this.rafId);
-            this.rafId = null;
-        }
-
-        document.removeEventListener('mousemove', this.onResizeMove);
-        document.removeEventListener('mouseup', this.onResizeEnd);
-
-        this.changeDetectorRef.detectChanges();
+    private scrollToField(targetId: string): void {
+        setTimeout(() => this.findFieldElement(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
     }
 }
