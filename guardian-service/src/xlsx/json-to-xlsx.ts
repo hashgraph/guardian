@@ -2,7 +2,7 @@ import { Dictionary, FieldTypes, geoDisplayValue } from './models/dictionary.js'
 import { anyToXlsx, examplesToXlsx, booleanToXlsx, entityToXlsx, fontToXlsx, stringToXlsx, typeToXlsx, unitToXlsx, valueToFormula, visibilityToXlsx } from './models/value-converters.js';
 import { Hyperlink, Range, Workbook, Worksheet } from './models/workbook.js';
 import { Table } from './models/table.js';
-import { ISchema, IwaVersion, resolveIwaVersion, Schema, SchemaCondition, SchemaField, SchemaHelper } from '@guardian/interfaces';
+import { ISchema, ISchemaArrayDependency, IwaVersion, resolveIwaVersion, Schema, SchemaCondition, SchemaField, SchemaHelper } from '@guardian/interfaces';
 import { PolicyTool } from '@guardian/common/entity/tool';
 import { PolicyProperty } from '@guardian/common/entity/policy-property';
 import { IPFS } from '@guardian/common/helpers/ipfs';
@@ -337,6 +337,68 @@ export class JsonToXlsx {
                 condition,
                 fieldCache
             );
+        }
+
+        JsonToXlsx.writeArrayDependencies(worksheet, table, schema, fieldCache);
+    }
+
+    public static writeArrayDependencies(
+        worksheet: Worksheet,
+        table: Table,
+        schema: Schema,
+        fieldCache: Map<string, IRowField>
+    ): void {
+        const dependencies: ISchemaArrayDependency[] = [...(schema.arrayDependencies || [])];
+        const collect = (fields: SchemaField[], path: string[], ancestors: Set<string>): void => {
+            for (const field of fields || []) {
+                const fieldPath = [...path, field.name];
+                if (!field.isRef || field.isArray || !field.type || ancestors.has(field.type)) {
+                    continue;
+                }
+                if (!(field.fields || []).some(child => fieldCache.has([...fieldPath, child.name].join('.')))) {
+                    continue;
+                }
+                const { arrayDependencies } = SchemaHelper.parseSchemaComment(schema.document?.$defs?.[field.type]?.$comment);
+                for (const dependency of Array.isArray(arrayDependencies) ? arrayDependencies : []) {
+                    dependencies.push({
+                        ...dependency,
+                        on: [...fieldPath, ...dependency.on],
+                        field: [...fieldPath, ...dependency.field]
+                    });
+                }
+                collect(field.fields, fieldPath, new Set([...ancestors, field.type]));
+            }
+        };
+        collect(schema.fields, [], new Set());
+
+        const keyCell = (path: string[]): string => {
+            const rowField = fieldCache.get(path.join('.'));
+            if (!rowField) {
+                throw new Error(`Repeatable link refers to unknown field "${path.join('.')}".`);
+            }
+            return worksheet.getPath(table.getCol(Dictionary.KEY), rowField.row);
+        };
+        const written = new Set<number>();
+        const write = (path: string[], formula: string): void => {
+            const rowField = fieldCache.get(path.join('.'));
+            if (rowField && !written.has(rowField.row)) {
+                written.add(rowField.row);
+                worksheet.getCell(table.getCol(Dictionary.REPEATABLE_LINKS), rowField.row).setFormulae(formula);
+            }
+        };
+        for (const dependency of dependencies) {
+            const source = keyCell(dependency.on);
+            const formula = dependency.title?.length
+                ? `${source}&" | "&${keyCell([...dependency.on, ...dependency.title])}`
+                : source;
+            const mappings = (dependency.valueMappings || []).map(mapping => ({
+                target: [...dependency.field, ...mapping.target],
+                formula: keyCell([...dependency.on, ...mapping.source])
+            }));
+            write(dependency.field, formula);
+            for (const mapping of mappings) {
+                write(mapping.target, mapping.formula);
+            }
         }
     }
 

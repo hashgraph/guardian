@@ -76,6 +76,7 @@ export enum Dictionary {
     README_SHEET = 'README',
     DEFAULT = 'Default Value',
     SUGGEST = 'Suggest Value',
+    REPEATABLE_LINKS = 'Repeatable Links',
 }
 
 /**

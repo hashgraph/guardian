@@ -4,7 +4,7 @@ import { xlsxToBoolean, xlsxToEntity, xlsxToFont, xlsxToPresetArray, xlsxToPrese
 import { Table } from './models/table.js';
 import * as mathjs from 'mathjs';
 import { XlsxSchemaConditions } from './models/schema-condition.js';
-import { isAncestorType, isRelationType, IwaVersion, ModelHelper, relationParent, SchemaCategory, SchemaEntity, SchemaField } from '@guardian/interfaces';
+import { isAncestorType, isRelationType, ISchemaArrayDependency, IwaVersion, ModelHelper, relationParent, SchemaCategory, SchemaEntity, SchemaField } from '@guardian/interfaces';
 import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import { XlsxResult } from './models/xlsx-result.js';
 import { XlsxEnum } from './models/xlsx-enum.js';
@@ -545,6 +545,13 @@ export class XlsxToJson {
                     conditionCache.push(condition);
                 }
             }
+            const arrayDependencies = XlsxToJson.readArrayDependencies(
+                worksheet,
+                table,
+                allFields,
+                fieldPaths,
+                xlsxResult
+            );
             row = table.end.r + 1;
             const expressions: XlsxExpressions = new XlsxExpressions();
             for (; row < range.e.r; row++) {
@@ -615,6 +622,7 @@ export class XlsxToJson {
                 });
             }
             const conditions = conditionCache.map(c => c.toJson());
+            schema.schema.arrayDependencies = arrayDependencies;
             schema.update(fields, conditions, expressions);
             return schema;
         } catch (error) {
@@ -1454,6 +1462,133 @@ export class XlsxToJson {
             }, field);
             return;
         }
+    }
+
+    private static readArrayDependencies(
+        worksheet: Worksheet,
+        table: Table,
+        allFields: Map<string, SchemaField>,
+        fieldPaths: Map<string, string[]>,
+        xlsxResult: XlsxResult
+    ): ISchemaArrayDependency[] {
+        const dependencies: ISchemaArrayDependency[] = [];
+        if (!table.hasCol(Dictionary.REPEATABLE_LINKS)) {
+            return dependencies;
+        }
+        const col = table.getCol(Dictionary.REPEATABLE_LINKS);
+        const range = worksheet.getRange();
+        const rows = new Map<ISchemaArrayDependency, number>();
+        const rejected: string[][] = [];
+        const fieldAt = (row: number) => {
+            const key = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);
+            return { field: allFields.get(key), path: fieldPaths.get(key) };
+        };
+        const isInside = (path: string[], parent: string[]): boolean =>
+            path.length > parent.length && parent.every((name, index) => path[index] === name);
+        const isRepeatable = (field: SchemaField): boolean => !!field.isArray && !!field.isRef;
+        const addError = (row: number, field: SchemaField, reason: string): void => {
+            xlsxResult.addError({
+                type: 'error',
+                text: `Invalid repeatable link on field "${field?.description || worksheet.getPath(col, row)}".`,
+                message: `Row ${row}: ${reason} `
+                    + `Supported formats: =A7 or =A7&" | "&A8 on a repeatable field, `
+                    + `and =A8 on a field inside a linked entry, `
+                    + `where A7 and A8 are "Key" cells of the fields that give the value.`,
+                worksheet: worksheet.name,
+                cell: worksheet.getPath(col, row),
+                row,
+                col,
+            }, field);
+        };
+        const reject = (row: number, field: SchemaField, path: string[], reason: string): void => {
+            addError(row, field, reason);
+            if (field && path && isRepeatable(field)) {
+                rejected.push(path);
+            }
+        };
+
+        for (let row = table.end.r + 1; row < range.e.r; row++) {
+            if (worksheet.outColumnRange(col)) {
+                break;
+            }
+            const cell = worksheet.getCell(col, row);
+            const value = cell.isFormulae() ? cell.getFormulae() : cell.isValue() ? String(cell.getValue<string>() ?? '') : '';
+            if (!value.trim()) {
+                continue;
+            }
+            const { field, path } = fieldAt(row);
+            const match = value.trim().replace(/^=/, '')
+                .match(/^\$?[A-Z]{1,3}\$?(\d+)(?:\s*&\s*"\s*\|\s*"\s*&\s*\$?[A-Z]{1,3}\$?(\d+))?$/i);
+            if (!match) {
+                reject(row, field, path, `"${value}" cannot be read as a repeatable link.`);
+                continue;
+            }
+            if (!field || !path) {
+                addError(row, field, 'This row has no field.');
+                continue;
+            }
+            const source = fieldAt(Number(match[1]));
+            const title = match[2] ? fieldAt(Number(match[2])) : null;
+            if (!source.field || !source.path || (title && (!title.field || !title.path))) {
+                reject(row, field, path, 'The reference points to a row with no field.');
+                continue;
+            }
+            if (isRepeatable(field)) {
+                if (!isRepeatable(source.field)) {
+                    reject(row, field, path, `The source "${source.path.join('.')}" is not a repeatable field.`);
+                    continue;
+                }
+                if (title && !isInside(title.path, source.path)) {
+                    reject(row, field, path, `The display name "${title.path.join('.')}" is not a field inside "${source.path.join('.')}".`);
+                    continue;
+                }
+                const dependency: ISchemaArrayDependency = { on: source.path, field: path, kind: 'array' };
+                if (title) {
+                    dependency.title = title.path.slice(source.path.length);
+                }
+                dependencies.push(dependency);
+                rows.set(dependency, row);
+            } else {
+                const owner = dependencies
+                    .filter(dependency => isInside(path, dependency.field))
+                    .sort((a, b) => b.field.length - a.field.length)[0];
+                if (!owner && rejected.some(parent => isInside(path, parent))) {
+                    continue;
+                }
+                if (title || !owner) {
+                    addError(row, field, 'A copied value must be on a field inside a linked entry and refer to one field.');
+                    continue;
+                }
+                if (!isInside(source.path, owner.on)) {
+                    addError(row, field, `The copied value "${source.path.join('.')}" is not a field inside "${owner.on.join('.')}".`);
+                    continue;
+                }
+                owner.valueMappings = [...(owner.valueMappings || []), {
+                    source: source.path.slice(owner.on.length),
+                    target: path.slice(owner.field.length)
+                }];
+            }
+        }
+
+        const sources = new Map(dependencies.map(dependency => [dependency.field.join('.'), dependency.on.join('.')]));
+        const cyclic = dependencies.filter(dependency => {
+            const start = dependency.field.join('.');
+            const seen = new Set<string>();
+            let current = sources.get(start);
+            while (current !== undefined && !seen.has(current)) {
+                if (current === start) {
+                    return true;
+                }
+                seen.add(current);
+                current = sources.get(current);
+            }
+            return false;
+        });
+        for (const dependency of cyclic) {
+            const row = rows.get(dependency);
+            addError(row, fieldAt(row).field, `The link "${dependency.on.join('.')}" → "${dependency.field.join('.')}" is part of a cycle.`);
+        }
+        return dependencies.filter(dependency => !cyclic.includes(dependency));
     }
 
     private static parseCondition(formulae: string): ICondition {
