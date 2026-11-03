@@ -291,12 +291,12 @@
                                   role="radio"
                                   [class.on]="item.control.value === option"
                                   [attr.aria-checked]="item.control.value === option"
-                                  [disabled]="item.control.disabled"
+                                  [disabled]="!!item.control.disabled || isSingleOption(item)"
                                   (click)="setChoice(item, option)"
                                   >{{ option }}</button>
                               }
                             </div>
-                            @if (!item.required && !item.control.disabled && isChosen(item)) {
+                            @if (!item.required && !item.control.disabled && isChosen(item) && !isSingleOption(item)) {
                               <button type="button" class="sf-clear" (click)="setChoice(item, undefined)">Clear</button>
                             }
                           </div>
@@ -591,61 +591,32 @@
                             }
                             @if (isBoolean(item)) {
                               <div
-                                class="form-field-boolean guardian-input-container"
-                                [attr.readonly-field]="
-                                    isEditMode && !item.isUpdatable
-                                "
+                                class="form-field-boolean guardian-input-container sf-choice-wrap"
+                                [attr.readonly-field]="isEditMode && !item.isUpdatable"
                                 >
-                                <div class="boolean-field">
-                                  <p-radioButton
-                                    class="guardian-radio-button radio-button-24"
-                                    [name]="listItem.id"
-                                    [value]="true"
-                                    [formControl]="listItem.control"
-                                    inputId="{{ listItem.id }}_true"
-                                    />
-                                  <label for="{{ listItem.id }}_true"
-                                    >True</label
-                                    >
-                                  </div>
-                                  <div
-                                    class="boolean-field"
-                                    [attr.readonly-field]="
-                                        isEditMode && !item.isUpdatable
-                                    "
-                                    >
-                                    <p-radioButton
-                                      class="guardian-radio-button radio-button-24"
-                                      [name]="listItem.id"
-                                      [value]="false"
-                                      [formControl]="listItem.control"
-                                      inputId="{{ listItem.id }}_false"
-                                      />
-                                    <label for="{{ listItem.id }}_false"
-                                      >False</label
-                                      >
-                                    </div>
-                                    @if (!item.required) {
-                                      <div
-                                        class="boolean-field"
-                                    [attr.readonly-field]="
-                                        isEditMode && !item.isUpdatable
-                                    "
-                                        >
-                                        <p-radioButton
-                                          class="guardian-radio-button radio-button-24"
-                                          [name]="listItem.id"
-                                          [value]="undefined"
-                                          [formControl]="listItem.control"
-                                          inputId="{{ listItem.id }}_unset"
-                                          />
-                                        <label for="{{ listItem.id }}_unset"
-                                          >Unset</label
-                                          >
-                                        </div>
-                                      }
-                                    </div>
-                                  }
+                                <div class="sf-choice" role="radiogroup" [attr.aria-label]="item.description">
+                                  <button
+                                    type="button"
+                                    role="radio"
+                                    [class.on]="listItem.control.value === true"
+                                    [attr.aria-checked]="listItem.control.value === true"
+                                    [disabled]="listItem.control.disabled"
+                                    (click)="setChoice(listItem, true)"
+                                    >Yes</button>
+                                  <button
+                                    type="button"
+                                    role="radio"
+                                    [class.on]="listItem.control.value === false"
+                                    [attr.aria-checked]="listItem.control.value === false"
+                                    [disabled]="listItem.control.disabled"
+                                    (click)="setChoice(listItem, false)"
+                                    >No</button>
+                                </div>
+                                @if (!item.required && !listItem.control.disabled && listItem.control.value !== undefined && listItem.control.value !== null) {
+                                  <button type="button" class="sf-clear" (click)="setChoice(listItem, undefined)">Clear</button>
+                                }
+                              </div>
+                            }
                                   @if (isEnum(item)) {
                                     <div
                                       class="form-field-input guardian-input-container"
@@ -758,7 +729,7 @@
                                 <span class="sf-chip" [class.sf-chip-err]="errorsRevealed">{{ st.left }} required left</span>
                               } @else if (st && st.total > 0) {
                                 <span class="sf-chip sf-chip-ok">Complete</span>
-                              } @else {
+                              } @else if (!item.required) {
                                 <span class="sf-chip">Optional</span>
                               }
                             </button>

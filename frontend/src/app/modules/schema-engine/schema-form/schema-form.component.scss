@@ -91,26 +91,6 @@ form {
                 top: 0;
             }
 
-            .boolean-field {
-                height: 32px;
-                display: flex;
-                justify-content: flex-start;
-                align-items: center;
-                min-height: 32px;
-
-                label {
-                    font-size: 14px;
-                    margin: 0;
-                    padding-left: 6px;
-                    height: 32px;
-                    width: 100%;
-                    display: flex;
-                    justify-content: flex-start;
-                    align-items: center;
-                    cursor: pointer;
-                }
-            }
-
             &[rules-status="Error"],
             &[rules-status="Failure"] {
                 input {

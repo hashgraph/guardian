@@ -273,6 +273,8 @@ export class SchemaFormComponent implements OnInit {
                     this.controlsIndex.set(field.id, { ancestors: entryAnc, field });
                 }
 
+                this.selectOnlyOption(field);
+
                 if (field.isArray) {
                     const list = Array.isArray((field as any).list) ? (field as any).list : [];
                     for (const listItem of list) {
@@ -600,12 +602,24 @@ export class SchemaFormComponent implements OnInit {
         return chars + 4 * values.length <= 30 ? 'seg' : 'cards';
     }
 
+    public isSingleOption(item: IFieldControl<any>): boolean {
+        return !!item.required && !!this.isEnum(item) && Array.isArray(item.enumValues) && item.enumValues.length === 1;
+    }
+
+    private selectOnlyOption(item: IFieldControl<any>): void {
+        const control = item.control;
+        if (!control || control.disabled || !this.isSingleOption(item) || this.isChosen(item)) {
+            return;
+        }
+        control.setValue(item.enumValues[0], { emitEvent: false });
+    }
+
     public isDefaultValue(item: IFieldControl<any>): boolean {
         return item.default !== undefined && !!item.control
             && item.control.value === item.default && !item.control.touched;
     }
 
-    public setChoice(item: IFieldControl<any>, value: any): void {
+    public setChoice(item: IFieldControl<any> | IFieldIndexControl<any>, value: any): void {
         const control = item.control;
         if (!control || control.disabled) {
             return;
