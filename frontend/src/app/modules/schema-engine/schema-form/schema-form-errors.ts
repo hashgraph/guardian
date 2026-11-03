@@ -59,6 +59,8 @@ export function getErrorMessage(item: IFieldControl<any>, listItem?: IFieldIndex
 /**
  * An error is shown once the field was left, when its value arrived prefilled,
  * or after a submit attempt revealed all errors (`revealed`, from the root form).
+ * A group or array holds child controls, and touching a child marks every parent
+ * touched, so a container only reports once prefilled or revealed.
  */
 export function showError(
     item: IFieldControl<any>,
@@ -69,5 +71,6 @@ export function showError(
     if (!control || control.valid || control.disabled) {
         return false;
     }
-    return control.touched || !!item.prefilled || revealed;
+    const isContainer = !listItem && (item.isRef || item.isArray);
+    return (!isContainer && control.touched) || !!item.prefilled || revealed;
 }

@@ -1,8 +1,8 @@
-import { UntypedFormControl, Validators } from '@angular/forms';
+import { AbstractControl, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { getErrorMessage, showError } from './schema-form-errors';
 
 describe('schema form errors', () => {
-    const item = (props: any, control: UntypedFormControl): any => ({ id: 'f1', control, ...props });
+    const item = (props: any, control: AbstractControl): any => ({ id: 'f1', control, ...props });
     const required = () => new UntypedFormControl(null, Validators.required);
 
     it('names the missing action by field kind', () => {
@@ -46,6 +46,18 @@ describe('schema form errors', () => {
         const untouched = item({}, required());
         expect(showError(untouched, true)).toBeTrue();
         expect(showError({ ...untouched, prefilled: true }, false)).toBeTrue();
+    });
+
+    it('keeps a group or array quiet when only a child was touched', () => {
+        const group = new UntypedFormGroup({ a: new UntypedFormControl(''), b: new UntypedFormControl('') });
+        group.setErrors({ required: true });
+        group.markAsTouched();
+        const sub = item({ isRef: true }, group);
+        expect(showError(sub, false)).toBeFalse();
+        expect(showError(item({ isArray: true }, group), false)).toBeFalse();
+        expect(showError(sub, true)).toBeTrue();
+        expect(showError({ ...sub, prefilled: true }, false)).toBeTrue();
+        expect(showError(sub, false, item({}, group))).toBeTrue();
     });
 
     it('never shows an error for a valid or disabled control', () => {
