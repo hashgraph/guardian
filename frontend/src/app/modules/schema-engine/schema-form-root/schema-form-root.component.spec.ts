@@ -479,13 +479,13 @@ describe('SchemaFormRootComponent — required fields', () => {
         const container = document.createElement('div');
         const target = document.createElement('div');
         const input = document.createElement('input');
-        target.setAttribute('preview-field-id', root.model!.controls![1].id);
+        target.setAttribute('data-field-id', root.model!.controls![1].id);
         target.appendChild(input);
         container.appendChild(target);
         document.body.appendChild(container);
         Object.assign(root, { contentContainerRef: new ElementRef(container) });
         const scroll = spyOn(target, 'scrollIntoView');
-        root.focusPreviewField('rate');
+        root.focusField('rate');
         expect(scroll).toHaveBeenCalledWith({ behavior: 'smooth', block: 'center' });
         expect(document.activeElement).toBe(input);
         expect(root.group.get('amount')?.value).toBe(5);
@@ -499,12 +499,12 @@ describe('SchemaFormRootComponent — required fields', () => {
         const container = document.createElement('div');
         const target = document.createElement('div');
         const input = document.createElement('input');
-        target.setAttribute('preview-field-id', root.model!.controls![1].id);
+        target.setAttribute('data-field-id', root.model!.controls![1].id);
         target.appendChild(input);
         document.body.appendChild(container);
         Object.assign(root, { contentContainerRef: new ElementRef(container) });
         const scroll = spyOn(target, 'scrollIntoView');
-        root.focusPreviewField('rate');
+        root.focusField('rate');
         expect(scroll).not.toHaveBeenCalled();
         tick(100);
         container.appendChild(target);
@@ -520,13 +520,13 @@ describe('SchemaFormRootComponent — required fields', () => {
         const root = createRoot();
         const container = document.createElement('div');
         const target = document.createElement('div');
-        target.setAttribute('preview-field-id', root.model!.controls![1].id);
+        target.setAttribute('data-field-id', root.model!.controls![1].id);
         container.appendChild(target);
         document.body.appendChild(container);
         Object.assign(root, { contentContainerRef: new ElementRef(container) });
         const scroll = spyOn(target, 'scrollIntoView');
         spyOn(target, 'getBoundingClientRect').and.returnValue(new DOMRect(0, window.innerHeight + 500, 10, 10));
-        root.focusPreviewField('rate');
+        root.focusField('rate');
         expect(scroll).toHaveBeenCalledOnceWith({ behavior: 'smooth', block: 'center' });
         tick(300);
         expect(scroll).toHaveBeenCalledWith({ block: 'center' });
@@ -541,12 +541,12 @@ describe('SchemaFormRootComponent — required fields', () => {
         setRequired(root, ['rate']);
         const container = document.createElement('div');
         const target = document.createElement('div');
-        target.setAttribute('preview-field-id', root.model!.controls![1].id);
+        target.setAttribute('data-field-id', root.model!.controls![1].id);
         document.body.appendChild(container);
         Object.assign(root, { contentContainerRef: new ElementRef(container) });
         const scroll = spyOn(target, 'scrollIntoView');
         root.onPreviewLoadingChange(true);
-        root.focusPreviewField('rate');
+        root.focusField('rate');
         tick(5000);
         container.appendChild(target);
         tick(5000);
@@ -563,7 +563,7 @@ describe('SchemaFormRootComponent — required fields', () => {
         const root = createRoot();
         const container = document.createElement('div');
         Object.assign(root, { contentContainerRef: new ElementRef(container) });
-        root.focusPreviewField('rate');
+        root.focusField('rate');
         tick(2000);
         expect(Reflect.get(root, 'previewFocusTimer')).toBeNull();
     }));
@@ -574,14 +574,14 @@ describe('SchemaFormRootComponent — required fields', () => {
         const container = document.createElement('div');
         const target = document.createElement('div');
         const input = document.createElement('input');
-        target.setAttribute('preview-field-id', root.model!.controls![1].id);
+        target.setAttribute('data-field-id', root.model!.controls![1].id);
         target.appendChild(input);
         container.appendChild(target);
         document.body.appendChild(container);
         Object.assign(root, { contentContainerRef: new ElementRef(container) });
         const scroll = spyOn(target, 'scrollIntoView');
         root.onPreviewLoadingChange(true);
-        root.focusPreviewField('rate');
+        root.focusField('rate');
         tick(50);
         expect(scroll).not.toHaveBeenCalled();
         expect(document.activeElement).not.toBe(input);
@@ -595,7 +595,7 @@ describe('SchemaFormRootComponent — required fields', () => {
 
     it('focuses the first missing field after rebuilding requirements', fakeAsync(() => {
         const root = createRoot();
-        const focus = spyOn(root, 'focusPreviewField');
+        const focus = spyOn(root, 'focusField');
         root.previewMissingFields = ['rate','amount'];
         root.requiredFields = ['rate','amount'];
         root.ngOnChanges({
@@ -624,7 +624,7 @@ describe('SchemaFormRootComponent — required fields', () => {
         root.presetDocument = { rows: [{ PEt: 4, PBt: 1 }, { PBt: 2 }] };
         root.requiredFields = ['rows.PEt', 'rows.PBt'];
         root.previewMissingFields = ['rows.1.PEt'];
-        const focus = spyOn(root, 'focusPreviewField');
+        const focus = spyOn(root, 'focusField');
         root.ngOnChanges({ schema: new SimpleChange(null, root.schema, false) });
         tick(64);
         flush();
@@ -669,6 +669,35 @@ describe('SchemaFormRootComponent — required fields', () => {
         expect(emitted.calls.allArgs().map(args => args[0].length)).toEqual([1, 0]);
     }));
 
+    it('lists every invalid leaf with its message in document order', fakeAsync(() => {
+        const root = createRoot();
+        root.group.get('amount')?.setValue(5);
+        expect(root.getIssues()).toEqual([{ path: 'rate', label: 'rate', message: 'Enter a value' }]);
+        root.group.get('amount')?.setValue(null);
+        expect(root.getIssues().map(issue => issue.path)).toEqual(['amount', 'rate']);
+    }));
+
+    it('reveals errors on the model and focuses the first issue', fakeAsync(() => {
+        const root = createRoot();
+        const focus = spyOn(root, 'focusField');
+        root.revealErrors();
+        expect(root.model?.errorsRevealed).toBeTrue();
+        expect(focus).toHaveBeenCalledOnceWith('amount');
+        focus.calls.reset();
+        root.revealErrors(false);
+        expect(focus).not.toHaveBeenCalled();
+    }));
+
+    it('keeps revealed errors and touched paths when the preview rebuilds the form', fakeAsync(() => {
+        const root = createRoot();
+        root.group.get('amount')?.markAsTouched();
+        root.revealErrors(false);
+        setRequired(root, ['amount', 'rate']);
+        expect(root.group.get('amount')?.touched).toBeTrue();
+        expect(root.group.get('rate')?.touched).toBeFalse();
+        expect(root.model?.errorsRevealed).toBeTrue();
+    }));
+
     describe('missing table cells after a row is deleted', () => {
         const createAreaRoot = (missing: string[]): SchemaFormRootComponent => {
             const root = createRoot();
@@ -696,8 +725,8 @@ describe('SchemaFormRootComponent — required fields', () => {
             expect(root.previewMissingOptions).toEqual([{ label: 'Rows / #2 / PBt', value: 'rows.1.PBt' }]);
             removeRow(root, 0);
             expect(root.previewMissingOptions).toEqual([{ label: 'Rows / #1 / PBt', value: 'rows.0.PBt' }]);
-            const focus = spyOn(root, 'focusPreviewField').and.callThrough();
-            root.focusPreviewField(root.previewMissingOptions[0].value);
+            const focus = spyOn(root, 'focusField').and.callThrough();
+            root.focusField(root.previewMissingOptions[0].value);
             expect(focus).toHaveBeenCalledWith('rows.0.PBt');
             expect(root.model!.controls![0].list![0].open).toBeTrue();
         }));

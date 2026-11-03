@@ -6,10 +6,6 @@ form {
     .form-field-container {
         margin-bottom: 24px;
 
-        ::ng-deep .p-inputtext.ng-dirty.ng-invalid {
-            border-color: #f44336;
-        }
-
         &:last-child {
             margin-bottom: 0px;
         }
@@ -237,15 +233,30 @@ form {
             align-items: center;
         }
 
-        .invalid-field-label {
+        .sf-error {
+            display: flex;
+            align-items: center;
+            gap: 5px;
             font-family: Inter;
             font-size: 12px;
             font-weight: 400;
-            line-height: 14px;
+            line-height: 16px;
             text-align: left;
-            color: #848FA9;
-            margin-top: 8px;
-            padding-left: 2px;
+            color: var(--guardian-failure-color);
+            margin-top: 5px;
+
+            svg-icon {
+                display: flex;
+                flex: none;
+                width: 12px;
+                height: 12px;
+            }
+
+            ::ng-deep .sf-error-icon {
+                width: 12px;
+                height: 12px;
+                fill: var(--guardian-failure-color);
+            }
 
             &.invalid-sub-schema {
                 margin-top: 0px;
@@ -296,21 +307,26 @@ form {
     border-color: #f44336 !important;
 }
 
-.form-field-value[invalid-required-field="true"] {
+.form-field-value[sf-invalid="true"] {
+    ::ng-deep .p-inputtext,
+    ::ng-deep .p-textarea {
+        border-color: var(--guardian-failure-color);
+    }
+
     .form-field-boolean ::ng-deep .guardian-radio-button .p-radiobutton .p-radiobutton-box {
-        border-color: #f44336;
+        border-color: var(--guardian-failure-color);
     }
 
     .form-field-enum ::ng-deep p-select.p-select {
-        border-color: #f44336 !important;
+        border-color: var(--guardian-failure-color) !important;
     }
 
     .form-field-input input {
-        border-color: #f44336;
+        border-color: var(--guardian-failure-color);
     }
 
     .form-field-input ::ng-deep .guardian-datepicker input {
-        border-color: #f44336;
+        border-color: var(--guardian-failure-color);
     }
 }
 
@@ -703,12 +719,12 @@ form::ng-deep {
 
 .preview-missing-field {
     .form-field-input ::ng-deep textarea {
-        border-color: #f44336;
+        border-color: var(--guardian-failure-color);
     }
 }
 
 .table-validation-error {
-    outline: 2px solid #f44336;
+    outline: 2px solid var(--guardian-failure-color);
     outline-offset: 2px;
     border-radius: 4px;
 }

@@ -98,7 +98,16 @@
                 <div class="guardian-dropdown-selected" [truncateTooltip]="item?.label" tooltipPosition="bottom">
                   <span class="guardian-dropdown-label">Document</span>
                   <span class="guardian-dropdown-item">{{ item?.label }}</span>
+                  @if (item?.final) {
+                    <span class="preview-final-mark">Final</span>
+                  }
                 </div>
+              </ng-template>
+              <ng-template pTemplate="item" let-item>
+                <span [class.preview-final-option]="item.final">{{ item.label }}</span>
+                @if (item.final) {
+                  <span class="preview-final-mark">Final</span>
+                }
               </ng-template>
             </p-select>
           }

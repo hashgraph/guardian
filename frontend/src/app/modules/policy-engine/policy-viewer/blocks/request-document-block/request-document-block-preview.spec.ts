@@ -33,6 +33,7 @@ describe('request document preview wiring', () => {
                 getViewerDocuments: (result: any) => result.documents.map((item: any, index: number) => ({
                     label: `${index + 1}. ${item.target}`,
                     document: item.document.document,
+                    final: item.final === true,
                 })),
                 showErrors: (result: any) => errors.push(...result.errors),
                 showDiscoveryWarning: (result: any) => {
@@ -140,7 +141,20 @@ describe('request document preview wiring', () => {
         expect(dialogs[0].config.data.viewDocument).toBeTrue();
         expect(dialogs[0].config.data.dryRun).toBeTrue();
         expect(dialogs[0].config.data.document).toEqual({ id: 'vc-1' });
-        expect(dialogs[0].config.data.previewDocuments).toEqual([{ label: '1. save', document: { id: 'vc-1' } }]);
+        expect(dialogs[0].config.data.previewDocuments).toEqual([{ label: '1. save', document: { id: 'vc-1' }, final: false }]);
+    });
+
+    it('opens the first final document when saved intermediate documents come first', async () => {
+        const chain = [
+            { source: 'save_intermediate', target: null, final: false, document: { document: { id: 'vc-1' } } },
+            { source: 'math', target: 'save_final', final: true, document: { document: { id: 'vc-2' } } },
+        ];
+        const { component, dialogs } = form([Promise.resolve(response(['amount'], [], chain))], blockParent());
+        component.previewMode = true;
+        component.parent.dryRun = true;
+        await component.onStep();
+        expect(dialogs[0].config.data.document).toEqual({ id: 'vc-2' });
+        expect(dialogs[0].config.data.previewDocuments.map((item: any) => item.final)).toEqual([false, true]);
     });
 
     it('shows block errors and opens the documents that were still calculated', async () => {
@@ -271,7 +285,7 @@ describe('request document preview wiring', () => {
     it('shows the remaining missing fields and scrolls to the chosen one', () => {
         const { component } = form([], blockParent());
         component.changeDetectorRef = { markForCheck: jasmine.createSpy('markForCheck') };
-        component.formRoot = { focusPreviewField: jasmine.createSpy('focusPreviewField') };
+        component.formRoot = { focusField: jasmine.createSpy('focusField') };
         component.previewMode = true;
         component.previewMissingPath = null;
         const options = [{ label: 'Amount', value: 'amount' }, { label: 'Rows / #2 / Rate', value: 'rows.1.rate' }];
@@ -279,7 +293,7 @@ describe('request document preview wiring', () => {
         expect(component.previewMissingOptions).toBe(options);
         component.previewMissingPath = 'rows.1.rate';
         component.onPreviewMissingSelect('rows.1.rate');
-        expect(component.formRoot.focusPreviewField).toHaveBeenCalledOnceWith('rows.1.rate');
+        expect(component.formRoot.focusField).toHaveBeenCalledOnceWith('rows.1.rate');
         component.onPreviewMissingOptionsChange([options[1]]);
         expect(component.previewMissingOptions).toEqual([options[1]]);
         expect(component.previewMissingPath).toBeNull();
@@ -332,7 +346,7 @@ describe('request document preview wiring', () => {
         expect(calls).toEqual([{ previewFields: false, ref: { id: 'ref-2' } }]);
         expect(dialogs.length).toBe(1);
         expect(dialogs[0].type).toBe(VCViewerDialog);
-        expect(dialogs[0].config.data.previewDocuments).toEqual([{ label: '1. save', document: { id: 'vc-1' } }]);
+        expect(dialogs[0].config.data.previewDocuments).toEqual([{ label: '1. save', document: { id: 'vc-1' }, final: false }]);
         component.ngDoCheck();
         expect(component.getButtonName({ id: 'submit' })).toBe('Preview');
     });

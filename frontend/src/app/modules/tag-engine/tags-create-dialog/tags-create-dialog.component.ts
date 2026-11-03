@@ -1,6 +1,7 @@
-import { ChangeDetectorRef, Component } from '@angular/core';
+import { ChangeDetectorRef, Component, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { SchemaFormRootComponent } from '../../schema-engine/schema-form-root/schema-form-root.component';
 
 /**
  * Dialog for creating tags.
@@ -12,6 +13,7 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
     standalone: false
 })
 export class TagCreateDialog {
+    @ViewChild(SchemaFormRootComponent) formRoot?: SchemaFormRootComponent;
     started = false;
     dataForm = this.fb.group({
         name: ['', Validators.required],
@@ -50,14 +52,17 @@ export class TagCreateDialog {
     }
 
     onCreate() {
-        if (this.dataForm.valid) {
-            const data = this.dataForm.value;
-            if (this.schema) {
-                data.document = this.schemaForm.value;
-                data.schema = this.schema?.iri;
-            }
-            this.dialogRef.close(data);
+        if (this.disabled) {
+            this.dataForm.markAllAsTouched();
+            this.formRoot?.revealErrors();
+            return;
         }
+        const data = this.dataForm.value;
+        if (this.schema) {
+            data.document = this.schemaForm.value;
+            data.schema = this.schema?.iri;
+        }
+        this.dialogRef.close(data);
     }
 
     onAddArtifact(selector: any) {

@@ -34,6 +34,7 @@ export interface ICalculationPreviewDocument {
     target: string | null;
     blockType: string | null;
     document: unknown;
+    final?: boolean;
 }
 
 export interface ICalculationPreviewResult {
@@ -61,6 +62,7 @@ export interface ICalculationPreviewError {
 export interface ICalculationPreviewViewerDocument {
     label: string;
     document: unknown;
+    final: boolean;
 }
 
 export function normalizePreviewResult(raw: any): ICalculationPreviewResult {
@@ -161,7 +163,8 @@ export class CalculationPreviewService {
                 if (document) {
                     documents.push({
                         label: `${documents.length + 1}. ${name}`,
-                        document: this.restorePreviewTables(structuredClone(document))
+                        document: this.restorePreviewTables(structuredClone(document)),
+                        final: item.final === true
                     });
                 }
             }
