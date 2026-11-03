@@ -129,7 +129,7 @@
         </div>
       }
       @if (duplicatedFrom) {
-        <div class="form-notice form-notice-copy">
+        <div class="form-notice">
           <i class="pi pi-copy" aria-hidden="true"></i>
           <span class="form-notice-text">New draft copied from the submitted document <code>{{ duplicatedFrom }}</code>. Check the values, then Validate &amp; Create – this creates a separate document.</span>
         </div>
@@ -145,32 +145,23 @@
           <div class="form-stat rule"><b>{{ ruleIssues.length }}</b>Rule checks failed</div>
           <div class="form-stat"><b>{{ requiredValid }}</b>Required answers valid</div>
         </div>
-        @if (issues.length) {
-          <h3 class="form-issues-title">Errors</h3>
-          @for (issue of issues; track issue.path) {
-            <div class="form-issue">
-              <span class="form-pill error">Error</span>
-              <div class="form-issue-text">
-                <b>{{ issueName(issue) }}</b>
-                <small>{{ issueDetail(issue) }}</small>
+        <ng-template #issueList let-title let-kind="kind" let-pill="pill" let-items="items">
+          @if (items.length) {
+            <h3 class="form-issues-title">{{ title }}</h3>
+            @for (issue of items; track issue.path) {
+              <div class="form-issue">
+                <span class="form-pill" [class]="kind">{{ pill }}</span>
+                <div class="form-issue-text">
+                  <b>{{ issueName(issue) }}</b>
+                  <small>{{ issueDetail(issue) }}</small>
+                </div>
+                <button type="button" class="guardian-button guardian-button-secondary" (click)="goToField(issue.path)">Go to field</button>
               </div>
-              <button type="button" class="guardian-button guardian-button-secondary" (click)="goToField(issue.path)">Go to field</button>
-            </div>
+            }
           }
-        }
-        @if (ruleIssues.length) {
-          <h3 class="form-issues-title">Rule checks</h3>
-          @for (issue of ruleIssues; track issue.path) {
-            <div class="form-issue">
-              <span class="form-pill rule">Rule</span>
-              <div class="form-issue-text">
-                <b>{{ issueName(issue) }}</b>
-                <small>{{ issueDetail(issue) }}</small>
-              </div>
-              <button type="button" class="guardian-button guardian-button-secondary" (click)="goToField(issue.path)">Go to field</button>
-            </div>
-          }
-        }
+        </ng-template>
+        <ng-container *ngTemplateOutlet="issueList; context: { title: 'Errors', kind: 'error', pill: 'Error', items: issues }" />
+        <ng-container *ngTemplateOutlet="issueList; context: { title: 'Rule checks', kind: 'rule', pill: 'Rule', items: ruleIssues }" />
       </div>
     }
     @if (submitted; as sub) {

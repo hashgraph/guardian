@@ -569,9 +569,8 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         }
     }
 
-    public getIssues(): IFormIssue[] {
+    public getIssues(targets: IFormTarget[] = walkFields(this.model?.controls)): IFormIssue[] {
         const issues: IFormIssue[] = [];
-        const targets = walkFields(this.model?.controls);
         const withInvalidRows = new Set<object>();
         for (const target of targets) {
             if (target.row && target.control?.invalid && !target.control.disabled) {
@@ -579,7 +578,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             }
         }
         for (const { path, labels, field, row, control, hidden } of targets) {
-            if (hidden || field.visibility === false || !control || control.disabled || !control.invalid) {
+            if (hidden || !control || !control.invalid) {
                 continue;
             }
             if (!row && field.isRef && !field.isArray) {

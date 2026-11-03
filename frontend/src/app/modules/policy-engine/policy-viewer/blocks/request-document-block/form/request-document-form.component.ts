@@ -24,18 +24,12 @@ import { IFormIssue, SchemaFormRootComponent } from 'src/app/modules/schema-engi
 import { PolicyTestAutomationService } from '../../../policy-test-automation/policy-test-automation.service';
 import { CalculationPreviewService, ICalculationPreviewResult } from 'src/app/services/calculation-preview.service';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
-import { walkFields } from 'src/app/modules/schema-engine/schema-form/schema-form-walk';
+import { IFormTarget, walkFields } from 'src/app/modules/schema-engine/schema-form/schema-form-walk';
 import { FormTakeoverService } from '../../../form-takeover/form-takeover.service';
 import { PolicyProgressService } from '../../../../services/policy-progress.service';
 
 export type FormStep = 'fill' | 'evidence' | 'relayer';
 export type FormScreen = 'form' | 'results' | 'submitted';
-
-export interface IRuleIssue {
-    path: string;
-    label: string;
-    message: string;
-}
 
 /**
  * Everything the Submitted screen shows. The block underneath can change or disappear
@@ -119,9 +113,10 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     public screen: FormScreen = 'form';
     public issues: IFormIssue[] = [];
     public requiredValid: number = 0;
-    public ruleIssues: IRuleIssue[] = [];
+    public ruleIssues: IFormIssue[] = [];
     public submitted: ISubmittedSnapshot | null = null;
     public docTab: 'doc' | 'json' = 'doc';
+    public submittedJson = '';
     public relayerAccountType: string = 'account';
     public currentRelayerAccount: string;
     public relayerAccounts: any[] = [];
@@ -329,7 +324,6 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         this.policyProgressService?.activeStep$?.pipe(takeUntil(this.destroy$)).subscribe((step) => {
             this.activeStepLabel = step?.label ?? null;
         });
-        this.duplicatedFrom ??= this.dialogRef ? (this.parent as any)?.consumeDuplicatedFrom?.() ?? null : null;
         this.initForm(this.dataForm, false);
         this.sub = interval(this.AUTOSAVE_INTERVAL).subscribe(async () => {
             const data = this.dataForm.getRawValue();
@@ -602,8 +596,8 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
             payload
         };
         this.docTab = 'doc';
-        this.issues = [];
-        this.ruleIssues = [];
+        this.submittedJson = JSON.stringify(document ?? null, null, 2);
+        this.clearIssues();
         this.screen = 'submitted';
         this.dataSaved = true;
         this.sub?.unsubscribe();
@@ -611,9 +605,6 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         this.changeDetectorRef.markForCheck();
     }
 
-    public get submittedJson(): string {
-        return JSON.stringify(this.submitted?.document ?? this.submitted?.payload ?? null, null, 2);
-    }
 
     public onDuplicate(): void {
         const submitted = this.submitted;
@@ -639,17 +630,17 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     }
 
     /** Row title: the field name only (the last part of the label path). */
-    public issueName(issue: IRuleIssue): string {
+    public issueName(issue: IFormIssue): string {
         return issue.label.split(' / ').pop() || issue.label;
     }
 
     /** Row subtitle: where the field lives, then the message. */
-    public issueDetail(issue: IRuleIssue): string {
+    public issueDetail(issue: IFormIssue): string {
         const trail = issue.label.split(' / ').slice(0, -1).join(' / ');
         return trail ? `${trail} · ${issue.message}` : issue.message;
     }
 
-    private computeRuleIssues(): IRuleIssue[] {
+    private computeRuleIssues(targets: IFormTarget[]): IFormIssue[] {
         const iri = this.schema?.iri;
         if (!this.rules || !iri) {
             return [];
@@ -659,11 +650,11 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
             return [];
         }
         const labels = new Map<string, string>();
-        for (const target of walkFields(this.formRoot?.model?.controls)) {
+        for (const target of targets) {
             labels.set(target.path, target.labels.join(' / '));
         }
         const prefix = `${iri}/`;
-        const issues: IRuleIssue[] = [];
+        const issues: IFormIssue[] = [];
         for (const [key, value] of Object.entries<any>(results)) {
             if (value?.status !== 'Failure' && value?.status !== 'Error') {
                 continue;
@@ -679,20 +670,25 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     }
 
     // Required answers that are filled in and valid (F5: a required array needs a row and valid rows)
-    private countRequiredValid(): number {
-        const targets = walkFields(this.formRoot?.model?.controls);
+    private countRequiredValid(targets: IFormTarget[]): number {
         return targets.filter((target) => {
-            if (!target.requiredUnit || target.hidden || !target.control?.valid) {
+            if (!target.requiredUnit || !target.control?.valid) {
                 return false;
             }
             return !target.field.isArray || (target.field.list?.length ?? 0) > 0;
         }).length;
     }
 
+    private clearIssues(): void {
+        this.issues = [];
+        this.ruleIssues = [];
+    }
+
     private refreshIssues(): void {
-        this.issues = this.formRoot?.getIssues() ?? [];
-        this.requiredValid = this.countRequiredValid();
-        this.ruleIssues = this.computeRuleIssues();
+        const targets = walkFields(this.formRoot?.model?.controls);
+        this.issues = this.formRoot?.getIssues(targets) ?? [];
+        this.requiredValid = this.countRequiredValid(targets);
+        this.ruleIssues = this.computeRuleIssues(targets);
         this.changeDetectorRef.markForCheck();
     }
 
@@ -739,22 +735,21 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         if (this.disabled || this.loading) {
             return;
         }
-        if (!this.dataForm.valid && !draft) {
+        if (draft) {
+            await this.onSubmit(true);
+            return;
+        }
+        if (!this.dataForm.valid) {
             this.showResults();
             return;
         }
-        if (!draft) {
-            this.issues = [];
-            this.ruleIssues = [];
-            this.screen = 'form';
-        }
-        if (this.previewMode && !draft) {
+        this.clearIssues();
+        this.screen = 'form';
+        if (this.previewMode) {
             await this.runPreview(false);
             return;
         }
-        if (draft) {
-            await this.onSubmit(draft);
-        } else if (this.enableAdditionalData && this.step === 'fill') {
+        if (this.enableAdditionalData && this.step === 'fill') {
             this.step = 'evidence';
         } else if (this.enableAdditionalData && this.step === 'evidence' && this.relayerAccount) {
             this.step = 'relayer';
@@ -763,7 +758,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
             this.step = 'relayer';
             this.loadRelayerAccounts();
         } else {
-            await this.onSubmit(draft);
+            await this.onSubmit(false);
         }
     }
 

@@ -43,7 +43,7 @@ function walk(
             labels: fieldLabels,
             field,
             control: field.control,
-            requiredUnit: !insideRequiredArray && visible && enabled && !!field.required && isUnit,
+            requiredUnit: !insideRequiredArray && !hidden && !!field.required && isUnit,
             hidden
         });
         if (field.isArray) {

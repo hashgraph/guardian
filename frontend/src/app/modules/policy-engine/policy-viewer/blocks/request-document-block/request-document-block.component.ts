@@ -98,7 +98,6 @@ export class RequestDocumentBlockComponent
     private pageFormOpened = false;
     private destroyed = false;
     // Handed to a modal form (opened with this block as its data) on its first render
-    private modalDuplicatedFrom: string | null = null;
     private takeoverRef: ComponentRef<RequestDocumentFormComponent> | null = null;
 
     constructor(
@@ -127,12 +126,6 @@ export class RequestDocumentBlockComponent
 
     public get isDestroyed(): boolean {
         return this.destroyed;
-    }
-
-    public consumeDuplicatedFrom(): string | null {
-        const value = this.modalDuplicatedFrom;
-        this.modalDuplicatedFrom = null;
-        return value;
     }
 
     ngOnDestroy(): void {
@@ -269,12 +262,10 @@ export class RequestDocumentBlockComponent
             return;
         }
         // A Submitted form that outlived its block is still open
-        if (this.formTakeover.active$.value) {
-            this.pageFormOpened = true;
-            return;
-        }
         this.pageFormOpened = true;
-        setTimeout(() => this.onDialogOpen());
+        if (!this.formTakeover.active$.value) {
+            setTimeout(() => this.onDialogOpen());
+        }
     }
 
     isBtnVisible() {
@@ -395,12 +386,12 @@ export class RequestDocumentBlockComponent
             });
             return;
         }
-        this.modalDuplicatedFrom = duplicatedFrom;
         this.dialogService.open(RequestDocumentFormComponent, {
             showHeader: false,
             width: '90%',
             styleClass: 'guardian-dialog without-padding pv-scope',
-            data: this
+            data: this,
+            inputValues: { duplicatedFrom }
         });
     }
 

@@ -83,7 +83,6 @@ export class RequestDocumentBlockAddonComponent
     private formTakeover = inject(FormTakeoverService, { optional: true });
     private takeoverRef: ComponentRef<RequestDocumentFormComponent> | null = null;
     private destroyed = false;
-    private modalDuplicatedFrom: string | null = null;
     public edit: boolean;
     public draft: boolean;
     public relayerAccount: boolean;
@@ -134,12 +133,6 @@ export class RequestDocumentBlockAddonComponent
 
     public get isDestroyed(): boolean {
         return this.destroyed;
-    }
-
-    public consumeDuplicatedFrom(): string | null {
-        const value = this.modalDuplicatedFrom;
-        this.modalDuplicatedFrom = null;
-        return value;
     }
 
     ngOnDestroy(): void {
@@ -285,12 +278,12 @@ export class RequestDocumentBlockAddonComponent
             });
             return;
         }
-        this.modalDuplicatedFrom = duplicatedFrom;
         this.dialogService.open(RequestDocumentFormComponent, {
             showHeader: false,
             width: '90%',
             styleClass: 'guardian-dialog pv-scope',
-            data: this
+            data: this,
+            inputValues: { duplicatedFrom }
         });
     }
 
