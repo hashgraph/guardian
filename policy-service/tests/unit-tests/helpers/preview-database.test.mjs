@@ -443,6 +443,21 @@ describe('@unit preview database wrapper', () => {
         assert.equal(getPreviewSavedDocuments(step)[0].document.credentialSubject[0].section.total, 1);
     });
 
+    it('marks no document final when the chain stopped before an end', async () => {
+        const step = previewStep();
+        await inPreview(step, () =>
+            server.saveVC({ policyId, owner: 'did:a', tag: 'save_intermediate', document: { credentialSubject: [{ area: 1 }] } }));
+        const calculated = { tag: 'math', document: { id: 'urn:uuid:calculated', credentialSubject: [{ total: 5 }] } };
+        step.saveResult({ data: calculated });
+        step.addError(new Error('block failed'), 'mathBlock');
+        const response = buildPreviewResponse(step, {});
+        assert.deepEqual(response.documents.map(({ source, final }) => ({ source, final })), [
+            { source: 'save_intermediate', final: false },
+            { source: 'math', final: false }
+        ]);
+        assert.equal(response.errors.length, 1);
+    });
+
     it('returns no documents when the preview wrote nothing and reached no end', () => {
         assert.deepEqual(buildPreviewResponse(previewStep(), {}).documents, []);
     });

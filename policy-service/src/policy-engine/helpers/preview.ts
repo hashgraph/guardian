@@ -1235,19 +1235,20 @@ function getPreviewRecordId(record: unknown): string | null {
     return id === undefined || id === null ? null : String(id);
 }
 
-function buildPreviewResponseDocuments(actionStatus: RecordActionStep, documents: IPreviewDocument[]): IPreviewResponseDocument[] {
+function buildPreviewResponseDocuments(actionStatus: RecordActionStep, documents: IPreviewDocument[], ended: boolean): IPreviewResponseDocument[] {
     const finalIds = new Set(documents
         .flatMap((item) => (Array.isArray(item.document) ? item.document : [item.document]).map(getPreviewRecordId))
         .filter((id) => id !== null));
     const saved = getPreviewSavedDocuments(actionStatus)
         .filter((record) => !finalIds.has(getPreviewRecordId(record)))
         .map((record) => ({ source: typeof record.tag === 'string' ? record.tag : null, target: null, blockType: null, document: record, final: false }));
-    return [...saved, ...documents.map((item) => ({ ...item, final: true }))];
+    return [...saved, ...documents.map((item) => ({ ...item, final: ended }))];
 }
 
 export function buildPreviewResponse(actionStatus: RecordActionStep, input: unknown, history: boolean = false) {
     const { fields, missingFields } = resolvePreviewFields(actionStatus.getPreviewSource(), actionStatus.getPreviewReads());
     let documents = actionStatus.getPreviewDocuments();
+    const ended = documents.length > 0;
     if (!documents.length) {
         const recorded = new Map<string, IPreviewDocument>();
         for (const step of actionStatus.getResults()) {
@@ -1273,7 +1274,7 @@ export function buildPreviewResponse(actionStatus: RecordActionStep, input: unkn
         trackingId: actionStatus.id,
         preview: true,
         input,
-        documents: buildPreviewResponseDocuments(actionStatus, documents),
+        documents: buildPreviewResponseDocuments(actionStatus, documents, ended),
         calculations: actionStatus.getPreviewCalculations(),
         fields,
         missingFields,

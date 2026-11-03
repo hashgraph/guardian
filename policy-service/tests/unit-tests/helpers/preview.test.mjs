@@ -338,6 +338,7 @@ describe('@unit preview helpers', function () {
             action.saveResult({ data: null });
             const response = buildPreviewResponse(action, {});
             assert.deepEqual(response.documents.map((item) => item.document), [input, calculated]);
+            assert.deepEqual(response.documents.map((item) => item.final), [false, false]);
             assert.equal(firstSubject(response.documents[1].document).total, 42);
             assert.deepEqual(action.getPreviewDocuments(), []);
         });
@@ -349,7 +350,7 @@ describe('@unit preview helpers', function () {
             action.saveResult({ data: calculated });
             action.saveResult({ data: saved });
             const response = buildPreviewResponse(action, {});
-            assert.deepEqual(response.documents, [{ source: 'save', target: null, blockType: null, document: saved, final: true }]);
+            assert.deepEqual(response.documents, [{ source: 'save', target: null, blockType: null, document: saved, final: false }]);
         });
 
         it('retains separate VCs from a batch and ignores empty or non-VC steps', () => {
