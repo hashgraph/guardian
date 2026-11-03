@@ -2183,6 +2183,13 @@ export class SchemaHelper {
         return parsed;
     }
 
+    public static equalArrayDependencies(a: ISchemaArrayDependency, b: ISchemaArrayDependency): boolean {
+        const mappings = (link: ISchemaArrayDependency) => (link.valueMappings || [])
+            .map(pair => JSON.stringify([pair.source, pair.target])).sort();
+        return JSON.stringify([a.on, a.field, a.kind, a.title || [], mappings(a)])
+            === JSON.stringify([b.on, b.field, b.kind, b.title || [], mappings(b)]);
+    }
+
     public static collectArrayDependencies(
         document: ISchemaDocument | null | undefined,
         dependencies?: ISchemaArrayDependency[]
@@ -2204,31 +2211,10 @@ export class SchemaHelper {
         };
         const add = (links: ISchemaArrayDependency[], path: string[]): void => {
             const own = links.map(link => ({ ...link, on: [...path, ...link.on], field: [...path, ...link.field] }));
-            const conflicts: ISchemaArrayDependency[] = [];
             for (const link of own) {
-                const existing = sourceOf(link.field);
-                if (existing) {
-                    if (key(existing.on) !== key(link.on)) {
-                        conflicts.push(link);
-                    }
-                } else if (!isAbove(link.field, link.on)) {
+                if (!result.some(existing => SchemaHelper.equalArrayDependencies(existing, link))
+                    && !isAbove(link.field, link.on)) {
                     result.push(link);
-                }
-            }
-            for (const link of conflicts) {
-                const existing = sourceOf(link.field);
-                let top = link.on;
-                const seen = new Set<string>();
-                while (!seen.has(key(top))) {
-                    seen.add(key(top));
-                    const parent = own.find(item => key(item.field) === key(top));
-                    if (!parent) {
-                        break;
-                    }
-                    top = parent.on;
-                }
-                if (!sourceOf(top) && !isAbove(top, existing.on)) {
-                    result.push({ on: existing.on, field: top, kind: 'array' });
                 }
             }
         };

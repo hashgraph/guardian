@@ -122,8 +122,8 @@ describe('Repeatable links in the Excel schema sheet', () => {
         ]);
     });
 
-    it('keeps the parent link when the parent and the sub-schema link the same dependent', async () => {
-        const parentLink = { on: ['section', 'locations'], field: ['section', 'instances'], kind: 'array', title: ['area'] };
+    it('writes identical parent and nested copies once on a worksheet', async () => {
+        const parentLink = { on: ['section', 'locations'], field: ['section', 'instances'], kind: 'array', title: ['name'] };
         const { workbook } = write(makeSchema([parentLink]));
         const { result, errors } = await read(workbook);
         assert.deepEqual(errors, []);
@@ -184,5 +184,65 @@ describe('Repeatable links in the Excel schema sheet', () => {
         assert.equal(errors.length, 3);
         assert.ok(errors.every(error => /cycle/.test(error.message)));
         assert.deepEqual(result.schema.arrayDependencies, []);
+    });
+});
+
+describe('resolved worksheet relationship conflicts', () => {
+    async function imported(parentLink, childLink) {
+        const workbook = new Workbook();
+        const parent = makeSchema([parentLink, ...rootLinks], [childLink]);
+        parent.fields.find(field => field.name === 'section').customType = '';
+        const child = makeSchema([childLink], []);
+        child.name = 'Section';
+        child.fields = child.fields.filter(field => field.name !== 'section');
+        const schemas = new Map([['#section', 'Section'], ['#location', 'Location'],
+            ['#instance', 'Instance'], ['#report', 'Report']]);
+        for (const name of ['locations', 'instances', 'reports']) {
+            const entry = child.fields.find(field => field.name === name);
+            const entrySchema = { ...child, name: schemas.get(entry.type), fields: entry.fields,
+                arrayDependencies: [] };
+            JsonToXlsx.writeSchema(workbook.createWorksheet(entrySchema.name), entrySchema, null, schemas, new Map());
+            entry.customType = '';
+            parent.fields.find(field => field.name === name).customType = '';
+            const nested = parent.fields.find(field => field.name === 'section').fields
+                .find(field => field.name === name);
+            if (nested) { nested.customType = ''; }
+        }
+        const parentSheet = workbook.createWorksheet('Links');
+        JsonToXlsx.writeSchema(parentSheet, parent, null, schemas, new Map());
+        if (!parentLink.valueMappings?.length) {
+            const rows = rowsOf(parentSheet);
+            cell(parentSheet, rows.get('section.instances.locationName')).setValue(null);
+        }
+        JsonToXlsx.writeSchema(workbook.createWorksheet('Section'), child, null, schemas, new Map());
+        const result = await XlsxToJson.parse(await workbook.write(), { preview: true });
+        result.updateSchemas();
+        return result;
+    }
+
+    it('drops both competing declarations and their mappings with cell diagnostics', async () => {
+        const child = { on: ['locations'], field: ['instances'], kind: 'array', title: ['name'],
+            valueMappings: [{ source: ['name'], target: ['locationName'] }] };
+        const parent = { on: ['section', 'locations'], field: ['section', 'instances'], kind: 'array' };
+        const result = await imported(parent, child);
+        const errors = result.toJson().errors.filter(error => /Conflicting repeatable/.test(error.text));
+        assert.equal(errors.length, 2);
+        assert.ok(errors.every(error => error.cell && /Both.*skipped/.test(error.message)));
+        const root = result.schemas.find(schema => schema.name === 'Links');
+        const section = result.schemas.find(schema => schema.name === 'Section');
+        assert.deepEqual(root.arrayDependencies, rootLinks);
+        assert.deepEqual(section.arrayDependencies, []);
+        result.updateSchemas();
+        assert.deepEqual(root.arrayDependencies, rootLinks);
+        assert.deepEqual(section.arrayDependencies, []);
+    });
+
+    it('retains identical copies on both schemas', async () => {
+        const child = { on: ['locations'], field: ['instances'], kind: 'array', title: ['name'] };
+        const parent = { ...child, on: ['section', 'locations'], field: ['section', 'instances'] };
+        const result = await imported(parent, child);
+        assert.equal(result.toJson().errors.filter(error => /Conflicting repeatable/.test(error.text)).length, 0);
+        assert.deepEqual(result.schemas.find(schema => schema.name === 'Links').arrayDependencies, [...rootLinks, parent]);
+        assert.deepEqual(result.schemas.find(schema => schema.name === 'Section').arrayDependencies, [child]);
     });
 });

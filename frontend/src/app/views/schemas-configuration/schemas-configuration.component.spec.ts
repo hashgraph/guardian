@@ -1,5 +1,5 @@
 import { of, Subject, throwError } from 'rxjs';
-import { Schema } from '@guardian/interfaces';
+import { Schema, SchemaField } from '@guardian/interfaces';
 import { SchemasConfigurationComponent } from './schemas-configuration.component';
 import { FIELD_TYPES_UI } from 'src/app/modules/schema-engine/field-type-ui';
 
@@ -1774,6 +1774,338 @@ describe('SchemasConfigurationComponent', () => {
             component.markDirty = () => { component.dirtyCalls++; };
             return component;
         }
+
+        it('blocks a nested competing declaration and explains the dependent', () => {
+            const component = createLinkComponent([]);
+            const child = makeSchema({ id: 'section', fields: [arrayField('one'), arrayField('two')] });
+            child.arrayDependencies = [link('one', 'two')];
+            component.selectedSchema.fields.push(makeField({
+                name: 'section', type: child.iri, isRef: true, fields: child.fields
+            }));
+            component.schemas.push(child);
+            component.resolveRefSchema = (iri: string) => iri === child.iri ? child : undefined;
+            component.newArrayDependencyOn = 'one';
+            component.newArrayDependencyField = 'section.two';
+            expect(component.canApplyArrayDependency()).toBeFalse();
+            expect(component.arrayDependencyError).toContain('section.two');
+            component.applyArrayDependency();
+            expect(component.arrayDependencies).toEqual([]);
+            component.newArrayDependencyOn = 'section.one';
+            expect(component.canApplyArrayDependency()).toBeFalse();
+        });
+
+        it('allows an unchanged Excel copy but rejects changes to its title', () => {
+            const copy = { on: ['section', 'one'], field: ['section', 'two'], kind: 'array' };
+            const component = createLinkComponent([copy]);
+            const child = makeSchema({ id: 'section', fields: [arrayField('one'), arrayField('two')] });
+            child.arrayDependencies = [link('one', 'two')];
+            component.selectedSchema.fields.push(makeField({
+                name: 'section', type: child.iri, isRef: true, fields: child.fields
+            }));
+            component.schemas.push(child);
+            component.resolveRefSchema = (iri: string) => iri === child.iri ? child : undefined;
+            component.startEditArrayDependency(copy);
+            expect(component.canApplyArrayDependency()).toBeTrue();
+            component.newArrayDependencyTitle = 'a';
+            expect(component.canApplyArrayDependency()).toBeFalse();
+            expect(component.arrayDependencyError).toContain('section.two');
+        });
+
+        it('allows adding and saving in an unrelated schema when another schema has a conflict', () => {
+            const component = createLinkComponent([]);
+            const unrelated = makeSchema({ id: 'legacy' });
+            unrelated.arrayDependencies = [link('oldSource', 'oldTarget'), link('otherSource', 'oldTarget')];
+            component.schemas.push(unrelated);
+            component.newArrayDependencyOn = 'one';
+            component.newArrayDependencyField = 'two';
+            expect(component.arrayDependencyError).toBeNull();
+            expect(component.canApplyArrayDependency()).toBeTrue();
+            component.applyArrayDependency();
+            component.dirtySchemaIds.add('a');
+            component.saveAll();
+            expect(component.updated.length).toBe(1);
+            expect(component.updated[0].id).toBe('a');
+        });
+
+        it('blocks a candidate that conflicts with its loaded Parent after prefixing', () => {
+            const component = createLinkComponent([]);
+            const child = component.selectedSchema;
+            const parent = makeSchema({ id: 'parent', fields: [makeField({
+                name: 'section', type: child.iri, isRef: true
+            })] });
+            parent.arrayDependencies = [link('regions', 'section.two')];
+            component.schemas.push(parent);
+            component.resolveRefSchema = (iri: string) => iri === child.iri ? child : undefined;
+            component.newArrayDependencyOn = 'one';
+            component.newArrayDependencyField = 'two';
+            expect(component.canApplyArrayDependency()).toBeFalse();
+            expect(component.arrayDependencyError).toContain('section.two');
+        });
+
+        it('explains a dirty schema conflict once when Save all is clicked from Fields', () => {
+            const component = createLinkComponent([link('one', 'two'), link('three', 'two')]);
+            component.activeCanvasTab = 'fields';
+            component.schemas = [];
+            component.dirtySchemaIds.add('a');
+            component.saveAll();
+            expect(component.updated.length).toBe(0);
+            expect(component.created.length).toBe(0);
+            expect(component.toasts.length).toBe(1);
+            expect(component.toasts[0].action).toBe('Save all');
+            expect(component.toasts[0].detail).toContain(`"${component.selectedSchema.name}"`);
+            expect(component.toasts[0].detail).toContain('different relationships');
+        });
+
+        it('checks the edited schema instead of its stale sidebar copy when saving', () => {
+            const component = createLinkComponent([]);
+            const stale = makeSchema({ id: 'a' });
+            stale.arrayDependencies = [link('one', 'two'), link('three', 'two')];
+            component.schemas = [stale];
+            component.dirtySchemaIds.add('a');
+            component.saveAll();
+            expect(component.updated.length).toBe(1);
+            expect(component.updated[0]).toBe(component.selectedSchema);
+            expect(component.toasts.length).toBe(0);
+        });
+
+        it('still blocks saving a changed child that conflicts with its loaded Parent', () => {
+            const component = createLinkComponent([link('one', 'two')]);
+            const child = component.selectedSchema;
+            const parent = makeSchema({ id: 'parent', fields: [makeField({
+                name: 'section', type: child.iri, isRef: true
+            })] });
+            parent.arrayDependencies = [link('regions', 'section.two')];
+            component.schemas.push(parent);
+            component.resolveRefSchema = (iri: string) => iri === child.iri ? child : undefined;
+            component.dirtySchemaIds.add('a');
+            component.saveAll();
+            expect(component.updated.length).toBe(0);
+            expect(component.toasts.length).toBe(1);
+            expect(component.toasts[0].detail).toContain(`"${parent.name}"`);
+        });
+
+        it('ignores an unrelated conflict within a loaded Parent when checking a candidate', () => {
+            const component = createLinkComponent([]);
+            const child = component.selectedSchema;
+            const parent = makeSchema({ id: 'parent', fields: [makeField({
+                name: 'section', type: child.iri, isRef: true
+            })] });
+            parent.arrayDependencies = [link('oldSource', 'oldTarget'), link('otherSource', 'oldTarget')];
+            component.schemas.push(parent);
+            component.resolveRefSchema = (iri: string) => iri === child.iri ? child : undefined;
+            component.newArrayDependencyOn = 'one';
+            component.newArrayDependencyField = 'two';
+            expect(component.arrayDependencyError).toBeNull();
+            expect(component.canApplyArrayDependency()).toBeTrue();
+        });
+
+        function sparseReferenceFixture(links: any[] = [link('one', 'two')]): any {
+            const component = createLinkComponent([]);
+            delete component.resolveRefSchema;
+            const document = {
+                $id: '#section', type: 'object', required: [],
+                $comment: JSON.stringify({ arrayDependencies: links }),
+                properties: {
+                    one: { title: 'one', description: 'one', type: 'array', items: { $ref: '#entry' } },
+                    two: { title: 'two', description: 'two', type: 'array', items: { $ref: '#entry' } }
+                },
+                $defs: { '#entry': { $id: '#entry', type: 'object', required: [],
+                    properties: { a: { type: 'string', title: 'a', description: 'a' } } } }
+            };
+            const raw: any = { id: 'section', iri: '#section', name: 'Full Section', document };
+            const full = new Schema(raw);
+            const sidebar = makeSchema({ id: 'section', iri: '#section', fields: full.fields });
+            sidebar.document = undefined;
+            sidebar.arrayDependencies = [];
+            const field = makeField({ name: 'section', type: '#section', isRef: true, fields: full.fields });
+            component.selectedSchema.fields.push(field);
+            component.schemas.push(sidebar);
+            component.selectedField = field;
+            return { component, sidebar, full, raw };
+        }
+
+        it('reads cached full relationships despite a sparse sidebar entry for Add and Save', () => {
+            const { component, sidebar, full } = sparseReferenceFixture();
+            component._subSchemasByIri.set(full.iri, full);
+            expect(component.resolveRefSchema(full.iri)).toBe(sidebar);
+            component.newArrayDependencyOn = 'one';
+            component.newArrayDependencyField = 'section.two';
+            expect(component.canApplyArrayDependency()).toBeFalse();
+            component.selectedSchema.arrayDependencies = [link('one', 'section.two')];
+            component.dirtySchemaIds.add('a');
+            component.saveAll();
+            expect(component.updated.length).toBe(0);
+            expect(component.arrayDependencyError).toContain('section.two');
+        });
+
+        it('loads relationships for a replaced reference even when its fields already exist', () => {
+            const { component, sidebar, raw } = sparseReferenceFixture();
+            const response = new Subject<any>();
+            component.schemaService.getSchemaWithSubSchemas = () => response;
+            component.selectedSchema.arrayDependencies = [link('one', 'section.two')];
+            component.changeSubSchemaRef(sidebar);
+            component.dirtySchemaIds.add('a');
+            component.saveAll();
+            expect(component.updated.length).toBe(0);
+            expect(component.arrayDependencyError).toContain('have not loaded');
+            expect(component.toasts.length).toBe(1);
+            expect(component.toasts[0].detail).toContain(`"${sidebar.name}"`);
+            expect(component.toasts[0].detail).toContain('have not loaded');
+            response.next({ schema: raw, subSchemas: [] });
+            expect(sidebar.arrayDependencies).toEqual([link('one', 'two')]);
+            component.saveAll();
+            expect(component.updated.length).toBe(0);
+            expect(component.arrayDependencyError).toContain('section.two');
+            response.complete();
+        });
+
+        function droppedSidebarFixture(links: any[]): any {
+            const fixture = sparseReferenceFixture(links);
+            const { component, sidebar } = fixture;
+            component.selectedSchema.fields.pop();
+            component.selectedField = null;
+            sidebar.fields = [];
+            component.sidebarDropIndex = -1;
+            const response = new Subject<any>();
+            let requests = 0;
+            component.schemaService.getSchemaWithSubSchemas = () => { requests++; return response; };
+            return { ...fixture, response, requests: () => requests };
+        }
+
+        it('loads a schema dropped from the sidebar so a schema without links saves after loading', () => {
+            const { component, sidebar, raw, response, requests } = droppedSidebarFixture([]);
+            component.addSchemaField(sidebar);
+            expect(requests()).toBe(1);
+            component.dirtySchemaIds.add('a');
+            component.saveAll();
+            expect(component.updated.length).toBe(0);
+            expect(component.toasts[0].detail).toContain('have not loaded');
+            response.next({ schema: raw, subSchemas: [] });
+            expect(sidebar.document).toEqual(raw.document);
+            expect(component.selectedSchema.fields[component.selectedSchema.fields.length - 1].fields.length).toBeGreaterThan(0);
+            component.saveAll();
+            expect(component.updated.length).toBe(1);
+            response.complete();
+        });
+
+        it('checks the links of a dropped schema once it has loaded', () => {
+            const { component, sidebar, raw, response } = droppedSidebarFixture([link('one', 'two')]);
+            component.addSchemaField(sidebar);
+            const name = component.selectedSchema.fields[component.selectedSchema.fields.length - 1].name;
+            component.selectedSchema.arrayDependencies = [link('one', `${name}.two`)];
+            response.next({ schema: raw, subSchemas: [] });
+            component.dirtySchemaIds.add('a');
+            component.saveAll();
+            expect(component.updated.length).toBe(0);
+            expect(component.toasts[component.toasts.length - 1].detail).toContain('different relationships');
+            response.complete();
+        });
+
+        it('loads a schema dropped inside an entered sub-schema', () => {
+            const { component, sidebar, raw, response, requests } = droppedSidebarFixture([link('one', 'two')]);
+            component.drillStack = [{ schemaIri: '#host', fields: [] }];
+            component.addDrillSchemaField(sidebar);
+            expect(requests()).toBe(1);
+            response.next({ schema: raw, subSchemas: [] });
+            expect(sidebar.arrayDependencies).toEqual([link('one', 'two')]);
+            expect(component.drillCurrentFields[0].fields.length).toBeGreaterThan(0);
+            response.complete();
+        });
+
+        it('does not load again when a dropped schema already has its document', () => {
+            const { component, sidebar, raw, requests } = droppedSidebarFixture([]);
+            sidebar.document = raw.document;
+            component.addSchemaField(sidebar);
+            expect(requests()).toBe(0);
+        });
+
+        it('allows a valid replacement after full loading and preserves its existing field edits', () => {
+            const { component, sidebar, raw } = sparseReferenceFixture([]);
+            const fields = sidebar.fields;
+            fields[0].description = 'Unsaved field description';
+            component.schemaService.getSchemaWithSubSchemas = () => of({ schema: raw, subSchemas: [] });
+            component.changeSubSchemaRef(sidebar);
+            expect(sidebar.fields).toBe(fields);
+            expect(sidebar.fields[0].description).toBe('Unsaved field description');
+            component.dirtySchemaIds.add('a');
+            component.saveAll();
+            expect(component.updated.length).toBe(1);
+        });
+
+        for (const serialized of [false, true]) {
+            it(`keeps only stored definitions when hydrating from a whole-topic response (serialized: ${serialized})`, () => {
+                const { component, sidebar, raw } = sparseReferenceFixture([]);
+                const stored = JSON.parse(JSON.stringify(raw.document));
+                const unrelated = Array.from({ length: 5 }, (_, index) => ({
+                    id: `other-${index}`, iri: `#other-${index}`, name: 'QA Section',
+                    document: { $id: `#other-${index}`, type: 'object', properties: {},
+                        $defs: { '#unused': { type: 'object', properties: {} } } }
+                }));
+                const data = { schema: { ...raw, document: serialized ? JSON.stringify(stored) : raw.document },
+                    subSchemas: [{ id: 'entry', iri: '#entry', name: 'Entry', document: stored.$defs['#entry'] },
+                        ...unrelated] };
+                component.schemaService.getSchemaWithSubSchemas = () => of(data);
+                component.changeSubSchemaRef(sidebar);
+                expect(sidebar.document).toEqual(stored);
+                expect(Object.keys(sidebar.document.$defs)).toEqual(['#entry']);
+                for (const item of unrelated) {
+                    expect(component._subSchemasByIri.has(item.iri)).toBeFalse();
+                    expect(component.resolveRefSchema(item.iri)).toBeUndefined();
+                }
+                expect(component._subSchemasByIri.get('#entry').document).toEqual(stored.$defs['#entry']);
+                delete component._buildRefs;
+                const definitions = component._buildRefs(component.selectedSchema);
+                expect(Object.keys(definitions).sort()).toEqual(['#entry', '#section']);
+                expect(definitions['#section'].$defs).toBeUndefined();
+                expect(raw.document).toEqual(stored);
+            });
+        }
+
+        it('caches nested stored definitions without replacing previously loaded schemas', () => {
+            const { component, sidebar, raw } = sparseReferenceFixture([]);
+            const leaf = { $id: '#leaf', type: 'object', required: [],
+                properties: { value: { type: 'string', title: 'value', description: 'value' } } };
+            raw.document.$defs['#entry'].properties.nested = { $ref: '#leaf' };
+            raw.document.$defs['#leaf'] = leaf;
+            const existing = makeSchema({ id: 'existing', iri: '#existing', document: leaf });
+            component._subSchemasByIri.set('#existing', existing);
+            component.schemaService.getSchemaWithSubSchemas = () => of({ schema: raw, subSchemas: [
+                { id: 'entry', iri: '#entry', document: raw.document.$defs['#entry'] },
+                { id: 'leaf', iri: '#leaf', document: leaf },
+                { id: 'existing', iri: '#existing', document: raw.document },
+                { id: 'unrelated', iri: '#unrelated', document: leaf }
+            ] });
+            component.changeSubSchemaRef(sidebar);
+            expect(Array.from(component._subSchemasByIri.keys()).sort())
+                .toEqual(['#entry', '#existing', '#leaf', '#section']);
+            expect(component._subSchemasByIri.get('#existing')).toBe(existing);
+            expect(component._subSchemasByIri.get('#leaf').document).toEqual(leaf);
+            expect(component._subSchemasByIri.get('#entry').fields.find((field: SchemaField) => field.name === 'nested')
+                .fields.some((field: SchemaField) => field.name === 'value')).toBeTrue();
+        });
+
+        it('keeps Save blocked if replacement loading fails', () => {
+            const { component, sidebar } = sparseReferenceFixture();
+            component.schemaService.getSchemaWithSubSchemas = () => throwError(() => new Error('load failed'));
+            component.changeSubSchemaRef(sidebar);
+            expect(component.toasts.length).toBe(1);
+            component.dirtySchemaIds.add('a');
+            component.saveAll();
+            expect(component.updated.length).toBe(0);
+            expect(component.arrayDependencyError).toContain('have not loaded');
+            expect(component.toasts.length).toBe(2);
+            expect(component.toasts[1].detail).toContain('have not loaded');
+        });
+
+        it('prefers loaded sidebar relationship edits over the full cache', () => {
+            const { component, sidebar, full } = sparseReferenceFixture();
+            component._subSchemasByIri.set(full.iri, full);
+            sidebar.document = full.document;
+            sidebar.arrayDependencies = [];
+            component.newArrayDependencyOn = 'one';
+            component.newArrayDependencyField = 'section.two';
+            expect(component.canApplyArrayDependency()).toBeTrue();
+        });
 
         it('fills the form from the saved link and copies its pairs by value', () => {
             const saved = link('one', 'two', {

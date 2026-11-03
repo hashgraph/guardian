@@ -2149,6 +2149,25 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             });
             return;
         }
+        const changedSchemas = [...toCreate, ...toSave];
+        const affectedSchemas = [...changedSchemas, ...this.schemas.filter(schema =>
+            !changedSchemas.some(changed => schema === changed || (schema.iri && schema.iri === changed.iri))
+            && changedSchemas.some(changed => this.arrayDependencySchemaPaths(schema, changed).length > 0))];
+        for (const schema of affectedSchemas) {
+            const missing = this.arrayDependencyMissingSchema(schema);
+            if (missing) {
+                this.reportError('Save all', {
+                    message: `Relationships for schema "${missing.name}" have not loaded. Wait for loading to finish before saving.`
+                });
+                return;
+            }
+            if (this.arrayDependencyConflict(this.arrayDependencyTree(schema))) {
+                this.reportError('Save all', {
+                    message: `Schema "${schema.name}" has different relationships for the same dependent array. Remove the conflicting relationship before saving.`
+                });
+                return;
+            }
+        }
         this.isSaving = true;
         // Sync any in-flight drill edits to the schema object in case this.schemas was refreshed
         // after enterSubSchema stored its fields reference in drillStack.
@@ -3282,6 +3301,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             this.drillStack = [];
         }
         this.markDirty();
+        if (!schema.document) { this.hydrateSubSchemaFields(schema); }
     }
 
     private resetArrayDependencyEditor(): void {
@@ -3459,11 +3479,131 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return false;
     }
 
+    private arrayDependencyTree(
+        schema: Schema,
+        replacement?: ISchemaArrayDependency[],
+        path: string[] = [],
+        ancestors: Set<string> = new Set()
+    ): ISchemaArrayDependency[] {
+        const own = (schema === this.selectedSchema || schema.iri === this.selectedSchema?.iri) && replacement
+            ? replacement : schema.arrayDependencies || [];
+        const result = own.map(item => ({
+            ...item, on: [...path, ...item.on], field: [...path, ...item.field]
+        }));
+        for (const field of schema.fields || []) {
+            if (!field.isRef || field.isArray || ancestors.has(field.type)) { continue; }
+            const child = this.resolveArrayDependencySchema(field.type);
+            if (child) {
+                result.push(...this.arrayDependencyTree(child, replacement, [...path, field.name],
+                    new Set([...ancestors, field.type])));
+            } else {
+                const definitions = schema.document?.$defs;
+                const document = definitions?.[field.type];
+                if (document) {
+                    result.push(...SchemaHelper.collectArrayDependencies({
+                        ...document, $defs: definitions
+                    }).map(item => ({
+                        ...item, on: [...path, field.name, ...item.on],
+                        field: [...path, field.name, ...item.field]
+                    })));
+                }
+            }
+        }
+        return result;
+    }
+
+    private arrayDependencySchemaPaths(
+        schema: Schema,
+        target: Schema,
+        path: string[] = [],
+        ancestors: Set<Schema> = new Set()
+    ): string[][] {
+        if (ancestors.has(schema)) { return []; }
+        const paths = schema === target || (schema.iri && schema.iri === target.iri) ? [path] : [];
+        for (const field of schema.fields || []) {
+            if (!field.isRef || field.isArray) { continue; }
+            const child = this.resolveArrayDependencySchema(field.type);
+            if (child) {
+                paths.push(...this.arrayDependencySchemaPaths(child, target, [...path, field.name],
+                    new Set([...ancestors, schema])));
+            }
+        }
+        return paths;
+    }
+
+    private arrayDependencyMissingSchema(schema: Schema, ancestors: Set<Schema> = new Set()): Schema | undefined {
+        if (ancestors.has(schema)) { return undefined; }
+        for (const field of schema.fields || []) {
+            if (!field.isRef || field.isArray) { continue; }
+            const child = this.resolveArrayDependencySchema(field.type);
+            if (!child) { continue; }
+            if (child.id && !child.document) { return child; }
+            const missing = this.arrayDependencyMissingSchema(child, new Set([...ancestors, schema]));
+            if (missing) { return missing; }
+        }
+        return undefined;
+    }
+
+    private resolveArrayDependencySchema(iri: string): Schema | undefined {
+        const schema = this.resolveRefSchema(iri);
+        const full = this._subSchemasByIri.get(iri);
+        return schema?.document ? schema : full?.document ? full : schema;
+    }
+
+    private arrayDependencyConflict(links: ISchemaArrayDependency[]): ISchemaArrayDependency | undefined {
+        return links.find((link, index) => links.some((other, otherIndex) =>
+            index !== otherIndex && link.field.join('.') === other.field.join('.')
+            && !SchemaHelper.equalArrayDependencies(link, other)));
+    }
+
+    public get arrayDependencyError(): string | null {
+        const schema = this.selectedSchema;
+        const field = this.newArrayDependencyField;
+        const on = this.newArrayDependencyOn;
+        if (!schema) { return null; }
+        const missing = this.arrayDependencyMissingSchema(schema);
+        if (missing) {
+            return `Relationships for schema "${missing.name}" have not loaded. Wait for loading to finish before adding a relationship or saving.`;
+        }
+        if (!field || !on) {
+            const conflict = this.arrayDependencyConflict(this.arrayDependencyTree(schema));
+            return conflict
+                ? `Array "${conflict.field.join('.')}" has different relationships. Remove the conflicting relationship before saving.`
+                : null;
+        }
+        const candidate: ISchemaArrayDependency = {
+            on: on.split('.'), field: field.split('.'), kind: 'array',
+            title: this.newArrayDependencyTitle?.split('.') || [],
+            valueMappings: this.newArrayDependencyValueMappings || []
+        };
+        const own = (schema.arrayDependencies || []).filter(item => item !== this.editingArrayDependency);
+        const links = this.arrayDependencyTree(schema, own);
+        const existing = links.find(item => item.field.join('.') === field
+            && (!this.editingArrayDependency || !SchemaHelper.equalArrayDependencies(item, candidate)));
+        if (existing) {
+            return `Array "${field}" is already linked to "${existing.on.join('.')}". Remove that relationship before adding another one.`;
+        }
+        for (const parent of this.schemas) {
+            const paths = this.arrayDependencySchemaPaths(parent, schema);
+            if (!paths.length) { continue; }
+            const declarations = this.arrayDependencyTree(parent, [...own, candidate]);
+            for (const path of paths) {
+                const prefixed = { ...candidate, on: [...path, ...candidate.on], field: [...path, ...candidate.field] };
+                const conflict = declarations.find(item => item.field.join('.') === prefixed.field.join('.')
+                    && !SchemaHelper.equalArrayDependencies(item, prefixed));
+                if (conflict) {
+                    return `Array "${conflict.field.join('.')}" already has a different relationship in "${parent.name}". Remove it before adding another one.`;
+                }
+            }
+        }
+        return null;
+    }
+
     public canApplyArrayDependency(): boolean {
         const field = this.newArrayDependencyField;
         const on = this.newArrayDependencyOn;
         const ignore = this.editingArrayDependency;
-        if (!field || !on || field === on) { return false; }
+        if (!field || !on || field === on || this.arrayDependencyError) { return false; }
         const availablePaths = new Set(
             this.arrayDependencyFieldGroups.flatMap(group => group.items.map(item => item.pathStr))
         );
@@ -3692,9 +3832,29 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     if (!data?.schema) { return; }
                     const defs = this.collectDefs(data.subSchemas);
                     const loaded = new Schema(this.withDefs(data.schema, defs));
-                    if (subSchema.fields?.length) { return; }
-                    subSchema.fields = loaded.fields;
-                    subSchema.conditions = loaded.conditions;
+                    if (!subSchema.document) {
+                        subSchema.document = typeof data.schema.document === 'string'
+                            ? JSON.parse(data.schema.document) : data.schema.document;
+                        subSchema.arrayDependencies = loaded.arrayDependencies;
+                    }
+                    if (!subSchema.fields?.length) {
+                        subSchema.fields = loaded.fields;
+                        subSchema.conditions = loaded.conditions;
+                    }
+                    if (subSchema.iri) { this._subSchemasByIri.set(subSchema.iri, subSchema); }
+                    const referencedSchemas = new Set(Object.keys(subSchema.document?.$defs || {}));
+                    for (const raw of data.subSchemas || []) {
+                        if (!referencedSchemas.has(raw.iri)) { continue; }
+                        const child = new Schema(this.withDefs(raw, defs));
+                        child.document = typeof raw.document === 'string' ? JSON.parse(raw.document) : raw.document;
+                        if (child.iri && !this._subSchemasByIri.has(child.iri)) {
+                            this._subSchemasByIri.set(child.iri, child);
+                        }
+                    }
+                    const selectedField = this.selectedField;
+                    if (selectedField && selectedField.type === subSchema.iri) {
+                        selectedField.fields = subSchema.fields;
+                    }
                     const entry = this.drillStack.find(e => e.schemaIri === subSchema.iri);
                     if (entry) { entry.fields = subSchema.fields; }
                     if (this.previewSchemaRef === subSchema) { this.rebuildPreview(); }
@@ -3718,7 +3878,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             subSchema.fields = [...field.fields];
         }
         const fields = subSchema?.fields ?? field.fields ?? [];
-        if (subSchema && !fields.length) { this.hydrateSubSchemaFields(subSchema); }
+        if (subSchema && (!fields.length || !subSchema.document)) { this.hydrateSubSchemaFields(subSchema); }
         this.drillEntering = true;
         this.resetCanvasScroll();
         this.activeDrillTab = 'fields';
@@ -4152,6 +4312,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
         this.selectedField = field;
         this.markDirty();
+        if (!schema.document) { this.hydrateSubSchemaFields(schema); }
     }
 
     private addSchemaField(schema: Schema): void {
@@ -4190,6 +4351,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
         this.selectedField = field;
         this.markDirty();
+        if (!schema.document) { this.hydrateSubSchemaFields(schema); }
     }
 
     public onNewSchema(): void {

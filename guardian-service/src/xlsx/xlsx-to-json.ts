@@ -1547,6 +1547,7 @@ export class XlsxToJson {
                     dependency.title = title.path.slice(source.path.length);
                 }
                 dependencies.push(dependency);
+                xlsxResult.registerArrayDependency(dependency, worksheet, row, col);
                 rows.set(dependency, row);
             } else {
                 const owner = dependencies

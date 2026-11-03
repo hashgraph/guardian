@@ -709,10 +709,10 @@ describe('FieldForm links declared in a non-repeatable sub-schema', () => {
         expect(controlOf(second, 'instances').list?.length || 0).toBe(otherLength);
     });
 
-    it('follows the parent source when the parent links an array the sub-schema also links', () => {
+    it('follows an explicit parent to section to instance chain', () => {
         const child = documentOf([link]);
         const document: any = {
-            $id: '#parent', $comment: comment([{ on: ['regions'], field: ['section', 'instances'], kind: 'array' }]),
+            $id: '#parent', $comment: comment([{ on: ['regions'], field: ['section', 'locations'], kind: 'array' }]),
             type: 'object', properties: { regions: arrayOf('#reg'), section: { $ref: child.$id } }, required: ['section'],
             $defs: { [child.$id]: child, ...child.$defs, '#reg': subSchema('#reg', 'regionName') }
         };
@@ -725,7 +725,98 @@ describe('FieldForm links declared in a non-repeatable sub-schema', () => {
         expect(controlOf(section, 'instances').list?.length).toBe(1);
         expect(form.isManagedArray(controlOf(section, 'locations'))).toBe(true);
         expect(form.isManagedArray(controlOf(section, 'instances'))).toBe(true);
-        expect(document.$comment).toBe(comment([{ on: ['regions'], field: ['section', 'instances'], kind: 'array' }]));
+        expect(document.$comment).toBe(comment([{ on: ['regions'], field: ['section', 'locations'], kind: 'array' }]));
+    });
+
+    it('copies through a section chain continued by a parent link on every edit', () => {
+        const child = documentOf([link]);
+        const parentLink = { on: ['section', 'instances'], field: ['reports'], kind: 'array',
+            valueMappings: [{ source: ['copiedName'], target: ['reportName'] }] };
+        const document: any = {
+            $id: '#parent', $comment: comment([parentLink]), type: 'object',
+            properties: { section: { $ref: child.$id }, reports: arrayOf('#rep') }, required: ['section'],
+            $defs: { [child.$id]: child, ...child.$defs, '#rep': subSchema('#rep', 'reportName') }
+        };
+        form = buildForm(document);
+        const section = controlOf(form, 'section').model;
+        if (!(section instanceof FieldForm)) { throw new Error('Expected a sub-schema form'); }
+        const source = controlOf(section, 'locations');
+        const middle = controlOf(section, 'instances');
+        const end = controlOf(form, 'reports');
+        section.addItem(source);
+        expect(middle.list?.length).toBe(1);
+        expect(end.list?.length).toBe(1);
+        for (const value of ['North', 'South']) {
+            setEntryValue(source, 0, 'instanceName', value);
+            expect(entryValue(middle, 0, 'copiedName')).toBe(value);
+            expect(entryValue(end, 0, 'reportName')).toBe(value);
+        }
+    });
+
+    it('copies a root chain the same way whichever order its links are declared in', () => {
+        const chain = [link, { on: ['instances'], field: ['reports'], kind: 'array',
+            valueMappings: [{ source: ['copiedName'], target: ['reportName'] }] }];
+        for (const [index, declared] of [chain, [...chain].reverse()].entries()) {
+            if (index > 0) { form.destroy(); }
+            form = buildForm(documentOf(declared, true));
+            const source = controlOf(form, 'locations');
+            form.addItem(source);
+            for (const value of ['North', 'South']) {
+                setEntryValue(source, 0, 'instanceName', value);
+                expect(entryValue(controlOf(form, 'instances'), 0, 'copiedName')).toBe(value);
+                expect(entryValue(controlOf(form, 'reports'), 0, 'reportName')).toBe(value);
+            }
+        }
+    });
+
+    it('copies later edits after an optional section opens and reopens', () => {
+        const document = parentDocument();
+        document.required = [];
+        form = buildForm(document);
+        const item = controlOf(form, 'first');
+        form.addGroup(item);
+        let section = item.model;
+        if (!(section instanceof FieldForm)) { throw new Error('Expected section'); }
+        const subscribe = spyOn<any>(form, 'syncArrayDependencyValues').and.callThrough();
+        form.addGroup(controlOf(form, 'second'));
+        let source = controlOf(section, 'locations');
+        let target = controlOf(section, 'instances');
+        section.addItem(source);
+        subscribe.calls.reset();
+        setEntryValue(source, 0, 'instanceName', 'Almaty');
+        expect(entryValue(target, 0, 'copiedName')).toBe('Almaty');
+        expect(subscribe.calls.count()).toBe(1);
+        setEntryValue(source, 0, 'instanceName', 'Updated');
+        expect(entryValue(target, 0, 'copiedName')).toBe('Updated');
+        form.removeGroup(item);
+        form.addGroup(item);
+        section = item.model;
+        if (!(section instanceof FieldForm)) { throw new Error('Expected reopened section'); }
+        source = controlOf(section, 'locations');
+        target = controlOf(section, 'instances');
+        section.addItem(source);
+        setEntryValue(source, 0, 'instanceName', 'Reopened');
+        expect(entryValue(target, 0, 'copiedName')).toBe('Reopened');
+    });
+
+    it('uses the existing source subscription when an optional target section opens', () => {
+        const document = documentOf([{ ...link, field: ['section', 'instances'] }]);
+        const child = documentOf([]);
+        child.$id = '#section';
+        document.properties.section = { $ref: child.$id };
+        document.$defs[child.$id] = child;
+        form = buildForm(document);
+        const source = controlOf(form, 'locations');
+        form.addItem(source);
+        setEntryValue(source, 0, 'instanceName', 'Before opening');
+        const sectionControl = controlOf(form, 'section');
+        form.addGroup(sectionControl);
+        const section = sectionControl.model;
+        if (!(section instanceof FieldForm)) { throw new Error('Expected section'); }
+        const target = controlOf(section, 'instances');
+        expect(entryValue(target, 0, 'copiedName')).toBe('Before opening');
+        setEntryValue(source, 0, 'instanceName', 'After opening');
+        expect(entryValue(target, 0, 'copiedName')).toBe('After opening');
     });
 
     it('aligns existing source records when the parent form is opened', () => {

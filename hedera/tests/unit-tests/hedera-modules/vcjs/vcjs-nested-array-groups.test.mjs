@@ -63,12 +63,12 @@ for (const mode of ['subject', 'vc']) {
             assert.equal(result.ok, true);
         });
 
-        it('checks the parent link and the automatic link instead of the sub-schema link they replace', async () => {
-            const parentLinks = [{ on: ['regions'], field: ['section', 'targets'], kind: 'array' }];
+        it('checks an explicit parent to section chain', async () => {
+            const parentLinks = [{ on: ['regions'], field: ['section', 'sources'], kind: 'array' }];
             const wrongCount = await verify({ regions: names('R'), section: { sources: [], targets: names('T') } }, parentLinks);
             assert.equal(wrongCount.ok, false);
-            assert.deepEqual(errorsOf(wrongCount, 'arrayGroupLength'), ['/section/sources']);
-            const valid = await verify({ regions: names('R'), section: { sources: names('S'), targets: names('T') } }, parentLinks);
+            assert.deepEqual(errorsOf(wrongCount, 'arrayGroupLength'), ['/section/sources', '/section/targets']);
+            const valid = await verify({ regions: names('R'), section: { sources: names('S'), targets: names('S') } }, parentLinks);
             assert.equal(valid.ok, true);
         });
     });

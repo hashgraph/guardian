@@ -237,13 +237,13 @@ describe('collectArrayDependencies includes declarations in non-repeatable sub-s
         assert.deepEqual(result, [copy]);
     });
 
-    it('lets the parent source win and links that source to the top of the sub-schema chain', () => {
+    it('keeps different declarations without generating an automatic relationship', () => {
         const parent = { on: ['regions'], field: ['section', 'reports'], kind: 'array', title: ['region'] };
         const result = SchemaHelper.collectArrayDependencies(section(), [parent]);
         assert.deepEqual(result, [
             parent,
             { on: ['section', 'locations'], field: ['section', 'instances'], kind: 'array', title: ['name'] },
-            { on: ['regions'], field: ['section', 'locations'], kind: 'array' }
+            { ...chain[1], on: ['section', 'instances'], field: ['section', 'reports'] }
         ]);
     });
 
@@ -255,7 +255,8 @@ describe('collectArrayDependencies includes declarations in non-repeatable sub-s
         const result = SchemaHelper.collectArrayDependencies(section(), parent);
         assert.deepEqual(result, [
             ...parent,
-            { on: ['section', 'locations'], field: ['section', 'instances'], kind: 'array', title: ['name'] }
+            { on: ['section', 'locations'], field: ['section', 'instances'], kind: 'array', title: ['name'] },
+            { ...chain[1], on: ['section', 'instances'], field: ['section', 'reports'] }
         ]);
     });
 
@@ -272,18 +273,29 @@ describe('collectArrayDependencies includes declarations in non-repeatable sub-s
         assert.deepEqual(result, [
             parent,
             { on: ['section', 'locations'], field: ['section', 'instances'], kind: 'array', title: ['name'] },
+            { ...chain[1], on: ['section', 'instances'], field: ['section', 'reports'] },
             { on: ['section', 'locations'], field: ['section', 'extra'], kind: 'array' }
         ]);
     });
 
-    it('lets an outer sub-schema win over a deeper one for the same array', () => {
+    it('does not replace a deeper declaration with an outer declaration', () => {
         const inner = { type: 'object', $comment: JSON.stringify({ arrayDependencies: [chain[0]] }), properties: {} };
         const outer = { type: 'object', properties: { inner: { $ref: '#inner' } },
             $comment: JSON.stringify({ arrayDependencies: [{ on: ['zones'], field: ['inner', 'instances'], kind: 'array' }] }) };
         const doc = { type: 'object', properties: { outer: { $ref: '#outer' } }, $defs: { '#outer': outer, '#inner': inner } };
         assert.deepEqual(SchemaHelper.collectArrayDependencies(doc), [
             { on: ['outer', 'zones'], field: ['outer', 'inner', 'instances'], kind: 'array' },
-            { on: ['outer', 'zones'], field: ['outer', 'inner', 'locations'], kind: 'array' }
+            { ...chain[0], on: ['outer', 'inner', 'locations'], field: ['outer', 'inner', 'instances'] }
         ]);
+    });
+});
+
+describe('complete relationship equality', () => {
+    const link = { on: ['a'], field: ['b'], kind: 'array', title: ['name'],
+        valueMappings: [{ source: ['name'], target: ['copy'] }] };
+    it('compares titles and copied values, not just array paths', () => {
+        assert.equal(SchemaHelper.equalArrayDependencies(link, { ...link, title: ['other'] }), false);
+        assert.equal(SchemaHelper.equalArrayDependencies(link, { ...link, valueMappings: [] }), false);
+        assert.equal(SchemaHelper.equalArrayDependencies(link, structuredClone(link)), true);
     });
 });

@@ -2,7 +2,7 @@ import { UntypedFormGroup, UntypedFormControl, UntypedFormArray, ValidatorFn, Va
 import { Schema, SchemaCondition, SchemaConditionTarget, SchemaField, SchemaHelper, SchemaPredicateComparator, SchemaRuleValidateResult, GenerateUUIDv4, isGeoCustomType } from '@guardian/interfaces';
 import { fullFormats } from 'ajv-formats/dist/formats';
 import moment from 'moment';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, Subscription, takeUntil } from 'rxjs';
 import { uriValidator } from 'src/app/validators/uri.validator';
 import { GeoForm } from './geo-form';
 import { SentinelHubForm } from './sentinel-hub-form';
@@ -118,6 +118,7 @@ export class FieldForm {
     private arrayDependencies: ReturnType<typeof SchemaHelper.collectArrayDependencies> = [];
     private arrayGroupCache: Map<IFieldControl<any>, IArrayGroupEntry[]> | null = null;
     private fieldOrder: Map<string, number> | null = null;
+    private readonly arrayDependencySources = new Map<UntypedFormArray, Subscription>();
 
     private readonly destroy$: Subject<boolean>;
 
@@ -149,6 +150,7 @@ export class FieldForm {
 
     public destroy() {
         this.destroy$.next(true);
+        this.arrayDependencySources.clear();
         this.destroy$.unsubscribe();
         this.controlsChanged$.complete();
     }
@@ -662,7 +664,14 @@ export class FieldForm {
     }
 
     private syncArrayDependencyValues(): void {
-        for (const dependency of (this.arrayDependencies || [])) {
+        const pending = (this.arrayDependencies || []).filter(dependency => dependency.valueMappings?.length);
+        const ordered: typeof pending = [];
+        while (pending.length) {
+            const next = pending.findIndex(dependency => !pending.some(other =>
+                other !== dependency && other.field.join('.') === dependency.on.join('.')));
+            ordered.push(...pending.splice(Math.max(next, 0), 1));
+        }
+        for (const dependency of ordered) {
             if (!dependency.valueMappings?.length) { continue; }
             const source = this.resolveArrayEntry(dependency.on);
             const target = this.resolveArrayEntry(dependency.field);
@@ -681,11 +690,21 @@ export class FieldForm {
     }
 
     private subscribeArrayDependencyValues(): void {
+        const sources = new Set<UntypedFormArray>();
         for (const dependency of (this.arrayDependencies || [])) {
             if (!dependency.valueMappings?.length) { continue; }
-            this.resolveArrayEntry(dependency.on)?.control.control.valueChanges
-                .pipe(takeUntil(this.destroy$))
-                .subscribe(() => this.syncArrayDependencyValues());
+            const source = this.resolveArrayEntry(dependency.on)?.control.control;
+            if (!(source instanceof UntypedFormArray)) { continue; }
+            sources.add(source);
+            if (this.arrayDependencySources.has(source)) { continue; }
+            this.arrayDependencySources.set(source, source.valueChanges.pipe(takeUntil(this.destroy$))
+                .subscribe(() => this.syncArrayDependencyValues()));
+        }
+        for (const [source, subscription] of this.arrayDependencySources) {
+            if (!sources.has(source)) {
+                subscription.unsubscribe();
+                this.arrayDependencySources.delete(source);
+            }
         }
     }
 
@@ -1497,6 +1516,7 @@ export class FieldForm {
             this.rootForm.rebuildCrossSchemaConditions(true);
         }
         if (this.rootForm.arrayDependencies?.length) {
+            this.rootForm.subscribeArrayDependencyValues();
             this.rootForm.syncArrayDependencyValues();
         }
     }
@@ -1533,6 +1553,8 @@ export class FieldForm {
         item.control = null;
         item.model?.destroy();
         this.form.removeControl(item.name);
+        this.rootForm.arrayGroupCache = null;
+        this.rootForm.subscribeArrayDependencyValues();
     }
 
     public hasSameRequiredFields(paths: string[] | null): boolean {
