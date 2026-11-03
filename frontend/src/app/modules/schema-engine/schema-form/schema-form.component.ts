@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, QueryList, SimpleChanges, ViewChild, ViewChildren } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, QueryList, SimpleChanges, ViewChildren } from '@angular/core';
 import { UntypedFormArray } from '@angular/forms';
 import {
     isGeoCustomType,
@@ -19,7 +19,7 @@ import { getErrorMessage, showError } from './schema-form-errors';
 import { countRequired } from './schema-form-completion';
 import { getMinutesAgoStream } from 'src/app/utils/autosave-utils';
 import { withNewTabLinks } from '../rich-text-editor/rich-text-sanitizer';
-import { collectImageReferences, markdownToHtml } from '../rich-text-editor/markdown';
+import { markdownToHtml } from '../rich-text-editor/markdown';
 import {
     GeoOption,
     GeoResolverField,
@@ -546,13 +546,13 @@ export class SchemaFormComponent implements OnInit {
             return null;
         }
         const failed = rule.status === 'Failure' || rule.status === 'Error';
+        if (!failed && rule.status !== 'Success') {
+            return null;
+        }
         const names = (rule.rules || [])
             .filter((r) => failed ? (r.status === 'Failure' || r.status === 'Error') : r.status === 'Success')
             .map((r) => r.name)
             .join(', ');
-        if (!failed && rule.status !== 'Success') {
-            return null;
-        }
         return { failed, text: `${failed ? 'Rule check failed' : 'Rule check passed'}: ${names}` };
     }
 
@@ -588,10 +588,7 @@ export class SchemaFormComponent implements OnInit {
         if (this.isGeoLocation(item) || this.isBoolean(item)) {
             return false;
         }
-        if (item.type === 'string' && !item.format) {
-            return true;
-        }
-        return false;
+        return item.type === 'string' && !item.format;
     }
 
     public enumMode(item: IFieldControl<any>): 'seg' | 'cards' | 'select' {
@@ -638,8 +635,7 @@ export class SchemaFormComponent implements OnInit {
         const customType = item.customType || '';
         const value = item.control.value;
         return customType !== 'table' && customType !== 'richText' && !this.isBoolean(item)
-            && !this.isGeoLocation(item) && value !== undefined && value !== null && value !== ''
-            && typeof value !== 'object';
+            && !this.isGeoLocation(item) && this.isChosen(item) && typeof value !== 'object';
     }
 
     public copyValue(item: IFieldControl<any>): void {
@@ -649,14 +645,14 @@ export class SchemaFormComponent implements OnInit {
         }
     }
 
-    public requiredLeft(item: IFieldControl<any>, model: any = item.model): { left: number; total: number } {
-        const { answered, total } = countRequired(model?.controls);
+    public requiredLeft(item: IFieldControl<any>): { left: number; total: number } {
+        const { answered, total } = countRequired(item.model?.controls);
         return { left: total - answered, total };
     }
 
     public recordText(item: IFieldControl<any>, listItem: IFieldIndexControl<any>): { title: string; sub: string } {
         if (this.isManagedArray(item)) {
-            return { title: this.entryTitle(item, listItem) || `${item.description} #${listItem.index2}`, sub: '' };
+            return { title: this.entryTitle(item, listItem), sub: '' };
         }
         const values: string[] = [];
         for (const field of listItem.model?.controls || []) {
@@ -895,51 +891,6 @@ export class SchemaFormComponent implements OnInit {
     }
 
     @ViewChildren(SchemaFormComponent) public childForms?: QueryList<SchemaFormComponent>;
-
-    private richTextImages = new Map<string, string | null>();
-
-    private richTextImageRequests = new Map<string, Promise<string | null>>();
-
-    private getRichTextMarkdown(item: IFieldControl<any>): string {
-        const value = item.control?.value;
-        return typeof value === 'string' ? value : '';
-    }
-
-    private getRichTextHtml(item: IFieldControl<any>): string {
-        const markdown = this.getRichTextMarkdown(item);
-        const resolved = new Map<string, string>();
-        for (const reference of collectImageReferences(markdown)) {
-            const source = this.richTextImages.get(reference);
-            if (source) {
-                resolved.set(reference, source);
-            }
-        }
-        return markdownToHtml(markdown, resolved);
-    }
-
-    private async loadRichTextImages(item: IFieldControl<any>): Promise<boolean> {
-        const missing = collectImageReferences(this.getRichTextMarkdown(item))
-            .filter((reference) => !this.richTextImages.has(reference));
-        if (!missing.length) {
-            return false;
-        }
-        await Promise.all(missing.map((reference) => {
-            let request = this.richTextImageRequests.get(reference);
-            if (!request) {
-                request = Promise.resolve()
-                    .then(() => this.resolveRichTextImage(reference))
-                    .then((source) => {
-                        this.richTextImages.set(reference, source);
-                        return source;
-                    })
-                    .catch(() => null)
-                    .finally(() => this.richTextImageRequests.delete(reference));
-                this.richTextImageRequests.set(reference, request);
-            }
-            return request;
-        }));
-        return missing.some((reference) => this.richTextImages.has(reference));
-    }
 
     private findString(item: any): string {
         if (typeof item === 'object') {

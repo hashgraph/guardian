@@ -739,22 +739,6 @@ export class FieldForm {
         return null;
     }
 
-    public getTitleMappedNames(item: IFieldControl<any>): Set<string> {
-        const names = new Set<string>();
-        for (const dependency of (this.rootForm.schema?.arrayDependencies || [])) {
-            if (!dependency.title?.length || !dependency.valueMappings?.length) { continue; }
-            const dependent = this.rootForm.resolveArrayEntry(dependency.field);
-            if (dependent?.control !== item) { continue; }
-            const titlePath = dependency.title.join('.');
-            for (const mapping of dependency.valueMappings) {
-                if (mapping.source.join('.') === titlePath) {
-                    names.add(mapping.target.join('.'));
-                }
-            }
-        }
-        return names;
-    }
-
     private isGroupArray(item: IFieldControl<any>): boolean {
         const groups = this.rootForm.getArrayGroups();
         if (groups.has(item)) { return true; }

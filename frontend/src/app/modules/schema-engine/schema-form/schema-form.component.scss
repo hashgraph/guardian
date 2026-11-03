@@ -578,9 +578,8 @@ form {
         min-width: 0;
         max-width: 100%;
         overflow-x: auto;
-        padding: 4px 16px 16px;
+        padding: 16px;
         border-top: 1px solid var(--guardian-border-color);
-        padding-top: 16px;
     }
 }
 
@@ -671,12 +670,6 @@ form {
         fill: var(--color-grey-5);
     }
 
-    .sf-remove {
-        border: 0;
-        background: transparent;
-        cursor: pointer;
-    }
-
     .sf-record-body {
         min-width: 0;
         max-width: 100%;
@@ -684,10 +677,6 @@ form {
         padding: 14px 16px 16px;
         border-top: 1px solid var(--guardian-border-color);
     }
-}
-
-.form-field-array[array-invalid="true"] {
-    border-color: var(--guardian-failure-color) !important;
 }
 
 .form-field-value[sf-invalid="true"] {
@@ -736,11 +725,6 @@ form {
     font-weight: 500;
 }
 
-.remove-btn {
-    height: 40px;
-    width: 100%;
-}
-
 .page-btns {
     .guardian-button {
         height: 40px;
@@ -779,16 +763,6 @@ form {
             margin-left: auto;
         }
     }
-}
-
-.table-header {
-    min-width: 275px;
-}
-
-.form-field-input-bool {
-    gap: 12px;
-    flex-direction: row;
-    align-items: center;
 }
 
 .guardian-input-container {
