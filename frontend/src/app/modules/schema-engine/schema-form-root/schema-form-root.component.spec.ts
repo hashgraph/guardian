@@ -494,6 +494,51 @@ describe('SchemaFormRootComponent — required fields', () => {
         container.remove();
     }));
 
+    it('focuses the input in the value block when the id sits on the label row', fakeAsync(() => {
+        const root = createRoot();
+        const container = document.createElement('div');
+        const field = document.createElement('div');
+        field.className = 'form-field';
+        const label = document.createElement('div');
+        label.className = 'sf-label';
+        label.setAttribute('data-field-id', root.model!.controls![1].id);
+        const input = document.createElement('input');
+        field.append(label, input);
+        container.appendChild(field);
+        document.body.appendChild(container);
+        Object.assign(root, { contentContainerRef: new ElementRef(container) });
+        spyOn(label, 'scrollIntoView');
+        root.focusField('rate');
+        expect(document.activeElement).toBe(input);
+        tick(64);
+        flush();
+        container.remove();
+    }));
+
+    it('focuses the input of the row with the error, not the first row of the array', fakeAsync(() => {
+        const root = createRoot();
+        const container = document.createElement('div');
+        const field = document.createElement('div');
+        field.className = 'form-field';
+        const firstRow = document.createElement('div');
+        const firstInput = document.createElement('input');
+        firstRow.appendChild(firstInput);
+        const secondRow = document.createElement('div');
+        secondRow.setAttribute('data-field-id', root.model!.controls![1].id);
+        const secondInput = document.createElement('input');
+        secondRow.appendChild(secondInput);
+        field.append(firstRow, secondRow);
+        container.appendChild(field);
+        document.body.appendChild(container);
+        Object.assign(root, { contentContainerRef: new ElementRef(container) });
+        spyOn(secondRow, 'scrollIntoView');
+        root.focusField('rate');
+        expect(document.activeElement).toBe(secondInput);
+        tick(64);
+        flush();
+        container.remove();
+    }));
+
     it('scrolls to a missing field that a nested section renders after the first look', fakeAsync(() => {
         const root = createRoot();
         const container = document.createElement('div');

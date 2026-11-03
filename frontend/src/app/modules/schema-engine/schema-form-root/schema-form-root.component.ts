@@ -546,8 +546,10 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         }
         target.scrollIntoView({ behavior: 'smooth', block: 'center' });
         const focusable = 'input,select,textarea,button,[tabindex]';
-        (target.querySelector<HTMLElement>(focusable)
-            ?? target.closest('.form-field')?.querySelector<HTMLElement>(focusable))?.focus({ preventScroll: true });
+        // A simple field keeps its id on the label row, so its input is in the sibling value block.
+        // Rows and cells hold their own inputs: search only inside them, never the whole array.
+        const scope = target.classList.contains('sf-label') ? target.closest('.form-field') : target;
+        scope?.querySelector<HTMLElement>(focusable)?.focus({ preventScroll: true });
         this.keepPreviewFieldInView(targetId, 5);
     }
 
