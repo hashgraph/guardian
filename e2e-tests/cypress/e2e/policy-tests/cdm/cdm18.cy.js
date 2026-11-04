@@ -1,35 +1,61 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { prepareTools, parseImportResponse } from '../../../support/cdmTools';
+
+const CDM_ARCHIVE = '../Methodology Library/Clean Development Mechanism (CDM)/CDM ACM0018/ACM0018.policy';
+
+// The archive references the library's tools by their testnet messageIds; the
+// import metadata remaps each reference to its locally published copy.
+const TOOL_REFS = {
+    'Tool 09': '1713221704.169952003',
+    'Tool 02': '1706866036.377014003',
+    'Tool 16': '1720000738.873798003',
+    'Tool 01': '1707834520.925981198',
+    'Tool 12': '1709106946.913157840',
+    'Tool 03': '1706867833.676387003',
+    'Tool 14': '1719310223.735760003',
+    'Tool 06': '1707068762.886477003',
+    'Tool 13': '1719308448.665936003',
+    'Tool 05': '1707833182.503204122',
+    'Tool 07': '1706867530.884259218',
+    'Tool 04': '1719308234.078552003'
+};
+
+// Dependencies before dependents (see cdmTools.js).
+const TOOL_IMPORT_ORDER = ['Tool 07', 'Tool 03', 'Tool 06', 'Tool 04', 'Tool 01', 'Tool 09', 'Tool 02', 'Tool 05', 'Tool 12', 'Tool 13', 'Tool 14', 'Tool 16'];
 
 context('Policy autotest', { tags: ['policyAT'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     it('Import policy ACM0018', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.readFile('../Methodology Library/Clean Development Mechanism (CDM)/CDM ACM0018/ACM0018.policy', 'binary')
-                .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
-                .then((file) => {
-                    cy.request({
-                        method: METHOD.POST,
-                        url: API.ApiServer + API.PolicisImportFile,
-                        body: file,
-                        headers: {
-                            'content-type': 'binary/octet-stream',
-                            authorization,
-                        },
-                        timeout: 180000,
-                    }).then((response) => {
-                        // `cy.request` returns the body as an ArrayBuffer for binary
-                        // requests, so decode it back to JSON before asserting.
-                        const imported = JSON.parse(new TextDecoder('utf-8').decode(response.body));
+            return prepareTools(TOOL_IMPORT_ORDER, authorization).then((local) => {
+                const metadata = { tools: Object.fromEntries(Object.entries(TOOL_REFS).map(([name, sourceMessageId]) => [sourceMessageId, local[name]])) };
+
+                return cy.readFile(CDM_ARCHIVE, 'binary')
+                    .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
+                    .then((file) => {
+                        const form = new FormData();
+                        form.append('policyFile', file, CDM_ARCHIVE.split('/').pop());
+                        form.append('metadata', JSON.stringify(metadata), 'metadata.json');
+                        return cy.request({
+                            method: METHOD.POST,
+                            url: API.ApiServer + API.PolicisImportFileMetadata,
+                            body: form,
+                            headers: { authorization },
+                            timeout: 180000,
+                        });
+                    })
+                    .then((response) => {
+                        const imported = parseImportResponse(response.body);
 
                         expect(response.status).to.eq(STATUS_CODE.SUCCESS);
                         expect(imported).to.be.an('array');
                         expect(imported[0].name).to.match(/^ACM0018(_\d+)?$/);
                         expect(imported[0].tools).to.have.length(13);
                     });
-                });
+            });
         });
     });
 });

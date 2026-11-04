@@ -25,22 +25,6 @@ interface IArtifact {
 }
 
 /**
- * A tool entry as it appears in a policy archive (`tools/*.json`).
- *
- * Two shapes coexist. The legacy entry is a bare PolicyTool row (in practice a
- * 5-field stub: name, description, messageId, owner, hash) whose document must
- * be re-fetched by messageId from a consensus message on the source network.
- * The self-contained v2 entry additionally carries the tool's `config`,
- * `schemas` and `tags`, plus the original `messageId`/`hash` identity at the
- * top level: import re-publishes such tools locally, so the archive works on
- * any network.
- */
-export type PolicyToolEntry = PolicyTool & {
-    schemas?: any[];
-    tags?: any[];
-};
-
-/**
  * Policy components
  */
 export interface IPolicyComponents {
@@ -51,7 +35,7 @@ export interface IPolicyComponents {
     formulas: Formula[];
     artifacts: IArtifact[];
     tags: Tag[];
-    tools: PolicyToolEntry[];
+    tools: PolicyTool[];
     tests: IArtifact[];
     schemaTemplateSnapshots?: SchemaTemplateSnapshot[];
     artifactErrors?: IArtifactError[];
@@ -371,34 +355,10 @@ export class PolicyImportExport {
             zip.file(`systemSchemas/${schema.iri}.json`, JSON.stringify(schema));
         }
 
-        // Two entry shapes, see PolicyToolEntry. A row carrying an explicit
-        // `config` and `schemas` is a self-contained v2 entry: import re-publishes
-        // it locally, so the archive needs no consensus message from the source
-        // network. Anything else keeps the legacy output (the bare row, which in
-        // practice serialises as the 5-field stub), re-fetched by messageId.
         zip.folder('tools');
-        preparedComponents.tools.forEach((tool, index) => {
-            const entry: any = tool;
-            if (entry.config !== undefined && entry.schemas !== undefined) {
-                const {
-                    _id, id, uuid, topicId, status, tagsTopicId, contentFileId, configFileId,
-                    createDate, updateDate, messageId, hash, config, schemas, tags, ...row
-                } = entry;
-                const object = {
-                    ...row,
-                    config,
-                    schemas,
-                    tags: Array.isArray(tags) ? tags : [],
-                    messageId,
-                    hash
-                };
-                const fileName = hash || entry.name || `tool-${index}`;
-                zip.file(`tools/${fileName}.json`, JSON.stringify(object));
-                return;
-            }
-            const { config: _droppedConfig, ...legacyRow } = entry;
-            zip.file(`tools/${tool.hash}.json`, JSON.stringify(legacyRow));
-        });
+        for (const tool of preparedComponents.tools) {
+            zip.file(`tools/${tool.hash}.json`, JSON.stringify(tool));
+        }
 
         // One folder per template, keyed by templateId, so multiple templates don't overwrite each other.
         if (preparedComponents.schemaTemplateSnapshots?.length) {
@@ -482,34 +442,6 @@ export class PolicyImportExport {
     }
 
     /**
-     * Normalise a `tools/*.json` archive entry (see PolicyToolEntry).
-     *
-     * A legacy stub (no `config`) is passed through as-is: import re-fetches
-     * the document by messageId. A self-contained v2 entry keeps the top-level
-     * `messageId`/`hash` identity - the source-network publish that import maps
-     * old-to-new from - while the row's own DB-assigned identity fields are
-     * stripped so the re-publish generates fresh ones.
-     */
-    private static parseToolEntry(entry: any): PolicyToolEntry {
-        if (entry.config === undefined) {
-            return entry as PolicyToolEntry;
-        }
-        const {
-            config, schemas, tags, messageId, hash,
-            id, _id, uuid, topicId, status, tagsTopicId, contentFileId, configFileId,
-            createDate, updateDate, ...row
-        } = entry;
-        return {
-            ...row,
-            config,
-            schemas,
-            tags: Array.isArray(tags) ? tags : [],
-            messageId,
-            hash
-        };
-    }
-
-    /**
      * Parse zip policy file
      * @param zipFile Zip file
      * @returns Parsed policy
@@ -554,7 +486,7 @@ export class PolicyImportExport {
         ]);
         const tokens = tokensStringArray.map(item => JSON.parse(item));
         const schemas = schemasStringArray.map(item => JSON.parse(item));
-        const tools = toolsStringArray.map(item => PolicyImportExport.parseToolEntry(JSON.parse(item)));
+        const tools = toolsStringArray.map(item => JSON.parse(item));
         const tags = tagsStringArray.map(item => JSON.parse(item));
         const formulas = formulasStringArray.map(item => JSON.parse(item));
         const systemSchemas = systemSchemasStringArray.map(item => JSON.parse(item));

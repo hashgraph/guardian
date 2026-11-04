@@ -107,8 +107,7 @@ export class ToolImportExport {
         }
 
         ImportExportUtils.addDeterministicZipDir(zip, 'tools');
-        for (let index = 0; index < components.tools.length; index++) {
-            const tool = components.tools[index];
+        for (const tool of components.tools) {
             const item = {
                 name: tool.name,
                 description: tool.description,
@@ -116,10 +115,7 @@ export class ToolImportExport {
                 owner: tool.creator,
                 hash: tool.hash
             };
-            // A nested ref may carry no hash; fall back so refs stay unique
-            // instead of collapsing into a single tools/undefined.json entry.
-            const fileName = tool.hash || tool.messageId || index;
-            zip.file(`tools/${fileName}.json`, JSON.stringify(item), ZIP_FILE_OPTIONS);
+            zip.file(`tools/${tool.hash}.json`, JSON.stringify(item), ZIP_FILE_OPTIONS);
         }
 
         return zip;
