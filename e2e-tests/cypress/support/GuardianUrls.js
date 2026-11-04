@@ -12,6 +12,7 @@ const URL = {
 
 	//Tabs
 	Policies: '/policy-viewer',
+	Tools: '/tools',
 	Tokens: '/tokens',
 	Contracts: '/contracts',
 	Modules: '/modules',
@@ -22,6 +23,8 @@ const URL = {
 	Status: '/admin/status',
 	Settings: '/admin/settings',
 	Logs: '/admin/logs',
+	UserManagement: '/user-management',
+	TokensUser: '/tokens-user',
 };
 
 export default URL;

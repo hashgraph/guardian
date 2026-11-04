@@ -1,25 +1,36 @@
 import URL from '../../../support/GuardianUrls';
-import CommonElements from '../../../support/defaultUIElements';
+import { waitForPageReady } from '../../../support/pageReadiness';
 
 const StatusPageLocators = {
+    serviceCard: '.item .header span',
     serviceStatusElement: (value) => `//*[contains(text(), '${value}')]/../../td//mat-icon`,
 };
 
 export class StatusPage {
 
     openStatusTab() {
-        cy.get(CommonElements.navBar).contains(CommonElements.administrationTab).click()
-        cy.get(CommonElements.navBar).contains(CommonElements.statusTab).click()
+        cy.visit(URL.Root + URL.Status);
+        waitForPageReady(StatusPageLocators.serviceCard);
     }
 
     verifyIfServicesIsRunning() {
-        cy.contains('GUARDIAN_SERVICE').parent().parent().find('div[ng-reflect-ng-switch="READY"]');
-        cy.contains('AUTH_SERVICE').parent().parent().find('div[ng-reflect-ng-switch="READY"]');
-        cy.contains('WORKER').parent().parent().find('div[ng-reflect-ng-switch="READY"]');
-        cy.contains('POLICY_SERVICE').parent().parent().find('div[ng-reflect-ng-switch="READY"]');
-        cy.contains('NOTIFICATION_SERVICE').parent().parent().find('div[ng-reflect-ng-switch="READY"]');
-        cy.contains('LOGGER_SERVICE').parent().parent().find('div[ng-reflect-ng-switch="READY"]');
-        cy.contains('QUEUE').parent().parent().find('div[ng-reflect-ng-switch="READY"]');
+        const services = [
+            'GUARDIAN_SERVICE',
+            'AUTH_SERVICE',
+            'WORKER',
+            'POLICY_SERVICE',
+            'NOTIFICATION_SERVICE',
+            'LOGGER_SERVICE',
+            'QUEUE',
+        ];
+        services.forEach((serviceName) => {
+            // The status page renders one card per service; every running state shows
+            // the green check icon (svgClass="success-color").
+            cy.contains(StatusPageLocators.serviceCard, serviceName)
+                .parents('.item')
+                .find('svg-icon[src="/assets/images/icons/check.svg"]')
+                .should('exist');
+        });
     }
 
 }

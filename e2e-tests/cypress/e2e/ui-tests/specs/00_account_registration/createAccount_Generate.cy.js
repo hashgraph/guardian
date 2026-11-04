@@ -7,9 +7,11 @@ const configpage = new ConfigPage();
 
 context('Create User Accounts', { tags: ['ui'] }, () => {
 
-    const SRName = 'TestSRUI' + randomInt(9999);
+    const SRName = 'TestSRUI' + randomInt(1000000000);
     const SRUsername = Cypress.env('SRUser');
-    const userName = 'User2';
+    // A fixed name would silently collide with the account a previous run left
+    // behind; a 1e9 space keeps re-runs unique.
+    const userName = 'TestUserUI' + randomInt(1000000000);
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
@@ -19,7 +21,7 @@ context('Create User Accounts', { tags: ['ui'] }, () => {
     it('Create and registration Standard Registry', () => {
         homepage.createAccount('SR', SRName);
         configpage.verifyUserCreated(SRName);
-        configpage.hederaSRRegistration();
+        configpage.hederaSRRegistration('random', undefined, SRName);
     });
 
     it('Create and registration user', () => {
