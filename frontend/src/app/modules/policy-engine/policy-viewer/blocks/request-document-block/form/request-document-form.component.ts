@@ -128,6 +128,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     public previewRendering: boolean = false;
     private previewBusyHold: boolean = false;
     private previewBusyTimer: ReturnType<typeof setTimeout> | null = null;
+    private submitTimer: ReturnType<typeof setTimeout> | null = null;
     private previewSubmitLabel: boolean = false;
     public previewItems: ICalculationPreviewTimelineItem[] = [];
     public previewIndex: number = 0;
@@ -418,6 +419,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
+        if (this.submitTimer !== null) clearTimeout(this.submitTimer);
         if (this.previewBusyTimer !== null) clearTimeout(this.previewBusyTimer);
         if (this.previewMode) this.previewRequest++;
         this.destroy$.next(true);
@@ -643,7 +645,12 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
                         result: result?.result || result?.response
                     });
                 }
-                setTimeout(() => {
+                if (!draft) {
+                    this.formTakeover?.keep(this);
+                }
+                if (this.submitTimer !== null) clearTimeout(this.submitTimer);
+                this.submitTimer = setTimeout(() => {
+                    this.submitTimer = null;
                     this.loading = false;
                     if (!draft) {
                         this.showSubmitted(result, data);
@@ -680,7 +687,6 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         this.screen = 'submitted';
         this.dataSaved = true;
         this.sub?.unsubscribe();
-        this.formTakeover?.keep(this);
         this.changeDetectorRef.markForCheck();
     }
 

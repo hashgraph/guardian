@@ -1017,6 +1017,41 @@ describe('SchemaFormRootComponent — sections', () => {
         expect(emitted.length).toBe(1);
     }));
 
+    it('says nothing is required and offers Start when the form has no required fields', fakeAsync(() => {
+        const root = create();
+        root.completion = { answered: 0, total: 0, sections: [] } as any;
+        expect(root.overviewNothingRequired).toBeTrue();
+        expect(root.overviewTitle).toBe('Nothing is required');
+        expect(root.overviewComplete).toBeFalse();
+        const none = create();
+        expect(none.overviewNothingRequired).toBeFalse();
+    }));
+
+    it('renders Start and no ring on the overview of a form with no required fields', fakeAsync(() => {
+        TestBed.configureTestingModule({
+            declarations: [SchemaFormRootComponent],
+            providers: [UntypedFormBuilder],
+            schemas: [NO_ERRORS_SCHEMA],
+        });
+        const fixture = TestBed.createComponent(SchemaFormRootComponent);
+        fixture.componentRef.setInput('schema', new Schema({ iri: '#secs&1.0.0', document }));
+        fixture.detectChanges(false);
+        tick(64);
+        flush(100);
+        const root = fixture.componentInstance;
+        root.completion = { answered: 0, total: 0, sections: root.completion?.sections ?? [] } as any;
+        fixture.componentRef.injector.get(ChangeDetectorRef).markForCheck();
+        fixture.detectChanges(false);
+        const el: HTMLElement = fixture.nativeElement;
+        expect(el.querySelector('.sf-overview-title')?.textContent).toContain('Nothing is required');
+        expect(el.querySelector('.sf-lead')?.textContent).toContain('This form has no required fields');
+        expect(el.querySelector('.sf-bigring')).toBeNull();
+        const buttons = Array.from(el.querySelectorAll('.sf-overview-actions button')).map(b => b.textContent?.trim());
+        expect(buttons).toEqual(['Start']);
+        fixture.destroy();
+        flush(100);
+    }));
+
     it('keeps the edit action on the overview disabled until the form is dirty', fakeAsync(() => {
         const root = create();
         root.isEditMode = true;

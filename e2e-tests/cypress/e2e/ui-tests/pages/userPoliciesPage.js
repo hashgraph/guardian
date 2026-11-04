@@ -101,7 +101,7 @@ function inForm(selector) {
 function fillFormSections(fill) {
     const form = UserPoliciesPageLocators.requestForm;
     cy.get('body').then(($body) => {
-        const $start = $body.find(`${form} .sf-overview-actions button`);
+        const $start = $body.find(`${form} .sf-overview-actions button:contains('Start'), ${form} .sf-overview-actions button:contains('Continue')`);
         if ($start.length) {
             cy.wrap($start.first()).click();
         }
@@ -607,9 +607,6 @@ export class UserPoliciesPage {
         // cy.intercept("/api/v1/profiles/Registrant").as("waitForRegisterRegistrant");
         // cy.wait("@waitForRegisterRegistrant", { timeout: 180000 });
         // cy.contains(RegistrantPageLocators.createIsssueRequestBtn).click();
-        // cy.contains(RegistrantPageLocators.requiredFillDateLabel).parent().parent().parent().find('input').type('3/1/2023')
-        // cy.contains(RegistrantPageLocators.requiredFillDateLabel).parent().parent().parent().find('input').type('3/1/2023')
-        // cy.contains(RegistrantPageLocators.requiredFillNumberLabel).parent().parent().parent().find('input').type('123')
         // cy.get(RegistrantPageLocators.submitBtn).last().click();
         // cy.wait(60000);
         // cy.contains("Issue Requests").click({force: true});

@@ -97,14 +97,6 @@ form {
                     border-color: var(--guardian-warning-color);
                 }
 
-                p-calendar::ng-deep {
-
-                    button,
-                    input {
-                        border-color: var(--guardian-warning-color);
-                    }
-                }
-
                 p-select.p-select {
                     border-color: var(--guardian-warning-color);
                 }
@@ -113,14 +105,6 @@ form {
             &[rules-status="Success"] {
                 input {
                     border-color: var(--guardian-success-color);
-                }
-
-                p-calendar::ng-deep {
-
-                    button,
-                    input {
-                        border-color: var(--guardian-success-color);
-                    }
                 }
 
                 p-select.p-select {

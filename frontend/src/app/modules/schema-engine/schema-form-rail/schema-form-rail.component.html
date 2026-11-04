@@ -4,10 +4,14 @@
     <button type="button" class="sf-rail-hide" (click)="hide.emit()">{{ inDrawer ? 'Close' : 'Hide menu' }}</button>
   </div>
   <div class="sf-rail-sum">
-    {{ answered }} of {{ total }} required answered
-    <div class="sf-bar" role="progressbar" aria-label="Required answers" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="percent">
-      <i [style.width.%]="percent"></i>
-    </div>
+    @if (total === 0) {
+      No required fields
+    } @else {
+      {{ answered }} of {{ total }} required answered
+      <div class="sf-bar" role="progressbar" aria-label="Required answers" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="percent">
+        <i [style.width.%]="percent"></i>
+      </div>
+    }
   </div>
   <div class="sf-rail-list">
     <div

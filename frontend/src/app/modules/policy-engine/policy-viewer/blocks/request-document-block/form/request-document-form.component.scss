@@ -321,10 +321,10 @@ form {
     .guardian-button-primary {
         border: 1px solid transparent;
         background: var(--color-primary);
-        color: #fff;
+        color: var(--guardian-secondary-color);
 
         &:hover:not(:disabled) {
-            background: color-mix(in srgb, var(--color-primary) 88%, #000);
+            background: color-mix(in srgb, var(--color-primary) 88%, var(--color-grey-black-1));
         }
     }
 
