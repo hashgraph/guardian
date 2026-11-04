@@ -14,7 +14,7 @@ export interface AppThemeOption {
  */
 const APP_THEME_STORAGE_KEY = 'GUARDIAN_APP_THEME';
 
-const LAST_USER_STORAGE_KEY = 'GUARDIAN_APP_THEME_LAST_USER';
+export const LAST_USER_STORAGE_KEY = 'GUARDIAN_APP_THEME_LAST_USER';
 
 function storageKeyForUser(userId: string | null): string {
     return userId ? `${APP_THEME_STORAGE_KEY}:${userId}` : APP_THEME_STORAGE_KEY;

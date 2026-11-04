@@ -577,8 +577,66 @@ export class SchemaFormComponent implements OnInit {
 
     public copyValue(item: IFieldControl<any>): void {
         const value = item.control?.value;
-        if (value !== undefined && value !== null && typeof navigator !== 'undefined' && navigator.clipboard) {
-            navigator.clipboard.writeText(String(value)).catch(() => { });
+        if (value !== undefined && value !== null) {
+            this.writeClipboard(String(value));
+        }
+    }
+
+    private writeClipboard(text: string): void {
+        if (typeof navigator !== 'undefined' && navigator.clipboard) {
+            navigator.clipboard.writeText(text).catch(() => { });
+        }
+    }
+
+    public get showMetadata(): boolean {
+        return !!this.formModel?.rootForm?.showMetadata;
+    }
+
+    public metaType(item: IFieldControl<any>): string {
+        const base = item.customType
+            || (item.format ? `${item.type} · ${item.format}` : String(item.type || ''));
+        return item.isArray ? `array · ${base}` : base;
+    }
+
+    public metaTags(item: IFieldControl<any>): { text: string; title?: string }[] {
+        const tags: { text: string; title?: string }[] = [];
+        const values: any[] = Array.isArray(item.enumValues) ? item.enumValues : [];
+        if (values.length) {
+            tags.push({
+                text: `${values.length} allowed value${values.length === 1 ? '' : 's'}`,
+                title: values.map((value) => String(value)).join(', ')
+            });
+        }
+        if (item.unit) {
+            tags.push({ text: `unit ${item.unit}` });
+        }
+        if (item.default !== undefined && item.default !== null && item.default !== '' && typeof item.default !== 'object') {
+            tags.push({ text: `default ${item.default}` });
+        }
+        if (this.formModel?.isConditional(item)) {
+            tags.push({ text: 'conditional' });
+        }
+        const formulas = this.getFieldFormulas(item).length;
+        if (formulas) {
+            tags.push({ text: `${formulas} formula${formulas === 1 ? '' : 's'}` });
+        }
+        if (this.rules?.[item.fullPath]) {
+            tags.push({ text: 'schema rule' });
+        }
+        if (item.readonly) {
+            tags.push({ text: 'read-only preset' });
+        }
+        return tags;
+    }
+
+    public metaPath(item: IFieldControl<any>): string {
+        return this.formModel.metadataPath(item);
+    }
+
+    public copyPath(item: IFieldControl<any>): void {
+        const path = this.metaPath(item);
+        if (path) {
+            this.writeClipboard(path);
         }
     }
 

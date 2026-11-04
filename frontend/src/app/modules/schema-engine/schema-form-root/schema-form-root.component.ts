@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Optional, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { SchemaFormComponent } from '../schema-form/schema-form.component';
 import { AbstractControl, UntypedFormArray, UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { Schema, SchemaField, SchemaRuleValidateResult } from '@guardian/interfaces';
@@ -10,6 +10,7 @@ import { getErrorMessage } from '../schema-form/schema-form-errors';
 import { IFormTarget, isRefLeaf, walkFields } from '../schema-form/schema-form-walk';
 import { IFormCompletion, ISectionCompletion, computeCompletion, isAnswered } from '../schema-form/schema-form-completion';
 import { BooleanProperty } from '../../policy-engine/structures/storage/boolean-prop';
+import { SchemaFormPreferencesService } from '../../../services/schema-form-preferences.service';
 import { IFormSection, buildSections, promotedRootName } from './schema-form-sections';
 
 /**
@@ -155,11 +156,19 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
 
     constructor(
         private fb: UntypedFormBuilder,
-        protected changeDetectorRef: ChangeDetectorRef
+        protected changeDetectorRef: ChangeDetectorRef,
+        @Optional() private preferences?: SchemaFormPreferencesService
     ) {
         this.group = this.fb.group({});
         this.model = null;
         this.railHiddenProp.load();
+        this.preferences?.reload();
+        this.metadataSub = this.preferences?.showFieldMetadata$.subscribe((value) => {
+            if (this.model) {
+                this.model.showMetadata = value;
+                this.changeDetectorRef.markForCheck();
+            }
+        });
     }
 
     public get railHidden(): boolean {
@@ -377,6 +386,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         this.formulaSub?.unsubscribe();
         this.controlsSub?.unsubscribe();
         this.completionSub?.unsubscribe();
+        this.metadataSub?.unsubscribe();
         if (this.model) {
             this.model.destroy();
         }
@@ -403,6 +413,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             keepDefaultLabels: !this.userPreset,
         });
         this.model.errorsRevealed = this.errorsRevealed;
+        this.model.showMetadata = !!this.preferences?.showFieldMetadata;
         this.model.build();
         this.updatePreviewMissingFieldIds();
         this.controlsSub = this.model.controlsChanged$.subscribe(() => {
@@ -513,6 +524,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     private userPreset = false;
 
     public errorsRevealed = false;
+    private metadataSub?: Subscription;
 
     public previewMissingFieldIds: string[] = [];
 

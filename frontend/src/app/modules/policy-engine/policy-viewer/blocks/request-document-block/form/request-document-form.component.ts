@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, HostBinding, Output, ViewChild, inject } from '@angular/core';
+import { SchemaFormPreferencesService } from 'src/app/services/schema-form-preferences.service';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { RequestDocumentBlockComponent } from '../request-document-block.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -383,6 +384,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         private policyTest: PolicyTestAutomationService,
         private formulasService: FormulasService,
         private calculationPreview: CalculationPreviewService,
+        public formPreferences: SchemaFormPreferencesService,
     ) {
         this.dataForm = this.fb.group({});
         this.storage = new DocumentAutosaveStorage(indexedDb);

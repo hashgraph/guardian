@@ -145,6 +145,43 @@ form {
                 align-items: stretch;
                 gap: 0;
             }
+
+            .form-menu-sep {
+                height: 1px;
+                margin: 6px 0;
+                background: var(--guardian-border-color);
+            }
+
+            .form-menu-switch {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                padding: 8px 10px;
+                border-radius: 6px;
+                font-size: 14px;
+                font-weight: 500;
+                color: var(--guardian-font-color);
+                cursor: pointer;
+
+                &:hover,
+                &:focus-visible {
+                    background: var(--sf-sunken);
+                    outline: none;
+                }
+
+                p-toggleswitch {
+                    flex: 0 0 auto;
+                    pointer-events: none;
+                }
+            }
+
+            .form-menu-hint {
+                padding: 0 10px 6px;
+                font-size: 11.5px;
+                line-height: 16px;
+                color: var(--color-grey-5);
+            }
         }
     }
 }
