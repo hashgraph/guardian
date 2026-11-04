@@ -855,3 +855,29 @@ describe('FieldForm — revealed errors', () => {
         form.destroy();
     });
 });
+
+describe('FieldForm — pattern with a format', () => {
+    it('applies the format validator on top of the pattern', () => {
+        const document: any = {
+            $id: '#pe&1.0.0',
+            $comment: JSON.stringify({ '@id': 'ctx:#pe&1.0.0', term: 'pe&1.0.0' }),
+            title: 'Pattern',
+            description: 'Pattern',
+            type: 'object',
+            properties: {
+                mail: { type: 'string', format: 'email', pattern: '^a', title: 'mail', description: 'mail' },
+            },
+        };
+        const form = new FieldForm(new UntypedFormGroup({}));
+        form.setData({ schema: new Schema({ iri: '#pe&1.0.0', document }) });
+        form.build();
+        const control = form.controls!.find((c) => c.name === 'mail')!.control!;
+        control.setValue('a-not-mail');
+        expect(control.errors?.['pattern']).toBeTruthy();
+        control.setValue('a@b.co');
+        expect(control.errors).toBeNull();
+        control.setValue('b@b.co');
+        expect(control.errors?.['pattern']).toBeTruthy();
+        form.destroy();
+    });
+});

@@ -183,7 +183,7 @@ export class CalculationPreviewService {
             const name = item.target || item.source || 'Document';
             const states = Array.isArray(item.document) ? item.document : [item.document];
             for (const state of states) {
-                const document = state && typeof state === 'object' ? Reflect.get(state, 'document') : null;
+                const document = this.unwrapDocument(state);
                 if (document) {
                     items.push({
                         role: 'result',
@@ -199,12 +199,14 @@ export class CalculationPreviewService {
         return items;
     }
 
+    /** The document of a state wrapper (`{ document }`), or null when there is none. */
+    private unwrapDocument(state: unknown): object | null {
+        const document = state && typeof state === 'object' ? Reflect.get(state, 'document') : null;
+        return document && typeof document === 'object' ? document : null;
+    }
+
     private getInputDocument(input: unknown): unknown {
-        if (!input || typeof input !== 'object') {
-            return null;
-        }
-        const document = Reflect.get(input, 'document');
-        return document && typeof document === 'object' ? document : input;
+        return this.unwrapDocument(input) ?? (input && typeof input === 'object' ? input : null);
     }
 
     private restorePreviewTables(node: unknown): unknown {

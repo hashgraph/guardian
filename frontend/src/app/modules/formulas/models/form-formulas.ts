@@ -21,6 +21,11 @@ export class FormFormulas {
     private data: any = null;
     private readonly prefix: string[];
     private cache = new Map<string, FormulaItem[]>();
+    /**
+     * The serialized form of each `entries` object. Entry scopes are never mutated after they
+     * are handed out (a changed scope is a new object), so the key can be reused per object.
+     */
+    private entriesKeys = new WeakMap<object, string>();
 
     constructor(
         public readonly tree: FormulasTree,
@@ -77,7 +82,7 @@ export class FormFormulas {
         if (!field) {
             return EMPTY;
         }
-        const key = `${fullPath}|${JSON.stringify(entries ?? null)}`;
+        const key = `${fullPath}|${this.entriesKey(entries)}`;
         let result = this.cache.get(key);
         if (!result) {
             const items = this.tree.get(field.schema, field.path, this.context(entries));
@@ -85,6 +90,18 @@ export class FormFormulas {
             this.cache.set(key, result);
         }
         return result;
+    }
+
+    private entriesKey(entries?: Record<string, number> | null): string {
+        if (!entries) {
+            return 'null';
+        }
+        let key = this.entriesKeys.get(entries);
+        if (key === undefined) {
+            key = JSON.stringify(entries);
+            this.entriesKeys.set(entries, key);
+        }
+        return key;
     }
 
     public context(entries?: Record<string, number> | null): IFormulaConditionContext {

@@ -1,6 +1,8 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { DialogService } from 'primeng/dynamicdialog';
+import { Tooltip, TooltipModule } from 'primeng/tooltip';
 import { TableFieldComponent } from './table-field.component';
 import { CsvService } from '../../../services/csv.service';
 import { ArtifactService } from '../../../services/artifact.service';
@@ -14,9 +16,10 @@ describe('TableFieldComponent', () => {
         { name: 'CO2 (tonnes)', key: 'co2_tonnes' },
     ];
 
-    const build = (): TableFieldComponent => {
+    const build = (imports: any[] = []): TableFieldComponent => {
         TestBed.resetTestingModule();
         TestBed.configureTestingModule({
+            imports,
             declarations: [TableFieldComponent],
             providers: [
                 { provide: DialogService, useValue: {} },
@@ -123,6 +126,22 @@ describe('TableFieldComponent', () => {
 
         expect(without.previewHeaderKeysLimited).toEqual([]);
         expect(without.previewRowsLimited).toEqual([]);
+    });
+
+    it('puts the full column name on the preview header as a tooltip', () => {
+        const longName = 'Estimated net reductions and removals (tCO2e)';
+        build([TooltipModule]);
+        const fixture = TestBed.createComponent(TableFieldComponent);
+        fixture.componentInstance.item = {
+            name: 'field4',
+            field: { tableColumns: [{ name: longName, key: 'net' }] },
+        } as any;
+        fixture.detectChanges();
+
+        const header = fixture.debugElement.query(By.css('.table-field__cell--head'));
+
+        expect(header.injector.get(Tooltip).content).toBe(longName);
+        expect(header.nativeElement.querySelector('.table-field__head-text')?.textContent?.trim()).toBe(longName);
     });
 
     it('keeps the uploaded file in the browser when the field is destroyed', () => {

@@ -6,6 +6,7 @@ import { Subject, Subscription, takeUntil } from 'rxjs';
 import { uriValidator } from 'src/app/validators/uri.validator';
 import { GeoForm } from './geo-form';
 import { SentinelHubForm } from './sentinel-hub-form';
+import { isIndexSegment } from '../schema-form/schema-form-walk';
 
 /**
  * Loose equality used by condition predicates: numbers, dates and trimmed strings.
@@ -137,7 +138,7 @@ export class FieldForm {
     public metadataPath(item: IFieldControl<any>): string {
         const scope = (this.previewPath() || '').split('.').filter(Boolean);
         const own = (item.path || item.name).split('.');
-        const depth = scope.filter((part) => !/^\d+$/.test(part)).length + 1;
+        const depth = scope.filter((part) => !isIndexSegment(part)).length + 1;
         const lead = own.slice(0, Math.max(0, own.length - depth));
         return [...lead, ...scope, item.name].join('.');
     }
@@ -148,6 +149,8 @@ export class FieldForm {
     }
 
     private arrayGroupCache: Map<IFieldControl<any>, IArrayGroupEntry[]> | null = null;
+    /** Every array control that is a dependent in some group; built together with `arrayGroupCache`. */
+    private managedSet: Set<IFieldControl<any>> | null = null;
     private fieldOrder: Map<string, number> | null = null;
     private readonly arrayDependencySources = new Map<UntypedFormArray, Subscription>();
 
@@ -263,6 +266,7 @@ export class FieldForm {
     public build() {
         const { fields, conditions } = this.updateData();
         this.arrayGroupCache = null;
+        this.managedSet = null;
         this.crossSchemaItems = [];
         this.conditionExprBySource = new Map<SchemaCondition, IConditionExpr>();
         this.conditionRevealMap = SchemaHelper.buildRevealMap(conditions || []);
@@ -658,6 +662,10 @@ export class FieldForm {
     public getArrayGroups(): Map<IFieldControl<any>, IArrayGroupEntry[]> {
         if (!this.arrayGroupCache) {
             this.arrayGroupCache = this.buildArrayGroups();
+            this.managedSet = new Set<IFieldControl<any>>();
+            for (const dependents of this.arrayGroupCache.values()) {
+                for (const entry of dependents) { this.managedSet.add(entry.control); }
+            }
         }
         return this.arrayGroupCache;
     }
@@ -667,10 +675,8 @@ export class FieldForm {
     }
 
     public isManagedArray(item: IFieldControl<any>): boolean {
-        for (const dependents of this.getArrayGroups().values()) {
-            if (dependents.some(entry => entry.control === item)) { return true; }
-        }
-        return false;
+        this.getArrayGroups();
+        return this.managedSet!.has(item);
     }
 
     private alignArrayGroups(): void {
@@ -702,6 +708,7 @@ export class FieldForm {
                 other !== dependency && other.field.join('.') === dependency.on.join('.')));
             ordered.push(...pending.splice(Math.max(next, 0), 1));
         }
+        let changed = false;
         for (const dependency of ordered) {
             if (!dependency.valueMappings?.length) { continue; }
             const source = this.resolveArrayEntry(dependency.on);
@@ -713,11 +720,16 @@ export class FieldForm {
                     const sourceControl = source.control.list?.[index]?.control?.get(mapping.source.join('.'));
                     const targetControl = target.control.list?.[index]?.control?.get(mapping.target.join('.'));
                     if (!sourceControl || !targetControl) { continue; }
-                    targetControl.setValue(sourceControl.value ?? null, { emitEvent: false });
+                    const value = sourceControl.value ?? null;
+                    if (targetControl.disabled && targetControl.value === value) { continue; }
+                    targetControl.setValue(value, { emitEvent: false });
                     targetControl.disable({ emitEvent: false });
+                    changed = true;
                 }
             }
         }
+        // The writes above are silent, so tell the views that cache required counts.
+        if (changed) { this.rootForm.controlsChanged$.next(); }
     }
 
     private subscribeArrayDependencyValues(): void {
@@ -1126,7 +1138,6 @@ export class FieldForm {
 
         if (item.pattern) {
             validators.push(Validators.pattern(new RegExp(item.pattern)));
-            return validators;
         }
 
         if (item.format === 'email') {
@@ -1264,7 +1275,7 @@ export class FieldForm {
                 }
                 const tail = requiredPath.slice(prefix.length).split('.');
                 let start = 0;
-                while (/^\d+$/.test(tail[start] || '')) {
+                while (isIndexSegment(tail[start] || '')) {
                     start++;
                 }
                 const childPrefix = [path, ...tail.slice(0, start)].join('.');
@@ -1527,6 +1538,7 @@ export class FieldForm {
         this.form.addControl(item.name, item.control);
         if (this.rootForm.arrayDependencies?.length) {
             this.rootForm.arrayGroupCache = null;
+            this.rootForm.managedSet = null;
             this.rootForm.alignArrayGroups();
         }
         this.rebuildCrossSchemaConditions(true);
@@ -1639,7 +1651,7 @@ export class FieldForm {
                         return [path];
                     }
                     const tail = path.slice(prefix.length).split('.');
-                    if (!/^\d+$/.test(tail[0])) {
+                    if (!isIndexSegment(tail[0])) {
                         return [path];
                     }
                     const row = Number(tail[0]);

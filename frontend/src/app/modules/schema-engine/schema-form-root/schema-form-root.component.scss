@@ -101,8 +101,8 @@
     gap: 6px;
     padding: 6px 12px;
     border-radius: 8px;
-    border: 1px solid var(--guardian-border-color, #E1E7EF);
-    background: var(--guardian-background, #FFF);
+    border: 1px solid var(--guardian-border-color);
+    background: var(--guardian-background);
     color: var(--guardian-font-color);
     font-size: 13px;
     cursor: pointer;
@@ -454,9 +454,9 @@
 
 .sf-btn-primary {
     background: var(--color-primary);
-    color: #fff;
+    color: var(--guardian-secondary-color);
 
     &:hover:not(:disabled) {
-        background: color-mix(in srgb, var(--color-primary) 88%, #000);
+        background: color-mix(in srgb, var(--color-primary) 88%, var(--color-grey-black-1));
     }
 }

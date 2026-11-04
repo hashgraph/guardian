@@ -1,7 +1,15 @@
 import { UntypedFormGroup } from '@angular/forms';
 import { Schema, SchemaDataTypes } from '@guardian/interfaces';
-import { FieldForm } from '../schema-form-model/field-form';
+import { FieldForm, IFieldControl } from '../schema-form-model/field-form';
 import { computeCompletion, countRequired } from './schema-form-completion';
+import { CommonModule } from '@angular/common';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { ReactiveFormsModule } from '@angular/forms';
+import { DialogService } from 'primeng/dynamicdialog';
+import { IPFSService } from 'src/app/services/ipfs.service';
+import { FormTextareaComponent } from './form-textarea/form-textarea.component';
+import { SchemaFormComponent } from './schema-form.component';
 
 describe('countRequired', () => {
     const document: any = {
@@ -160,5 +168,77 @@ describe('computeCompletion', () => {
         expect(result.sections.map(item => [item.title, item.answered, item.total])).toEqual([['Main', 1, 1], ['Group', 0, 1]]);
         expect(result.sections.map(item => item.hasErrors)).toEqual([false, true]);
         form.destroy();
+    });
+});
+
+const createView = (model: FieldForm) => {
+    TestBed.configureTestingModule({
+        declarations: [SchemaFormComponent, FormTextareaComponent],
+        imports: [CommonModule, ReactiveFormsModule],
+        providers: [
+            { provide: IPFSService, useValue: {} },
+            { provide: DialogService, useValue: {} },
+        ],
+        schemas: [NO_ERRORS_SCHEMA],
+    });
+    const fixture = TestBed.createComponent(SchemaFormComponent);
+    fixture.componentRef.setInput('form-model', model);
+    fixture.componentRef.setInput('showButtons', false);
+    fixture.detectChanges();
+    return fixture;
+};
+
+
+describe('SchemaFormComponent requiredLeft cache', () => {
+    const text = (title: string) => ({ type: SchemaDataTypes.string, title, description: title });
+    const document: any = {
+        $id: '#rl&1.0.0',
+        $comment: JSON.stringify({ '@id': 'ctx:#rl&1.0.0', term: 'rl&1.0.0' }),
+        type: SchemaDataTypes.object,
+        properties: {
+            group: { $ref: '#group', title: 'Group', description: 'Group' },
+            rows: { type: SchemaDataTypes.array, title: 'Rows', description: 'Rows', items: { $ref: '#group' } },
+        },
+        required: ['group'],
+        $defs: {
+            '#group': {
+                $id: '#group', type: SchemaDataTypes.object,
+                properties: { one: text('One'), two: text('Two') },
+                required: ['one', 'two'],
+            },
+        },
+    };
+    const build = () => {
+        const model = new FieldForm(new UntypedFormGroup({}));
+        model.setData({ schema: new Schema({ iri: '#rl&1.0.0', document }), preset: { group: {} } });
+        model.build();
+        const fixture = createView(model);
+        const view = fixture.componentInstance;
+        return { model, view, fixture, group: model.controls!.find((c) => c.name === 'group')! };
+    };
+
+    it('reuses the count until a child value changes', () => {
+        const { view, group } = build();
+        const first = view.requiredLeft(group);
+        expect(first).toEqual(jasmine.objectContaining({ left: 2, total: 2 }));
+        expect(view.requiredLeft(group)).toBe(first);
+        group.control.get('one')!.setValue('x');
+        expect(view.requiredLeft(group)).toEqual(jasmine.objectContaining({ left: 1, total: 2 }));
+    });
+
+    it('updates after a condition hides a required field', () => {
+        const { model, view, group } = build();
+        expect(view.requiredLeft(group).total).toBe(2);
+        // A condition hides a field with emitEvent: false and announces it on controlsChanged$.
+        group.model!.controls!.find((c: IFieldControl<any>) => c.name === 'two')!.visibility = false;
+        model.controlsChanged$.next();
+        expect(view.requiredLeft(group)).toEqual(jasmine.objectContaining({ left: 1, total: 1 }));
+    });
+
+    it('stops listening on destroy', () => {
+        const { model, view, fixture, group } = build();
+        view.requiredLeft(group);
+        fixture.destroy();
+        expect(() => model.controlsChanged$.next()).not.toThrow();
     });
 });

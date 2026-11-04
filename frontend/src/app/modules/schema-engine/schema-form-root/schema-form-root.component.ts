@@ -7,7 +7,7 @@ import { Subscription, audit, timer } from 'rxjs';
 import { FormulasTree } from 'src/app/modules/formulas/models/formula-tree';
 import { FormFormulas, IFormulaLinkScope } from 'src/app/modules/formulas/models/form-formulas';
 import { getErrorMessage } from '../schema-form/schema-form-errors';
-import { IFormTarget, isRefLeaf, walkFields } from '../schema-form/schema-form-walk';
+import { IFormTarget, isIndexSegment, isRefLeaf, walkFields } from '../schema-form/schema-form-walk';
 import { IFormCompletion, ISectionCompletion, computeCompletion, isAnswered } from '../schema-form/schema-form-completion';
 import { BooleanProperty } from '../../policy-engine/structures/storage/boolean-prop';
 import { SchemaFormPreferencesService } from '../../../services/schema-form-preferences.service';
@@ -538,7 +538,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
                 if (index === parts.length - 1) {
                     return [field.id];
                 }
-                if (field.isArray && /^\d+$/.test(parts[index + 1] || '')) {
+                if (field.isArray && isIndexSegment(parts[index + 1] || '')) {
                     const row = field.list?.[Number(parts[++index])];
                     controls = row?.model?.controls || [];
                 } else {
@@ -567,7 +567,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             if (!field) break;
             field.open = true;
             targetId = field.id;
-            if (field.isArray && /^\d+$/.test(parts[index + 1] || '')) {
+            if (field.isArray && isIndexSegment(parts[index + 1] || '')) {
                 const row = field.list?.[Number(parts[++index])];
                 if (!row) break;
                 row.open = true;
@@ -918,6 +918,9 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
 
     public get overviewTitle(): string {
         const { answered = 0, total = 0 } = this.completion ?? {};
+        if (total === 0) {
+            return 'Nothing is required';
+        }
         if (answered >= total) {
             return 'Ready to validate';
         }
@@ -925,7 +928,12 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     }
 
     public get overviewComplete(): boolean {
-        return !!this.completion && this.completion.answered >= this.completion.total;
+        return !!this.completion && this.completion.total > 0 && this.completion.answered >= this.completion.total;
+    }
+
+    /** The form has no required fields at all, so there is no progress to show. */
+    public get overviewNothingRequired(): boolean {
+        return (this.completion?.total ?? 0) === 0;
     }
 
     public get overviewPrimaryText(): string {

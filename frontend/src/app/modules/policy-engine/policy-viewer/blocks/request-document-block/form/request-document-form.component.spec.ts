@@ -1,5 +1,5 @@
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { FormControl, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { of, Subscription } from 'rxjs';
 import { DatePipe } from '@angular/common';
@@ -174,7 +174,53 @@ describe('RequestDocumentFormComponent', () => {
     describe('submitted', () => {
         const document = { id: 'urn:uuid:1', issuanceDate: '2026-11-01T10:42:00.000Z' };
 
-        it('builds the snapshot, stops the autosave and keeps the takeover', () => {
+        it('gives the document to the viewer and marks the active view button', () => {
+            const { fixture, component } = create();
+            (component as any).showSubmitted({ response: { document } }, { name: 'x' });
+            fixture.detectChanges();
+            const element: HTMLElement = fixture.nativeElement;
+
+            expect((element.querySelector('app-document-view') as any).document).toBe(document);
+            const buttons = [...element.querySelectorAll<HTMLButtonElement>('.form-submitted-bar .form-toggle button')];
+            expect(buttons.map((button) => button.classList.contains('on'))).toEqual([true, false]);
+            expect(buttons.map((button) => button.getAttribute('aria-pressed'))).toEqual(['true', 'false']);
+
+            buttons[1].click();
+            fixture.detectChanges();
+            expect(buttons.map((button) => button.classList.contains('on'))).toEqual([false, true]);
+            expect(element.querySelector('app-document-view')).not.toBeNull();
+            expect(element.querySelector<HTMLElement>('pre.form-submitted-json')!.hidden).toBeFalse();
+            fixture.destroy();
+        });
+
+        it('keeps a viewer per visited preview card and shows the document in it', () => {
+            const { fixture, component } = create();
+            const item = (id: string, role: 'input' | 'result') => ({
+                role, label: id, blockType: null, source: null, target: null, document: { id }, title: id, sub: ''
+            });
+            component.previewMode = true;
+            (component as any).previewSubmitLabel = true;
+            component.previewItems = [item('a', 'input'), item('b', 'result')] as any;
+            component.previewIndex = 1;
+            component.previewVisited = new Set([1]);
+            component.screen = 'presults';
+            (component as any).changeDetectorRef.markForCheck();
+            fixture.detectChanges();
+            const element: HTMLElement = fixture.nativeElement;
+            const views = () => [...element.querySelectorAll('app-document-view')] as any[];
+
+            expect(views().map((view) => view.document)).toEqual([{ id: 'b' }]);
+            component.selectPreviewItem(0);
+            (component as any).changeDetectorRef.markForCheck();
+            fixture.detectChanges();
+            expect(views().map((view) => view.document)).toEqual([{ id: 'a' }, { id: 'b' }]);
+            expect(views().map((view) => view.parentElement.parentElement.hidden)).toEqual([false, true]);
+            const buttons = [...element.querySelectorAll<HTMLButtonElement>('.form-pres-head .form-toggle button')];
+            expect(buttons.map((button) => button.getAttribute('aria-pressed'))).toEqual(['true', 'false']);
+            fixture.destroy();
+        });
+
+        it('builds the snapshot and stops the autosave', () => {
             const { fixture, component } = create();
             const autosave = new Subscription();
             (component as any).sub = autosave;
@@ -195,7 +241,6 @@ describe('RequestDocumentFormComponent', () => {
                 payload: { name: 'x' },
             }));
             expect(autosave.closed).toBeTrue();
-            expect(takeover.keep).toHaveBeenCalledWith(component);
             expect(fixture.nativeElement.querySelector('.form-submitted-banner')).not.toBeNull();
             expect(component.backLabel).toBe('Back to Project submittal');
             fixture.destroy();
@@ -266,5 +311,46 @@ describe('RequestDocumentFormComponent', () => {
             expect(closed).toBe(1);
             fixture.destroy();
         });
+    });
+
+    describe('submit timing', () => {
+        const submit = (component: RequestDocumentFormComponent, draft: boolean) => {
+            const target = component as any;
+            target.storage = { delete: async () => undefined };
+            target.tablePersist = { persistTablesInDocument: async () => undefined, rollbackIpfsUploads: async () => undefined };
+            target.geoFilePersist = { persistGeoFilesInDocument: async () => undefined, rollbackGridFsUploads: async () => undefined };
+            apiCall.and.returnValue(of({ response: { document: { id: 'urn:uuid:1' } } }));
+            return target.onSubmit(draft) as Promise<void>;
+        };
+
+        it('keeps the takeover as soon as the request returns, before the 1 s delay', fakeAsync(() => {
+            const { fixture, component } = create();
+            submit(component, false);
+            tick(0);
+            expect(apiCall).toHaveBeenCalled();
+            expect(takeover.keep).toHaveBeenCalledWith(component);
+            expect(component.screen).not.toBe('submitted');
+            tick(1000);
+            expect(component.screen).toBe('submitted');
+            fixture.destroy();
+        }));
+
+        it('does not keep the takeover for a draft', fakeAsync(() => {
+            const { fixture, component } = create();
+            submit(component, true);
+            tick(1000);
+            expect(takeover.keep).not.toHaveBeenCalled();
+            expect(component.dataSaved).toBeTrue();
+            fixture.destroy();
+        }));
+
+        it('clears the timer on destroy', fakeAsync(() => {
+            const { fixture, component } = create();
+            submit(component, false);
+            tick(0);
+            fixture.destroy();
+            tick(1000);
+            expect(component.screen).not.toBe('submitted');
+        }));
     });
 });

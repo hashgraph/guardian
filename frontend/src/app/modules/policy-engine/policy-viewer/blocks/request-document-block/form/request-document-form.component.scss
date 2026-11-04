@@ -205,6 +205,11 @@ form {
 
 .guardian-loading.preview-loading-overlay {
     @include preview.overlay;
+    // Opaque, so the busy text inside it stays readable; the veil comes from the background
+    opacity: 1;
+    background: color-mix(in srgb, var(--guardian-background) 75%, transparent);
+    flex-direction: column;
+    gap: 8px;
 }
 
 // Rotates with transform only, so it keeps spinning while the main thread builds the form
@@ -321,10 +326,10 @@ form {
     .guardian-button-primary {
         border: 1px solid transparent;
         background: var(--color-primary);
-        color: #fff;
+        color: var(--guardian-secondary-color);
 
         &:hover:not(:disabled) {
-            background: color-mix(in srgb, var(--color-primary) 88%, #000);
+            background: color-mix(in srgb, var(--color-primary) 88%, var(--color-grey-black-1));
         }
     }
 
@@ -811,11 +816,6 @@ form {
 }
 
 .form-busy-text {
-    position: absolute;
-    z-index: 100;
-    top: calc(50% + 44px);
-    left: 50%;
-    transform: translateX(-50%);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -829,10 +829,6 @@ form {
     text-align: center;
     font-size: 13px;
     color: var(--guardian-font-color);
-
-    &[hidden] {
-        display: none;
-    }
 
     span {
         color: var(--sf-text-2);
@@ -890,7 +886,9 @@ form {
     }
 }
 
-.form-results {
+// Heading shared by the validation results and the preview results
+.form-results,
+.form-presults {
     .form-results-eyebrow {
         font-size: 12px;
         color: var(--sf-text-3);
@@ -904,7 +902,30 @@ form {
         font-weight: 600;
         letter-spacing: -0.01em;
     }
+}
 
+// Head of a document: pills, a title, a note and the view toggle on one wrapping line
+%form-doc-head {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    b {
+        font-size: 15px;
+    }
+
+    small {
+        font-size: 12px;
+        color: var(--sf-text-3);
+    }
+
+    .form-submitted-spacer {
+        flex: 1 1 auto;
+    }
+}
+
+.form-results {
     .form-results-lead {
         max-width: 520px;
         margin: 0;
@@ -1055,38 +1076,16 @@ form {
     }
 
     .form-submitted-bar {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 8px;
+        @extend %form-doc-head;
         margin-bottom: 12px;
 
         b {
-            font-size: 15px;
             font-weight: 600;
-        }
-
-        .form-submitted-spacer {
-            flex: 1 1 auto;
         }
     }
 }
 
 .form-presults {
-    .form-results-eyebrow {
-        font-size: 12px;
-        color: var(--sf-text-3);
-        margin-bottom: 4px;
-    }
-
-    .form-results-title {
-        margin: 0 0 6px;
-        font-size: 24px;
-        line-height: 1.2;
-        font-weight: 600;
-        letter-spacing: -0.01em;
-    }
-
     .form-results-lead {
         max-width: 520px;
         margin: 0 0 16px;
@@ -1249,24 +1248,8 @@ form {
     }
 
     .form-pres-head {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 8px;
+        @extend %form-doc-head;
         margin-bottom: 10px;
-
-        b {
-            font-size: 15px;
-        }
-
-        small {
-            font-size: 12px;
-            color: var(--sf-text-3);
-        }
-
-        .form-submitted-spacer {
-            flex: 1 1 auto;
-        }
     }
 }
 

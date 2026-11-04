@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, QueryList, SimpleChanges, ViewChildren } from '@angular/core';
+import { ChangeDetectorRef, Component, DoCheck, EventEmitter, Input, OnInit, Output, QueryList, SimpleChanges, ViewChildren } from '@angular/core';
 import { UntypedFormArray } from '@angular/forms';
 import {
     isGeoCustomType,
@@ -66,7 +66,7 @@ const FILE_EXTENSIONS = '.txt, .pdf, .doc, .docx, .xls, .csv, .kml, .geoJSON';
     styleUrls: ['./schema-form.component.scss'],
     standalone: false
 })
-export class SchemaFormComponent implements OnInit {
+export class SchemaFormComponent implements OnInit, DoCheck {
     // The PrimeNG auto-resize reads scrollHeight on every change detection, which forces a layout
     // for each textarea. Browsers with `field-sizing` grow the textarea in CSS instead.
     public readonly scriptAutoResize = !CSS.supports('field-sizing', 'content');
@@ -118,6 +118,21 @@ export class SchemaFormComponent implements OnInit {
     private geoOptions = new Map<string, GeoOption[]>();
 
     private entryScopes = new WeakMap<object, Record<string, number>>();
+    private scopeMeta = new WeakMap<object, { entries: unknown; index: number }>();
+    private requiredCache = new WeakMap<IFieldControl<any>, { left: number; total: number; control: unknown }>();
+    private requiredSubs = new Map<IFieldControl<any>, Subscription>();
+    private controlsChangedSub?: Subscription;
+    private controlsChangedFor?: FieldForm;
+    private recordCache = new WeakMap<object, { value: unknown; index2: unknown; result: { title: string; sub: string } }>();
+    private fullRowCache = new WeakMap<IFieldControl<any>, boolean>();
+    private enumModeCache = new WeakMap<IFieldControl<any>, { values: unknown; mode: 'seg' | 'cards' | 'select' }>();
+    private loneSet: Set<number> | null = null;
+    private layoutList: IFieldControl<any>[] | null = null;
+    private layoutSignature = '';
+    private ruleLines = new Map<string, { failed: boolean; text: string } | null>();
+    private ruleLinesFor?: SchemaRuleValidateResult;
+    private metaStaticCache = new WeakMap<IFieldControl<any>, { text: string; title?: string }[]>();
+    private metaTypeCache = new WeakMap<IFieldControl<any>, string>();
     private previewSections = new WeakSet<object>();
     private previewFrames = new Map<IFieldControl<any> | IFieldIndexControl<any>, number>();
     public previewRenderLimit: number = Infinity;
@@ -192,6 +207,8 @@ export class SchemaFormComponent implements OnInit {
         this.previewLoadingChange.emit(true);
         const next = () => {
             this.previewRenderLimit += PREVIEW_RENDER_CHUNK;
+            // `detectChanges()` on this view skips its own `ngDoCheck`, so refresh the layout here.
+            this.computeLayout();
             if (this.previewRenderLimit < this.renderedControls.length) {
                 this.changeDetectorRef.detectChanges();
                 this.previewRenderFrame = requestAnimationFrame(next);
@@ -199,6 +216,7 @@ export class SchemaFormComponent implements OnInit {
             }
             this.previewRenderFrame = null;
             this.previewRenderLimit = Infinity;
+            this.computeLayout();
             this.changeDetectorRef.detectChanges();
             this.previewLoadingChange.emit(false);
         };
@@ -223,24 +241,39 @@ export class SchemaFormComponent implements OnInit {
 
     /**
      * Entries scope for formulas of a repeated sub-schema entry: parent scope plus
-     * this array's current entry index. The same object is returned (and refreshed in place)
-     * so child components do not see a new input on every change detection pass.
+     * this array's current entry index. The same object is returned until the parent scope or
+     * the entry index changes, so child components do not see a new input on every pass.
      */
     public getEntryFormulaScope(item: IFieldControl<any>, listItem: any): Record<string, number> {
-        let scope = this.entryScopes.get(listItem);
-        if (!scope) {
-            scope = {};
-            this.entryScopes.set(listItem, scope);
+        const index = Number(listItem.index);
+        const meta = this.scopeMeta.get(listItem);
+        const cached = this.entryScopes.get(listItem);
+        if (cached && meta && meta.entries === this.formulaEntries && meta.index === index) {
+            return cached;
         }
-        for (const key of Object.keys(scope)) {
-            delete scope[key];
-        }
-        Object.assign(scope, this.formulaEntries);
-        scope[item.path] = Number(listItem.index);
+        // A rebuilt scope is a new object and is never mutated afterwards, so `FormFormulas`
+        // can key its memo by object identity.
+        const scope: Record<string, number> = { ...this.formulaEntries, [item.path]: index };
+        this.entryScopes.set(listItem, scope);
+        this.scopeMeta.set(listItem, { entries: this.formulaEntries, index });
         return scope;
     }
 
     ngOnChanges(changes: SimpleChanges) {
+        if (changes.formModel || changes.renderControls) {
+            this.loneSet = null;
+            this.layoutList = null;
+        }
+        if (changes.formModel) {
+            this.subscribeControlsChanged();
+        }
+        if (changes.rules) {
+            this.ruleLines.clear();
+            this.ruleLinesFor = this.rules;
+        }
+        if (changes.rules || changes.formulas || changes.formulaEntries) {
+            this.metaStaticCache = new WeakMap();
+        }
         if (changes.formModel || changes.previewValidation || changes.renderControls) {
             if (this.previewValidation || this.previewFrames.size) this.cancelPreviewSections();
             if (this.previewValidation) this.prepareOpenPreviewSections();
@@ -259,7 +292,13 @@ export class SchemaFormComponent implements OnInit {
         }
     }
 
+    ngDoCheck(): void {
+        this.computeLayout();
+    }
+
     ngOnDestroy() {
+        this.controlsChangedSub?.unsubscribe();
+        this.clearRequiredCache();
         this.cancelPreviewSections();
         this.stopPreviewRendering();
         this.clearSuggestHideTimer();
@@ -473,7 +512,22 @@ export class SchemaFormComponent implements OnInit {
         return this.rules ? this.rules[item.fullPath] : undefined;
     }
 
+    /** Looked up by `fullPath`; the lines are rebuilt lazily whenever the `rules` object is replaced (S5). */
     public ruleLine(item: IFieldControl<any>): { failed: boolean; text: string } | null {
+        if (this.ruleLinesFor !== this.rules) {
+            this.ruleLines.clear();
+            this.ruleLinesFor = this.rules;
+        }
+        const key = item.fullPath;
+        if (this.ruleLines.has(key)) {
+            return this.ruleLines.get(key)!;
+        }
+        const line = this.buildRuleLine(item);
+        this.ruleLines.set(key, line);
+        return line;
+    }
+
+    private buildRuleLine(item: IFieldControl<any>): { failed: boolean; text: string } | null {
         const rule = this.isRules(item);
         if (!rule) {
             return null;
@@ -490,24 +544,71 @@ export class SchemaFormComponent implements OnInit {
     }
 
     public isLoneField(index: number): boolean {
-        const list = this.renderedControls;
-        const item = list[index];
-        if (!list || !item || this.isFullRow(item)) {
-            return false;
+        if (!this.loneSet) {
+            this.computeLayout();
         }
-        return this.neighbourIsFullRow(list, index, -1) && this.neighbourIsFullRow(list, index, 1);
+        return this.loneSet!.has(index);
     }
 
-    private neighbourIsFullRow(list: IFieldControl<any>[], from: number, step: number): boolean {
-        for (let i = from + step; i >= 0 && i < list.length && i < this.previewRenderLimit; i += step) {
+    /**
+     * Rebuilds `loneSet` in one pass, only when the rendered list, the render limit or a
+     * visibility flag changed (S3). Runs from `ngDoCheck` and before the self-driven
+     * `detectChanges()` calls, which do not run this component's own `ngDoCheck`.
+     */
+    private computeLayout(): void {
+        const list = this.renderedControls;
+        let signature = `${list.length}|${this.previewRenderLimit}|`;
+        for (const control of list) {
+            signature += control.visibility ? '1' : '0';
+        }
+        if (this.loneSet && list === this.layoutList && signature === this.layoutSignature) {
+            return;
+        }
+        this.layoutList = list;
+        this.layoutSignature = signature;
+        const lone = new Set<number>();
+        // Whether the nearest visible control before / after each index is a full row (true at the ends).
+        const before: boolean[] = new Array(list.length);
+        let previous = true;
+        for (let i = 0; i < list.length; i++) {
+            before[i] = previous;
             if (list[i].visibility) {
-                return this.isFullRow(list[i]);
+                previous = this.isFullRow(list[i]);
             }
         }
-        return true;
+        const limit = Math.min(list.length, this.previewRenderLimit);
+        let next = true;
+        for (let i = list.length - 1; i >= 0; i--) {
+            if (i >= limit) {
+                continue;
+            }
+            if (!this.isFullRow(list[i]) && before[i] && next) {
+                lone.add(i);
+            }
+            if (list[i].visibility) {
+                next = this.isFullRow(list[i]);
+            }
+        }
+        this.loneSet = lone;
     }
 
+    /**
+     * Depends only on the schema, so it is cached per item (S3). Enum fields are the exception:
+     * their answer follows `enumMode`, which can change when remote values load.
+     */
     public isFullRow(item: IFieldControl<any>): boolean {
+        if (this.isEnum(item)) {
+            return this.computeFullRow(item);
+        }
+        let result = this.fullRowCache.get(item);
+        if (result === undefined) {
+            result = this.computeFullRow(item);
+            this.fullRowCache.set(item, result);
+        }
+        return result;
+    }
+
+    private computeFullRow(item: IFieldControl<any>): boolean {
         if (item.isArray || item.isRef || this.isHelpText(item) || this.isRichText(item)) {
             return true;
         }
@@ -524,7 +625,21 @@ export class SchemaFormComponent implements OnInit {
         return item.type === 'string' && !item.format;
     }
 
+    /**
+     * Cached per item (S4). `enumValues` is set at build time, and again when a remote enum
+     * loads, so the cache entry remembers the array it was computed from.
+     */
     public enumMode(item: IFieldControl<any>): 'seg' | 'cards' | 'select' {
+        const cached = this.enumModeCache.get(item);
+        if (cached && cached.values === item.enumValues) {
+            return cached.mode;
+        }
+        const mode = this.computeEnumMode(item);
+        this.enumModeCache.set(item, { values: item.enumValues, mode });
+        return mode;
+    }
+
+    private computeEnumMode(item: IFieldControl<any>): 'seg' | 'cards' | 'select' {
         const values: any[] = Array.isArray(item.enumValues) ? item.enumValues : [];
         if (!values.length || values.length > 4) {
             return 'select';
@@ -592,13 +707,39 @@ export class SchemaFormComponent implements OnInit {
         return !!this.formModel?.rootForm?.showMetadata;
     }
 
+    /** Static for a field, so it is cached per item (S9). */
     public metaType(item: IFieldControl<any>): string {
-        const base = item.customType
-            || (item.format ? `${item.type} · ${item.format}` : String(item.type || ''));
-        return item.isArray ? `array · ${base}` : base;
+        let type = this.metaTypeCache.get(item);
+        if (type === undefined) {
+            const base = item.customType
+                || (item.isRef ? 'object · sub-schema' : null)
+                || (item.format ? `${item.type} · ${item.format}` : String(item.type || ''));
+            type = item.isArray ? `array · ${base}` : base;
+            this.metaTypeCache.set(item, type);
+        }
+        return type;
     }
 
+    /**
+     * The strip is cached without the formula count: that count follows the form data
+     * (`FormFormulas.setData` resets its memo without replacing `formulas`), so it is added live.
+     */
     public metaTags(item: IFieldControl<any>): { text: string; title?: string }[] {
+        let tags = this.metaStaticCache.get(item);
+        if (!tags) {
+            tags = this.buildMetaTags(item);
+            this.metaStaticCache.set(item, tags);
+        }
+        const formulas = this.getFieldFormulas(item).length;
+        if (!formulas) {
+            return tags;
+        }
+        const formulaTag = { text: `${formulas} formula${formulas === 1 ? '' : 's'}` };
+        const at = tags.findIndex((tag) => tag.text === 'schema rule' || tag.text === 'read-only preset');
+        return at < 0 ? [...tags, formulaTag] : [...tags.slice(0, at), formulaTag, ...tags.slice(at)];
+    }
+
+    private buildMetaTags(item: IFieldControl<any>): { text: string; title?: string }[] {
         const tags: { text: string; title?: string }[] = [];
         const values: any[] = Array.isArray(item.enumValues) ? item.enumValues : [];
         if (values.length) {
@@ -615,10 +756,6 @@ export class SchemaFormComponent implements OnInit {
         }
         if (this.formModel?.isConditional(item)) {
             tags.push({ text: 'conditional' });
-        }
-        const formulas = this.getFieldFormulas(item).length;
-        if (formulas) {
-            tags.push({ text: `${formulas} formula${formulas === 1 ? '' : 's'}` });
         }
         if (this.rules?.[item.fullPath]) {
             tags.push({ text: 'schema rule' });
@@ -640,15 +777,59 @@ export class SchemaFormComponent implements OnInit {
         }
     }
 
+    /** Required counts of a card, cached per card until its subtree or the set of controls changes (S1). */
     public requiredLeft(item: IFieldControl<any>): { left: number; total: number } {
+        const control = item.control;
+        const cached = this.requiredCache.get(item);
+        if (cached && cached.control === control) {
+            return cached;
+        }
         const { answered, total } = countRequired(item.model?.controls);
-        return { left: total - answered, total };
+        const entry = { left: total - answered, total, control };
+        this.requiredCache.set(item, entry);
+        this.requiredSubs.get(item)?.unsubscribe();
+        this.requiredSubs.delete(item);
+        if (control) {
+            this.requiredSubs.set(item, control.valueChanges.subscribe(() => this.requiredCache.delete(item)));
+        }
+        return entry;
+    }
+
+    private clearRequiredCache(): void {
+        for (const sub of this.requiredSubs.values()) {
+            sub.unsubscribe();
+        }
+        this.requiredSubs.clear();
+        this.requiredCache = new WeakMap();
+    }
+
+    /** `controlsChanged$` covers condition-driven visibility, which arrives with `emitEvent: false`. */
+    private subscribeControlsChanged(): void {
+        const root = this.formModel?.rootForm;
+        if (root === this.controlsChangedFor) {
+            return;
+        }
+        this.controlsChangedSub?.unsubscribe();
+        this.controlsChangedFor = root;
+        this.clearRequiredCache();
+        this.controlsChangedSub = root?.controlsChanged$.subscribe(() => this.clearRequiredCache());
     }
 
     public recordText(item: IFieldControl<any>, listItem: IFieldIndexControl<any>): { title: string; sub: string } {
+        // A managed array's title reads another array, so it is never cached (S2).
         if (this.isManagedArray(item)) {
             return { title: this.entryTitle(item, listItem), sub: '' };
         }
+        const cached = this.recordCache.get(listItem);
+        if (cached && cached.value === listItem.control?.value && cached.index2 === listItem.index2) {
+            return cached.result;
+        }
+        const result = this.buildRecordText(item, listItem);
+        this.recordCache.set(listItem, { value: listItem.control?.value, index2: listItem.index2, result });
+        return result;
+    }
+
+    private buildRecordText(item: IFieldControl<any>, listItem: IFieldIndexControl<any>): { title: string; sub: string } {
         const values: string[] = [];
         for (const field of listItem.model?.controls || []) {
             const value = field.control?.value;
@@ -1071,6 +1252,7 @@ export class SchemaFormComponent implements OnInit {
                 .subscribe((res: any) => {
                     item.enumValues = res?.enum;
                     item.fileUploading = false;
+                    this.loneSet = null;
                 }, (error) => {
                     item.fileUploading = false;
                     console.error(error);

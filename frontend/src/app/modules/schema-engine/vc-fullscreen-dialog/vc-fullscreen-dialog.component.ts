@@ -531,6 +531,11 @@ export class VCFullscreenDialog implements OnDestroy {
         );
     }
 
+    /** The backend applies edits to credentialSubject[0] only. */
+    public get editSubjects(): any[] {
+        return this.subjects.slice(0, 1);
+    }
+
     public getCredentialSubject(item: any): string {
         if (this.subjects.length > 1) {
             return `Credential Subject #${this.subjects.indexOf(item) + 1}`;
@@ -549,7 +554,31 @@ export class VCFullscreenDialog implements OnDestroy {
 
     public onUpdatableBtnEvent(isSwitchMode?: boolean) {
         if (!this.dataForm.valid) {
-            this.formRoots?.forEach((root) => root.revealErrors(root === this.formRoots.first));
+            if (!isSwitchMode) {
+                this.formRoots?.forEach((root) => root.revealErrors(root === this.formRoots.first));
+                return;
+            }
+            const discardRef = this.dialog.open(
+                ApproveUpdateVcDocumentDialogComponent,
+                {
+                    data: {
+                        text: 'Your changes have errors and can\'t be saved. Leave edit mode and discard them?',
+                        okBtnName: 'Discard changes',
+                        closeBtnName: 'Keep editing',
+                    },
+                    header: 'Unsaved changes',
+                    height: '200px',
+                    width: '500px',
+                    modal: true,
+                    closable: true,
+                }
+            )!;
+            discardRef.onClose.subscribe((result) => {
+                if (result) {
+                    this.loadProfile();
+                    this.isEditMode = false;
+                }
+            });
             return;
         }
         const dialogRef = this.dialog.open(

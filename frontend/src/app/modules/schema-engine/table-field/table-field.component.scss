@@ -101,6 +101,22 @@
 .table-field__cell--head {
     justify-content: center;
     font-weight: 600;
+    min-width: 0;
+}
+
+.table-field__row--header .table-field__cell {
+    height: var(--header-height);
+}
+
+.table-field__head-text {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow: hidden;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+    text-align: center;
 }
 
 .table-field__placeholder-box {
@@ -128,7 +144,7 @@
 
 .table-field__grid {
     --row-height: 42px;
-    --header-height: 44px;
+    --header-height: 64px;
     border: 1px solid rgba(0, 0, 0, 0.12);
     border-radius: 8px;
     overflow: hidden;

@@ -218,7 +218,13 @@
 
   @if (isEditMode) {
     <div class="vc-fullscreen-dialog-body">
-      @for (item of subjects; track item) {
+      @if (subjects.length > 1) {
+        <div class="form-notice">
+          <i class="pi pi-info-circle" aria-hidden="true"></i>
+          <span class="form-notice-text">This document has {{ subjects.length }} credential subjects. Only the first one can be edited, and the new version will contain only that one.</span>
+        </div>
+      }
+      @for (item of editSubjects; track item) {
         <div class="guardian-accordion-container">
           <p-accordion
             [multiple]="true"
