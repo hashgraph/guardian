@@ -4,18 +4,48 @@
     gap: 8px;
 }
 
-.guardian-button {
-    height: 40px;
-    padding: 1px 16px;
+.draft-action {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--guardian-font-color);
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 18px;
+    text-align: left;
+    white-space: nowrap;
+    cursor: pointer;
 
-    .guardian-button-icon {
-        width: 20px;
-        height: 20px;
+    svg-icon {
+        display: flex;
+        flex: 0 0 16px;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        height: 16px;
 
-        svg-icon,
-        svg {
-            width: 20px;
-            height: 20px;
+        ::ng-deep svg {
+            width: 16px !important;
+            height: 16px !important;
         }
+    }
+
+    span {
+        line-height: 18px;
+    }
+
+    &:hover {
+        background: var(--sf-sunken);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--color-primary);
+        outline-offset: -2px;
     }
 }

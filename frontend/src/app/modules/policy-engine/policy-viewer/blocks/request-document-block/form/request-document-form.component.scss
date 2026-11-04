@@ -30,27 +30,30 @@ form {
 .form-header {
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 16px 32px;
+    gap: 14px;
+    // Same height as the policy toolbar above
+    min-height: 64px;
+    padding: 12px 32px;
     border-bottom: 1px solid var(--guardian-border-color);
 
     .form-back {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        height: 36px;
-        padding: 0 12px;
+        gap: 6px;
+        padding: 6px 10px;
         border: 1px solid var(--guardian-border-color);
         border-radius: 8px;
-        background: transparent;
-        color: var(--guardian-font-color);
+        background: var(--guardian-background);
+        color: var(--sf-text-2);
+        font-family: Inter, sans-serif;
         font-size: 14px;
         font-weight: 500;
+        line-height: 18px;
         cursor: pointer;
 
         &:hover {
-            border-color: var(--color-primary);
-            color: var(--color-primary);
+            background: var(--sf-sunken);
+            color: var(--guardian-font-color);
         }
     }
 
@@ -66,9 +69,9 @@ form {
 
         .form-heading-title {
             margin: 0;
-            font-size: 20px;
+            font-size: 17px;
             font-weight: 600;
-            line-height: 28px;
+            line-height: 22px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -100,31 +103,31 @@ form {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 36px;
-            height: 36px;
-            border: 1px solid var(--guardian-border-color);
-            border-radius: 8px;
+            width: 34px;
+            height: 32px;
+            border: 1px solid var(--sf-border-strong);
+            border-radius: 7px;
             background: transparent;
-            color: var(--guardian-font-color);
+            color: var(--sf-text-3);
             cursor: pointer;
 
             &:hover {
-                border-color: var(--color-primary);
-                color: var(--color-primary);
+                background: var(--sf-sunken);
+                color: var(--guardian-font-color);
             }
         }
 
         .form-menu-pop {
             position: absolute;
             z-index: 10;
-            top: calc(100% + 4px);
+            top: 40px;
             right: 0;
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            padding: 12px;
+            min-width: 230px;
+            padding: 6px;
             border: 1px solid var(--guardian-border-color);
-            border-radius: 8px;
+            border-radius: 10px;
             background: var(--guardian-background);
             box-shadow: 0 4px 12px var(--guardian-shadow);
 
@@ -135,6 +138,7 @@ form {
             request-draft-file-actions {
                 flex-direction: column;
                 align-items: stretch;
+                gap: 0;
             }
         }
     }
@@ -696,7 +700,17 @@ form {
     align-items: center;
     gap: 8px;
     white-space: nowrap;
-    color: var(--guardian-font-color);
+    color: var(--sf-text-2);
+    font-size: 12.5px;
+    font-weight: 500;
+    --p-toggleswitch-width: 34px;
+    --p-toggleswitch-height: 20px;
+    --p-toggleswitch-handle-size: 16px;
+    --p-toggleswitch-gap: 2px;
+
+    label {
+        cursor: pointer;
+    }
 }
 
 .form-menu[inert] {
@@ -759,8 +773,8 @@ form {
     gap: 6px;
     padding: 2px 10px;
     border-radius: 999px;
-    background: var(--guardian-grey-color);
-    color: var(--guardian-font-color);
+    background: var(--sf-sunken);
+    color: var(--sf-text-2);
     font-family: var(--font-family-inter, Inter, sans-serif);
     font-size: 12px;
     font-weight: 600;
@@ -1022,9 +1036,9 @@ form {
     }
 
     .form-results-lead {
-        max-width: 560px;
+        max-width: 520px;
         margin: 0 0 16px;
-        color: var(--color-grey-6);
+        color: var(--sf-text-2);
     }
 
     .form-notice b {
@@ -1152,6 +1166,7 @@ form {
         border-top: 3px solid var(--color-primary);
         border-radius: 12px;
         background: var(--guardian-background);
+        box-shadow: 0 1px 2px var(--guardian-shadow);
 
         &.result {
             border-top-color: var(--color-accent-green-1);
@@ -1185,25 +1200,26 @@ form {
 
     .form-toggle {
         display: inline-flex;
-        padding: 2px;
-        border: 1px solid var(--guardian-border-color);
+        padding: 3px;
         border-radius: 8px;
+        background: var(--sf-sunken);
 
         button {
-            height: 28px;
-            padding: 0 12px;
+            padding: 4px 12px;
             border: 0;
             border-radius: 6px;
             background: transparent;
-            color: var(--sf-text-3);
+            color: var(--sf-text-2);
             font-family: inherit;
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 500;
+            line-height: 18px;
             cursor: pointer;
 
             &.on {
-                background: var(--guardian-primary-background);
-                color: var(--color-primary);
+                background: var(--guardian-background);
+                color: var(--guardian-font-color);
+                box-shadow: 0 1px 2px var(--guardian-shadow);
             }
         }
     }
