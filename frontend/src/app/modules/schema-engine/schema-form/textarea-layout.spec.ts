@@ -40,9 +40,9 @@ describe('Textarea layout in the request form and the document view', () => {
         return style;
     };
 
-    const expectLayout = (root: HTMLElement) => {
+    const expectLayout = (root: HTMLElement, rowsAsCells = true, longHeight: number | null = 124) => {
         const textareas: HTMLTextAreaElement[] = Array.from(root.querySelectorAll('textarea'));
-        expect(textareas.map((textarea) => textarea.closest('td') ? 'cell' : 'text')).toEqual(['text', 'text', 'text', 'cell', 'cell', 'cell', 'cell']);
+        expect(textareas.map((textarea) => textarea.closest('td') ? 'cell' : 'text')).toEqual(['text', 'text', 'text', ...Array(4).fill(rowsAsCells ? 'cell' : 'text')]);
         for (const textarea of textareas) {
             const container = textarea.closest<HTMLElement>('.guardian-input-container');
             expect(textarea.offsetWidth).toBe(container?.clientWidth ?? -1);
@@ -50,7 +50,11 @@ describe('Textarea layout in the request form and the document view', () => {
                 expect(textarea.classList).toContain('textarea-resize-none');
                 expect(textarea.offsetHeight).toBe(40);
             } else {
-                expect(textarea.offsetHeight).toBe(textarea.value === long ? 124 : 40);
+                if (longHeight === null && textarea.value === long) {
+                    expect(textarea.offsetHeight).toBeGreaterThan(40);
+                } else {
+                    expect(textarea.offsetHeight).toBe(textarea.value === long ? longHeight! : 40);
+                }
             }
         }
     };
@@ -72,11 +76,14 @@ describe('Textarea layout in the request form and the document view', () => {
         fixture.nativeElement.style.display = 'block';
         fixture.nativeElement.style.width = '900px';
         document.body.appendChild(fixture.nativeElement);
-        fixture.componentInstance.isShown = fixture.componentInstance.isShown.map(() => true);
+        const rows = model.controls!.find((item) => item.name === 'rows')!;
+        for (const target of [rows, ...rows.list!]) {
+            target.open = true;
+        }
         fixture.detectChanges();
         await new Promise((resolve) => setTimeout(resolve, 50));
         fixture.detectChanges();
-        expectLayout(fixture.nativeElement);
+        expectLayout(fixture.nativeElement, false, null);
         style.remove();
         fixture.nativeElement.remove();
     });

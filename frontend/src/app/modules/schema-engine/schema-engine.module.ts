@@ -58,7 +58,7 @@ import {TableViewerComponent} from "./table-viewer/table-viewer.component";
 import { SchemaDeleteWarningDialogComponent } from './schema-delete-warning-dialog/schema-delete-warning-dialog.component';
 import { SchemaDeleteDialogComponent } from './schema-delete-dialog/schema-delete-dialog.component';
 import { IwaUpgradeDialogComponent } from './iwa-upgrade-dialog/iwa-upgrade-dialog.component';
-import { SchemaFormNavigationComponent } from './schema-form-navigation/schema-form-navigation.component';
+import { SchemaFormRailComponent } from './schema-form-rail/schema-form-rail.component';
 import { SchemaFormViewNavigationComponent } from './schema-form-view-navigation/schema-form-view-navigation.component';
 import { RichTextEditorComponent } from './rich-text-editor/rich-text-editor.component';
 import { RichTextClipDirective } from './rich-text-editor/rich-text-clip.directive';
@@ -94,7 +94,7 @@ import { RichTextClipDirective } from './rich-text-editor/rich-text-clip.directi
         SchemaFormRootComponent,
         TableFieldComponent,
         TableViewerComponent,
-        SchemaFormNavigationComponent,
+        SchemaFormRailComponent,
         SchemaFormViewNavigationComponent,
         RichTextEditorComponent,
         RichTextClipDirective
@@ -139,7 +139,7 @@ import { RichTextClipDirective } from './rich-text-editor/rich-text-clip.directi
         ExportSchemaDialog,
         SchemaFormDialog,
         SchemaFormRootComponent,
-        SchemaFormNavigationComponent,
+        SchemaFormRailComponent,
         SchemaFormViewNavigationComponent,
         RichTextEditorComponent,
         RichTextClipDirective

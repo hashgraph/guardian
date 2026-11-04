@@ -4,39 +4,13 @@
     <span>Back</span>
   </button>
   <div class="form-heading">
-    @if ((activeStep$ | async); as step) {
-      <div class="form-heading-step">{{ step.label }}</div>
+    @if (headerStepLabel) {
+      <div class="form-heading-step">{{ headerStepLabel }}</div>
     }
-    <h2 class="form-heading-title">{{ dialogTitle || parent?.title }}</h2>
+    <h2 class="form-heading-title">{{ headerTitle }}</h2>
   </div>
-  @if (previewMode && previewMissingOptions.length) {
-    @for (options of [previewMissingOptions]; track options) {
-    <p-select
-      [options]="options"
-      [(ngModel)]="previewMissingPath"
-      (onChange)="onPreviewMissingSelect($event.value)"
-      optionLabel="label"
-      optionValue="value"
-      [placeholder]="'Missing fields: ' + previewMissingOptions.length"
-      class="guardian-dropdown preview-missing-dropdown"
-      panelStyleClass="guardian-dropdown-panel preview-missing-panel"
-      [disabled]="isPreviewBusy"
-      [appendTo]="'body'"
-      >
-      <ng-template pTemplate="selectedItem" let-item>
-        <div class="guardian-dropdown-selected" [truncateTooltip]="item?.label" tooltipPosition="bottom">
-          <span class="guardian-dropdown-label">Missing</span>
-          <span class="guardian-dropdown-item">{{ item?.label }}</span>
-        </div>
-      </ng-template>
-      <ng-template pTemplate="item" let-item>
-        <div class="preview-missing-option" [truncateTooltip]="item.label" tooltipPosition="bottom">{{ item.label }}</div>
-      </ng-template>
-    </p-select>
-    }
-  }
-  @if (previewAvailable) {
-    <div class="calculation-preview-toggle">
+  @if (previewAvailable && !isSubmitted) {
+    <div class="calculation-preview-toggle" title="Run the policy's calculations on these values without creating anything">
       <p-toggleswitch
         inputId="calculationPreview_{{ id }}"
         [ngModel]="previewMode"
@@ -46,79 +20,265 @@
       <label for="calculationPreview_{{ id }}">Calculation preview</label>
     </div>
   }
-  <div class="form-draft" [attr.inert]="isPreviewBusy ? '' : null">
+  @if (!isSubmitted) {
+    @if (dataSaved) {
+      <span class="form-saved"><span class="form-saved-dot"></span>Draft saved just now</span>
+    } @else if (minutesAgo$ | async; as saved) {
+      <span class="form-saved"><span class="form-saved-dot"></span>{{ saved }}</span>
+    }
+    <div class="form-menu" [attr.inert]="isPreviewBusy ? '' : null">
+      <button
+        type="button"
+        class="form-menu-toggle"
+        aria-haspopup="true"
+        aria-label="More actions"
+        title="More actions"
+        [attr.aria-expanded]="menuOpen"
+        (click)="menuOpen = !menuOpen">
+        <i class="pi pi-ellipsis-h" aria-hidden="true"></i>
+      </button>
+      <div class="form-menu-pop" [hidden]="!menuOpen" (click)="closeMenu()">
+        <request-draft-file-actions
+          [schema]="schema"
+          [policyId]="policyId"
+          [blockId]="id"
+          [dataForm]="dataForm"
+          (draftImported)="onDraftImported($event)">
+        </request-draft-file-actions>
+        <div class="form-menu-sep" role="separator"></div>
+        <div
+          class="form-menu-switch"
+          role="menuitemcheckbox"
+          tabindex="0"
+          [attr.aria-checked]="formPreferences.showFieldMetadata"
+          (click)="$event.stopPropagation(); formPreferences.setShowFieldMetadata(!formPreferences.showFieldMetadata)"
+          (keydown.enter)="formPreferences.setShowFieldMetadata(!formPreferences.showFieldMetadata)"
+          (keydown.space)="$event.preventDefault(); formPreferences.setShowFieldMetadata(!formPreferences.showFieldMetadata)">
+          <span>Show field metadata</span>
+          <p-toggleswitch
+            tabindex="-1"
+            [ngModel]="formPreferences.showFieldMetadata"
+            [readonly]="true"
+            (click)="$event.preventDefault()">
+          </p-toggleswitch>
+        </div>
+        <div class="form-menu-hint">Key, type, path and schema details under each field label</div>
+      </div>
+    </div>
+  }
+</div>
+<nav class="form-stepper" aria-label="Form steps">
+  @for (item of stepperSteps; track item.id; let i = $index) {
+    @let state = stepState(item.id);
+    @if (i > 0) {
+      <span class="form-stepper-sep" [class.done]="state.done || state.current"></span>
+    }
     <button
       type="button"
-      class="form-draft-toggle"
-      aria-haspopup="true"
-      [attr.aria-expanded]="draftMenuOpen"
-      (click)="draftMenuOpen = !draftMenuOpen">
-      <span>Draft</span>
-      <i class="pi pi-angle-down" aria-hidden="true"></i>
+      class="form-step"
+      [class.current]="state.current"
+      [class.done]="state.done"
+      [class.bad]="state.bad"
+      [disabled]="!state.clickable"
+      [attr.aria-current]="state.current ? 'step' : null"
+      (click)="onStepperClick(item.id)">
+      <span class="form-step-marker">
+        @if (state.done) {
+          <i class="pi pi-check" aria-hidden="true"></i>
+        } @else {
+          {{ i + 1 }}
+        }
+      </span>
+      <span class="form-step-label">{{ item.label }}</span>
+      @if (state.bad) {
+        <span class="form-step-count">{{ issues.length }}</span>
+      }
     </button>
-    <div class="form-draft-menu" [hidden]="!draftMenuOpen" (click)="closeDraftMenu()">
-      <request-draft-file-actions
-        [schema]="schema"
-        [policyId]="policyId"
-        [blockId]="id"
-        [dataForm]="dataForm"
-        (draftImported)="onDraftImported($event)">
-      </request-draft-file-actions>
-    </div>
-  </div>
-</div>
-<div class="form-body">
-  @if (loading || isPreviewBusy) {
-    <div class="guardian-loading" [class.preview-loading-overlay]="previewMode">
+  }
+</nav>
+<div class="form-body" [class.fill]="screen === 'form' && step === 'fill'">
+  @if (loading || isPreviewBusy || previewViewLoading > 0) {
+    <div class="guardian-loading" [class.preview-loading-overlay]="previewMode || previewViewLoading > 0">
       <div class="form-spinner"></div>
+    </div>
+    <div class="form-busy-text" role="status" [hidden]="!previewMode || !(loading || isPreviewBusy)">
+      <b>Running calculation preview…</b>
+      <span>The policy's calculations run on a temporary copy. Nothing is created or sent.</span>
     </div>
   }
   <div class="form-body-container" [attr.inert]="isPreviewBusy ? '' : null">
-    @if (dryRun) {
-      <div class="form-notice">
-        <i class="pi pi-info-circle" aria-hidden="true"></i>
-        <span class="form-notice-text">Dry run – you can fill this form with test data.</span>
-        <button type="button" class="guardian-button guardian-button-secondary" [disabled]="isPreviewBusy" (click)="onDryRun()">Fill with test data</button>
-        @if (restoreData) {
-          <button type="button" class="guardian-button guardian-button-secondary" [disabled]="isPreviewBusy" (click)="onRestoreClick()">Restore values</button>
-        }
-      </div>
-    } @else if (restoreData) {
-      <div class="form-notice">
-        <i class="pi pi-info-circle" aria-hidden="true"></i>
-        <span class="form-notice-text">There is some data to restore.</span>
-        <button type="button" class="guardian-button guardian-button-secondary" [disabled]="isPreviewBusy" (click)="onRestoreClick()">Restore values</button>
+    @if (screen === 'results') {
+      <div class="form-results">
+        <div class="form-results-eyebrow">{{ resultsEyebrow }}</div>
+        <h1 class="form-results-title">{{ resultsHeading }}</h1>
+        <p class="form-results-lead">{{ resultsLead }}</p>
+        <div class="form-stats">
+          <div class="form-stat error"><b>{{ issues.length }}</b>Errors to fix</div>
+          <div class="form-stat rule"><b>{{ ruleIssues.length }}</b>Rule checks failed</div>
+          <div class="form-stat"><b>{{ requiredValid }}</b>Required answers valid</div>
+        </div>
+        <ng-template #issueList let-title let-kind="kind" let-pill="pill" let-items="items">
+          @if (items.length) {
+            <h3 class="form-issues-title">{{ title }}</h3>
+            @for (issue of items; track issue.path) {
+              <div class="form-issue">
+                <span class="form-pill" [class]="kind">{{ pill }}</span>
+                <div class="form-issue-text">
+                  <b>{{ issueName(issue) }}</b>
+                  <small>{{ issueDetail(issue) }}</small>
+                </div>
+                <button type="button" class="guardian-button guardian-button-secondary" (click)="goToField(issue.path)">Go to field</button>
+              </div>
+            }
+          }
+        </ng-template>
+        <ng-container *ngTemplateOutlet="issueList; context: { title: previewMode ? 'Missing values' : 'Errors', kind: 'error', pill: issuePill, items: issues }" />
+        <ng-container *ngTemplateOutlet="issueList; context: { title: 'Rule checks', kind: 'rule', pill: 'Rule', items: ruleIssues }" />
       </div>
     }
-    @if (relayerAccount || enableAdditionalData) {
-      <div class="relayer-account-steps">
-        <div class="guardian-step-container">
-          <div class="guardian-stepper horizontal-stepper">
-            <div class="guardian-step" [attr.action]="isActionStep(0)" [attr.disabled]="isStep(0)" (click)="setStep(0)">
-              <div class="guardian-step-marker">1</div>
-              <div class="guardian-step-name">Fill Form</div>
+    @if (screen === 'presults') {
+      <div class="form-presults">
+        <div class="form-results-eyebrow">Calculation preview</div>
+        <h1 class="form-results-title">{{ previewHeading }}</h1>
+        <p class="form-results-lead">{{ previewLead }}</p>
+        @for (problem of previewProblems; track $index) {
+          <div class="form-notice form-notice-warn">
+            <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+            <span class="form-notice-text">
+              @if (problem.blockType) {<b>{{ problem.blockType }}:</b> }{{ problem.message }}
+              @if (validatorError(problem); as validator) {
+                <span class="form-validator-error">
+                  <span class="form-validator-summary">{{ validator.summary }}</span>
+                  @for (condition of validator.conditions; track condition.label) {
+                    <span class="form-validator-condition">
+                      <b>{{ condition.label }}</b>
+                      <span>{{ condition.matched }}/{{ condition.total }}</span>
+                      @if (condition.hint) {
+                        <small>{{ condition.hint }}</small>
+                      }
+                    </span>
+                  }
+                </span>
+              }
+            </span>
+          </div>
+        }
+        @if (!previewIncomplete) {
+          @if (previewItems.length) {
+            <div class="form-pres">
+              <ol class="form-timeline" aria-label="Calculation chain">
+                @for (item of previewItems; track $index; let i = $index) {
+                  <li class="form-tl-item" [class.input]="item.role === 'input'" [class.result]="item.role === 'result'">
+                    <span class="form-tl-node" aria-hidden="true">
+                      @if (item.role === 'result') {
+                        <i class="pi pi-check"></i>
+                      } @else {
+                        <i class="pi pi-file"></i>
+                      }
+                    </span>
+                    <button
+                      type="button"
+                      class="form-tl-card"
+                      [class.on]="i === previewIndex"
+                      [attr.aria-current]="i === previewIndex ? 'true' : null"
+                      (click)="selectPreviewItem(i)">
+                      <b>{{ previewItemTitle(item) }}</b>
+                      <small>{{ previewItemSub(item) }}</small>
+                    </button>
+                  </li>
+                }
+              </ol>
+              @if (previewSelected; as selected) {
+                <div class="form-pres-doc" [class.input]="selected.role === 'input'" [class.result]="selected.role === 'result'">
+                  <div class="form-pres-head">
+                    <span class="form-pill" [class.ok]="selected.role === 'result'">{{ selected.role === 'input' ? 'Input' : 'Result' }}</span>
+                    <b>{{ previewItemTitle(selected) }}</b>
+                    <span class="form-pill">Temporary</span>
+                    <small>{{ previewItemSub(selected) }}</small>
+                    <span class="form-submitted-spacer"></span>
+                    <div class="form-toggle" role="group" aria-label="Document view">
+                      <button type="button" [class.on]="previewTab === 'doc'" [attr.aria-pressed]="previewTab === 'doc'" (click)="previewTab = 'doc'">Document</button>
+                      <button type="button" [class.on]="previewTab === 'json'" [attr.aria-pressed]="previewTab === 'json'" (click)="previewTab = 'json'">JSON</button>
+                    </div>
+                  </div>
+                  @if (previewTab === 'doc') {
+                    @for (shown of [selected]; track shown) {
+                      <app-document-view
+                        [preview]="true"
+                        [document]="shown.document"
+                        [type]="'VC'"
+                        [policyId]="policyId"
+                        [dryRun]="!!dryRun"
+                        (previewLoadingChange)="onPreviewViewLoadingChange($event)">
+                      </app-document-view>
+                    }
+                  } @else {
+                    <pre class="form-submitted-json">{{ previewJson }}</pre>
+                  }
+                </div>
+              }
             </div>
-            @if (enableAdditionalData) {
-              <div class="guardian-step-separator"></div>
-              <div class="guardian-step" [attr.action]="isActionStep(1)" [attr.disabled]="!isStep(1) && !isStep(2)" (click)="isStep(2) && setStep(1)">
-                <div class="guardian-step-marker">2</div>
-                <div class="guardian-step-name">Add Evidence Attachments</div>
-              </div>
-            }
-            @if (relayerAccount) {
-              <div class="guardian-step-separator"></div>
-              <div class="guardian-step" [attr.action]="isActionStep(enableAdditionalData ? 2 : 1)" [attr.disabled]="!isStep(enableAdditionalData ? 3 : 2)" (click)="isStep(enableAdditionalData ? 3 : 2) && setStep(enableAdditionalData ? 2 : 1)">
-                <div class="guardian-step-marker">{{enableAdditionalData ? 3 : 2}}</div>
-                <div class="guardian-step-name">Configure Relayer Account</div>
-              </div>
-            }
+          } @else {
+            <p class="form-results-lead">The calculations produced no documents.</p>
+          }
+        }
+      </div>
+    }
+    @if (submitted; as sub) {
+      <div class="form-submitted">
+        <div class="form-submitted-banner">
+          <div class="form-submitted-icon"><i class="pi pi-check" aria-hidden="true"></i></div>
+          <div class="form-submitted-text">
+            <h2>{{ sub.edit ? 'Changes submitted' : 'Document submitted' }}</h2>
+            <p>
+              {{ sub.edit ? 'The updated document was created and passed to the policy workflow.' : 'The document was created and passed to the policy workflow.' }}
+              It is read-only from here@if (sub.stepLabel) {; its status shows in <b>{{ sub.stepLabel }}</b>}.
+            </p>
+            <div class="form-submitted-facts">
+              @if (sub.schemaName) {
+                <span><small>Document</small>{{ sub.schemaName }}</span>
+              }
+              @if (sub.issuedAt) {
+                <span><small>Submitted</small>{{ sub.issuedAt | date: 'medium' }}</span>
+              }
+              @if (sub.role) {
+                <span><small>Submitted as</small>{{ sub.role }}</span>
+              }
+              @if (sub.vcId) {
+                <span><small>Document ID</small><code>{{ sub.vcId }}</code></span>
+              }
+              @if (sub.dryRun) {
+                <span><small>Mode</small><span class="form-pill rule">Dry run</span></span>
+              }
+            </div>
           </div>
         </div>
+        @if (sub.document) {
+          <div class="form-submitted-bar">
+            <b>Submitted document</b>
+            <span class="form-pill ok"><i class="pi pi-lock" aria-hidden="true"></i>Read-only</span>
+            <span class="form-submitted-spacer"></span>
+            <div class="form-toggle" role="group" aria-label="Document view">
+              <button type="button" [class.on]="docTab === 'doc'" [attr.aria-pressed]="docTab === 'doc'" (click)="docTab = 'doc'">Document</button>
+              <button type="button" [class.on]="docTab === 'json'" [attr.aria-pressed]="docTab === 'json'" (click)="docTab = 'json'">JSON</button>
+            </div>
+          </div>
+          @if (docTab === 'doc') {
+            <app-document-view
+              [document]="sub.document"
+              [type]="'VC'"
+              [policyId]="sub.policyId"
+              [dryRun]="sub.dryRun">
+            </app-document-view>
+          } @else {
+            <pre class="form-submitted-json">{{ submittedJson }}</pre>
+          }
+        }
       </div>
     }
     @if (schema) {
       <div class="body-dialog-template">
-        <form (ngSubmit)="onStep()" [formGroup]="dataForm" [attr.visibility]="isStep(0)">
+        <form (ngSubmit)="onStep()" [formGroup]="dataForm" [attr.visibility]="screen === 'form' && step === 'fill'">
           <div class="form-card">
             <app-schema-form-root
               #formRoot
@@ -137,26 +297,64 @@
               [previewMissingFields]="previewMissingFields"
               [previewActionsDisabled]="isPreviewBusy"
               [saveShown]="allowDraft"
+              [overviewHint]="edit ? null : 'Complete each section, then validate and create the document. Your progress is autosaved in this browser.'"
               [comesFromDialog]="true"
               [showButtons]="false"
               cancelText = "Cancel"
-              submitText = "Validate & Create"
+              [submitText]="submitLabel"
               saveText = "Save Draft"
               (form)="initForm($event)"
               (presetApplied)="onPresetApplied()"
               (previewBusyChange)="onPreviewRenderingChange($event)"
-              (previewMissingOptionsChange)="onPreviewMissingOptionsChange($event)"
               (buttons)="onChangeButtons($event)"
+              (completionChange)="onCompletionChange($event)"
               (cancelBtnEvent)="handleCancelBtnEvent($event, this)"
               (submitBtnEvent)="handleSubmitBtnEvent($event, this)"
               (saveBtnEvent)="handleSaveBtnEvent($event, this)"
               style="outline: none !important"
               >
+              <div sfNotice>
+                @if (screen === 'form') {
+                @if (previewMode) {
+                  <div class="form-notice form-notice-preview">
+                    <i class="pi pi-calculator" aria-hidden="true"></i>
+                    <span class="form-notice-text">
+                      <b>Calculation preview is on.</b> Preview runs the policy's calculations on these values and shows the documents they produce. Nothing is created, sent to Hedera or minted. {{ previewRequiredText }}
+                      @if (previewDiscoveryWarning) {
+                        <br>Could not determine every field the calculation needs. Fill in the marked fields and run Preview again.
+                      }
+                    </span>
+                  </div>
+                }
+                @if (dryRun) {
+                  <div class="form-notice">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6M10 3v6L4.5 19a1.5 1.5 0 001.3 2h12.4a1.5 1.5 0 001.3-2L14 9V3"/></svg>
+                    <span class="form-notice-text">Dry run – you can fill this form with test data.</span>
+                    <button type="button" class="guardian-button guardian-button-secondary" [disabled]="isPreviewBusy" (click)="onDryRun()">Fill with test data</button>
+                    @if (restoreData) {
+                      <button type="button" class="guardian-button guardian-button-secondary" [disabled]="isPreviewBusy" (click)="onRestoreClick()">Restore values</button>
+                    }
+                  </div>
+                } @else if (restoreData) {
+                  <div class="form-notice">
+                    <i class="pi pi-info-circle" aria-hidden="true"></i>
+                    <span class="form-notice-text">There is some data to restore.</span>
+                    <button type="button" class="guardian-button guardian-button-secondary" [disabled]="isPreviewBusy" (click)="onRestoreClick()">Restore values</button>
+                  </div>
+                }
+                @if (duplicatedFrom) {
+                  <div class="form-notice">
+                    <i class="pi pi-copy" aria-hidden="true"></i>
+                    <span class="form-notice-text">New draft copied from the submitted document <code>{{ duplicatedFrom }}</code>. Check the values, then Validate &amp; Create – this creates a separate document.</span>
+                  </div>
+                }
+                }
+              </div>
             </app-schema-form-root>
           </div>
         </form>
         @if (enableAdditionalData) {
-          <div class="evidence-container" [attr.visibility]="isStep(evidenceStepIndex)">
+          <div class="evidence-container" [attr.visibility]="screen === 'form' && step === 'evidence'">
             <div class="toolbar-textarea guardian-textarea-container">
               <textarea
                 placeholder="Add a comment (optional)"
@@ -188,7 +386,7 @@
             </div>
           </div>
         }
-        <div class="relayer-account-container" [attr.visibility]="isStep(enableAdditionalData ? 2 : 1)">
+        <div class="relayer-account-container" [attr.visibility]="screen === 'form' && step === 'relayer'">
           <div class="relayer-account-type-values">
             @if (needRemoteWarning) {
               <div class="account-warning">
@@ -283,7 +481,6 @@
             </div>
           </div>
         </div>
-        <div class="result-container" [attr.visibility]="isStep(enableAdditionalData && relayerAccount ? 3 : 2)"></div>
         <ng-template #preloader>
           <div class="preloader-image"></div>
         </ng-template>
@@ -291,31 +488,69 @@
     }
   </div>
 </div>
-<div class="form-footer" [attr.loading]="loading || null">
-  <div class="action-buttons">
-  @for (config of buttons; track config.id) {
-    <div
-      [attr.visible]="config.visible()"
-      [attr.id]="config.id"
-      class="form-button">
-      <button
-        type="button"
-        (click)="config.fn()"
-        [disabled]="ifDisabledBtn(config)"
-        class="guardian-button guardian-button-{{config.type}}"
-      >
-        @if (config.iconPath) {
-          <svg-icon src="{{config.iconPath}}" svgClass="save-icon-color"></svg-icon>
-        }
-        {{getButtonName(config)}}
-      </button>
+@if (screen === 'form') {
+  <div class="form-footer" [attr.loading]="loading || null">
+    <div class="action-buttons">
+    @for (config of buttons; track config.id) {
+      <div
+        [attr.visible]="config.visible()"
+        [attr.id]="config.id"
+        class="form-button">
+        <button
+          type="button"
+          (click)="config.fn()"
+          [disabled]="ifDisabledBtn(config)"
+          class="guardian-button guardian-button-{{config.type}}"
+        >
+          @if (config.iconPath) {
+            <svg-icon src="{{config.iconPath}}" svgClass="save-icon-color"></svg-icon>
+          }
+          {{getButtonName(config)}}
+        </button>
+      </div>
+    }
+      @if (step === 'fill' && completion && completion.total > 0) {
+        <div class="form-progress">
+          <span>{{ completion.answered }} of {{ completion.total }} required answered</span>
+          @if (completion.answered < completion.total) {
+            <span class="form-progress-dot" aria-hidden="true">·</span>
+            <button type="button" class="form-progress-link" [disabled]="isPreviewBusy" (click)="jumpToNextMissing()">Jump to next missing</button>
+          }
+        </div>
+      } @else {
+        <div class="action-buttons-spacer"></div>
+      }
     </div>
-  }
-    <div class="action-buttons-spacer"></div>
-  @if (lastSavedAt) {
-    <div class="last-autosave">
-      {{ minutesAgo$ | async }}
-    </div>
-  }
   </div>
-</div>
+} @else if (screen === 'results') {
+  <div class="form-footer">
+    <div class="footer-actions">
+      <button type="button" class="guardian-button guardian-button-secondary" (click)="showForm()">Back to the form</button>
+      <div class="footer-spacer"></div>
+      @if (issues.length || ruleIssues.length) {
+        <button type="button" class="guardian-button guardian-button-primary" (click)="fixFirstError()">Fix first error</button>
+      }
+    </div>
+  </div>
+} @else if (screen === 'presults') {
+  <div class="form-footer">
+    <div class="footer-actions">
+      <button type="button" class="guardian-button guardian-button-secondary" (click)="showForm()">Back to the form</button>
+      <div class="footer-spacer"></div>
+      <button type="button" class="guardian-button guardian-button-primary" [disabled]="loading || isPreviewBusy" (click)="previewAgain()">Preview again</button>
+    </div>
+  </div>
+} @else if (submitted; as sub) {
+  <div class="form-footer">
+    <div class="footer-actions">
+      <span class="form-pill ok"><i class="pi pi-check" aria-hidden="true"></i>Submitted</span>
+      <span class="form-footer-hint">The form is closed for editing.</span>
+      <div class="footer-spacer"></div>
+      @if (canDuplicate) {
+        <button type="button" class="guardian-button guardian-button-secondary" (click)="onDuplicate()">Duplicate as new draft</button>
+        <button type="button" class="guardian-button guardian-button-secondary create-another" (click)="onCreateAnother()">Create another</button>
+      }
+      <button type="button" class="guardian-button guardian-button-primary" (click)="onClose()">{{ backLabel }}</button>
+    </div>
+  </div>
+}

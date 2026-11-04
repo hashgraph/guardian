@@ -45,7 +45,6 @@ export interface IFieldControl<T extends UntypedFormControl | UntypedFormGroup |
     control: T;
     preset?: any;
     isPreset?: boolean;
-    prefilled?: boolean;
     fileUploading?: boolean;
     enumValues?: any;
     displayRequired?: boolean;
@@ -124,6 +123,8 @@ export class FieldForm {
     private conditionRevealMap: Map<string, { condition: SchemaCondition, branch: 'then' | 'else' }[]>;
 
     private readonly conditionFields: Set<string>;
+    /** Every then/else field name, including user-ordered ones that conditionFields skips. */
+    private readonly conditionalNames: Set<string>;
     private ownParentControlledFields: Set<string>;
     private readonly childControlledFields: Map<string, Set<string>>;
     private readonly ancestorChildPaths: Map<string, Set<string>>;
@@ -131,6 +132,21 @@ export class FieldForm {
     public keepDefaultLabels: boolean = false;
     private arrayDependencies: ReturnType<typeof SchemaHelper.collectArrayDependencies> = [];
     public errorsRevealed = false;
+    public showMetadata = false;
+    /** Dot path of the field with the row index of every array it sits in. */
+    public metadataPath(item: IFieldControl<any>): string {
+        const scope = (this.previewPath() || '').split('.').filter(Boolean);
+        const own = (item.path || item.name).split('.');
+        const depth = scope.filter((part) => !/^\d+$/.test(part)).length + 1;
+        const lead = own.slice(0, Math.max(0, own.length - depth));
+        return [...lead, ...scope, item.name].join('.');
+    }
+
+    /** True when the field is shown or hidden by a condition of this schema. */
+    public isConditional(item: IFieldControl<any>): boolean {
+        return this.conditionalNames.has(item.name);
+    }
+
     private arrayGroupCache: Map<IFieldControl<any>, IArrayGroupEntry[]> | null = null;
     private fieldOrder: Map<string, number> | null = null;
     private readonly arrayDependencySources = new Map<UntypedFormArray, Subscription>();
@@ -150,6 +166,7 @@ export class FieldForm {
         this.validateLikeDryRun = validateLikeDryRun;
         this.privateFields = {};
         this.conditionFields = new Set<string>();
+        this.conditionalNames = new Set<string>();
         this.ownParentControlledFields = new Set<string>();
         this.childControlledFields = new Map<string, Set<string>>();
         this.ancestorChildPaths = new Map<string, Set<string>>();
@@ -280,13 +297,12 @@ export class FieldForm {
         }
 
         this.conditionFields.clear();
+        this.conditionalNames.clear();
         this.childControlledFields.clear();
         if (conditions) {
             for (const condition of conditions) {
-                for (const field of (condition.thenFields || [])) {
-                    if (!field.conditionUserOrdered) { this.conditionFields.add(field.name); }
-                }
-                for (const field of (condition.elseFields || [])) {
+                for (const field of [...(condition.thenFields || []), ...(condition.elseFields || [])]) {
+                    this.conditionalNames.add(field.name);
                     if (!field.conditionUserOrdered) { this.conditionFields.add(field.name); }
                 }
                 const allTargets: SchemaConditionTarget[] = [
@@ -760,22 +776,6 @@ export class FieldForm {
             if (field?.description) { return field.description; }
         }
         return null;
-    }
-
-    public getTitleMappedNames(item: IFieldControl<any>): Set<string> {
-        const names = new Set<string>();
-        for (const dependency of (this.rootForm.arrayDependencies || [])) {
-            if (!dependency.title?.length || !dependency.valueMappings?.length) { continue; }
-            const dependent = this.rootForm.resolveArrayEntry(dependency.field);
-            if (dependent?.control !== item) { continue; }
-            const titlePath = dependency.title.join('.');
-            for (const mapping of dependency.valueMappings) {
-                if (mapping.source.join('.') === titlePath) {
-                    names.add(mapping.target.join('.'));
-                }
-            }
-        }
-        return names;
     }
 
     private isGroupArray(item: IFieldControl<any>): boolean {
@@ -1298,7 +1298,6 @@ export class FieldForm {
         if (preset) {
             item.isPreset = !this.rootForm.keepDefaultLabels;
             item.preset = preset[field.name];
-            item.prefilled = !this.rootForm.keepDefaultLabels && !isEmptyValue(preset[field.name]);
         }
 
         // ifSimpleField
@@ -1310,6 +1309,9 @@ export class FieldForm {
             }
             if (field.enum) {
                 item.enumValues = field.enum;
+            }
+            if (item.required && field.enum?.length === 1 && isEmptyValue(item.control.value)) {
+                item.control.setValue(field.enum[0]);
             }
             this.postFormat(item, item.control);
             item.model = null;

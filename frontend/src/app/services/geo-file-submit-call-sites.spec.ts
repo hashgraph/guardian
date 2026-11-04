@@ -6,6 +6,7 @@ describe('geo file submit call sites', () => {
     it('persists geo files before the dialog request', async () => {
         const order: string[] = [];
         const component = Object.create(RequestDocumentFormComponent.prototype) as any;
+        component.showSubmitted = () => undefined; // its 1s timer would otherwise fire after the spec ends
         component.parent = {
             id: 'block-1', policyId: 'policy-1', dryRun: false,
             relayerAccount: false, getRef: () => null, getAutosaveId: () => 'autosave'
@@ -36,7 +37,7 @@ describe('geo file submit call sites', () => {
         const closed = new Subject<boolean>();
         const component = Object.create(VCFullscreenDialog.prototype) as any;
         component.dialog = { open: () => ({ onClose: closed }) };
-        component.dataForm = { getRawValue: () => ({ place: {} }) };
+        component.dataForm = { valid: true, getRawValue: () => ({ place: {} }) };
         component.tablePersist = {
             persistTablesInDocument: async () => order.push('tables'),
             rollbackIpfsUploads: tableRollback
@@ -68,6 +69,7 @@ describe('geo file submit call sites', () => {
         const tableRollback = jasmine.createSpy('tableRollback').and.resolveTo();
         const geoRollback = jasmine.createSpy('geoRollback').and.resolveTo();
         const component = Object.create(RequestDocumentFormComponent.prototype) as any;
+        component.showSubmitted = () => undefined; // its 1s timer would otherwise fire after the spec ends
         component.parent = {
             id: 'block-1', policyId: 'policy-1', dryRun: false,
             relayerAccount: false, getRef: () => null, getAutosaveId: () => 'autosave'
@@ -119,6 +121,7 @@ describe('geo file submit call sites', () => {
             const request = jasmine.createSpy('request');
             const deleteAutosave = jasmine.createSpy('delete');
             const component = Object.create(RequestDocumentFormComponent.prototype) as any;
+            component.showSubmitted = () => undefined; // its 1s timer would otherwise fire after the spec ends
             component.parent = {
                 id: 'block-1', policyId: 'policy-1', dryRun: false,
                 relayerAccount: false, getRef: () => null, getAutosaveId: () => 'autosave'
@@ -143,7 +146,7 @@ describe('geo file submit call sites', () => {
             const closed = new Subject<boolean>();
             const component = Object.create(VCFullscreenDialog.prototype) as any;
             component.dialog = { open: () => ({ onClose: closed }) };
-            component.dataForm = { getRawValue: () => ({ place: {} }) };
+            component.dataForm = { valid: true, getRawValue: () => ({ place: {} }) };
             component.tablePersist = tablePersist;
             component.geoFilePersist = geoFilePersist;
             component.policyEngineService = { createNewVersionVcDocument: request };
@@ -182,6 +185,7 @@ describe('geo file submit call sites', () => {
 
         it('does not roll back geo files in the dialog', async () => {
             const component = Object.create(RequestDocumentFormComponent.prototype) as any;
+            component.showSubmitted = () => undefined; // its 1s timer would otherwise fire after the spec ends
             component.parent = {
                 id: 'block-1', policyId: 'policy-1', dryRun: false,
                 relayerAccount: false, getRef: () => null, getAutosaveId: () => 'autosave'
@@ -203,7 +207,7 @@ describe('geo file submit call sites', () => {
             const closed = new Subject<boolean>();
             const component = Object.create(VCFullscreenDialog.prototype) as any;
             component.dialog = { open: () => ({ onClose: closed }) };
-            component.dataForm = { getRawValue: () => ({ place: {} }) };
+            component.dataForm = { valid: true, getRawValue: () => ({ place: {} }) };
             component.tablePersist = tablePersist;
             component.geoFilePersist = geoFilePersist;
             component.policyEngineService = { createNewVersionVcDocument: jasmine.createSpy('request') };
