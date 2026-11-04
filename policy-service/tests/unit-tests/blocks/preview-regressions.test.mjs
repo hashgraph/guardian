@@ -17,6 +17,8 @@ import { PolicyComponentsUtils } from '../../../dist/policy-engine/policy-compon
 import { isPreviewStoredDocument, markPreviewExtractedDocument, markPreviewStoredDocuments, runPreview } from '../../../dist/policy-engine/helpers/preview.js';
 import { createPreviewCredential } from '../helpers/preview-document-fixture.mjs';
 import { makeBlock, makeUser, makeComponents, restoreHarness } from './_block-exec-harness.mjs';
+import { useShortRecordCompletion } from '../helpers/record-completion-delay.mjs';
+import { itInFullWorkerRun } from '../helpers/full-worker-run.mjs';
 
 const user = makeUser();
 const credential = subject => ({ schema: '#S', document: createPreviewCredential(subject, user.did, crypto.randomUUID()).toJsonTree() });
@@ -46,6 +48,7 @@ async function previewDatabase() {
 }
 
 describe('@unit Preview regressions', function () {
+    useShortRecordCompletion();
     this.timeout(60000);
     let external;
     let blockError;
@@ -75,7 +78,7 @@ describe('@unit Preview regressions', function () {
         assert.equal(supplied.output.document.credentialSubject[0].total, 0);
     });
 
-    it('excludes historical by-name source copies through the actual source addon', async () => {
+    itInFullWorkerRun('excludes historical by-name source copies through the actual source addon', async () => {
         for (const mode of ['historical-filled', 'historical-missing', 'temporary-missing']) {
             const { db, server } = await previewDatabase();
             const subject = mode === 'historical-filled' ? { rate: 3 } : {};
@@ -158,7 +161,7 @@ describe('@unit Preview regressions', function () {
         }
     });
 
-    it('recovers an extracted copied object at its original path', async () => {
+    itInFullWorkerRun('recovers an extracted copied object at its original path', async () => {
         const child = credential({});
         delete child.schema;
         const parent = credential({ section: {} });
@@ -170,7 +173,7 @@ describe('@unit Preview regressions', function () {
         assert.deepEqual(result.response.data.missingFields, ['section.rate']);
     });
 
-    it('does not charge actual HTTP output fields to the form', async () => {
+    itInFullWorkerRun('does not charge actual HTTP output fields to the form', async () => {
         let total;
         const response = await runPreview({ blockType: 'requestVcDocumentBlock' }, user, {}, async (_r, _u, _d, step) => {
             step.setPreviewSource({ schema: '#S', document: {}, paths: ['rate', 'total'], dependencies: {} });
@@ -229,7 +232,7 @@ describe('@unit Preview regressions', function () {
         }
     });
 
-    it('accepts handled missing parents and still requires unhandled children', async () => {
+    itInFullWorkerRun('accepts handled missing parents and still requires unhandled children', async () => {
         const forms = [
             '(d.geo?.lat ?? 0)*2',
             '((d.geo && d.geo.lat) || 0)*2',
@@ -279,7 +282,7 @@ describe('@unit Preview regressions', function () {
         }
     });
 
-    it('tracks direct and copied current-form source reads, excluding history', async () => {
+    itInFullWorkerRun('tracks direct and copied current-form source reads, excluding history', async () => {
         for (const copy of [false, true]) {
             const expression = 'const original=sources[0].document.credentialSubject[0];const c=' + (copy ? '{...original}' : 'original') + ';done({total:c["ra"+"te"]*2});';
             const missing = await previewScript([], expression, {}, ['rate', 'total'], async block => {
@@ -296,7 +299,7 @@ describe('@unit Preview regressions', function () {
         }
     });
 
-    it('recovers the actual copied document when several form documents arrive', async () => {
+    itInFullWorkerRun('recovers the actual copied document when several form documents arrive', async () => {
         const expression = 'const c={...documents[0].document.credentialSubject[0]};done({total:c["ra"+"te"]*2});';
         const missing = await previewScript([credential({}), credential({})], expression, {}, ['rate', 'total']);
         assert.equal(missing.response.code, 422);

@@ -8,6 +8,8 @@ import { MessageResponse } from '@guardian/common/models/message-response';
 import { makeBlock, makeUser } from '../blocks/_block-exec-harness.mjs';
 import { CustomLogicBlock } from '../../../dist/policy-engine/blocks/custom-logic-block.js';
 import { RecordActionStep } from '../../../dist/policy-engine/record-action-step.js';
+import { useShortRecordCompletion } from './record-completion-delay.mjs';
+import { itInFullWorkerRun } from './full-worker-run.mjs';
 
 const filename = fileURLToPath(import.meta.url);
 const WORKERS = path.join(path.dirname(filename), '../../../dist/policy-engine/helpers/workers');
@@ -51,6 +53,7 @@ async function diagnose(execFunc, targets = [top]) {
 }
 
 describe('@unit Preview copied-field diagnosis', function () {
+    useShortRecordCompletion();
     this.timeout(30000);
 
     it('exports the enumerated form object in an ordinary Preview run', async () => {
@@ -60,41 +63,41 @@ describe('@unit Preview copied-field diagnosis', function () {
         assert.equal(messages.some((message) => message?.type === 'diagnosis'), false);
     });
 
-    it('finds a computed key read from a spread copy', async () => {
+    itInFullWorkerRun('finds a computed key read from a spread copy', async () => {
         const diagnosis = await diagnose('const c = { ...doc }; done({ total: c["ra" + "te"] * 2 });');
         assert.equal(diagnosis.trusted, true);
         assert.equal(diagnosis.failed, true);
         assert.deepEqual(diagnosis.sites.map((site) => site.fullPath), ['rate']);
     });
 
-    it('finds two missing fields from an Object.assign copy', async () => {
+    itInFullWorkerRun('finds two missing fields from an Object.assign copy', async () => {
         const diagnosis = await diagnose('const c = Object.assign({}, doc); done({ total: c["ra" + "te"] * c.factor });');
         assert.equal(diagnosis.trusted, true);
         assert.deepEqual(diagnosis.sites.map((site) => site.fullPath).sort(), ['factor', 'rate']);
     });
 
-    it('keeps the exact index of one of two identical copied rows', async () => {
+    itInFullWorkerRun('keeps the exact index of one of two identical copied rows', async () => {
         const diagnosis = await diagnose('const r = { ...doc.rows[1] }; done({ total: r["ra" + "te"] * 2 });', [rowOne]);
         assert.equal(diagnosis.trusted, true);
         assert.deepEqual(diagnosis.sites.map((site) => site.fullPath), ['rows.1.rate']);
     });
 
-    it('does not trust a JSON clone, which loses the link to the form', async () => {
+    itInFullWorkerRun('does not trust a JSON clone, which loses the link to the form', async () => {
         const diagnosis = await diagnose('const c = JSON.parse(JSON.stringify(doc)); done({ total: c.rate * 2 });');
         assert.equal(diagnosis.trusted, false);
     });
 
-    it('does not trust a read from an unrelated object', async () => {
+    itInFullWorkerRun('does not trust a read from an unrelated object', async () => {
         const diagnosis = await diagnose('const c = {}; done({ total: c.rate * 2 });');
         assert.equal(diagnosis.trusted, false);
     });
 
-    it('does not trust a run that checked presence through Reflect.has, even through an alias', async () => {
+    itInFullWorkerRun('does not trust a run that checked presence through Reflect.has, even through an alias', async () => {
         const diagnosis = await diagnose('const has = Reflect.has; const c = { ...doc }; done({ total: has(c, "skip") ? c.factor * 2 : c.rate * 2 });');
         assert.equal(diagnosis.trusted, false);
     });
 
-    it('does not trust a run that checked the prototype with hasOwnProperty', async () => {
+    itInFullWorkerRun('does not trust a run that checked the prototype with hasOwnProperty', async () => {
         for (const code of [
             'const c = { ...doc }; done({ total: c.__proto__.hasOwnProperty("skip") ? c.factor * 2 : c["ra" + "te"] * 2 });',
             'const c = { ...doc }; done({ total: Object.hasOwn(Object.getPrototypeOf({}), "skip") ? c.factor * 2 : c["ra" + "te"] * 2 });'
@@ -109,7 +112,7 @@ describe('@unit Preview copied-field diagnosis', function () {
         assert.deepEqual(diagnosis.sites.map((site) => site.fullPath), ['rate']);
     });
 
-    it('does not trust a run that inspected symbols or descriptors', async () => {
+    itInFullWorkerRun('does not trust a run that inspected symbols or descriptors', async () => {
         for (const code of [
             'const c = { ...doc }; Object.getOwnPropertySymbols(c); done({ total: c.rate * 2 });',
             'const c = { ...doc }; Object.getOwnPropertyDescriptor(Object.getPrototypeOf(c), "skip"); done({ total: c.rate * 2 });'
@@ -118,19 +121,19 @@ describe('@unit Preview copied-field diagnosis', function () {
         }
     });
 
-    it('keeps an ordinary assignment to a copy and reports no failure', async () => {
+    itInFullWorkerRun('keeps an ordinary assignment to a copy and reports no failure', async () => {
         const diagnosis = await diagnose('const c = { ...doc }; c.rate = 3; Object.assign(c, { factor: 2 }); done({ total: c.rate * c.factor });');
         assert.equal(diagnosis.failed, false);
         assert.deepEqual(diagnosis.sites, []);
     });
 
-    it('reports a thrown script as failed', async () => {
+    itInFullWorkerRun('reports a thrown script as failed', async () => {
         const diagnosis = await diagnose('const c = { ...doc }; if (c["ra" + "te"] === undefined) { throw new Error("no rate"); } done({});');
         assert.equal(diagnosis.failed, true);
         assert.deepEqual(diagnosis.sites.map((site) => site.fullPath), ['rate']);
     });
 
-    it('finds a copied read in a Math code block', async () => {
+    itInFullWorkerRun('finds a copied read in a Math code block', async () => {
         const expression = { code: 'const c = { ...document }; result.total = c["ra" + "te"] * 2;', inputs: [], outputs: [], formulas: [] };
         const messages = await runWorker('math-worker.js', {
             expression,
@@ -149,7 +152,7 @@ describe('@unit Preview copied-field diagnosis', function () {
         assert.deepEqual(diagnosis.sites.map((site) => site.fullPath), ['rate']);
     });
 
-    it('runs Math diagnosis without Node capabilities and reports the different failure', async () => {
+    itInFullWorkerRun('runs Math diagnosis without Node capabilities and reports the different failure', async () => {
         const expression = { code: 'process.exitCode; const c = { ...document }; result.total = c["ra" + "te"] * 2;', inputs: [], outputs: [], formulas: [] };
         const messages = await runWorker('math-worker.js', {
             expression, user: {}, documents: { target: { amount: 4 } }, schema: null, copy: false, tablesPack: {},
@@ -338,7 +341,7 @@ describe('@unit Preview copied-field diagnosis', function () {
         };
         const credential = (subject) => ({ schema: '#S', document: { credentialSubject: [subject] } });
 
-        it('settles the block only after a slow diagnosis has added its fields', async () => {
+        itInFullWorkerRun('settles the block only after a slow diagnosis has added its fields', async () => {
             const { result, readsWhenSettled } = await preview(
                 'const doc = documents[0].document.credentialSubject[0]; const c = { ...doc }; done({ total: c["ra" + "te"] * 2 }); const until = Date.now() + 3000; while (Date.now() < until) {}',
                 credential({ amount: 2 })
@@ -348,7 +351,7 @@ describe('@unit Preview copied-field diagnosis', function () {
             assert.deepEqual(result.data.missingFields, ['rate']);
         });
 
-        it('shows an error the script threw itself instead of asking for fields', async () => {
+        itInFullWorkerRun('shows an error the script threw itself instead of asking for fields', async () => {
             const { result } = await preview(
                 'const doc = documents[0].document.credentialSubject[0]; for (const key in doc) {} throw new Error("amount too small");',
                 credential({ amount: 2 })
@@ -357,7 +360,7 @@ describe('@unit Preview copied-field diagnosis', function () {
             assert.match(result.body.errors[0].message, /amount too small/);
         });
 
-        it('asks for fields after a TypeError caused by an empty copied value', async () => {
+        itInFullWorkerRun('asks for fields after a TypeError caused by an empty copied value', async () => {
             const { result } = await preview(
                 'const doc = documents[0].document.credentialSubject[0]; const c = JSON.parse(JSON.stringify(doc)); done({ total: c.rate.value });',
                 credential({ amount: 2 })
@@ -366,7 +369,7 @@ describe('@unit Preview copied-field diagnosis', function () {
             assert.deepEqual(result.data.missingFields, ['other', 'rate']);
         });
 
-        it('asks for fields after a mathjs Undefined symbol error on a copy', async () => {
+        itInFullWorkerRun('asks for fields after a mathjs Undefined symbol error on a copy', async () => {
             const { result } = await preview(
                 'const doc = documents[0].document.credentialSubject[0]; const c = { ...doc }; done({ total: mathjs.evaluate("rate * 2", c) });',
                 credential({ amount: 2 })
@@ -375,7 +378,7 @@ describe('@unit Preview copied-field diagnosis', function () {
             assert.deepEqual(result.data.missingFields, ['other', 'rate']);
         });
 
-        it('does not ask for a result field the failed script writes itself', async () => {
+        itInFullWorkerRun('does not ask for a result field the failed script writes itself', async () => {
             const { result } = await preview(
                 'const doc = documents[0].document.credentialSubject[0]; const c = JSON.parse(JSON.stringify(doc)); c.total = c.rate * 2; done(c);',
                 credential({ amount: 2 }),
@@ -385,7 +388,7 @@ describe('@unit Preview copied-field diagnosis', function () {
             assert.deepEqual(result.data.missingFields, ['other', 'rate']);
         });
 
-        it('keeps a field the script reads before writing it', async () => {
+        itInFullWorkerRun('keeps a field the script reads before writing it', async () => {
             const { result } = await preview(
                 'const doc = documents[0].document.credentialSubject[0]; const c = JSON.parse(JSON.stringify(doc)); c.rate = c.rate * 2; done(c);',
                 credential({ amount: 2 })
@@ -394,7 +397,7 @@ describe('@unit Preview copied-field diagnosis', function () {
             assert.deepEqual(result.data.missingFields, ['other', 'rate']);
         });
 
-        it('returns the exact field from the current form', async () => {
+        itInFullWorkerRun('returns the exact field from the current form', async () => {
             const { result } = await preview(
                 'const doc = documents[0].document.credentialSubject[0]; const c = { ...doc }; done({ total: c["ra" + "te"] * 2 });',
                 credential({ amount: 2 })
@@ -403,7 +406,7 @@ describe('@unit Preview copied-field diagnosis', function () {
             assert.deepEqual(result.data.missingFields, ['rate']);
         });
 
-        it('falls back to the empty fields of a copied same-schema input after a failure', async () => {
+        itInFullWorkerRun('falls back to the empty fields of a copied same-schema input after a failure', async () => {
             const { result } = await preview(
                 'const old = documents[1].document.credentialSubject[0]; const c = { ...old }; done({ total: c["ra" + "te"] * 2 });',
                 [credential({ amount: 2 }), credential({ amount: 7 })]

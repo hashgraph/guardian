@@ -18,6 +18,8 @@ import {
     runPreview,
     setPreviewComputed
 } from '../../../dist/policy-engine/helpers/preview.js';
+import { useShortRecordCompletion } from '../helpers/record-completion-delay.mjs';
+import { itInFullWorkerRun } from '../helpers/full-worker-run.mjs';
 
 const CHILD = { type: 'object', properties: { amount: { type: 'number' }, total: { type: 'number' } } };
 const SCHEMAS = {
@@ -79,6 +81,7 @@ async function runSwitch(formula, data, step) {
 }
 
 describe('@unit Preview attributes reads to the document that supplied them', function () {
+    useShortRecordCompletion();
     this.timeout(30000);
     const originals = [];
     const patch = (target, values) => {
@@ -117,7 +120,7 @@ describe('@unit Preview attributes reads to the document that supplied them', fu
             assert.equal(total(results), 10);
         });
 
-        it('keeps the form field optional in a mixed array when only the stored record supplies it', async () => {
+        itInFullWorkerRun('keeps the form field optional in a mixed array when only the stored record supplies it', async () => {
             let results;
             const response = await preview(source({ flag: true }), async (_user, step) => {
                 results = await runCustomLogic(customLogic(SKIP_CURRENT), [document({ flag: true }), markPreviewStoredDocuments(document({ flag: false, amount: 5 }))], step);
@@ -126,7 +129,7 @@ describe('@unit Preview attributes reads to the document that supplied them', fu
             assert.equal(total(results), 10);
         });
 
-        it('still asks for a form field the script reads from the current form in a mixed array', async () => {
+        itInFullWorkerRun('still asks for a form field the script reads from the current form in a mixed array', async () => {
             const response = await preview(source({ flag: false }), async (_user, step) => {
                 await runCustomLogic(customLogic(SKIP_CURRENT), [document({ flag: false }), markPreviewStoredDocuments(document({ flag: false, amount: 5 }))], step);
             });
@@ -134,7 +137,7 @@ describe('@unit Preview attributes reads to the document that supplied them', fu
             assert.deepEqual(response.data.missingFields, ['amount']);
         });
 
-        it('counts zero and false from the current form as supplied', async () => {
+        itInFullWorkerRun('counts zero and false from the current form as supplied', async () => {
             let results;
             const response = await preview(source({ flag: false, amount: 0 }), async (_user, step) => {
                 results = await runCustomLogic(customLogic(SKIP_CURRENT), [document({ flag: false, amount: 0 }), markPreviewStoredDocuments(document({ flag: false, amount: 5 }))], step);
@@ -143,7 +146,7 @@ describe('@unit Preview attributes reads to the document that supplied them', fu
             assert.equal(total(results), 10);
         });
 
-        it('checks calculated fields on the record that was read, not across every same-schema record', async () => {
+        itInFullWorkerRun('checks calculated fields on the record that was read, not across every same-schema record', async () => {
             const read = (index) => `const doc=documents[${index}].document.credentialSubject[0]; done({total:doc.amount*2});`;
             for (const [index, code] of [[0, 200], [1, 422]]) {
                 const response = await preview(source(), async (_user, step) => {
@@ -154,7 +157,7 @@ describe('@unit Preview attributes reads to the document that supplied them', fu
             }
         });
 
-        it('lists only current-form inputs during discovery', async () => {
+        itInFullWorkerRun('lists only current-form inputs during discovery', async () => {
             for (const [stored, fields] of [[true, ['flag']], [false, ['amount', 'flag']]]) {
                 const response = await preview(source({ flag: true }, { discovery: true }), async (_user, step) => {
                     const old = document({ flag: false, amount: 5 });
@@ -165,7 +168,7 @@ describe('@unit Preview attributes reads to the document that supplied them', fu
             }
         });
 
-        it('calculates the same value outside Preview', async () => {
+        itInFullWorkerRun('calculates the same value outside Preview', async () => {
             const results = await runCustomLogic(customLogic(SKIP_CURRENT), [document({ flag: true }), document({ flag: false, amount: 5 })]);
             assert.equal(total(results), 10);
         });
@@ -189,7 +192,7 @@ describe('@unit Preview attributes reads to the document that supplied them', fu
             }
         };
 
-        it('follows an explicit same-schema link to the stored relationship it selects', async () => {
+        itInFullWorkerRun('follows an explicit same-schema link to the stored relationship it selects', async () => {
             let calculated;
             const response = await preview({ schema: '#S', document: {}, paths: ['amount', 'total'] }, async (_user, step) => {
                 calculated = await run('#S', step, true);
@@ -200,7 +203,7 @@ describe('@unit Preview attributes reads to the document that supplied them', fu
             assert.deepEqual(ordinary.document.credentialSubject, calculated.document.credentialSubject);
         });
 
-        it('still asks for the current-form field read through a link without a schema', async () => {
+        itInFullWorkerRun('still asks for the current-form field read through a link without a schema', async () => {
             const response = await preview({ schema: '#S', document: {}, paths: ['amount', 'total'] }, async (_user, step) => {
                 await run('', step, true).catch((error) => step.addError(error, 'mathBlock'));
             });
@@ -208,7 +211,7 @@ describe('@unit Preview attributes reads to the document that supplied them', fu
             assert.deepEqual(response.data.missingFields, ['amount']);
         });
 
-        it('asks for nothing when its code reads a stored main document', async () => {
+        itInFullWorkerRun('asks for nothing when its code reads a stored main document', async () => {
             const { block } = makeBlock(MathBlock);
             const ref = {
                 tag: 'math', blockType: 'mathBlock', warn() {},
@@ -391,7 +394,7 @@ describe('@unit Preview attributes reads to the document that supplied them', fu
         const script = (state, step) => runCustomLogic(customLogic('const doc=documents[0].document.credentialSubject[0]; done({total:doc.amount*2});'), state.data, step)
             .catch((error) => { step.addError(error, 'customLogicBlock'); return []; });
 
-        it('calculates from a filled extracted value and keeps zero as supplied', async () => {
+        itInFullWorkerRun('calculates from a filled extracted value and keeps zero as supplied', async () => {
             for (const [amount, expected] of [[5, 10], [0, 0]]) {
                 const { response, results } = await chain({ section: { amount } }, script);
                 assert.equal(response.code, 200);
@@ -399,19 +402,19 @@ describe('@unit Preview attributes reads to the document that supplied them', fu
             }
         });
 
-        it('asks for the original form path of an empty extracted value', async () => {
+        itInFullWorkerRun('asks for the original form path of an empty extracted value', async () => {
             const { response } = await chain({ section: {} }, script);
             assert.equal(response.code, 422);
             assert.deepEqual(response.data.missingFields, ['section.amount']);
         });
 
-        it('lists the original form path during discovery', async () => {
+        itInFullWorkerRun('lists the original form path during discovery', async () => {
             const { response } = await chain({ section: {} }, script, { discovery: true });
             assert.equal(response.code, 200);
             assert.ok(response.body.fields.includes('section.amount'));
         });
 
-        it('names the exact row of an empty value extracted from a table of sections', async () => {
+        itInFullWorkerRun('names the exact row of an empty value extracted from a table of sections', async () => {
             const { response } = await chain({ sections: [{ amount: 1 }, {}] }, (state, step) => runCustomLogic(
                 customLogic('let total=0; for(const item of documents){total+=item.document.credentialSubject[0].amount*2} done({total});'), state.data, step)
                 .catch((error) => { step.addError(error, 'customLogicBlock'); return []; }));
@@ -419,7 +422,7 @@ describe('@unit Preview attributes reads to the document that supplied them', fu
             assert.deepEqual(response.data.missingFields, ['sections.1.amount']);
         });
 
-        it('does not ask for a value calculated before extraction or taken from a stored record', async () => {
+        itInFullWorkerRun('does not ask for a value calculated before extraction or taken from a stored record', async () => {
             const calculated = (subject) => setPreviewComputed(document(subject, '#Parent'), ['section.amount']);
             const stored = (subject) => markPreviewStoredDocuments(document(subject, '#Parent'));
             for (const parent of [calculated, stored]) {
@@ -431,7 +434,7 @@ describe('@unit Preview attributes reads to the document that supplied them', fu
             }
         });
 
-        it('carries the original path into Switch and Math', async () => {
+        itInFullWorkerRun('carries the original path into Switch and Math', async () => {
             const toSwitch = await chain({ section: {} }, async (state, step) => runSwitch('amount > 0', state.data, step));
             assert.equal(toSwitch.response.code, 422);
             assert.deepEqual(toSwitch.response.data.missingFields, ['section.amount']);
@@ -483,7 +486,7 @@ describe('@unit Preview attributes reads to the document that supplied them', fu
     });
 
     describe('Aggregate into a calculation', () => {
-        it('takes a stored older record from cumulative Aggregate without asking for its field in the form', async () => {
+        itInFullWorkerRun('takes a stored older record from cumulative Aggregate without asking for its field in the form', async () => {
             const old = { ...document({ flag: false, amount: 5 }), _id: '6a0000000000000000000001', id: '6a0000000000000000000001' };
             const target = makeDb({
                 find: async (entityClass) => entityClass === AggregateVC ? [structuredClone(old)] : [],

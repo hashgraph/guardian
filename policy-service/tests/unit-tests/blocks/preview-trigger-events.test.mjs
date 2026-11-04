@@ -8,6 +8,7 @@ import { PolicyLink } from '../../../dist/policy-engine/interfaces/policy-event.
 import { EventActor } from '../../../dist/policy-engine/interfaces/policy-event-type.js';
 import { PreviewScope, recordPreviewWait } from '../../../dist/policy-engine/helpers/preview.js';
 import { RecordActionStep } from '../../../dist/policy-engine/record-action-step.js';
+import { useShortRecordCompletion } from '../helpers/record-completion-delay.mjs';
 
 const triggerEvents = SwitchBlock.prototype.triggerEvents;
 const triggerEventSync = SwitchBlock.prototype.triggerEventSync;
@@ -36,6 +37,7 @@ const previewStep = () => new RecordActionStep(() => {}, 0, true, true, undefine
 const state = { data: { id: 'doc-1' } };
 
 describe('@unit basic block triggerEvents in preview', () => {
+    useShortRecordCompletion();
     it('dispatches every target, including former stop-list types, without guessing their behaviour', async () => {
         const calls = [];
         const step = previewStep();
@@ -256,6 +258,7 @@ describe('@unit basic block triggerEvents in preview', () => {
 });
 
 describe('@unit basic block runAction in preview', () => {
+    useShortRecordCompletion();
     const origGetRef = PolicyComponentsUtils.GetBlockRef;
     const origExternal = PolicyComponentsUtils.ExternalEventFn;
 
@@ -294,6 +297,7 @@ describe('@unit basic block runAction in preview', () => {
 });
 
 describe('@unit switch condition fields in preview', () => {
+    useShortRecordCompletion();
     const origGetRef = PolicyComponentsUtils.GetBlockRef;
     const origExternal = PolicyComponentsUtils.ExternalEventFn;
     const origTrack = PreviewReadTracker.prototype.track;
@@ -342,6 +346,7 @@ describe('@unit switch condition fields in preview', () => {
 });
 
 describe('@unit basic block screen updates and debug records in preview', () => {
+    useShortRecordCompletion();
     const fakeBlock = () => {
         const calls = { saved: 0, debugContexts: 0, debugErrors: 0 };
         const block = {
@@ -390,6 +395,7 @@ describe('@unit basic block screen updates and debug records in preview', () => 
 });
 
 describe('@unit Issuer actor with a preview document', () => {
+    useShortRecordCompletion();
     const origLookup = PolicyComponentsUtils.GetPolicyUserByDID;
     let lookups;
 

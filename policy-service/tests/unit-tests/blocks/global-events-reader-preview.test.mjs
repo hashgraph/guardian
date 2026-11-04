@@ -10,6 +10,7 @@ import { EventActor } from '../../../dist/policy-engine/interfaces/policy-event-
 import { PreviewScope } from '../../../dist/policy-engine/helpers/preview.js';
 import { RecordActionStep } from '../../../dist/policy-engine/record-action-step.js';
 import { makeBlock, makeComponents, makeUser, restoreHarness } from './_block-exec-harness.mjs';
+import { useShortRecordCompletion } from '../helpers/record-completion-delay.mjs';
 
 const db = createInMemoryDatabaseHelper();
 const { DatabaseServer } = await esmock('@guardian/common/database-modules/database-server', {
@@ -17,6 +18,7 @@ const { DatabaseServer } = await esmock('@guardian/common/database-modules/datab
 });
 
 describe('@unit Global Events Reader inside a preview chain', () => {
+    useShortRecordCompletion();
     beforeEach(() => db.reset());
     after(() => restoreHarness());
 

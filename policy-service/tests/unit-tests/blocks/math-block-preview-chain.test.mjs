@@ -9,6 +9,7 @@ import { PolicyUtils } from '../../../dist/policy-engine/helpers/utils.js';
 import { fillPreviewPlaceholders, getPreviewComputed, getPreviewDocumentSchema, PreviewScope, resolvePreviewFields, setPreviewComputed } from '../../../dist/policy-engine/helpers/preview.js';
 import { RecordActionStep } from '../../../dist/policy-engine/record-action-step.js';
 import { Users } from '@guardian/common/helpers/users';
+import { itInFullWorkerRun } from '../helpers/full-worker-run.mjs';
 
 const schemaFields = ['amount', 'temp', 'final', 'rate', 'total'];
 
@@ -110,7 +111,7 @@ describe('@unit mathBlock preview chain with real workers', function () {
         });
     });
 
-    it('keeps the fields a failed code section read, so the missing one becomes required', async () => {
+    itInFullWorkerRun('keeps the fields a failed code section read, so the missing one becomes required', async () => {
         const step = previewStep(['amount', 'rate', 'final']);
         const code = 'if (document.amount > 0) result.final = document.rate.toFixed(2);';
         await assert.rejects(
@@ -128,7 +129,7 @@ describe('@unit mathBlock preview chain with real workers', function () {
         ['a function', 'scope.double = (value) => value * 2; result.final = scope.double(document.amount);'],
         ['a document reference', 'scope.src = document; result.final = scope.src.amount * 2;']
     ]) {
-        it(`keeps the result and the calculation view when code stores ${name} in scope`, async () => {
+        itInFullWorkerRun(`keeps the result and the calculation view when code stores ${name} in scope`, async () => {
             const step = previewStep(['amount', 'temp', 'final']);
             const output = await runMath(step, mathRef('scoped', expression('amount', 'temp', text)), formDocument());
             assert.equal(subject(output).final, name === 'a filtered array' ? 2 : 4);
@@ -137,7 +138,7 @@ describe('@unit mathBlock preview chain with real workers', function () {
         });
     }
 
-    it('passes the reference of the form to a script after a Math block that writes another schema', async () => {
+    itInFullWorkerRun('passes the reference of the form to a script after a Math block that writes another schema', async () => {
         const step = previewStep(['amount', 'temp']);
         const math = await runMath(step, mathRef('cross', expression('amount', 'temp'), '#OUT'), formDocument());
         assert.equal(math.schema, '#OUT');
@@ -158,7 +159,7 @@ describe('@unit mathBlock preview chain with real workers', function () {
         assert.equal(item.document.proof, undefined);
     });
 
-    it('still asks for a field in one branch when only another branch computed it', async () => {
+    itInFullWorkerRun('still asks for a field in one branch when only another branch computed it', async () => {
         const step = previewStep(['amount', 'temp', 'final']);
         const branchA = await runMath(step, mathRef('mathA', expression('amount', 'temp')), formDocument());
         const branchB = await runMath(step, mathRef('mathB', expression('temp', 'final')), formDocument());
@@ -217,7 +218,7 @@ describe('@unit mathBlock preview chain with real workers', function () {
         }
     });
 
-    it('does not ask the user for a field a Custom Logic script computed', async () => {
+    itInFullWorkerRun('does not ask the user for a field a Custom Logic script computed', async () => {
         const step = previewStep(['amount', 'temp', 'final']);
         const script = await runScript(step, formDocument(), {
             outputSchema: '#S',
@@ -231,7 +232,7 @@ describe('@unit mathBlock preview chain with real workers', function () {
         });
     });
 
-    it('still asks for a field a script passed through unchanged, and not for one it set', async () => {
+    itInFullWorkerRun('still asks for a field a script passed through unchanged, and not for one it set', async () => {
         const passThrough = previewStep(['amount', 'temp', 'final']);
         const unchanged = await runScript(passThrough, formDocument(), {
             passOriginal: true,
@@ -261,7 +262,7 @@ describe('@unit mathBlock preview chain with real workers', function () {
         return document;
     };
 
-    it('does not ask for a field a script sets to the same value as the discovery placeholder', async () => {
+    itInFullWorkerRun('does not ask for a field a script sets to the same value as the discovery placeholder', async () => {
         const assigned = previewStep(['amount', 'temp', 'final']);
         const passed = await runScript(assigned, placeholderDocument(), {
             passOriginal: true,
@@ -285,7 +286,7 @@ describe('@unit mathBlock preview chain with real workers', function () {
         });
     });
 
-    it('does not count a write to one input document for another returned document', async () => {
+    itInFullWorkerRun('does not count a write to one input document for another returned document', async () => {
         const run = async (code, documents = [formDocument(), formDocument()]) => {
             const step = previewStep(['amount', 'temp', 'final']);
             const output = await runScript(step, documents, { passOriginal: true, expression: code });
@@ -327,7 +328,7 @@ describe('@unit mathBlock preview chain with real workers', function () {
         return { output, math, fields: resolvePreviewFields(step.getPreviewSource(), step.getPreviewReads()) };
     };
 
-    it('does not give a returned subject the computed fields of another input document', async () => {
+    itInFullWorkerRun('does not give a returned subject the computed fields of another input document', async () => {
         const other = await runSubject('done(documents[1].document.credentialSubject[0]);', [computedDocument(), formDocument()]);
         assert.equal(subject(other.output).temp, undefined);
         assert.deepEqual(getPreviewComputed(other.output), []);
@@ -342,7 +343,7 @@ describe('@unit mathBlock preview chain with real workers', function () {
         assert.deepEqual(spread.fields.missingFields, ['temp']);
     });
 
-    it('marks only what a script wrote on a returned subject, not the fields it did not touch', async () => {
+    itInFullWorkerRun('marks only what a script wrote on a returned subject, not the fields it did not touch', async () => {
         const written = await runSubject(
             'const doc = documents[0].document.credentialSubject[0]; doc.temp = doc.amount * 0; done(doc);',
             [placeholderDocument()]
@@ -373,7 +374,7 @@ describe('@unit mathBlock preview chain with real workers', function () {
         return step;
     };
 
-    it('still asks for a field in a row when the script computed only another field of that row', async () => {
+    itInFullWorkerRun('still asks for a field in a row when the script computed only another field of that row', async () => {
         const step = rowsStep([{}]);
         const script = await runScript(step, rowsDocument([{}]), {
             passOriginal: true,
@@ -386,7 +387,7 @@ describe('@unit mathBlock preview chain with real workers', function () {
         });
     });
 
-    it('still asks for a field in a row the script did not compute', async () => {
+    itInFullWorkerRun('still asks for a field in a row the script did not compute', async () => {
         const script = 'const doc = documents[0].document.credentialSubject[0]; doc.items[0].value = 5; done(documents[0]);';
         const otherRow = rowsStep([{}, {}]);
         const otherOutput = await runScript(otherRow, rowsDocument([{}, {}]), { passOriginal: true, expression: script });
@@ -405,7 +406,7 @@ describe('@unit mathBlock preview chain with real workers', function () {
         return document;
     };
 
-    it('asks for a field the code reads through result', async () => {
+    itInFullWorkerRun('asks for a field the code reads through result', async () => {
         const empty = previewStep(['amount', 'rate', 'final']);
         await assert.rejects(runMath(empty, mathRef('result', code('result.final = result.rate * 2;')), formDocument()), /non-finite/);
         assert.deepEqual(resolved(empty), { fields: ['rate'], missingFields: ['rate'] });
@@ -416,14 +417,14 @@ describe('@unit mathBlock preview chain with real workers', function () {
         assert.deepEqual(resolved(filled), { fields: ['rate'], missingFields: [] });
     });
 
-    it('asks for the nested field the code reads from a value getField returned', async () => {
+    itInFullWorkerRun('asks for the nested field the code reads from a value getField returned', async () => {
         const paths = ['amount', 'location', 'location.lat', 'location.lng', 'final'];
         const step = previewStep(paths, { amount: 2, location: {} });
         await assert.rejects(runMath(step, mathRef('nested', code("result.final = getField('location').lat * 2;")), withValues({ location: {} })), /non-finite/);
         assert.deepEqual(resolved(step), { fields: ['location.lat'], missingFields: ['location.lat'] });
     });
 
-    it('does not ask for a field the code wrote and then read back, or for one it only reads with a default', async () => {
+    itInFullWorkerRun('does not ask for a field the code wrote and then read back, or for one it only reads with a default', async () => {
         const own = previewStep(['amount', 'temp', 'final']);
         await runMath(own, mathRef('own', code('result.temp = document.amount + 1; result.final = result.temp * 2;')), formDocument());
         assert.deepEqual(resolved(own), { fields: ['amount'], missingFields: [] });
@@ -437,7 +438,7 @@ describe('@unit mathBlock preview chain with real workers', function () {
         assert.deepEqual(resolved(group), { fields: [], missingFields: [] });
     });
 
-    it('asks for an element of a list of numbers the code reads when it writes another element', async () => {
+    itInFullWorkerRun('asks for an element of a list of numbers the code reads when it writes another element', async () => {
         const script = 'const value = document.values[1]; result.values[0] = 1; result.final = value * 2;';
         const empty = previewStep(['values', 'final'], { values: [] });
         await assert.rejects(runMath(empty, mathRef('values', code(script)), withValues({ values: [] })), /non-finite/);
@@ -456,7 +457,7 @@ describe('@unit mathBlock preview chain with real workers', function () {
         assert.deepEqual(resolved(logic), { fields: ['values'], missingFields: ['values'] });
     });
 
-    it('keeps the preview schema of an unsigned document a script passes through', async () => {
+    itInFullWorkerRun('keeps the preview schema of an unsigned document a script passes through', async () => {
         const run = async (values, document) => {
             const step = previewStep(['amount', 'temp', 'rate', 'final'], document);
             const unsigned = await runMath(step, mathRef('unsigned', expression('amount', 'temp'), '#S', { unsigned: true }), withValues(values));
@@ -490,32 +491,32 @@ describe('@unit mathBlock preview chain with real workers', function () {
         };
         const copy = 'done(JSON.parse(JSON.stringify(documents[0])));';
 
-        it('is still asked for when the copy loses the schema', async () => {
+        itInFullWorkerRun('is still asked for when the copy loses the schema', async () => {
             const missing = await run({}, { amount: 2 }, copy);
             assert.equal(getPreviewDocumentSchema(missing.passed), null);
             assert.deepEqual(missing.fields, { fields: ['amount', 'rate'], missingFields: ['rate'] });
         });
 
-        it('is no longer missing once the user fills it', async () => {
+        itInFullWorkerRun('is no longer missing once the user fills it', async () => {
             const filled = await run({ rate: 3 }, { amount: 2, rate: 3 }, copy);
             assert.equal(subject(filled.math).final, 6);
             assert.deepEqual(filled.fields, { fields: ['amount', 'rate'], missingFields: [] });
         });
 
-        it('keeps the schema when the script passes the document itself', async () => {
+        itInFullWorkerRun('keeps the schema when the script passes the document itself', async () => {
             const matched = await run({}, { amount: 2 }, 'done(documents[0]);');
             assert.equal(getPreviewDocumentSchema(matched.passed), '#S');
             assert.deepEqual(matched.fields, { fields: ['amount', 'rate'], missingFields: ['rate'] });
         });
 
-        it('keeps the schema of a copy when every input has the same schema', async () => {
+        itInFullWorkerRun('keeps the schema of a copy when every input has the same schema', async () => {
             const same = await run({}, { amount: 2 }, copy, false);
             assert.equal(getPreviewDocumentSchema(same.passed), '#S');
             assert.deepEqual(same.fields, { fields: ['amount', 'rate'], missingFields: ['rate'] });
         });
     });
 
-    it('does not ask the next block for a field the code of an earlier Math block wrote', async () => {
+    itInFullWorkerRun('does not ask the next block for a field the code of an earlier Math block wrote', async () => {
         const step = previewStep(['amount', 'temp', 'final']);
         const first = await runMath(step, mathRef('math1', code('result.temp = document.amount + 1;')), formDocument());
         const second = await runMath(step, mathRef('math2', expression('temp', 'final')), first);
@@ -528,7 +529,7 @@ describe('@unit mathBlock preview chain with real workers', function () {
         assert.deepEqual(resolved(same), { fields: ['amount'], missingFields: [] });
     });
 
-    it('marks only what a new object returned by the code holds', async () => {
+    itInFullWorkerRun('marks only what a new object returned by the code holds', async () => {
         const created = previewStep(['amount', 'temp', 'final']);
         const made = await runMath(created, mathRef('made', code('return { temp: document.amount + 1 };')), formDocument());
         await runMath(created, mathRef('next', expression('temp', 'final')), made);
@@ -541,7 +542,7 @@ describe('@unit mathBlock preview chain with real workers', function () {
         assert.deepEqual(resolved(dropped), { fields: ['temp'], missingFields: ['temp'] });
     });
 
-    it('keeps the fields of the form after an unsigned Math block', async () => {
+    itInFullWorkerRun('keeps the fields of the form after an unsigned Math block', async () => {
         const step = previewStep(['amount', 'temp', 'final', 'rate']);
         const unsigned = await runMath(step, mathRef('unsigned', expression('amount', 'temp'), '#S', { unsigned: true }), formDocument());
         assert.equal(unsigned.schema, undefined);
@@ -557,7 +558,7 @@ describe('@unit mathBlock preview chain with real workers', function () {
         assert.deepEqual(resolved(script), { fields: ['amount', 'rate'], missingFields: ['rate'] });
     });
 
-    it('asks for a Switch condition field read from a copy whose schema is unknown', async () => {
+    itInFullWorkerRun('asks for a Switch condition field read from a copy whose schema is unknown', async () => {
         const rawSwitch = Object.getPrototypeOf(SwitchBlock.prototype).runAction;
         const other = () => ({ schema: '#R', owner: 'did:user', document: PolicyUtils.createVcFromSubject({ note: 1 }).toJsonTree() });
         const run = async (values, document, script) => {
@@ -597,7 +598,7 @@ describe('@unit mathBlock preview chain with real workers', function () {
         }
     });
 
-    it('leaves a field the script checks for with in to the script, which reports its own error', async () => {
+    itInFullWorkerRun('leaves a field the script checks for with in to the script, which reports its own error', async () => {
         const script = "const doc = documents[0].document.credentialSubject[0]; if (!('rate' in doc)) throw new Error('rate is required'); done({ final: 7 });";
 
         const missing = previewStep(['amount', 'rate', 'final']);
@@ -615,7 +616,7 @@ describe('@unit mathBlock preview chain with real workers', function () {
         return step;
     };
 
-    it('keeps discovering fields after a Math block divides by an empty placeholder', async () => {
+    itInFullWorkerRun('keeps discovering fields after a Math block divides by an empty placeholder', async () => {
         const paths = ['amount', 'rate', 'temp', 'total', 'final'];
         const divide = code('result.temp = document.amount / document.rate;');
         const multiply = code('result.final = document.temp * document.total;');
@@ -632,7 +633,7 @@ describe('@unit mathBlock preview chain with real workers', function () {
         await assert.rejects(runMath(real, mathRef('divide', divide), withValues({ amount: 0, rate: 0, total: 0 })), /non-finite/);
     });
 
-    it('lets a Switch after a Math block with an empty placeholder report its condition fields', async () => {
+    itInFullWorkerRun('lets a Switch after a Math block with an empty placeholder report its condition fields', async () => {
         const rawSwitch = Object.getPrototypeOf(SwitchBlock.prototype).runAction;
         const step = discoveryStep(['amount', 'rate', 'temp', 'total']);
         const math = await runMath(step, mathRef('divide', code('result.temp = document.amount / document.rate;')), withValues({ amount: 0, rate: 0, total: 0 }));
@@ -658,7 +659,7 @@ describe('@unit mathBlock preview chain with real workers', function () {
         });
     });
 
-    it('keeps discovering fields after a script divides by an empty placeholder', async () => {
+    itInFullWorkerRun('keeps discovering fields after a script divides by an empty placeholder', async () => {
         const options = {
             outputSchema: '#S',
             expression: 'const doc = documents[0].document.credentialSubject[0]; done({ final: doc.amount / doc.rate });'

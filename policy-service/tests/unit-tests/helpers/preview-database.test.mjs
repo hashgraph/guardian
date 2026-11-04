@@ -12,6 +12,7 @@ import {
     getPreviewIncomplete,
     getPreviewSavedDocuments
 } from '../../../dist/policy-engine/helpers/preview-database.js';
+import { useShortRecordCompletion } from './record-completion-delay.mjs';
 
 const db = createInMemoryDatabaseHelper();
 const { DatabaseServer } = await esmock('@guardian/common/database-modules/database-server', {
@@ -47,6 +48,7 @@ const ID_B = '64b7f0a1c2d3e4f5a6b7c8d2';
 const ID_C = '64b7f0a1c2d3e4f5a6b7c8d3';
 
 describe('@unit preview database wrapper', () => {
+    useShortRecordCompletion();
     let server;
 
     beforeEach(() => {

@@ -7,6 +7,8 @@ import { ExtractDataBlock } from '../../../dist/policy-engine/blocks/extract-dat
 import { MathBlock } from '../../../dist/policy-engine/blocks/math-block.js';
 import { CustomLogicBlock } from '../../../dist/policy-engine/blocks/custom-logic-block.js';
 import { runPreview, markPreviewStoredDocuments, resolvePreviewDocumentRead } from '../../../dist/policy-engine/helpers/preview.js';
+import { useShortRecordCompletion } from '../helpers/record-completion-delay.mjs';
+import { itInFullWorkerRun } from '../helpers/full-worker-run.mjs';
 
 const child = { iri: '#Child', uuid: 'Child', contextURL: 'schema:child', document: JSON.stringify({ type: 'object', properties: { amount: { type: 'number' }, total: { type: 'number' } } }) };
 const parent = { iri: '#Parent', uuid: 'Parent', contextURL: 'schema:parent', document: JSON.stringify({ type: 'object', properties: { section: { $ref: '#Child' } }, $defs: { '#Child': JSON.parse(child.document) } }) };
@@ -31,6 +33,7 @@ async function math(input, schema, code, step) {
 }
 
 describe('@unit Preview retains origins across intermediate calculations', function () {
+    useShortRecordCompletion();
     this.timeout(30000);
     const originals = [];
     before(() => {
@@ -52,7 +55,7 @@ describe('@unit Preview retains origins across intermediate calculations', funct
     });
 
     for (const middle of ['math', 'custom']) {
-        it(`keeps the missing extracted field after ${middle} creates a wrapper`, async () => {
+        itInFullWorkerRun(`keeps the missing extracted field after ${middle} creates a wrapper`, async () => {
             let mapped;
             const response = await runPreview({ blockType: 'requestVcDocumentBlock' }, user, {}, async (_ref, _user, _data, step) => {
                 step.setPreviewSource({ schema: '#Parent', document: { section: {} }, paths: ['section', 'section.amount', 'section.total'], dependencies: {} });
@@ -90,7 +93,7 @@ describe('@unit Preview retains origins across intermediate calculations', funct
         assert.deepEqual(response.body.missingFields, []);
     });
 
-    it('does not assign an extracted origin to an unrelated generated Custom result', async () => {
+    itInFullWorkerRun('does not assign an extracted origin to an unrelated generated Custom result', async () => {
         let mapped;
         const response = await runPreview({ blockType: 'requestVcDocumentBlock' }, user, {}, async (_ref, _user, _data, step) => {
             step.setPreviewSource({ schema: '#Parent', document: { section: {} }, paths: ['section', 'section.amount'], dependencies: {} });

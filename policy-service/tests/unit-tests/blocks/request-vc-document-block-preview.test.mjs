@@ -10,6 +10,7 @@ import { RequestVcDocumentBlock } from '../../../dist/policy-engine/blocks/reque
 import { ComponentsService } from '../../../dist/policy-engine/helpers/components-service.js';
 import { Worker } from 'node:worker_threads';
 import { makeBlock, makeDb, makeUser, restoreHarness } from './_block-exec-harness.mjs';
+import { useShortRecordCompletion } from '../helpers/record-completion-delay.mjs';
 
 const originals = [];
 const patch = (target, map) => {
@@ -28,6 +29,7 @@ const restore = () => {
 const previewStep = () => new RecordActionStep(() => {}, 0, true, true, undefined, true);
 
 describe('@unit RequestVcDocumentBlock preview', () => {
+    useShortRecordCompletion();
     let releaseCredentials;
     beforeEach(() => { releaseCredentials = installCredentialPreparation(); });
 

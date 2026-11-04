@@ -7,6 +7,7 @@ import { RecordActionStep } from '../../../dist/policy-engine/record-action-step
 import { PolicyComponentsUtils } from '../../../dist/policy-engine/policy-components-utils.js';
 import { PolicyUtils } from '../../../dist/policy-engine/helpers/utils.js';
 import { Users } from '@guardian/common/helpers/users';
+import { useShortRecordCompletion } from './record-completion-delay.mjs';
 
 const user = { did: 'did:user', group: 'group-1', userId: 'u-1' };
 const ref = { policyId: 'policy-1', tag: 'form' };
@@ -23,6 +24,7 @@ const notCalled = async () => {
 };
 
 describe('@unit preview helpers', function () {
+    useShortRecordCompletion();
     this.timeout(5000);
 
     describe('output and effect input rules', () => {

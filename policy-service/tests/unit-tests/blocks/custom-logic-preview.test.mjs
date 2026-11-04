@@ -7,8 +7,11 @@ import { makeBlock, makeUser, restoreHarness } from './_block-exec-harness.mjs';
 import { CustomLogicBlock } from '../../../dist/policy-engine/blocks/custom-logic-block.js';
 import { PolicyComponentsUtils } from '../../../dist/policy-engine/policy-components-utils.js';
 import { RecordActionStep } from '../../../dist/policy-engine/record-action-step.js';
+import { useShortRecordCompletion } from '../helpers/record-completion-delay.mjs';
+import { itInFullWorkerRun } from '../helpers/full-worker-run.mjs';
 
 describe('@unit customLogicBlock preview', () => {
+    useShortRecordCompletion();
     let origBlockErrorFn;
     let uiErrors;
 
@@ -96,7 +99,7 @@ describe('@unit customLogicBlock preview', () => {
         'cache[key]=doc[key];done({total:cache[key]>0?5:7});',
         'Object.keys(doc);cache[key]=doc[key];done({total:cache[key]>0?5:7});'
     ]) for (const subject of [{}, { amount: 0 }, { amount: 3 }]) {
-        it(`validates an input consumed by an indexed assignment: ${calculation} ${JSON.stringify(subject)}`, async function () {
+        itInFullWorkerRun(`validates an input consumed by an indexed assignment: ${calculation} ${JSON.stringify(subject)}`, async function () {
             this.timeout(20000);
             const response = await runPreview({ blockType: 'requestVcDocumentBlock' }, makeUser(), {}, async (_request, user, _data, step) => {
                 step.setPreviewSource({ schema: '#S', document: subject, paths: ['amount'], dependencies: {} });
@@ -125,7 +128,7 @@ describe('@unit customLogicBlock preview', () => {
         });
     }
 
-    it('requires a missing selected input after a nonempty-document guard', async function () {
+    itInFullWorkerRun('requires a missing selected input after a nonempty-document guard', async function () {
         this.timeout(20000);
         const subject = { note: 'filled' };
         const response = await runPreview({ blockType: 'requestVcDocumentBlock' }, makeUser(), {}, async (_request, user, _data, step) => {
@@ -165,7 +168,7 @@ describe('@unit customLogicBlock preview', () => {
     });
 
     for (const amount of [0, 3]) {
-        it(`requires only the consumed field from a copy using saved keys: ${amount}`, async function () {
+        itInFullWorkerRun(`requires only the consumed field from a copy using saved keys: ${amount}`, async function () {
             this.timeout(20000);
             const subject = { amount, note: '' };
             const response = await runPreview({ blockType: 'requestVcDocumentBlock' }, makeUser(), {}, async (_request, user, _data, step) => {
@@ -191,7 +194,7 @@ describe('@unit customLogicBlock preview', () => {
         'Object.keys(doc).forEach(k=>c[k]=doc[k]);',
         'for(const k of Object.keys(doc)){const key=k;c[key]=doc[key];}'
     ]) {
-        it(`keeps unrelated copied fields optional: ${copy}`, async function () {
+        itInFullWorkerRun(`keeps unrelated copied fields optional: ${copy}`, async function () {
             this.timeout(20000);
             const subject = { amount: 3, note: '' };
             const response = await runPreview({ blockType: 'requestVcDocumentBlock' }, makeUser(), {}, async (_request, user, _data, step) => {
@@ -247,7 +250,7 @@ describe('@unit customLogicBlock preview', () => {
         'let x=doc.amount;for(;;){x=x/2;if(x<1)break}doc.total=x;',
         'function fact(n){return n<2?1:n*fact(n-1)}doc.total=fact(doc.amount);',
     ]) {
-        it(`discovers downstream inputs after data-dependent script control flow: ${calculation}`, async function () {
+        itInFullWorkerRun(`discovers downstream inputs after data-dependent script control flow: ${calculation}`, async function () {
             this.timeout(20000);
             const result = await executeConditional({
                 expression: 'const doc=documents[0].document.credentialSubject[0];' + calculation + 'done(documents[0]);',
@@ -259,7 +262,7 @@ describe('@unit customLogicBlock preview', () => {
 
     for (const preparation of ['const c={...doc};', 'const c=Object.assign({},doc);',
         'const {...c}=doc;', 'debug(JSON.stringify(doc));const c=doc;']) {
-        it(`requires only consumed copied values in worker discovery: ${preparation}`, async function () {
+        itInFullWorkerRun(`requires only consumed copied values in worker discovery: ${preparation}`, async function () {
             this.timeout(20000);
             const result = await executeConditional({ expression: 'const doc=documents[0].document.credentialSubject[0];'
                 + preparation + 'doc.total=c.amount*2;done(documents[0]);' });
@@ -272,7 +275,7 @@ describe('@unit customLogicBlock preview', () => {
         "let total=0;for(let i=1;i<=doc.count;i++)total+=doc['year'+i];doc.total=total;",
         "let total=0;for(const [k,v] of Object.entries(doc))if(k.startsWith('year'))total+=v;doc.total=total;",
     ]) {
-        it(`requires fields read by a built key and not fields found only by listing keys: ${expression}`, async function () {
+        itInFullWorkerRun(`requires fields read by a built key and not fields found only by listing keys: ${expression}`, async function () {
             this.timeout(20000);
             const result = await executeConditional({ expression: 'const doc=documents[0].document.credentialSubject[0];'
                 + expression + 'done(documents[0]);', values: { count: 3, year1: 10, year2: 20, year3: 30, unused: 99 },
@@ -283,7 +286,7 @@ describe('@unit customLogicBlock preview', () => {
     }
 
     for (const [name, calculation, expectedFields, expectedTotal] of [["values index", "doc.total=Object.values(doc)[0]*2;", [], 10], ["entries index", "doc.total=Object.entries(doc)[0][1]*2;", [], 10], ["copied key count", "doc.total=Object.keys({...doc}).length;", [], 5], ["copy before source overwrite", "const c={...doc};doc.rate=2;doc.total=c.rate*doc.amount;", ["amount", "rate"], 15], ["consumed JSON", "doc.total=JSON.stringify(doc).length;", [], 58], ["debug JSON", "debug(JSON.stringify(doc));doc.total=doc.amount*2;", ["amount"], 10], ["unused copy", "const c={...doc};doc.total=doc.amount*2;", ["amount"], 10], ["frozen serialized value", "const text=JSON.stringify(doc);doc.rate=2;doc.total=text.length;", [], 58], ["frozen values", "const c=Object.values(doc);doc.amount=2;doc.total=c[0]*2;", [], 10]]) {
-        it(`requires a field read by a whole-object operation only when its name is used: ${name}`, async function () {
+        itInFullWorkerRun(`requires a field read by a whole-object operation only when its name is used: ${name}`, async function () {
             this.timeout(20000);
             const result = await executeConditional({ expression: 'const doc=documents[0].document.credentialSubject[0];'
                 + calculation + 'done(documents[0]);', values: { amount: 5, rate: 3, discount: 1, unused: 99, kind: 'te' },
@@ -294,7 +297,7 @@ describe('@unit customLogicBlock preview', () => {
     }
 
     for (const call of ['debug(doc);', 'debug(documents);', 'console.log(doc);', 'console.warn([doc]);']) {
-        it(`ignores a logged tracked object and keeps the ordinary result: ${call}`, async function () {
+        itInFullWorkerRun(`ignores a logged tracked object and keeps the ordinary result: ${call}`, async function () {
             this.timeout(20000);
             const result = await executeConditional({ expression: 'const doc=documents[0].document.credentialSubject[0];'
                 + call + 'doc.total=doc.amount*2;done(documents[0]);' });
@@ -303,7 +306,7 @@ describe('@unit customLogicBlock preview', () => {
         });
     }
 
-    it('reads a frozen nested object like an ordinary run', async function () {
+    itInFullWorkerRun('reads a frozen nested object like an ordinary run', async function () {
         this.timeout(20000);
         const result = await executeConditional({ expression: 'const doc=documents[0].document.credentialSubject[0];'
             + 'const sub=Object.freeze(doc.sub);doc.total=sub.inner.x*2;done(documents[0]);',
@@ -312,7 +315,7 @@ describe('@unit customLogicBlock preview', () => {
     });
 
     for (const preparation of ['', 'const c={...doc};', 'debug(JSON.stringify(doc));']) {
-        it(`retains an explicit same-expression input beyond the old work limit: ${preparation}`, async function () {
+        itInFullWorkerRun(`retains an explicit same-expression input beyond the old work limit: ${preparation}`, async function () {
             this.timeout(20000);
             const items = new Array(100010).fill('0').join(',');
             const result = await executeConditional({ expression: 'const doc=documents[0].document.credentialSubject[0];'
@@ -335,7 +338,7 @@ describe('@unit customLogicBlock preview', () => {
         ["whitelist alias", "const keys=['amount'];doc.total=JSON.stringify(doc,keys).length;", [], 12],
         ["whitelist snapshot", "const text=JSON.stringify(doc,['rate']);doc.rate=2;doc.total=text.length;", [], 10],
     ]){
-        it(`does not require fields that only serialized or logged JSON reads: ${name}`,async function(){
+        itInFullWorkerRun(`does not require fields that only serialized or logged JSON reads: ${name}`,async function(){
             this.timeout(20000);
             const result=await executeConditional({expression:'const doc=documents[0].document.credentialSubject[0];'+calculation+'done(documents[0]);',
                 values:{amount:5,rate:3,discount:1,unused:99,kind:'te'},paths:['amount','rate','discount','unused','kind']});
@@ -343,7 +346,7 @@ describe('@unit customLogicBlock preview', () => {
             assert.equal(result.documents[0].document.document.credentialSubject[0].total,expectedTotal);
         });
     }
-    it('retains a late input after four nested counted loops through the real worker',async function(){
+    itInFullWorkerRun('retains a late input after four nested counted loops through the real worker',async function(){
         this.timeout(20000);
         const loops='let s=0;'+Array.from({length:4},(_,i)=>`for(let i${i}=0;i${i}<32;i${i}++){`).join('')+'s++;'+'}'.repeat(4);
         const result=await executeConditional({expression:'const doc=documents[0].document.credentialSubject[0];'+loops+'doc.total=s*doc.rate;done(documents[0]);'});
@@ -352,7 +355,7 @@ describe('@unit customLogicBlock preview', () => {
     });
 
     for (const amount of [5, 200]) {
-        it(`discovers only the inputs of the JavaScript branch that ran with the real worker for amount=${amount}`, async function () {
+        itInFullWorkerRun(`discovers only the inputs of the JavaScript branch that ran with the real worker for amount=${amount}`, async function () {
             this.timeout(20000);
             const result = await executeConditional({ amount });
             assert.deepEqual(result.fields, amount > 100 ? ['amount', 'rate'] : ['amount', 'discount']);
@@ -363,7 +366,7 @@ describe('@unit customLogicBlock preview', () => {
     }
 
     for (const amount of [5, 200]) {
-        it(`finds a constructed field name only when its branch runs, for amount=${amount}`, async function () {
+        itInFullWorkerRun(`finds a constructed field name only when its branch runs, for amount=${amount}`, async function () {
             this.timeout(20000);
             const result = await executeConditional({ amount,
                 expression: 'const doc = documents[0].document.credentialSubject[0]; '
@@ -373,7 +376,7 @@ describe('@unit customLogicBlock preview', () => {
         });
     }
 
-    it('ignores unrelated names and write-only output fields during initial discovery', async function () {
+    itInFullWorkerRun('ignores unrelated names and write-only output fields during initial discovery', async function () {
         this.timeout(20000);
         const result = await executeConditional({
             expression: 'const doc = documents[0].document.credentialSubject[0]; '
@@ -384,7 +387,7 @@ describe('@unit customLogicBlock preview', () => {
         assert.equal(result.documents[0].document.document.credentialSubject[0].total, 10);
     });
 
-    it('discovers only the fields an executable artifact read in the branch that ran', async function () {
+    itInFullWorkerRun('discovers only the fields an executable artifact read in the branch that ran', async function () {
         this.timeout(20000);
         const original = PolicyUtils.getArtifactFile;
         PolicyUtils.getArtifactFile = async (_ref, id) => {
@@ -402,7 +405,7 @@ describe('@unit customLogicBlock preview', () => {
         }
     });
 
-    it('keeps fields produced by earlier blocks out of conservative input requirements', async function () {
+    itInFullWorkerRun('keeps fields produced by earlier blocks out of conservative input requirements', async function () {
         this.timeout(20000);
         const result = await executeConditional({ computed: ['rate'],
             expression: 'const doc = documents[0].document.credentialSubject[0]; '
@@ -412,14 +415,14 @@ describe('@unit customLogicBlock preview', () => {
     });
 
     for (const inputSchema of ['#Other', null]) {
-        it(`keeps the conservative schema boundary for input schema ${inputSchema}`, async function () {
+        itInFullWorkerRun(`keeps the conservative schema boundary for input schema ${inputSchema}`, async function () {
             this.timeout(20000);
             const result = await executeConditional({ inputSchema });
             assert.deepEqual(result.fields, inputSchema ? [] : ['amount', 'discount']);
         });
     }
 
-    it('requires the same fields in real preview as in discovery', async function () {
+    itInFullWorkerRun('requires the same fields in real preview as in discovery', async function () {
         this.timeout(20000);
         const result = await executeConditional({ discovery: false });
         assert.deepEqual(result.fields, ['amount', 'discount']);
@@ -427,7 +430,7 @@ describe('@unit customLogicBlock preview', () => {
         assert.equal(result.documents[0].document.document.credentialSubject[0].total, 4);
     });
 
-    it('rejects every empty field of the branch that ran and nothing from the branch that did not run', async function () {
+    itInFullWorkerRun('rejects every empty field of the branch that ran and nothing from the branch that did not run', async function () {
         this.timeout(20000);
         const response = await runPreview({ blockType: 'requestVcDocumentBlock' }, makeUser(), {}, async (_block, user, _data, step) => {
             step.setPreviewSource({ schema: '#S', document: { amount: 5 },
@@ -446,7 +449,7 @@ describe('@unit customLogicBlock preview', () => {
         assert.equal(response.body, null);
     });
 
-    it('keeps a value written before an intermediate done out of the inputs, but still requires a new input', async function () {
+    itInFullWorkerRun('keeps a value written before an intermediate done out of the inputs, but still requires a new input', async function () {
         this.timeout(20000);
         const run = (calculation) => runPreview({ blockType: 'requestVcDocumentBlock' }, makeUser(), {}, async (_block, user, _data, step) => {
             step.setPreviewSource({ schema: '#S', document: { amount: 5 },
@@ -474,7 +477,7 @@ describe('@unit customLogicBlock preview', () => {
         assert.deepEqual(input.data.missingFields, ['rate']);
     });
 
-    it('retains ordinary worker output without preview observations', async function () {
+    itInFullWorkerRun('retains ordinary worker output without preview observations', async function () {
         this.timeout(20000);
         const external = PolicyComponentsUtils.ExternalEventFn;
         PolicyComponentsUtils.ExternalEventFn = () => {};
@@ -508,6 +511,7 @@ describe('@unit customLogicBlock preview', () => {
 
 
 describe('Custom Logic result transport', function () {
+    useShortRecordCompletion();
     this.timeout(20000);
     after(() => restoreHarness());
 
@@ -531,7 +535,7 @@ describe('Custom Logic result transport', function () {
         ['let calls=0;done({row:{get total(){return ++calls}}});', [{ row: { total: 1 } }]],
         ['let calls=0;const output={get total(){return ++calls}};done(output,false);done({total:output.total});', [{ total: 1 }, { total: 2 }]]
     ]) {
-        it(`preserves ordinary getter values and worker-side reuse: ${expression}`, async () => {
+        itInFullWorkerRun(`preserves ordinary getter values and worker-side reuse: ${expression}`, async () => {
             const ordinary = await execute(expression, false);
             const preview = await execute(expression, true);
             assert.deepEqual(ordinary.outputs, expected);
@@ -551,7 +555,7 @@ describe('Custom Logic result transport', function () {
     });
 
     for (const amount of [5, 0]) {
-        it(`keeps input attribution when the result getter reads amount ${amount}`, async () => {
+        itInFullWorkerRun(`keeps input attribution when the result getter reads amount ${amount}`, async () => {
             const expression = 'const doc=documents[0].document.credentialSubject[0];let calls=0;done({get total(){return doc.amount*++calls}});';
             const ordinary = await execute(expression, false, { amount });
             const preview = await execute(expression, true, { amount });
@@ -562,14 +566,14 @@ describe('Custom Logic result transport', function () {
         });
     }
 
-    it('still reports a missing input read by a result getter', async () => {
+    itInFullWorkerRun('still reports a missing input read by a result getter', async () => {
         const { step, outputs } = await execute('const doc=documents[0].document.credentialSubject[0];done({get total(){return doc.amount*2}});', true);
         assert.deepEqual(outputs, []);
         assert.equal(getPreviewInputError(step).code, 422);
         assert.deepEqual(getPreviewInputError(step).data.missingFields, ['amount']);
     });
 
-    it('requires a dynamic calculation input after enumerating document keys', async () => {
+    itInFullWorkerRun('requires a dynamic calculation input after enumerating document keys', async () => {
         const response = await runPreview(
             { blockType: 'requestVcDocumentBlock' },
             makeUser(),
@@ -623,7 +627,7 @@ describe('Custom Logic result transport', function () {
     });
 
     for (const amount of [5, 0]) {
-        it(`retains a supplied dynamic input after enumeration: ${amount}`, async () => {
+        itInFullWorkerRun(`retains a supplied dynamic input after enumeration: ${amount}`, async () => {
             const expression = 'const doc=documents[0].document.credentialSubject[0];console.log(Object.keys(doc));const key=["amo","unt"].join("");done({total:doc[key]>0?5:7});';
             const ordinary = await execute(expression, false, { amount });
             const preview = await execute(expression, true, { amount });

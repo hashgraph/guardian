@@ -19,6 +19,7 @@ import { AggregateBlock } from '../../../dist/policy-engine/blocks/aggregate-blo
 import { DocumentsSourceAddon } from '../../../dist/policy-engine/blocks/documents-source-addon.js';
 import { CustomLogicBlock } from '../../../dist/policy-engine/blocks/custom-logic-block.js';
 import { makeBlock, makeComponents, makeUser, restoreHarness } from './_block-exec-harness.mjs';
+import { useShortRecordCompletion } from '../helpers/record-completion-delay.mjs';
 
 const db = createInMemoryDatabaseHelper();
 const { DatabaseServer } = await esmock('@guardian/common/database-modules/database-server', {
@@ -47,6 +48,7 @@ const vcJson = (subject) => createPreviewDocument({ policyId: 'policy-1', tag: '
 const ID_OLD = '64b7f0a1c2d3e4f5a6b7c8e1';
 
 describe('@unit save, reassign and request edit in a preview', () => {
+    useShortRecordCompletion();
     let releaseCredentials;
     beforeEach(() => { releaseCredentials = installCredentialPreparation(); });
 

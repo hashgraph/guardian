@@ -3,8 +3,10 @@ import { RecordActionStep } from '../../../dist/policy-engine/record-action-step
 import { PolicyLink } from '../../../dist/policy-engine/interfaces/policy-event.js';
 import { PreviewBranches } from '../../../dist/policy-engine/helpers/preview-branches.js';
 import { recordPreviewWait } from '../../../dist/policy-engine/helpers/preview.js';
+import { useShortRecordCompletion } from './record-completion-delay.mjs';
 
 describe('@unit preview branch saves', () => {
+    useShortRecordCompletion();
     it('selects only the last saved document at a completed end', async () => {
         const branches = new PreviewBranches();
         await branches.run(async () => {

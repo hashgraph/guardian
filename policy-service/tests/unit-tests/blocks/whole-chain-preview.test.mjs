@@ -20,6 +20,7 @@ import { DocumentsSourceAddon } from '../../../dist/policy-engine/blocks/documen
 import { SwitchBlock } from '../../../dist/policy-engine/blocks/switch-block.js';
 import { CreateTokenBlock } from '../../../dist/policy-engine/blocks/create-token-block.js';
 import { makeBlock, makeComponents, makeUser, restoreHarness } from './_block-exec-harness.mjs';
+import { useShortRecordCompletion } from '../helpers/record-completion-delay.mjs';
 
 const db = createInMemoryDatabaseHelper();
 const { DatabaseServer } = await esmock('@guardian/common/database-modules/database-server', {
@@ -48,6 +49,7 @@ const plot = (area) => createPreviewDocument({ policyId: 'policy-1', tag: 'form'
 const link = (output, source, target) => new PolicyLink('RunEvent', output, source, target, EventActor.EventInitiator, (event) => target.runAction(event));
 
 describe('@unit a preview over the whole chain', function () {
+    useShortRecordCompletion();
     this.timeout(10000);
 
     beforeEach(() => {

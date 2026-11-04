@@ -5,6 +5,7 @@ import { DocumentMap } from '../../../dist/policy-engine/helpers/math-model/inde
 import { PolicyUtils } from '../../../dist/policy-engine/helpers/utils.js';
 import { getPreviewInputError, PreviewScope, setPreviewComputed } from '../../../dist/policy-engine/helpers/preview.js';
 import { RecordActionStep } from '../../../dist/policy-engine/record-action-step.js';
+import { itInFullWorkerRun } from '../helpers/full-worker-run.mjs';
 
 const expression = {
     variables: [{ type: 'link', name: 'a', description: '', field: 'amount', schema: '#in' }],
@@ -171,7 +172,7 @@ describe('@unit mathBlock preview calculation', () => {
         }
     });
 
-    it('keeps a direct getter read required after every JavaScript line break with the real Math worker', async function () {
+    itInFullWorkerRun('keeps a direct getter read required after every JavaScript line break with the real Math worker', async function () {
         this.timeout(30000);
         for (const separator of ['\n', '\r\n', '\r', '\u2028', '\u2029']) {
             const { block } = setup();
