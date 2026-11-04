@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
+import { LocationType } from '@guardian/interfaces';
+import { MessageResponse } from '@guardian/common/models/message-response';
 import esmock from 'esmock';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { createInMemoryDatabaseHelper } from './in-memory-database-helper.mjs';
 import { RecordActionStep } from '../../../dist/policy-engine/record-action-step.js';
-import { PreviewScope, buildPreviewResponse, getPreviewComputed, getPreviewDocumentSchema, setPreviewComputed, setPreviewDocumentSchema } from '../../../dist/policy-engine/helpers/preview.js';
+import { PreviewScope, buildPreviewResponse, runPreview, getPreviewComputed, getPreviewDocumentSchema, setPreviewComputed, setPreviewDocumentSchema } from '../../../dist/policy-engine/helpers/preview.js';
 import {
     PreviewIncompleteError,
     createPreviewDatabaseServer,
@@ -520,6 +522,29 @@ describe('@unit preview database wrapper', () => {
             step.addPreviewDocument('input', null, { data: saved });
         });
         assert.deepEqual(buildPreviewResponse(step, input).documents.map((item) => item.final), [false]);
+    });
+
+    it('returns per-output schema matches through the real Preview response path', async () => {
+        const calls = [];
+        const schema = (type) => ({ document: { type: 'object', properties: { total: { type } } } });
+        const block = { blockType: 'requestVcDocumentBlock', locationType: LocationType.LOCAL,
+            components: { loadSchemaByID: async (id) => {
+                calls.push(id);
+                return schema(id === '#other' ? 'string' : 'number');
+            } } };
+        const response = await runPreview(block, {}, { document: { total: 2 } }, async (_block, _user, _data, step) => {
+            step.setPreviewSource({ schema: '#input', document: { total: 2 }, paths: ['total'], dependencies: {} });
+            for (const type of ['matching', 'other']) {
+                await step.previewBranches.run(async () => {
+                    const row = await server.saveVC({ policyId, document: { id: `urn:uuid:${type}`, credentialSubject: [{ type, total: 4 }] } });
+                    step.addPreviewDocument(type, null, { data: row });
+                });
+            }
+            return new MessageResponse({ document: { id: 'urn:uuid:input' } });
+        });
+        assert.equal(response.body.sameSchema, true);
+        assert.deepEqual(response.body.documents.map((item) => [item.final, item.sameSchema]), [[true, true], [true, false]]);
+        assert.deepEqual(calls, ['#input', '#matching', '#other']);
     });
 
     it('marks an existing document saved by a completed branch final without listing unrelated updates', async () => {

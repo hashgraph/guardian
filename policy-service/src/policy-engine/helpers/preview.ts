@@ -1,7 +1,7 @@
 import { compileFunction, createContext, runInContext } from 'node:vm';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import * as mathjs from 'mathjs';
-import { LocationType, SchemaCondition, SchemaField, SchemaHelper, } from '@guardian/interfaces';
+import { LocationType, Schema, SchemaCondition, SchemaField, SchemaHelper, } from '@guardian/interfaces';
 import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
 import { Message } from '@guardian/hedera/message/message';
 import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/policy-event-type.js';
@@ -17,6 +17,7 @@ import { findPreviewScriptFields } from './preview-script-fields.js';
 import { buildTableHelper } from './table-field-core.js';
 import { getPreviewIncomplete, getPreviewSavedDocumentIds, getPreviewSavedDocuments } from './preview-database.js';
 import { BlockActionError } from '../errors/index.js';
+import { setPreviewSchemaMatches } from './preview-schema.js';
 
 export const PREVIEW_SKIPPED_INPUTS: ReadonlySet<string> = new Set<string>([
     PolicyInputEventType.TimerEvent,
@@ -1225,6 +1226,7 @@ export async function recoverPreviewCopiedFields(
 
 export interface IPreviewResponseDocument extends IPreviewDocument {
     final: boolean;
+    sameSchema?: boolean;
 }
 
 function getPreviewRecordId(record: unknown): string | null {
@@ -1287,6 +1289,7 @@ export function buildPreviewResponse(actionStatus: RecordActionStep, input: unkn
     return {
         trackingId: actionStatus.id,
         preview: true,
+        sameSchema: false,
         input,
         documents: buildPreviewResponseDocuments(actionStatus, documents, input),
         calculations: actionStatus.getPreviewCalculations(),
@@ -1354,5 +1357,10 @@ export async function runPreview(
     if (inputError) {
         return inputError;
     }
-    return new MessageResponse(buildPreviewResponse(actionStatus, response.body, history), response.code);
+    const result = buildPreviewResponse(actionStatus, response.body, history);
+    await setPreviewSchemaMatches(result, actionStatus.getPreviewSource()?.schema ?? null, async (id) => {
+        const schema = await PolicyUtils.loadSchemaByID(block, id);
+        return schema ? new Schema(schema) : null;
+    });
+    return new MessageResponse(result, response.code);
 }

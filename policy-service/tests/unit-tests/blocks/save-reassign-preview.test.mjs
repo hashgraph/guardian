@@ -135,10 +135,12 @@ describe('@unit save, reassign and request edit in a preview', () => {
           for (const missing of [false, true]) {
             it(`retains computed inputs through ${route} after Save, missing real input=${missing}`, async function () {
             this.timeout(20000);
-            const components = makeComponents({ databaseServer: server });
+            const components = makeComponents({ databaseServer: server, loadSchemaByID: async () => ({
+                document: { type: 'object', properties: Object.fromEntries(['amount', 'temp', 'rate', 'total'].map((field) => [field, { type: 'number' }])) }
+            }) });
             const script = (calculation) => makeBlock(CustomLogicBlock, { components, options: { unsigned: true, passOriginal: true,
                 expression: `const doc=documents[0].document.credentialSubject[0];${calculation}done(documents[0]);` } }).block;
-            const response = await runPreview({ blockType: 'requestVcDocumentBlock' }, makeUser(), {}, async (_block, user, _data, step) => {
+            const response = await runPreview({ blockType: 'requestVcDocumentBlock', components }, makeUser(), {}, async (_block, user, _data, step) => {
                 step.setPreviewSource({ schema: '#S', document: { amount: 5 }, paths: ['amount', 'temp', 'rate', 'total'], dependencies: {} });
                 const first = script('doc.temp=doc.amount+1;');
                 const save = makeBlock(SendToGuardianBlock, { components, options: { dataSource: 'database', skipSaveState: true } }).block;
@@ -184,6 +186,8 @@ describe('@unit save, reassign and request edit in a preview', () => {
             assert.deepEqual(response.body.fields, ['amount']);
             assert.deepEqual(response.body.missingFields, []);
             assert.equal(response.body.documents[0].document.document.credentialSubject[0].total, 12);
+            assert.equal(response.body.sameSchema, true);
+            assert.equal(response.body.documents[0].sameSchema, true);
             });
           }
         }
