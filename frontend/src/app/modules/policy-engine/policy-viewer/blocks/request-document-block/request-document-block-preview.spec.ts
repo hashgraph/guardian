@@ -153,7 +153,7 @@ describe('request document preview wiring', () => {
         const { component } = form([Promise.resolve(response(['amount'], [], saved, [scriptError]))], blockParent());
         component.previewMode = true;
         await component.onStep();
-        expect(component.previewProblems).toEqual([{ blockType: 'customLogicBlock', message: 'rate is required' }]);
+        expect(component.previewProblems).toEqual([{ blockType: 'customLogicBlock', message: 'rate is required', errorData: null }]);
         expect(component.screen).toBe('presults');
         expect(component.previewItems.length).toBe(1);
         expect(component.previewIncomplete).toBeFalse();
@@ -163,7 +163,7 @@ describe('request document preview wiring', () => {
         const { component } = form([Promise.resolve(response(['amount'], [], [], [scriptError]))], blockParent());
         component.previewMode = true;
         await component.onStep();
-        expect(component.previewProblems).toEqual([{ blockType: 'customLogicBlock', message: 'rate is required' }]);
+        expect(component.previewProblems).toEqual([{ blockType: 'customLogicBlock', message: 'rate is required', errorData: null }]);
         expect(component.screen).toBe('presults');
         expect(component.previewItems).toEqual([]);
         expect(component.previewHeading).toBe('The preview is incomplete');
@@ -213,6 +213,18 @@ describe('request document preview wiring', () => {
         component.calculationPreview.run = () => Promise.resolve(response(['amount']));
         await component.onStep();
         expect(component.previewDiscoveryWarning).toBeFalse();
+    });
+
+    it('drops the old results and returns to the form when Preview again fails for another reason', async () => {
+        spyOn(console, 'error');
+        const { component } = form([Promise.resolve(response(['amount'])), Promise.reject(new HttpErrorResponse({ status: 500 }))], blockParent());
+        component.previewMode = true;
+        await component.onStep();
+        expect(component.screen).toBe('presults');
+        await component.previewAgain();
+        expect(component.screen).toBe('form');
+        expect(component.previewItems).toEqual([]);
+        expect(component.previewProblems).toEqual([]);
     });
 
     it('runs the preview again from the results screen and goes back to the form when the toggle is switched off', async () => {

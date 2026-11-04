@@ -8,7 +8,7 @@ import { FormControl, FormGroup, UntypedFormBuilder, UntypedFormGroup, Validator
 import { audit, takeUntil } from 'rxjs/operators';
 import { interval, Subject, Subscription } from 'rxjs';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
-import { DocumentValidators } from '@guardian/interfaces';
+import { BlockErrorType, DocumentValidators, IDocumentValidatorBlockError } from '@guardian/interfaces';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { DocumentAutosaveStorage } from 'src/app/modules/policy-engine/structures';
@@ -244,6 +244,12 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
 
     public get previewSelected(): ICalculationPreviewTimelineItem | null {
         return this.previewItems[this.previewIndex] ?? null;
+    }
+
+    public validatorError(problem: ICalculationPreviewProblem): IDocumentValidatorBlockError | null {
+        return problem.errorData?.type === BlockErrorType.DOCUMENT_VALIDATOR_BLOCK_ERROR
+            ? problem.errorData as IDocumentValidatorBlockError
+            : null;
     }
 
     public previewItemTitle(item: ICalculationPreviewTimelineItem): string {
@@ -939,6 +945,11 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
                     this.changeDetectorRef.detectChanges();
                     this.showResults();
                 }
+            } else if (this.previewMode && !validation && !previewFields && current()) {
+                // The run failed for another reason: the old results no longer match the form.
+                this.resetPreviewResult();
+                this.clearIssues();
+                this.screen = 'form';
             }
             console.error(error);
         } finally {

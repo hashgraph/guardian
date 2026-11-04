@@ -1,3 +1,4 @@
+import { BlockErrorType } from '@guardian/interfaces';
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -280,21 +281,21 @@ describe('CalculationPreviewService', () => {
             ],
         }));
         expect(problems).toEqual([
-            { blockType: 'customLogicBlock', message: 'Calculation preview result is incomplete: the operator $elemMatch' },
-            { blockType: null, message: 'Calculation preview result is incomplete: an aggregation over VcDocument changed in this preview' },
+            { blockType: 'customLogicBlock', message: 'Calculation preview result is incomplete: the operator $elemMatch', errorData: null },
+            { blockType: null, message: 'Calculation preview result is incomplete: an aggregation over VcDocument changed in this preview', errorData: null },
         ]);
     });
 
     it('reports every block error as a problem and never as a toast', () => {
         const problems = service.getProblems(normalizePreviewResult({
             errors: [
-                { message: 'rate is required', blockType: 'customLogicBlock', errorData: { code: 'E1' } },
+                { message: 'rate is required', blockType: 'customLogicBlock', errorData: { type: BlockErrorType.DOCUMENT_VALIDATOR_BLOCK_ERROR } },
                 { message: 'no block', blockType: null, errorData: null },
             ],
         }));
         expect(problems).toEqual([
-            { blockType: 'customLogicBlock', message: 'rate is required' },
-            { blockType: null, message: 'no block' },
+            { blockType: 'customLogicBlock', message: 'rate is required', errorData: { type: BlockErrorType.DOCUMENT_VALIDATOR_BLOCK_ERROR } },
+            { blockType: null, message: 'no block', errorData: null },
         ]);
         expect(toast.error).not.toHaveBeenCalled();
     });

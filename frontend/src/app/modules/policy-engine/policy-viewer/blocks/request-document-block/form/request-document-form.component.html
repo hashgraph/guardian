@@ -128,6 +128,20 @@
             <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
             <span class="form-notice-text">
               @if (problem.blockType) {<b>{{ problem.blockType }}:</b> }{{ problem.message }}
+              @if (validatorError(problem); as validator) {
+                <span class="form-validator-error">
+                  <span class="form-validator-summary">{{ validator.summary }}</span>
+                  @for (condition of validator.conditions; track condition.label) {
+                    <span class="form-validator-condition">
+                      <b>{{ condition.label }}</b>
+                      <span>{{ condition.matched }}/{{ condition.total }}</span>
+                      @if (condition.hint) {
+                        <small>{{ condition.hint }}</small>
+                      }
+                    </span>
+                  }
+                </span>
+              }
             </span>
           </div>
         }

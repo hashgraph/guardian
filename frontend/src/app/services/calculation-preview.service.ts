@@ -71,6 +71,7 @@ export interface ICalculationPreviewTimelineItem {
 export interface ICalculationPreviewProblem {
     blockType: string | null;
     message: string;
+    errorData: IBlockErrorData | null;
 }
 
 export function normalizePreviewResult(raw: any): ICalculationPreviewResult {
@@ -282,13 +283,15 @@ export class CalculationPreviewService {
     public getProblems(result: ICalculationPreviewResult): ICalculationPreviewProblem[] {
         const problems: ICalculationPreviewProblem[] = result.errors.map((error) => ({
             blockType: error.blockType,
-            message: error.message
+            message: error.message,
+            errorData: error.errorData ?? null
         }));
         for (const item of result.incomplete) {
             if (!result.errors.some((error) => error.message.endsWith(item.reason))) {
                 problems.push({
                     blockType: item.blockType ?? null,
-                    message: `Calculation preview result is incomplete: ${item.reason}`
+                    message: `Calculation preview result is incomplete: ${item.reason}`,
+                    errorData: null
                 });
             }
         }

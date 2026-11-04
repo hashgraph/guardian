@@ -1060,6 +1060,25 @@ form {
         font-weight: 600;
     }
 
+    .form-validator-error {
+        display: grid;
+        gap: 4px;
+        margin-top: 4px;
+        color: var(--sf-text-2);
+    }
+
+    .form-validator-condition {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        column-gap: 8px;
+
+        small {
+            grid-column: 1 / -1;
+            font-size: 12px;
+            color: var(--sf-text-3);
+        }
+    }
+
     .form-pres {
         display: grid;
         grid-template-columns: 260px minmax(0, 1fr);
