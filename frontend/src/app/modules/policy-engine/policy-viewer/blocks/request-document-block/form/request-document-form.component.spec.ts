@@ -1,5 +1,5 @@
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { FormControl, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { of, Subscription } from 'rxjs';
 import { DatePipe } from '@angular/common';
@@ -174,7 +174,7 @@ describe('RequestDocumentFormComponent', () => {
     describe('submitted', () => {
         const document = { id: 'urn:uuid:1', issuanceDate: '2026-11-01T10:42:00.000Z' };
 
-        it('builds the snapshot, stops the autosave and keeps the takeover', () => {
+        it('builds the snapshot and stops the autosave', () => {
             const { fixture, component } = create();
             const autosave = new Subscription();
             (component as any).sub = autosave;
@@ -195,7 +195,6 @@ describe('RequestDocumentFormComponent', () => {
                 payload: { name: 'x' },
             }));
             expect(autosave.closed).toBeTrue();
-            expect(takeover.keep).toHaveBeenCalledWith(component);
             expect(fixture.nativeElement.querySelector('.form-submitted-banner')).not.toBeNull();
             expect(component.backLabel).toBe('Back to Project submittal');
             fixture.destroy();
@@ -266,5 +265,46 @@ describe('RequestDocumentFormComponent', () => {
             expect(closed).toBe(1);
             fixture.destroy();
         });
+    });
+
+    describe('submit timing', () => {
+        const submit = (component: RequestDocumentFormComponent, draft: boolean) => {
+            const target = component as any;
+            target.storage = { delete: async () => undefined };
+            target.tablePersist = { persistTablesInDocument: async () => undefined, rollbackIpfsUploads: async () => undefined };
+            target.geoFilePersist = { persistGeoFilesInDocument: async () => undefined, rollbackGridFsUploads: async () => undefined };
+            apiCall.and.returnValue(of({ response: { document: { id: 'urn:uuid:1' } } }));
+            return target.onSubmit(draft) as Promise<void>;
+        };
+
+        it('keeps the takeover as soon as the request returns, before the 1 s delay', fakeAsync(() => {
+            const { fixture, component } = create();
+            submit(component, false);
+            tick(0);
+            expect(apiCall).toHaveBeenCalled();
+            expect(takeover.keep).toHaveBeenCalledWith(component);
+            expect(component.screen).not.toBe('submitted');
+            tick(1000);
+            expect(component.screen).toBe('submitted');
+            fixture.destroy();
+        }));
+
+        it('does not keep the takeover for a draft', fakeAsync(() => {
+            const { fixture, component } = create();
+            submit(component, true);
+            tick(1000);
+            expect(takeover.keep).not.toHaveBeenCalled();
+            expect(component.dataSaved).toBeTrue();
+            fixture.destroy();
+        }));
+
+        it('clears the timer on destroy', fakeAsync(() => {
+            const { fixture, component } = create();
+            submit(component, false);
+            tick(0);
+            fixture.destroy();
+            tick(1000);
+            expect(component.screen).not.toBe('submitted');
+        }));
     });
 });

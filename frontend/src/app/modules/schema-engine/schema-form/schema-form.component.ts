@@ -594,6 +594,7 @@ export class SchemaFormComponent implements OnInit {
 
     public metaType(item: IFieldControl<any>): string {
         const base = item.customType
+            || (item.isRef ? 'object · sub-schema' : null)
             || (item.format ? `${item.type} · ${item.format}` : String(item.type || ''));
         return item.isArray ? `array · ${base}` : base;
     }

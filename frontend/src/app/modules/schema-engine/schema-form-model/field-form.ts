@@ -1103,7 +1103,6 @@ export class FieldForm {
 
         if (item.pattern) {
             validators.push(Validators.pattern(new RegExp(item.pattern)));
-            return validators;
         }
 
         if (item.format === 'email') {

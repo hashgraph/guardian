@@ -918,6 +918,9 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
 
     public get overviewTitle(): string {
         const { answered = 0, total = 0 } = this.completion ?? {};
+        if (total === 0) {
+            return 'Nothing is required';
+        }
         if (answered >= total) {
             return 'Ready to validate';
         }
@@ -925,7 +928,12 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     }
 
     public get overviewComplete(): boolean {
-        return !!this.completion && this.completion.answered >= this.completion.total;
+        return !!this.completion && this.completion.total > 0 && this.completion.answered >= this.completion.total;
+    }
+
+    /** The form has no required fields at all, so there is no progress to show. */
+    public get overviewNothingRequired(): boolean {
+        return (this.completion?.total ?? 0) === 0;
     }
 
     public get overviewPrimaryText(): string {

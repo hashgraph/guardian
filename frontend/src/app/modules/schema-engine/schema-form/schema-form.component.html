@@ -757,6 +757,9 @@
                               </button>
                             }
                           </div>
+                          @if (showMetadata) {
+                            <ng-container *ngTemplateOutlet="sfMeta; context: { $implicit: item }"></ng-container>
+                          }
                           @if (item.open && isPreviewSectionReady(item)) {
                             <div class="sf-card-body">
                               @if (
@@ -878,6 +881,9 @@
                               <span class="sf-chip" [class.sf-chip-err]="showError(item)">{{ item.list?.length || 0 }} {{ item.list?.length === 1 ? 'entry' : 'entries' }}</span>
                             </button>
                           </div>
+                          @if (showMetadata) {
+                            <ng-container *ngTemplateOutlet="sfMeta; context: { $implicit: item }"></ng-container>
+                          }
                           @if (item.open && isPreviewSectionReady(item)) {
                             <div class="sf-card-body">
                               @if (

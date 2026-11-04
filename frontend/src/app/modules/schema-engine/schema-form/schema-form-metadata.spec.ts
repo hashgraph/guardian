@@ -69,7 +69,13 @@ describe('SchemaFormComponent field metadata', () => {
         expect(kind).toContain('3 allowed values');
         expect(kind).toContain(control('kind').path);
         expect(text(control('when').id)).toContain('string · date');
-        expect(text(control('group').id)).toBe('');
+        expect(text(control('group').id)).toContain('object · sub-schema');
+        expect(text(control('rows').id)).toContain('array · object · sub-schema');
+    });
+
+    it('shows no strip on a sub-schema card when the flag is off', () => {
+        const { fixture, control } = setup(false);
+        expect(fixture.nativeElement.querySelector(`.sf-meta[data-meta-id="${control('group').id}"]`)).toBeNull();
     });
 
     it('reads the flag from the root form for a nested form', () => {
