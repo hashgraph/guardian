@@ -147,6 +147,8 @@ export class FieldForm {
     }
 
     private arrayGroupCache: Map<IFieldControl<any>, IArrayGroupEntry[]> | null = null;
+    /** Every array control that is a dependent in some group; built together with `arrayGroupCache`. */
+    private managedSet: Set<IFieldControl<any>> | null = null;
     private fieldOrder: Map<string, number> | null = null;
 
     private readonly destroy$: Subject<boolean>;
@@ -257,6 +259,7 @@ export class FieldForm {
     public build() {
         const { fields, conditions } = this.updateData();
         this.arrayGroupCache = null;
+        this.managedSet = null;
         this.crossSchemaItems = [];
         this.conditionExprBySource = new Map<SchemaCondition, IConditionExpr>();
         this.conditionRevealMap = SchemaHelper.buildRevealMap(conditions || []);
@@ -652,6 +655,10 @@ export class FieldForm {
     public getArrayGroups(): Map<IFieldControl<any>, IArrayGroupEntry[]> {
         if (!this.arrayGroupCache) {
             this.arrayGroupCache = this.buildArrayGroups();
+            this.managedSet = new Set<IFieldControl<any>>();
+            for (const dependents of this.arrayGroupCache.values()) {
+                for (const entry of dependents) { this.managedSet.add(entry.control); }
+            }
         }
         return this.arrayGroupCache;
     }
@@ -661,10 +668,8 @@ export class FieldForm {
     }
 
     public isManagedArray(item: IFieldControl<any>): boolean {
-        for (const dependents of this.getArrayGroups().values()) {
-            if (dependents.some(entry => entry.control === item)) { return true; }
-        }
-        return false;
+        this.getArrayGroups();
+        return this.managedSet!.has(item);
     }
 
     private alignArrayGroups(): void {
@@ -689,6 +694,7 @@ export class FieldForm {
     }
 
     private syncArrayDependencyValues(): void {
+        let changed = false;
         for (const dependency of (this.schema?.arrayDependencies || [])) {
             if (!dependency.valueMappings?.length) { continue; }
             const source = this.resolveArrayEntry(dependency.on);
@@ -700,11 +706,16 @@ export class FieldForm {
                     const sourceControl = source.control.list?.[index]?.control?.get(mapping.source.join('.'));
                     const targetControl = target.control.list?.[index]?.control?.get(mapping.target.join('.'));
                     if (!sourceControl || !targetControl) { continue; }
-                    targetControl.setValue(sourceControl.value ?? null, { emitEvent: false });
+                    const value = sourceControl.value ?? null;
+                    if (targetControl.disabled && targetControl.value === value) { continue; }
+                    targetControl.setValue(value, { emitEvent: false });
                     targetControl.disable({ emitEvent: false });
+                    changed = true;
                 }
             }
         }
+        // The writes above are silent, so tell the views that cache required counts.
+        if (changed) { this.rootForm.controlsChanged$.next(); }
     }
 
     private subscribeArrayDependencyValues(): void {
@@ -1503,6 +1514,7 @@ export class FieldForm {
         this.form.addControl(item.name, item.control);
         if (this.rootForm.schema?.arrayDependencies?.length) {
             this.rootForm.arrayGroupCache = null;
+            this.rootForm.managedSet = null;
             this.rootForm.alignArrayGroups();
         }
         this.rebuildCrossSchemaConditions(true);

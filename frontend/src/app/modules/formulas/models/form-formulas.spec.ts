@@ -103,6 +103,19 @@ describe('FormFormulas', () => {
         expect(model.get(key, { rows: 1 }).map((e) => e.uuid)).toEqual(['a']);
     });
 
+    it('keys the memo by the content of a scope, and reuses the key for the same object', () => {
+        const condition = pred('kind', 'x', ['rows', 'kind']);
+        const tree = buildTree([formula('f1', [item('a', 'field1', condition)])]);
+        const model = new FormFormulas(tree, SCHEMA);
+        const key = `${SCHEMA}/field1`;
+        model.setData({ rows: [{ kind: 'y' }, { kind: 'x' }] });
+        const scope = { rows: 1 };
+        const first = model.get(key, scope);
+        expect(model.get(key, scope)).toBe(first);
+        expect(model.get(key, { rows: 1 })).toBe(first);
+        expect(model.get(key, { rows: 0 }).length).toBe(0);
+    });
+
     it('matches any entry when no entry index is given', () => {
         const condition = pred('kind', 'x', ['rows', 'kind']);
         const tree = buildTree([formula('f1', [item('a', 'field1', condition)])]);

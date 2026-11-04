@@ -609,3 +609,128 @@ describe('SchemaFormComponent error timing', () => {
         expect(fixture.nativeElement.querySelector('.sf-error')).toBeNull();
     });
 });
+
+describe('SchemaFormComponent render caches', () => {
+    const create = (document: any, iri: string, preset?: any) => {
+        TestBed.configureTestingModule({
+            declarations: [SchemaFormComponent, FormTextareaComponent],
+            imports: [CommonModule, ReactiveFormsModule],
+            providers: [
+                { provide: IPFSService, useValue: {} },
+                { provide: DialogService, useValue: {} },
+            ],
+            schemas: [NO_ERRORS_SCHEMA],
+        });
+        const model = new FieldForm(new UntypedFormGroup({}));
+        model.setData({ schema: new Schema({ iri, document }), preset });
+        model.build();
+        const fixture = TestBed.createComponent(SchemaFormComponent);
+        fixture.componentRef.setInput('form-model', model);
+        fixture.componentRef.setInput('showButtons', false);
+        fixture.detectChanges();
+        return { fixture, view: fixture.componentInstance, model };
+    };
+
+    it('follows a new rules object in ruleLine', () => {
+        const document: any = {
+            $id: '#rc&1.0.0',
+            $comment: JSON.stringify({ '@id': 'ctx:#rc&1.0.0', term: 'rc&1.0.0' }),
+            type: SchemaDataTypes.object,
+            properties: { name: { type: SchemaDataTypes.string, title: 'Name', description: 'Name' } },
+        };
+        const { fixture, view, model } = create(document, '#rc&1.0.0');
+        const name = model.controls![0];
+        expect(view.ruleLine(name)).toBeNull();
+        fixture.componentRef.setInput('rules', { [name.fullPath]: { status: 'Failure', rules: [{ name: 'R1', status: 'Failure' }] } });
+        fixture.detectChanges();
+        const failed = view.ruleLine(name);
+        expect(failed).toEqual({ failed: true, text: 'Rule check failed: R1' });
+        expect(view.ruleLine(name)).toBe(failed);
+        fixture.componentRef.setInput('rules', { [name.fullPath]: { status: 'Success', rules: [{ name: 'R1', status: 'Success' }] } });
+        fixture.detectChanges();
+        expect(view.ruleLine(name)).toEqual({ failed: false, text: 'Rule check passed: R1' });
+    });
+
+    it('keeps a managed-array title in step with the source array', () => {
+        const sub = (id: string, property: string): any => ({
+            $id: id, title: id, description: id, type: 'object',
+            properties: { [property]: { type: 'string', title: property, description: property } },
+        });
+        const array = (ref: string): any => ({ type: 'array', items: { $ref: ref } });
+        const document: any = {
+            $id: '#mg&1.0.0',
+            $comment: JSON.stringify({
+                '@id': 'ctx:#mg&1.0.0', term: 'mg&1.0.0',
+                arrayDependencies: [{ field: ['instances'], on: ['locations'], kind: 'array', title: ['instanceName'] }],
+            }),
+            type: 'object',
+            properties: { locations: array('#loc'), instances: array('#inst') },
+            $defs: { '#loc': sub('#loc', 'instanceName'), '#inst': sub('#inst', 'copiedName') },
+        };
+        const { view, model } = create(document, '#mg&1.0.0', { locations: [{ instanceName: 'North' }] });
+        const locations = model.controls!.find((c) => c.name === 'locations')!;
+        const instances = model.controls!.find((c) => c.name === 'instances')!;
+        expect(view.isManagedArray(instances)).toBeTrue();
+        expect(view.isManagedArray(locations)).toBeFalse();
+        const row = instances.list![0];
+        expect(view.recordText(instances, row).title).toBe('North');
+        locations.list![0].control.get('instanceName')!.setValue('South');
+        expect(view.recordText(instances, row).title).toBe('South');
+    });
+
+    it('caches a record summary until the row value changes', () => {
+        const document: any = {
+            $id: '#rr&1.0.0',
+            $comment: JSON.stringify({ '@id': 'ctx:#rr&1.0.0', term: 'rr&1.0.0' }),
+            type: 'object',
+            properties: { rows: { type: 'array', title: 'Rows', description: 'Rows', items: { $ref: '#row' } } },
+            $defs: { '#row': { $id: '#row', type: 'object', properties: { v: { type: 'string', title: 'V', description: 'V' } } } },
+        };
+        const { view, model } = create(document, '#rr&1.0.0', { rows: [{ v: 'one' }] });
+        const rows = model.controls![0];
+        const row = rows.list![0];
+        const first = view.recordText(rows, row);
+        expect(first.title).toBe('one');
+        expect(view.recordText(rows, row)).toBe(first);
+        row.control.get('v')!.setValue('two');
+        expect(view.recordText(rows, row).title).toBe('two');
+    });
+
+    it('recomputes the lone fields for every chunk of a chunked Preview render', fakeAsync(() => {
+        const properties: any = { head: { type: 'string', title: 'Head', description: 'Head' } };
+        for (let i = 0; i < 25; i++) {
+            properties[`d${i}`] = { type: 'string', format: 'date', title: `D${i}`, description: `D${i}` };
+            if (i % 2) {
+                properties[`t${i}`] = { type: 'string', title: `T${i}`, description: `T${i}` };
+            }
+        }
+        const document: any = {
+            $id: '#ch&1.0.0',
+            $comment: JSON.stringify({ '@id': 'ctx:#ch&1.0.0', term: 'ch&1.0.0' }),
+            type: 'object',
+            properties,
+        };
+        const { fixture, view, model } = create(document, '#ch&1.0.0');
+        const list = model.controls!;
+        const expected = (limit: number) => {
+            const lone = new Set<number>();
+            for (let i = 0; i < Math.min(limit, list.length); i++) {
+                if (view.isFullRow(list[i])) { continue; }
+                const prev = i === 0 || view.isFullRow(list[i - 1]);
+                const next = i + 1 >= Math.min(limit, list.length) || view.isFullRow(list[i + 1]);
+                if (prev && next) { lone.add(i); }
+            }
+            return lone;
+        };
+        fixture.componentRef.setInput('previewValidation', true);
+        fixture.detectChanges();
+        expect(view.previewRenderLimit).toBe(10);
+        expect(new Set(list.map((_, i) => i).filter((i) => view.isLoneField(i)))).toEqual(expected(10));
+        for (let step = 0; step < 4; step++) {
+            tick(20);
+            const limit = view.previewRenderLimit;
+            expect(new Set(list.map((_, i) => i).filter((i) => view.isLoneField(i)))).toEqual(expected(limit));
+        }
+        fixture.destroy();
+    }));
+});
