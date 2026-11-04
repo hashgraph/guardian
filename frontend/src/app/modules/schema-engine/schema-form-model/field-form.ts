@@ -45,7 +45,6 @@ export interface IFieldControl<T extends UntypedFormControl | UntypedFormGroup |
     control: T;
     preset?: any;
     isPreset?: boolean;
-    prefilled?: boolean;
     fileUploading?: boolean;
     enumValues?: any;
     displayRequired?: boolean;
@@ -1259,7 +1258,6 @@ export class FieldForm {
         if (preset) {
             item.isPreset = !this.rootForm.keepDefaultLabels;
             item.preset = preset[field.name];
-            item.prefilled = !this.rootForm.keepDefaultLabels && !isEmptyValue(preset[field.name]);
         }
 
         // ifSimpleField

@@ -37,7 +37,7 @@ describe('schema form errors', () => {
         expect(getErrorMessage(item({ isRef: true }, control))).toBe('Fix the fields in this group');
     });
 
-    it('shows an error after blur, for prefilled values or once revealed', () => {
+    it('shows an error after blur or once revealed', () => {
         const control = required();
         const field = item({}, control);
         expect(showError(field, false)).toBeFalse();
@@ -45,7 +45,6 @@ describe('schema form errors', () => {
         expect(showError(field, false)).toBeTrue();
         const untouched = item({}, required());
         expect(showError(untouched, true)).toBeTrue();
-        expect(showError({ ...untouched, prefilled: true }, false)).toBeTrue();
     });
 
     it('keeps a group or array quiet when only a child was touched', () => {
@@ -56,7 +55,6 @@ describe('schema form errors', () => {
         expect(showError(sub, false)).toBeFalse();
         expect(showError(item({ isArray: true }, group), false)).toBeFalse();
         expect(showError(sub, true)).toBeTrue();
-        expect(showError({ ...sub, prefilled: true }, false)).toBeTrue();
         expect(showError(sub, false, item({}, group))).toBeTrue();
     });
 

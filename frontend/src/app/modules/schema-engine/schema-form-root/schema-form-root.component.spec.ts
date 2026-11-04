@@ -1098,6 +1098,18 @@ describe('SchemaFormRootComponent — expand and collapse all', () => {
         expect(root.nestedCards.some(card => card.open)).toBeFalse();
     }));
 
+    it('opens the section sub-schema that holds a card chosen in the rail', fakeAsync(() => {
+        const root = create(true);
+        root.openSection(0);
+        const parent = root.activeSection!.controls.find(item => item.isRef)!;
+        parent.open = false;
+        const card = root.activeCards[0];
+        root.onRailCard(card);
+        expect(parent.open).toBeTrue();
+        expect(card.open).toBeTrue();
+        flush(100);
+    }));
+
     it('has nothing to toggle when the sub-schema holds no sub-schemas', fakeAsync(() => {
         const root = create(false);
         root.openSection(0);

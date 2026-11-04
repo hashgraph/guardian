@@ -441,6 +441,7 @@ describe('SchemaFormComponent Preview table validation', () => {
         first.required = false;
         first.control.setValidators(Validators.min(1));
         first.control.updateValueAndValidity();
+        first.control.markAsTouched();
         second.control.disable();
         fixture.detectChanges();
         const rows = fixture.nativeElement.querySelectorAll('.sf-record');
@@ -603,8 +604,8 @@ describe('SchemaFormComponent error timing', () => {
         expect(fixture.nativeElement.querySelector('.sf-error')).not.toBeNull();
     });
 
-    it('shows the error of a prefilled value at once', () => {
+    it('keeps the error of a prefilled value quiet until it is touched', () => {
         const { fixture } = render({ code: 'ABC' });
-        expect(fixture.nativeElement.querySelector('.sf-error').textContent).toContain('required format');
+        expect(fixture.nativeElement.querySelector('.sf-error')).toBeNull();
     });
 });

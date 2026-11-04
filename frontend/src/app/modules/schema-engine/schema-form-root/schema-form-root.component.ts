@@ -911,9 +911,17 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     }
 
     public onRailCard(card: IFieldControl<any>): void {
+        // The card is drawn by the nested form of its section's sub-schema, which draws nothing while
+        // that sub-schema is closed and registers its own cards in Preview
+        for (const item of this.activeSection?.controls ?? []) {
+            if (item.isRef && (item.model?.controls || []).includes(card)) {
+                item.open = true;
+            }
+        }
         card.open = true;
         this.drawerOpen = false;
-        this.childForm?.preparePreviewSection(card);
+        this.changeDetectorRef.detectChanges();
+        this.childForm?.prepareOpenPreviewSections?.();
         this.changeDetectorRef.detectChanges();
         this.scrollToField(card.id);
     }
