@@ -1,7 +1,17 @@
 import { UntypedFormGroup } from '@angular/forms';
 import { Schema } from '@guardian/interfaces';
 import { FieldForm } from '../schema-form-model/field-form';
-import { walkFields } from './schema-form-walk';
+import { isIndexSegment, walkFields } from './schema-form-walk';
+
+describe('isIndexSegment', () => {
+    it('tells a row index from a field name', () => {
+        expect(isIndexSegment('0')).toBeTrue();
+        expect(isIndexSegment('12')).toBeTrue();
+        expect(isIndexSegment('')).toBeFalse();
+        expect(isIndexSegment('1a')).toBeFalse();
+        expect(isIndexSegment('rows')).toBeFalse();
+    });
+});
 
 describe('walkFields', () => {
     const document: any = {

@@ -216,6 +216,17 @@ describe('CalculationPreviewService', () => {
         ]);
     });
 
+    it('unwraps the document of a state and keeps the input as a fallback', () => {
+        const unwrap = (value: unknown) => Reflect.get(service, 'unwrapDocument').call(service, value);
+        expect(unwrap({ document: { id: 'a' } })).toEqual({ id: 'a' });
+        expect(unwrap({ document: 'text' })).toBeNull();
+        expect(unwrap(null)).toBeNull();
+        const input = (value: unknown) => Reflect.get(service, 'getInputDocument').call(service, value);
+        expect(input({ document: { id: 'a' } })).toEqual({ id: 'a' });
+        expect(input({ id: 'b' })).toEqual({ id: 'b' });
+        expect(input('text')).toBeNull();
+    });
+
     it('takes an input that is the document itself', () => {
         const preview = normalizePreviewResult({ input: { id: 'vc-input', credentialSubject: [] } });
         expect(service.getTimeline(preview)).toEqual([

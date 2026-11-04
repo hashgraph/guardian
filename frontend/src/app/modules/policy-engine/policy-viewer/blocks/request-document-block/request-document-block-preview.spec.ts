@@ -68,6 +68,11 @@ describe('request document preview wiring', () => {
         component.previewMode = false;
         component.previewRequiredFields = null;
         component.previewRequest = 0;
+        component.previewVisited = new Set<number>();
+        component.previewLoadingByCard = new Map<number, number>();
+        component.previewRequiredText = '';
+        component.docTab = 'doc';
+        component.previewTab = 'doc';
         return { component, calls: fake.calls, uploads, dialogs };
     };
 
@@ -128,7 +133,7 @@ describe('request document preview wiring', () => {
         await component.onStep();
         expect(component.screen).toBe('presults');
         expect(component.previewItems).toEqual([
-            { role: 'result', label: 'save', blockType: null, source: 'form', target: 'save', document: { id: 'vc-1' } },
+            { role: 'result', label: 'save', blockType: null, source: 'form', target: 'save', document: { id: 'vc-1' }, title: 'save', sub: 'save' },
         ]);
         expect(component.previewSelected?.document).toEqual({ id: 'vc-1' });
         expect(component.previewIncomplete).toBeFalse();
@@ -252,12 +257,13 @@ describe('request document preview wiring', () => {
 
     it('counts a field once in the notice although a 422 adds its indexed paths', () => {
         const { component } = form([], blockParent());
-        component.previewRequiredFields = null;
+        component.setPreviewRequiredFields(null);
         expect(component.previewRequiredText).toBe('Only the fields the calculations read are required.');
-        component.previewRequiredFields = ['rows.rate'];
+        component.setPreviewRequiredFields(['rows.rate']);
         expect(component.previewRequiredText).toBe('Only the 1 field the calculation reads is required.');
-        component.previewRequiredFields = ['amount', 'rows.rate', 'rows.1.rate', 'rows.2.rate'];
+        component.setPreviewRequiredFields(['amount', 'rows.rate', 'rows.1.rate', 'rows.2.rate']);
         expect(component.previewRequiredText).toBe('Only the 2 fields the calculations read are required.');
+        expect(component.previewRequiredFields).toEqual(['amount', 'rows.rate', 'rows.1.rate', 'rows.2.rate']);
     });
 
     it('goes back to a clean form when the toggle is switched off on the missing values screen', async () => {
@@ -278,10 +284,132 @@ describe('request document preview wiring', () => {
         component.parent.schema = { name: 'Project description' };
         const input = { role: 'input', label: 'Your form values', blockType: null, source: null, target: null, document: {} };
         const result = { role: 'result', label: 'save', blockType: 'sendToGuardianBlock', source: 'm', target: 'save', document: {} };
-        expect(component.previewItemTitle(input)).toBe('Project description');
-        expect(component.previewItemSub(input)).toBe('Your form values');
-        expect(component.previewItemTitle(result)).toBe('save');
-        expect(component.previewItemSub(result)).toBe('sendToGuardianBlock · save');
+        const inputView = component.toPreviewItemView(input);
+        const resultView = component.toPreviewItemView(result);
+        expect(inputView.title).toBe('Project description');
+        expect(inputView.sub).toBe('Your form values');
+        expect(resultView.title).toBe('save');
+        expect(resultView.sub).toBe('sendToGuardianBlock · save');
+    });
+
+    describe('document viewers', () => {
+        const chain = [
+            { source: 'a', target: 'first', final: false, document: { document: { id: 'vc-1' } } },
+            { source: 'b', target: 'second', final: true, document: { document: { id: 'vc-2' } } },
+        ];
+
+        it('opens a viewer only for a card that was visited and keeps it after switching away', async () => {
+            const { component } = form([Promise.resolve(response(['amount'], [], chain))], blockParent());
+            component.previewMode = true;
+            await component.onStep();
+            expect([...component.previewVisited]).toEqual([1]);
+            component.selectPreviewItem(0);
+            expect([...component.previewVisited].sort()).toEqual([0, 1]);
+            component.selectPreviewItem(1);
+            expect([...component.previewVisited].sort()).toEqual([0, 1]);
+        });
+
+        it('forgets the visited cards when the result is replaced or the toggle is switched off', async () => {
+            const { component } = form([Promise.resolve(response(['amount'], [], chain))], blockParent());
+            component.previewMode = true;
+            await component.onStep();
+            component.selectPreviewItem(0);
+            await component.onPreviewModeChange(false);
+            expect(component.previewVisited.size).toBe(0);
+        });
+
+        it('keeps the overlay for the open card when a hidden viewer finishes loading', async () => {
+            const { component } = form([Promise.resolve(response(['amount'], [], chain))], blockParent());
+            component.previewMode = true;
+            await component.onStep();
+            component.onPreviewViewLoadingChange(1, true);
+            component.selectPreviewItem(0);
+            expect(component.previewViewLoading).toBe(0);
+            component.onPreviewViewLoadingChange(0, true);
+            expect(component.previewViewLoading).toBe(1);
+            component.onPreviewViewLoadingChange(1, false);
+            expect(component.previewViewLoading).toBe(1);
+            component.onPreviewViewLoadingChange(0, false);
+            expect(component.previewViewLoading).toBe(0);
+            component.selectPreviewItem(1);
+            expect(component.previewViewLoading).toBe(0);
+        });
+
+        it('flips between Document and JSON without touching the visited cards', async () => {
+            const { component } = form([Promise.resolve(response(['amount'], [], chain))], blockParent());
+            component.previewMode = true;
+            await component.onStep();
+            component.setDocView('preview', 'json');
+            expect(component.previewTab).toBe('json');
+            expect(component.docTab).toBe('doc');
+            component.setDocView('submitted', 'json');
+            expect(component.docTab).toBe('json');
+            expect([...component.previewVisited]).toEqual([1]);
+        });
+    });
+
+    describe('refreshing the issues', () => {
+        const missing = (fields: string[]) => new HttpErrorResponse({ status: 422, error: { data: { preview: true, fields, missingFields: fields } } });
+
+        it('refreshes the issues once for a 422 that brings no new requirements', async () => {
+            spyOn(console, 'error');
+            const { component } = form([Promise.reject(missing(['rate']))], blockParent());
+            const getIssues = spyOn(component.formRoot, 'getIssues').and.returnValue([]);
+            const detect = spyOn(component.changeDetectorRef, 'detectChanges');
+            component.previewMode = true;
+            component.previewRequiredFields = ['rate'];
+            await component.runPreview(false);
+            expect(component.screen).toBe('results');
+            expect(getIssues).toHaveBeenCalledTimes(1);
+            expect(detect).not.toHaveBeenCalled();
+        });
+
+        it('lets the form take new requirements before listing what is missing', async () => {
+            spyOn(console, 'error');
+            const { component } = form([Promise.reject(missing(['rate']))], blockParent());
+            const detect = spyOn(component.changeDetectorRef, 'detectChanges');
+            component.previewMode = true;
+            component.previewRequiredFields = ['amount'];
+            await component.runPreview(false);
+            expect(detect).toHaveBeenCalledTimes(1);
+            expect(component.previewRequiredFields).toEqual(['rate']);
+        });
+
+        it('refreshes the results only when the form stops rendering', () => {
+            const { component } = form([], blockParent());
+            const refresh = spyOn<any>(component, 'refreshIssues');
+            component.previewMode = true;
+            component.screen = 'results';
+            component.onPreviewRenderingChange(false);
+            expect(refresh).not.toHaveBeenCalled();
+            component.onPreviewRenderingChange(true);
+            component.onPreviewRenderingChange(true);
+            expect(refresh).not.toHaveBeenCalled();
+            component.onPreviewRenderingChange(false);
+            expect(refresh).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('missing fields the form has no control for', () => {
+        const schema = {
+            getField: (path: string) => ({
+                'group': { description: 'Group', name: 'group' },
+                'group.rows': { title: 'Rows', name: 'rows' },
+                'group.rows.rate': { name: 'rate' },
+            } as any)[path] ?? null,
+        };
+
+        it('labels each segment with its field description, title or name and a row as #n', () => {
+            const { component } = form([], blockParent());
+            component.parent.schema = schema;
+            expect(component.missingFieldLabel('group.rows.1.rate')).toBe('Group / Rows / #2 / rate');
+        });
+
+        it('keeps the raw segment when the schema has no such field', () => {
+            const { component } = form([], blockParent());
+            component.parent.schema = schema;
+            expect(component.missingFieldLabel('group.other')).toBe('Group / other');
+        });
     });
 
     it('names the preview step in the stepper and has no Submitted step', () => {

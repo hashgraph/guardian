@@ -6,6 +6,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { uriValidator } from 'src/app/validators/uri.validator';
 import { GeoForm } from './geo-form';
 import { SentinelHubForm } from './sentinel-hub-form';
+import { isIndexSegment } from '../schema-form/schema-form-walk';
 
 /**
  * Loose equality used by condition predicates: numbers, dates and trimmed strings.
@@ -136,7 +137,7 @@ export class FieldForm {
     public metadataPath(item: IFieldControl<any>): string {
         const scope = (this.previewPath() || '').split('.').filter(Boolean);
         const own = (item.path || item.name).split('.');
-        const depth = scope.filter((part) => !/^\d+$/.test(part)).length + 1;
+        const depth = scope.filter((part) => !isIndexSegment(part)).length + 1;
         const lead = own.slice(0, Math.max(0, own.length - depth));
         return [...lead, ...scope, item.name].join('.');
     }
@@ -1251,7 +1252,7 @@ export class FieldForm {
                 }
                 const tail = requiredPath.slice(prefix.length).split('.');
                 let start = 0;
-                while (/^\d+$/.test(tail[start] || '')) {
+                while (isIndexSegment(tail[start] || '')) {
                     start++;
                 }
                 const childPrefix = [path, ...tail.slice(0, start)].join('.');
@@ -1624,7 +1625,7 @@ export class FieldForm {
                         return [path];
                     }
                     const tail = path.slice(prefix.length).split('.');
-                    if (!/^\d+$/.test(tail[0])) {
+                    if (!isIndexSegment(tail[0])) {
                         return [path];
                     }
                     const row = Number(tail[0]);
