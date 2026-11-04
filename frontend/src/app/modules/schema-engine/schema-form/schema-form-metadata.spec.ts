@@ -133,4 +133,26 @@ describe('SchemaFormComponent field metadata', () => {
         form.build();
         expect(form.isConditional({ name: 'b' } as any)).toBeTrue();
     });
+
+    it('caches the static tags and adds the formula count live', () => {
+        const { view, control } = setup(true);
+        const kind = control('kind');
+        const first = view.metaTags(kind);
+        expect(view.metaTags(kind)).toBe(first);
+        expect(first.map((tag) => tag.text)).toEqual(['3 allowed values']);
+        let count = 2;
+        view.formulas = { get: () => new Array(count).fill({}) } as any;
+        expect(view.metaTags(kind).map((tag) => tag.text)).toEqual(['3 allowed values', '2 formulas']);
+        count = 1;
+        expect(view.metaTags(kind).map((tag) => tag.text)).toEqual(['3 allowed values', '1 formula']);
+    });
+
+    it('drops the cached tags when the rules change', () => {
+        const { fixture, view, control } = setup(true);
+        const name = control('name');
+        expect(view.metaTags(name)).toEqual([]);
+        fixture.componentRef.setInput('rules', { [name.fullPath]: { status: 'Success', rules: [] } });
+        fixture.detectChanges();
+        expect(view.metaTags(name).map((tag) => tag.text)).toEqual(['schema rule']);
+    });
 });

@@ -18,6 +18,7 @@
           >
           <!-- simple field -->
           @if (ifSimpleField(item)) {
+            @let err = showError(item);
             <div class="form-field">
               @if (!isHelpText(item)) {
                 <div
@@ -101,7 +102,7 @@
                   <div
                     class="form-field-value"
                     [class.preview-missing-field]="isInvalidField(item)"
-                    [attr.sf-invalid]="showError(item)"
+                    [attr.sf-invalid]="err"
                     [attr.rules-status]="isRulesStatus(item)"
                     >
                     @if (isPrefix(item)) {
@@ -370,7 +371,7 @@
                       {{ rl.text }}
                     </div>
                   }
-                  @if (showError(item)) {
+                  @if (err) {
                     <div class="sf-error">
                       <svg-icon src="/assets/images/icons/warning.svg" svgClass="sf-error-icon"></svg-icon>
                       {{ getErrorMessage(item) }}
@@ -380,6 +381,7 @@
               }
               <!-- array of simple fields -->
               @if (ifSimpleArray(item)) {
+                @let managed = isManagedArray(item);
                 <div class="form-field-array">
                   <div
                     class="sf-label"
@@ -436,6 +438,7 @@
                       </div>
                     }
                     @for (listItem of item.list; track listItem; let i = $index) {
+                      @let rowErr = showError(item, listItem);
                       <div
                         class="form-field-array-item-container"
                         [attr.required]="item.required"
@@ -446,7 +449,7 @@
                         <div class="form-field-array-item">
                           <div
                             class="form-field-value"
-                            [attr.sf-invalid]="showError(item, listItem)"
+                            [attr.sf-invalid]="rowErr"
                             >
                             @if (isPrefix(item)) {
                               <div
@@ -661,7 +664,7 @@
                                   }
                                 </div>
                                 @if (
-                                  !item.control.disabled && !isManagedArray(item) && (!isEditMode || item?.isUpdatable)
+                                  !item.control.disabled && !managed && (!isEditMode || item?.isUpdatable)
                                   ) {
                                   <div
                                     class="fields-remove"
@@ -680,7 +683,7 @@
                                   </div>
                                 }
                               </div>
-                              @if (showError(item, listItem)) {
+                              @if (rowErr) {
                                 <div class="sf-error">
                                   <svg-icon src="/assets/images/icons/warning.svg" svgClass="sf-error-icon"></svg-icon>
                                   {{ getErrorMessage(item, listItem) }}
@@ -689,7 +692,7 @@
                             </div>
                           }
                           @if (
-                            !item.control.disabled && !isManagedArray(item) && (!isEditMode || item?.isUpdatable)
+                            !item.control.disabled && !managed && (!isEditMode || item?.isUpdatable)
                             ) {
                             <button
                               (click)="addItem(item)"
@@ -709,10 +712,11 @@
                         </div>
                       }
                       @if (ifSubSchema(item)) {
+                        @let err = showError(item);
                         @let st = item.control ? requiredLeft(item) : null;
                         <div
                           class="sf-card form-field-group sub-schema sub-schema-{{ item.customType }}"
-                          [class.sf-card-error]="showError(item)"
+                          [class.sf-card-error]="err"
                           [class.sf-card-open]="item.open"
                           >
                           <div class="sf-card-head">
@@ -779,7 +783,7 @@
               </button>
             </div>
           }
-                              @if (showError(item)) {
+                              @if (err) {
                                 <div
                                   class="sf-error invalid-sub-schema"
                                   [class.invalid-geo-field]="item.customType === 'geo'"
@@ -859,9 +863,11 @@
                       }
                       <!-- array of sub schemas -->
                       @if (ifSubSchemaArray(item)) {
+                        @let managed = isManagedArray(item);
+                        @let err = showError(item);
                         <div
                           class="sf-card form-field-group schema-form-field-array-group sub-schemas sub-schema-{{ item.customType }}"
-                          [class.sf-card-error]="showError(item)"
+                          [class.sf-card-error]="err"
                           [class.sf-card-open]="item.open"
                           >
                           <div class="sf-card-head">
@@ -878,7 +884,7 @@
                               @if (ifRequiredField(item)) {
                                 <span class="sf-req" aria-label="required">*</span>
                               }
-                              <span class="sf-chip" [class.sf-chip-err]="showError(item)">{{ item.list?.length || 0 }} {{ item.list?.length === 1 ? 'entry' : 'entries' }}</span>
+                              <span class="sf-chip" [class.sf-chip-err]="err">{{ item.list?.length || 0 }} {{ item.list?.length === 1 ? 'entry' : 'entries' }}</span>
                             </button>
                           </div>
                           @if (showMetadata) {
@@ -903,7 +909,7 @@
               </button>
             </div>
           }
-                              @if (showError(item)) {
+                              @if (err) {
                                 <div class="sf-error invalid-sub-schema">
                                   <svg-icon src="/assets/images/icons/warning.svg" svgClass="sf-error-icon"></svg-icon>
                                   {{ getErrorMessage(item) }}
@@ -913,10 +919,11 @@
                                 <div class="sf-empty">No entries yet</div>
                               }
                               @for (listItem of item.list; track listItem) {
+                                @let rowErr = showError(item, listItem);
                                 <div
                                   class="sf-record form-field-array-item-container"
                                   [class.sf-record-open]="listItem.open"
-                                  [class.sf-record-bad]="showError(item, listItem)"
+                                  [class.sf-record-bad]="rowErr"
                                   [attr.index]="listItem.index"
                                   [attr.data-field-id]="listItem.id"
                                   [attr.required]="item.required"
@@ -930,7 +937,7 @@
                                         <small>{{ rt.sub }}</small>
                                       }
                                     </div>
-                                    @if (showError(item, listItem)) {
+                                    @if (rowErr) {
                                       <span class="sf-chip sf-chip-err">Missing values</span>
                                     }
                                     <button
@@ -942,7 +949,7 @@
                                       {{ listItem.open ? 'Close' : 'Edit' }}
                                     </button>
                                     @if (
-                                      !item.control.disabled && !isManagedArray(item) && (!isEditMode || item?.isUpdatable)
+                                      !item.control.disabled && !managed && (!isEditMode || item?.isUpdatable)
                                       ) {
                                       <button
                                         type="button"
@@ -1008,7 +1015,7 @@
                                   }
                                 </div>
                               }
-                              @if (!item.control.disabled && !isManagedArray(item) && (!isEditMode || item?.isUpdatable)) {
+                              @if (!item.control.disabled && !managed && (!isEditMode || item?.isUpdatable)) {
                                 <button
               type="button"
               (click)="addItem(item)"

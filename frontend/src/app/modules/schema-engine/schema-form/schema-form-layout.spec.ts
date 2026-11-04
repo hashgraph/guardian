@@ -114,3 +114,80 @@ describe('SchemaFormComponent layout helpers', () => {
         expect(root.querySelectorAll('form.sf-grid .sf-full').length).toBe(1);
     });
 });
+
+const createView = (model: FieldForm) => {
+    TestBed.configureTestingModule({
+        declarations: [SchemaFormComponent, FormTextareaComponent],
+        imports: [CommonModule, ReactiveFormsModule],
+        providers: [
+            { provide: IPFSService, useValue: {} },
+            { provide: DialogService, useValue: {} },
+        ],
+        schemas: [NO_ERRORS_SCHEMA],
+    });
+    const fixture = TestBed.createComponent(SchemaFormComponent);
+    fixture.componentRef.setInput('form-model', model);
+    fixture.componentRef.setInput('showButtons', false);
+    fixture.detectChanges();
+    return fixture;
+};
+
+describe('SchemaFormComponent lone fields', () => {
+    const text = (title: string) => ({ type: SchemaDataTypes.string, format: 'date', title, description: title });
+    const document: any = {
+        $id: '#lone&1.0.0',
+        $comment: JSON.stringify({ '@id': 'ctx:#lone&1.0.0', term: 'lone&1.0.0' }),
+        type: SchemaDataTypes.object,
+        properties: {
+            name: { type: SchemaDataTypes.string, title: 'Name', description: 'Name' },
+            a: text('A'),
+            b: text('B'),
+            notes: { type: SchemaDataTypes.string, title: 'Notes', description: 'Notes' },
+        },
+    };
+
+    it('updates when a neighbour hides', () => {
+        const model = new FieldForm(new UntypedFormGroup({}));
+        model.setData({ schema: new Schema({ iri: '#lone&1.0.0', document }) });
+        model.build();
+        const fixture = createView(model);
+        const view = fixture.componentInstance;
+        const byName = (name: string) => model.controls!.find((c) => c.name === name)!;
+        // name (full) | a b (share a row) | notes (full)
+        expect([0, 1, 2, 3].map((i) => view.isLoneField(i))).toEqual([false, false, false, false]);
+        // The check runs from `ngDoCheck`; calling it directly avoids re-rendering a model edited by hand.
+        byName('b').visibility = false;
+        view.ngDoCheck();
+        expect(view.isLoneField(1)).toBeTrue();
+        byName('b').visibility = true;
+        view.ngDoCheck();
+        expect(view.isLoneField(1)).toBeFalse();
+    });
+
+    it('follows a swapped list of the same length and visibility', () => {
+        const model = new FieldForm(new UntypedFormGroup({}));
+        model.setData({ schema: new Schema({ iri: '#lone&1.0.0', document }) });
+        model.build();
+        const fixture = createView(model);
+        const view = fixture.componentInstance;
+        const [name, a, b, notes] = model.controls!;
+        fixture.componentRef.setInput('renderControls', [name, a, notes]);
+        fixture.detectChanges();
+        expect(view.isLoneField(1)).toBeTrue();
+        fixture.componentRef.setInput('renderControls', [name, a, b]);
+        fixture.detectChanges();
+        expect(view.isLoneField(1)).toBeFalse();
+    });
+
+    it('caches the enum mode per values array and recomputes when a new one is assigned', () => {
+        const model = new FieldForm(new UntypedFormGroup({}));
+        model.setData({ schema: new Schema({ iri: '#lone&1.0.0', document }) });
+        model.build();
+        const view = createView(model).componentInstance;
+        const item = model.controls![1];
+        item.enumValues = ['A', 'B'];
+        expect(view.enumMode(item)).toBe('seg');
+        item.enumValues = ['A', 'B', 'C', 'D', 'E'];
+        expect(view.enumMode(item)).toBe('select');
+    });
+});
