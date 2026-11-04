@@ -2712,16 +2712,9 @@
 
     i { font-size: 14px; }
 
-    svg-icon.svg-icon-16 {
-        width: 14px;
-        height: 14px;
-        line-height: 14px;
-
-        ::ng-deep svg {
-            width: 100%;
-            height: 100%;
-            fill: currentColor;
-        }
+    // The icon file has no fill of its own, so it takes the button's colour
+    svg-icon.svg-icon-16 ::ng-deep svg {
+        fill: currentColor;
     }
 
     &:hover { background: var(--guardian-hover); }
@@ -3472,17 +3465,9 @@
 
     i { font-size: 14px; }
 
-    svg-icon.svg-icon-16 {
-        width: 14px;
-        height: 14px;
-        line-height: 14px;
-        vertical-align: middle;
-
-        ::ng-deep svg {
-            width: 100%;
-            height: 100%;
-            fill: currentColor;
-        }
+    // The icon file has no fill of its own, so it takes the button's colour
+    svg-icon.svg-icon-16 ::ng-deep svg {
+        fill: currentColor;
     }
 
     &:not(.active):hover { color: var(--guardian-font-color); }

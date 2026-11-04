@@ -36,6 +36,11 @@ export function isRefLeaf(control: AbstractControl | null | undefined): boolean 
     return control instanceof UntypedFormControl;
 }
 
+/** A row index inside a dotted path, for example the `0` in `rows.0.name`. */
+export function isIndexSegment(part: string): boolean {
+    return /^\d+$/.test(part);
+}
+
 export function isFieldVisible(field: IFieldControl<any>): boolean {
     return field.visibility !== false;
 }

@@ -29,11 +29,6 @@
         justify-content: center;
         width: 16px;
         height: 16px;
-
-        ::ng-deep svg {
-            width: 16px !important;
-            height: 16px !important;
-        }
     }
 
     &:hover {

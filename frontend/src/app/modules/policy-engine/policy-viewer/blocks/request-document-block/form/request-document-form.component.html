@@ -98,12 +98,14 @@
 </nav>
 <div class="form-body" [class.fill]="screen === 'form' && step === 'fill'">
   @if (loading || isPreviewBusy || previewViewLoading > 0) {
-    <div class="guardian-loading" [class.preview-loading-overlay]="previewMode || previewViewLoading > 0">
+    <div class="guardian-loading" [class.preview-loading-overlay]="previewMode">
       <div class="form-spinner"></div>
-    </div>
-    <div class="form-busy-text" role="status" [hidden]="!previewMode || !(loading || isPreviewBusy)">
-      <b>Running calculation preview…</b>
-      <span>The policy's calculations run on a temporary copy. Nothing is created or sent.</span>
+      @if (previewMode && (loading || isPreviewBusy)) {
+        <div class="form-busy-text" role="status">
+          <b>Running calculation preview…</b>
+          <span>The policy's calculations run on a temporary copy. Nothing is created or sent.</span>
+        </div>
+      }
     </div>
   }
   <div class="form-body-container" [attr.inert]="isPreviewBusy ? '' : null">
@@ -182,8 +184,8 @@
                       [class.on]="i === previewIndex"
                       [attr.aria-current]="i === previewIndex ? 'true' : null"
                       (click)="selectPreviewItem(i)">
-                      <b>{{ previewItemTitle(item) }}</b>
-                      <small>{{ previewItemSub(item) }}</small>
+                      <b>{{ item.title }}</b>
+                      <small>{{ item.sub }}</small>
                     </button>
                   </li>
                 }
@@ -192,28 +194,27 @@
                 <div class="form-pres-doc" [class.input]="selected.role === 'input'" [class.result]="selected.role === 'result'">
                   <div class="form-pres-head">
                     <span class="form-pill" [class.ok]="selected.role === 'result'">{{ selected.role === 'input' ? 'Input' : 'Result' }}</span>
-                    <b>{{ previewItemTitle(selected) }}</b>
+                    <b>{{ selected.title }}</b>
                     <span class="form-pill">Temporary</span>
-                    <small>{{ previewItemSub(selected) }}</small>
+                    <small>{{ selected.sub }}</small>
                     <span class="form-submitted-spacer"></span>
-                    <div class="form-toggle" role="group" aria-label="Document view">
-                      <button type="button" [class.on]="previewTab === 'doc'" [attr.aria-pressed]="previewTab === 'doc'" (click)="previewTab = 'doc'">Document</button>
-                      <button type="button" [class.on]="previewTab === 'json'" [attr.aria-pressed]="previewTab === 'json'" (click)="previewTab = 'json'">JSON</button>
-                    </div>
+                    <ng-container *ngTemplateOutlet="docToggle; context: { tab: previewTab, kind: 'preview' }"></ng-container>
                   </div>
-                  @if (previewTab === 'doc') {
-                    @for (shown of [selected]; track shown) {
-                      <app-document-view
-                        [preview]="true"
-                        [document]="shown.document"
-                        [type]="'VC'"
-                        [policyId]="policyId"
-                        [dryRun]="!!dryRun"
-                        (previewLoadingChange)="onPreviewViewLoadingChange($event)">
-                      </app-document-view>
+                  <!-- One viewer per visited card, hidden rather than destroyed, so flipping back is instant -->
+                  @for (item of previewItems; track $index; let i = $index) {
+                    @if (previewVisited.has(i)) {
+                      <ng-container
+                        *ngTemplateOutlet="docPane; context: {
+                          document: item.document,
+                          json: i === previewIndex ? previewJson : '',
+                          tab: previewTab,
+                          hidden: i !== previewIndex,
+                          policyId: policyId,
+                          dryRun: !!dryRun,
+                          preview: true
+                        }">
+                      </ng-container>
                     }
-                  } @else {
-                    <pre class="form-submitted-json">{{ previewJson }}</pre>
                   }
                 </div>
               }
@@ -258,21 +259,19 @@
             <b>Submitted document</b>
             <span class="form-pill ok"><i class="pi pi-lock" aria-hidden="true"></i>Read-only</span>
             <span class="form-submitted-spacer"></span>
-            <div class="form-toggle" role="group" aria-label="Document view">
-              <button type="button" [class.on]="docTab === 'doc'" [attr.aria-pressed]="docTab === 'doc'" (click)="docTab = 'doc'">Document</button>
-              <button type="button" [class.on]="docTab === 'json'" [attr.aria-pressed]="docTab === 'json'" (click)="docTab = 'json'">JSON</button>
-            </div>
+            <ng-container *ngTemplateOutlet="docToggle; context: { tab: docTab, kind: 'submitted' }"></ng-container>
           </div>
-          @if (docTab === 'doc') {
-            <app-document-view
-              [document]="sub.document"
-              [type]="'VC'"
-              [policyId]="sub.policyId"
-              [dryRun]="sub.dryRun">
-            </app-document-view>
-          } @else {
-            <pre class="form-submitted-json">{{ submittedJson }}</pre>
-          }
+          <ng-container
+            *ngTemplateOutlet="docPane; context: {
+              document: sub.document,
+              json: submittedJson,
+              tab: docTab,
+              hidden: false,
+              policyId: sub.policyId,
+              dryRun: sub.dryRun,
+              preview: false
+            }">
+          </ng-container>
         }
       </div>
     }
@@ -554,3 +553,27 @@
     </div>
   </div>
 }
+
+<ng-template #docToggle let-tab let-kind="kind">
+  <div class="form-toggle" role="group" aria-label="Document view">
+    <button type="button" [class.on]="tab === 'doc'" [attr.aria-pressed]="tab === 'doc'" (click)="setDocView(kind, 'doc')">Document</button>
+    <button type="button" [class.on]="tab === 'json'" [attr.aria-pressed]="tab === 'json'" (click)="setDocView(kind, 'json')">JSON</button>
+  </div>
+</ng-template>
+
+<!-- The viewer and the JSON pane are both kept in the DOM and switched with [hidden], so the viewer survives a flip -->
+<ng-template #docPane let-document let-json="json" let-tab="tab" let-hidden="hidden" let-policyId="policyId" let-dryRun="dryRun" let-preview="preview">
+  <div [hidden]="hidden">
+    <div [hidden]="tab !== 'doc'">
+      <app-document-view
+        [preview]="preview"
+        [document]="document"
+        [type]="'VC'"
+        [policyId]="policyId"
+        [dryRun]="dryRun"
+        (previewLoadingChange)="preview && onPreviewViewLoadingChange($event)">
+      </app-document-view>
+    </div>
+    <pre class="form-submitted-json" [hidden]="tab !== 'json'">{{ json }}</pre>
+  </div>
+</ng-template>
