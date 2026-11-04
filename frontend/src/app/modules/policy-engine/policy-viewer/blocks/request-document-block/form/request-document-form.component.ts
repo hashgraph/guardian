@@ -134,7 +134,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     public previewIncomplete: boolean = false;
     public previewDiscoveryWarning: boolean = false;
     public previewTab: 'doc' | 'json' = 'doc';
-    private previewJsonCache: { item: ICalculationPreviewTimelineItem; text: string } | null = null;
+    public previewJson = '';
     public previewViewLoading: number = 0;
 
     public get isPreviewBusy(): boolean {
@@ -246,17 +246,6 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         return this.previewItems[this.previewIndex] ?? null;
     }
 
-    public get previewJson(): string {
-        const item = this.previewSelected;
-        if (!item) {
-            return '';
-        }
-        if (this.previewJsonCache?.item !== item) {
-            this.previewJsonCache = { item, text: JSON.stringify(item.document ?? null, null, 2) };
-        }
-        return this.previewJsonCache.text;
-    }
-
     public previewItemTitle(item: ICalculationPreviewTimelineItem): string {
         return item.role === 'input' ? (this.schema?.name || item.label) : item.label;
     }
@@ -272,7 +261,13 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
             return;
         }
         this.previewIndex = index;
+        this.previewJson = this.stringifyPreviewItem();
         this.previewViewLoading = 0;
+    }
+
+    private stringifyPreviewItem(): string {
+        const item = this.previewSelected;
+        return item ? JSON.stringify(item.document ?? null, null, 2) : '';
     }
 
     public onPreviewViewLoadingChange(loading: boolean): void {
@@ -932,7 +927,6 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
             if (previewFields) {
                 this.previewDiscoveryWarning = this.calculationPreview.needsDiscoveryWarning(result);
             } else {
-                this.previewDiscoveryWarning = false;
                 this.showPreviewResult(result);
             }
         } catch (error) {
@@ -941,7 +935,9 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
                 this.previewRequiredFields = this.calculationPreview.updateRequiredFields(this.previewRequiredFields, validation);
                 this.previewMissingFields = [...validation.missingFields];
                 if (!previewFields) {
-                    this.showMissingValues();
+                    // The form takes the new requirements, then the results screen lists what is missing.
+                    this.changeDetectorRef.detectChanges();
+                    this.showResults();
                 }
             }
             console.error(error);
@@ -959,14 +955,8 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         this.previewIncomplete = false;
         this.previewDiscoveryWarning = false;
         this.previewTab = 'doc';
-        this.previewJsonCache = null;
+        this.previewJson = '';
         this.previewViewLoading = 0;
-    }
-
-    /** 422 from Preview: the form takes the new requirements, then the results screen lists what is missing. */
-    private showMissingValues(): void {
-        this.changeDetectorRef.detectChanges();
-        this.showResults();
     }
 
     private showPreviewResult(result: ICalculationPreviewResult): void {
@@ -976,6 +966,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         this.previewItems = this.calculationPreview.getTimeline(result);
         this.previewIncomplete = result.incomplete.length > 0 || (!this.previewItems.length && this.previewProblems.length > 0);
         this.previewIndex = Math.max(0, this.previewItems.length - 1);
+        this.previewJson = this.stringifyPreviewItem();
         this.screen = 'presults';
     }
 
