@@ -409,7 +409,7 @@ describe('@unit preview database wrapper', () => {
         assert.equal(db.records(VcDocument).length, 3);
     });
 
-    it('returns the saved documents before the end documents and marks only the end documents final', async () => {
+    it('returns saved and unsaved ends but marks only the last saved output final', async () => {
         const step = previewStep();
         const saved = await inPreview(step, async () => ({
             intermediate: await server.saveVC({ policyId, owner: 'did:a', tag: 'save_intermediate', document: { credentialSubject: [{ area: 1 }] } }),
@@ -422,11 +422,13 @@ describe('@unit preview database wrapper', () => {
         assert.deepEqual(response.documents.map(({ source, target, final }) => ({ source, target, final })), [
             { source: 'save_intermediate', target: null, final: false },
             { source: 'save_final', target: 'wait', final: true },
-            { source: 'math_end', target: null, final: true }
+            { source: 'math_end', target: null, final: false },
+            { source: 'math_end', target: null, final: false }
         ]);
         assert.equal(response.documents[0].document.id, saved.intermediate.id);
         assert.equal(response.documents[1].document.id, saved.final.id);
-        assert.deepEqual(response.documents[2].document, [unsaved, null]);
+        assert.deepEqual(response.documents[2].document, unsaved);
+        assert.equal(response.documents[3].document, null);
     });
 
     it('returns the end version of a saved document that a later block changed without saving it again', async () => {
@@ -461,4 +463,88 @@ describe('@unit preview database wrapper', () => {
     it('returns no documents when the preview wrote nothing and reached no end', () => {
         assert.deepEqual(buildPreviewResponse(previewStep(), {}).documents, []);
     });
+    it('keeps the last save of each completed branch final beside a failed branch', async () => {
+        const step = previewStep();
+        const input = { document: { id: 'urn:uuid:input', credentialSubject: [{ amount: 2 }] } };
+        await inPreview(step, async () => {
+            await server.saveVC({ ...input, policyId, tag: 'input' });
+            await step.previewBranches.run(async () => {
+                await server.saveVC({ policyId, tag: 'first', document: { id: 'urn:uuid:first', credentialSubject: [{ total: 4 }] } });
+                const last = await server.saveVC({ policyId, tag: 'last', document: { id: 'urn:uuid:last', credentialSubject: [{ total: 8 }] } });
+                step.addPreviewDocument('last', null, { data: last });
+            });
+            await step.previewBranches.run(async () => {
+                await server.saveVC({ policyId, tag: 'failed', document: { credentialSubject: [{ total: 99 }] } });
+                step.addError(new Error('calculation failed'), 'customLogicBlock');
+            });
+        });
+        const response = buildPreviewResponse(step, input);
+        assert.deepEqual(response.documents.filter((item) => item.final).map((item) => item.document.tag), ['last']);
+        assert.equal(response.errors.length, 1);
+        assert.equal(db.records(VcDocument).length, 3);
+    });
+
+    it('marks only the last record in a saved batch final and excludes a saved input', async () => {
+        const step = previewStep();
+        const input = { document: { id: 'urn:uuid:input', credentialSubject: [{ total: 1 }] } };
+        await inPreview(step, async () => {
+            const rows = await server.saveVC([
+                { ...input, policyId, tag: 'input' },
+                { policyId, tag: 'a', document: { id: 'urn:uuid:a', credentialSubject: [{ total: 2 }] } },
+                { policyId, tag: 'b', document: { id: 'urn:uuid:b', credentialSubject: [{ total: 3 }] } }
+            ]);
+            step.addPreviewDocument('batch', null, { data: rows });
+        });
+        const response = buildPreviewResponse(step, input);
+        assert.deepEqual(response.documents.map((item) => item.final), [false, false, true]);
+    });
+
+    it('uses the latest save operation rather than first insertion order', async () => {
+        const step = previewStep();
+        await inPreview(step, async () => {
+            const first = await server.saveVC({ policyId, tag: 'first', document: { credentialSubject: [{ total: 1 }] } });
+            await server.saveVC({ policyId, tag: 'second', document: { credentialSubject: [{ total: 2 }] } });
+            const last = await server.saveVC({ ...first, document: { credentialSubject: [{ total: 3 }] } });
+            step.addPreviewDocument('last', null, { data: last });
+        });
+        const response = buildPreviewResponse(step, {});
+        assert.deepEqual(response.documents.filter((item) => item.final).map((item) => item.document.tag), ['first']);
+        assert.equal(response.documents.find((item) => item.final).document.document.credentialSubject[0].total, 3);
+    });
+
+    it('does not mark the saved input final when the branch only saves its input', async () => {
+        const step = previewStep();
+        const input = { document: { id: 'urn:uuid:input', credentialSubject: [{ amount: 2 }] } };
+        await inPreview(step, async () => {
+            const saved = await server.saveVC({ ...input, policyId });
+            step.addPreviewDocument('input', null, { data: saved });
+        });
+        assert.deepEqual(buildPreviewResponse(step, input).documents.map((item) => item.final), [false]);
+    });
+
+    it('marks an existing document saved by a completed branch final without listing unrelated updates', async () => {
+        const step = previewStep();
+        await inPreview(step, async () => {
+            const row = await server.getVcDocument({ _id: new ObjectId(ID_A) });
+            const saved = await server.saveVC({ ...row, document: { credentialSubject: [{ area: 99 }] } });
+            step.addPreviewDocument('saved_existing', null, { data: saved });
+        });
+        const response = buildPreviewResponse(step, {});
+        assert.equal(response.documents.length, 1);
+        assert.equal(response.documents[0].final, true);
+        assert.equal(response.documents[0].document.document.credentialSubject[0].area, 99);
+        assert.deepEqual(getPreviewSavedDocuments(step), []);
+        assert.equal(db.records(VcDocument).find((row) => row.id === ID_A).document.credentialSubject[0].area, 10);
+    });
+
+    it('does not mark a document removed from the temporary database final', async () => {
+        const step = previewStep();
+        await inPreview(step, async () => {
+            const saved = await server.saveVC({ policyId, document: { credentialSubject: [{ total: 2 }] } });
+            step.addPreviewDocument('saved', null, { data: saved });
+            await server.remove(VcDocument, saved);
+        });
+        assert.equal(buildPreviewResponse(step, {}).documents.some((item) => item.final), false);
+    });
+
 });

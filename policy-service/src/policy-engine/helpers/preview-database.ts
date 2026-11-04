@@ -507,14 +507,15 @@ class PreviewDatabase {
             return await this.saveMany(entityClass, item, filter);
         }
         const id = getRecordId(item);
-        if (!id && !filter) {
-            return await this.insert(entityClass, item);
+        const existing = id || filter ? await this.findOne(entityClass, filter || id) : null;
+        const result = existing
+            ? this.assign(entityClass, existing, item)
+            : await this.insert(entityClass, item);
+        const savedId = getRecordId(result);
+        if (SAVED_DOCUMENT_ENTITIES.includes(entityClass.name) && savedId) {
+            getActivePreview()?.previewBranches?.save(savedId);
         }
-        const existing = await this.findOne(entityClass, filter || id);
-        if (existing) {
-            return this.assign(entityClass, existing, item);
-        }
-        return await this.insert(entityClass, item);
+        return result;
     }
 
     public async saveMany(entityClass: EntityClass, items: unknown[], filter?: unknown): Promise<unknown[]> {
@@ -601,6 +602,13 @@ export function createPreviewDatabaseServer(target: DatabaseServer, dryRunId: st
             };
         }
     });
+}
+
+export function getPreviewSavedDocumentIds(actionStatus: RecordActionStep): Set<string> {
+    const store = stores.get(actionStatus);
+    return new Set(SAVED_DOCUMENT_ENTITIES.flatMap((name) => [...(store?.entities.get(name)?.entries() ?? [])])
+        .filter(([, entry]) => !!entry.record)
+        .map(([id]) => id));
 }
 
 export function getPreviewSavedDocuments(actionStatus: RecordActionStep): Record<string, unknown>[] {

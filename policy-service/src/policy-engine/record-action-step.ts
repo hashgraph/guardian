@@ -1,5 +1,6 @@
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { PolicyLink } from './interfaces/index.js';
+import { PreviewBranches } from './helpers/preview-branches.js';
 
 type Callback = (id: string, timestamp: number, errors: { message: string; stack?: string }[]) => void;
 
@@ -60,6 +61,7 @@ export class RecordActionStep {
     public readonly syncActions: boolean;
     public readonly withHistory: boolean;
     public readonly preview: boolean;
+    public readonly previewBranches: PreviewBranches | null;
     private readonly results: any[] = [];
     private readonly errors: IActionError[] = [];
     private readonly actionsMap: Set<string> = new Set();
@@ -81,6 +83,7 @@ export class RecordActionStep {
         this.syncActions = syncActions;
         this.withHistory = withHistory;
         this.preview = preview;
+        this.previewBranches = preview ? new PreviewBranches() : null;
     }
 
     public checkCycle(link: PolicyLink<any>) {
@@ -116,6 +119,7 @@ export class RecordActionStep {
             return;
         }
         const data = state && typeof state === 'object' ? Reflect.get(state, 'data') : undefined;
+        this.previewBranches.finish();
         this.previewDocuments.push({
             source,
             target: target?.tag ?? null,
@@ -169,6 +173,7 @@ export class RecordActionStep {
         const stack = err instanceof Error ? err.stack : undefined;
         const errorData = err && typeof err === 'object' ? Reflect.get(err, 'data') : undefined;
         this.errors.push({ message, stack, blockType, errorData });
+        this.previewBranches?.fail();
     }
 
     public getErrors(): IActionError[] {

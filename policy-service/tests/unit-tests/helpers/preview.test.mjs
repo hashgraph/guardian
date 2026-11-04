@@ -144,7 +144,7 @@ describe('@unit preview helpers', function () {
             assert.equal(res.body.trackingId, seen.step.id);
             assert.deepEqual(res.body.input, { id: 'input-1' });
             assert.deepEqual(res.body.documents, [
-                { source: 'form', target: 'save', blockType: 'sendToGuardianBlock', document: { id: 'doc-1' }, final: true }
+                { source: 'form', target: 'save', blockType: 'sendToGuardianBlock', document: { id: 'doc-1' }, final: false }
             ]);
             assert.deepEqual(res.body.calculations, []);
             assert.deepEqual(res.body.fields, []);
@@ -367,7 +367,7 @@ describe('@unit preview helpers', function () {
             const document = vc('urn:uuid:final', 42);
             action.saveResult({ data: document });
             action.addPreviewDocument('math', { tag: 'wait', blockType: 'buttonBlock' }, { data: document });
-            assert.deepEqual(buildPreviewResponse(action, {}).documents, action.getPreviewDocuments().map((item) => ({ ...item, final: true })));
+            assert.deepEqual(buildPreviewResponse(action, {}).documents, action.getPreviewDocuments().map((item) => ({ ...item, final: false })));
             assert.equal(buildPreviewResponse(action, {}).documents.length, 1);
         });
 

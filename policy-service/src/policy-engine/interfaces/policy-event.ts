@@ -141,7 +141,9 @@ export class PolicyLink<T> {
             if (actionStatus) {
                 actionStatus.inc();
 
-                const res = this.callback.call(this.target, event);
+                const res = actionStatus.previewBranches
+                    ? actionStatus.previewBranches.run(() => this.callback.call(this.target, event))
+                    : this.callback.call(this.target, event);
 
                 if (typeof res?.then === 'function') {
                     res.then((result) => {
@@ -186,7 +188,9 @@ export class PolicyLink<T> {
         if (actionStatus) {
             actionStatus.inc()
 
-            const res = await this.callback.bind(this.target)(event);
+            const res = actionStatus.previewBranches
+                ? await actionStatus.previewBranches.run(() => this.callback.call(this.target, event))
+                : await this.callback.bind(this.target)(event);
 
             actionStatus.dec()
 
