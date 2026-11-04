@@ -2392,9 +2392,22 @@
     font-size: 14px;
     color: var(--guardian-font-color-secondary, #848FA9);
     flex-shrink: 0;
+    flex-wrap: wrap;
     position: sticky;
     top: 0;
     z-index: 5;
+}
+
+.sc-preview-spacer {
+    flex: 1 1 auto;
+}
+
+.sc-preview-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    cursor: pointer;
 }
 
 .sc-view-pill {

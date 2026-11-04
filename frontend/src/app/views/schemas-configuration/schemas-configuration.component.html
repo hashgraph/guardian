@@ -764,6 +764,15 @@
                             <span>View as:</span>
                             <button class="sc-view-pill" [class.active]="previewPill === 'submitter'" (click)="setPreviewPill('submitter')">Submitter</button>
                             <button class="sc-view-pill" [class.active]="previewPill === 'readonly'" (click)="setPreviewPill('readonly')">Read-only</button>
+                            <span class="sc-preview-spacer"></span>
+                            <label class="sc-preview-meta" for="scFieldMetadata">
+                                <p-toggleswitch
+                                    inputId="scFieldMetadata"
+                                    [ngModel]="formPreferences.showFieldMetadata$ | async"
+                                    (onChange)="formPreferences.setShowFieldMetadata($event.checked)">
+                                </p-toggleswitch>
+                                Show field metadata
+                            </label>
                         </div>
                         <div class="sc-preview-viewport">
                             @for (key of [previewKey]; track key) {

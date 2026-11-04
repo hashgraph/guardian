@@ -129,6 +129,21 @@ export class FieldForm {
     public rootForm: FieldForm;
     public keepDefaultLabels: boolean = false;
     public errorsRevealed = false;
+    public showMetadata = false;
+    /** Dot path of the field with the row index of every array it sits in. */
+    public metadataPath(item: IFieldControl<any>): string {
+        const scope = (this.previewPath() || '').split('.').filter(Boolean);
+        const own = (item.path || item.name).split('.');
+        const depth = scope.filter((part) => !/^\d+$/.test(part)).length + 1;
+        const lead = own.slice(0, Math.max(0, own.length - depth));
+        return [...lead, ...scope, item.name].join('.');
+    }
+
+    /** True when the field is shown or hidden by a condition of this schema. */
+    public isConditional(item: IFieldControl<any>): boolean {
+        return this.conditionFields.has(item.name);
+    }
+
     private arrayGroupCache: Map<IFieldControl<any>, IArrayGroupEntry[]> | null = null;
     private fieldOrder: Map<string, number> | null = null;
 

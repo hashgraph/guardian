@@ -36,6 +36,9 @@
                   }
                 </div>
                 <!-- slot for field help text (7193) -->
+                @if (showMetadata && !isHelpText(item)) {
+                  <ng-container *ngTemplateOutlet="sfMeta; context: { $implicit: item }"></ng-container>
+                }
               }
               @if (isHelpText(item)) {
                 <div
@@ -390,6 +393,9 @@
                       <span class="sf-chip">Optional</span>
                     }
                   </div>
+                  @if (showMetadata) {
+                    <ng-container *ngTemplateOutlet="sfMeta; context: { $implicit: item }"></ng-container>
+                  }
                     @let fx = getFieldFormulas(item);
                     @if (fx.length) {
                       <app-field-formulas
@@ -1118,3 +1124,17 @@
     [innerHTML]="suggestPopoverValue"
   ></div>
 </p-popover>
+
+<ng-template #sfMeta let-item>
+  <div class="sf-meta" [attr.data-meta-id]="item.id">
+    <code>{{ item.name }}</code>
+    <span class="sf-chip">{{ metaType(item) }}</span>
+    @if (item.path) {
+      <span class="sf-meta-path">{{ metaPath(item) }}</span>
+      <button type="button" class="sf-meta-copy" (click)="copyPath(item)">Copy path</button>
+    }
+    @for (tag of metaTags(item); track tag.text) {
+      <span class="sf-chip" [attr.title]="tag.title">{{ tag.text }}</span>
+    }
+  </div>
+</ng-template>

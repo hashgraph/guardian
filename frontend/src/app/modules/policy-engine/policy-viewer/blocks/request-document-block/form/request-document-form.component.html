@@ -45,6 +45,24 @@
           [dataForm]="dataForm"
           (draftImported)="onDraftImported($event)">
         </request-draft-file-actions>
+        <div class="form-menu-sep" role="separator"></div>
+        <div
+          class="form-menu-switch"
+          role="menuitemcheckbox"
+          tabindex="0"
+          [attr.aria-checked]="!!(formPreferences.showFieldMetadata$ | async)"
+          (click)="$event.stopPropagation(); formPreferences.setShowFieldMetadata(!formPreferences.showFieldMetadata)"
+          (keydown.enter)="formPreferences.setShowFieldMetadata(!formPreferences.showFieldMetadata)"
+          (keydown.space)="$event.preventDefault(); formPreferences.setShowFieldMetadata(!formPreferences.showFieldMetadata)">
+          <span>Show field metadata</span>
+          <p-toggleswitch
+            tabindex="-1"
+            [ngModel]="formPreferences.showFieldMetadata$ | async"
+            [readonly]="true"
+            (click)="$event.preventDefault()">
+          </p-toggleswitch>
+        </div>
+        <div class="form-menu-hint">Key, type, path and schema details under each field label</div>
       </div>
     </div>
   }

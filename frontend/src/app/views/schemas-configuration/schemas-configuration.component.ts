@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpResponse } from '@angular/common/http';
 import { EMPTY, Observable, Subject, Subscription, firstValueFrom, forkJoin, of } from 'rxjs';
 import { IPFSService } from 'src/app/services/ipfs.service';
+import { SchemaFormPreferencesService } from 'src/app/services/schema-form-preferences.service';
 import { catchError, debounceTime, distinctUntilChanged, map, shareReplay, switchMap, takeUntil } from 'rxjs/operators';
 import { DefaultFieldDictionary, DocumentGenerator, IFormulaLink, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ModuleStatus, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus, ISchemaArrayDependency, ISchemaArrayDependencyMapping, DEFAULT_IWA_VERSION, IwaVersion, resolveIwaVersion, IPropertySuggestionResult, IPropertySuggestionRequest } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
@@ -870,6 +871,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         formulasService: FormulasService,
         policyEngineService: PolicyEngineService,
         profileService: ProfileService,
+        public formPreferences: SchemaFormPreferencesService,
     ) {
         this.fieldFormulas = new SchemaFieldFormulas(
             formulasService,
