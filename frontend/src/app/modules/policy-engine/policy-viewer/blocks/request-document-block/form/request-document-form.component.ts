@@ -140,7 +140,8 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     public previewVisited = new Set<number>();
     public previewIndex: number = 0;
     public previewProblems: ICalculationPreviewProblem[] = [];
-    public previewIncomplete: boolean = false;
+    public previewShowErrors: boolean = false;
+    public previewExpanded: boolean = false;
     public previewDiscoveryWarning: boolean = false;
     public previewTab: 'doc' | 'json' = 'doc';
     public previewJson = '';
@@ -249,13 +250,25 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     }
 
     public get previewHeading(): string {
-        return this.previewIncomplete ? 'The preview is incomplete' : 'Preview results';
+        return this.previewShowErrors ? 'The preview is incomplete' : 'Preview results';
     }
 
     public get previewLead(): string {
-        return this.previewIncomplete
+        return this.previewShowErrors
             ? 'A block in the calculation chain stopped. Fix the cause and run Preview again.'
             : 'Temporary documents produced by the policy\'s calculation chain from your current values, in chain order. Nothing was created, sent to Hedera or minted.';
+    }
+
+    public isPreviewItemVisible(index: number): boolean {
+        const item = this.previewItems[index];
+        return this.previewExpanded || item.role === 'input' || item.final === true
+            || (!this.previewItems.some((entry) => entry.final === true) && index === this.previewItems.length - 1);
+    }
+
+    public showPreviewErrors(): void {
+        if (this.previewProblems.length) {
+            this.previewShowErrors = true;
+        }
     }
 
     public get previewSelected(): IPreviewItemView | null {
@@ -1017,7 +1030,8 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         this.previewVisited.clear();
         this.previewIndex = 0;
         this.previewProblems = [];
-        this.previewIncomplete = false;
+        this.previewShowErrors = false;
+        this.previewExpanded = false;
         this.previewDiscoveryWarning = false;
         this.previewTab = 'doc';
         this.previewJson = '';
@@ -1030,8 +1044,8 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         this.resetPreviewResult();
         this.previewProblems = this.calculationPreview.getProblems(result);
         this.previewItems = this.calculationPreview.getTimeline(result).map((item) => this.toPreviewItemView(item));
-        this.previewIncomplete = result.incomplete.length > 0 || (!this.previewItems.length && this.previewProblems.length > 0);
-        this.previewIndex = Math.max(0, this.previewItems.length - 1);
+        const finalIndex = this.previewItems.findIndex((item) => item.final === true);
+        this.previewIndex = finalIndex < 0 ? Math.max(0, this.previewItems.length - 1) : finalIndex;
         this.previewVisited.add(this.previewIndex);
         this.previewJson = this.stringifyPreviewItem();
         this.screen = 'presults';

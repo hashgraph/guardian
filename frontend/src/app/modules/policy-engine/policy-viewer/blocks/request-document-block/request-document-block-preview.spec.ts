@@ -136,55 +136,69 @@ describe('request document preview wiring', () => {
             { role: 'result', label: 'save', blockType: null, source: 'form', target: 'save', document: { id: 'vc-1' }, title: 'save', sub: 'save' },
         ]);
         expect(component.previewSelected?.document).toEqual({ id: 'vc-1' });
-        expect(component.previewIncomplete).toBeFalse();
+        expect(component.previewShowErrors).toBeFalse();
         expect(component.previewHeading).toBe('Preview results');
         expect(component.issues).toEqual([]);
     });
 
-    it('selects the last result when the chain has several documents', async () => {
+    it('selects the first final result rather than the last list item', async () => {
         const chain = [
             { source: 'save_intermediate', target: null, final: false, document: { document: { id: 'vc-1' } } },
             { source: 'math', target: 'save_final', final: true, document: { document: { id: 'vc-2' } } },
+            { source: 'later', target: null, final: false, document: { document: { id: 'vc-3' } } },
         ];
         const { component } = form([Promise.resolve(response(['amount'], [], chain))], blockParent());
         component.previewMode = true;
         await component.onStep();
-        expect(component.previewItems.length).toBe(2);
+        expect(component.previewItems.length).toBe(3);
         expect(component.previewIndex).toBe(1);
         expect(component.previewSelected?.document).toEqual({ id: 'vc-2' });
     });
 
-    it('lists block errors as notices and still shows the documents that were calculated', async () => {
+    it('keeps successful results and opens block errors only through the incomplete result action', async () => {
         const { component } = form([Promise.resolve(response(['amount'], [], saved, [scriptError]))], blockParent());
         component.previewMode = true;
         await component.onStep();
         expect(component.previewProblems).toEqual([{ blockType: 'customLogicBlock', message: 'rate is required', errorData: null }]);
         expect(component.screen).toBe('presults');
         expect(component.previewItems.length).toBe(1);
-        expect(component.previewIncomplete).toBeFalse();
-    });
-
-    it('lists block errors as notices and shows no document when none was calculated', async () => {
-        const { component } = form([Promise.resolve(response(['amount'], [], [], [scriptError]))], blockParent());
-        component.previewMode = true;
-        await component.onStep();
-        expect(component.previewProblems).toEqual([{ blockType: 'customLogicBlock', message: 'rate is required', errorData: null }]);
-        expect(component.screen).toBe('presults');
-        expect(component.previewItems).toEqual([]);
+        expect(component.previewShowErrors).toBeFalse();
+        expect(component.previewShowErrors).toBeFalse();
+        expect(component.previewHeading).toBe('Preview results');
+        component.showPreviewErrors();
+        expect(component.previewShowErrors).toBeTrue();
         expect(component.previewHeading).toBe('The preview is incomplete');
     });
 
-    it('shows no document of an incomplete result', async () => {
+    it('opens results before error details when no document was calculated', async () => {
+        const { component } = form([Promise.resolve(response(['amount'], [], [], [scriptError]))], blockParent());
+        component.previewMode = true;
+        await component.onStep();
+        expect(component.previewItems).toEqual([]);
+        expect(component.previewHeading).toBe('Preview results');
+        expect(component.previewShowErrors).toBeFalse();
+        component.showPreviewErrors();
+        expect(component.previewHeading).toBe('The preview is incomplete');
+    });
+
+    it('keeps the chain and selects the last document for an incomplete result', async () => {
         const incomplete = normalizePreviewResult({
-            fields: ['amount'], documents: saved,
+            input: { document: { id: 'input' } }, fields: ['amount'],
+            documents: [...saved, { final: false, document: { document: { id: 'last' } } }],
             incomplete: [{ blockType: 'customLogicBlock', reason: 'the operator $elemMatch' }],
         });
         const { component } = form([Promise.resolve(incomplete)], blockParent());
         component.previewMode = true;
         await component.onStep();
-        expect(component.previewIncomplete).toBeTrue();
-        expect(component.previewItems).toEqual([]);
+        expect(component.previewItems.length).toBe(3);
+        expect(component.previewSelected.document).toEqual({ id: 'last' });
+        expect(component.previewHeading).toBe('Preview results');
         expect(component.previewProblems[0].message).toContain('the operator $elemMatch');
+        expect(component.isPreviewItemVisible(0)).toBeTrue();
+        expect(component.isPreviewItemVisible(1)).toBeFalse();
+        expect(component.isPreviewItemVisible(2)).toBeTrue();
+        component.showPreviewErrors();
+        expect(component.previewHeading).toBe('The preview is incomplete');
     });
 
     it('opens the results screen with the missing values when Preview answers 422', async () => {
@@ -880,6 +894,57 @@ describe('request document preview wiring', () => {
         expect(component.dataForm.getRawValue()).toEqual({ amount: 5 });
         expect(dialogs.length).toBe(0);
         component.destroy$.next();
+    });
+
+    it('keeps all branches and resets intermediate expansion for a new preview', async () => {
+        const result = normalizePreviewResult({ sameSchema: true, input: { document: { id: 'input' } }, documents: [
+            { final: false, document: { document: { id: 'middle' } } },
+            { final: true, sameSchema: true, document: { document: { id: 'matching' } } },
+            { final: true, sameSchema: false, document: { document: { id: 'other' } } },
+        ] });
+        const { component } = form([Promise.resolve(result), Promise.resolve(result)], blockParent());
+        component.previewMode = true;
+        await component.onStep();
+        expect(component.previewItems.length).toBe(4);
+        expect(component.previewSelected.document).toEqual({ id: 'matching' });
+        expect(component.isPreviewItemVisible(0)).toBeTrue();
+        expect(component.isPreviewItemVisible(1)).toBeFalse();
+        expect(component.isPreviewItemVisible(2)).toBeTrue();
+        expect(component.isPreviewItemVisible(3)).toBeTrue();
+        component.previewExpanded = true;
+        expect(component.isPreviewItemVisible(1)).toBeTrue();
+        await component.onStep();
+        expect(component.previewExpanded).toBeFalse();
+    });
+
+    it('opens the input when no saved document is returned', async () => {
+        const result = normalizePreviewResult({ input: { document: { id: 'input' } }, errors: [scriptError] });
+        const { component } = form([Promise.resolve(result)], blockParent());
+        component.previewMode = true;
+        await component.onStep();
+        expect(component.previewSelected.document).toEqual({ id: 'input' });
+        expect(component.previewHeading).toBe('Preview results');
+        expect(component.previewShowErrors).toBeFalse();
+        component.showPreviewErrors();
+        expect(component.previewHeading).toBe('The preview is incomplete');
+    });
+
+    it('selects the last returned unsaved output when no final exists', async () => {
+        const unsaved = { credentialSubject: [{ type: 'Output', total: 6 }] };
+        const result = normalizePreviewResult({ input: { document: { id: 'input' } }, documents: [
+            { source: 'save', final: false, document: { id: 'stored-record', document: { id: 'saved' } } },
+            { source: 'math', final: false, document: { document: unsaved } },
+        ] });
+        const { component } = form([Promise.resolve(result)], blockParent());
+        component.previewMode = true;
+        await component.onStep();
+        expect(component.previewSelected.document).toEqual(unsaved);
+        expect(component.previewSelected.final).toBeFalse();
+        expect(component.isPreviewItemVisible(2)).toBeTrue();
+        expect(component.isPreviewItemVisible(1)).toBeFalse();
+        component.previewExpanded = true;
+        component.selectPreviewItem(1);
+        expect(component.previewSelected.document).toEqual({ id: 'saved' });
     });
 
 });

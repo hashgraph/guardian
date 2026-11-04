@@ -35,9 +35,11 @@ export interface ICalculationPreviewDocument {
     blockType: string | null;
     document: unknown;
     final?: boolean;
+    sameSchema?: boolean;
 }
 
 export interface ICalculationPreviewResult {
+    sameSchema: boolean;
     trackingId: string;
     input: unknown;
     documents: ICalculationPreviewDocument[];
@@ -60,6 +62,8 @@ export interface ICalculationPreviewError {
 }
 
 export interface ICalculationPreviewTimelineItem {
+    final?: boolean;
+    sameSchema?: boolean;
     role: 'input' | 'result';
     label: string;
     blockType: string | null;
@@ -76,6 +80,7 @@ export interface ICalculationPreviewProblem {
 
 export function normalizePreviewResult(raw: any): ICalculationPreviewResult {
     return {
+        sameSchema: raw?.sameSchema === true,
         trackingId: typeof raw?.trackingId === 'string' ? raw.trackingId : '',
         input: raw?.input ?? null,
         documents: Array.isArray(raw?.documents) ? raw.documents : [],
@@ -161,13 +166,9 @@ export class CalculationPreviewService {
 
     /**
      * The chain as the form shows it: the input first, then one item per returned document.
-     * An incomplete result has no documents.
      */
     public getTimeline(result: ICalculationPreviewResult): ICalculationPreviewTimelineItem[] {
         const items: ICalculationPreviewTimelineItem[] = [];
-        if (result.incomplete.length) {
-            return items;
-        }
         const input = this.getInputDocument(result.input);
         if (input) {
             items.push({
@@ -187,6 +188,8 @@ export class CalculationPreviewService {
                 if (document) {
                     items.push({
                         role: 'result',
+                        ...(typeof item.final === 'boolean' ? { final: item.final } : {}),
+                        ...(typeof item.sameSchema === 'boolean' ? { sameSchema: item.sameSchema } : {}),
                         label: name,
                         blockType: item.blockType ?? null,
                         source: item.source ?? null,
