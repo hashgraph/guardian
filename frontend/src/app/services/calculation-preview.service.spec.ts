@@ -23,7 +23,7 @@ describe('CalculationPreviewService', () => {
                 Reflect.set(root, 'table', 'inline');
             }
         });
-        toast = jasmine.createSpyObj<ToastService>('ToastService', ['error', 'warn']);
+        toast = jasmine.createSpyObj<ToastService>('ToastService', ['error']);
         TestBed.configureTestingModule({
             providers: [
                 CalculationPreviewService,
@@ -197,33 +197,36 @@ describe('CalculationPreviewService', () => {
         expect(service.updateRequiredFields(null, result([], []))).toEqual([]);
     });
 
-    it('lists every returned document for the viewer, named by the block it was going to', () => {
+    it('lists the input first and then every returned document, named by the block it was going to', () => {
         const preview = normalizePreviewResult({
+            input: { document: { id: 'vc-input' } },
             documents: [
-                { source: 't09_math', target: 't09_save_a', document: { document: { id: 'vc-a' } } },
-                { source: 't09_math', target: 't09_save_b', document: [{ document: { id: 'vc-b1' } }, { document: { id: 'vc-b2' } }] },
+                { source: 't09_math', target: 't09_save_a', blockType: 'sendToGuardianBlock', document: { document: { id: 'vc-a' } } },
+                { source: 't09_math', target: 't09_save_b', blockType: 'sendToGuardianBlock', document: [{ document: { id: 'vc-b1' } }, { document: { id: 'vc-b2' } }] },
                 { source: 't09_end', target: null, document: { document: { id: 'vc-end' } } },
             ],
         });
-        expect(service.getViewerDocuments(preview)).toEqual([
-            { label: '1. t09_save_a', document: { id: 'vc-a' }, final: false },
-            { label: '2. t09_save_b', document: { id: 'vc-b1' }, final: false },
-            { label: '3. t09_save_b', document: { id: 'vc-b2' }, final: false },
-            { label: '4. t09_end', document: { id: 'vc-end' }, final: false },
+        expect(service.getTimeline(preview)).toEqual([
+            { role: 'input', label: 'Your form values', blockType: null, source: null, target: null, document: { id: 'vc-input' } },
+            { role: 'result', label: 't09_save_a', blockType: 'sendToGuardianBlock', source: 't09_math', target: 't09_save_a', document: { id: 'vc-a' } },
+            { role: 'result', label: 't09_save_b', blockType: 'sendToGuardianBlock', source: 't09_math', target: 't09_save_b', document: { id: 'vc-b1' } },
+            { role: 'result', label: 't09_save_b', blockType: 'sendToGuardianBlock', source: 't09_math', target: 't09_save_b', document: { id: 'vc-b2' } },
+            { role: 'result', label: 't09_end', blockType: null, source: 't09_end', target: null, document: { id: 'vc-end' } },
         ]);
     });
 
-    it('keeps the final flag of each returned document for the viewer', () => {
-        const preview = normalizePreviewResult({
-            documents: [
-                { source: 'save_intermediate', target: null, blockType: null, final: false, document: { document: { id: 'vc-a' } } },
-                { source: 'save_final', target: 'wait', blockType: 'interfaceActionBlock', final: true, document: [{ document: { id: 'vc-b' } }] },
-            ],
-        });
-        expect(service.getViewerDocuments(preview)).toEqual([
-            { label: '1. save_intermediate', document: { id: 'vc-a' }, final: false },
-            { label: '2. wait', document: { id: 'vc-b' }, final: true },
+    it('takes an input that is the document itself', () => {
+        const preview = normalizePreviewResult({ input: { id: 'vc-input', credentialSubject: [] } });
+        expect(service.getTimeline(preview)).toEqual([
+            { role: 'input', label: 'Your form values', blockType: null, source: null, target: null, document: { id: 'vc-input', credentialSubject: [] } },
         ]);
+    });
+
+    it('has no input item when the result carries no input', () => {
+        const preview = normalizePreviewResult({
+            documents: [{ source: 'a', target: 'b', blockType: 'mathBlock', document: { document: { id: 'vc-a' } } }],
+        });
+        expect(service.getTimeline(preview).map((item) => item.role)).toEqual(['result']);
     });
 
     it('drops the placeholder file id of a preview table so the viewer reads its csv', () => {
@@ -237,8 +240,8 @@ describe('CalculationPreviewService', () => {
             documents: [{ source: 't04_math', target: 't04_save', document: { document: { credentialSubject: [subject] } } }],
         });
 
-        const [viewer] = service.getViewerDocuments(preview);
-        const shown: any = viewer.document;
+        const [item] = service.getTimeline(preview);
+        const shown: any = item.document;
         expect(JSON.parse(shown.credentialSubject[0].areaTable)).toEqual({ type: 'table', csv: 'year,area\r\n2024,10\r\n2025,20\r\n' });
         expect(JSON.parse(shown.credentialSubject[0].group.rows[0])).toEqual({
             type: 'table', csv: 'Year,Area\r\n2026,30\r\n', columnNames: ['Year', 'Area'], columnKeys: ['year', 'area']
@@ -256,68 +259,66 @@ describe('CalculationPreviewService', () => {
                 { source: 'a', target: 'c', document: { document: null } },
             ],
         });
-        expect(service.getViewerDocuments(preview)).toEqual([]);
+        expect(service.getTimeline(preview)).toEqual([]);
     });
 
-    it('shows an incomplete result as an error toast with its block, once', () => {
-        service.showErrors(normalizePreviewResult({
+    it('returns an empty timeline for an incomplete result, input included', () => {
+        const preview = normalizePreviewResult({
+            input: { document: { id: 'vc-input' } },
+            documents: [{ source: 'sum', target: 'save', blockType: 'sendToGuardianBlock', document: { document: { id: 'vc-1' } } }],
+            incomplete: [{ blockType: 'customLogicBlock', reason: 'the operator $elemMatch' }],
+        });
+        expect(service.getTimeline(preview)).toEqual([]);
+    });
+
+    it('reports an incomplete result as a problem with its block, once', () => {
+        const problems = service.getProblems(normalizePreviewResult({
             errors: [{ message: 'Calculation preview result is incomplete: the operator $elemMatch', blockType: 'customLogicBlock', errorData: null }],
             incomplete: [
                 { blockType: 'customLogicBlock', reason: 'the operator $elemMatch' },
                 { blockType: null, reason: 'an aggregation over VcDocument changed in this preview' },
             ],
         }));
-        expect(toast.error.calls.allArgs()).toEqual([
-            ['Calculation preview result is incomplete: the operator $elemMatch', 'customLogicBlock', { blockErrorData: undefined }],
-            ['Calculation preview result is incomplete: an aggregation over VcDocument changed in this preview', 'Calculation preview'],
+        expect(problems).toEqual([
+            { blockType: 'customLogicBlock', message: 'Calculation preview result is incomplete: the operator $elemMatch' },
+            { blockType: null, message: 'Calculation preview result is incomplete: an aggregation over VcDocument changed in this preview' },
         ]);
     });
 
-    it('shows no document of an incomplete result in the viewer', () => {
-        const preview = normalizePreviewResult({
-            documents: [{ source: 'sum', target: 'save', blockType: 'sendToGuardianBlock', document: { document: { id: 'vc-1' } } }],
-            incomplete: [{ blockType: 'customLogicBlock', reason: 'the operator $elemMatch' }],
-        });
-        expect(service.getViewerDocuments(preview)).toEqual([]);
-    });
-
-    it('warns once without the technical message when field discovery stopped on an error', () => {
-        service.showDiscoveryWarning(normalizePreviewResult({
-            errors: [{ message: 'Calculation returned a non-finite number', blockType: 'mathBlock', errorData: null }],
+    it('reports every block error as a problem and never as a toast', () => {
+        const problems = service.getProblems(normalizePreviewResult({
+            errors: [
+                { message: 'rate is required', blockType: 'customLogicBlock', errorData: { code: 'E1' } },
+                { message: 'no block', blockType: null, errorData: null },
+            ],
         }));
-        expect(toast.warn.calls.allArgs()).toEqual([
-            ['Could not determine every field the calculation needs. Fill in the marked fields and run Preview again.', 'Calculation preview'],
+        expect(problems).toEqual([
+            { blockType: 'customLogicBlock', message: 'rate is required' },
+            { blockType: null, message: 'no block' },
         ]);
         expect(toast.error).not.toHaveBeenCalled();
     });
 
-    it('warns when field discovery returned an incomplete result', () => {
-        service.showDiscoveryWarning(normalizePreviewResult({
+    it('has no problems for a clean result', () => {
+        expect(service.getProblems(normalizePreviewResult({ fields: ['amount'] }))).toEqual([]);
+    });
+
+    it('needs the discovery warning when field discovery stopped on an error', () => {
+        expect(service.needsDiscoveryWarning(normalizePreviewResult({
+            errors: [{ message: 'Calculation returned a non-finite number', blockType: 'mathBlock', errorData: null }],
+        }))).toBeTrue();
+    });
+
+    it('needs the discovery warning when field discovery returned an incomplete result', () => {
+        expect(service.needsDiscoveryWarning(normalizePreviewResult({
             incomplete: [{ blockType: 'customLogicBlock', reason: 'the operator $elemMatch' }],
-        }));
-        expect(toast.warn).toHaveBeenCalledTimes(1);
+        }))).toBeTrue();
     });
 
-    it('does not warn when field discovery finished cleanly', () => {
-        service.showDiscoveryWarning(normalizePreviewResult({ fields: ['amount'], missingFields: ['amount'] }));
-        expect(toast.warn).not.toHaveBeenCalled();
+    it('does not need the discovery warning when field discovery finished cleanly', () => {
+        expect(service.needsDiscoveryWarning(normalizePreviewResult({ fields: ['amount'], missingFields: ['amount'] }))).toBeFalse();
     });
 
-    it('shows every block error as the normal block error toast', () => {
-        const errorData: any = { code: 'E1' };
-        service.showErrors(normalizePreviewResult({
-            errors: [
-                { message: 'rate is required', blockType: 'customLogicBlock', errorData },
-                { message: 'Invalid expression: doubled', blockType: 'requestVcDocumentBlock', errorData: null },
-                { message: 'no block', blockType: null, errorData: null },
-            ],
-        }));
-        expect(toast.error.calls.allArgs()).toEqual([
-            ['rate is required', 'customLogicBlock', { blockErrorData: errorData }],
-            ['Invalid expression: doubled', 'requestVcDocumentBlock', { blockErrorData: undefined }],
-            ['no block', '', { blockErrorData: undefined }],
-        ]);
-    });
     it('keeps indexed paths in errors and applies schema paths to required flags', () => {
         const error = new HttpErrorResponse({ status: 422, error: { data: {
             preview: true, fields: ['amount'], missingFields: ['rows.1.bonus','rows.3.rate']

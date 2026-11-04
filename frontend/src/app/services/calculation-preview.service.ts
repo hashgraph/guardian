@@ -59,10 +59,18 @@ export interface ICalculationPreviewError {
     errorData: IBlockErrorData | null;
 }
 
-export interface ICalculationPreviewViewerDocument {
+export interface ICalculationPreviewTimelineItem {
+    role: 'input' | 'result';
     label: string;
+    blockType: string | null;
+    source: string | null;
+    target: string | null;
     document: unknown;
-    final: boolean;
+}
+
+export interface ICalculationPreviewProblem {
+    blockType: string | null;
+    message: string;
 }
 
 export function normalizePreviewResult(raw: any): ICalculationPreviewResult {
@@ -150,10 +158,25 @@ export class CalculationPreviewService {
         return [...new Set([...result.fields, ...result.missingFields])].sort();
     }
 
-    public getViewerDocuments(result: ICalculationPreviewResult): ICalculationPreviewViewerDocument[] {
-        const documents: ICalculationPreviewViewerDocument[] = [];
+    /**
+     * The chain as the form shows it: the input first, then one item per returned document.
+     * An incomplete result has no documents.
+     */
+    public getTimeline(result: ICalculationPreviewResult): ICalculationPreviewTimelineItem[] {
+        const items: ICalculationPreviewTimelineItem[] = [];
         if (result.incomplete.length) {
-            return documents;
+            return items;
+        }
+        const input = this.getInputDocument(result.input);
+        if (input) {
+            items.push({
+                role: 'input',
+                label: 'Your form values',
+                blockType: null,
+                source: null,
+                target: null,
+                document: this.restorePreviewTables(structuredClone(input))
+            });
         }
         for (const item of result.documents) {
             const name = item.target || item.source || 'Document';
@@ -161,15 +184,26 @@ export class CalculationPreviewService {
             for (const state of states) {
                 const document = state && typeof state === 'object' ? Reflect.get(state, 'document') : null;
                 if (document) {
-                    documents.push({
-                        label: `${documents.length + 1}. ${name}`,
-                        document: this.restorePreviewTables(structuredClone(document)),
-                        final: item.final === true
+                    items.push({
+                        role: 'result',
+                        label: name,
+                        blockType: item.blockType ?? null,
+                        source: item.source ?? null,
+                        target: item.target ?? null,
+                        document: this.restorePreviewTables(structuredClone(document))
                     });
                 }
             }
         }
-        return documents;
+        return items;
+    }
+
+    private getInputDocument(input: unknown): unknown {
+        if (!input || typeof input !== 'object') {
+            return null;
+        }
+        const document = Reflect.get(input, 'document');
+        return document && typeof document === 'object' ? document : input;
     }
 
     private restorePreviewTables(node: unknown): unknown {
@@ -239,23 +273,25 @@ export class CalculationPreviewService {
         return typeof csv === 'string' ? new TextEncoder().encode(csv).length : 0;
     }
 
-    public showDiscoveryWarning(result: ICalculationPreviewResult): void {
-        if (result.errors.length || result.incomplete.length) {
-            this.toastService.warn(
-                'Could not determine every field the calculation needs. Fill in the marked fields and run Preview again.',
-                'Calculation preview'
-            );
-        }
+    /** True when the field discovery stopped on an error or an incomplete block. */
+    public needsDiscoveryWarning(result: ICalculationPreviewResult): boolean {
+        return result.errors.length > 0 || result.incomplete.length > 0;
     }
 
-    public showErrors(result: ICalculationPreviewResult): void {
-        for (const error of result.errors) {
-            this.toastService.error(error.message, error.blockType || '', { blockErrorData: error.errorData || undefined });
-        }
+    /** Errors and incomplete blocks of a result, one line each. */
+    public getProblems(result: ICalculationPreviewResult): ICalculationPreviewProblem[] {
+        const problems: ICalculationPreviewProblem[] = result.errors.map((error) => ({
+            blockType: error.blockType,
+            message: error.message
+        }));
         for (const item of result.incomplete) {
             if (!result.errors.some((error) => error.message.endsWith(item.reason))) {
-                this.toastService.error(`Calculation preview result is incomplete: ${item.reason}`, item.blockType || 'Calculation preview');
+                problems.push({
+                    blockType: item.blockType ?? null,
+                    message: `Calculation preview result is incomplete: ${item.reason}`
+                });
             }
         }
+        return problems;
     }
 }

@@ -9,34 +9,8 @@
     }
     <h2 class="form-heading-title">{{ headerTitle }}</h2>
   </div>
-  @if (previewMode && previewMissingOptions.length && !isSubmitted) {
-    @for (options of [previewMissingOptions]; track options) {
-    <p-select
-      [options]="options"
-      [(ngModel)]="previewMissingPath"
-      (onChange)="onPreviewMissingSelect($event.value)"
-      optionLabel="label"
-      optionValue="value"
-      [placeholder]="'Missing fields: ' + previewMissingOptions.length"
-      class="guardian-dropdown preview-missing-dropdown"
-      panelStyleClass="guardian-dropdown-panel preview-missing-panel"
-      [disabled]="isPreviewBusy"
-      [appendTo]="'body'"
-      >
-      <ng-template pTemplate="selectedItem" let-item>
-        <div class="guardian-dropdown-selected" [truncateTooltip]="item?.label" tooltipPosition="bottom">
-          <span class="guardian-dropdown-label">Missing</span>
-          <span class="guardian-dropdown-item">{{ item?.label }}</span>
-        </div>
-      </ng-template>
-      <ng-template pTemplate="item" let-item>
-        <div class="preview-missing-option" [truncateTooltip]="item.label" tooltipPosition="bottom">{{ item.label }}</div>
-      </ng-template>
-    </p-select>
-    }
-  }
   @if (previewAvailable && !isSubmitted) {
-    <div class="calculation-preview-toggle">
+    <div class="calculation-preview-toggle" title="Run the policy's calculations on these values without creating anything">
       <p-toggleswitch
         inputId="calculationPreview_{{ id }}"
         [ngModel]="previewMode"
@@ -105,9 +79,13 @@
   }
 </nav>
 <div class="form-body" [class.fill]="screen === 'form' && step === 'fill'">
-  @if (loading || isPreviewBusy) {
-    <div class="guardian-loading" [class.preview-loading-overlay]="previewMode">
+  @if (loading || isPreviewBusy || previewViewLoading > 0) {
+    <div class="guardian-loading" [class.preview-loading-overlay]="previewMode || previewViewLoading > 0">
       <div class="form-spinner"></div>
+    </div>
+    <div class="form-busy-text" role="status" [hidden]="!previewMode || !(loading || isPreviewBusy)">
+      <b>Running calculation preview…</b>
+      <span>The policy's calculations run on a temporary copy. Nothing is created or sent.</span>
     </div>
   }
   <div class="form-body-container" [attr.inert]="isPreviewBusy ? '' : null">
@@ -115,7 +93,7 @@
       <div class="form-results">
         <div class="form-results-eyebrow">{{ resultsEyebrow }}</div>
         <h1 class="form-results-title">{{ resultsHeading }}</h1>
-        <p class="form-results-lead">Nothing was submitted. Errors block creation. Rule checks come from the policy's schema rules and don't block it.</p>
+        <p class="form-results-lead">{{ resultsLead }}</p>
         <div class="form-stats">
           <div class="form-stat error"><b>{{ issues.length }}</b>Errors to fix</div>
           <div class="form-stat rule"><b>{{ ruleIssues.length }}</b>Rule checks failed</div>
@@ -136,8 +114,82 @@
             }
           }
         </ng-template>
-        <ng-container *ngTemplateOutlet="issueList; context: { title: 'Errors', kind: 'error', pill: 'Error', items: issues }" />
+        <ng-container *ngTemplateOutlet="issueList; context: { title: previewMode ? 'Missing values' : 'Errors', kind: 'error', pill: issuePill, items: issues }" />
         <ng-container *ngTemplateOutlet="issueList; context: { title: 'Rule checks', kind: 'rule', pill: 'Rule', items: ruleIssues }" />
+      </div>
+    }
+    @if (screen === 'presults') {
+      <div class="form-presults">
+        <div class="form-results-eyebrow">Calculation preview</div>
+        <h1 class="form-results-title">{{ previewHeading }}</h1>
+        <p class="form-results-lead">{{ previewLead }}</p>
+        @for (problem of previewProblems; track $index) {
+          <div class="form-notice form-notice-warn">
+            <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+            <span class="form-notice-text">
+              @if (problem.blockType) {<b>{{ problem.blockType }}:</b> }{{ problem.message }}
+            </span>
+          </div>
+        }
+        @if (!previewIncomplete) {
+          @if (previewItems.length) {
+            <div class="form-pres">
+              <ol class="form-timeline" aria-label="Calculation chain">
+                @for (item of previewItems; track $index; let i = $index) {
+                  <li class="form-tl-item" [class.input]="item.role === 'input'" [class.result]="item.role === 'result'">
+                    <span class="form-tl-node" aria-hidden="true">
+                      @if (item.role === 'result') {
+                        <i class="pi pi-check"></i>
+                      } @else {
+                        <i class="pi pi-file"></i>
+                      }
+                    </span>
+                    <button
+                      type="button"
+                      class="form-tl-card"
+                      [class.on]="i === previewIndex"
+                      [attr.aria-current]="i === previewIndex ? 'true' : null"
+                      (click)="selectPreviewItem(i)">
+                      <b>{{ previewItemTitle(item) }}</b>
+                      <small>{{ previewItemSub(item) }}</small>
+                    </button>
+                  </li>
+                }
+              </ol>
+              @if (previewSelected; as selected) {
+                <div class="form-pres-doc" [class.input]="selected.role === 'input'" [class.result]="selected.role === 'result'">
+                  <div class="form-pres-head">
+                    <span class="form-pill" [class.ok]="selected.role === 'result'">{{ selected.role === 'input' ? 'Input' : 'Result' }}</span>
+                    <b>{{ previewItemTitle(selected) }}</b>
+                    <span class="form-pill">Temporary</span>
+                    <small>{{ previewItemSub(selected) }}</small>
+                    <span class="form-submitted-spacer"></span>
+                    <div class="form-toggle" role="group" aria-label="Document view">
+                      <button type="button" [class.on]="previewTab === 'doc'" [attr.aria-pressed]="previewTab === 'doc'" (click)="previewTab = 'doc'">Document</button>
+                      <button type="button" [class.on]="previewTab === 'json'" [attr.aria-pressed]="previewTab === 'json'" (click)="previewTab = 'json'">JSON</button>
+                    </div>
+                  </div>
+                  @if (previewTab === 'doc') {
+                    @for (shown of [selected]; track shown) {
+                      <app-document-view
+                        [preview]="true"
+                        [document]="shown.document"
+                        [type]="'VC'"
+                        [policyId]="policyId"
+                        [dryRun]="!!dryRun"
+                        (previewLoadingChange)="onPreviewViewLoadingChange($event)">
+                      </app-document-view>
+                    }
+                  } @else {
+                    <pre class="form-submitted-json">{{ previewJson }}</pre>
+                  }
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="form-results-lead">The calculations produced no documents.</p>
+          }
+        }
       </div>
     }
     @if (submitted; as sub) {
@@ -222,7 +274,6 @@
               (form)="initForm($event)"
               (presetApplied)="onPresetApplied()"
               (previewBusyChange)="onPreviewRenderingChange($event)"
-              (previewMissingOptionsChange)="onPreviewMissingOptionsChange($event)"
               (buttons)="onChangeButtons($event)"
               (completionChange)="onCompletionChange($event)"
               (cancelBtnEvent)="handleCancelBtnEvent($event, this)"
@@ -232,6 +283,17 @@
               >
               <div sfNotice>
                 @if (screen === 'form') {
+                @if (previewMode) {
+                  <div class="form-notice form-notice-preview">
+                    <i class="pi pi-calculator" aria-hidden="true"></i>
+                    <span class="form-notice-text">
+                      <b>Calculation preview is on.</b> Preview runs the policy's calculations on these values and shows the documents they produce. Nothing is created, sent to Hedera or minted. {{ previewRequiredText }}
+                      @if (previewDiscoveryWarning) {
+                        <br>Could not determine every field the calculation needs. Fill in the marked fields and run Preview again.
+                      }
+                    </span>
+                  </div>
+                }
                 @if (dryRun) {
                   <div class="form-notice">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6M10 3v6L4.5 19a1.5 1.5 0 001.3 2h12.4a1.5 1.5 0 001.3-2L14 9V3"/></svg>
@@ -436,6 +498,14 @@
       @if (issues.length || ruleIssues.length) {
         <button type="button" class="guardian-button guardian-button-primary" (click)="fixFirstError()">Fix first error</button>
       }
+    </div>
+  </div>
+} @else if (screen === 'presults') {
+  <div class="form-footer">
+    <div class="footer-actions">
+      <button type="button" class="guardian-button guardian-button-secondary" (click)="showForm()">Back to the form</button>
+      <div class="footer-spacer"></div>
+      <button type="button" class="guardian-button guardian-button-primary" [disabled]="loading || isPreviewBusy" (click)="previewAgain()">Preview again</button>
     </div>
   </div>
 } @else if (submitted; as sub) {
