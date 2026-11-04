@@ -19,7 +19,7 @@ export class SchemaFormRailComponent {
     @Input() completion: IFormCompletion | null = null;
     @Input() screen: 'overview' | 'section' = 'overview';
     @Input() activeIndex = 0;
-    /** Sub-schema controls of the active section. */
+    /** Sub-schema cards inside the active section. */
     @Input() cards: IFieldControl<any>[] = [];
     @Input() errorsRevealed = false;
     /** The rail is shown in the drawer: "Hide menu" reads "Close". */

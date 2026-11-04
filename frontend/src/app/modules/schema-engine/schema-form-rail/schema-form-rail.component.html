@@ -59,7 +59,7 @@
           </svg>
         }
       </div>
-      @if (screen === 'section' && activeIndex === i && cards.length > 1) {
+      @if (screen === 'section' && activeIndex === i && cards.length) {
         @for (card of cards; track card.id) {
           <div class="sf-ri sf-ri-sub" tabindex="0" role="button" (click)="selectCard.emit(card)" (keydown.enter)="selectCard.emit(card)">
             <span class="sf-ri-label">{{ cardTitle(card) }}</span>

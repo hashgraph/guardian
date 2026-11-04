@@ -177,19 +177,6 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         return this.hasSections ? this.sections[this.activeIndex] ?? null : null;
     }
 
-    /** Sub-schema controls of the active section. */
-    public get activeCards(): IFieldControl<any>[] {
-        const section = this.activeSection;
-        const visible = (section?.controls ?? []).filter(item => item.isRef);
-        const same = visible.length === this.cardsCache.length && visible.every((item, index) => item === this.cardsCache[index]);
-        if (!same) {
-            this.cardsCache = visible;
-        }
-        return this.cardsCache;
-    }
-
-    private cardsCache: IFieldControl<any>[] = [];
-
     public get formOwner(): FieldForm | null {
         return this.activeSection?.owner ?? this.model;
     }
@@ -745,11 +732,55 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         return true;
     }
 
+    /** Sub-schemas and array rows inside the sub-schema of the active section, for Expand/Collapse all. */
+    public nestedCards: { open: boolean }[] = [];
+    /** The direct sub-schema cards inside the active section, listed under it in the rail. */
+    public activeCards: IFieldControl<any>[] = [];
+
+    private updateNestedCards(): void {
+        const found: { open: boolean }[] = [];
+        const collect = (item: IFieldControl<any>): void => {
+            for (const row of item.list || []) {
+                found.push(row);
+                (row.model?.controls || []).forEach(visit);
+            }
+            (item.model?.controls || []).forEach(visit);
+        };
+        const visit = (item: IFieldControl<any>): void => {
+            if (item.visibility === false || !item.isRef) return;
+            found.push(item);
+            collect(item);
+        };
+        for (const item of this.activeSection?.controls ?? []) {
+            if (item.visibility !== false && item.isRef) collect(item);
+        }
+        this.nestedCards = found;
+        const cards: IFieldControl<any>[] = [];
+        for (const item of this.activeSection?.controls ?? []) {
+            if (item.visibility !== false && item.isRef) {
+                cards.push(...(item.model?.controls || []).filter((child: IFieldControl<any>) => child.isRef && child.visibility !== false));
+            }
+        }
+        const same = cards.length === this.activeCards.length && cards.every((card, index) => card === this.activeCards[index]);
+        if (!same) this.activeCards = cards;
+    }
+
+    public setAllOpen(open: boolean): void {
+        for (const card of this.nestedCards) {
+            card.open = open;
+        }
+        this.changeDetectorRef.detectChanges();
+        this.childForm?.prepareOpenPreviewSections?.();
+        this.changeDetectorRef.detectChanges();
+    }
+
     private recompute(): void {
         const model = this.model;
         if (!model) {
             this.sections = [];
             this.completion = null;
+            this.nestedCards = [];
+            this.activeCards = [];
             this.promotedName = null;
             return;
         }
@@ -764,6 +795,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
                 this.drawerOpen = false;
             }
         }
+        this.updateNestedCards();
         this.promotedName = sections.length ? promotedRootName(model) : null;
         const completion = computeCompletion(model.controls, sections);
         if (!sameCompletion(this.completion, completion)) {
@@ -859,6 +891,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         }
         this.drawerOpen = false;
         change();
+        this.updateNestedCards();
         this.changeDetectorRef.detectChanges();
         if (preview) {
             requestAnimationFrame(() => {
@@ -926,7 +959,9 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             }
             return {
                 text: this.editButtonConfig?.text ?? 'Save Changes',
-                disabled: this.isPreviewLocked || !!this.editButtonConfig?.disabled?.(),
+                // Until the form has sent its button (it exists only once a section is open), fall back to
+                // the root form's own dirty state, as the host does for that button
+                disabled: this.isPreviewLocked || (this.editButtonConfig ? !!this.editButtonConfig.disabled?.() : !this.group.dirty),
                 run: () => this.updatableBtnEvent.emit()
             };
         }
@@ -957,15 +992,6 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     public get percent(): number {
         const { answered = 0, total = 0 } = this.completion ?? {};
         return total ? Math.round((answered / total) * 100) : 0;
-    }
-
-    public setAllOpen(open: boolean): void {
-        for (const card of this.activeCards) {
-            card.open = open;
-        }
-        this.changeDetectorRef.detectChanges();
-        this.childForm?.prepareOpenPreviewSections?.();
-        this.changeDetectorRef.detectChanges();
     }
 
     private scrollToTop(): void {

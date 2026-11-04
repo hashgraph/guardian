@@ -150,7 +150,7 @@
                   }
                 </span>
               }
-              @if (activeCards.length > 1) {
+              @if (nestedCards.length) {
                 <button type="button" class="sf-link" (click)="setAllOpen(false)">Collapse all</button>
                 <button type="button" class="sf-link" (click)="setAllOpen(true)">Expand all</button>
               }

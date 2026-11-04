@@ -1008,6 +1008,16 @@ describe('SchemaFormRootComponent — sections', () => {
         expect(emitted.length).toBe(1);
     }));
 
+    it('keeps the edit action on the overview disabled until the form is dirty', fakeAsync(() => {
+        const root = create();
+        root.isEditMode = true;
+        root.showButtons = true;
+        root.updatableBtnEvent.subscribe(() => undefined);
+        expect(root.overviewSubmit?.disabled).toBeTrue();
+        root.group.markAsDirty();
+        expect(root.overviewSubmit?.disabled).toBeFalse();
+    }));
+
     it('builds its own footer list: previous and next follow the section screen', fakeAsync(() => {
         const root = create();
         const lists: any[][] = [];
@@ -1038,5 +1048,59 @@ describe('SchemaFormRootComponent — sections', () => {
         expect(root.completion!.answered).toBe(1);
         expect(emitted.length).toBe(1);
         flush(100);
+    }));
+});
+
+describe('SchemaFormRootComponent — expand and collapse all', () => {
+    const text = (title: string): ISchemaDocument => ({ type: SchemaDataTypes.string, title, description: title });
+    const sub = (id: string, title: string, properties: any): ISchemaDocument => ({
+        $id: id, type: SchemaDataTypes.object, title, description: title, properties, required: []
+    } as ISchemaDocument);
+    const ref = (id: string, title: string) => ({ $ref: id, title, description: title }) as any;
+
+    const create = (nested: boolean): SchemaFormRootComponent => {
+        const document: ISchemaDocument = {
+            $id: '#exp&1.0.0',
+            $comment: JSON.stringify({ '@id': 'ctx:#exp&1.0.0', term: 'exp&1.0.0' }),
+            title: 'Exp',
+            description: 'Exp',
+            type: SchemaDataTypes.object,
+            properties: { a: ref('#a', 'Alpha'), b: ref('#b', 'Beta') },
+            required: [],
+            $defs: {
+                '#a': sub('#a', 'Alpha', nested ? { x: ref('#x', 'X'), y: ref('#y', 'Y') } : { one: text('one') }),
+                '#b': sub('#b', 'Beta', { two: text('two') }),
+                '#x': sub('#x', 'X', { xx: text('xx') }),
+                '#y': sub('#y', 'Y', { yy: text('yy') }),
+            } as any,
+        };
+        const changeDetector = jasmine.createSpyObj<ChangeDetectorRef>('ChangeDetectorRef', ['detectChanges', 'markForCheck']);
+        const root = new SchemaFormRootComponent(new UntypedFormBuilder(), changeDetector);
+        root.schema = new Schema({ iri: '#exp&1.0.0', document });
+        root.presetDocument = { a: nested ? { x: {}, y: {} } : {}, b: {} };
+        root.layout = 'sections';
+        root.ngOnChanges({
+            schema: new SimpleChange(null, root.schema, true),
+            presetDocument: new SimpleChange(null, root.presetDocument, true)
+        });
+        tick(64);
+        flush(100);
+        return root;
+    };
+
+    it('offers the nested sub-schemas of the open section and toggles them', fakeAsync(() => {
+        const root = create(true);
+        root.openSection(0);
+        expect(root.nestedCards.length).toBe(2);
+        root.setAllOpen(true);
+        expect(root.nestedCards.every(card => card.open)).toBeTrue();
+        root.setAllOpen(false);
+        expect(root.nestedCards.some(card => card.open)).toBeFalse();
+    }));
+
+    it('has nothing to toggle when the sub-schema holds no sub-schemas', fakeAsync(() => {
+        const root = create(false);
+        root.openSection(0);
+        expect(root.nestedCards.length).toBe(0);
     }));
 });
