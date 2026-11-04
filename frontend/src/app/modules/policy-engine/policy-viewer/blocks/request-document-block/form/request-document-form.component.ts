@@ -8,7 +8,7 @@ import { FormControl, FormGroup, UntypedFormBuilder, UntypedFormGroup, Validator
 import { audit, takeUntil } from 'rxjs/operators';
 import { interval, Subject, Subscription } from 'rxjs';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
-import { DocumentValidators } from '@guardian/interfaces';
+import { BlockErrorType, DocumentValidators, IDocumentValidatorBlockError } from '@guardian/interfaces';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { DocumentAutosaveStorage } from 'src/app/modules/policy-engine/structures';
@@ -22,8 +22,7 @@ import { FormulasService } from 'src/app/services/formulas.service';
 import { FormulasTree } from 'src/app/modules/formulas/models/formula-tree';
 import { IFormIssue, SchemaFormRootComponent } from 'src/app/modules/schema-engine/schema-form-root/schema-form-root.component';
 import { PolicyTestAutomationService } from '../../../policy-test-automation/policy-test-automation.service';
-import { CalculationPreviewService, ICalculationPreviewResult } from 'src/app/services/calculation-preview.service';
-import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
+import { CalculationPreviewService, ICalculationPreviewProblem, ICalculationPreviewResult, ICalculationPreviewTimelineItem } from 'src/app/services/calculation-preview.service';
 import { IFormTarget, walkFields } from 'src/app/modules/schema-engine/schema-form/schema-form-walk';
 import { IFormCompletion } from 'src/app/modules/schema-engine/schema-form/schema-form-completion';
 import { ToastService } from 'src/app/services/toast.service';
@@ -31,7 +30,7 @@ import { FormTakeoverService } from '../../../form-takeover/form-takeover.servic
 import { PolicyProgressService } from '../../../../services/policy-progress.service';
 
 export type FormStep = 'fill' | 'evidence' | 'relayer';
-export type FormScreen = 'form' | 'results' | 'submitted';
+export type FormScreen = 'form' | 'results' | 'presults' | 'submitted';
 
 /**
  * Everything the Submitted screen shows. The block underneath can change or disappear
@@ -129,6 +128,14 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     private previewBusyHold: boolean = false;
     private previewBusyTimer: ReturnType<typeof setTimeout> | null = null;
     private previewSubmitLabel: boolean = false;
+    public previewItems: ICalculationPreviewTimelineItem[] = [];
+    public previewIndex: number = 0;
+    public previewProblems: ICalculationPreviewProblem[] = [];
+    public previewIncomplete: boolean = false;
+    public previewDiscoveryWarning: boolean = false;
+    public previewTab: 'doc' | 'json' = 'doc';
+    public previewJson = '';
+    public previewViewLoading: number = 0;
 
     public get isPreviewBusy(): boolean {
         return this.previewMode && (this.loading || this.previewRendering || this.previewBusyHold);
@@ -155,21 +162,12 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         }
     }
 
-    public previewMissingOptions: { label: string; value: string }[] = [];
-    public previewMissingPath: string | null = null;
-
-    public onPreviewMissingOptionsChange(options: { label: string; value: string }[]): void {
-        this.previewMissingOptions = this.previewMode ? options : [];
-        this.previewMissingPath = null;
-        this.changeDetectorRef.markForCheck();
-    }
-
-    public onPreviewMissingSelect(path: string): void {
-        this.formRoot?.focusField(path);
-    }
-
     public onPreviewRenderingChange(rendering: boolean): void {
         this.previewRendering = this.previewMode && rendering;
+        if (!rendering && this.previewMode && this.screen === 'results') {
+            // The form finished rebuilding with the new requirements
+            this.refreshIssues();
+        }
         this.changeDetectorRef.markForCheck();
     }
     public previewRequiredFields: string[] | null = null;
@@ -199,15 +197,88 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     }
 
     public get resultsEyebrow(): string {
-        return this.buttonNames['submit'];
+        return this.previewMode ? 'Calculation preview' : this.buttonNames['submit'];
     }
 
     public get resultsHeading(): string {
         const count = this.issues.length;
+        if (this.previewMode) {
+            return `The calculations need ${count} more ${count === 1 ? 'value' : 'values'}`;
+        }
         if (!count) {
             return 'Fix the highlighted fields before creating the document';
         }
         return `Fix ${count} ${count === 1 ? 'problem' : 'problems'} before creating the document`;
+    }
+
+    public get resultsLead(): string {
+        return this.previewMode
+            ? "These fields are read by the policy's calculations. Fill them in and run Preview again. Nothing was created."
+            : "Nothing was submitted. Errors block creation. Rule checks come from the policy's schema rules and don't block it.";
+    }
+
+    public get issuePill(): string {
+        return this.previewMode ? 'Missing' : 'Error';
+    }
+
+    public get previewRequiredText(): string {
+        if (!this.previewRequiredFields) {
+            return 'Only the fields the calculations read are required.';
+        }
+        // Schema paths only: a 422 also lists indexed row paths for the same fields
+        const count = this.previewRequiredFields.filter((path) => !path.split('.').some((part) => /^\d+$/.test(part))).length;
+        return count === 1
+            ? 'Only the 1 field the calculation reads is required.'
+            : `Only the ${count} fields the calculations read are required.`;
+    }
+
+    public get previewHeading(): string {
+        return this.previewIncomplete ? 'The preview is incomplete' : 'Preview results';
+    }
+
+    public get previewLead(): string {
+        return this.previewIncomplete
+            ? 'A block in the calculation chain stopped. Fix the cause and run Preview again.'
+            : 'Temporary documents produced by the policy\'s calculation chain from your current values, in chain order. Nothing was created, sent to Hedera or minted.';
+    }
+
+    public get previewSelected(): ICalculationPreviewTimelineItem | null {
+        return this.previewItems[this.previewIndex] ?? null;
+    }
+
+    public validatorError(problem: ICalculationPreviewProblem): IDocumentValidatorBlockError | null {
+        return problem.errorData?.type === BlockErrorType.DOCUMENT_VALIDATOR_BLOCK_ERROR
+            ? problem.errorData as IDocumentValidatorBlockError
+            : null;
+    }
+
+    public previewItemTitle(item: ICalculationPreviewTimelineItem): string {
+        return item.role === 'input' ? (this.schema?.name || item.label) : item.label;
+    }
+
+    public previewItemSub(item: ICalculationPreviewTimelineItem): string {
+        return item.role === 'input'
+            ? item.label
+            : [item.blockType, item.target || item.source].filter(Boolean).join(' · ');
+    }
+
+    public selectPreviewItem(index: number): void {
+        if (index === this.previewIndex) {
+            return;
+        }
+        this.previewIndex = index;
+        this.previewJson = this.stringifyPreviewItem();
+        this.previewViewLoading = 0;
+    }
+
+    private stringifyPreviewItem(): string {
+        const item = this.previewSelected;
+        return item ? JSON.stringify(item.document ?? null, null, 2) : '';
+    }
+
+    public onPreviewViewLoadingChange(loading: boolean): void {
+        this.previewViewLoading = Math.max(0, this.previewViewLoading + (loading ? 1 : -1));
+        this.changeDetectorRef.markForCheck();
     }
 
     public get isSubmitted(): boolean {
@@ -220,6 +291,9 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     }
 
     public get stepperSteps(): { id: string; label: string }[] {
+        if (this.previewMode) {
+            return [{ id: 'fill', label: 'Fill form' }, { id: 'results', label: 'Calculation preview' }];
+        }
         const steps = [{ id: 'fill', label: 'Fill form' }, { id: 'results', label: 'Validation results' }];
         if (this.enableAdditionalData) {
             steps.push({ id: 'evidence', label: 'Evidence attachments' });
@@ -233,7 +307,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
 
     public get currentStepId(): string {
         if (this.screen === 'submitted') return 'submitted';
-        if (this.screen === 'results') return 'results';
+        if (this.screen === 'results' || this.screen === 'presults') return 'results';
         return this.step;
     }
 
@@ -697,8 +771,26 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     private refreshIssues(): void {
         const targets = walkFields(this.formRoot?.model?.controls);
         this.issues = this.formRoot?.getIssues(targets) ?? [];
+        if (this.previewMode) {
+            this.issues = [...this.issues, ...this.unlistedMissingFields(targets, this.issues)];
+        }
         this.ruleIssues = this.computeRuleIssues(targets);
         this.changeDetectorRef.markForCheck();
+    }
+
+    /**
+     * Fields the calculations read that the form has no control for yet, for example inside an
+     * optional sub-schema that was not added. The form can't flag them, so the results list them.
+     */
+    private unlistedMissingFields(targets: IFormTarget[], listed: IFormIssue[]): IFormIssue[] {
+        const known = new Set([...targets.map((target) => target.path), ...listed.map((issue) => issue.path)]);
+        return this.previewMissingFields
+            .filter((path) => !known.has(path))
+            .map((path) => ({
+                path,
+                label: path.split('.').map((part) => /^\d+$/.test(part) ? `#${Number(part) + 1}` : part).join(' / '),
+                message: 'Enter a value'
+            }));
     }
 
     /** Reveals every error and opens the results screen. Does not touch the API. */
@@ -718,6 +810,18 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
             return;
         }
         this.showResults();
+    }
+
+    /** 'Preview again' on the preview results screen. */
+    public async previewAgain(): Promise<void> {
+        if (this.loading || this.isPreviewBusy) {
+            return;
+        }
+        if (!this.dataForm.valid) {
+            this.showResults();
+            return;
+        }
+        await this.runPreview(false);
     }
 
     public showForm(): void {
@@ -753,11 +857,11 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
             return;
         }
         this.clearIssues();
-        this.screen = 'form';
         if (this.previewMode) {
             await this.runPreview(false);
             return;
         }
+        this.screen = 'form';
         if (this.enableAdditionalData && this.step === 'fill') {
             this.step = 'evidence';
         } else if (this.enableAdditionalData && this.step === 'evidence' && this.relayerAccount) {
@@ -791,8 +895,14 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
             this.loading = false;
             this.previewRequiredFields = null;
             this.previewMissingFields = [];
+            this.resetPreviewResult();
+            if (this.screen === 'presults' || this.screen === 'results') {
+                this.clearIssues();
+                this.screen = 'form';
+            }
             return;
         }
+        this.clearIssues();
         this.screen = 'form';
         this.step = 'fill';
         await this.runPreview(true);
@@ -821,7 +931,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
             this.previewRequiredFields = this.calculationPreview.updateRequiredFields(this.previewRequiredFields, result);
             this.previewMissingFields = [];
             if (previewFields) {
-                this.calculationPreview.showDiscoveryWarning(result);
+                this.previewDiscoveryWarning = this.calculationPreview.needsDiscoveryWarning(result);
             } else {
                 this.showPreviewResult(result);
             }
@@ -830,6 +940,16 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
             if (this.previewMode && validation && current()) {
                 this.previewRequiredFields = this.calculationPreview.updateRequiredFields(this.previewRequiredFields, validation);
                 this.previewMissingFields = [...validation.missingFields];
+                if (!previewFields) {
+                    // The form takes the new requirements, then the results screen lists what is missing.
+                    this.changeDetectorRef.detectChanges();
+                    this.showResults();
+                }
+            } else if (this.previewMode && !validation && !previewFields && current()) {
+                // The run failed for another reason: the old results no longer match the form.
+                this.resetPreviewResult();
+                this.clearIssues();
+                this.screen = 'form';
             }
             console.error(error);
         } finally {
@@ -839,25 +959,26 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         }
     }
 
+    private resetPreviewResult(): void {
+        this.previewItems = [];
+        this.previewIndex = 0;
+        this.previewProblems = [];
+        this.previewIncomplete = false;
+        this.previewDiscoveryWarning = false;
+        this.previewTab = 'doc';
+        this.previewJson = '';
+        this.previewViewLoading = 0;
+    }
+
     private showPreviewResult(result: ICalculationPreviewResult): void {
-        this.calculationPreview.showErrors(result);
-        const documents = this.calculationPreview.getViewerDocuments(result);
-        if (!documents.length) {
-            return;
-        }
-        this.dialogService.open(VCViewerDialog, {
-            showHeader: false,
-            width: '90%',
-            styleClass: 'guardian-dialog',
-            data: {
-                title: 'Calculation preview',
-                type: 'VC',
-                viewDocument: true,
-                dryRun: !!this.dryRun,
-                document: (documents.find((item) => item.final) ?? documents[0]).document,
-                previewDocuments: documents
-            }
-        });
+        this.clearIssues();
+        this.resetPreviewResult();
+        this.previewProblems = this.calculationPreview.getProblems(result);
+        this.previewItems = this.calculationPreview.getTimeline(result);
+        this.previewIncomplete = result.incomplete.length > 0 || (!this.previewItems.length && this.previewProblems.length > 0);
+        this.previewIndex = Math.max(0, this.previewItems.length - 1);
+        this.previewJson = this.stringifyPreviewItem();
+        this.screen = 'presults';
     }
 
     public showUnsavedChangesDialog() {

@@ -2,6 +2,7 @@ import { ChangeDetectorRef, ElementRef, NO_ERRORS_SCHEMA, SimpleChange } from '@
 import { fakeAsync, flush, TestBed, tick } from '@angular/core/testing';
 import { UntypedFormBuilder } from '@angular/forms';
 import { ISchemaDocument, Schema, SchemaDataTypes } from '@guardian/interfaces';
+import { walkFields } from '../schema-form/schema-form-walk';
 import { SchemaFormRootComponent } from './schema-form-root.component';
 
 describe('SchemaFormRootComponent — required fields', () => {
@@ -685,7 +686,7 @@ describe('SchemaFormRootComponent — required fields', () => {
         expect(root.previewMissingFieldIds).toEqual([]);
     }));
 
-    it('lists unfilled Preview missing fields, including a table cell, and drops each one once it has a value', fakeAsync(() => {
+    it('lists the Preview missing fields as issues, including a table cell, and drops each one once it has a value', fakeAsync(() => {
         const root = createRoot();
         root.schema = new Schema({ iri: '#calc&1.0.0', document: {
             ...calcDocument,
@@ -698,20 +699,16 @@ describe('SchemaFormRootComponent — required fields', () => {
         root.ngOnChanges({ schema: new SimpleChange(null, root.schema, false) });
         tick(64);
         flush(100);
-        const emitted = jasmine.createSpy('emitted');
-        root.previewMissingOptionsChange.subscribe(emitted);
-        expect(root.previewMissingOptions).toEqual([
-            { label: 'amount', value: 'amount' },
-            { label: 'Rows / #2 / PEt', value: 'rows.1.PEt' },
+        expect(root.getIssues().map(issue => [issue.path, issue.label])).toEqual([
+            ['amount', 'amount'],
+            ['rows.1.PEt', 'Rows / #2 / PEt'],
         ]);
         root.group.get('rows.1.PEt')!.setValue(0);
-        expect(root.previewMissingOptions.map(option => option.value)).toEqual(['amount']);
+        expect(root.getIssues().map(issue => issue.path)).toEqual(['amount']);
         root.group.get('amount')!.setValue('');
-        expect(root.previewMissingOptions.map(option => option.value)).toEqual(['amount']);
+        expect(root.getIssues().map(issue => issue.path)).toEqual(['amount']);
         root.group.get('amount')!.setValue(5);
-        expect(root.previewMissingOptions).toEqual([]);
-        tick();
-        expect(emitted.calls.allArgs().map(args => args[0].length)).toEqual([1, 0]);
+        expect(root.getIssues()).toEqual([]);
     }));
 
     it('lists every invalid leaf with its message in document order', fakeAsync(() => {
@@ -720,6 +717,29 @@ describe('SchemaFormRootComponent — required fields', () => {
         expect(root.getIssues()).toEqual([{ path: 'rate', label: 'rate', message: 'Enter a value' }]);
         root.group.get('amount')?.setValue(null);
         expect(root.getIssues().map(issue => issue.path)).toEqual(['amount', 'rate']);
+    }));
+
+    it('lists an empty GeoJSON row and a single GeoJSON field, which have no nested fields', fakeAsync(() => {
+        const geoComment = (term: string) => JSON.stringify({ term, '@id': `https://www.schema.org/${term}`, customType: 'geo' });
+        const geoDefs = { '#GeoJSON': { $id: '#GeoJSON', type: SchemaDataTypes.object, properties: {} } };
+        const root = createRootWith({
+            ...calcDocument,
+            properties: {
+                places: { title: 'Places', description: 'Places', type: SchemaDataTypes.array, $comment: geoComment('places'), items: { $ref: '#GeoJSON' } },
+                place: { title: 'Place', description: 'Place', $ref: '#GeoJSON', $comment: geoComment('place') },
+            },
+            $defs: geoDefs,
+            required: ['places', 'place'],
+        });
+        // The GeoJSON validators are attached while the form is built; the first edit runs them.
+        walkFields(root.model?.controls).forEach(target => target.control?.updateValueAndValidity());
+        const paths = root.getIssues().map(issue => issue.path);
+        expect(paths).toContain('places.0');
+        expect(paths).toContain('place');
+        expect(paths).not.toContain('places');
+        expect(root.group.invalid).toBeTrue();
+        const missing = walkFields(root.model?.controls).filter(target => target.requiredUnit && !target.row);
+        expect(missing.map(target => target.path).sort()).toEqual(['place', 'places']);
     }));
 
     it('reveals errors on the model and focuses the first issue', fakeAsync(() => {
@@ -765,54 +785,43 @@ describe('SchemaFormRootComponent — required fields', () => {
             root.model!.updateValueAndValidity();
         };
 
-        it('moves the link to the new row number when an earlier row is deleted', fakeAsync(() => {
+        const issuePaths = (root: SchemaFormRootComponent) => root.getIssues().map(issue => issue.path);
+
+        it('moves the issue to the new row number when an earlier row is deleted', fakeAsync(() => {
             const root = createAreaRoot(['rows.1.PBt']);
-            expect(root.previewMissingOptions).toEqual([{ label: 'Rows / #2 / PBt', value: 'rows.1.PBt' }]);
+            expect(issuePaths(root)).toEqual(['rows.1.PBt', 'rows.2.PBt']);
             removeRow(root, 0);
-            expect(root.previewMissingOptions).toEqual([{ label: 'Rows / #1 / PBt', value: 'rows.0.PBt' }]);
+            expect(issuePaths(root)).toEqual(['rows.0.PBt', 'rows.1.PBt']);
             const focus = spyOn(root, 'focusField').and.callThrough();
-            root.focusField(root.previewMissingOptions[0].value);
+            root.focusField(root.getIssues()[0].path);
             expect(focus).toHaveBeenCalledWith('rows.0.PBt');
             expect(root.model!.controls![0].list![0].open).toBeTrue();
         }));
 
-        it('keeps the link after another cell of the moved row changes, until the cell is filled', fakeAsync(() => {
+        it('keeps the issue after another cell of the moved row changes, until the cell is filled', fakeAsync(() => {
             const root = createAreaRoot(['rows.1.PBt']);
             removeRow(root, 0);
             root.group.get('rows.0.PEt')!.setValue(7);
-            expect(root.previewMissingOptions).toEqual([{ label: 'Rows / #1 / PBt', value: 'rows.0.PBt' }]);
+            expect(issuePaths(root)).toContain('rows.0.PBt');
             root.group.get('rows.0.PBt')!.setValue(0);
-            expect(root.previewMissingOptions).toEqual([]);
+            expect(issuePaths(root)).not.toContain('rows.0.PBt');
         }));
 
-        it('drops the link of a deleted row and keeps the others in their new places', fakeAsync(() => {
+        it('drops the issue of a deleted row and keeps the others in their new places', fakeAsync(() => {
             const root = createAreaRoot(['rows.1.PBt', 'rows.2.PBt']);
-            expect(root.previewMissingOptions.map(option => option.value)).toEqual(['rows.1.PBt', 'rows.2.PBt']);
+            expect(issuePaths(root)).toEqual(['rows.1.PBt', 'rows.2.PBt']);
             removeRow(root, 1);
-            expect(root.previewMissingOptions).toEqual([{ label: 'Rows / #2 / PBt', value: 'rows.1.PBt' }]);
+            expect(issuePaths(root)).toEqual(['rows.1.PBt']);
             const cell = root.model!.controls![0].list![1].model.controls.find((field: { name: string }) => field.name === 'PBt');
             expect(root.previewMissingFieldIds).toContain(cell.id);
         }));
 
-        it('keeps a later row link unchanged when a later row is deleted', fakeAsync(() => {
+        it('keeps a later row issue unchanged when a later row is deleted', fakeAsync(() => {
             const root = createAreaRoot(['rows.1.PBt']);
             removeRow(root, 2);
-            expect(root.previewMissingOptions).toEqual([{ label: 'Rows / #2 / PBt', value: 'rows.1.PBt' }]);
+            expect(issuePaths(root)).toEqual(['rows.1.PBt']);
         }));
     });
-
-    it('never lists missing fields or watches values in ordinary mode', fakeAsync(() => {
-        const root = createRoot();
-        const emitted = jasmine.createSpy('emitted');
-        root.previewMissingOptionsChange.subscribe(emitted);
-        root.previewMissingFields = ['amount'];
-        root.ngOnChanges({ previewMissingFields: new SimpleChange([], root.previewMissingFields, false) });
-        root.group.get('rate')!.setValue(1);
-        tick(64);
-        expect(root.previewMissingOptions).toEqual([]);
-        expect(Reflect.get(root, 'previewMissingSub')).toBeUndefined();
-        expect(emitted).not.toHaveBeenCalled();
-    }));
 
     const rowDocument: ISchemaDocument = {
         $id: '#row',

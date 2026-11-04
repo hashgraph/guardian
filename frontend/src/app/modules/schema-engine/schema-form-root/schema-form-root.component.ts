@@ -7,7 +7,7 @@ import { Subscription, audit, timer } from 'rxjs';
 import { FormulasTree } from 'src/app/modules/formulas/models/formula-tree';
 import { FormFormulas, IFormulaLinkScope } from 'src/app/modules/formulas/models/form-formulas';
 import { getErrorMessage } from '../schema-form/schema-form-errors';
-import { IFormTarget, walkFields } from '../schema-form/schema-form-walk';
+import { IFormTarget, isRefLeaf, walkFields } from '../schema-form/schema-form-walk';
 import { IFormCompletion, ISectionCompletion, computeCompletion, isAnswered } from '../schema-form/schema-form-completion';
 import { BooleanProperty } from '../../policy-engine/structures/storage/boolean-prop';
 import { IFormSection, buildSections, promotedRootName } from './schema-form-sections';
@@ -72,7 +72,6 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     public formulaModel: FormFormulas | null = null;
     private formulaSub?: Subscription;
     private controlsSub?: Subscription;
-    private previewMissingSub?: Subscription;
     private completionSub?: Subscription;
 
     private railElement: HTMLElement | null = null;
@@ -145,8 +144,6 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
 
     @Output('form') form = new EventEmitter<UntypedFormGroup>();
     @Output('presetApplied') presetApplied = new EventEmitter<UntypedFormGroup>();
-    @Output() previewMissingOptionsChange = new EventEmitter<{ label: string; value: string }[]>(true);
-    public previewMissingOptions: { label: string; value: string }[] = [];
     @Output() completionChange = new EventEmitter<IFormCompletion>(true);
     @Output('change') change = new EventEmitter<Schema | null>();
     @Output('destroy') destroy = new EventEmitter<void>();
@@ -379,7 +376,6 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         if (this.previewFocusTimer !== null) clearTimeout(this.previewFocusTimer);
         this.formulaSub?.unsubscribe();
         this.controlsSub?.unsubscribe();
-        this.previewMissingSub?.unsubscribe();
         this.completionSub?.unsubscribe();
         if (this.model) {
             this.model.destroy();
@@ -420,10 +416,6 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
                 this.recompute();
                 this.changeDetectorRef.markForCheck();
             });
-        this.previewMissingSub?.unsubscribe();
-        this.previewMissingSub = this.requiredFields === null
-            ? undefined
-            : this.group.valueChanges.subscribe(() => this.updatePreviewMissingOptions());
         this.group.updateValueAndValidity();
         this.buildFormulaModel();
         this.recompute();
@@ -524,10 +516,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
 
     public previewMissingFieldIds: string[] = [];
 
-    private previewMissingTargets: object[] = [];
-
     private updatePreviewMissingFieldIds(): void {
-        this.previewMissingTargets = [];
         this.previewMissingFieldIds = this.previewMissingFields.flatMap(path => {
             const parts = path.split('.');
             let controls = this.model?.controls || [];
@@ -535,14 +524,10 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
                 const field = controls.find(item => item.name === parts[index]);
                 if (!field) return [];
                 if (index === parts.length - 1) {
-                    this.previewMissingTargets.push(field);
                     return [field.id];
                 }
                 if (field.isArray && /^\d+$/.test(parts[index + 1] || '')) {
                     const row = field.list?.[Number(parts[++index])];
-                    if (row && index === parts.length - 1) {
-                        this.previewMissingTargets.push(row);
-                    }
                     controls = row?.model?.controls || [];
                 } else {
                     controls = field.model?.controls || [];
@@ -550,30 +535,6 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             }
             return [];
         });
-        this.updatePreviewMissingOptions();
-    }
-
-    private updatePreviewMissingOptions(): void {
-        const options: { label: string; value: string }[] = [];
-        const targets = new Map<object, IFormTarget>();
-        if (this.requiredFields !== null && this.previewMissingTargets.length) {
-            for (const target of walkFields(this.model?.controls)) {
-                targets.set(target.row ?? target.field, target);
-            }
-        }
-        for (const target of this.requiredFields === null ? [] : this.previewMissingTargets) {
-            const current = targets.get(target);
-            if (!current || (current.control && (current.control.disabled || !this.hasNoValue(current.control.value)))) {
-                continue;
-            }
-            options.push({ label: current.labels.join(' / '), value: current.path });
-        }
-        if (options.length === this.previewMissingOptions.length
-            && options.every((option, index) => option.value === this.previewMissingOptions[index].value)) {
-            return;
-        }
-        this.previewMissingOptions = options;
-        this.previewMissingOptionsChange.emit(options);
     }
 
     private schedulePreviewFocus(): void {
@@ -665,13 +626,13 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             if (hidden || !control || !control.invalid) {
                 continue;
             }
-            if (!row && field.isRef && !field.isArray) {
+            if (!row && field.isRef && !field.isArray && !isRefLeaf(control)) {
                 continue;
             }
             if (!row && field.isArray && withInvalidRows.has(field)) {
                 continue;
             }
-            if (row && field.isRef) {
+            if (row && field.isRef && !isRefLeaf(control)) {
                 continue;
             }
             const section = this.sectionTitleOf(path);

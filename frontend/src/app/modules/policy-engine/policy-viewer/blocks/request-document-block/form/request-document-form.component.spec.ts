@@ -110,7 +110,9 @@ describe('RequestDocumentFormComponent', () => {
                 getIssues: () => [{ path: 'name', label: 'Name', message: 'Required' }],
                 focusField: jasmine.createSpy('focusField'),
             };
-            component.formRoot = root as any;
+            // The spec renders no schema, so there is no real form root. A fixed accessor keeps the
+            // stand-in when change detection refreshes the @ViewChild query after a template change.
+            Object.defineProperty(component, 'formRoot', { get: () => root, set: () => undefined, configurable: true });
             return root;
         };
 
