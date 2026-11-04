@@ -706,7 +706,9 @@ export class FieldForm {
                     const sourceControl = source.control.list?.[index]?.control?.get(mapping.source.join('.'));
                     const targetControl = target.control.list?.[index]?.control?.get(mapping.target.join('.'));
                     if (!sourceControl || !targetControl) { continue; }
-                    targetControl.setValue(sourceControl.value ?? null, { emitEvent: false });
+                    const value = sourceControl.value ?? null;
+                    if (targetControl.disabled && targetControl.value === value) { continue; }
+                    targetControl.setValue(value, { emitEvent: false });
                     targetControl.disable({ emitEvent: false });
                     changed = true;
                 }
