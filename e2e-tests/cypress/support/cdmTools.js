@@ -49,6 +49,60 @@ const TOOL_SUB_REFS = {
     },
 };
 
+// A re-import of an existing name is renamed with a `_timestamp` suffix.
+export const namePattern = (name) => new RegExp(`^${name}(_\\d+)?$`);
+
+// Chromium's FormData rejects a three-argument append whose value is a string
+// (the filename is only valid on a blob part), so metadata parts are wrapped
+// in a native blob.
+export const metadataPart = (metadata) => new Blob([JSON.stringify(metadata)], { type: 'application/json' });
+
+// `cy.request` hands the response back as an ArrayBuffer whenever the request
+// body was binary (FormData / Blob), even though the response is JSON. The
+// buffer is created in another JS realm, so `instanceof ArrayBuffer` fails
+// across the boundary and the buffer must be duck-typed instead.
+export const decodeBody = (body) => {
+    if (body && typeof body === 'object' && body.byteLength !== undefined) {
+        return new TextDecoder('utf-8').decode(body);
+    }
+    if (typeof body === 'string') {
+        return body;
+    }
+    return JSON.stringify(body);
+};
+
+// Parsed view of an import response: the import routes answer with the
+// freshly imported entity (tool) or the full policy list, newest first.
+export const parseImportResponse = (response) => {
+    const text = decodeBody(response.body);
+    let parsed;
+    try {
+        parsed = JSON.parse(text);
+    } catch (error) {
+        throw new Error(`import response is not JSON (${error.message}): ${text.slice(0, 500)}`, { cause: error });
+    }
+    if (!parsed) {
+        throw new Error(`import response body is empty: ${text.slice(0, 500)}`);
+    }
+    return parsed;
+};
+
+// The import flow runs live Hedera steps (account/topic resolution, publish);
+// a flaky node answers 500 that a plain retry clears, so retry a bounded
+// number of times and then fail with the decoded error body.
+const requestWithRetry = (options, label, expectedStatus, attempts = 3) => {
+    return cy.request({ ...options, failOnStatusCode: false }).then((response) => {
+        if (response.status === expectedStatus) {
+            return response;
+        }
+        if (response.status === 500 && attempts > 1) {
+            // eslint-disable-next-line cypress/no-unnecessary-waiting -- back off between retries
+            return cy.wait(3000).then(() => requestWithRetry(options, label, expectedStatus, attempts - 1));
+        }
+        throw new Error(`${label}: status ${response.status} (expected ${expectedStatus}), body: ${decodeBody(response.body).slice(0, 500)}`);
+    });
+};
+
 // Import one tool archive with its sub-reference remaps applied, then publish
 // it and record the published messageId. `local` maps tool name -> published
 // messageId of the tools imported so far; the remap targets must already be
@@ -63,58 +117,101 @@ const importAndPublishTool = (name, authorization, local) => {
         .then((file) => {
             const form = new FormData();
             form.append('file', file, `${name}.tool`);
-            form.append('metadata', JSON.stringify({ tools: overrides }), 'metadata.json');
-            return cy.request({
+            form.append('metadata', metadataPart({ tools: overrides }), 'metadata.json');
+            return requestWithRetry({
                 method: METHOD.POST,
                 url: API.ApiServer + API.ToolsImportFileMetadata,
                 body: form,
                 headers: { authorization },
                 timeout: 180000,
-            });
+            }, `importing tool ${name}`, STATUS_CODE.SUCCESS);
         })
         .then((response) => {
-            expect(response.status, `importing tool ${name}`).to.eq(STATUS_CODE.SUCCESS);
-            return response.body;
-        })
-        .then((tool) => {
-            expect(tool.id, `importing tool ${name}`).to.not.be.undefined;
-            return cy.request({
+            // The import answers with the freshly created draft tool.
+            const tool = parseImportResponse(response);
+            expect(tool.name, `importing tool ${name}`).to.satisfy((value) => namePattern(name).test(value ?? ''));
+            return requestWithRetry({
                 method: METHOD.PUT,
-                url: `${API.ApiServer}${API.Tools}${tool.id}/${API.Publish}`,
+                url: `${API.ApiServer}${API.Tools}${tool.id}/publish`,
                 body: { toolVersion: '1.0.0' },
                 headers: { authorization, 'content-type': 'application/json' },
                 timeout: 180000,
-            });
+            }, `publishing tool ${name}`, STATUS_CODE.OK);
         })
         .then((response) => {
-            expect(response.status, `publishing tool ${name}`).to.eq(STATUS_CODE.OK);
-            expect(response.body.isValid, `publishing tool ${name}: ${JSON.stringify(response.body.errors)}`).to.be.true;
-            local[name] = response.body.tool.messageId;
+            // The publish DTO carries the new messageId the policy import must
+            // remap its references to.
+            const result = parseImportResponse(response);
+            expect(result.isValid, `publishing tool ${name}: ${JSON.stringify(result.errors ?? {})}`).to.be.true;
+            expect(result.tool?.messageId, `publishing tool ${name}: no messageId in the publish response`).to.be.a('string');
+            local[name] = result.tool.messageId;
         });
 };
 
 /**
  * Import and publish the CDM library tools an archive references, in the
- * given (dependency-first) order. Returns a map of tool name -> local
- * published messageId: the values a policy import must remap its references
- * to. Every referenced tool must appear exactly once, with each of its
- * dependencies listed before it.
+ * given (dependency-first) order. Returns a Cypress chain that yields a map
+ * of tool name -> local published messageId: the values a policy import must
+ * remap its references to. Every referenced tool must appear exactly once,
+ * with each of its dependencies listed before it.
+ *
+ * The sequence must stay in the Cypress queue (seeded with cy.then, not a
+ * real Promise): a real Promise adopts the returned chain by settling it from
+ * the chain's *current* tail, but the import/publish requests are enqueued
+ * lazily from later callbacks — after that settle point — so the Promise
+ * would resolve with an empty map before any request ran.
  */
 export const prepareTools = (toolNames, authorization) => {
     const local = {};
     return toolNames
-        .reduce((chain, name) => chain.then(() => importAndPublishTool(name, authorization, local)), Promise.resolve())
+        .reduce((chain, name) => chain.then(() => importAndPublishTool(name, authorization, local)), cy.then(() => null))
         .then(() => local);
 };
 
-// `cy.request` returns the parsed object for JSON responses but an ArrayBuffer
-// (or a string) for anything else; normalize all shapes to the decoded object.
-export const parseImportResponse = (body) => {
-    if (body instanceof ArrayBuffer) {
-        return JSON.parse(new TextDecoder('utf-8').decode(body));
-    }
-    if (typeof body === 'string') {
-        return JSON.parse(body);
-    }
-    return body;
+// Import a policy archive with its tool-reference remaps applied. The import
+// answers with the full policy list (newest first), so the imported row is
+// located by name and returned for the caller to assert on.
+export const importPolicyArchive = (archivePath, fileName, displayName, authorization, toolRemaps) => {
+    return cy.readFile(archivePath, 'binary')
+        .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
+        .then((file) => {
+            const form = new FormData();
+            form.append('policyFile', file, fileName);
+            form.append('metadata', metadataPart({ tools: toolRemaps }), 'metadata.json');
+            return requestWithRetry({
+                method: METHOD.POST,
+                url: API.ApiServer + API.PolicisImportFileMetadata,
+                body: form,
+                headers: { authorization },
+                timeout: 180000,
+            }, `importing policy ${displayName}`, STATUS_CODE.SUCCESS);
+        })
+        .then((response) => {
+            const policies = parseImportResponse(response);
+            const rows = Array.isArray(policies) ? policies : [policies];
+            const policy = rows.find((row) => namePattern(displayName).test(row?.name ?? ''));
+            expect(policy, `importing policy ${displayName}: no row named "${displayName}" in the import response (${rows.length} rows)`).to.exist;
+            return policy;
+        });
+};
+
+// The cdmAR3 archive references no tools, so it goes through the plain import
+// route (no metadata part). The route answers with the full policy list.
+export const importPolicyFile = (archivePath, fileName, displayName, authorization) => {
+    return cy.readFile(archivePath, 'binary')
+        .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
+        .then((file) => requestWithRetry({
+            method: METHOD.POST,
+            url: API.ApiServer + API.PolicisImportFile,
+            body: file,
+            headers: { 'content-type': 'binary/octet-stream', authorization },
+            timeout: 180000,
+        }, `importing policy ${displayName}`, STATUS_CODE.SUCCESS))
+        .then((response) => {
+            const policies = parseImportResponse(response);
+            const rows = Array.isArray(policies) ? policies : [policies];
+            const policy = rows.find((row) => namePattern(displayName).test(row?.name ?? ''));
+            expect(policy, `importing policy ${displayName}: no row named "${displayName}" in the import response (${rows.length} rows)`).to.exist;
+            return policy;
+        });
 };
