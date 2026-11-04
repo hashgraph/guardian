@@ -776,8 +776,7 @@
                                         [private-fields]="{}"
                                         [readonly-fields]="previewReadonlyFields"
                                         [example]="previewPill !== 'submitter'"
-                                        [showButtons]="false"
-                                        [paginationHidden]="true">
+                                        [showButtons]="false">
                                     </app-schema-form-root>
                                 }
                             }
@@ -1537,12 +1536,13 @@
                             @if (selectedField!.isRef) {
                                 <!-- Ref fields (sub-schema, GeoJSON, SentinelHUB): delegate to schema-form-root
                                      so "+ Add [description]" and nested-document editing work identically to
-                                     the old editor. Wrapper class hides the nav panel via CSS overrides. -->
+                                     the old editor. It stays a single page (layout="single"). -->
                                 <div class="sc-fv-ref-form">
                                     <app-schema-form-root
                                         [fields]="refPresetFormFields!"
                                         [preset]="refPresetValues"
                                         [showButtons]="false"
+                                        layout="single"
                                         [likeDryRun]="true"
                                         (form)="onRefPresetFormChange($event)"
                                     ></app-schema-form-root>

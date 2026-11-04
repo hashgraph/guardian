@@ -39,8 +39,10 @@ export class DocumentViewComponent implements OnInit {
     @Input('relayer-account') relayerAccount?: string;
 
     @Input('disconnected') disconnected: boolean = false;
+    @Input() preview: boolean = false;
     
     @Output('discussion-action') discussionActionEvent = new EventEmitter<any>();
+    @Output() previewLoadingChange = new EventEmitter<boolean>();
 
     @ViewChild(SchemaFormViewComponent) private schemaView?: SchemaFormViewComponent;
     @ViewChild(SchemaFormViewNavigationComponent) public schemaNav?: SchemaFormViewNavigationComponent;
@@ -49,6 +51,10 @@ export class DocumentViewComponent implements OnInit {
     @ViewChild('contentContainer') contentContainerRef?: ElementRef;
 
     public loading: boolean = false;
+    public previewRendering: boolean = false;
+    public previewReady: boolean = false;
+    private previewFrame: number | null = null;
+    private previewRenderTimer: ReturnType<typeof setTimeout> | null = null;
     public isIssuerObject: boolean = false;
     public issuerOptions: any[] = [];
     public subjects: any[] = [];
@@ -85,6 +91,10 @@ export class DocumentViewComponent implements OnInit {
     ngOnInit(): void {
         if (!this.document) {
             return;
+        }
+        if (this.preview) {
+            this.previewRendering = true;
+            this.previewLoadingChange.emit(true);
         }
 
         this.issuerOptions = [];
@@ -147,6 +157,15 @@ export class DocumentViewComponent implements OnInit {
     }
 
     ngOnDestroy() {
+        if (this.preview && this.previewRendering) this.previewLoadingChange.emit(false);
+        if (this.previewRenderTimer !== null) {
+            clearTimeout(this.previewRenderTimer);
+            this.previewRenderTimer = null;
+        }
+        if (this.previewFrame !== null) {
+            cancelAnimationFrame(this.previewFrame);
+            this.previewFrame = null;
+        }
         this.destroy$.next(true);
         this.destroy$.unsubscribe();
         
@@ -241,6 +260,11 @@ export class DocumentViewComponent implements OnInit {
 
 
         this.loading = true;
+        if (this.preview && !Object.keys(requests).length) {
+            this.loading = false;
+            this.renderPreview();
+            return;
+        }
         forkJoin(requests).subscribe((results: any) => {
             //Load Rules
             if (results.rules) {
@@ -274,15 +298,40 @@ export class DocumentViewComponent implements OnInit {
                 }
             }
 
-            setTimeout(() => {
+            const timer = setTimeout(() => {
                 this.loading = false;
+                if (this.preview) {
+                    this.previewRenderTimer = null;
+                    this.renderPreview();
+                }
                 this.ref.detectChanges();
             }, 500);
+            if (this.preview) {
+                this.previewRenderTimer = timer;
+            }
         }, (e) => {
             this.loading = false;
+            if (this.preview) {
+                this.renderPreview();
+            }
             this.ref.detectChanges();
         });
 
+    }
+
+    private renderPreview(): void {
+        this.previewFrame = requestAnimationFrame(() => {
+            this.previewFrame = requestAnimationFrame(() => {
+                this.previewReady = true;
+                this.ref.detectChanges();
+                this.previewFrame = requestAnimationFrame(() => {
+                    this.previewFrame = null;
+                    this.previewRendering = false;
+                    this.previewLoadingChange.emit(false);
+                    this.ref.markForCheck();
+                });
+            });
+        });
     }
 
     getItemsPage(items: any[]) {

@@ -368,7 +368,7 @@
 
     .policy-identity-meta {
         font-size: 11px;
-        color: var(--pc-no-active-color);
+        color: color-mix(in srgb, var(--guardian-font-color) 75%, transparent);
     }
 
     .policy-identity-caret {

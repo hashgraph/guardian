@@ -23,6 +23,7 @@ import { DocumentType } from '../interfaces/document.type.js';
 import { FilterQuery } from '@mikro-orm/core';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
 import { PolicyUser } from '@policy-engine/policy-user.js';
+import { PreviewScope, keepPreviewDocumentOrigins } from '../helpers/preview.js';
 
 /**
  * Document Operations
@@ -537,7 +538,9 @@ export class SendToGuardianBlock {
         } else if (type === DocumentType.VerifiableCredential) {
             const vc = VcDocument.fromJsonTree(document.document);
             const vcMessage = new VCMessage(MessageAction.CreateVC);
-            vcMessage.setDocument(vc);
+            if (!PreviewScope.current()) {
+                vcMessage.setDocument(vc);
+            }
             vcMessage.setDocumentStatus(document.option?.status || DocumentStatus.NEW);
             vcMessage.setRelationships(document.relationships);
             vcMessage.setTag(ref);
@@ -641,6 +644,15 @@ export class SendToGuardianBlock {
     }
 
     /**
+     * Keep preview origins
+     * @param source
+     * @param result
+     */
+    private keepPreviewOrigins(source: IPolicyDocument, result: IPolicyDocument): IPolicyDocument {
+        return keepPreviewDocumentOrigins(source, result);
+    }
+
+    /**
      * Run block action
      * @event PolicyEventType.Run
      * @param {IPolicyEvent} event
@@ -666,12 +678,12 @@ export class SendToGuardianBlock {
             for (const doc of docs) {
                 PolicyUtils.setDocumentTags(doc, tags);
                 const newDoc = await this.documentSender(doc, event?.user?.userId, event.user);
-                newDocs.push(newDoc);
+                newDocs.push(this.keepPreviewOrigins(doc, newDoc));
             }
             event.data.data = newDocs;
         } else {
             PolicyUtils.setDocumentTags(docs, tags);
-            event.data.data = await this.documentSender(docs, event?.user?.userId, event.user);
+            event.data.data = this.keepPreviewOrigins(docs, await this.documentSender(docs, event?.user?.userId, event.user));
         }
 
         const olds: IPolicyDocument | IPolicyDocument[] = event.data.old;

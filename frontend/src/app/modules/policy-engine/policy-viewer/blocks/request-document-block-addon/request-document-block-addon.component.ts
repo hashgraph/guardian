@@ -15,6 +15,8 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { AbstractUIBlockComponent } from '../models/abstract-ui-block.component';
 import { RequestDocumentFormComponent } from '../request-document-block/form/request-document-form.component';
+import { TablePersistenceService } from 'src/app/services/table-persistence.service';
+import { GeoFilePersistenceService } from 'src/app/services/geo-file-persistence.service';
 import { FormTakeoverService } from '../../form-takeover/form-takeover.service';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { SchemaService } from 'src/app/services/schema.service';
@@ -80,6 +82,7 @@ export class RequestDocumentBlockAddonComponent
     public readonly allowDraft: boolean = true;
     private formTakeover = inject(FormTakeoverService, { optional: true });
     private takeoverRef: ComponentRef<RequestDocumentFormComponent> | null = null;
+    private destroyed = false;
     public edit: boolean;
     public draft: boolean;
     public relayerAccount: boolean;
@@ -96,6 +99,8 @@ export class RequestDocumentBlockAddonComponent
         private dialogService: DialogService,
         private changeDetectorRef: ChangeDetectorRef,
         private schemaService: SchemaService,
+        private tablePersist: TablePersistenceService,
+        private geoFilePersist: GeoFilePersistenceService,
     ) {
         super(policyEngineService, profile, wsService);
         this.dataForm = this.fb.group({});
@@ -126,7 +131,12 @@ export class RequestDocumentBlockAddonComponent
         (window as any).__request[this.id] = this;
     }
 
+    public get isDestroyed(): boolean {
+        return this.destroyed;
+    }
+
     ngOnDestroy(): void {
+        this.destroyed = true;
         if (this.takeoverRef) {
             this.formTakeover?.close(this.takeoverRef);
         }
@@ -239,10 +249,26 @@ export class RequestDocumentBlockAddonComponent
             this.presetDocument = null;
         }
 
+        this.showDocumentDialog();
+    }
+
+    /**
+     * Opens a new form with the values of a submitted document, without resetting the
+     * data form first. Uploaded files and tables stay linked.
+     */
+    public async duplicateSubmitted(values: any, sourceId: string | null) {
+        this.preset(values);
+        await this.tablePersist.restoreTablesFromDraft(values);
+        await this.geoFilePersist.restoreGeoFilesFromDraft(values);
+        this.showDocumentDialog(sourceId);
+    }
+
+    private showDocumentDialog(duplicatedFrom: string | null = null) {
         if (this.formTakeover) {
             const ref = this.formTakeover.open(RequestDocumentFormComponent, {
                 parent: this,
-                allowDraft: this.allowDraft
+                allowDraft: this.allowDraft,
+                duplicatedFrom
             });
             this.takeoverRef = ref;
             ref.instance.closed.subscribe(() => {
@@ -256,7 +282,8 @@ export class RequestDocumentBlockAddonComponent
             showHeader: false,
             width: '90%',
             styleClass: 'guardian-dialog pv-scope',
-            data: this
+            data: this,
+            inputValues: { duplicatedFrom }
         });
     }
 

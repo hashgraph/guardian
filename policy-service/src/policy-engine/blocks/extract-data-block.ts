@@ -8,6 +8,7 @@ import { PolicyUtils } from '../helpers/utils.js';
 import { LocationType, Schema, SchemaField } from '@guardian/interfaces';
 import { BlockActionError } from '../errors/index.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { getPreviewComputed, markPreviewExtractedDocument, PreviewScope, setPreviewComputed } from '../helpers/preview.js';
 
 /**
  * Extract block
@@ -116,30 +117,31 @@ export class ExtractDataBlock {
         return false;
     }
 
-    private searchFieldsPath(json: IPolicyDocument, path: string): any {
+    private searchFieldsPath(json: IPolicyDocument, path: string, origins: string[] = []): any {
         const result = [];
         const paths = (path || '').split('.');
         if (paths.length) {
             json = PolicyUtils.getCredentialSubject(json);
-            this._searchFieldsPath(json, paths, 0, result);
+            this._searchFieldsPath(json, paths, 0, result, [], origins);
         }
         return result;
     }
 
-    private _searchFieldsPath(json: any, paths: string[], i: number, result: any[]): any {
+    private _searchFieldsPath(json: any, paths: string[], i: number, result: any[], trail: string[] = [], origins: string[] = []): any {
         if (!json || typeof json !== 'object') {
             return;
         }
         if (Array.isArray(json)) {
-            for (const item of json) {
-                this._searchFieldsPath(item, paths, i, result);
+            for (const [index, item] of json.entries()) {
+                this._searchFieldsPath(item, paths, i, result, [...trail, String(index)], origins);
             }
         } else {
             if (i < paths.length) {
                 const key = paths[i];
-                this._searchFieldsPath(json[key], paths, i + 1, result);
+                this._searchFieldsPath(json[key], paths, i + 1, result, [...trail, key], origins);
             } else if (json) {
                 result.push(json);
+                origins.push(trail.join('.'));
             }
         }
     }
@@ -147,15 +149,18 @@ export class ExtractDataBlock {
     private async extract(
         json: IPolicyDocument,
         schemaIRI: string,
-        result: any[]
+        result: any[],
+        origins: { document: IPolicyDocument, path: string }[] = []
     ): Promise<void> {
         const schema = await this.getSchema(json);
         if (schema) {
             const fields = schema.searchFields((f) => this.compareSchema(f, schemaIRI));
             for (const field of fields) {
-                const subJsons = this.searchFieldsPath(json, field.path);
-                for (const subJson of subJsons) {
+                const paths: string[] = [];
+                const subJsons = this.searchFieldsPath(json, field.path, paths);
+                for (const [index, subJson] of subJsons.entries()) {
                     result.push(subJson);
+                    origins.push({ document: json, path: paths[index] });
                 }
             }
         }
@@ -188,8 +193,9 @@ export class ExtractDataBlock {
             throw new BlockActionError(`Invalid documents`, ref.blockType, ref.uuid);
         }
         const sourceSubjects: any[] = [];
+        const sourceOrigins: { document: IPolicyDocument, path: string }[] = [];
         for (const source of sources) {
-            await this.extract(source, schema, sourceSubjects);
+            await this.extract(source, schema, sourceSubjects, sourceOrigins);
         }
         if (data.length !== sourceSubjects.length) {
             throw new BlockActionError(`Invalid documents count`, ref.blockType, ref.uuid);
@@ -202,6 +208,13 @@ export class ExtractDataBlock {
                 Object.assign(sourceSubject, newSubject[0]);
             } else if (newSubject) {
                 Object.assign(sourceSubject, newSubject);
+            }
+            if (PreviewScope.current()?.preview) {
+                const { document, path } = sourceOrigins[i];
+                setPreviewComputed(document, [
+                    ...getPreviewComputed(document),
+                    ...getPreviewComputed(newDoc).map((computed) => path ? `${path}.${computed}` : computed)
+                ]);
             }
         }
         const state = { data: sources };
@@ -221,18 +234,20 @@ export class ExtractDataBlock {
             throw new BlockActionError(`Invalid documents`, ref.blockType, ref.uuid);
         }
         const subDocs: any[] = [];
+        const origins: { document: IPolicyDocument, path: string }[] = [];
         if (Array.isArray(docs)) {
             for (const doc of docs) {
-                await this.extract(doc, schema, subDocs);
+                await this.extract(doc, schema, subDocs, origins);
             }
         } else {
-            await this.extract(docs, schema, subDocs);
+            await this.extract(docs, schema, subDocs, origins);
         }
 
         const result: IPolicyDocument[] = [];
-        for (const json of subDocs) {
+        for (const [index, json] of subDocs.entries()) {
             const vc = PolicyUtils.createVcFromSubject(json);
-            result.push(PolicyUtils.createUnsignedVC(ref, vc, event.actionStatus?.id));
+            const item = PolicyUtils.createUnsignedVC(ref, vc, event.actionStatus?.id);
+            result.push(markPreviewExtractedDocument(item, origins[index].document, origins[index].path));
         }
         const state: IPolicyEventState = {
             source: docs,

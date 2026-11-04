@@ -1,4 +1,11 @@
+@use '../../../../../schema-engine/preview-loading' as preview;
+
 :host {
+    // Same derived greys as the policy navigation (progress-tracker)
+    --sf-text-2: color-mix(in srgb, var(--guardian-font-color) 75%, transparent);
+    --sf-text-3: var(--color-grey-5);
+    --sf-sunken: color-mix(in srgb, var(--guardian-border-color) 30%, var(--guardian-grey-background));
+    --sf-border-strong: color-mix(in srgb, var(--guardian-border-color) 70%, var(--guardian-font-color));
     display: flex;
     flex-direction: column;
     flex: 1 1 auto;
@@ -54,7 +61,7 @@ form {
         .form-heading-step {
             font-size: 12px;
             font-weight: 500;
-            color: var(--color-grey-4);
+            color: var(--sf-text-3);
         }
 
         .form-heading-title {
@@ -68,26 +75,46 @@ form {
         }
     }
 
-    .form-draft {
+    .form-saved {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        flex: 0 0 auto;
+        font-size: 12px;
+        color: var(--sf-text-3);
+        white-space: nowrap;
+
+        .form-saved-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--color-accent-green-1);
+        }
+    }
+
+    .form-menu {
         position: relative;
         flex: 0 0 auto;
 
-        .form-draft-toggle {
+        .form-menu-toggle {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            width: 36px;
             height: 36px;
-            padding: 0 12px;
             border: 1px solid var(--guardian-border-color);
             border-radius: 8px;
             background: transparent;
             color: var(--guardian-font-color);
-            font-size: 14px;
-            font-weight: 500;
             cursor: pointer;
+
+            &:hover {
+                border-color: var(--color-primary);
+                color: var(--color-primary);
+            }
         }
 
-        .form-draft-menu {
+        .form-menu-pop {
             position: absolute;
             z-index: 10;
             top: calc(100% + 4px);
@@ -99,7 +126,7 @@ form {
             border: 1px solid var(--guardian-border-color);
             border-radius: 8px;
             background: var(--guardian-background);
-            box-shadow: 0 4px 12px rgba(16, 24, 40, 0.12);
+            box-shadow: 0 4px 12px var(--guardian-shadow);
 
             &[hidden] {
                 display: none;
@@ -128,6 +155,10 @@ form {
     justify-items: center;
     justify-content: center;
     align-content: center;
+}
+
+.guardian-loading.preview-loading-overlay {
+    @include preview.overlay;
 }
 
 // Rotates with transform only, so it keeps spinning while the main thread builds the form
@@ -166,27 +197,55 @@ form {
         border: 1px solid var(--guardian-border-color);
         background: var(--guardian-background);
     }
+
+    // The form fills the whole area: the section rail is flush to the top and left,
+    // and the form gives its own content column the padding
+    &.fill {
+        --sf-content-pad: 24px 32px 40px;
+        padding: 0;
+
+        .body-dialog-template {
+            padding-bottom: 0;
+        }
+
+        .form-card {
+            padding: 0;
+            border: 0;
+            border-radius: 0;
+            background: transparent;
+        }
+    }
 }
 
 .form-notice {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 10px;
     margin-bottom: 16px;
-    padding: 10px 16px;
-    border-radius: 8px;
-    font-size: 14px;
+    padding: 9px 12px;
+    border: 1px dashed color-mix(in srgb, var(--color-primary) 30%, transparent);
+    border-radius: 10px;
+    font-family: Inter;
+    font-size: 13px;
     background: var(--guardian-dry-run-background);
-    color: var(--guardian-dry-run-color);
+    color: var(--guardian-font-color);
+
+    > .pi, > svg {
+        color: var(--color-primary);
+    }
 
     .form-notice-text {
-        flex: 1 1 auto;
+        flex: 1 1 180px;
     }
 
     .guardian-button {
-        height: 32px;
-        padding: 0 14px;
+        height: 30px;
+        padding: 0 10px;
+        border-radius: 7px;
+        font-family: Inter;
+        font-size: 12.5px;
+        font-weight: 600;
     }
 }
 
@@ -202,9 +261,72 @@ form {
     &[loading] .action-buttons {
         visibility: hidden;
     }
+
+    .guardian-button {
+        height: 36px;
+        padding: 0 14px;
+        border-radius: 8px;
+        font-family: Inter;
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .guardian-button-primary {
+        border: 1px solid transparent;
+        background: var(--color-primary);
+        color: #fff;
+
+        &:hover:not(:disabled) {
+            background: color-mix(in srgb, var(--color-primary) 88%, #000);
+        }
+    }
+
+    .guardian-button-secondary {
+        border: 1px solid var(--sf-border-strong);
+        background: var(--guardian-background);
+        color: var(--guardian-font-color);
+
+        &:hover:not(:disabled) {
+            background: var(--sf-sunken);
+        }
+    }
+
+    .guardian-button-ghost {
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--sf-text-2);
+
+        &:hover:not(:disabled) {
+            background: var(--sf-sunken);
+            color: var(--guardian-font-color);
+        }
+    }
+
+    // Cancel, then the progress, then the other buttons
+    .action-buttons {
+        gap: 8px;
+
+        .form-button {
+            order: 2;
+        }
+
+        .form-button#cancel {
+            order: 0;
+        }
+
+        .form-progress {
+            order: 1;
+        }
+
+        .action-buttons-spacer {
+            order: 1;
+        }
+    }
 }
 
-.action-buttons {
+.action-buttons,
+.footer-actions {
     display: flex;
     align-items: center;
     user-select: none;
@@ -213,6 +335,34 @@ form {
     .action-buttons-spacer {
         order: 2;
         flex: 1 1 auto;
+    }
+
+    .form-progress {
+        order: 2;
+        flex: 1 1 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-width: 160px;
+        font-family: Inter;
+        font-size: 12.5px;
+        color: var(--sf-text-2);
+
+        .form-progress-link {
+            padding: 0 6px;
+            border: 0;
+            background: transparent;
+            font-family: Inter;
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--color-primary);
+            cursor: pointer;
+
+            &:hover:not(:disabled) {
+                text-decoration: underline;
+            }
+        }
     }
 
     .form-button {
@@ -227,14 +377,6 @@ form {
 
     .form-button[id="cancel"] {
         order: 0;
-    }
-
-    // Fields are all on one page above 810px, so section paging is only needed below it
-    .form-button[id="prev"],
-    .form-button[id="next"] {
-        @media (min-width: 811px) {
-            display: none;
-        }
     }
 
     .form-button[id="prev"] {
@@ -257,16 +399,19 @@ form {
             gap: 8px;
         }
     }
-
-    .last-autosave {
-        order: 1;
-    }
 }
 
-.last-autosave {
-    font-size: 14px;
-    color: var(--color-grey-4);
-    white-space: nowrap;
+.footer-actions {
+    flex-wrap: wrap;
+
+    .footer-spacer {
+        flex: 1 1 auto;
+    }
+
+    .form-footer-hint {
+        font-size: 12.5px;
+        color: var(--sf-text-3);
+    }
 }
 
 .save-icon-color {
@@ -281,36 +426,143 @@ form {
         padding-left: 16px;
         padding-right: 16px;
     }
+
+    .form-body.fill {
+        --sf-content-pad: 16px 16px 24px;
+        padding: 0;
+    }
+
+    .form-header {
+        flex-wrap: wrap;
+        gap: 8px 12px;
+
+        .form-saved {
+            display: none;
+        }
+    }
+
+    .footer-actions {
+        gap: 8px;
+
+        .form-footer-hint,
+        .create-another {
+            display: none;
+        }
+    }
+
+    .form-footer .action-buttons {
+        flex-wrap: wrap;
+        gap: 8px;
+
+        .form-progress {
+            order: -1;
+            flex-basis: 100%;
+            justify-content: flex-start;
+        }
+    }
 }
 
-.relayer-account-steps {
+// Under the header on every screen of the form
+.form-stepper {
     display: flex;
     align-items: center;
-    justify-content: center;
-    height: 48px;
-    min-height: 48px;
-    margin-bottom: 16px;
-}
+    gap: 12px;
+    padding: 10px 32px;
+    border-bottom: 1px solid var(--guardian-border-color);
+    background: var(--guardian-background);
 
-.guardian-step-container {
-    width: 100%;
+    .form-step {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 2px 4px;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        color: var(--sf-text-3);
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 500;
+        white-space: nowrap;
+        cursor: default;
 
-    .guardian-step {
-        margin: 0 !important;
-    }
+        &:not(:disabled) {
+            cursor: pointer;
 
-    .guardian-step-separator {
-        min-height: 34px !important;
-        width: 100%;
-    }
-
-    .guardian-stepper {
-        .guardian-step:first-child {
-            padding-left: 0px;
+            &:hover {
+                color: var(--guardian-font-color);
+                background: var(--guardian-hover);
+            }
         }
 
-        .guardian-step:last-child {
-            padding-right: 0px;
+        &.current {
+            color: var(--guardian-font-color);
+            font-weight: 600;
+        }
+
+        .form-step-marker {
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+            width: 22px;
+            height: 22px;
+            border: 1.5px solid var(--color-grey-3);
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        &.current .form-step-marker {
+            border-color: var(--color-primary);
+            background: var(--color-primary);
+            color: var(--guardian-on-primary-color);
+        }
+
+        &.done .form-step-marker {
+            border-color: transparent;
+            background: var(--guardian-success-background);
+            color: var(--color-accent-green-1);
+        }
+
+        &.bad .form-step-marker {
+            border-color: var(--color-accent-red-1);
+            background: var(--color-accent-red-1);
+            color: var(--guardian-on-primary-color);
+        }
+
+        .form-step-count {
+            padding: 0 6px;
+            border-radius: 999px;
+            background: var(--guardian-failure-background);
+            color: var(--color-accent-red-1);
+            font-size: 11px;
+            font-weight: 600;
+        }
+    }
+
+    .form-stepper-sep {
+        flex: 1 1 auto;
+        min-width: 16px;
+        height: 1.5px;
+        background: var(--color-grey-3);
+
+        &.done {
+            background: var(--color-accent-green-1);
+        }
+    }
+}
+
+@container (max-width: 760px) {
+    .form-stepper {
+        gap: 8px;
+        padding: 8px 16px;
+
+        .form-step:not(.current) .form-step-label {
+            display: none;
+        }
+
+        .form-stepper-sep {
+            min-width: 8px;
         }
     }
 }
@@ -435,5 +687,302 @@ form {
         font-size: 12px;
         line-height: 14px;
         letter-spacing: 0%;
+    }
+}
+
+.form-header .calculation-preview-toggle {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    color: var(--guardian-font-color);
+}
+
+.form-menu[inert] {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+:host ::ng-deep .preview-missing-dropdown.p-select {
+    margin-right: 16px;
+    width: 320px;
+    max-width: 320px;
+
+    .guardian-dropdown-selected .guardian-dropdown-label {
+        color: var(--color-grey-6);
+    }
+
+    .guardian-dropdown-selected .guardian-dropdown-item {
+        color: var(--guardian-font-color);
+    }
+}
+
+.form-header .preview-missing-dropdown {
+    flex: 0 1 auto;
+    align-self: center;
+    min-width: 0;
+}
+
+.preview-missing-option {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+::ng-deep .preview-missing-panel.p-select-overlay {
+    width: 320px;
+    max-width: 320px;
+
+    .p-select-option {
+        overflow: hidden;
+    }
+}
+.form-notice code {
+    font-size: 12px;
+    word-break: break-all;
+}
+
+.form-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: var(--guardian-grey-color);
+    color: var(--guardian-font-color);
+    font-family: var(--font-family-inter, Inter, sans-serif);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+
+    &.ok {
+        background: var(--guardian-success-background);
+        color: var(--color-accent-green-1);
+    }
+
+    &.error {
+        background: var(--guardian-failure-background);
+        color: var(--color-accent-red-1);
+    }
+
+    &.rule {
+        background: var(--guardian-warning-background);
+        color: var(--guardian-warning-color);
+    }
+}
+
+.form-results {
+    font-family: var(--font-family-inter, Inter, sans-serif);
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--guardian-font-color);
+
+    h1,
+    h3,
+    b {
+        font-family: inherit;
+    }
+
+    .form-results-eyebrow {
+        font-size: 12px;
+        color: var(--sf-text-3);
+        margin-bottom: 4px;
+    }
+
+    .form-results-title {
+        margin: 0 0 6px;
+        font-size: 24px;
+        line-height: 1.2;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+    }
+
+    .form-results-lead {
+        max-width: 520px;
+        margin: 0;
+        color: var(--color-grey-6);
+    }
+
+    .form-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 10px;
+        margin: 16px 0;
+
+        .form-stat {
+            padding: 12px 14px;
+            border: 1px solid var(--guardian-border-color);
+            border-radius: 10px;
+            background: var(--guardian-background);
+            font-size: 12.5px;
+            color: var(--color-grey-6);
+
+            b {
+                display: block;
+                font-size: 22px;
+                font-weight: 600;
+                line-height: 1.45;
+                color: var(--guardian-font-color);
+            }
+
+            &.error b {
+                color: var(--color-accent-red-1);
+            }
+
+            &.rule b {
+                color: var(--guardian-warning-color);
+            }
+        }
+    }
+
+    .form-issues-title {
+        margin: 18px 0 8px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--color-grey-6);
+    }
+
+    .form-issue {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+        padding: 10px 12px;
+        border: 1px solid var(--guardian-border-color);
+        border-radius: 10px;
+        background: var(--guardian-background);
+
+        .form-issue-text {
+            flex: 1 1 auto;
+            min-width: 0;
+
+            b {
+                font-size: 14px;
+                font-weight: 600;
+            }
+
+            small {
+                display: block;
+                font-size: 12px;
+                color: var(--sf-text-3);
+            }
+        }
+
+        .guardian-button {
+            height: 28px;
+            padding: 0 10px;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+        }
+    }
+}
+
+.form-submitted {
+    .form-submitted-banner {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        margin-bottom: 16px;
+        padding: 14px 16px;
+        border: 1px solid var(--color-accent-green-1);
+        border-radius: 12px;
+        background: var(--guardian-success-background);
+
+        .form-submitted-icon {
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: var(--color-accent-green-1);
+            color: var(--guardian-on-primary-color);
+        }
+
+        .form-submitted-text {
+            min-width: 0;
+
+            h2 {
+                margin: 0 0 2px;
+                font-size: 17px;
+            }
+
+            p {
+                margin: 0;
+                font-size: 13px;
+            }
+        }
+
+        .form-submitted-facts {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 28px;
+            margin-top: 10px;
+            font-size: 13px;
+
+            small {
+                display: block;
+                font-size: 11.5px;
+                color: var(--sf-text-3);
+            }
+
+            code {
+                font-size: 12px;
+                word-break: break-all;
+            }
+        }
+    }
+
+    .form-submitted-bar {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+
+        b {
+            font-size: 15px;
+        }
+
+        .form-submitted-spacer {
+            flex: 1 1 auto;
+        }
+    }
+
+    .form-toggle {
+        display: inline-flex;
+        padding: 2px;
+        border: 1px solid var(--guardian-border-color);
+        border-radius: 8px;
+
+        button {
+            height: 28px;
+            padding: 0 12px;
+            border: 0;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--sf-text-3);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+
+            &.on {
+                background: var(--guardian-primary-background);
+                color: var(--color-primary);
+            }
+        }
+    }
+
+    .form-submitted-json {
+        margin: 0;
+        padding: 10px 12px;
+        overflow: auto;
+        border-radius: 8px;
+        background: var(--guardian-grey-color);
+        font: 12px/1.5 ui-monospace, Menlo, monospace;
     }
 }

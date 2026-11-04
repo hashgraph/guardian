@@ -4,6 +4,8 @@ import {
     ElementRef,
     OnDestroy,
     ViewChild,
+    ViewChildren,
+    QueryList,
 } from '@angular/core';
 import {
     DialogService,
@@ -17,6 +19,7 @@ import {
     UserPermissions,
 } from '@guardian/interfaces';
 import { ActivatedRoute, Router } from '@angular/router';
+import { SchemaFormRootComponent } from '../schema-form-root/schema-form-root.component';
 import { ProfileService } from 'src/app/services/profile.service';
 import { PolicyComments } from '../../common/policy-comments/policy-comments.component';
 import {
@@ -52,6 +55,8 @@ import { ViewerDialog } from '../../policy-engine/dialogs/viewer-dialog/viewer-d
     standalone: false
 })
 export class VCFullscreenDialog implements OnDestroy {
+    @ViewChildren(SchemaFormRootComponent)
+    formRoots: QueryList<SchemaFormRootComponent>;
     @ViewChild('discussionComponent', { static: false })
     discussionComponent: PolicyComments;
     @ViewChild('documentViewComponent', { static: false })
@@ -543,6 +548,10 @@ export class VCFullscreenDialog implements OnDestroy {
     }
 
     public onUpdatableBtnEvent(isSwitchMode?: boolean) {
+        if (!this.dataForm.valid) {
+            this.formRoots?.forEach((root) => root.revealErrors(root === this.formRoots.first));
+            return;
+        }
         const dialogRef = this.dialog.open(
             ApproveUpdateVcDocumentDialogComponent,
             {
@@ -617,7 +626,7 @@ export class VCFullscreenDialog implements OnDestroy {
         if (!Array.isArray($event)) {
             if ($event.id === 'submit') {
                 $event.disabled = () => {
-                    return !this.dataForm.valid || this.loading || !this.dataForm.dirty;
+                    return this.loading || !this.dataForm.dirty;
                 };
             }
         }

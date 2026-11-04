@@ -1,5 +1,5 @@
 <form>
-    <ng-container *ngFor="let item of fields">
+    <ng-container *ngFor="let item of fields; let i = index"><ng-container *ngIf="i < previewRenderLimit">
 
         <div *ngIf="ifFieldVisible(item) && this.values && this.values[item.name]" class="form-field-container" [attr.field-id]="item.fullPath">
 
@@ -26,15 +26,7 @@
                     </div>
 
                     <div *ngIf="isInput(item) && !isIPFS(item)" class="form-field-input guardian-input-container">
-                        <textarea
-                            pInputTextarea
-                            [value]="displayValue(item)"
-                            [readonly]="true"
-                            type="text"
-                            [autoResize]="true"
-                            rows="1"
-                        >
-                        </textarea>
+                        <app-readonly-textarea [value]="displayValue(item)" [autoResize]="true"></app-readonly-textarea>
                     </div>
 
                     <div *ngIf="isInput(item) && isIPFS(item)" class="form-field-ipfs guardian-input-container">
@@ -182,15 +174,7 @@
                             </div>
 
                             <div *ngIf="isInput(item) && !isIPFS(item)" class="form-field-input guardian-input-container">
-                                <textarea
-                                    pInputTextarea
-                                    [value]="listItem.value"
-                                    [readonly]="true"
-                                    type="text"
-                                    [autoResize]="true"
-                                    rows="1"
-                                >
-                                </textarea>
+                                <app-readonly-textarea [value]="listItem.value" [autoResize]="true"></app-readonly-textarea>
                             </div>
 
                             <div *ngIf="isInput(item) && isIPFS(item)" class="form-field-ipfs guardian-input-container">
@@ -250,13 +234,13 @@
             </div>
 
             <div *ngIf="ifSubSchema(item)" class="form-field-group">
-                <p-accordion class="guardian-accordion" [value]="item.open ? 0 : null" (valueChange)="item.open = ($event === 0); emitAccordionSelect(item.open, item)">
+                <p-accordion class="guardian-accordion" [value]="item.open ? 0 : null" (valueChange)="item.open = ($event === 0); preview && preparePreviewSection(item); emitAccordionSelect(item.open, item)">
                     <p-accordion-panel [value]="0">
                         <p-accordion-header>
                             <div class="label-field-accordion" [attr.accordiontabid]="item.fullPath">{{item.description}}</div>
                         </p-accordion-header>
                         <p-accordion-content>
-                        <ng-container *ngIf="item.open">
+                        <ng-container *ngIf="item.open && (!preview || item.previewReady)">
                             <div *ngIf="this.values && this.values[item.name]" class="form-field-array-item">
                                 <div class="form-field-group">
                                     <ng-container [ngSwitch]="item.customType">
@@ -281,6 +265,8 @@
                                             [formulas]="formulas"
                                             [link]="item.link"
                                             [accordionLink]="item.accordionLink"
+                                            [preview]="preview"
+                                            (previewLoadingChange)="preview && previewLoadingChange.emit($event)"
                                             [discussion]="discussionData"
                                             [discussion-view]="discussionView"
                                             [discussion-action]="discussionAction"
@@ -298,7 +284,10 @@
 
             <!-- array of objects as table -->
             <div *ngIf="canDrawTable(item)">
-                <p-table [value]="getTableHRowFields(item) || []">
+                <p-table
+                    [value]="getTableHRowFields(item) || []"
+                    [paginator]="preview && item.list.length > 25"
+                    [rows]="preview ? 25 : undefined">
                     <ng-template pTemplate="header">
                         <tr [attr.accordiontabid]="item.fullPath">
                             <th style="width: 3rem">#</th>
@@ -323,15 +312,7 @@
                                         </div>
 
                                         <div *ngIf="isInput(field) && !isIPFS(field)" class="form-field-input guardian-input-container">
-                                            <textarea
-                                                pInputTextarea
-                                                class="textarea-resize-none"
-                                                [value]="field.value ?? ''"
-                                                [readonly]="true"
-                                                type="text"
-                                                rows="1"
-                                            >
-                                            </textarea>
+                                            <app-readonly-textarea [value]="field.value ?? ''" [resizeNone]="true"></app-readonly-textarea>
                                         </div>
 
                                         <div
@@ -457,13 +438,13 @@
             </div>
 
             <div *ngIf="ifSubSchemaArray(item) && !canDrawTable(item)" class="form-field-group schema-form-field-array-group">
-                <p-accordion class="guardian-accordion" [value]="item.open ? 0 : null" (valueChange)="item.open = ($event === 0); emitAccordionSelect(item.open, item)">
+                <p-accordion class="guardian-accordion" [value]="item.open ? 0 : null" (valueChange)="item.open = ($event === 0); preview && preparePreviewSection(item); emitAccordionSelect(item.open, item)">
                     <p-accordion-panel [value]="0">
                         <p-accordion-header>
                             <div class="label-field-accordion" [attr.accordiontabid]="item.fullPath">{{item.description}}</div>
                         </p-accordion-header>
                         <p-accordion-content>
-                        <ng-container *ngIf="item.open">
+                        <ng-container *ngIf="item.open && (!preview || item.previewReady)">
                             <div
                                 *ngFor="let listItem of getItemsPage(item)"
                                 class="form-field-array-item short-delimiter"
@@ -492,6 +473,8 @@
                                             [formulas]="formulas"
                                             [link]="item.link"
                                             [accordionLink]="item.accordionLink"
+                                            [preview]="preview"
+                                            (previewLoadingChange)="preview && previewLoadingChange.emit($event)"
                                             [discussion]="discussionData"
                                             [discussion-view]="discussionView"
                                             [discussion-action]="discussionAction"
@@ -523,7 +506,7 @@
 
         <div *ngIf="!delimiterHide" class="delimiter"></div>
 
-    </ng-container>
+    </ng-container></ng-container>
 </form>
 
 <p-popover #richTextPopover styleClass="rich-text-view-popover">

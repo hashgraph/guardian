@@ -36,6 +36,13 @@ export class PolicyProgressService {
         this.dataSubject.next(data);
     }
 
+    // Keeps the role current without notifying `data$` subscribers
+    setRole(role: string): void {
+        if (role) {
+            this._role = role;
+        }
+    }
+
     getCurrentRole(): string {
         return this._role;
     }

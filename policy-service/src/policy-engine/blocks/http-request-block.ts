@@ -1,3 +1,4 @@
+import { markPreviewResultDocument } from '../helpers/preview.js';
 import { BasicBlock } from '../helpers/decorators/basic-block.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
@@ -242,6 +243,9 @@ export class HttpRequestBlock {
 
         const doc = await this.requestDocument(method, url, headers, requestBody ? JSON.parse(requestBody) : undefined, event?.user?.userId);
         const item = PolicyUtils.createVC(ref, event.user, doc, event.actionStatus?.id);
+        if (event.actionStatus?.preview) {
+            markPreviewResultDocument(item);
+        }
 
         const tags = await PolicyUtils.getBlockTags(ref);
         PolicyUtils.setDocumentTags(item, tags);

@@ -2421,28 +2421,11 @@
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    align-items: center;
     padding: 24px 16px;
 
     ::ng-deep app-schema-form-root {
         display: block;
         width: 100%;
-        max-width: 720px;
-
-        .schema-form-root {
-            display: block;
-        }
-
-        .schema-form-view-nav,
-        .resize-handler {
-            display: none !important;
-        }
-
-        .schema-form-content {
-            width: 100% !important;
-            max-width: 100% !important;
-            flex: unset !important;
-        }
     }
 }
 
@@ -4601,24 +4584,9 @@
     }
 }
 
-// ── Ref-field values form: hide nav panel, expand content to full width ───────
+// ── Ref-field values form (single page, no rail) ───────
 .sc-fv-ref-form {
     margin-top: 4px;
-
-    ::ng-deep .schema-form-view-nav,
-    ::ng-deep .resize-handler {
-        display: none !important;
-    }
-
-    ::ng-deep .schema-form-content {
-        flex: 0 0 100% !important;
-        min-width: 0 !important;
-        width: 100% !important;
-    }
-
-    ::ng-deep .schema-form-root {
-        min-height: 0;
-    }
 }
 
 .sc-array-link-canvas {

@@ -2,6 +2,8 @@ import { ITableField } from '../interface/table-field.interface.js';
 
 export const TABLE_FORMULA_MAX_ROWS = 10000;
 
+export const TABLE_MAX_BYTES = 10 * 1024 * 1024;
+
 export interface ITableFormulaColumn {
     key: string;
     name: string;
@@ -17,6 +19,13 @@ type TableFormulaPack = Record<string, {
     rows: any[];
     columnKeys: string[];
 }>;
+
+/**
+ * Returns the message shown when tables are larger than TABLE_MAX_BYTES.
+ */
+export function getTableTooLargeMessage(bytes: number): string {
+    return `Tables are too large (${(bytes / (1024 * 1024)).toFixed(1)} MB). The limit is ${TABLE_MAX_BYTES / (1024 * 1024)} MB.`;
+}
 
 /**
  * Returns true if the value is a plain object (i.e., created via object literal or Object).
