@@ -198,7 +198,7 @@ export class SendToGuardianBlock {
                 delete old.draftId;
             }
             old = this.mapDocument(old, document);
-            old = await PolicyUtils.updateVC(ref, old, userId);
+            old = this.recordPreviewSave(await PolicyUtils.updateVC(ref, old, userId));
         } else {
             if (!document.draft) {
                 delete document.draftId;
@@ -249,12 +249,24 @@ export class SendToGuardianBlock {
         let old = await this.getVPRecord(document, operation, ref);
         if (old) {
             old = this.mapDocument(old, document);
-            return await ref.databaseServer.updateVP(old);
+            return this.recordPreviewSave(await ref.databaseServer.updateVP(old));
         } else {
             delete document.id;
             delete document._id;
             return await ref.databaseServer.saveVP(document)
         }
+    }
+
+    /**
+     * Count an updated output record as the latest Preview save of its branch
+     * @param record
+     */
+    private recordPreviewSave<D extends IPolicyDocument>(record: D): D {
+        const id = record?._id ?? record?.id;
+        if (id !== undefined && id !== null) {
+            PreviewScope.current()?.previewBranches?.save(String(id));
+        }
+        return record;
     }
 
     /**
