@@ -145,6 +145,8 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     public previewTab: 'doc' | 'json' = 'doc';
     public previewJson = '';
     public previewViewLoading: number = 0;
+    /** Loading viewers per card: a viewer that stays mounted while hidden still reports. */
+    private previewLoadingByCard = new Map<number, number>();
 
     public get isPreviewBusy(): boolean {
         return this.previewMode && (this.loading || this.previewRendering || this.previewBusyHold);
@@ -291,7 +293,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         this.previewIndex = index;
         this.previewVisited.add(index);
         this.previewJson = this.stringifyPreviewItem();
-        this.previewViewLoading = 0;
+        this.previewViewLoading = this.previewLoadingByCard.get(index) ?? 0;
     }
 
     private stringifyPreviewItem(): string {
@@ -299,8 +301,11 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         return item ? JSON.stringify(item.document ?? null, null, 2) : '';
     }
 
-    public onPreviewViewLoadingChange(loading: boolean): void {
-        this.previewViewLoading = Math.max(0, this.previewViewLoading + (loading ? 1 : -1));
+    public onPreviewViewLoadingChange(index: number, loading: boolean): void {
+        const count = Math.max(0, (this.previewLoadingByCard.get(index) ?? 0) + (loading ? 1 : -1));
+        this.previewLoadingByCard.set(index, count);
+        // Only the open card can hold the overlay
+        this.previewViewLoading = this.previewLoadingByCard.get(this.previewIndex) ?? 0;
         this.changeDetectorRef.markForCheck();
     }
 
@@ -1016,6 +1021,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         this.previewDiscoveryWarning = false;
         this.previewTab = 'doc';
         this.previewJson = '';
+        this.previewLoadingByCard.clear();
         this.previewViewLoading = 0;
     }
 

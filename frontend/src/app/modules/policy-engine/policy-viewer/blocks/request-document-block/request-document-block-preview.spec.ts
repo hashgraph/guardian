@@ -69,6 +69,7 @@ describe('request document preview wiring', () => {
         component.previewRequiredFields = null;
         component.previewRequest = 0;
         component.previewVisited = new Set<number>();
+        component.previewLoadingByCard = new Map<number, number>();
         component.previewRequiredText = '';
         component.docTab = 'doc';
         component.previewTab = 'doc';
@@ -315,6 +316,23 @@ describe('request document preview wiring', () => {
             component.selectPreviewItem(0);
             await component.onPreviewModeChange(false);
             expect(component.previewVisited.size).toBe(0);
+        });
+
+        it('keeps the overlay for the open card when a hidden viewer finishes loading', async () => {
+            const { component } = form([Promise.resolve(response(['amount'], [], chain))], blockParent());
+            component.previewMode = true;
+            await component.onStep();
+            component.onPreviewViewLoadingChange(1, true);
+            component.selectPreviewItem(0);
+            expect(component.previewViewLoading).toBe(0);
+            component.onPreviewViewLoadingChange(0, true);
+            expect(component.previewViewLoading).toBe(1);
+            component.onPreviewViewLoadingChange(1, false);
+            expect(component.previewViewLoading).toBe(1);
+            component.onPreviewViewLoadingChange(0, false);
+            expect(component.previewViewLoading).toBe(0);
+            component.selectPreviewItem(1);
+            expect(component.previewViewLoading).toBe(0);
         });
 
         it('flips between Document and JSON without touching the visited cards', async () => {

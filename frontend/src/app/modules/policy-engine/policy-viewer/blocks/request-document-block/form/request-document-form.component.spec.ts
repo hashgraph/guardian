@@ -174,6 +174,52 @@ describe('RequestDocumentFormComponent', () => {
     describe('submitted', () => {
         const document = { id: 'urn:uuid:1', issuanceDate: '2026-11-01T10:42:00.000Z' };
 
+        it('gives the document to the viewer and marks the active view button', () => {
+            const { fixture, component } = create();
+            (component as any).showSubmitted({ response: { document } }, { name: 'x' });
+            fixture.detectChanges();
+            const element: HTMLElement = fixture.nativeElement;
+
+            expect((element.querySelector('app-document-view') as any).document).toBe(document);
+            const buttons = [...element.querySelectorAll<HTMLButtonElement>('.form-submitted-bar .form-toggle button')];
+            expect(buttons.map((button) => button.classList.contains('on'))).toEqual([true, false]);
+            expect(buttons.map((button) => button.getAttribute('aria-pressed'))).toEqual(['true', 'false']);
+
+            buttons[1].click();
+            fixture.detectChanges();
+            expect(buttons.map((button) => button.classList.contains('on'))).toEqual([false, true]);
+            expect(element.querySelector('app-document-view')).not.toBeNull();
+            expect(element.querySelector<HTMLElement>('pre.form-submitted-json')!.hidden).toBeFalse();
+            fixture.destroy();
+        });
+
+        it('keeps a viewer per visited preview card and shows the document in it', () => {
+            const { fixture, component } = create();
+            const item = (id: string, role: 'input' | 'result') => ({
+                role, label: id, blockType: null, source: null, target: null, document: { id }, title: id, sub: ''
+            });
+            component.previewMode = true;
+            (component as any).previewSubmitLabel = true;
+            component.previewItems = [item('a', 'input'), item('b', 'result')] as any;
+            component.previewIndex = 1;
+            component.previewVisited = new Set([1]);
+            component.screen = 'presults';
+            (component as any).changeDetectorRef.markForCheck();
+            fixture.detectChanges();
+            const element: HTMLElement = fixture.nativeElement;
+            const views = () => [...element.querySelectorAll('app-document-view')] as any[];
+
+            expect(views().map((view) => view.document)).toEqual([{ id: 'b' }]);
+            component.selectPreviewItem(0);
+            (component as any).changeDetectorRef.markForCheck();
+            fixture.detectChanges();
+            expect(views().map((view) => view.document)).toEqual([{ id: 'a' }, { id: 'b' }]);
+            expect(views().map((view) => view.parentElement.parentElement.hidden)).toEqual([false, true]);
+            const buttons = [...element.querySelectorAll<HTMLButtonElement>('.form-pres-head .form-toggle button')];
+            expect(buttons.map((button) => button.getAttribute('aria-pressed'))).toEqual(['true', 'false']);
+            fixture.destroy();
+        });
+
         it('builds the snapshot and stops the autosave', () => {
             const { fixture, component } = create();
             const autosave = new Subscription();

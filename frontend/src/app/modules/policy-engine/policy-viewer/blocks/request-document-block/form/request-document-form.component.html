@@ -211,7 +211,8 @@
                           hidden: i !== previewIndex,
                           policyId: policyId,
                           dryRun: !!dryRun,
-                          preview: true
+                          preview: true,
+                          index: i
                         }">
                       </ng-container>
                     }
@@ -269,7 +270,8 @@
               hidden: false,
               policyId: sub.policyId,
               dryRun: sub.dryRun,
-              preview: false
+              preview: false,
+              index: -1
             }">
           </ng-container>
         }
@@ -554,7 +556,7 @@
   </div>
 }
 
-<ng-template #docToggle let-tab let-kind="kind">
+<ng-template #docToggle let-tab="tab" let-kind="kind">
   <div class="form-toggle" role="group" aria-label="Document view">
     <button type="button" [class.on]="tab === 'doc'" [attr.aria-pressed]="tab === 'doc'" (click)="setDocView(kind, 'doc')">Document</button>
     <button type="button" [class.on]="tab === 'json'" [attr.aria-pressed]="tab === 'json'" (click)="setDocView(kind, 'json')">JSON</button>
@@ -562,7 +564,7 @@
 </ng-template>
 
 <!-- The viewer and the JSON pane are both kept in the DOM and switched with [hidden], so the viewer survives a flip -->
-<ng-template #docPane let-document let-json="json" let-tab="tab" let-hidden="hidden" let-policyId="policyId" let-dryRun="dryRun" let-preview="preview">
+<ng-template #docPane let-document="document" let-json="json" let-tab="tab" let-hidden="hidden" let-policyId="policyId" let-dryRun="dryRun" let-preview="preview" let-index="index">
   <div [hidden]="hidden">
     <div [hidden]="tab !== 'doc'">
       <app-document-view
@@ -571,7 +573,7 @@
         [type]="'VC'"
         [policyId]="policyId"
         [dryRun]="dryRun"
-        (previewLoadingChange)="preview && onPreviewViewLoadingChange($event)">
+        (previewLoadingChange)="preview && onPreviewViewLoadingChange(index, $event)">
       </app-document-view>
     </div>
     <pre class="form-submitted-json" [hidden]="tab !== 'json'">{{ json }}</pre>
