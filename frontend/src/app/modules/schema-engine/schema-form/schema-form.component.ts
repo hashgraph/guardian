@@ -593,18 +593,9 @@ export class SchemaFormComponent implements OnInit {
     }
 
     public metaType(item: IFieldControl<any>): string {
-        let base: string;
-        if (item.isRef) {
-            base = 'sub-schema';
-        } else if (item.customType) {
-            base = item.customType;
-        } else {
-            base = item.format ? `${item.type} · ${item.format}` : String(item.type || '');
-        }
-        if (item.isArray) {
-            return `array · ${base}`;
-        }
-        return item.isRef ? `object · ${base}` : base;
+        const base = item.customType
+            || (item.format ? `${item.type} · ${item.format}` : String(item.type || ''));
+        return item.isArray ? `array · ${base}` : base;
     }
 
     public metaTags(item: IFieldControl<any>): { text: string; title?: string }[] {

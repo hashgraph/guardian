@@ -123,6 +123,8 @@ export class FieldForm {
     private conditionRevealMap: Map<string, { condition: SchemaCondition, branch: 'then' | 'else' }[]>;
 
     private readonly conditionFields: Set<string>;
+    /** Every then/else field name, including user-ordered ones that conditionFields skips. */
+    private readonly conditionalNames: Set<string>;
     private ownParentControlledFields: Set<string>;
     private readonly childControlledFields: Map<string, Set<string>>;
     private readonly ancestorChildPaths: Map<string, Set<string>>;
@@ -141,7 +143,7 @@ export class FieldForm {
 
     /** True when the field is shown or hidden by a condition of this schema. */
     public isConditional(item: IFieldControl<any>): boolean {
-        return this.conditionFields.has(item.name);
+        return this.conditionalNames.has(item.name);
     }
 
     private arrayGroupCache: Map<IFieldControl<any>, IArrayGroupEntry[]> | null = null;
@@ -162,6 +164,7 @@ export class FieldForm {
         this.validateLikeDryRun = validateLikeDryRun;
         this.privateFields = {};
         this.conditionFields = new Set<string>();
+        this.conditionalNames = new Set<string>();
         this.ownParentControlledFields = new Set<string>();
         this.childControlledFields = new Map<string, Set<string>>();
         this.ancestorChildPaths = new Map<string, Set<string>>();
@@ -288,13 +291,12 @@ export class FieldForm {
         }
 
         this.conditionFields.clear();
+        this.conditionalNames.clear();
         this.childControlledFields.clear();
         if (conditions) {
             for (const condition of conditions) {
-                for (const field of (condition.thenFields || [])) {
-                    if (!field.conditionUserOrdered) { this.conditionFields.add(field.name); }
-                }
-                for (const field of (condition.elseFields || [])) {
+                for (const field of [...(condition.thenFields || []), ...(condition.elseFields || [])]) {
+                    this.conditionalNames.add(field.name);
                     if (!field.conditionUserOrdered) { this.conditionFields.add(field.name); }
                 }
                 const allTargets: SchemaConditionTarget[] = [

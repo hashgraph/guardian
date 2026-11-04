@@ -109,4 +109,22 @@ describe('SchemaFormComponent field metadata', () => {
         expect(form.isConditional({ name: 'b' } as any)).toBeTrue();
         expect(form.isConditional({ name: 'c' } as any)).toBeFalse();
     });
+
+    it('flags a user-ordered field revealed by a condition', () => {
+        const field = (name: string, extra: any = {}): any => ({
+            name, title: name, description: name, type: 'string',
+            isArray: false, isRef: false, required: false, readOnly: false, ...extra,
+        });
+        const form = new FieldForm(new UntypedFormGroup({}));
+        form.setData({
+            fields: [field('a'), field('b', { conditionUserOrdered: true })],
+            conditions: [{
+                ifCondition: { field: field('a'), fieldValue: '1' },
+                thenFields: [field('b', { conditionUserOrdered: true })],
+                elseFields: [],
+            }],
+        });
+        form.build();
+        expect(form.isConditional({ name: 'b' } as any)).toBeTrue();
+    });
 });
