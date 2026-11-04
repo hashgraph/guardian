@@ -136,7 +136,7 @@
                   class="full-width"
                   (onChange)="onTypeChange(geometry)">
                 </p-select>
-                @if (!type) {
+                @if (!geometry.type) {
                   <small class="p-error">This field is required.</small>
                 }
               </div>
