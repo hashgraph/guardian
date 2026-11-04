@@ -577,8 +577,14 @@ export class SchemaFormComponent implements OnInit {
 
     public copyValue(item: IFieldControl<any>): void {
         const value = item.control?.value;
-        if (value !== undefined && value !== null && typeof navigator !== 'undefined' && navigator.clipboard) {
-            navigator.clipboard.writeText(String(value)).catch(() => { });
+        if (value !== undefined && value !== null) {
+            this.writeClipboard(String(value));
+        }
+    }
+
+    private writeClipboard(text: string): void {
+        if (typeof navigator !== 'undefined' && navigator.clipboard) {
+            navigator.clipboard.writeText(text).catch(() => { });
         }
     }
 
@@ -638,8 +644,8 @@ export class SchemaFormComponent implements OnInit {
 
     public copyPath(item: IFieldControl<any>): void {
         const path = this.metaPath(item);
-        if (path && typeof navigator !== 'undefined' && navigator.clipboard) {
-            navigator.clipboard.writeText(path).catch(() => { });
+        if (path) {
+            this.writeClipboard(path);
         }
     }
 

@@ -163,9 +163,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         this.model = null;
         this.railHiddenProp.load();
         this.preferences?.reload();
-        this.showMetadata = !!this.preferences?.showFieldMetadata;
         this.metadataSub = this.preferences?.showFieldMetadata$.subscribe((value) => {
-            this.showMetadata = value;
             if (this.model) {
                 this.model.showMetadata = value;
                 this.changeDetectorRef.markForCheck();
@@ -415,7 +413,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             keepDefaultLabels: !this.userPreset,
         });
         this.model.errorsRevealed = this.errorsRevealed;
-        this.model.showMetadata = this.showMetadata;
+        this.model.showMetadata = !!this.preferences?.showFieldMetadata;
         this.model.build();
         this.updatePreviewMissingFieldIds();
         this.controlsSub = this.model.controlsChanged$.subscribe(() => {
@@ -526,7 +524,6 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     private userPreset = false;
 
     public errorsRevealed = false;
-    public showMetadata = false;
     private metadataSub?: Subscription;
 
     public previewMissingFieldIds: string[] = [];

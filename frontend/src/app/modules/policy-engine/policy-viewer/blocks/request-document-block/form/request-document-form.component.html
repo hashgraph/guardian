@@ -50,14 +50,14 @@
           class="form-menu-switch"
           role="menuitemcheckbox"
           tabindex="0"
-          [attr.aria-checked]="!!(formPreferences.showFieldMetadata$ | async)"
+          [attr.aria-checked]="formPreferences.showFieldMetadata"
           (click)="$event.stopPropagation(); formPreferences.setShowFieldMetadata(!formPreferences.showFieldMetadata)"
           (keydown.enter)="formPreferences.setShowFieldMetadata(!formPreferences.showFieldMetadata)"
           (keydown.space)="$event.preventDefault(); formPreferences.setShowFieldMetadata(!formPreferences.showFieldMetadata)">
           <span>Show field metadata</span>
           <p-toggleswitch
             tabindex="-1"
-            [ngModel]="formPreferences.showFieldMetadata$ | async"
+            [ngModel]="formPreferences.showFieldMetadata"
             [readonly]="true"
             (click)="$event.preventDefault()">
           </p-toggleswitch>

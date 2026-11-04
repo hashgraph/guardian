@@ -36,7 +36,7 @@
                   }
                 </div>
                 <!-- slot for field help text (7193) -->
-                @if (showMetadata && !isHelpText(item)) {
+                @if (showMetadata) {
                   <ng-container *ngTemplateOutlet="sfMeta; context: { $implicit: item }"></ng-container>
                 }
               }
