@@ -76,7 +76,6 @@ describe('Textarea layout in the request form and the document view', () => {
         fixture.nativeElement.style.display = 'block';
         fixture.nativeElement.style.width = '900px';
         document.body.appendChild(fixture.nativeElement);
-        fixture.componentInstance.isShown = fixture.componentInstance.isShown.map(() => true);
         const rows = model.controls!.find((item) => item.name === 'rows')!;
         for (const target of [rows, ...rows.list!]) {
             target.open = true;

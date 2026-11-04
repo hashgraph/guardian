@@ -89,6 +89,37 @@ function chooseChoiceGroups() {
     });
 }
 
+// A form with sub-schemas opens on its overview and draws only the active section, so a
+// field query can match nothing in a section. Search with jQuery: cy.get would retry and time out.
+function inForm(selector) {
+    return cy.get(UserPoliciesPageLocators.requestForm).then(($form) => $form.find(selector));
+}
+
+// Fills the form section by section: opens the overview's Start (or Continue) when the
+// form opens on it, runs fill(), then follows the footer's Next until it disappears.
+// Works with the rail (wide windows) and with the section bar (Cypress default 1000px).
+function fillFormSections(fill) {
+    const form = UserPoliciesPageLocators.requestForm;
+    cy.get('body').then(($body) => {
+        const $start = $body.find(`${form} .sf-overview-actions button`);
+        if ($start.length) {
+            cy.wrap($start.first()).click();
+        }
+    });
+    fill();
+    const next = () => {
+        cy.get('body').then(($body) => {
+            const $next = $body.find(`${form} .form-button[id="next"][visible="true"] button`);
+            if ($next.length) {
+                cy.wrap($next.first()).click();
+                fill();
+                next();
+            }
+        });
+    };
+    next();
+}
+
 export class UserPoliciesPage {
 
     openPoliciesTab() {
@@ -119,42 +150,44 @@ export class UserPoliciesPage {
         if (role == 'Project_Proponent') {
             Checks.waitForElement(UserPoliciesPageLocators.requestDocumentBlock);
             cy.get(UserPoliciesPageLocators.newVerraProjectButton).click();
-            cy.get(UserPoliciesPageLocators.enterTextInput).then((els) => {
-                [...els].forEach((el) =>
-                    cy.wrap(el).type('Test text', { force: true })
-                );
-            });
-            cy.get(UserPoliciesPageLocators.enterNumInput).then((els) => {
-                [...els].forEach((el) => cy.wrap(el).type('123', { force: true }));
-            });
-            cy.get('input[aria-haspopup="dialog"]').then((els) => {
-                [...els].forEach((el) =>
-                    cy.wrap(el).type(d.toLocaleDateString('en-GB'))
-                );
-            });
-            cy.get('input[aria-haspopup="dialog"]').then((els) => {
-                [...els].forEach((el) =>
-                    cy.wrap(el).type(d.toLocaleDateString('ipfs://ba'))
-                );
-            });
-            cy.get(UserPoliciesPageLocators.enterEmailInput).then((els) => {
-                [...els].forEach((el) =>
-                    cy.wrap(el).type('asd@dsa.dsa')
-                );
-            });
-            cy.get(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
-                [...els].forEach((el) => {
-                    cy.wrap(el).click();
-                    cy.get(CommonElements.dropdownOption);
+            fillFormSections(() => {
+                inForm(UserPoliciesPageLocators.enterTextInput).then((els) => {
+                    [...els].forEach((el) =>
+                        cy.wrap(el).type('Test text', { force: true })
+                    );
                 });
-            });
-            chooseChoiceGroups();
-            cy.get(UserPoliciesPageLocators.enterPosInput).then((els) => {
-                [...els].forEach((el) => {
-                    cy.wrap(el).type('[1.23,4.56]')
+                inForm(UserPoliciesPageLocators.enterNumInput).then((els) => {
+                    [...els].forEach((el) => cy.wrap(el).type('123', { force: true }));
                 });
+                inForm('input[aria-haspopup="dialog"]').then((els) => {
+                    [...els].forEach((el) =>
+                        cy.wrap(el).type(d.toLocaleDateString('en-GB'))
+                    );
+                });
+                inForm('input[aria-haspopup="dialog"]').then((els) => {
+                    [...els].forEach((el) =>
+                        cy.wrap(el).type(d.toLocaleDateString('ipfs://ba'))
+                    );
+                });
+                inForm(UserPoliciesPageLocators.enterEmailInput).then((els) => {
+                    [...els].forEach((el) =>
+                        cy.wrap(el).type('asd@dsa.dsa')
+                    );
+                });
+                inForm(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
+                    [...els].forEach((el) => {
+                        cy.wrap(el).click();
+                        cy.get(CommonElements.dropdownOption);
+                    });
+                });
+                chooseChoiceGroups();
+                inForm(UserPoliciesPageLocators.enterPosInput).then((els) => {
+                    [...els].forEach((el) => {
+                        cy.wrap(el).type('[1.23,4.56]')
+                    });
+                });
+                chooseChoiceGroups();
             });
-            chooseChoiceGroups();
             cy.get(UserPoliciesPageLocators.createButton).click();
             this.closeSubmitted();
             Checks.waitForElement(UserPoliciesPageLocators.waitingForAdded);
@@ -299,46 +332,48 @@ export class UserPoliciesPage {
     createReport() {
         cy.get("p:contains('Projects')").click();
         cy.get(UserPoliciesPageLocators.createReportButton).click();
-        cy.get(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
-            [...els].forEach((el) => {
-                cy.wrap(el).click();
-                cy.get(CommonElements.dropdownOption).first().click();
+        fillFormSections(() => {
+            inForm(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
+                [...els].forEach((el) => {
+                    cy.wrap(el).click();
+                    cy.get(CommonElements.dropdownOption).first().click();
+                });
             });
-        });
-        chooseChoiceGroups();
-        cy.get(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
-            [...els].forEach((el) => {
-                cy.wrap(el).click();
-                cy.get(CommonElements.dropdownOption).first().click();
+            chooseChoiceGroups();
+            inForm(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
+                [...els].forEach((el) => {
+                    cy.wrap(el).click();
+                    cy.get(CommonElements.dropdownOption).first().click();
+                });
             });
-        });
-        chooseChoiceGroups();
-        cy.get(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
-            [...els].forEach((el) => {
-                cy.wrap(el).click();
-                cy.get(CommonElements.dropdownOption).first().click();
+            chooseChoiceGroups();
+            inForm(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
+                [...els].forEach((el) => {
+                    cy.wrap(el).click();
+                    cy.get(CommonElements.dropdownOption).first().click();
+                });
             });
-        });
-        chooseChoiceGroups();
-        cy.get(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
-            [...els].forEach((el) => {
-                cy.wrap(el).click();
-                cy.get(CommonElements.dropdownOption).first().click();
+            chooseChoiceGroups();
+            inForm(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
+                [...els].forEach((el) => {
+                    cy.wrap(el).click();
+                    cy.get(CommonElements.dropdownOption).first().click();
+                });
             });
-        });
-        chooseChoiceGroups();
-        cy.get(UserPoliciesPageLocators.enterTextInput).then((els) => {
-            [...els].forEach((el) =>
-                cy.wrap(el).type('Test text', { force: true })
-            );
-        });
-        cy.get(UserPoliciesPageLocators.enterNumInput).then((els) => {
-            [...els].forEach((el) => cy.wrap(el).type('123', { force: true }));
-        });
-        cy.get('input[aria-haspopup="dialog"]').then((els) => {
-            [...els].forEach((el) =>
-                cy.wrap(el).type('2025-01-03', { force: true })
-            );
+            chooseChoiceGroups();
+            inForm(UserPoliciesPageLocators.enterTextInput).then((els) => {
+                [...els].forEach((el) =>
+                    cy.wrap(el).type('Test text', { force: true })
+                );
+            });
+            inForm(UserPoliciesPageLocators.enterNumInput).then((els) => {
+                [...els].forEach((el) => cy.wrap(el).type('123', { force: true }));
+            });
+            inForm('input[aria-haspopup="dialog"]').then((els) => {
+                [...els].forEach((el) =>
+                    cy.wrap(el).type('2025-01-03', { force: true })
+                );
+            });
         });
         cy.get(UserPoliciesPageLocators.createButton).click();
         cy.get('.preloader-image').should('not.exist');
@@ -348,42 +383,44 @@ export class UserPoliciesPage {
 
     createReportVerra() {
         cy.get(UserPoliciesPageLocators.createReportButton).click();
-        cy.get(UserPoliciesPageLocators.enterTextInput).then((els) => {
-            [...els].forEach((el) =>
-                cy.wrap(el).type('Test text', { force: true })
-            );
-        });
-        cy.get(UserPoliciesPageLocators.enterNumInput).then((els) => {
-            [...els].forEach((el) => cy.wrap(el).type('123', { force: true }));
-        });
-        cy.get('input[aria-haspopup="dialog"]').then((els) => {
-            [...els].forEach((el) =>
-                cy.wrap(el).type(d.toLocaleDateString('en-GB'))
-            );
-        });
-        cy.get('input[aria-haspopup="dialog"]').then((els) => {
-            [...els].forEach((el) =>
-                cy.wrap(el).type('ipfs://ba')
-            );
-        });
-        cy.get(UserPoliciesPageLocators.enterEmailInput).then((els) => {
-            [...els].forEach((el) =>
-                cy.wrap(el).type('asd@dsa.dsa')
-            );
-        });
-        cy.get(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
-            [...els].forEach((el) => {
-                cy.wrap(el).click();
-                cy.get(CommonElements.dropdownOption);
+        fillFormSections(() => {
+            inForm(UserPoliciesPageLocators.enterTextInput).then((els) => {
+                [...els].forEach((el) =>
+                    cy.wrap(el).type('Test text', { force: true })
+                );
             });
-        });
-        chooseChoiceGroups();
-        cy.get(UserPoliciesPageLocators.enterPosInput).then((els) => {
-            [...els].forEach((el) => {
-                cy.wrap(el).type('[1.23,4.56]')
+            inForm(UserPoliciesPageLocators.enterNumInput).then((els) => {
+                [...els].forEach((el) => cy.wrap(el).type('123', { force: true }));
             });
+            inForm('input[aria-haspopup="dialog"]').then((els) => {
+                [...els].forEach((el) =>
+                    cy.wrap(el).type(d.toLocaleDateString('en-GB'))
+                );
+            });
+            inForm('input[aria-haspopup="dialog"]').then((els) => {
+                [...els].forEach((el) =>
+                    cy.wrap(el).type('ipfs://ba')
+                );
+            });
+            inForm(UserPoliciesPageLocators.enterEmailInput).then((els) => {
+                [...els].forEach((el) =>
+                    cy.wrap(el).type('asd@dsa.dsa')
+                );
+            });
+            inForm(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
+                [...els].forEach((el) => {
+                    cy.wrap(el).click();
+                    cy.get(CommonElements.dropdownOption);
+                });
+            });
+            chooseChoiceGroups();
+            inForm(UserPoliciesPageLocators.enterPosInput).then((els) => {
+                [...els].forEach((el) => {
+                    cy.wrap(el).type('[1.23,4.56]')
+                });
+            });
+            chooseChoiceGroups();
         });
-        chooseChoiceGroups();
         cy.get(UserPoliciesPageLocators.createButton).click();
         cy.get(CommonElements.Loading).should('not.exist');
         cy.get('.preloader-image').should('not.exist');
@@ -409,59 +446,61 @@ export class UserPoliciesPage {
         cy.get("p:contains('Projects')").click();
         Checks.waitForLoading();
         cy.get(UserPoliciesPageLocators.newProjectButton).click();
-        cy.get(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
-            cy.log(els.length);
-            [...els].forEach((el) => {
-                cy.wrap(el).click();
-                cy.get(CommonElements.dropdownOption).first().click();
+        fillFormSections(() => {
+            inForm(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
+                cy.log(els.length);
+                [...els].forEach((el) => {
+                    cy.wrap(el).click();
+                    cy.get(CommonElements.dropdownOption).first().click();
+                });
             });
-        });
-        chooseChoiceGroups();
-        cy.get(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
-            cy.log(els.length);
-            [...els].forEach((el) => {
-                cy.wrap(el).click();
-                cy.get(CommonElements.dropdownOption).first().click();
+            chooseChoiceGroups();
+            inForm(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
+                cy.log(els.length);
+                [...els].forEach((el) => {
+                    cy.wrap(el).click();
+                    cy.get(CommonElements.dropdownOption).first().click();
+                });
             });
-        });
-        chooseChoiceGroups();
-        cy.get(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
-            cy.log(els.length);
-            [...els].forEach((el) => {
-                cy.wrap(el).click();
-                cy.get(CommonElements.dropdownOption).first().click();
+            chooseChoiceGroups();
+            inForm(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
+                cy.log(els.length);
+                [...els].forEach((el) => {
+                    cy.wrap(el).click();
+                    cy.get(CommonElements.dropdownOption).first().click();
+                });
             });
-        });
-        chooseChoiceGroups();
-        cy.get(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
-            cy.log(els.length);
-            [...els].forEach((el) => {
-                cy.wrap(el).click();
-                cy.get(CommonElements.dropdownOption).first().click();
+            chooseChoiceGroups();
+            inForm(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
+                cy.log(els.length);
+                [...els].forEach((el) => {
+                    cy.wrap(el).click();
+                    cy.get(CommonElements.dropdownOption).first().click();
+                });
             });
-        });
-        chooseChoiceGroups();
-        cy.get(UserPoliciesPageLocators.enterTextInput).then((els) => {
-            [...els].forEach((el) =>
-                cy.wrap(el).type('Test text', { force: true })
-            );
-        });
-        cy.get(UserPoliciesPageLocators.enterNumInput).then((els) => {
-            [...els].forEach((el) => cy.wrap(el).type('1', { force: true }));
-        });
-        cy.get('input[aria-haspopup="dialog"]').then((els) => {
-            [...els].forEach((el) =>
-                cy.wrap(el).type('2025-01-03', { force: true })
-            );
-        });
-        cy.get(UserPoliciesPageLocators.enterEmailInput).then((els) => {
-            [...els].forEach((el) =>
-                cy.wrap(el).type('asd@dsa.dsa')
-            );
-        });
-        cy.get(UserPoliciesPageLocators.enterPosInput).then((els) => {
-            [...els].forEach((el) => {
-                cy.wrap(el).type('[1.23,4.56]')
+            chooseChoiceGroups();
+            inForm(UserPoliciesPageLocators.enterTextInput).then((els) => {
+                [...els].forEach((el) =>
+                    cy.wrap(el).type('Test text', { force: true })
+                );
+            });
+            inForm(UserPoliciesPageLocators.enterNumInput).then((els) => {
+                [...els].forEach((el) => cy.wrap(el).type('1', { force: true }));
+            });
+            inForm('input[aria-haspopup="dialog"]').then((els) => {
+                [...els].forEach((el) =>
+                    cy.wrap(el).type('2025-01-03', { force: true })
+                );
+            });
+            inForm(UserPoliciesPageLocators.enterEmailInput).then((els) => {
+                [...els].forEach((el) =>
+                    cy.wrap(el).type('asd@dsa.dsa')
+                );
+            });
+            inForm(UserPoliciesPageLocators.enterPosInput).then((els) => {
+                [...els].forEach((el) => {
+                    cy.wrap(el).type('[1.23,4.56]')
+                });
             });
         });
         cy.get(UserPoliciesPageLocators.createButton).click();

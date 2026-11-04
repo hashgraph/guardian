@@ -23,6 +23,14 @@ export function walkFields(controls: IFieldControl<any>[] | null | undefined): I
     return targets;
 }
 
+export function fieldLabel(field: IFieldControl<any>): string {
+    return field.description || field.title || field.name;
+}
+
+export function isFieldVisible(field: IFieldControl<any>): boolean {
+    return field.visibility !== false;
+}
+
 function walk(
     controls: IFieldControl<any>[],
     path: string[],
@@ -33,8 +41,8 @@ function walk(
 ): void {
     for (const field of controls) {
         const fieldPath = [...path, field.name];
-        const fieldLabels = [...labels, field.description || field.title || field.name];
-        const visible = field.visibility !== false;
+        const fieldLabels = [...labels, fieldLabel(field)];
+        const visible = isFieldVisible(field);
         const enabled = !!field.control && !field.control.disabled;
         const isUnit = !field.isRef || !!field.isArray;
         const hidden = ancestorHidden || !visible || !!field.control?.disabled;

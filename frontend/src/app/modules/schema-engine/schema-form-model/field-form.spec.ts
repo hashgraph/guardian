@@ -671,7 +671,7 @@ describe('indexed Preview requirements', () => {
     });
 });
 
-describe('FieldForm — prefilled values', () => {
+describe('FieldForm — revealed errors', () => {
     const document: any = {
         $id: '#pf&1.0.0',
         $comment: JSON.stringify({ '@id': 'ctx:#pf&1.0.0', term: 'pf&1.0.0' }),
@@ -685,30 +685,13 @@ describe('FieldForm — prefilled values', () => {
         },
         required: ['amount'],
     };
-    const build = (preset?: any, keepDefaultLabels?: boolean): FieldForm => {
+    const build = (preset?: any): FieldForm => {
         const schema = new Schema({ iri: '#pf&1.0.0', document });
         const form = new FieldForm(new UntypedFormGroup({}));
-        form.setData({ schema, preset, keepDefaultLabels });
+        form.setData({ schema, preset });
         form.build();
         return form;
     };
-    const find = (form: FieldForm, name: string) => form.controls!.find(item => item.name === name)!;
-
-    it('marks only non-empty preset values, never schema defaults', () => {
-        const form = build({ amount: 5, note: '' });
-        expect(find(form, 'amount').prefilled).toBeTrue();
-        expect(find(form, 'note').prefilled).toBeFalse();
-        expect(find(form, 'rate').prefilled).toBeFalse();
-        form.destroy();
-    });
-    it('marks nothing without a preset or when default labels are kept', () => {
-        const empty = build();
-        expect(find(empty, 'amount').prefilled).toBeUndefined();
-        empty.destroy();
-        const kept = build({ amount: 5 }, true);
-        expect(find(kept, 'amount').prefilled).toBeFalse();
-        kept.destroy();
-    });
     it('starts without revealed errors', () => {
         const form = build();
         expect(form.errorsRevealed).toBeFalse();

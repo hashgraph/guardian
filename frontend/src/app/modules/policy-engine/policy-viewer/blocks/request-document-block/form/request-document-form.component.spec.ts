@@ -17,6 +17,7 @@ import { FormulasService } from 'src/app/services/formulas.service';
 import { CalculationPreviewService } from 'src/app/services/calculation-preview.service';
 import { FormTakeoverService } from '../../../form-takeover/form-takeover.service';
 import { PolicyProgressService } from '../../../../services/policy-progress.service';
+import { ToastService } from 'src/app/services/toast.service';
 
 describe('RequestDocumentFormComponent', () => {
     const progress = {
@@ -71,6 +72,7 @@ describe('RequestDocumentFormComponent', () => {
                 { provide: CalculationPreviewService, useValue: {} },
                 { provide: PolicyProgressService, useValue: progress },
                 { provide: FormTakeoverService, useValue: takeover },
+                { provide: ToastService, useValue: { success: jasmine.createSpy('success') } },
             ],
             schemas: [NO_ERRORS_SCHEMA],
         }).compileComponents();

@@ -104,37 +104,13 @@
     </button>
   }
 </nav>
-<div class="form-body">
+<div class="form-body" [class.fill]="screen === 'form' && step === 'fill'">
   @if (loading || isPreviewBusy) {
     <div class="guardian-loading" [class.preview-loading-overlay]="previewMode">
       <div class="form-spinner"></div>
     </div>
   }
   <div class="form-body-container" [attr.inert]="isPreviewBusy ? '' : null">
-    @if (screen === 'form') {
-      @if (dryRun) {
-        <div class="form-notice">
-          <i class="pi pi-info-circle" aria-hidden="true"></i>
-          <span class="form-notice-text">Dry run – you can fill this form with test data.</span>
-          <button type="button" class="guardian-button guardian-button-secondary" [disabled]="isPreviewBusy" (click)="onDryRun()">Fill with test data</button>
-          @if (restoreData) {
-            <button type="button" class="guardian-button guardian-button-secondary" [disabled]="isPreviewBusy" (click)="onRestoreClick()">Restore values</button>
-          }
-        </div>
-      } @else if (restoreData) {
-        <div class="form-notice">
-          <i class="pi pi-info-circle" aria-hidden="true"></i>
-          <span class="form-notice-text">There is some data to restore.</span>
-          <button type="button" class="guardian-button guardian-button-secondary" [disabled]="isPreviewBusy" (click)="onRestoreClick()">Restore values</button>
-        </div>
-      }
-      @if (duplicatedFrom) {
-        <div class="form-notice">
-          <i class="pi pi-copy" aria-hidden="true"></i>
-          <span class="form-notice-text">New draft copied from the submitted document <code>{{ duplicatedFrom }}</code>. Check the values, then Validate &amp; Create – this creates a separate document.</span>
-        </div>
-      }
-    }
     @if (screen === 'results') {
       <div class="form-results">
         <div class="form-results-eyebrow">{{ resultsEyebrow }}</div>
@@ -237,21 +213,49 @@
               [previewMissingFields]="previewMissingFields"
               [previewActionsDisabled]="isPreviewBusy"
               [saveShown]="allowDraft"
+              [overviewHint]="edit ? null : 'Complete each section, then validate and create the document. Your progress is autosaved in this browser.'"
               [comesFromDialog]="true"
               [showButtons]="false"
               cancelText = "Cancel"
-              submitText = "Validate & Create"
+              [submitText]="submitLabel"
               saveText = "Save Draft"
               (form)="initForm($event)"
               (presetApplied)="onPresetApplied()"
               (previewBusyChange)="onPreviewRenderingChange($event)"
               (previewMissingOptionsChange)="onPreviewMissingOptionsChange($event)"
               (buttons)="onChangeButtons($event)"
+              (completionChange)="onCompletionChange($event)"
               (cancelBtnEvent)="handleCancelBtnEvent($event, this)"
               (submitBtnEvent)="handleSubmitBtnEvent($event, this)"
               (saveBtnEvent)="handleSaveBtnEvent($event, this)"
               style="outline: none !important"
               >
+              <div sfNotice>
+                @if (screen === 'form') {
+                @if (dryRun) {
+                  <div class="form-notice">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6M10 3v6L4.5 19a1.5 1.5 0 001.3 2h12.4a1.5 1.5 0 001.3-2L14 9V3"/></svg>
+                    <span class="form-notice-text">Dry run – you can fill this form with test data.</span>
+                    <button type="button" class="guardian-button guardian-button-secondary" [disabled]="isPreviewBusy" (click)="onDryRun()">Fill with test data</button>
+                    @if (restoreData) {
+                      <button type="button" class="guardian-button guardian-button-secondary" [disabled]="isPreviewBusy" (click)="onRestoreClick()">Restore values</button>
+                    }
+                  </div>
+                } @else if (restoreData) {
+                  <div class="form-notice">
+                    <i class="pi pi-info-circle" aria-hidden="true"></i>
+                    <span class="form-notice-text">There is some data to restore.</span>
+                    <button type="button" class="guardian-button guardian-button-secondary" [disabled]="isPreviewBusy" (click)="onRestoreClick()">Restore values</button>
+                  </div>
+                }
+                @if (duplicatedFrom) {
+                  <div class="form-notice">
+                    <i class="pi pi-copy" aria-hidden="true"></i>
+                    <span class="form-notice-text">New draft copied from the submitted document <code>{{ duplicatedFrom }}</code>. Check the values, then Validate &amp; Create – this creates a separate document.</span>
+                  </div>
+                }
+                }
+              </div>
             </app-schema-form-root>
           </div>
         </form>
@@ -411,7 +415,17 @@
         </button>
       </div>
     }
-      <div class="action-buttons-spacer"></div>
+      @if (step === 'fill' && completion && completion.total > 0) {
+        <div class="form-progress">
+          <span>{{ completion.answered }} of {{ completion.total }} required answered</span>
+          @if (completion.answered < completion.total) {
+            <span class="form-progress-dot" aria-hidden="true">·</span>
+            <button type="button" class="form-progress-link" [disabled]="isPreviewBusy" (click)="jumpToNextMissing()">Jump to next missing</button>
+          }
+        </div>
+      } @else {
+        <div class="action-buttons-spacer"></div>
+      }
     </div>
   </div>
 } @else if (screen === 'results') {

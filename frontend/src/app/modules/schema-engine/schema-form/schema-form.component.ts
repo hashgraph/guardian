@@ -71,6 +71,8 @@ export class SchemaFormComponent implements OnInit {
     // for each textarea. Browsers with `field-sizing` grow the textarea in CSS instead.
     public readonly scriptAutoResize = !CSS.supports('field-sizing', 'content');
     @Input('form-model') formModel!: FieldForm;
+    /** Renders only these controls of `formModel` (a section); `null` renders all of them. */
+    @Input() renderControls: IFieldControl<any>[] | null = null;
     @Input('private-fields') hide!: { [x: string]: boolean };
     @Input('readonly-fields') readonly?: any;
     @Input('delimiter-hide') delimiterHide: boolean = false;
@@ -88,7 +90,6 @@ export class SchemaFormComponent implements OnInit {
     @Input() policyId?: string = '';
     @Input() blockId: string = '';
     @Input() rules?: SchemaRuleValidateResult;
-    @Input() paginationHidden: boolean = true;
     @Input() isFormForFinishSetup: boolean = false;
     @Input() isFormForRequestBlock: boolean = false;
     @Input() lastSavedAt?: Date;
@@ -106,19 +107,15 @@ export class SchemaFormComponent implements OnInit {
     @Output() saveBtnEvent = new EventEmitter<IFieldControl<any>[] | undefined | boolean | null>();
     @Output() updatableBtnEvent = new EventEmitter();
     @Output() buttons = new EventEmitter<any>();
-    @Output() onAccordionSelect = new EventEmitter<{path: string, isOpen: boolean}>();
     @Output() previewLoadingChange = new EventEmitter<boolean>();
 
     public minutesAgo$ = getMinutesAgoStream(() => this.lastSavedAt);
 
     public destroy$: Subject<boolean> = new Subject<boolean>();
-    public isShown: boolean[] = [true];
-    public currentIndex: number = 0;
     public buttonsConfig: IButton[] = [];
     public editButtonConfig: IButton;
     private geoSubscriptions = new Subscription();
     private geoOptions = new Map<string, GeoOption[]>();
-    private controlsIndex: Map<string, { ancestors: IFieldControl<any>[], field: IFieldControl<any>, listItem?: any }> = new Map();
 
     private entryScopes = new WeakMap<object, Record<string, number>>();
     private previewSections = new WeakSet<object>();
@@ -133,6 +130,11 @@ export class SchemaFormComponent implements OnInit {
     ) { }
 
     ngOnInit(): void {
+    }
+
+    /** The controls this form draws: the section it is limited to, or all of them. */
+    public get renderedControls(): IFieldControl<any>[] {
+        return this.renderControls ?? this.formModel?.controls ?? [];
     }
 
     public isPreviewSectionReady(item: IFieldControl<any> | IFieldIndexControl<any>): boolean {
@@ -185,12 +187,12 @@ export class SchemaFormComponent implements OnInit {
 
     private startPreviewRendering(): void {
         this.stopPreviewRendering();
-        if (!this.previewValidation || (this.formModel?.controls?.length || 0) <= PREVIEW_RENDER_CHUNK) return;
+        if (!this.previewValidation || this.renderedControls.length <= PREVIEW_RENDER_CHUNK) return;
         this.previewRenderLimit = PREVIEW_RENDER_CHUNK;
         this.previewLoadingChange.emit(true);
         const next = () => {
             this.previewRenderLimit += PREVIEW_RENDER_CHUNK;
-            if (this.previewRenderLimit < (this.formModel?.controls?.length || 0)) {
+            if (this.previewRenderLimit < this.renderedControls.length) {
                 this.changeDetectorRef.detectChanges();
                 this.previewRenderFrame = requestAnimationFrame(next);
                 return;
@@ -239,7 +241,7 @@ export class SchemaFormComponent implements OnInit {
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes.formModel || changes.previewValidation) {
+        if (changes.formModel || changes.previewValidation || changes.renderControls) {
             if (this.previewValidation || this.previewFrames.size) this.cancelPreviewSections();
             if (this.previewValidation) this.prepareOpenPreviewSections();
             if (this.previewValidation || this.previewRenderFrame !== null) this.startPreviewRendering();
@@ -250,46 +252,11 @@ export class SchemaFormComponent implements OnInit {
             }
         }
         this.setupGeoDependencies();
-        this.updatePages();
-        try {
-            this.buildControlsIndex();
-        } catch (e) {
-             console.error('[schema-form] buildControlsIndex failed', e);
-        }
         if (!this.isEditMode) {
             this.createButtons();
         } else {
             this.createEditModeButton()
         }
-    }
-
-    private buildControlsIndex() {
-        this.controlsIndex.clear();
-        const walk = (controls: IFieldControl<any>[] | undefined | null, ancestors: IFieldControl<any>[]) => {
-            if (!controls || !Array.isArray(controls)) return;
-            for (const field of controls) {
-                const entryAnc = ancestors.slice();
-                if (field.id) {
-                    this.controlsIndex.set(field.id, { ancestors: entryAnc, field });
-                }
-
-                if (field.isArray) {
-                    const list = Array.isArray((field as any).list) ? (field as any).list : [];
-                    for (const listItem of list) {
-                        const idx = (listItem as any).index2 ?? (listItem as any).index;
-                        const composite = `${field.id}-${idx}`;
-                        this.controlsIndex.set(composite, { ancestors: entryAnc.concat([field]), field, listItem });
-                    }
-                }
-
-                const childControls = Array.isArray((field as any).model?.controls) ? (field as any).model.controls : undefined;
-                if (Array.isArray(childControls) && childControls.length > 0) {
-                    walk(childControls, entryAnc.concat([field]));
-                }
-            }
-        };
-
-        walk(this.formModel?.controls, []);
     }
 
     ngOnDestroy() {
@@ -309,7 +276,7 @@ export class SchemaFormComponent implements OnInit {
                 if (!this.formModel?.controls || this.isChildSchema) {
                     return false;
                 }
-                return this.currentIndex === 0 && !this.cancelHidden;
+                return !this.cancelHidden;
             },
             disabled: () => {
                 return false;
@@ -321,46 +288,12 @@ export class SchemaFormComponent implements OnInit {
                 this.onCancelBtnClick();
             },
         }, {
-            id: 'prev',
-            visible: () => {
-                if (!this.formModel?.controls || this.isChildSchema) {
-                    return false;
-                }
-                return this.currentIndex !== 0;
-            },
-            disabled: () => {
-                return false;
-            },
-            text: 'Previous',
-            class: 'p-button-outlined',
-            type: 'secondary',
-            fn: () => {
-                this.getPrevShownFields(this.formModel?.controls);
-            },
-        }, {
-            id: 'next',
-            visible: () => {
-                if (!this.formModel?.controls || this.isChildSchema) {
-                    return false;
-                }
-                return !this.isShown[this.formModel.controls.length - 1];
-            },
-            disabled: () => {
-                return false;
-            },
-            text: 'Next',
-            class: 'p-button',
-            type: 'primary',
-            fn: () => {
-                this.getNextShownFields(this.formModel?.controls);
-            },
-        }, {
             id: 'submit',
             visible: () => {
                 if (!this.formModel?.controls || this.isChildSchema) {
                     return false;
                 }
-                return !!this.isShown[this.formModel.controls.length - 1] && !this.submitHidden;
+                return !this.submitHidden;
             },
             disabled: () => {
                 return false;
@@ -557,8 +490,8 @@ export class SchemaFormComponent implements OnInit {
     }
 
     public isLoneField(index: number): boolean {
-        const list = this.formModel?.controls;
-        const item = list?.[index];
+        const list = this.renderedControls;
+        const item = list[index];
         if (!list || !item || this.isFullRow(item)) {
             return false;
         }
@@ -676,10 +609,9 @@ export class SchemaFormComponent implements OnInit {
         return { title: values[0], sub: values.slice(1).join(' · ') };
     }
 
-    public toggleOpen(item: IFieldControl<any> | IFieldIndexControl<any>, open: boolean, owner?: IFieldControl<any>, index?: string): void {
+    public toggleOpen(item: IFieldControl<any> | IFieldIndexControl<any>, open: boolean): void {
         item.open = open;
         this.preparePreviewSection(item);
-        this.onAccordionSelectEvent(open, owner || (item as IFieldControl<any>), index);
     }
 
     public isRulesStatus(item: IFieldControl<any>) {
@@ -1053,92 +985,6 @@ export class SchemaFormComponent implements OnInit {
         }
     }
 
-    private getNextShownFields(fields: SchemaField[] | undefined | null, scroll = true): boolean[] {
-        if (!fields) {
-            return this.isShown;
-        }
-        this.isShown = new Array(fields.length).fill(false);
-        let nextRefIndex = -1;
-        let initialDivision = 0;
-        for (let i = this.currentIndex + 1; i < fields.length; i++) {
-            nextRefIndex = i;
-            if (fields[i].isRef) {
-                if (this.currentIndex == 0 && initialDivision == 0) {
-                    initialDivision = 1;
-                    this.currentIndex = i;
-                    this.isShown = new Array(fields.length).fill(false);
-                    if (fields[this.currentIndex].isRef && fields[this.currentIndex - 1].isRef) {
-                        this.isShown[this.currentIndex] = true;
-                        break;
-                    }
-                    continue;
-                }
-                break;
-            }
-            this.isShown[i] = true;
-        }
-        if (nextRefIndex !== -1) {
-            if (this.currentIndex === 0) {
-                this.currentIndex = -1;
-            }
-            for (let i = this.currentIndex + 1; i <= nextRefIndex; i++) {
-                this.isShown[i] = true;
-            }
-            this.currentIndex = nextRefIndex;
-        }
-        this.buttons.emit(this.buttonsConfig);
-
-        if (scroll) {
-            this.updateScroll();
-        }
-
-        return this.isShown;
-    }
-
-    private getPrevShownFields(fields: SchemaField[] | undefined | null): boolean[] {
-        if (!fields) {
-            return this.isShown;
-        }
-        this.isShown = new Array(fields.length).fill(false);
-        let prevRefIndex = -1;
-        if (this.currentIndex === 0) {
-            // If the current index is already at the beginning of the array,
-            // show all fields with isRef set to false
-            for (let i = 0; i < fields.length; i++) {
-                if (!fields[i].isRef) {
-                    this.isShown[i] = true;
-                }
-            }
-        } else {
-            for (let i = this.currentIndex - 1; i >= 0; i--) {
-                if (fields[i].isRef) {
-                    prevRefIndex = i;
-                    for (let j = prevRefIndex - 1; j >= 0; j--) {
-                        if (fields[j].isRef) {
-                            break
-                        } else if (j == 0) {
-                            prevRefIndex = 0;
-                        }
-                    }
-                    break;
-                }
-                //this.isShown[i] = true;
-                this.currentIndex = i;
-            }
-            if (prevRefIndex !== -1) {
-                for (let i = this.currentIndex - 1; i >= prevRefIndex; i--) {
-                    this.isShown[i] = true;
-                }
-                this.currentIndex = prevRefIndex;
-            }
-        }
-        this.buttons.emit(this.buttonsConfig);
-
-        this.updateScroll();
-
-        return this.isShown;
-    }
-
     public closeWindow() {
         window.close();
     }
@@ -1159,222 +1005,6 @@ export class SchemaFormComponent implements OnInit {
         this.updatableBtnEvent.emit()
     }
 
-    public showPage(item: IFieldControl<any>, index: number): boolean {
-        return this.isShown[index] || this.isChildSchema;
-    }
-
-    private updateScroll() {
-        const contentElement = document.querySelector('#main-content');
-        const formElement = document.querySelector('.schema-form');
-        setTimeout(() => {
-            if (window.innerWidth <= 810) {
-                contentElement!.scrollTo({
-                    top: -1,
-                    behavior: 'smooth'
-                });
-            } else {
-                if (formElement) {
-                    formElement.scrollTo({
-                        top: -1,
-                        behavior: 'smooth'
-                    });
-                }
-            }
-        }, 100)
-    }
-
-    public openField(link?: string, scroll = true): void {
-        if (!link || !this.formModel?.controls) return;
-
-        let found = false;
-        let parts:any = [link];
-        if (link.includes(';')) {
-            parts = link.split(';').map(p => p.trim()).filter(p => p.length > 0);
-            if (parts.length > 0) {
-                const leaf = parts[parts.length - 1];
-                const idxEntry = this.controlsIndex.get(leaf);
-                if (idxEntry) {
-                    for (const anc of idxEntry.ancestors || []) anc.open = true;
-                    idxEntry.field.open = true;
-                    if (idxEntry.listItem) idxEntry.listItem.open = true;
-                    found = true;
-                } else {
-                    found = this.findAndOpenByParts(parts, this.formModel.controls);
-                }
-            }
-        } else {
-            const idxEntry = this.controlsIndex.get(link);
-            if (idxEntry) {
-                for (const anc of idxEntry.ancestors || []) 
-                    anc.open = true;
-                idxEntry.field.open = true;
-                if (idxEntry.listItem) 
-                    idxEntry.listItem.open = true;
-                found = true;
-            } else {
-                found = this.findAndOpen(this.formModel.controls, link);
-            }
-        }
-
-        if (found) {
-            if (this.previewValidation) this.prepareOpenPreviewSections();
-            try {
-                this.changeDetectorRef.detectChanges();
-            } catch (e) {
-                console.error(e);
-            }
-            if (scroll) {
-                this.scrollToAccordionAttr(parts[parts.length - 1]);
-            }
-        }
-    }
-
-    private findAndOpen(controls: IFieldControl<any>[] | undefined | null, target: string): boolean {
-        if (!controls || !Array.isArray(controls)) return false;
-
-        for (const field of controls) {
-            (field as any).link = undefined;
-            if (field.id === target) {
-                field.open = true;
-                return true;
-            }
-
-            if (field.isArray) {
-                const list = Array.isArray((field as any).list) ? (field as any).list : [];
-                for (const listItem of list) {
-                    const idx = (listItem as any).index2 ?? (listItem as any).index;
-                    const composite = `${field.id}-${idx}`;
-                    if (composite === target) {
-                        field.open = true;
-                        (listItem as any).open = true;
-                        return true;
-                    }
-                    
-                    const itemChildControls = Array.isArray((field as any).model?.controls) ? (field as any).model.controls : undefined;
-                    if (Array.isArray(itemChildControls) && itemChildControls.length > 0) {
-                        const foundInItem = this.findAndOpen(itemChildControls, target);
-                        if (foundInItem) {
-                            field.open = true;
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            const childControls = Array.isArray((field as any).model?.controls) ? (field as any).model.controls : undefined;
-            if (Array.isArray(childControls) && childControls.length > 0) {
-                const foundInChild = this.findAndOpen(childControls, target);
-                if (foundInChild) {
-                    field.open = true;
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    private findAndOpenByParts(parts: string[], controls: IFieldControl<any>[] | undefined | null, idx: number = 0): boolean {
-        if (!controls || !Array.isArray(controls) || idx >= parts.length) return false;
-
-        const part = parts[idx];
-
-        for (const field of controls) {
-            if (field.id === part) {
-                field.open = true;
-                if (idx === parts.length - 1) {
-                    return true;
-                }
-                const childControls = Array.isArray((field as any).model?.controls) ? (field as any).model.controls : undefined;
-                if (Array.isArray(childControls) && childControls.length > 0) {
-                    const found = this.findAndOpenByParts(parts, childControls, idx + 1);
-                    if (found) {
-                        field.open = true;
-                        return true;
-                    }
-                }
-                continue;
-            }
-
-            if (field.isArray) {
-                const list = Array.isArray((field as any).list) ? (field as any).list : [];
-                for (const listItem of list) {
-                    const itemIdx = (listItem as any).index2 ?? (listItem as any).index;
-                    const composite = `${field.id}-${itemIdx}`;
-                    if (composite === part) {
-                        field.open = true;
-                        (listItem as any).open = true;
-                        if (idx === parts.length - 1) {
-                            return true;
-                        }
-                        const itemChildControls = Array.isArray((field as any).model?.controls) ? (field as any).model.controls : undefined;
-                        if (Array.isArray(itemChildControls) && itemChildControls.length > 0) {
-                            const foundInItem = this.findAndOpenByParts(parts, itemChildControls, idx + 1);
-                            if (foundInItem) {
-                                field.open = true;
-                                (listItem as any).open = true;
-                                return true;
-                            }
-                        }
-                        const listItemChildControls = Array.isArray((listItem as any).model?.controls) ? (listItem as any).model.controls : undefined;
-                        if (Array.isArray(listItemChildControls) && listItemChildControls.length > 0) {
-                            const foundInItem = this.findAndOpenByParts(parts, listItemChildControls, idx + 1);
-                            if (foundInItem) {
-                                field.open = true;
-                                (listItem as any).open = true;
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-
-            const childControls = Array.isArray((field as any).model?.controls) ? (field as any).model.controls : undefined;
-            if (Array.isArray(childControls) && childControls.length > 0) {
-                const foundInChild = this.findAndOpenByParts(parts, childControls, idx);
-                if (foundInChild) {
-                    field.open = true;
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    private scrollToAccordionAttr(value: string) {
-        setTimeout(() => {
-            try {
-                this.changeDetectorRef.detectChanges();
-            } catch (e) { }
-
-            const attrSelector = `[accordiontabid="${value}"]`;
-
-            try {
-                const node = document.querySelector(attrSelector) as Element | null;
-                if (node) {
-                    (node as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    return;
-                }
-            } catch (e) { }
-        }, 1000);
-    }
-
-    public onAccordionSelectEvent(isOpen: any, item: IFieldControl<any>, index: string = '', childrenAccordionId?: string) {
-        let accordionId = item.id;
-        if (index) {
-            accordionId = `${accordionId}-${index}`;
-        }
-
-        if (childrenAccordionId) {
-            accordionId = `${accordionId};${childrenAccordionId}`;
-        }
-        this.onAccordionSelect.emit({
-            path: accordionId,
-            isOpen: isOpen
-        });
-    }
-
     private updateRemoteFiles(item: IFieldControl<any>) {
         if (item.remoteLink && item.fileUploading === true) {
             this.ipfs
@@ -1390,17 +1020,4 @@ export class SchemaFormComponent implements OnInit {
         }
     }
 
-    private updatePages() {
-        if (this.formModel && this.formModel.controls) {
-            for (let i = 0; i < this.formModel.controls.length; i++) {
-                const item = this.formModel.controls[i];
-                if (item.isRef) {
-                    this.isShown[i] = true;
-                    break;
-                } else {
-                    this.isShown[i] = true;
-                }
-            }
-        }
-    }
 }

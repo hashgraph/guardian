@@ -1,6 +1,11 @@
 @use '../../../../../schema-engine/preview-loading' as preview;
 
 :host {
+    // Same derived greys as the policy navigation (progress-tracker)
+    --sf-text-2: color-mix(in srgb, var(--guardian-font-color) 75%, transparent);
+    --sf-text-3: var(--color-grey-5);
+    --sf-sunken: color-mix(in srgb, var(--guardian-border-color) 30%, var(--guardian-grey-background));
+    --sf-border-strong: color-mix(in srgb, var(--guardian-border-color) 70%, var(--guardian-font-color));
     display: flex;
     flex-direction: column;
     flex: 1 1 auto;
@@ -56,7 +61,7 @@ form {
         .form-heading-step {
             font-size: 12px;
             font-weight: 500;
-            color: var(--color-grey-4);
+            color: var(--sf-text-3);
         }
 
         .form-heading-title {
@@ -76,7 +81,7 @@ form {
         gap: 6px;
         flex: 0 0 auto;
         font-size: 12px;
-        color: var(--color-grey-4);
+        color: var(--sf-text-3);
         white-space: nowrap;
 
         .form-saved-dot {
@@ -192,27 +197,55 @@ form {
         border: 1px solid var(--guardian-border-color);
         background: var(--guardian-background);
     }
+
+    // The form fills the whole area: the section rail is flush to the top and left,
+    // and the form gives its own content column the padding
+    &.fill {
+        --sf-content-pad: 24px 32px 40px;
+        padding: 0;
+
+        .body-dialog-template {
+            padding-bottom: 0;
+        }
+
+        .form-card {
+            padding: 0;
+            border: 0;
+            border-radius: 0;
+            background: transparent;
+        }
+    }
 }
 
 .form-notice {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 10px;
     margin-bottom: 16px;
-    padding: 10px 16px;
-    border-radius: 8px;
-    font-size: 14px;
+    padding: 9px 12px;
+    border: 1px dashed color-mix(in srgb, var(--color-primary) 30%, transparent);
+    border-radius: 10px;
+    font-family: Inter;
+    font-size: 13px;
     background: var(--guardian-dry-run-background);
-    color: var(--guardian-dry-run-color);
+    color: var(--guardian-font-color);
+
+    > .pi, > svg {
+        color: var(--color-primary);
+    }
 
     .form-notice-text {
-        flex: 1 1 auto;
+        flex: 1 1 180px;
     }
 
     .guardian-button {
-        height: 32px;
-        padding: 0 14px;
+        height: 30px;
+        padding: 0 10px;
+        border-radius: 7px;
+        font-family: Inter;
+        font-size: 12.5px;
+        font-weight: 600;
     }
 }
 
@@ -228,6 +261,68 @@ form {
     &[loading] .action-buttons {
         visibility: hidden;
     }
+
+    .guardian-button {
+        height: 36px;
+        padding: 0 14px;
+        border-radius: 8px;
+        font-family: Inter;
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .guardian-button-primary {
+        border: 1px solid transparent;
+        background: var(--color-primary);
+        color: #fff;
+
+        &:hover:not(:disabled) {
+            background: color-mix(in srgb, var(--color-primary) 88%, #000);
+        }
+    }
+
+    .guardian-button-secondary {
+        border: 1px solid var(--sf-border-strong);
+        background: var(--guardian-background);
+        color: var(--guardian-font-color);
+
+        &:hover:not(:disabled) {
+            background: var(--sf-sunken);
+        }
+    }
+
+    .guardian-button-ghost {
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--sf-text-2);
+
+        &:hover:not(:disabled) {
+            background: var(--sf-sunken);
+            color: var(--guardian-font-color);
+        }
+    }
+
+    // Cancel, then the progress, then the other buttons
+    .action-buttons {
+        gap: 8px;
+
+        .form-button {
+            order: 2;
+        }
+
+        .form-button#cancel {
+            order: 0;
+        }
+
+        .form-progress {
+            order: 1;
+        }
+
+        .action-buttons-spacer {
+            order: 1;
+        }
+    }
 }
 
 .action-buttons,
@@ -242,6 +337,34 @@ form {
         flex: 1 1 auto;
     }
 
+    .form-progress {
+        order: 2;
+        flex: 1 1 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-width: 160px;
+        font-family: Inter;
+        font-size: 12.5px;
+        color: var(--sf-text-2);
+
+        .form-progress-link {
+            padding: 0 6px;
+            border: 0;
+            background: transparent;
+            font-family: Inter;
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--color-primary);
+            cursor: pointer;
+
+            &:hover:not(:disabled) {
+                text-decoration: underline;
+            }
+        }
+    }
+
     .form-button {
         margin: 0;
 
@@ -254,14 +377,6 @@ form {
 
     .form-button[id="cancel"] {
         order: 0;
-    }
-
-    // Fields are all on one page above 810px, so section paging is only needed below it
-    .form-button[id="prev"],
-    .form-button[id="next"] {
-        @media (min-width: 811px) {
-            display: none;
-        }
     }
 
     .form-button[id="prev"] {
@@ -295,7 +410,7 @@ form {
 
     .form-footer-hint {
         font-size: 12.5px;
-        color: var(--color-grey-4);
+        color: var(--sf-text-3);
     }
 }
 
@@ -310,6 +425,11 @@ form {
     .form-footer {
         padding-left: 16px;
         padding-right: 16px;
+    }
+
+    .form-body.fill {
+        --sf-content-pad: 16px 16px 24px;
+        padding: 0;
     }
 
     .form-header {
@@ -327,6 +447,17 @@ form {
         .form-footer-hint,
         .create-another {
             display: none;
+        }
+    }
+
+    .form-footer .action-buttons {
+        flex-wrap: wrap;
+        gap: 8px;
+
+        .form-progress {
+            order: -1;
+            flex-basis: 100%;
+            justify-content: flex-start;
         }
     }
 }
@@ -348,7 +479,7 @@ form {
         border: 0;
         border-radius: 6px;
         background: transparent;
-        color: var(--color-grey-4);
+        color: var(--sf-text-3);
         font-family: inherit;
         font-size: 13px;
         font-weight: 500;
@@ -656,7 +787,7 @@ form {
 
     .form-results-eyebrow {
         font-size: 12px;
-        color: var(--color-grey-5);
+        color: var(--sf-text-3);
         margin-bottom: 4px;
     }
 
@@ -735,7 +866,7 @@ form {
             small {
                 display: block;
                 font-size: 12px;
-                color: var(--color-grey-5);
+                color: var(--sf-text-3);
             }
         }
 
@@ -795,7 +926,7 @@ form {
             small {
                 display: block;
                 font-size: 11.5px;
-                color: var(--color-grey-4);
+                color: var(--sf-text-3);
             }
 
             code {
@@ -833,7 +964,7 @@ form {
             border: 0;
             border-radius: 6px;
             background: transparent;
-            color: var(--color-grey-5);
+            color: var(--sf-text-3);
             font-family: inherit;
             font-size: 13px;
             font-weight: 500;

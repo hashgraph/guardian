@@ -25,6 +25,8 @@ import { PolicyTestAutomationService } from '../../../policy-test-automation/pol
 import { CalculationPreviewService, ICalculationPreviewResult } from 'src/app/services/calculation-preview.service';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { IFormTarget, walkFields } from 'src/app/modules/schema-engine/schema-form/schema-form-walk';
+import { IFormCompletion } from 'src/app/modules/schema-engine/schema-form/schema-form-completion';
+import { ToastService } from 'src/app/services/toast.service';
 import { FormTakeoverService } from '../../../form-takeover/form-takeover.service';
 import { PolicyProgressService } from '../../../../services/policy-progress.service';
 
@@ -78,6 +80,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     public config = inject(DynamicDialogConfig, { optional: true });
     private policyProgressService = inject(PolicyProgressService, { optional: true });
     private formTakeover = inject(FormTakeoverService, { optional: true });
+    private toastService = inject(ToastService);
     private activeStepLabel: string | null = null;
 
     public get id() { return this.parent?.id; }
@@ -112,7 +115,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     public step: FormStep = 'fill';
     public screen: FormScreen = 'form';
     public issues: IFormIssue[] = [];
-    public requiredValid: number = 0;
+    public completion: IFormCompletion | null = null;
     public ruleIssues: IFormIssue[] = [];
     public submitted: ISubmittedSnapshot | null = null;
     public docTab: 'doc' | 'json' = 'doc';
@@ -637,7 +640,23 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     /** Row subtitle: where the field lives, then the message. */
     public issueDetail(issue: IFormIssue): string {
         const trail = issue.label.split(' / ').slice(0, -1).join(' / ');
-        return trail ? `${trail} · ${issue.message}` : issue.message;
+        return [issue.section, trail, issue.message].filter(Boolean).join(' · ');
+    }
+
+    public get requiredValid(): number {
+        return this.completion?.answered ?? 0;
+    }
+
+    public onCompletionChange(completion: IFormCompletion): void {
+        this.completion = completion;
+        this.changeDetectorRef.markForCheck();
+    }
+
+    /** Footer link: goes to the first required answer that is still missing. */
+    public jumpToNextMissing(): void {
+        if (!this.formRoot?.focusNextMissing()) {
+            this.toastService.success('All required answers are filled in');
+        }
     }
 
     private computeRuleIssues(targets: IFormTarget[]): IFormIssue[] {
@@ -664,19 +683,10 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
                 .filter((rule: any) => rule.status === 'Failure' || rule.status === 'Error')
                 .map((rule: any) => rule.name)
                 .join(', ');
-            issues.push({ path, label: labels.get(path) || path, message: names ? `Rule failed: ${names}` : 'Rule failed' });
+            const section = this.formRoot?.sectionTitleOf(path);
+            issues.push({ path, label: labels.get(path) || path, message: names ? `Rule failed: ${names}` : 'Rule failed', ...(section ? { section } : {}) });
         }
         return issues;
-    }
-
-    // Required answers that are filled in and valid (F5: a required array needs a row and valid rows)
-    private countRequiredValid(targets: IFormTarget[]): number {
-        return targets.filter((target) => {
-            if (!target.requiredUnit || !target.control?.valid) {
-                return false;
-            }
-            return !target.field.isArray || (target.field.list?.length ?? 0) > 0;
-        }).length;
     }
 
     private clearIssues(): void {
@@ -687,7 +697,6 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     private refreshIssues(): void {
         const targets = walkFields(this.formRoot?.model?.controls);
         this.issues = this.formRoot?.getIssues(targets) ?? [];
-        this.requiredValid = this.countRequiredValid(targets);
         this.ruleIssues = this.computeRuleIssues(targets);
         this.changeDetectorRef.markForCheck();
     }
@@ -917,6 +926,11 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
             }
         }
         return this.buttonNames[item.id] || item.text;
+    }
+
+    /** The label of the primary action: the footer and the overview show the same one. */
+    public get submitLabel(): string {
+        return this.getButtonName({ id: 'submit', text: 'Validate & Create' });
     }
 
     public onChangeButtons($event: any) {

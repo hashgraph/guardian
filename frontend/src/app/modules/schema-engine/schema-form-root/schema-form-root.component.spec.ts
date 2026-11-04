@@ -26,7 +26,7 @@ describe('SchemaFormRootComponent — required fields', () => {
         root.schema = new Schema({ iri: '#calc&1.0.0', document: calcDocument });
         root.ngOnChanges({ schema: new SimpleChange(null, root.schema, true) });
         tick(64);
-        flush();
+        flush(100);
         return root;
     };
 
@@ -35,7 +35,7 @@ describe('SchemaFormRootComponent — required fields', () => {
         root.requiredFields = requiredFields;
         root.ngOnChanges({ requiredFields: new SimpleChange(previous, requiredFields, false) });
         tick(64);
-        flush();
+        flush(100);
     };
 
     const setRequiredWithoutWaiting = (root: SchemaFormRootComponent, requiredFields: string[] | null): void => {
@@ -54,7 +54,7 @@ describe('SchemaFormRootComponent — required fields', () => {
             presetDocument: new SimpleChange(null, preset, true)
         });
         tick(64);
-        flush();
+        flush(100);
         return root;
     };
 
@@ -226,7 +226,7 @@ describe('SchemaFormRootComponent — required fields', () => {
             requiredFields: new SimpleChange(['amount'], root.requiredFields, false),
         });
         tick(64);
-        flush();
+        flush(100);
         expect(root.model).not.toBe(model);
         expect(root.group.get('extra')?.errors?.['required']).toBeTrue();
         expect(root.group.get('rate')).toBeNull();
@@ -265,7 +265,7 @@ describe('SchemaFormRootComponent — required fields', () => {
                 presetDocument: new SimpleChange(null, root.presetDocument, false),
             });
             tick(64);
-            flush();
+            flush(100);
             expect(update).not.toHaveBeenCalled();
             expect(root.model).not.toBe(model);
             expect(forms).toHaveBeenCalledOnceWith(root.group);
@@ -459,7 +459,7 @@ describe('SchemaFormRootComponent — required fields', () => {
         root.presetDocument = { amount: 1 };
         root.ngOnChanges({ presetDocument: new SimpleChange(null, root.presetDocument, true) });
         tick(64);
-        flush();
+        flush(100);
         expect(applied.length).toBe(0);
         setRequired(root, ['amount']);
         expect(applied.length).toBe(0);
@@ -467,7 +467,7 @@ describe('SchemaFormRootComponent — required fields', () => {
         root.presetDocument = loaded;
         root.ngOnChanges({ presetDocument: new SimpleChange({ amount: 1 }, loaded, false) });
         tick(64);
-        flush();
+        flush(100);
         expect(applied).toEqual([root.group]);
         expect(forms[forms.length - 1]).toBe(root.group);
         expect(root.group.get('amount')?.value).toBe(7);
@@ -490,7 +490,7 @@ describe('SchemaFormRootComponent — required fields', () => {
         expect(document.activeElement).toBe(input);
         expect(root.group.get('amount')?.value).toBe(5);
         tick(64);
-        flush();
+        flush(100);
         container.remove();
     }));
 
@@ -511,7 +511,7 @@ describe('SchemaFormRootComponent — required fields', () => {
         root.focusField('rate');
         expect(document.activeElement).toBe(input);
         tick(64);
-        flush();
+        flush(100);
         container.remove();
     }));
 
@@ -535,7 +535,7 @@ describe('SchemaFormRootComponent — required fields', () => {
         root.focusField('rate');
         expect(document.activeElement).toBe(secondInput);
         tick(64);
-        flush();
+        flush(100);
         container.remove();
     }));
 
@@ -557,7 +557,7 @@ describe('SchemaFormRootComponent — required fields', () => {
         expect(scroll).toHaveBeenCalledOnceWith({ behavior: 'smooth', block: 'center' });
         expect(document.activeElement).toBe(input);
         tick(64);
-        flush();
+        flush(100);
         container.remove();
     }));
 
@@ -600,7 +600,7 @@ describe('SchemaFormRootComponent — required fields', () => {
         tick(50);
         expect(scroll).toHaveBeenCalledOnceWith({ behavior: 'smooth', block: 'center' });
         tick(2000);
-        flush();
+        flush(100);
         container.remove();
     }));
 
@@ -648,7 +648,7 @@ describe('SchemaFormRootComponent — required fields', () => {
             previewMissingFields: new SimpleChange([], root.previewMissingFields, false)
         });
         tick(64);
-        flush();
+        flush(100);
         expect(focus).toHaveBeenCalledOnceWith('rate');
     }));
 
@@ -672,7 +672,7 @@ describe('SchemaFormRootComponent — required fields', () => {
         const focus = spyOn(root, 'focusField');
         root.ngOnChanges({ schema: new SimpleChange(null, root.schema, false) });
         tick(64);
-        flush();
+        flush(100);
         const rows = root.model!.controls![0].list!;
         const target = rows[1].model.controls.find((field: { name: string }) => field.name === 'PEt');
         expect(root.previewMissingFieldIds).toEqual([target.id]);
@@ -681,7 +681,7 @@ describe('SchemaFormRootComponent — required fields', () => {
         root.previewMissingFields = [];
         root.ngOnChanges({ previewMissingFields: new SimpleChange(['rows.1.PEt'], [], false) });
         tick(64);
-        flush();
+        flush(100);
         expect(root.previewMissingFieldIds).toEqual([]);
     }));
 
@@ -697,7 +697,7 @@ describe('SchemaFormRootComponent — required fields', () => {
         root.previewMissingFields = ['amount', 'rows.1.PEt', 'missing.path'];
         root.ngOnChanges({ schema: new SimpleChange(null, root.schema, false) });
         tick(64);
-        flush();
+        flush(100);
         const emitted = jasmine.createSpy('emitted');
         root.previewMissingOptionsChange.subscribe(emitted);
         expect(root.previewMissingOptions).toEqual([
@@ -756,7 +756,7 @@ describe('SchemaFormRootComponent — required fields', () => {
             root.previewMissingFields = missing;
             root.ngOnChanges({ schema: new SimpleChange(null, root.schema, false) });
             tick(64);
-            flush();
+            flush(100);
             return root;
         };
         const removeRow = (root: SchemaFormRootComponent, index: number): void => {
@@ -835,7 +835,7 @@ describe('SchemaFormRootComponent — required fields', () => {
         } });
         root.ngOnChanges({ schema: new SimpleChange(null, root.schema, false) });
         tick(64);
-        flush();
+        flush(100);
         root.group.get('amount')?.setValue(1);
         root.group.get('rate')?.setValue(2);
         return root;
@@ -857,7 +857,7 @@ describe('SchemaFormRootComponent — required fields', () => {
         root.presetDocument = { amount: 1, rate: 2, rows: [{ PEt: 0 }, {}, { PBt: 3 }] };
         root.ngOnChanges({ presetDocument: new SimpleChange(null, root.presetDocument, false) });
         tick(64);
-        flush();
+        flush(100);
         setRequired(root, ['rows.PEt']);
         setRequired(root, null);
         expect(root.group.getRawValue().rows).toEqual([
@@ -905,4 +905,214 @@ describe('SchemaFormRootComponent — required fields', () => {
         expect(root.group.pristine).toBeTrue();
     }));
 
+});
+
+describe('SchemaFormRootComponent — sections', () => {
+    const text = (title: string): ISchemaDocument => ({ type: SchemaDataTypes.string, title, description: title });
+    const sub = (id: string, title: string, field: string): ISchemaDocument => ({
+        $id: id, type: SchemaDataTypes.object, title, description: title,
+        properties: { [field]: text(field) }, required: [field]
+    } as ISchemaDocument);
+    const document: ISchemaDocument = {
+        $id: '#secs&1.0.0',
+        $comment: JSON.stringify({ '@id': 'ctx:#secs&1.0.0', term: 'secs&1.0.0' }),
+        title: 'Secs',
+        description: 'Secs',
+        type: SchemaDataTypes.object,
+        properties: {
+            name: text('name'),
+            a: { $ref: '#a', title: 'Alpha', description: 'Alpha' } as any,
+            b: { $ref: '#b', title: 'Beta', description: 'Beta' } as any,
+        },
+        required: ['name', 'a', 'b'],
+        $defs: { '#a': sub('#a', 'Alpha', 'one'), '#b': sub('#b', 'Beta', 'two') } as any,
+    };
+
+    const create = (preset: unknown = null, layout: 'sections' | 'single' = 'sections'): SchemaFormRootComponent => {
+        const changeDetector = jasmine.createSpyObj<ChangeDetectorRef>('ChangeDetectorRef', ['detectChanges', 'markForCheck']);
+        const root = new SchemaFormRootComponent(new UntypedFormBuilder(), changeDetector);
+        root.schema = new Schema({ iri: '#secs&1.0.0', document });
+        root.presetDocument = preset;
+        root.layout = layout;
+        root.ngOnChanges({
+            schema: new SimpleChange(null, root.schema, true),
+            presetDocument: new SimpleChange(null, preset, true)
+        });
+        tick(64);
+        flush(100);
+        return root;
+    };
+
+    it('opens on the overview with one section per sub-schema and the first one counted', fakeAsync(() => {
+        const root = create();
+        expect(root.hasSections).toBeTrue();
+        expect(root.screen).toBe('overview');
+        expect(root.sections.map(section => section.title)).toEqual(['Alpha', 'Beta']);
+        expect(root.completion).toEqual(jasmine.objectContaining({ answered: 0, total: 3 }));
+        expect(root.completion!.sections.map(section => section.total)).toEqual([2, 1]);
+    }));
+
+    it('is a single page with the single layout', fakeAsync(() => {
+        const root = create(null, 'single');
+        expect(root.hasSections).toBeFalse();
+        expect(root.sections).toEqual([]);
+        expect(root.completion).toEqual(jasmine.objectContaining({ answered: 0, total: 3 }));
+    }));
+
+    it('switches to the section that owns the field when it is focused', fakeAsync(() => {
+        const root = create();
+        root.focusField('b.two');
+        flush(100);
+        expect(root.screen).toBe('section');
+        expect(root.activeIndex).toBe(1);
+        root.focusField('name');
+        flush(100);
+        expect(root.activeIndex).toBe(0);
+    }));
+
+    it('moves to the first missing answer from the current section and wraps', fakeAsync(() => {
+        const root = create({ a: { one: '1' }, b: { two: '2' } });
+        expect(root.completion).toEqual(jasmine.objectContaining({ answered: 2, total: 3 }));
+        root.openSection(1);
+        expect(root.focusNextMissing()).toBeTrue();
+        flush(100);
+        expect(root.activeIndex).toBe(0);
+
+        const filled = create({ name: 'x', a: { one: '1' }, b: { two: '2' } });
+        expect(filled.focusNextMissing()).toBeFalse();
+    }));
+
+    it('prefers a missing answer in a later section over one before it', fakeAsync(() => {
+        const root = create({ name: 'x', a: {}, b: {} });
+        root.openSection(1);
+        root.focusNextMissing();
+        flush(100);
+        expect(root.activeIndex).toBe(1);
+    }));
+
+    it('titles an issue with its section', fakeAsync(() => {
+        const root = create({ a: {}, b: {} });
+        const issue = root.getIssues().find(item => item.path === 'b.two');
+        expect(issue?.section).toBe('Beta');
+    }));
+
+    it('shows the submit action on the overview only when the host listens to it', fakeAsync(() => {
+        const root = create();
+        expect(root.overviewSubmit).toBeNull();
+        root.submitText = 'Validate & Create';
+        root.submitBtnEvent.subscribe(() => undefined);
+        expect(root.overviewSubmit?.text).toBe('Validate & Create');
+        const emitted: unknown[] = [];
+        root.submitBtnEvent.subscribe(value => emitted.push(value));
+        root.overviewSubmit!.run();
+        expect(emitted.length).toBe(1);
+    }));
+
+    it('keeps the edit action on the overview disabled until the form is dirty', fakeAsync(() => {
+        const root = create();
+        root.isEditMode = true;
+        root.showButtons = true;
+        root.updatableBtnEvent.subscribe(() => undefined);
+        expect(root.overviewSubmit?.disabled).toBeTrue();
+        root.group.markAsDirty();
+        expect(root.overviewSubmit?.disabled).toBeFalse();
+    }));
+
+    it('builds its own footer list: previous and next follow the section screen', fakeAsync(() => {
+        const root = create();
+        const lists: any[][] = [];
+        root.buttons.subscribe((list: any[]) => lists.push(list));
+        root.submitText = 'Go';
+        root.ngOnChanges({ submitText: new SimpleChange('Submit', 'Go', false) });
+        const buttons = lists[0];
+        const byId = (id: string) => buttons.find(item => item.id === id);
+        expect(buttons.map(item => item.id)).toEqual(['cancel', 'prev', 'next', 'save', 'submit']);
+        expect(byId('submit').text).toBe('Go');
+        expect(byId('prev').visible()).toBeFalse();
+        expect(byId('next').visible()).toBeFalse();
+        root.openSection(0);
+        expect(byId('prev').visible()).toBeFalse();
+        expect(byId('next').visible()).toBeTrue();
+        byId('next').fn();
+        expect(root.activeIndex).toBe(1);
+        expect(byId('prev').visible()).toBeTrue();
+        expect(byId('next').visible()).toBeFalse();
+    }));
+
+    it('emits the completion when answers change', fakeAsync(() => {
+        const root = create();
+        const emitted: any[] = [];
+        root.completionChange.subscribe((value: any) => emitted.push(value));
+        root.group.get('name')!.setValue('x');
+        tick(400);
+        expect(root.completion!.answered).toBe(1);
+        expect(emitted.length).toBe(1);
+        flush(100);
+    }));
+});
+
+describe('SchemaFormRootComponent — expand and collapse all', () => {
+    const text = (title: string): ISchemaDocument => ({ type: SchemaDataTypes.string, title, description: title });
+    const sub = (id: string, title: string, properties: any): ISchemaDocument => ({
+        $id: id, type: SchemaDataTypes.object, title, description: title, properties, required: []
+    } as ISchemaDocument);
+    const ref = (id: string, title: string) => ({ $ref: id, title, description: title }) as any;
+
+    const create = (nested: boolean): SchemaFormRootComponent => {
+        const document: ISchemaDocument = {
+            $id: '#exp&1.0.0',
+            $comment: JSON.stringify({ '@id': 'ctx:#exp&1.0.0', term: 'exp&1.0.0' }),
+            title: 'Exp',
+            description: 'Exp',
+            type: SchemaDataTypes.object,
+            properties: { a: ref('#a', 'Alpha'), b: ref('#b', 'Beta') },
+            required: [],
+            $defs: {
+                '#a': sub('#a', 'Alpha', nested ? { x: ref('#x', 'X'), y: ref('#y', 'Y') } : { one: text('one') }),
+                '#b': sub('#b', 'Beta', { two: text('two') }),
+                '#x': sub('#x', 'X', { xx: text('xx') }),
+                '#y': sub('#y', 'Y', { yy: text('yy') }),
+            } as any,
+        };
+        const changeDetector = jasmine.createSpyObj<ChangeDetectorRef>('ChangeDetectorRef', ['detectChanges', 'markForCheck']);
+        const root = new SchemaFormRootComponent(new UntypedFormBuilder(), changeDetector);
+        root.schema = new Schema({ iri: '#exp&1.0.0', document });
+        root.presetDocument = { a: nested ? { x: {}, y: {} } : {}, b: {} };
+        root.layout = 'sections';
+        root.ngOnChanges({
+            schema: new SimpleChange(null, root.schema, true),
+            presetDocument: new SimpleChange(null, root.presetDocument, true)
+        });
+        tick(64);
+        flush(100);
+        return root;
+    };
+
+    it('offers the nested sub-schemas of the open section and toggles them', fakeAsync(() => {
+        const root = create(true);
+        root.openSection(0);
+        expect(root.nestedCards.length).toBe(2);
+        root.setAllOpen(true);
+        expect(root.nestedCards.every(card => card.open)).toBeTrue();
+        root.setAllOpen(false);
+        expect(root.nestedCards.some(card => card.open)).toBeFalse();
+    }));
+
+    it('opens the section sub-schema that holds a card chosen in the rail', fakeAsync(() => {
+        const root = create(true);
+        root.openSection(0);
+        const parent = root.activeSection!.controls.find(item => item.isRef)!;
+        parent.open = false;
+        const card = root.activeCards[0];
+        root.onRailCard(card);
+        expect(parent.open).toBeTrue();
+        expect(card.open).toBeTrue();
+        flush(100);
+    }));
+
+    it('has nothing to toggle when the sub-schema holds no sub-schemas', fakeAsync(() => {
+        const root = create(false);
+        root.openSection(0);
+        expect(root.nestedCards.length).toBe(0);
+    }));
 });
