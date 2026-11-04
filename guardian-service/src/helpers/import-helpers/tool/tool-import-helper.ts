@@ -1,9 +1,10 @@
-import { BlockType, GenerateUUIDv4, IOwner, IRootConfig, ModuleStatus, PolicyToolMetadata, SchemaCategory, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, IOwner, IRootConfig, ModelHelper, ModuleStatus, PolicyToolMetadata, SchemaCategory, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
 import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import { INotificationStep } from '@guardian/common/notification/notification-step.interface';
 import { IToolComponents, ToolImportExport } from '@guardian/common/import-export/tool';
 import { PolicyTool } from '@guardian/common/entity/tool';
 import { replaceAllEntities, replaceAllVariables, SchemaFields } from '@guardian/common/helpers/utils';
+import { Hashing } from '@guardian/common/helpers/hashing';
 import { Users } from '@guardian/common/helpers/users';
 import { MessageAction } from '@guardian/hedera/message/message-action';
 import { MessageServer } from '@guardian/hedera/message/message-server';
@@ -14,7 +15,7 @@ import { TopicConfig } from '@guardian/hedera/topic';
 import { TopicHelper } from '@guardian/hedera/topic-helper';
 import { importTag } from '../tag/tag-import-helper.js';
 import { SchemaImportExportHelper } from '../schema/schema-import-helper.js';
-import { ImportToolMap, ImportToolResult, ImportToolResults } from './tool-import.interface.js';
+import { ImportToolMap, ImportToolResult, ImportToolResults, ToolEmbeddedRegistry, ToolImportEntry } from './tool-import.interface.js';
 import { resolveToolOverrides } from './tool-override-resolver.js';
 
 // backstop only - `visited` is what catches cycles
@@ -78,37 +79,69 @@ export async function getToolSchemas(tools: PolicyTool[]): Promise<{ name: strin
  */
 export async function importSubTools(
     hederaAccount: IRootConfig,
-    messages: {
-        name?: string,
-        messageId?: string
-    }[],
+    messages: ToolImportEntry[],
     user: IOwner,
     notifier: INotificationStep,
     userId: string | null,
-    visited: Set<string> = new Set<string>()
+    visited: Set<string> = new Set<string>(),
+    embeddedRegistry: ToolEmbeddedRegistry = new Map<string, ToolImportEntry>()
 ): Promise<ImportToolResults> {
     notifier.start();
 
     if (!messages?.length) {
         notifier.complete();
-        return { tools: [], errors: [] };
+        return { tools: [], errors: [], maps: [] };
     }
 
     const errors: any[] = [];
     const tools: any[] = [];
+    const maps: ImportToolMap[] = [];
     notifier.setEstimate(messages.length);
     let index = 0;
-    for (const message of messages) {
+    for (const entry of messages) {
         try {
-            const step = notifier.addStep(`${message.name || '-'}`);
-            const importResult = await importToolByMessage(
-                hederaAccount,
-                message.messageId,
-                user,
-                step,
-                userId,
-                visited
-            );
+            const step = notifier.addStep(`${entry.name || '-'}`);
+            /*
+             * An entry carrying a `config` is a self-contained tool document,
+             * and a ref the registry can resolve is one as well: import
+             * re-publishes the content locally instead of re-fetching a
+             * consensus message that only exists on the source network.
+             */
+            const embeddedEntry = entry.config
+                ? entry
+                : entry.messageId ? embeddedRegistry.get(entry.messageId.trim()) : undefined;
+            const importResult = embeddedEntry
+                ? await importToolByEmbedded(
+                    hederaAccount, embeddedEntry, user, step, userId, visited, embeddedRegistry
+                )
+                : await importToolByMessage(
+                    hederaAccount,
+                    entry.messageId,
+                    user,
+                    step,
+                    userId,
+                    visited
+                );
+            if (importResult.map) {
+                maps.push(importResult.map);
+            } else if (
+                importResult.tool &&
+                entry.messageId &&
+                importResult.tool.messageId &&
+                entry.messageId !== importResult.tool.messageId
+            ) {
+                // The identity of a freshly created by-message tool changed, so
+                // report the mapping for config substitution as well.
+                maps.push({
+                    oldMessageId: entry.messageId,
+                    messageId: importResult.tool.messageId,
+                    oldHash: entry.hash,
+                    newHash: importResult.tool.hash
+                });
+            }
+            if (importResult.maps?.length) {
+                maps.push(...importResult.maps);
+            }
             if (importResult.tool) {
                 tools.push(importResult.tool);
             }
@@ -124,8 +157,8 @@ export async function importSubTools(
             // status only survives as an unattributed worker log line.
             errors.push({
                 type: 'tool',
-                name: message.name,
-                messageId: message.messageId,
+                name: entry.name,
+                messageId: entry.messageId,
                 error: error?.message || String(error) || 'Invalid tool'
             });
         }
@@ -134,7 +167,8 @@ export async function importSubTools(
     notifier.complete();
     return {
         tools,
-        errors
+        errors,
+        maps
     };
 }
 
@@ -150,7 +184,8 @@ export async function importToolByMessage(
     user: IOwner,
     notifier: INotificationStep,
     userId: string | null,
-    visited: Set<string> = new Set<string>()
+    visited: Set<string> = new Set<string>(),
+    embeddedRegistry: ToolEmbeddedRegistry = new Map<string, ToolImportEntry>()
 ): Promise<ImportToolResult> {
     // <-- Steps
     const STEP_LOAD_FILE = 'Load tool file';
@@ -254,7 +289,7 @@ export async function importToolByMessage(
     const components = await ToolImportExport.parseZipFile(message.document);
 
     // Import Tools
-    const toolsResults = await importSubTools(hederaAccount, components.tools, user, notifier, userId, visited);
+    const toolsResults = await importSubTools(hederaAccount, components.tools, user, notifier, userId, visited, embeddedRegistry);
 
     // saved after the recursion: a blob written before it is orphaned by anything
     // that throws in between, with no reference and no cleanup path
@@ -356,6 +391,335 @@ export async function importToolByMessage(
     };
     } finally {
         visited.delete(messageId);
+    }
+}
+
+/**
+ * Import a tool whose full document is embedded in the archive entry
+ * (the self-contained, v2 entry format).
+ *
+ * Re-fetching by messageId is impossible here: the document was published on
+ * the source network, and this network has no such consensus message. Instead
+ * the content is re-published locally - a new tool topic, a new PublishTool
+ * consensus message, a new messageId - and the row is saved PUBLISHED, the
+ * only status the policy engine will execute.
+ *
+ * The hash is computed from the embedded bytes (never from reloaded entities,
+ * whose ids would drift), so the same embedded content always produces the
+ * same hash on every network. That is what the (hash, owner) dedup keys on:
+ * two archives embedding the same tool republish it once.
+ *
+ * The returned ImportToolMap carries the old-to-new identity so the importing
+ * policy can substitute the new ids across its config and `tools` list.
+ */
+export async function importToolByEmbedded(
+    hederaAccount: IRootConfig,
+    entry: ToolImportEntry,
+    user: IOwner,
+    notifier: INotificationStep,
+    userId: string | null,
+    visited: Set<string> = new Set<string>(),
+    embeddedRegistry: ToolEmbeddedRegistry = new Map<string, ToolImportEntry>()
+): Promise<ImportToolResult> {
+    // <-- Steps
+    const STEP_LOAD_FILE = 'Load tool file';
+    const STEP_CHECK_DEDUP = 'Check for existing tool';
+    const STEP_CREATE_TOPIC = 'Create topic';
+    const STEP_IMPORT_SUB_TOOLS = 'Import sub-tools';
+    const STEP_IMPORT_SCHEMAS = 'Import schemas';
+    const STEP_CREATE_TAGS_TOPIC = 'Create tags topic';
+    const STEP_UPDATE_CONFIG = 'Update config';
+    const STEP_PUBLISH_TOOL = 'Publish tool';
+    const STEP_SAVE = 'Save tool';
+    const STEP_LINK_TOPIC = 'Link topic and tool';
+    const STEP_IMPORT_TAGS = 'Import tags';
+    // Steps -->
+
+    notifier.addStep(STEP_LOAD_FILE);
+    notifier.addStep(STEP_CHECK_DEDUP);
+    notifier.addStep(STEP_CREATE_TOPIC);
+    notifier.addStep(STEP_IMPORT_SUB_TOOLS);
+    notifier.addStep(STEP_IMPORT_SCHEMAS);
+    notifier.addStep(STEP_CREATE_TAGS_TOPIC);
+    notifier.addStep(STEP_UPDATE_CONFIG);
+    notifier.addStep(STEP_PUBLISH_TOOL);
+    notifier.addStep(STEP_SAVE);
+    notifier.addStep(STEP_LINK_TOPIC);
+    notifier.addStep(STEP_IMPORT_TAGS);
+    notifier.start();
+
+    notifier.startStep(STEP_LOAD_FILE);
+
+    /*
+     * Deep-clone the entry before mutating anything: the registry shares the
+     * same objects across parents, and every step below mutates in place
+     * (ref enrichment, replaceConfig, updateToolConfig). Without the clone, a
+     * diamond lets one parent's import change the bytes another parent
+     * re-zips - different hash, dedup miss, double re-publish.
+     */
+    const cloned = structuredClone(entry);
+    const components: IToolComponents = {
+        // The entry is parsed JSON, not an entity instance; the casts are
+        // compile-time only - nothing below calls entity methods on it.
+        tool: cloned as unknown as PolicyTool,
+        tools: (Array.isArray(cloned.tools) ? cloned.tools : []) as unknown as PolicyTool[],
+        schemas: Array.isArray(cloned.schemas) ? cloned.schemas : [],
+        tags: Array.isArray(cloned.tags) ? cloned.tags : []
+    };
+
+    if (!components.tool.config) {
+        throw new Error('The embedded tool entry has no config; nothing to re-publish.');
+    }
+
+    const oldMessageId = typeof components.tool.messageId === 'string' ? components.tool.messageId.trim() : '';
+    const oldHash = typeof entry.hash === 'string' && entry.hash ? entry.hash : undefined;
+
+    /*
+     * Same cycle protection as importToolByMessage. The entry's original
+     * messageId is the preferred key; an entry without one falls back to its
+     * content hash, so a hash-keyed self-reference is caught as well.
+     */
+    const visitedKey = oldMessageId || `hash:${components.tool.hash || components.tool.name}`;
+    if (visited.has(visitedKey)) {
+        throw new Error(
+            `Circular tool reference: "${visitedKey}" is already being imported further up the chain.`
+        );
+    }
+    if (visited.size >= MAX_TOOL_IMPORT_DEPTH) {
+        throw new Error(
+            `Tool import nested deeper than ${MAX_TOOL_IMPORT_DEPTH} levels; refusing to continue.`
+        );
+    }
+    visited.add(visitedKey);
+
+    try {
+        // Enrich the 3-field nested refs with the registry's identity so the
+        // stubs the zip emits are complete and uniquely named. A ref not
+        // embedded in the archive keeps the name fallback.
+        for (const ref of components.tools) {
+            const embedded = typeof ref.messageId === 'string'
+                ? embeddedRegistry.get(ref.messageId.trim())
+                : undefined;
+            if (!embedded) {
+                continue;
+            }
+            if (!ref.description) {
+                ref.description = embedded.description;
+            }
+            if (!ref.creator) {
+                ref.creator = embedded.creator;
+            }
+            if (!ref.hash) {
+                ref.hash = embedded.hash;
+            }
+        }
+
+        // The zip (and thus the hash) must be generated before any identity
+        // mutation below: the published document and the dedup key are both
+        // derived from the embedded bytes as they appear in the archive.
+        const zip = await ToolImportExport.generateZipFile(components);
+        const buffer = Buffer.from(await zip.generateAsync({ type: 'arraybuffer' }));
+        const hash = Hashing.base58.encode(Hashing.sha256.digest(buffer));
+
+        // The consensus message document must be exactly the embedded content,
+        // so the message hash keeps covering it after the row is mutated.
+        const documentTool = structuredClone(components.tool);
+        documentTool.hash = hash;
+        notifier.completeStep(STEP_LOAD_FILE);
+
+        notifier.startStep(STEP_CHECK_DEDUP);
+        // Same (hash, owner) key the dedup was built on: a re-import of an
+        // archive embedding an already re-published tool reuses the existing row.
+        const existing = await DatabaseServer.getTool({ hash, owner: user.owner });
+        notifier.completeStep(STEP_CHECK_DEDUP);
+        if (existing) {
+            notifier.complete();
+            return {
+                tool: existing,
+                errors: [],
+                map: {
+                    oldMessageId,
+                    messageId: existing.messageId,
+                    oldHash,
+                    newHash: existing.hash
+                }
+            };
+        }
+
+        notifier.startStep(STEP_CREATE_TOPIC);
+        const messageServer = new MessageServer({
+            operatorId: hederaAccount.hederaAccountId,
+            operatorKey: hederaAccount.hederaAccountKey,
+            signOptions: hederaAccount.signOptions
+        });
+        const parent = await TopicConfig.fromObject(
+            await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic), true, userId
+        );
+        const topicHelper = new TopicHelper(
+            hederaAccount.hederaAccountId,
+            hederaAccount.hederaAccountKey,
+            hederaAccount.signOptions
+        );
+        const topic = await topicHelper.create({
+            type: TopicType.ToolTopic,
+            name: components.tool.name || TopicType.ToolTopic,
+            description: components.tool.description || TopicType.ToolTopic,
+            owner: user.owner,
+            targetId: null,
+            targetUUID: null
+        }, {
+            admin: true,
+            submit: true
+        }, {
+            userId
+        });
+        await topic.saveKeys(userId);
+        await topicHelper.twoWayLink({ topic, parent, rationale: null, userId });
+        await DatabaseServer.saveTopic(topic.toObject());
+        documentTool.topicId = topic.topicId;
+        notifier.completeStep(STEP_CREATE_TOPIC);
+
+        // Row mutation: the identity the archive carried is source-network
+        // data, and every field below is assigned fresh for this network.
+        const tool = components.tool;
+        delete tool._id;
+        delete tool.id;
+        delete tool.uuid;
+        delete tool.messageId;
+        delete tool.topicId;
+        delete tool.status;
+        delete tool.tagsTopicId;
+        delete tool.createDate;
+        delete tool.updateDate;
+        tool.uuid = GenerateUUIDv4();
+        tool.creator = user.creator;
+        tool.owner = user.owner;
+        if (!ModelHelper.checkVersionFormat(tool.version || '')) {
+            tool.version = '1.0.0';
+        }
+        if (!ModelHelper.checkVersionFormat(tool.previousVersion || '')) {
+            tool.previousVersion = '0.0.0';
+        }
+        tool.status = ModuleStatus.PUBLISHED;
+        tool.hash = hash;
+        tool.topicId = topic.topicId;
+
+        notifier.startStep(STEP_IMPORT_SUB_TOOLS);
+        const toolsResults = await importSubTools(
+            hederaAccount,
+            components.tools,
+            user,
+            notifier.getStep(STEP_IMPORT_SUB_TOOLS),
+            userId,
+            visited,
+            embeddedRegistry
+        );
+        const childMaps = toolsResults.maps;
+        const toolsSchemas = await getToolSchemas(toolsResults.tools);
+        notifier.completeStep(STEP_IMPORT_SUB_TOOLS);
+
+        notifier.startStep(STEP_IMPORT_SCHEMAS);
+        const schemasResult = await SchemaImportExportHelper.importSchemaByFiles(
+            components.schemas,
+            user,
+            {
+                category: SchemaCategory.TOOL,
+                topicId: topic.topicId,
+                skipGenerateId: false,
+                outerSchemas: toolsSchemas
+            },
+            notifier.getStep(STEP_IMPORT_SCHEMAS),
+            userId
+        );
+        const schemasMap = schemasResult.schemasMap;
+        notifier.completeStep(STEP_IMPORT_SCHEMAS);
+
+        notifier.startStep(STEP_CREATE_TAGS_TOPIC);
+        const tagsTopic = await topicHelper.create({
+            type: TopicType.TagsTopic,
+            name: tool.name || TopicType.TagsTopic,
+            description: tool.description || TopicType.TagsTopic,
+            owner: user.owner,
+            policyId: null,
+            policyUUID: tool.uuid
+        }, {
+            admin: true,
+            submit: false
+        }, {
+            userId
+        });
+        await tagsTopic.saveKeys(userId);
+        await DatabaseServer.saveTopic(tagsTopic.toObject());
+        tool.tagsTopicId = tagsTopic.topicId;
+        documentTool.tagsTopicId = tagsTopic.topicId;
+        notifier.completeStep(STEP_CREATE_TAGS_TOPIC);
+
+        notifier.startStep(STEP_UPDATE_CONFIG);
+        // Nested refs and schema IRIs now point at the new local identities.
+        await replaceConfig(tool, schemasMap, childMaps);
+        await updateToolConfig(tool);
+        notifier.completeStep(STEP_UPDATE_CONFIG);
+
+        // Saved after the recursion: a blob written before it is orphaned by
+        // anything that throws in between, with no reference and no cleanup path
+        tool.contentFileId = await DatabaseServer.saveFile(GenerateUUIDv4(), buffer);
+
+        notifier.startStep(STEP_PUBLISH_TOOL);
+        const message = new ToolMessage(MessageType.Tool, MessageAction.PublishTool);
+        message.setDocument(documentTool, buffer);
+        const result = await messageServer
+            .setTopicObject(topic)
+            .sendMessage(message, {
+                sendToIPFS: true,
+                memo: null,
+                userId,
+                interception: userId
+            });
+        tool.messageId = result.getId();
+        notifier.completeStep(STEP_PUBLISH_TOOL);
+
+        notifier.startStep(STEP_SAVE);
+        // The row only exists once the consensus message does: a failed
+        // publish must not leave behind a PUBLISHED row with no messageId.
+        const item = await DatabaseServer.createTool(tool);
+        notifier.completeStep(STEP_SAVE);
+
+        notifier.startStep(STEP_LINK_TOPIC);
+        const topicRow = await DatabaseServer.getTopicById(topic.topicId);
+        topicRow.targetId = item.id.toString();
+        topicRow.targetUUID = item.uuid;
+        await DatabaseServer.updateTopic(topicRow);
+        notifier.completeStep(STEP_LINK_TOPIC);
+
+        notifier.startStep(STEP_IMPORT_TAGS);
+        const toolTags = components.tags.filter((t: any) => t.entity === TagType.Tool);
+        await importTag(toolTags, item.id.toString());
+        notifier.completeStep(STEP_IMPORT_TAGS);
+
+        const errors: any[] = [];
+        for (const error of toolsResults.errors) {
+            errors.push(error);
+        }
+        if (schemasResult.errors) {
+            for (const error of schemasResult.errors) {
+                errors.push(error);
+            }
+        }
+
+        notifier.complete();
+        return {
+            tool: item,
+            errors,
+            map: {
+                oldMessageId,
+                messageId: item.messageId,
+                oldHash,
+                newHash: hash
+            },
+            maps: childMaps
+        };
+    } finally {
+        visited.delete(visitedKey);
     }
 }
 
@@ -660,11 +1024,15 @@ export async function replaceConfig(
     }
 
     for (const item of tools) {
-        if (!item.newHash || !item.messageId) {
+        if (!item.messageId) {
             continue;
         }
-        replaceAllEntities(tool.config, ['messageId'], item.oldMessageId, item.messageId);
-        replaceAllEntities(tool.config, ['hash'], item.oldHash, item.newHash);
+        if (item.oldMessageId && item.oldMessageId !== item.messageId) {
+            replaceAllEntities(tool.config, ['messageId'], item.oldMessageId, item.messageId);
+        }
+        if (item.oldHash && item.newHash && item.oldHash !== item.newHash) {
+            replaceAllEntities(tool.config, ['hash'], item.oldHash, item.newHash);
+        }
     }
 }
 

@@ -50,6 +50,7 @@ import { PolicyImportExportHelper } from './policy-import-helper.js';
 import { SchemaImportExportHelper } from '../schema/schema-import-helper.js';
 import { importTag } from '../tag/tag-import-helper.js';
 import { ImportToolMap, ImportToolResults } from '../tool/tool-import.interface.js';
+import { ToolImportEntry } from '../tool/tool-import.interface.js';
 import { getToolSchemas, importSubTools } from '../tool/tool-import-helper.js';
 import { resolveToolOverrides } from '../tool/tool-override-resolver.js';
 import { ImportTokenMap, ImportTokenResult } from '../token/token-import.interface.js';
@@ -378,7 +379,7 @@ export class PolicyImport {
     }
 
     private async importTools(
-        tools: PolicyTool[],
+        tools: ToolImportEntry[],
         user: IOwner,
         metadata: PolicyToolMetadata | null,
         step: INotificationStep,
@@ -386,11 +387,31 @@ export class PolicyImport {
     ) {
         step.start();
 
+        // Self-contained entries embedded in the archive resolve nested refs from
+        // the archive itself: a ref whose original messageId the archive embeds
+        // re-publishes locally instead of fetching a consensus message that only
+        // exists on the source network. Built before resolveToolOverrides rewrites
+        // the messageId of overridden entries.
+        const embeddedRegistry = new Map<string, ToolImportEntry>();
+        for (const tool of tools) {
+            if (tool.config && typeof tool.messageId === 'string' && tool.messageId.trim()) {
+                embeddedRegistry.set(tool.messageId.trim(), tool);
+            }
+        }
+
         const { toolsMapping, preResolvedTools, toolsToImport } = await resolveToolOverrides(tools, metadata);
         this.toolsMapping = toolsMapping;
 
-        this.toolsResult = await importSubTools(this.root, toolsToImport, user, step, userId);
+        this.toolsResult = await importSubTools(
+            this.root, toolsToImport, user, step, userId, undefined, embeddedRegistry
+        );
         this.toolsResult.tools = [...preResolvedTools, ...this.toolsResult.tools];
+
+        // The re-publish maps (old -> new identity) join the resolver maps so the
+        // config substitution below covers them as well.
+        for (const map of this.toolsResult.maps) {
+            this.toolsMapping.push(map);
+        }
 
         for (const toolMapping of this.toolsMapping) {
             const toolByMessageId = this.toolsResult.tools.find((tool) => tool.messageId === toolMapping.messageId);

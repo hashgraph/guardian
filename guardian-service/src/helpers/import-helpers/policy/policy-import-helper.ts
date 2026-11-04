@@ -14,6 +14,7 @@ import { ImportMode } from '../common/import.interface.js';
 import { ImportPolicyError, ImportPolicyOptions, ImportPolicyResult } from './policy-import.interface.js';
 import { PolicyImport } from './policy-import.js';
 import { ImportSchemaMap } from '../schema/schema-import.interface.js';
+import { ImportToolMap } from '../tool/tool-import.interface.js';
 import { PolicyConverterUtils } from './policy-converter-utils.js';
 import { HashComparator, PolicyLoader } from '../../../analytics/index.js';
 import { importPolicyTags } from '../tag/tag-import-helper.js';
@@ -129,7 +130,7 @@ export class PolicyImportExportHelper {
         schemasMap: ImportSchemaMap[],
         artifactsMap: Map<string, string>,
         tokenMap: any[],
-        tools: { oldMessageId: string, messageId: string, oldHash: string, newHash?: string }[]
+        tools: ImportToolMap[]
     ) {
         if (await new DatabaseServer().findOne(Policy, { name: policy.name })) {
             policy.name = policy.name + '_' + Date.now();
@@ -150,11 +151,15 @@ export class PolicyImportExportHelper {
         }
 
         for (const item of tools) {
-            if (!item.newHash || !item.messageId) {
+            if (!item.oldMessageId || !item.messageId || item.oldMessageId === item.messageId) {
                 continue;
             }
             replaceAllEntities(policy.config, ['messageId'], item.oldMessageId, item.messageId);
-            replaceAllEntities(policy.config, ['hash'], item.oldHash, item.newHash);
+            // Guard both hashes: an undefined oldValue would match own properties
+            // that hold undefined, and an unchanged hash needs no rewrite.
+            if (item.oldHash && item.newHash && item.oldHash !== item.newHash) {
+                replaceAllEntities(policy.config, ['hash'], item.oldHash, item.newHash);
+            }
         }
 
         // compatibility with older versions

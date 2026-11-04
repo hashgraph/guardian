@@ -4,7 +4,6 @@ import * as Authorization from '../../../support/authorization';
 
 context('Policy autotest', { tags: ['policyAT'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-    const isTestnet = Cypress.env('hederaNet') === 'testnet';
 
     it('Import policy CDM AMS-III.BB', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
@@ -19,24 +18,16 @@ context('Policy autotest', { tags: ['policyAT'] }, () => {
                             'content-type': 'binary/octet-stream',
                             authorization,
                         },
-                        failOnStatusCode: false,
                         timeout: 180000,
                     }).then((response) => {
                         // `cy.request` returns the body as an ArrayBuffer for binary
                         // requests, so decode it back to JSON before asserting.
                         const imported = JSON.parse(new TextDecoder('utf-8').decode(response.body));
 
-                        if (isTestnet) {
-                            expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                            expect(imported[0].name).to.match(/^CDM AMS-III\.BB(_\d+)?$/);
-                        } else {
-                            // The tools embedded in this archive reference Hedera testnet consensus
-                            // messages. They cannot be retrieved on a local network, so the import
-                            // fails with MESSAGE_NOT_FOUND; on testnet they resolve and the import
-                            // succeeds.
-                            expect(response.status).to.eq(STATUS_CODE.ERROR);
-                            expect(imported.message).to.contain('MESSAGE_NOT_FOUND');
-                        }
+                        expect(response.status).to.eq(STATUS_CODE.SUCCESS);
+                        expect(imported).to.be.an('array');
+                        expect(imported[0].name).to.match(/^CDM AMS-III\.BB(_\d+)?$/);
+                        expect(imported[0].tools).to.have.length(3);
                     });
                 });
         });

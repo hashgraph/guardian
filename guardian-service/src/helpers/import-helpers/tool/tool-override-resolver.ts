@@ -1,7 +1,7 @@
 import { ModuleStatus, PolicyToolMetadata } from '@guardian/interfaces';
 import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import { PolicyTool } from '@guardian/common/entity/tool';
-import { ImportToolMap } from './tool-import.interface.js';
+import { ImportToolMap, ToolImportEntry } from './tool-import.interface.js';
 
 /**
  * Resolve user-provided tool messageId overrides against the local DB.
@@ -12,18 +12,18 @@ import { ImportToolMap } from './tool-import.interface.js';
  * which would otherwise fail the strict hash/owner equality check inside
  * `importToolByMessage` for tools the user has explicitly chosen.
  */
-export async function resolveToolOverrides(
-    tools: PolicyTool[],
+export async function resolveToolOverrides<T extends ToolImportEntry>(
+    tools: T[],
     metadata: PolicyToolMetadata | null
 ): Promise<{
     toolsMapping: ImportToolMap[];
     preResolvedTools: PolicyTool[];
-    toolsToImport: PolicyTool[];
+    toolsToImport: T[];
 }> {
     const toolsMapping: ImportToolMap[] = [];
     const preResolvedTools: PolicyTool[] = [];
-    const toolsToImport: PolicyTool[] = [];
-    const overrides: { tool: PolicyTool, overrideMessageId: string }[] = [];
+    const toolsToImport: T[] = [];
+    const overrides: { tool: T, overrideMessageId: string }[] = [];
 
     for (const tool of tools) {
         const overrideMessageId = metadata?.tools?.[tool.messageId];
