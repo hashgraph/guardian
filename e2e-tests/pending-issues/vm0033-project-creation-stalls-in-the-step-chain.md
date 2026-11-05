@@ -85,6 +85,30 @@ Cheapest next step is the policy-service log: `unparkStalledChild` logs
 empty-result branch logs `custom logic returned an empty result` — either line names the child the
 chain actually died on.
 
+## Root cause (verified 5 Nov 2026)
+
+The chain dies on `calculate_project_fields` (index 5), as the second refinement above suspected, and the
+policy-service log names the reason. The custom-logic output fails validation against the output schema:
+
+```
+step stalled on non-UI child "calculate_project_fields" (index 5); rewinding to index 0
+JSON_SCHEMA_VALIDATION_ERROR ... Field 'delta_CSHRUB_BSL_i_t_ar_tool_14' is not allowed unless:
+  is_aboveground_non_tree_biomass = 'true'
+```
+
+The script in `VM0033_7_23.policy` assigns per-stratum fields unconditionally
+(`asl.delta_CSHRUB_BSL_i_t_ar_tool_14 = stratum.ar_tool_14.delta_C_SHRUB;`, `asl.ET_FC_I_t_ar_tool_5_BSL = ...`),
+while the output schema's `allOf/else` branches forbid them unless the matching flag is `true`
+(`is_aboveground_non_tree_biomass`, `is_fossil_fuel_use`, ...). `cypress/fixtures/payload.json` sets those flags
+to `false`, so the output is always invalid. The product behaves as designed: it is a policy/payload inconsistency,
+not a `policy-service` bug.
+
+Checked live: with every `is_aboveground_non_tree_biomass` set to `true` in the payload (temporary edit, reverted),
+the first error disappears and the next one appears
+(`Field 'ET_FC_I_t_ar_tool_5_BSL' is not allowed unless: is_fossil_fuel_use = 'true'`), and the step still rewinds
+to 0. So a payload-only fix would need every conditional flag set consistently; the clean fix is in the script
+(assign each conditional field only when its flag is `true`). Not changed here: the policy is a vendored artefact.
+
 ## Reproduction
 
 Against a published VM0033 with the Project Proponent registered in the policy:
