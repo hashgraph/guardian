@@ -1,0 +1,149 @@
+@use '../sections' as sections;
+
+:host {
+    @include sections.sf-vars;
+    display: block;
+    container: sf-nav / inline-size;
+}
+
+.sf-nav {
+    position: relative;
+    display: flex;
+    width: 100%;
+}
+
+// Flush to the top and left of the host's scroll area, like the policy navigation
+.sf-rail-col {
+    flex: 0 0 288px;
+    width: 288px;
+    align-self: stretch;
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    max-height: 100vh;
+    box-sizing: border-box;
+
+    app-schema-form-rail {
+        flex: 1;
+        min-height: 0;
+    }
+}
+
+.sf-nav-content {
+    flex: 1;
+    min-width: 0;
+}
+
+// The host sets --sf-content-pad when it gives the page the whole scroll area
+.sf-content-inner {
+    padding: var(--sf-content-pad, 0);
+}
+
+.sf-section-bar {
+    display: none;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 16px;
+    border-bottom: 1px solid var(--guardian-border-color);
+    background: var(--guardian-background);
+    font-family: Inter;
+    font-size: 14px;
+    color: var(--guardian-font-color);
+    cursor: pointer;
+
+    &:focus-visible {
+        outline: 2px solid var(--color-primary);
+        outline-offset: -2px;
+    }
+
+    .sf-section-bar-icon {
+        color: var(--sf-text-3);
+    }
+
+    .sf-section-bar-text {
+        flex: 1;
+        min-width: 0;
+
+        small {
+            display: block;
+            font-size: 11px;
+            color: var(--sf-text-3);
+        }
+
+        b {
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-weight: 600;
+        }
+    }
+}
+
+.sf-show-menu {
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 14px;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--guardian-border-color);
+    background: var(--guardian-background);
+    color: var(--guardian-font-color);
+    font-size: 13px;
+    cursor: pointer;
+
+    &:hover {
+        background: var(--guardian-hover);
+    }
+}
+
+.sf-drawer-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 40;
+    background: color-mix(in srgb, var(--guardian-font-color) 35%, transparent);
+}
+
+.sf-drawer {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 41;
+    display: flex;
+    flex-direction: column;
+    width: 300px;
+    max-width: 86%;
+    background: var(--sf-sunken);
+    box-shadow: 0 4px 16px rgba(16, 24, 40, 0.08);
+
+    app-schema-form-rail {
+        position: sticky;
+        top: 0;
+        max-height: 100vh;
+    }
+}
+
+@container sf-nav (max-width: 1000px) {
+    .sf-rail-col,
+    .sf-show-menu {
+        display: none;
+    }
+
+    .sf-section-bar {
+        display: flex;
+    }
+}
+
+@container sf-nav (min-width: 1001px) {
+    .sf-drawer,
+    .sf-drawer-bg {
+        display: none;
+    }
+}

@@ -38,6 +38,21 @@
 
 .sf-ro-sub {
     @include form-grid.sf-sub-heading;
+
+    // Inside a card the sub-schemas are small caps headings, as in the mockup
+    > .sf-sub-head {
+        font-size: 11.5px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--color-grey-5);
+    }
+
+    &:first-child {
+        margin-top: 0;
+        padding-top: 0;
+        border-top: 0;
+    }
 }
 
 .sf-ro-label {

@@ -1,0 +1,59 @@
+<div class="sf-overview" [attr.inert]="locked ? '' : null">
+  <ng-content select="[overviewHead]"></ng-content>
+  @if (tiles.length) {
+    <div class="sf-tiles">
+      @for (tile of tiles; track tile.label) {
+        <div
+          class="sf-tile"
+          [class.sf-tile-warn]="tile.tone === 'warn'"
+          [class.sf-tile-bad]="tile.tone === 'bad'"
+          [class.sf-tile-ok]="tile.tone === 'ok'"
+          >
+          <b>{{ tile.value }}</b>{{ tile.label }}
+        </div>
+      }
+    </div>
+  }
+  <ng-content select="[overviewExtra]"></ng-content>
+  <div class="sf-cards">
+    @for (card of cards; track card.id; let i = $index) {
+      <button type="button" class="sf-overview-card" (click)="open.emit(i)">
+        @if (card.pill || card.ring || card.status) {
+          <span class="sf-overview-card-top">
+            <span class="sf-overview-card-state">{{ card.pill?.text }}</span>
+            @if (card.ring; as ring) {
+              <app-schema-form-ring size="md" [state]="ring.optional ? 'optional' : ring.done ? 'done' : 'progress'" [pct]="ring.pct"></app-schema-form-ring>
+            } @else if (card.status) {
+              <span class="sf-status-dot" [class.sf-status-ok]="card.status === 'ok'" [class.sf-status-bad]="card.status === 'bad'"></span>
+            }
+          </span>
+        }
+        <span class="sf-overview-card-name">
+          @if (card.prefix) {
+            <span class="sf-overview-card-prefix">{{ card.prefix }}</span>
+          }{{ card.title }}
+        </span>
+        @if (card.meta) {
+          <span class="sf-overview-card-meta">{{ card.meta }}</span>
+        }
+        @if (card.fill !== undefined) {
+          <span class="sf-overview-card-fill"><i [style.width.%]="card.fill"></i></span>
+        }
+        @if (card.badges?.length) {
+          <span class="sf-overview-card-badges">
+            @for (badge of card.badges; track badge.kind) {
+              <span class="sf-badge" [class.sf-badge-warn]="badge.kind === 'warn'" [class.sf-badge-comment]="badge.kind === 'comment'" [attr.title]="badge.tooltip">{{ badge.count }}</span>
+            }
+          </span>
+        }
+        <span class="sf-overview-card-go">{{ card.action }} →</span>
+      </button>
+    }
+  </div>
+  @if (footerLink) {
+    <div class="sf-section-links">
+      <span></span>
+      <button type="button" class="sf-section-link" (click)="footer.emit()">{{ footerLink }} →</button>
+    </div>
+  }
+</div>

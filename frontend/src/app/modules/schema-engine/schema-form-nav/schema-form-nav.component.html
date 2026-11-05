@@ -1,0 +1,74 @@
+<div class="sf-nav">
+  @if (hasSections && !railHidden) {
+    <aside class="sf-rail-col" [attr.inert]="locked ? '' : null" #railContainer>
+      <app-schema-form-rail
+        [sections]="sections"
+        [completion]="completion"
+        [screen]="screen"
+        [activeIndex]="activeIndex"
+        [cards]="cards"
+        [errorsRevealed]="errorsRevealed"
+        [mode]="mode"
+        [title]="title"
+        [overviewLabel]="overviewLabel"
+        (select)="onSelect($event)"
+        (selectCard)="onSelectCard($event)"
+        (hide)="toggleRail()"
+        >
+      </app-schema-form-rail>
+    </aside>
+  }
+  <div class="sf-nav-content">
+    @if (hasSections) {
+      <div
+        class="sf-section-bar"
+        role="button"
+        tabindex="0"
+        aria-haspopup="dialog"
+        [attr.inert]="locked ? '' : null"
+        (click)="setDrawer(true)"
+        (keydown.enter)="setDrawer(true)"
+        >
+        <i class="pi pi-bars sf-section-bar-icon" aria-hidden="true"></i>
+        <div class="sf-section-bar-text">
+          @if (barLabel) {
+            <small>{{ barLabel }}</small>
+          }
+          <b>{{ barTitle }}</b>
+        </div>
+        <i class="pi pi-chevron-down" aria-hidden="true"></i>
+      </div>
+    }
+    <div class="sf-content-inner">
+      <ng-content select="[navTop]"></ng-content>
+      @if (hasSections && railHidden) {
+        <button type="button" class="sf-show-menu" (click)="toggleRail()">
+          <i class="pi pi-angle-double-right" aria-hidden="true"></i>
+          Show menu
+        </button>
+      }
+      <ng-content></ng-content>
+    </div>
+  </div>
+  @if (hasSections && drawerOpen) {
+    <div class="sf-drawer-bg" (click)="setDrawer(false)"></div>
+    <aside class="sf-drawer" [attr.aria-label]="title">
+      <app-schema-form-rail
+        [sections]="sections"
+        [completion]="completion"
+        [screen]="screen"
+        [activeIndex]="activeIndex"
+        [cards]="cards"
+        [errorsRevealed]="errorsRevealed"
+        [mode]="mode"
+        [title]="title"
+        [overviewLabel]="overviewLabel"
+        [inDrawer]="true"
+        (select)="onSelect($event)"
+        (selectCard)="onSelectCard($event)"
+        (hide)="setDrawer(false)"
+        >
+      </app-schema-form-rail>
+    </aside>
+  }
+</div>
