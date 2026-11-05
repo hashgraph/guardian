@@ -26,26 +26,6 @@ form {
     // min-height: 400px;
     position: relative;
 
-    .guardian-accordion-container {
-        margin-bottom: 16px;
-
-        &:last-child {
-            margin-bottom: 0px;
-        }
-    }
-
-    .group-header,
-    .group-multiple-header {
-        font-family: Poppins;
-        font-size: 16px;
-        font-weight: 600;
-        line-height: 20px;
-        text-align: left;
-        margin-bottom: 16px;
-        padding-left: 2px;
-        color: var(--color-grey-5);
-    }
-
     .disconnected-message {
         height: 40px;
         margin-bottom: 16px;
@@ -110,21 +90,6 @@ form {
             }
         }
     }
-}
-
-*[readonly] {
-    opacity: 0.6 !important;
-    cursor: not-allowed !important;
-}
-
-.tags-container {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-:host ::ng-deep .form-field-table {
-    width: 100%;
 }
 
 .content {

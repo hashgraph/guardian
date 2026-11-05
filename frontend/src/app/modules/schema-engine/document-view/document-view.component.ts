@@ -60,6 +60,7 @@ export class DocumentViewComponent implements OnInit {
     public previewReady: boolean = false;
     private previewFrame: number | null = null;
     private previewRenderTimer: ReturnType<typeof setTimeout> | null = null;
+    private linkTimer: ReturnType<typeof setTimeout> | undefined;
     public subjects: any[] = [];
     public proofJson!: string;
     public evidenceJson!: string;
@@ -144,7 +145,6 @@ export class DocumentViewComponent implements OnInit {
                 this.subjects.push(this.document.verifiableCredential);
             }
         }
-        this.pagesReady = this.type === 'VP';
         this.updateFormulasResults();
         this.loadData();
     }
@@ -182,6 +182,7 @@ export class DocumentViewComponent implements OnInit {
     }
 
     ngOnDestroy() {
+        clearTimeout(this.linkTimer);
         if (this.preview && this.previewRendering) this.previewLoadingChange.emit(false);
         if (this.previewRenderTimer !== null) {
             clearTimeout(this.previewRenderTimer);
@@ -503,7 +504,8 @@ export class DocumentViewComponent implements OnInit {
         this.ref.detectChanges();
         this.onNavCard({ id: location.id });
         // The link only has to open the field once; a later one for the same field must work again
-        setTimeout(() => {
+        clearTimeout(this.linkTimer);
+        this.linkTimer = setTimeout(() => {
             this.link = undefined;
             this.ref.detectChanges();
         }, 600);

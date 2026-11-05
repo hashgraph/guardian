@@ -94,10 +94,6 @@ export interface IViewSection extends IRailSection {
     fields: SchemaField[];
 }
 
-function viewLabel(field: SchemaField): string {
-    return field.description || field.title || field.name;
-}
-
 /**
  * Single-root promotion (N5) of a read-only document: exactly one visible top-level non-array
  * sub-schema whose own fields hold a visible sub-schema. Its fields are then the sections.
@@ -126,7 +122,7 @@ export function buildViewSections(fields: SchemaField[], visible: (field: Schema
         items,
         item => item.isRef,
         (title, list, last) => last
-            ? { id: last.name, title: viewLabel(last), fields: list }
+            ? { id: last.name, title: fieldLabel(last), fields: list }
             : { id: OTHER_DETAILS_SECTION_ID, title: title!, fields: list }
     );
 }

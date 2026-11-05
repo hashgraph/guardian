@@ -100,7 +100,7 @@
 <ng-template #fieldPage>
   @for (key of [pageKey]; track key) {
     @for (block of blocks; track block.key) {
-      <section class="sf-dd-card sf-dd-fields" [attr.field-id]="block.id" [class.sf-dd-plain]="!block.title">
+      <section class="sf-dd-card sf-dd-fields" [attr.field-id]="block.id">
         @if (block.title) {
           <div class="sf-dd-head">{{ block.title }}</div>
         }

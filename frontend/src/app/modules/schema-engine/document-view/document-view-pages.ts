@@ -1,5 +1,6 @@
 import { Schema, SchemaField, SchemaRuleValidateResult } from '@guardian/interfaces';
 import { applyViewConditions } from '../schema-form-view/schema-form-view-conditions';
+import { fieldLabel } from '../schema-form/schema-form-walk';
 import { IViewSection, buildViewSections, viewPromotedRoot } from '../schema-form-root/schema-form-sections';
 
 /** A field of the read-only view: the schema field plus the mark the conditions leave on it. */
@@ -56,6 +57,13 @@ function copyField(field: SchemaField): ViewField {
     return { ...field } as ViewField;
 }
 
+/** The fields of a sub-schema with its conditions judged by its own value. */
+function viewChildren(field: SchemaField, value: unknown): ViewField[] {
+    const children = (field.fields ?? []).map(copyField);
+    applyViewConditions(children, field.conditions, value ?? {});
+    return children;
+}
+
 /** Same filter as the field list of the view: hidden, help text and fields of a failed condition are not shown. */
 function isShown(field: ViewField, hide: { [x: string]: boolean }, value: unknown): boolean {
     if (hide?.[field.name] || field.type === 'null' || field.notCorrespondCondition) {
@@ -105,8 +113,7 @@ export function fieldStats(fields: SchemaField[], values: any, context: IViewCon
                 continue;
             }
             if (isGroup(field)) {
-                const children = (field.fields ?? []).map(copyField);
-                applyViewConditions(children, field.conditions, value ?? {});
+                const children = viewChildren(field, value);
                 walk(children, value);
                 continue;
             }
@@ -146,21 +153,19 @@ export function collectLocations(sections: IViewSection[], values: any, hide: { 
                 }
                 const isMap = field.customType === 'geo';
                 if (isGroup(field)) {
-                    const children = (field.fields ?? []).map(copyField);
-                    applyViewConditions(children, field.conditions, value ?? {});
+                    const children = viewChildren(field, value);
                     walk(children, value, [...trail, field.name]);
                 } else if (field.isArray && field.isRef && !isMap) {
                     // An array of sub-schemas: the first row stands for the list
                     const row = Array.isArray(value) ? value[0] : undefined;
-                    const children = (field.fields ?? []).map(copyField);
-                    applyViewConditions(children, field.conditions, row ?? {});
+                    const children = viewChildren(field, row);
                     walk(children, row, [...trail, field.name]);
                 } else if (isMap && !isEmptyValue(value)) {
                     // A list of maps shows its first one
                     const first = field.isArray ? (value as unknown[])[0] : value;
                     if (!isEmptyValue(first)) {
                         found.push({
-                            label: field.description || field.title || field.name,
+                            label: fieldLabel(field),
                             value: first,
                             sectionIndex,
                             sectionTitle: section.title,
@@ -195,11 +200,10 @@ export function sectionCards(section: IViewSection, values: any, hide: { [x: str
         if (!isShown(field, hide, value)) {
             continue;
         }
-        const children = (field.fields ?? []).map(copyField);
-        applyViewConditions(children, field.conditions, value ?? {});
+        const children = viewChildren(field, value);
         for (const child of children) {
-            if (child.isRef && child.customType !== 'geo' && child.customType !== 'sentinel' && isShown(child, hide, value?.[child.name])) {
-                cards.push({ id: child.fullPath ?? child.name, title: child.description || child.title || child.name });
+            if (isGroup(child) && isShown(child, hide, value?.[child.name])) {
+                cards.push({ id: child.fullPath ?? child.name, title: fieldLabel(child) });
             }
         }
     }
@@ -247,8 +251,7 @@ export function sectionBlocks(section: IViewSection, values: any, prefix: string
         }
         add(lead, values, prefix, '');
         lead = [];
-        const children = (field.fields ?? []).map(copyField);
-        applyViewConditions(children, field.conditions, value ?? {});
+        const children = viewChildren(field, value);
         const base = `${prefix}${field.name}.`;
         const link = `${field.name}.`;
         let own: ViewField[] = [];
@@ -257,10 +260,9 @@ export function sectionBlocks(section: IViewSection, values: any, prefix: string
             if (isGroup(child) && isShown(child, hide, childValue)) {
                 add(own, value, base, link);
                 own = [];
-                const inner = (child.fields ?? []).map(copyField);
-                applyViewConditions(inner, child.conditions, childValue ?? {});
+                const inner = viewChildren(child, childValue);
                 add(inner, childValue, `${base}${child.name}.`, `${link}${child.name}.`, {
-                    title: child.description || child.title || child.name,
+                    title: fieldLabel(child),
                     id: child.fullPath ?? child.name,
                     empty: isEmptyValue(childValue) || (typeof childValue === 'object' && !Array.isArray(childValue) && Object.keys(childValue).length === 0),
                 });
