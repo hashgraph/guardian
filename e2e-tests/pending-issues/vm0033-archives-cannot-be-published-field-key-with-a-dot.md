@@ -1,6 +1,6 @@
 # VM0033 archives cannot be published: a schema field key contains a dot
 
-**Status:** open for the library archive `Methodology Library/Verra/Verified Carbon Standard (VCS)/VM0033/VM0033.policy`; worked around in the e2e fixture
+**Status:** open — both the library archive `Methodology Library/Verra/Verified Carbon Standard (VCS)/VM0033/VM0033.policy` and the e2e fixture still carry the key; the e2e fixture is left as it is
 **Component:** `guardian-service` — `schema-field-key-validator.ts` (rejects `.` and `:` in field keys on import and publish, feat #6620); content of the VM0033 archive
 **Severity:** medium — the library's own VM0033 policy imports but `PUT /policies/{id}/publish` answers 500
 **Found by:** `e2e-tests/cypress/e2e/api-tests/009_policies/VM033.cy.js`
@@ -22,8 +22,8 @@ The key `3.1.3.5_buffer_zones` appears in two schemas of the archive (four occur
 ## Fix
 
 - Library: rename the key (for example `3_1_3_5_buffer_zones`) in the two schemas and re-export the archive. Whether existing published policies that use the dotted key need a migration is a product decision.
-- E2E fixture: done — the key was renamed in the two schema files of `cypress/fixtures/VM0033_7_23.policy`.
+- E2E fixture: rename the key the same way in `cypress/fixtures/VM0033_7_23.policy`. Verified: with the rename, `VM033.cy.js` publishes (the fixture is not changed in this repo until the library archive is fixed).
 
 ## Test impact
 
-With the fixture fixed, `VM033.cy.js` gets through import, publish and assign. It then stops at `Create application`, which is the separate, still open problem in `vm0033-project-creation-stalls-in-the-step-chain.md`.
+With the unmodified fixture, `VM033.cy.js` imports the policy and fails at publish with the 500 above. With the key renamed it gets through import, publish and assign, then stops at `Create application`, the separate problem in `vm0033-project-creation-stalls-in-the-step-chain.md`.
