@@ -409,6 +409,29 @@ describe('SchemaFormViewComponent', () => {
             expect(labels).toEqual([['Kind', 'Area'], ['Kind', 'Other']]);
         });
 
+        it('keeps each card on its own row when paging back and forth', () => {
+            const many = Array.from({ length: 30 }, (_, i) => ({ name: `row-${i}`, size: i }));
+            const fixture = render([rows], { rows: many });
+            const component = fixture.componentInstance;
+            const item = component.fields![0];
+            const page = (index: number) => {
+                component.onPage(item, { pageIndex: index, pageSize: 25 });
+                (component as any).changeDetector.markForCheck();
+                fixture.detectChanges();
+            };
+            const expandAll = () => {
+                (fixture.nativeElement.querySelector('.sf-ro-recbar-actions .sf-link') as HTMLElement).click();
+                fixture.detectChanges();
+            };
+            expandAll();
+            page(1);
+            expandAll();
+            page(0);
+            const first = fixture.nativeElement.querySelector('.sf-record') as HTMLElement;
+            expect(first.querySelector('.sf-record-text b')!.textContent).toBe('row-0');
+            expect(first.querySelector('.sf-record-body .sf-ro-value')!.textContent!.trim()).toBe('row-0');
+        });
+
         it('lists a record per row with a count and expands a card on click', () => {
             const fixture = render([rows], values);
             expect(texts(fixture, '.sf-ro-muted')).toEqual(['2 items']);

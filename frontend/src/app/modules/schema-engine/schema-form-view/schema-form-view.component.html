@@ -303,7 +303,7 @@
                                         <button type="button" class="sf-link" [disabled]="!hasOpenRows(item)" (click)="collapseAll(item)">Collapse all</button>
                                     </span>
                                 </div>
-                                @for (row of getItemsPage(item); track $index; let ri = $index) {
+                                @for (row of getItemsPage(item); track row; let ri = $index) {
                                     @let idx = rowIndex(item, ri);
                                     @let summary = rowSummary(item, row, idx);
                                     <div
