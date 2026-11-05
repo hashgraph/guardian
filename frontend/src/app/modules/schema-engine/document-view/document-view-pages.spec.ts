@@ -1,4 +1,4 @@
-import { buildSubjectView, collectLocations, fieldStats, sumStats } from './document-view-pages';
+import { buildSubjectView, collectLocations, fieldStats, sectionBlocks, sectionCards, sumStats } from './document-view-pages';
 
 describe('document view pages', () => {
     const text = (name: string, extra: any = {}): any => ({ name, description: name, type: 'string', isRef: false, isArray: false, fullPath: name, ...extra });
@@ -98,8 +98,81 @@ describe('document view pages', () => {
             const geo = text('area', { customType: 'geo', description: 'Project area' });
             const sections: any[] = [{ id: 'a', title: 'Alpha', fields: [text('x')] }, { id: 'b', title: 'Beta', fields: [geo, ref('b', [])] }];
             const value = { type: 'Polygon', coordinates: [] };
-            expect(collectLocations(sections, { area: value }, {})).toEqual([{ label: 'Project area', value, sectionIndex: 1, sectionTitle: 'Beta' }]);
+            expect(collectLocations(sections, { area: value }, {})).toEqual([{ label: 'Project area', value, sectionIndex: 1, sectionTitle: 'Beta', id: 'area', path: 'area' }]);
             expect(collectLocations(sections, {}, {})).toEqual([]);
+        });
+    });
+
+    describe('sectionCards', () => {
+        it('lists the sub-schemas inside the sub-schemas of a section, without the ones a condition hides', () => {
+            const part = ref('part', [text('x'), ref('general', []), ref('details', []), ref('extra', [])], {
+                conditions: [{ ifCondition: { field: { name: 'x' }, fieldValue: 'show' }, thenFields: [{ name: 'extra' }], elseFields: [] }]
+            });
+            const section: any = { id: 'part', title: 'part', fields: [text('a'), part] };
+            expect(sectionCards(section, { part: { x: 'no' } }, {}).map(item => item.title)).toEqual(['general', 'details']);
+            expect(sectionCards(section, { part: { x: 'show' } }, {}).map(item => item.title)).toEqual(['general', 'details', 'extra']);
+            expect(sectionCards(section, { part: { x: 'show' } }, { details: true }).map(item => item.title)).toEqual(['general', 'extra']);
+        });
+
+        it('has none for a section of plain fields', () => {
+            expect(sectionCards({ id: 'a', title: 'a', fields: [text('a')] } as any, {}, {})).toEqual([]);
+        });
+    });
+
+    describe('collectLocations in lists', () => {
+        const geo = (extra: any = {}) => text('area', { customType: 'geo', description: 'Area', ...extra });
+        const point = (n: number) => ({ type: 'Point', coordinates: [n, n] });
+
+        it('takes the first row of an array of sub-schemas', () => {
+            const rows = ref('places', [geo()], { isArray: true });
+            const sections: any[] = [{ id: 's', title: 'Place', fields: [rows] }];
+            const found = collectLocations(sections, { places: [{ area: point(1) }, { area: point(2) }] }, {});
+            expect(found.map(item => item.value)).toEqual([point(1)]);
+            expect(found[0].path).toBe('places.area');
+            expect(collectLocations(sections, { places: [] }, {})).toEqual([]);
+        });
+
+        it('takes the first map of a list of maps, also inside a sub-schema', () => {
+            const list = geo({ isArray: true });
+            const sections: any[] = [{ id: 's', title: 'Place', fields: [ref('part', [list])] }];
+            const found = collectLocations(sections, { part: { area: [point(3), point(4)] } }, {});
+            expect(found.map(item => item.value)).toEqual([point(3)]);
+        });
+    });
+
+    describe('sectionBlocks', () => {
+        it('gives each first-level sub-schema a card with its own heading and the plain fields one without', () => {
+            const root = ref('root', [text('head'), ref('general', [text('x')]), ref('details', [text('y')]), text('tail')]);
+            const section: any = { id: 'root', title: 'Root', fields: [text('top'), root] };
+            const blocks = sectionBlocks(section, { top: 1, root: { head: 'h', general: { x: 1 }, details: { y: 2 }, tail: 't' } }, '', {});
+            expect(blocks.map(item => [item.title, item.fields.map(f => f.name)])).toEqual([
+                [null, ['top']],
+                [null, ['head']],
+                ['general', ['x']],
+                ['details', ['y']],
+                [null, ['tail']],
+            ]);
+            expect(blocks[2].values).toEqual({ x: 1 });
+            expect(blocks[2].prefix).toBe('root.general.');
+            expect(blocks[2].linkPrefix).toBe('root.general.');
+            expect(blocks[2].id).toBe('general');
+        });
+
+        it('marks a sub-schema that was never added and leaves out one a condition hides', () => {
+            const root = ref('root', [text('mode'), ref('a', [text('x')]), ref('b', [text('y')])], {
+                conditions: [{ ifCondition: { field: { name: 'mode' }, fieldValue: 'on' }, thenFields: [{ name: 'b' }], elseFields: [] }]
+            });
+            const section: any = { id: 'root', title: 'Root', fields: [root] };
+            const blocks = sectionBlocks(section, { root: { mode: 'off' } }, '', {});
+            expect(blocks.filter(item => item.title).map(item => [item.title, item.empty])).toEqual([['a', true]]);
+        });
+
+        it('keeps an array of sub-schemas in the plain card', () => {
+            const rows = ref('rows', [text('x')], { isArray: true });
+            const root = ref('root', [ref('a', [text('x')]), rows]);
+            const blocks = sectionBlocks({ id: 'r', title: 'R', fields: [root] } as any, { root: { a: { x: 1 }, rows: [{ x: 2 }] } }, '', {});
+            expect(blocks.map(item => item.title)).toEqual(['a', null]);
+            expect(blocks[1].fields.map(f => f.name)).toEqual(['rows']);
         });
     });
 });

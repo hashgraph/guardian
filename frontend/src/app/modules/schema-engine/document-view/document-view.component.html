@@ -1,6 +1,8 @@
-<ng-template #detailsCard>
+<ng-template #detailsCard let-head="head">
   <section class="sf-dd-card" aria-label="Document details">
-    <div class="sf-dd-head">Document details</div>
+    @if (head) {
+      <div class="sf-dd-head">Document details</div>
+    }
     <div class="sf-dd-grid">
       <div class="sf-ro-cell">
         <div class="sf-ro-label"><span class="sf-ro-lt">Document ID</span></div>
@@ -95,28 +97,37 @@
   </section>
 </ng-template>
 
-<ng-template #fieldPage let-fields="fields" let-values="values" let-prefix="prefix">
+<ng-template #fieldPage>
   @for (key of [pageKey]; track key) {
-    <section class="sf-dd-card sf-dd-fields">
-      <div class="sf-dd-body">
-        <app-schema-form-view
-          [private-fields]="hideFields"
-          [fields]="fields"
-          [values]="values"
-          [pathPrefix]="prefix"
-          [dryRun]="dryRun"
-          [rules]="rulesResults"
-          [formulas]="formulasFor(subject)"
-          [preview]="preview"
-          (previewLoadingChange)="preview && previewLoadingChange.emit($event)"
-          [link]="pageLink"
-          [discussion]="discussionData"
-          [discussion-view]="discussionView"
-          [discussion-action]="discussionAction"
-          (discussion-action)="onDiscussionAction($event)">
-        </app-schema-form-view>
-      </div>
-    </section>
+    @for (block of blocks; track block.key) {
+      <section class="sf-dd-card sf-dd-fields" [attr.field-id]="block.id" [class.sf-dd-plain]="!block.title">
+        @if (block.title) {
+          <div class="sf-dd-head">{{ block.title }}</div>
+        }
+        <div class="sf-dd-body">
+          @if (block.empty) {
+            <span class="sf-chip">Not added</span>
+          } @else {
+            <app-schema-form-view
+              [private-fields]="hideFields"
+              [fields]="block.fields"
+              [values]="block.values"
+              [pathPrefix]="block.prefix"
+              [dryRun]="dryRun"
+              [rules]="rulesResults"
+              [formulas]="formulasFor(subject)"
+              [preview]="preview"
+              (previewLoadingChange)="preview && previewLoadingChange.emit($event)"
+              [link]="blockLink(block)"
+              [discussion]="discussionData"
+              [discussion-view]="discussionView"
+              [discussion-action]="discussionAction"
+              (discussion-action)="onDiscussionAction($event)">
+            </app-schema-form-view>
+          }
+        </div>
+      </section>
+    }
   }
 </ng-template>
 
@@ -144,11 +155,14 @@
           @if (type === 'VC' && subjects.length > 0 && pagesReady && (!preview || previewReady)) {
             <app-schema-form-nav
               mode="view"
+              [class.sf-framed]="!navHidden && railSections.length > 0"
               [sections]="navHidden ? [] : railSections"
               [screen]="screen"
               [activeIndex]="activeIndex"
+              [cards]="navHidden ? [] : railCards"
               [barLabel]="barLabel"
               (select)="onNavSelect($event)"
+              (selectCard)="onNavCard($event)"
               >
               @if (subjects.length > 1) {
                 <div class="sf-subjects">
@@ -189,7 +203,7 @@
                           <div class="sf-eyebrow">Location</div>
                           <b>{{ location.label }}</b>
                           <span>in {{ location.sectionTitle }}</span>
-                          <button type="button" class="sf-section-link" (click)="openPage(location.sectionIndex + 1)">Open {{ location.sectionTitle }} →</button>
+                          <button type="button" class="sf-section-link" (click)="openLocation(location)">Open in {{ location.sectionTitle }} →</button>
                         </div>
                       </div>
                     }
@@ -211,12 +225,15 @@
                   </div>
                 }
                 @if (showDetails) {
-                  <ng-container *ngTemplateOutlet="detailsCard"></ng-container>
+                  @if (hasSections) {
+                    <div class="sf-section-head">
+                      <h2 class="sf-section-title">Document details</h2>
+                    </div>
+                  }
+                  <ng-container *ngTemplateOutlet="detailsCard; context: { head: !hasSections }"></ng-container>
                 }
-                @if (!hasSections) {
-                  <ng-container *ngTemplateOutlet="fieldPage; context: { fields: view.fields, values: view.values, prefix: '' }"></ng-container>
-                } @else if (section; as current) {
-                  <ng-container *ngTemplateOutlet="fieldPage; context: { fields: current.fields, values: view.values, prefix: view.pathPrefix }"></ng-container>
+                @if (!hasSections || section) {
+                  <ng-container *ngTemplateOutlet="fieldPage"></ng-container>
                 }
                 @if (screen === 'section' && railSections.length > 1) {
                   <div class="sf-section-links">
@@ -226,7 +243,10 @@
                         {{ railSections[activeIndex - 1].title }}
                       </button>
                     } @else {
-                      <span></span>
+                      <button type="button" class="sf-section-link" (click)="openOverview()">
+                        <i class="pi pi-arrow-left" aria-hidden="true"></i>
+                        Overview
+                      </button>
                     }
                     @if (activeIndex < railSections.length - 1) {
                       <button type="button" class="sf-section-link" (click)="openPage(activeIndex + 1)">
@@ -240,6 +260,7 @@
             </app-schema-form-nav>
           } @else if (type === 'VP' && subjects.length > 0 && (!preview || previewReady)) {
             <app-schema-form-nav
+              class="sf-framed"
               mode="view"
               title="Credentials"
               screen="section"
@@ -252,7 +273,7 @@
               (selectCard)="onVpCard($event)"
               >
               @if (vpIndex === 0) {
-                <ng-container *ngTemplateOutlet="detailsCard"></ng-container>
+                <ng-container *ngTemplateOutlet="detailsCard; context: { head: true }"></ng-container>
                 <div class="sf-vc-rows">
                   @for (item of subjects; track item; let i = $index) {
                     <button type="button" class="sf-vc-row" (click)="openCredential(i + 1)">
@@ -285,7 +306,7 @@
               }
             </app-schema-form-nav>
           } @else {
-            <ng-container *ngTemplateOutlet="detailsCard"></ng-container>
+            <ng-container *ngTemplateOutlet="detailsCard; context: { head: true }"></ng-container>
           }
         </div>
       }

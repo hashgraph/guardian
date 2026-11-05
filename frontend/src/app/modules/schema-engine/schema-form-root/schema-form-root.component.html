@@ -37,9 +37,6 @@
                   <div class="sf-overview-actions">
                     @if (overviewNothingRequired) {
                       <button type="button" class="sf-btn sf-btn-primary" (click)="openSection(0)">Start</button>
-                      @if (overviewSubmit; as submit) {
-                        <button type="button" class="sf-btn" [disabled]="submit.disabled" (click)="submit.run()">{{ submit.text }}</button>
-                      }
                     } @else if (overviewComplete) {
                       @if (overviewSubmit; as submit) {
                         <button type="button" class="sf-btn sf-btn-primary" [disabled]="submit.disabled" (click)="submit.run()">{{ submit.text }}</button>

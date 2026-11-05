@@ -142,11 +142,6 @@
 }
 
 @container sf-nav (min-width: 1001px) {
-    // Room between the rail column and the page, for hosts that don't pad it themselves
-    .sf-nav-content {
-        padding-left: var(--sf-nav-gap, 0px);
-    }
-
     .sf-drawer,
     .sf-drawer-bg {
         display: none;

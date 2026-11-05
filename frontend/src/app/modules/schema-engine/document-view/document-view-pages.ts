@@ -37,6 +37,10 @@ export interface IViewLocation {
     value: any;
     sectionIndex: number;
     sectionTitle: string;
+    /** The path the view marks the field with. */
+    id: string;
+    /** The field names from the section down to the field, as a field link. */
+    path: string;
 }
 
 export function isEmptyValue(value: unknown): boolean {
@@ -134,27 +138,138 @@ export function sumStats(list: IViewStats[]): IViewStats {
 export function collectLocations(sections: IViewSection[], values: any, hide: { [x: string]: boolean }): IViewLocation[] {
     const found: IViewLocation[] = [];
     sections.forEach((section, sectionIndex) => {
-        const walk = (list: ViewField[], current: any): void => {
+        const walk = (list: ViewField[], current: any, trail: string[]): void => {
             for (const field of list) {
                 const value = current?.[field.name];
                 if (!isShown(field, hide, value)) {
                     continue;
                 }
+                const isMap = field.customType === 'geo';
                 if (isGroup(field)) {
                     const children = (field.fields ?? []).map(copyField);
                     applyViewConditions(children, field.conditions, value ?? {});
-                    walk(children, value);
-                } else if (!field.isArray && field.customType === 'geo' && !isEmptyValue(value)) {
-                    found.push({
-                        label: field.description || field.title || field.name,
-                        value,
-                        sectionIndex,
-                        sectionTitle: section.title,
-                    });
+                    walk(children, value, [...trail, field.name]);
+                } else if (field.isArray && field.isRef && !isMap) {
+                    // An array of sub-schemas: the first row stands for the list
+                    const row = Array.isArray(value) ? value[0] : undefined;
+                    const children = (field.fields ?? []).map(copyField);
+                    applyViewConditions(children, field.conditions, row ?? {});
+                    walk(children, row, [...trail, field.name]);
+                } else if (isMap && !isEmptyValue(value)) {
+                    // A list of maps shows its first one
+                    const first = field.isArray ? (value as unknown[])[0] : value;
+                    if (!isEmptyValue(first)) {
+                        found.push({
+                            label: field.description || field.title || field.name,
+                            value: first,
+                            sectionIndex,
+                            sectionTitle: section.title,
+                            id: field.fullPath ?? field.name,
+                            path: [...trail, field.name].join('.'),
+                        });
+                    }
                 }
             }
         };
-        walk(section.fields as ViewField[], values);
+        walk(section.fields as ViewField[], values, []);
     });
     return found;
+}
+
+export interface IViewCard {
+    id: string;
+    title: string;
+}
+
+/**
+ * The sub-schemas inside the sub-schemas of a section: the sub-rows the rail lists under the
+ * open section, as in the edit form. The id is the field path the view marks its sub-headings with.
+ */
+export function sectionCards(section: IViewSection, values: any, hide: { [x: string]: boolean }): IViewCard[] {
+    const cards: IViewCard[] = [];
+    for (const field of section.fields as ViewField[]) {
+        if (!isGroup(field)) {
+            continue;
+        }
+        const value = values?.[field.name];
+        if (!isShown(field, hide, value)) {
+            continue;
+        }
+        const children = (field.fields ?? []).map(copyField);
+        applyViewConditions(children, field.conditions, value ?? {});
+        for (const child of children) {
+            if (child.isRef && child.customType !== 'geo' && child.customType !== 'sentinel' && isShown(child, hide, value?.[child.name])) {
+                cards.push({ id: child.fullPath ?? child.name, title: child.description || child.title || child.name });
+            }
+        }
+    }
+    return cards;
+}
+
+/** One card of a section page: a first-level sub-schema with its own heading, or the plain fields around it. */
+export interface IPageBlock {
+    key: string;
+    /** The heading of the card; null for plain fields. */
+    title: string | null;
+    /** The path the view marks the sub-heading with; the rail card scrolls to it. */
+    id?: string;
+    fields: ViewField[];
+    values: any;
+    /** The path of `values`, for the metadata strip. */
+    prefix: string;
+    /** The names that lead to `values`, so a field link can be handed to the right card. */
+    linkPrefix: string;
+    /** An optional sub-schema that was never added. */
+    empty: boolean;
+}
+
+/**
+ * Splits a section page into cards, the way the mockup does: each sub-schema inside the section's
+ * sub-schema gets a card of its own, and the plain fields around them share a card with no heading.
+ */
+export function sectionBlocks(section: IViewSection, values: any, prefix: string, hide: { [x: string]: boolean }): IPageBlock[] {
+    const blocks: IPageBlock[] = [];
+    const add = (fields: ViewField[], current: any, path: string, link: string, extra: Partial<IPageBlock> = {}): void => {
+        if (!fields.length && !extra.title) {
+            return;
+        }
+        blocks.push({
+            key: `${blocks.length}:${extra.id ?? ''}`,
+            title: null, fields, values: current, prefix: path, linkPrefix: link, empty: false, ...extra,
+        });
+    };
+    let lead: ViewField[] = [];
+    for (const field of section.fields as ViewField[]) {
+        const value = values?.[field.name];
+        if (!isGroup(field) || !isShown(field, hide, value)) {
+            lead.push(field);
+            continue;
+        }
+        add(lead, values, prefix, '');
+        lead = [];
+        const children = (field.fields ?? []).map(copyField);
+        applyViewConditions(children, field.conditions, value ?? {});
+        const base = `${prefix}${field.name}.`;
+        const link = `${field.name}.`;
+        let own: ViewField[] = [];
+        for (const child of children) {
+            const childValue = value?.[child.name];
+            if (isGroup(child) && isShown(child, hide, childValue)) {
+                add(own, value, base, link);
+                own = [];
+                const inner = (child.fields ?? []).map(copyField);
+                applyViewConditions(inner, child.conditions, childValue ?? {});
+                add(inner, childValue, `${base}${child.name}.`, `${link}${child.name}.`, {
+                    title: child.description || child.title || child.name,
+                    id: child.fullPath ?? child.name,
+                    empty: isEmptyValue(childValue) || (typeof childValue === 'object' && !Array.isArray(childValue) && Object.keys(childValue).length === 0),
+                });
+            } else {
+                own.push(child);
+            }
+        }
+        add(own, value, base, link);
+    }
+    add(lead, values, prefix, '');
+    return blocks;
 }

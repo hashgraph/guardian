@@ -95,8 +95,11 @@ describe('SchemaFormNavComponent', () => {
             fixture.detectChanges();
             const rail = el('.sf-rail-col')!;
             expect(getScrollParent(rail)).toBe(host);
-            expect(rail.style.minHeight).toBe('380px');
-            expect(rail.style.maxHeight).toBe('380px');
+            const style = getComputedStyle(host);
+            const expected = host.clientHeight - (parseFloat(style.paddingTop) || 0) - (parseFloat(style.paddingBottom) || 0);
+            expect(expected).toBeGreaterThan(0);
+            expect(rail.style.minHeight).toBe(`${expected}px`);
+            expect(rail.style.maxHeight).toBe(`${expected}px`);
         } finally {
             fixture.destroy();
             host.remove();

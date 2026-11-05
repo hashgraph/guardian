@@ -343,6 +343,7 @@ describe('DocumentViewComponent pages', () => {
         const filled = render(sectioned(), credential(subject({ a: { one: 'x', geo } })));
         expect(filled.componentInstance.locations.length).toBe(1);
         expect(filled.componentInstance.locations[0].sectionTitle).toBe('Alpha');
+        expect(filled.componentInstance.locations[0].path).toBe('a.geo');
         expect(q(filled, '.sf-location')).not.toBeNull();
     }));
 
@@ -367,6 +368,41 @@ describe('DocumentViewComponent pages', () => {
         expect(view.activeIndex).toBe(0);
         expect(view.overviewTitle).toBe('Second');
         expect(fixture.nativeElement.querySelectorAll('.sf-subject').length).toBe(2);
+    }));
+
+    it('lists the sub-schemas of the open section in the rail', fakeAsync(() => {
+        const fixture = render(sectioned(), credential(subject()));
+        const view = fixture.componentInstance;
+        expect(view.railCards).toEqual([]);
+        view.openPage(1);
+        expect(view.railCards.map(item => item.title)).toEqual([]);
+        view.openPage(0);
+        expect(view.railCards).toEqual([]);
+    }));
+
+    it('puts the Document details heading above its card and links back to the Overview', fakeAsync(() => {
+        const fixture = render(sectioned(), credential(subject()));
+        fixture.componentInstance.openPage(0);
+        fixture.detectChanges();
+        expect(q(fixture, '.sf-section-title')!.textContent).toBe('Document details');
+        expect(q(fixture, '.sf-dd-head')).toBeNull();
+        const links = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.sf-section-link')).map(item => item.textContent!.trim());
+        expect(links).toEqual(['Overview', 'Alpha']);
+        (fixture.nativeElement.querySelector('.sf-section-link') as HTMLElement).click();
+        expect(fixture.componentInstance.screen).toBe('overview');
+    }));
+
+    it('keeps the heading inside the card of a flat document', fakeAsync(() => {
+        const fixture = render(flat(), credential(subject({ other: 'y' })));
+        expect(q(fixture, '.sf-dd-head')!.textContent).toBe('Document details');
+        expect(q(fixture, '.sf-section-title')).toBeNull();
+    }));
+
+    it('frames the rail and the page of a document with sections only', fakeAsync(() => {
+        const sectionedView = render(sectioned(), credential(subject()));
+        expect(q(sectionedView, 'app-schema-form-nav')!.classList).toContain('sf-framed');
+        const flatView = render(flat(), credential(subject({ other: 'y' })));
+        expect(q(flatView, 'app-schema-form-nav')!.classList).not.toContain('sf-framed');
     }));
 
     it('walks the pages with Previous and Next', fakeAsync(() => {

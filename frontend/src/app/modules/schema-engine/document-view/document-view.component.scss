@@ -7,8 +7,16 @@
 }
 
 app-schema-form-nav {
-    --sf-content-pad: 16px 0 0;
-    --sf-nav-gap: 20px;
+    --sf-content-pad: 0;
+}
+
+// The rail and the page share one rounded frame, as in the mockup
+app-schema-form-nav.sf-framed {
+    --sf-content-pad: 20px;
+    border: 1px solid var(--guardian-border-color);
+    border-radius: 12px;
+    // clip, not hidden: the rail is sticky and hidden would make this the scroll container
+    overflow: clip;
 }
 
 form {
@@ -218,6 +226,12 @@ form {
     padding: 14px 16px;
 }
 
+// A card of a section page, as in the mockup: a heading row, then the fields
+.sf-dd-fields .sf-dd-head {
+    font-family: Inter;
+    font-size: 15px;
+}
+
 // Projected into the nav and the Overview, so styled here
 @include sections.sf-overview-text;
 @include sections.sf-section-head;
@@ -337,4 +351,9 @@ form {
         font-size: 12px;
         color: var(--sf-text-3);
     }
+}
+
+// A rail card scrolls its sub-heading into view below the sticky section bar
+:host ::ng-deep [field-id] {
+    scroll-margin-top: 64px;
 }

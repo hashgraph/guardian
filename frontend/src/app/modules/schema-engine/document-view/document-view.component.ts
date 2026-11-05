@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { DocumentValidators, Schema, SchemaRuleValidateResult } from '@guardian/interfaces';
 import { forkJoin, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -10,7 +10,7 @@ import { FormulasTree } from '../../formulas/models/formula-tree';
 import { IRailBadge, IRailCard, IRailSection } from '../schema-form-rail/schema-form-rail.component';
 import { IOverviewCard, IOverviewTile } from '../schema-form-nav/schema-form-overview.component';
 import { IViewSection } from '../schema-form-root/schema-form-sections';
-import { ISubjectView, IViewLocation, IViewStats, buildSubjectView, collectLocations, fieldStats, isEmptyValue, sumStats } from './document-view-pages';
+import { ISubjectView, IViewLocation, IViewStats, IPageBlock, buildSubjectView, collectLocations, fieldStats, isEmptyValue, sectionBlocks, sectionCards, sumStats } from './document-view-pages';
 
 /** The pages of a document, for a host that draws the navigation itself (a presentation). */
 export const OVERVIEW_PAGE = 'overview';
@@ -102,7 +102,8 @@ export class DocumentViewComponent implements OnInit {
         private schemaService: SchemaService,
         private schemaRulesService: SchemaRulesService,
         private formulasService: FormulasService,
-        private ref: ChangeDetectorRef
+        private ref: ChangeDetectorRef,
+        private host: ElementRef<HTMLElement>
     ) { }
 
     ngOnInit(): void {
@@ -427,6 +428,60 @@ export class DocumentViewComponent implements OnInit {
         ];
     }
 
+    /** The sub-schemas of the open section, listed under it in the rail. */
+    public get railCards(): IRailCard[] {
+        const key = `${this.pageKey}:${this.cardsVersion}`;
+        if (key !== this.cardsKey) {
+            this.cardsKey = key;
+            const section = this.section;
+            this.cardsList = section ? sectionCards(section, this.view.values, this.hideFields || {}) : [];
+        }
+        return this.cardsList;
+    }
+
+    /** The cards of the open page: one per first-level sub-schema of a section, one for a flat document. */
+    public get blocks(): IPageBlock[] {
+        const key = `${this.pageKey}:${this.cardsVersion}`;
+        if (key !== this.blocksKey) {
+            this.blocksKey = key;
+            const view = this.view;
+            const section = this.section;
+            this.blocksList = section
+                ? sectionBlocks(section, view.values, view.pathPrefix, this.hideFields || {})
+                : !view.sections.length
+                    ? [{ key: 'flat', title: null, fields: view.fields, values: view.values, prefix: '', linkPrefix: '', empty: false }]
+                    : [];
+        }
+        return this.blocksList;
+    }
+
+    /** The part of the field link that points into a card, relative to the card's own fields. */
+    public blockLink(block: IPageBlock): string | undefined {
+        const link = this.pageLink;
+        if (!link) {
+            return undefined;
+        }
+        if (!block.linkPrefix) {
+            return link;
+        }
+        return link.startsWith(block.linkPrefix) && link.length > block.linkPrefix.length ? link.substring(block.linkPrefix.length) : undefined;
+    }
+
+    private blocksKey = '';
+    private blocksList: IPageBlock[] = [];
+    private cardsKey = '';
+    private cardsVersion = 0;
+    private cardsList: IRailCard[] = [];
+
+    /** Scrolls to the sub-heading of a card the rail reports. */
+    public onNavCard(card: IRailCard): void {
+        setTimeout(() => {
+            this.host.nativeElement
+                .querySelector<HTMLElement>(`[field-id="${CSS.escape(card.id)}"]`)
+                ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    }
+
     public get subjectLabels(): { index: number; text: string }[] {
         return this.getItemsPage(this.subjects).map((item) => {
             const index = this.subjects.indexOf(item);
@@ -438,6 +493,20 @@ export class DocumentViewComponent implements OnInit {
         this.screen = 'section';
         this.activeIndex = index;
         this.ref.detectChanges();
+    }
+
+    /** Opens the page of a location's field, opens the row it is in, and scrolls to it. */
+    public openLocation(location: IViewLocation): void {
+        this.link = location.path;
+        this.screen = 'section';
+        this.activeIndex = location.sectionIndex + 1;
+        this.ref.detectChanges();
+        this.onNavCard({ id: location.id });
+        // The link only has to open the field once; a later one for the same field must work again
+        setTimeout(() => {
+            this.link = undefined;
+            this.ref.detectChanges();
+        }, 600);
     }
 
     public openOverview(): void {
@@ -567,6 +636,7 @@ export class DocumentViewComponent implements OnInit {
         if (this.type !== 'VC' || !this.subjects.length) {
             return;
         }
+        this.cardsVersion++;
         this.subjectViews = new Map();
         for (const item of this.subjects) {
             this.subjectViews.set(item, buildSubjectView(this.schemaMap[item.type], item, this.hideFields || {}));
