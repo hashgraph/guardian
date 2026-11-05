@@ -1,6 +1,6 @@
 # The gateway's auth guard hangs an HTTP request forever when the auth service never replies, freezing the UI
 
-**Status:** open — infra robustness bug; seen once (transient), but the failure mode is a permanent UI freeze with no error and no way out
+**Status:** gateway side fixed (`Users.getUserByToken` waits at most 30 s and `sendMessageWithTimeout` clears its timer); the frontend `timeout` hardening and the other `Users` lookups are still open — infra robustness bug; seen once (transient), but the failure mode is a permanent UI freeze with no error and no way out
 **Component:** `common/src/mq/nats-service.ts` (`sendMessage`) + `api-gateway/src/auth/auth-guard.ts` + `api-gateway/src/helpers/users.ts` (`Users.getUserByToken`); the frozen UI is `frontend/src/app/views/user-profile/user-profile.component.ts` (`createDID`)
 **Severity:** medium — one transient hit in ~40 wizard runs, but the consequence is a full-screen spinner that never resolves; the affected user can only reload
 **Found by:** `e2e-tests/cypress/e2e/ui-tests/specs/00_account_registration/` run of 31 Oct 2026: after the USER wizard's `Confirm` click, the app fired `PUT /api/v1/profiles/push/:user` and the page froze on a spinner. The attached `[proxy]` request logger (`frontend/proxy.hostdocker.js`) shows the request went out and no `<-` status line ever came back. An identical `PUT /profiles/push` repro via `curl` 30 minutes later answered `202 in 24ms`, so the miss was transient, not an outage.

@@ -1,6 +1,6 @@
 # A user without a DID gets 422 "User is not registered." from `GET /external-policies`
 
-**Status:** open — product bug, cosmetic for the UI tests (the suite dismisses the sticky toast)
+**Status:** fixed in `api-gateway` (`getExternalPolicies` answers an empty page for a user without a DID); the suite's `dismissStickyToasts()` is now only a safeguard for other toasts
 **Component:** `api-gateway` — `helpers/entity-owner.ts` + `api/service/external-policy.ts`
 **Severity:** low — a stray error toast; the wizard and all other flows keep working
 **Found by:** `e2e-tests/cypress/e2e/ui-tests/specs/00_account_registration/` — every spec registers a fresh Standard Registry account, which lands on `/config` with a sticky toast a few seconds later. Probe 23 (browser-level XHR/fetch tap) captured the exact request on 31 Oct 2026.
