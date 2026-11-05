@@ -1,3 +1,4 @@
+@use '../form-grid' as form-grid;
 @import '../nav-collapse';
 
 form {
@@ -24,156 +25,14 @@ form {
         text-align: left;
         margin-bottom: 16px;
         padding-left: 2px;
-        color: #848FA9;
-    }
-
-    .schema-form-field-array-group {
-        .form-field-array-item {
-            display: block;
-            width: 100%;
-            position: relative;
-            border: 1px solid #E1E7EF;
-            padding: 16px;
-            border-radius: 8px;
-            margin-bottom: 24px;
-
-            .form-field-array-item-index {
-                font-family: Poppins;
-                font-size: 16px;
-                font-weight: 600;
-                line-height: 20px;
-                text-align: left;
-                margin-bottom: 24px;
-                padding-left: 2px;
-                display: block;
-            }
-        }
-    }
-
-    .form-field-container {
-        margin-bottom: 24px;
-
-        &:last-child {
-            margin-bottom: 0px;
-        }
-
-        .label-field {
-            font-family: Poppins;
-            font-size: 16px;
-            font-weight: 600;
-            line-height: 20px;
-            text-align: left;
-            margin-bottom: 24px;
-            padding-left: 2px;
-
-            &.help-text {
-                margin-bottom: 0px;
-            }
-        }
-
-        .form-field {
-            display: block;
-            width: 100%;
-            position: relative;
-            background: var(--guardian-grey-background, #F9FAFC);
-            border: 1px solid #E1E7EF;
-            padding: 16px;
-            border-radius: 8px;
-        }
-
-        .form-field-array {
-            display: block;
-            width: 100%;
-            position: relative;
-            background: var(--guardian-grey-background, #F9FAFC);
-            border: 1px solid #E1E7EF;
-            padding: 16px;
-            border-radius: 8px;
-        }
-
-        .form-field-group {
-            display: block;
-            width: 100%;
-            position: relative;
-
-            .remove-btn {
-                margin-top: 24px;
-            }
-        }
-
-        .sub-schema-geo,
-        .sub-schema-sentinel {
-            display: block;
-            width: 100%;
-            position: relative;
-            background: var(--guardian-grey-background, #F9FAFC);
-            border: 1px solid #E1E7EF;
-            padding: 16px;
-            border-radius: 8px;
-        }
-
-        .form-field-sub-group {
-            display: block;
-            width: 100%;
-            position: relative;
-            margin-bottom: 24px;
-        }
-
-        .schema-form-field-array-group {
-            display: block;
-            width: 100%;
-            position: relative;
-            box-sizing: border-box;
-        }
-
-        .form-field-value {
-            display: flex;
-            width: 100%;
-            flex-direction: row;
-
-            .form-field-prefix {
-                padding: 0px 14px 0px 2px;
-                display: flex;
-                justify-content: flex-start;
-                align-items: center;
-                font-size: 20px;
-            }
-
-            .form-field-input {
-                height: 40px;
-                position: relative;
-            }
-
-            .form-field-textarea {
-                position: relative;
-            }
-
-            .form-field-boolean {
-                position: relative;
-                height: auto;
-            }
-
-            .form-field-postfix {
-                padding: 0px 2px 0px 14px;
-                display: flex;
-                justify-content: flex-start;
-                align-items: center;
-                font-size: 20px;
-            }
-        }
-
-        .form-field-array-item {
-            display: flex;
-            flex-direction: row;
-            width: 100%;
-        }
+        color: var(--color-grey-5);
     }
 
     .disconnected-message {
         height: 40px;
         margin-bottom: 16px;
-        background: #FFF6E3;
-        border: 1px solid #DA9B22;
+        background: var(--guardian-warning-background);
+        border: 1px solid color-mix(in srgb, var(--guardian-warning-color) 45%, transparent);
         border-radius: 8px;
         display: flex;
         justify-content: center;
@@ -182,7 +41,7 @@ form {
         font-weight: 500;
         font-size: 12px;
         line-height: 14px;
-        color: #DA9B22;
+        color: var(--guardian-warning-color);
 
         svg-icon {
             position: relative;
@@ -202,8 +61,8 @@ form {
         display: flex;
         align-items: flex-start;
         padding: 8px 12px;
-        background: #F3F6FB;
-        border: 1px solid #E1E7EF;
+        background: var(--color-grey-2);
+        border: 1px solid var(--guardian-border-color);
         border-radius: 6px;
     }
 
@@ -215,7 +74,7 @@ form {
         font-family: Inter;
         font-size: 13px;
         line-height: 18px;
-        color: var(--guardian-font-color, #23252E);
+        color: var(--guardian-font-color);
         word-break: break-word;
 
         svg-icon {
@@ -225,7 +84,7 @@ form {
         }
 
         a {
-            color: #4169E1;
+            color: var(--color-primary);
             text-decoration: none;
 
             &:hover {
@@ -306,5 +165,85 @@ form {
 
     .p-accordioncontent-content {
         overflow-x: auto;
+    }
+}
+
+.sf-dd-card {
+    margin-bottom: 16px;
+    border: 1px solid var(--guardian-border-color);
+    border-radius: 10px;
+    background: var(--guardian-background);
+
+    .sf-dd-head {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--guardian-border-color);
+        font-family: Poppins;
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--guardian-font-color);
+    }
+
+    .sf-dd-grid {
+        @include form-grid.sf-field-grid;
+        padding: 14px 16px;
+    }
+
+    .sf-ro-cell {
+        min-width: 0;
+
+        &.sf-full {
+            @include form-grid.sf-full-row;
+        }
+    }
+
+    .sf-ro-label {
+        @include form-grid.sf-ro-label;
+    }
+
+    .sf-ro-value {
+        @include form-grid.sf-ro-value;
+    }
+
+    .sf-dd-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    .sf-dd-mono {
+        min-width: 0;
+        overflow: hidden;
+        font-family: ui-monospace, Menlo, monospace;
+        font-size: 12.5px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .sf-dd-muted {
+        margin-top: 2px;
+        font-size: 12px;
+        color: var(--color-grey-5);
+    }
+
+    .sf-dd-empty {
+        color: var(--color-grey-4);
+        font-style: italic;
+    }
+
+    .sf-dd-json {
+        margin: 8px 0 0;
+        padding: 10px 12px;
+        border-radius: 8px;
+        background: var(--color-grey-2);
+        font-family: ui-monospace, Menlo, monospace;
+        font-size: 12px;
+        line-height: 1.5;
+        overflow: auto;
+        max-height: 320px;
+    }
+
+    .sf-link {
+        @include form-grid.sf-link;
     }
 }

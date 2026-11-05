@@ -40,6 +40,17 @@
     </div>
 
     <div class="header-toolbar">
+      @if (!isEditMode && currentTab === 0 && (type === 'VC' || type === 'VP')) {
+        <label class="field-metadata-toggle" for="vcFullscreenFieldMetadata">
+          <p-toggleswitch
+            inputId="vcFullscreenFieldMetadata"
+            [ngModel]="formPreferences.showFieldMetadata$ | async"
+            (onChange)="formPreferences.setShowFieldMetadata($event.checked)">
+          </p-toggleswitch>
+          Field metadata
+        </label>
+      }
+
       @if (!isEditMode) {
         <button
           (click)="onDownloadJsonFile()"

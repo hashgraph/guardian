@@ -4,20 +4,20 @@ import { TestBed } from '@angular/core/testing';
 import { Schema, SchemaDataTypes } from '@guardian/interfaces';
 import { DialogService } from 'primeng/dynamicdialog';
 import { PopoverModule } from 'primeng/popover';
-import { TableModule } from 'primeng/table';
-import { Textarea } from 'primeng/textarea';
+import { BehaviorSubject } from 'rxjs';
 import { IPFSService } from 'src/app/services/ipfs.service';
+import { SchemaFormPreferencesService } from 'src/app/services/schema-form-preferences.service';
 import { SchemaFormViewComponent } from './schema-form-view.component';
-import { ReadonlyTextareaComponent } from './readonly-textarea/readonly-textarea.component';
 
-describe('SchemaFormViewComponent Rich Text table cell', () => {
-    const render = (rows: any[], ipfs: any = {}, beforeRender?: (component: SchemaFormViewComponent) => void, extraImports: any[] = []) => {
+describe('SchemaFormViewComponent Rich Text in a record row', () => {
+    const render = (rows: any[], ipfs: any = {}) => {
         TestBed.configureTestingModule({
-            declarations: [SchemaFormViewComponent, ReadonlyTextareaComponent],
-            imports: [CommonModule, TableModule, PopoverModule, ...extraImports],
+            declarations: [SchemaFormViewComponent],
+            imports: [CommonModule, PopoverModule],
             providers: [
                 { provide: IPFSService, useValue: ipfs },
                 { provide: DialogService, useValue: {} },
+                { provide: SchemaFormPreferencesService, useValue: { showFieldMetadata$: new BehaviorSubject(false) } },
             ],
             schemas: [NO_ERRORS_SCHEMA],
         });
@@ -44,30 +44,32 @@ describe('SchemaFormViewComponent Rich Text table cell', () => {
         fixture.componentRef.setInput('schema', schema);
         fixture.componentRef.setInput('values', { rows });
         fixture.componentRef.setInput('dryRun', true);
-        beforeRender?.(fixture.componentInstance);
         fixture.detectChanges();
-        const component = fixture.componentInstance;
-        const cards = (): HTMLElement[] =>
-            Array.from(fixture.nativeElement.querySelectorAll('.rich-text-table-card'));
-        return { fixture, component, cards };
+        (fixture.nativeElement.querySelector('.sf-record-toggle') as HTMLElement).click();
+        fixture.detectChanges();
+        const component = fixture.debugElement.children[0]?.componentInstance as SchemaFormViewComponent
+            ?? fixture.componentInstance;
+        const rich = (): HTMLElement | null => fixture.nativeElement.querySelector('.sf-record-body .sf-ro-rt');
+        return { fixture, component: fixture.componentInstance, rich };
     };
 
     const popoverSpy = (overlayVisible = false) => jasmine.createSpyObj('popover', ['show', 'hide', 'align'], { overlayVisible });
 
-    it('renders a card with the formatted preview and a view button', () => {
-        const { cards } = render([{ outcome: '## Local community\n\nMet with the **council**' }]);
-        expect(cards().length).toBe(1);
-        const preview = cards()[0].querySelector('.rich-text-table-preview') as HTMLElement;
-        expect(preview.querySelector('h2')?.textContent).toBe('Local community');
-        expect(preview.querySelector('b')?.textContent).toBe('council');
-        expect(cards()[0].querySelector('.rich-text-table-view')).not.toBeNull();
+    it('renders the formatted text clamped, with a Show more control', () => {
+        const { rich, fixture } = render([{ outcome: '## Local community\n\nMet with the **council**' }]);
+        expect(rich()!.querySelector('h2')?.textContent).toBe('Local community');
+        expect(rich()!.querySelector('b')?.textContent).toBe('council');
+        const more = fixture.nativeElement.querySelector('.sf-record-body .sf-ro-more') as HTMLElement;
+        more.click();
+        fixture.detectChanges();
+        expect(rich()!.classList).toContain('open');
+        expect(more.textContent!.trim()).toBe('Show less');
     });
 
-    it('shows "No text" and no view button for an empty value', () => {
-        const { cards } = render([{ comment: 'plain' }]);
-        expect(cards()[0].querySelector('.rich-text-table-preview')).toBeNull();
-        expect(cards()[0].querySelector('.rich-text-table-empty')?.textContent).toBe('No text');
-        expect(cards()[0].querySelector('.rich-text-table-view')).toBeNull();
+    it('shows "Not provided" for an empty rich text', () => {
+        const { fixture } = render([{ comment: 'plain' }]);
+        expect(fixture.nativeElement.querySelector('.sf-record-body .sf-empty')?.textContent).toBe('Not provided');
+        expect(fixture.nativeElement.querySelector('.sf-record-body .sf-ro-rt')).toBeNull();
     });
 
     it('fills the popover on hover and skips an empty value', () => {
@@ -82,83 +84,31 @@ describe('SchemaFormViewComponent Rich Text table cell', () => {
     });
 
     it('opens a read-only dialog with the rendered value and no editor', () => {
-        const { fixture, component, cards } = render([{ outcome: '# Title\n\nBody text' }]);
-        (cards()[0].querySelector('.rich-text-table-view') as HTMLElement).click();
+        const { fixture, component } = render([{ outcome: '# Title\n\nBody text' }]);
+        const view = fixture.debugElement.query(({ componentInstance }) => componentInstance instanceof SchemaFormViewComponent && componentInstance.inRecord);
+        const row = view.componentInstance as SchemaFormViewComponent;
+        const button = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.sf-record-body .sf-ro-rt-actions button'))
+            .find((node) => node.textContent!.trim() === 'View')!;
+        button.click();
         fixture.detectChanges();
-        expect(component.richTextDialogField?.value).toBe('# Title\n\nBody text');
-        const content = fixture.nativeElement.querySelector('p-dialog .rte-view-content') as HTMLElement;
-        expect(content.querySelector('h1')?.textContent).toBe('Title');
-        expect(fixture.nativeElement.querySelector('p-dialog app-rich-text-editor')).toBeNull();
-        expect(fixture.nativeElement.querySelector('p-dialog [contenteditable="true"]')).toBeNull();
-        component.closeRichTextDialog();
+        expect(row.richTextDialogField?.value).toBe('# Title\n\nBody text');
+        row.closeRichTextDialog();
+        expect(row.richTextDialogField).toBeNull();
         expect(component.richTextDialogField).toBeNull();
     });
 
-    it('shows an empty plain cell instead of the word undefined', () => {
-        const { fixture } = render([{ outcome: 'x' }]);
-        const textarea = fixture.nativeElement.querySelector('td textarea') as HTMLTextAreaElement;
-        expect(textarea.value).toBe('');
-    });
-
-    it('resolves an IPFS image in the cell preview', async () => {
+    it('resolves an IPFS image in the record row', async () => {
         const ipfs = {
             getImageWithDryRunFallback: jasmine.createSpy('getImageWithDryRunFallback').and.resolveTo('blob:resolved-image'),
             getImageFromDryRunStorage: jasmine.createSpy('getImageFromDryRunStorage').and.resolveTo('blob:resolved-image'),
         };
-        const { fixture, cards } = render([{ outcome: 'Photo ![site](ipfs://bafyimage)' }], ipfs);
+        const { fixture, rich } = render([{ outcome: 'Photo ![site](ipfs://bafyimage)' }], ipfs);
         await new Promise((resolve) => setTimeout(resolve));
         fixture.detectChanges();
-        const image = cards()[0].querySelector('.rich-text-table-preview img') as HTMLImageElement;
+        const image = rich()!.querySelector('img') as HTMLImageElement;
         expect(image.getAttribute('src')).toBe('blob:resolved-image');
         const calls = ipfs.getImageWithDryRunFallback.calls.count() + ipfs.getImageFromDryRunStorage.calls.count();
         expect(calls).toBe(1);
-    });
-
-    it('does not start image loading from the table re-render', () => {
-        let host: SchemaFormViewComponent | null = null;
-        let depth = 0;
-        const read = jasmine.createSpy('read').and.callFake(() => {
-            const table = (host?.fields || []).find((field) => field.name === 'rows');
-            if (table && depth < 20) {
-                depth++;
-                host?.getTableHRowFields(table);
-            }
-            return new Promise(() => undefined);
-        });
-        const ipfs = { getImageWithDryRunFallback: read, getImageFromDryRunStorage: read };
-        const { fixture, component } = render([{ outcome: 'Photo ![site](ipfs://bafyimage)' }], ipfs, (created) => {
-            host = created;
-        });
-        const table = (component.fields || []).find((field) => field.name === 'rows');
-        expect(table).toBeDefined();
-        for (let index = 0; index < 5 && table; index++) {
-            component.getTableHRowFields(table);
-            fixture.detectChanges();
-        }
-        expect(read).toHaveBeenCalledTimes(1);
-        expect(depth).toBe(0);
-    });
-
-    it('returns the same table rows on every change detection', () => {
-        const { component } = render([{ outcome: 'x', comment: 'plain' }]);
-        const table = (component.fields || []).find((field) => field.name === 'rows');
-        expect(table).toBeDefined();
-        if (table) {
-            expect(component.getTableHRowFields(table)).toBe(component.getTableHRowFields(table));
-        }
-    });
-
-    it('renders a table with a PrimeNG textarea without endless re-rendering', () => {
-        let error = '';
-        try {
-            const { fixture } = render([{ outcome: 'x', comment: 'plain' }], {}, undefined, [Textarea]);
-            fixture.detectChanges();
-            const textarea = fixture.nativeElement.querySelector('td textarea') as HTMLTextAreaElement;
-            expect(textarea.value).toBe('plain');
-        } catch (caught: any) {
-            error = String(caught?.message || caught);
-        }
-        expect(error).toBe('');
     });
 
     it('moves an already open popover to the newly hovered cell', () => {

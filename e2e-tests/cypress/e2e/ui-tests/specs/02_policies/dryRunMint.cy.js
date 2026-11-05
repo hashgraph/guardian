@@ -7,10 +7,14 @@ const policiesPage = new PoliciesPage();
 import { UserPoliciesPage } from '../../pages/userPoliciesPage';
 const userPoliciesPage = new UserPoliciesPage();
 
+import { randomInt } from '../../../../support/random';
+
+const IREC3_FILE = '../Methodology Library/International Renewable Energy Certificate (iREC)/Policies/IRec Policy 3 (1707126011.005978889).policy';
+
 context('Dry run Policy', { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
-    const name = 'iRec_3';
+    const runName = randomInt(1000000000) + 'testName';
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
@@ -20,12 +24,14 @@ context('Dry run Policy', { tags: ['ui'] }, () => {
     })
 
     it('checks dry run with mint workflow', () => {
-        //import and dry-run policy
-        policiesPage.importPolicyFromIPFS('1707126011.005978889');  //iRec3
+        //import and dry-run policy (file import: the localnode gateway does not
+        //answer the IPFS message lookups the IPFS import needs)
+        policiesPage.importPolicyFromFile(IREC3_FILE);
+        policiesPage.renameImportedPolicy(runName);
+        policiesPage.startDryRun(runName);
         policiesPage.backToPoliciesList();
-        policiesPage.startDryRun(name);
-        policiesPage.checkStatus(name, 'In Dry Run');
-        policiesPage.openPolicy(name);
+        policiesPage.checkStatus(runName, 'In Dry Run');
+        policiesPage.openPolicy(runName);
 
         //Register user as Registrant and create application
         policiesPage.createDryRunUser();
@@ -55,7 +61,7 @@ context('Dry run Policy', { tags: ['ui'] }, () => {
 
     after(() => {
         policiesPage.openPoliciesTab();
-        policiesPage.stopDryRun(name);
-        policiesPage.deletePolicy(name);
+        policiesPage.stopDryRun(runName);
+        policiesPage.deletePolicy(runName);
     });
 });

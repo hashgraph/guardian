@@ -1,4 +1,7 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Inject, Input, LOCALE_ID, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
+import { formatDate } from '@angular/common';
+import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from 'src/app/services/api';
+import { Subscription } from 'rxjs';
 import {
     getAllContinents,
     getAllCountries,
@@ -14,11 +17,14 @@ import { IPFSService } from 'src/app/services/ipfs.service';
 import { FormulasViewDialog } from '../../formulas/dialogs/formulas-view-dialog/formulas-view-dialog.component';
 import { DialogService } from 'primeng/dynamicdialog';
 import { isSafeHref, withNewTabLinks } from '../rich-text-editor/rich-text-sanitizer';
-import { collectImageReferences, markdownToHtml } from '../rich-text-editor/markdown';
+import { collectImageReferences, markdownToHtml, markdownToPlainText } from '../rich-text-editor/markdown';
+import { SchemaFormPreferencesService } from 'src/app/services/schema-form-preferences.service';
+import { baseMetaTags, IMetaTag, metaType } from '../schema-form/schema-form-metadata';
+import { recordSummary } from '../schema-form/schema-form-records';
+import { applyNestedConditions, applyViewConditions } from './schema-form-view-conditions';
 
 const PREVIEW_RENDER_CHUNK = 10;
 
-type SchemaFieldPredicate = { field: any; fieldValue: any } | { field: any; const: any };
 interface IFieldControl extends SchemaField {
     fullPath: string;
     hide: boolean;
@@ -35,6 +41,13 @@ interface IFieldControl extends SchemaField {
     accordionLink?: string | undefined;
     open: boolean;
     previewReady?: boolean;
+    /** Indexes of the opened record cards of an array of sub-schemas. */
+    openRows?: Set<number>;
+}
+
+interface IRichTextEntry {
+    description?: string;
+    value: any;
 }
 
 interface IFieldIndexControl {
@@ -53,11 +66,10 @@ interface IFieldIndexControl {
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: false
 })
-export class SchemaFormViewComponent implements OnInit, OnDestroy {
+export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
     @Input('private-fields') hide!: { [x: string]: boolean };
     @Input('schema') schema: Schema | null | undefined;
     @Input('fields') schemaFields!: SchemaField[] | undefined;
-    @Input('delimiter-hide') delimiterHide: boolean = false;
     @Input('values') values: any;
     @Input() dryRun?: boolean = false;
     @Input() rules?: SchemaRuleValidateResult;
@@ -66,8 +78,14 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
     @Input('discussion-action') discussionAction: boolean = false;
     @Input('discussion-view') discussionView: boolean = false;
     @Input() link?: string | undefined;
+    /** Conditions of the array this view renders one row of; judged by this row's values. */
+    @Input() conditions?: any[];
     @Input() accordionLink?: string | undefined;
     @Input() preview: boolean = false;
+    /** Path of this view's values, so the metadata strip shows the same path as the edit form. */
+    @Input() pathPrefix: string = '';
+    /** Set on the view of a record card: rich text there keeps the popover and the dialog. */
+    @Input() inRecord: boolean = false;
 
     @Output('discussion-action') discussionActionEvent = new EventEmitter<any>();
     @Output('onAccordionSelect') onAccordionSelect = new EventEmitter<{path: string, isOpen: boolean}>();
@@ -77,6 +95,9 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
     private pageSize: number = 25;
     // Resolved images by link; null marks a link that failed to resolve.
     private imgCache = new Map<string, string | null>();
+    /** Rendered rich text per markdown value; dropped whenever an image resolves, since that changes the HTML. */
+    private richHtmlCache = new Map<string, string>();
+    private rowSummaryCache = new WeakMap<object, { title: string; sub: string }>();
     private imgRequests = new Map<string, Promise<string | null>>();
     private previewFrames = new Map<IFieldControl, number>();
     public previewRenderLimit: number = Infinity;
@@ -85,11 +106,24 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
     constructor(
         private ipfs: IPFSService,
         private dialogService: DialogService,
-        private changeDetector: ChangeDetectorRef
+        private changeDetector: ChangeDetectorRef,
+        private preferences: SchemaFormPreferencesService,
+        @Inject(LOCALE_ID) private locale: string = 'en-US'
     ) { }
 
+    public showMetadata: boolean = false;
+    private metadataSub?: Subscription;
+    /** Rule results by field path, with the text of the rule line and the tooltip. */
+    public ruleView = new Map<string, { failed: boolean; text: string }>();
+    private expandedText = new Set<string>();
+
     ngOnInit(): void {
-        this.init();
+        applyViewConditions(this.fields, this.conditions, this.values);
+        applyNestedConditions(this.fields, this.values);
+        this.metadataSub = this.preferences.showFieldMetadata$.subscribe((value) => {
+            this.showMetadata = value;
+            this.changeDetector.markForCheck();
+        });
     }
 
     private stopPreviewRendering(): void {
@@ -108,6 +142,7 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
         this.previewLoadingChange.emit(true);
         const next = () => {
             this.previewRenderLimit += PREVIEW_RENDER_CHUNK;
+            this.preparePreviewRange();
             if (this.previewRenderLimit < (this.fields?.length || 0)) {
                 this.changeDetector.detectChanges();
                 this.previewRenderFrame = requestAnimationFrame(next);
@@ -115,10 +150,25 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
             }
             this.previewRenderFrame = null;
             this.previewRenderLimit = Infinity;
+            this.preparePreviewRange();
             this.changeDetector.detectChanges();
             this.previewLoadingChange.emit(false);
         };
         this.previewRenderFrame = requestAnimationFrame(next);
+    }
+
+    /** Sub-schemas are always open, so each one is prepared when its sub-heading enters the render chunk. */
+    private preparePreviewRange(): void {
+        if (!this.preview || !this.fields) {
+            return;
+        }
+        const limit = Math.min(this.fields.length, this.previewRenderLimit);
+        for (let i = 0; i < limit; i++) {
+            const field = this.fields[i];
+            if (field.isRef && !field.isArray && field.open && !field.previewReady) {
+                this.preparePreviewSection(field);
+            }
+        }
     }
 
     private cancelPreviewSections(): void {
@@ -157,31 +207,28 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
         }));
     }
 
-    isBooleanView(item: boolean | any): string {
-        return (typeof item === 'boolean') ? String(item) : 'Unset';
+    public isBooleanView(value: boolean | any): string {
+        if (typeof value === 'boolean') {
+            return value ? 'Yes' : 'No';
+        }
+        return this.isEmptyValue(value) ? 'Not provided' : String(value);
+    }
+
+    /** An empty value is shown as "Not provided". `false` and `0` are values. */
+    public isEmptyValue(value: unknown): boolean {
+        return value === null || value === undefined || value === '' || (Array.isArray(value) && value.length === 0);
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes.rules && this.rules) {
-            for (const value of Object.values(this.rules)) {
-                if (value.status === 'Failure' || value.status === 'Error') {
-                    value.tooltip = 'Failure: ' + value.rules
-                        .filter((r) => r.status === 'Failure' || r.status === 'Error')
-                        .map((r) => r.name)
-                        .join(', ');
-                } else {
-                    value.tooltip = 'Success: ' + value.rules
-                        .filter((r) => r.status === 'Success')
-                        .map((r) => r.name)
-                        .join(', ');
-                }
-            }
+        if (changes.rules) {
+            this.buildRuleView();
         }
         if (
             changes.schema ||
             changes.schemaFields ||
             changes.hide
         ) {
+            this.rowSummaryCache = new WeakMap();
             if (this.preview) this.cancelPreviewSections();
             this.hide = this.hide || {};
             if (this.schemaFields) {
@@ -191,7 +238,10 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
             } else {
                 this.update();
             }
-            if (this.preview) this.startPreviewRendering();
+            if (this.preview) {
+                this.startPreviewRendering();
+                this.preparePreviewRange();
+            }
         }
         if (changes.link) {
             this.openField(this.link);
@@ -202,100 +252,18 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
         }
     }
 
-    private init() {
-        if (!this.fields) {
-            return;
+    private buildRuleView(): void {
+        this.ruleView = new Map();
+        for (const [path, value] of Object.entries(this.rules || {})) {
+            const failed = value.status === 'Failure' || value.status === 'Error';
+            const names = (value.rules || [])
+                .filter((rule) => failed
+                    ? (rule.status === 'Failure' || rule.status === 'Error')
+                    : rule.status === 'Success')
+                .map((rule) => rule.name)
+                .join(', ');
+            this.ruleView.set(path, { failed, text: names });
         }
-
-        for (const item of this.fields) {
-            if (!item.conditions || !Array.isArray(item.conditions)) continue;
-
-            const subValues = this.values ? this.values[item.name] : {};
-
-            for (const condition of item.conditions) {
-                const ic = condition?.ifCondition;
-                if (!ic) continue;
-
-                const condTrue = this.evaluateIfCondition(ic, subValues);
-
-                for (const field of (condition.thenFields ?? [])) {
-                    const thenField = item.fields?.find((f: any) => f.name === field.name);
-                    if (thenField) {
-                        (thenField as any).notCorrespondCondition = !condTrue;
-                    }
-                }
-                for (const field of (condition.elseFields ?? [])) {
-                    const elseField = item.fields?.find((f: any) => f.name === field.name);
-                    if (elseField) {
-                        (elseField as any).notCorrespondCondition = condTrue;
-                    }
-                }
-            }
-        }
-    }
-
-    private isSingleIF(ic: any): ic is { field: any; fieldValue: any } {
-        return ic && 'field' in ic && 'fieldValue' in ic;
-    }
-
-    private isAND(ic: any): ic is { AND: SchemaFieldPredicate[] } {
-        return ic && 'AND' in ic && Array.isArray(ic.AND);
-    }
-
-    private isOR(ic: any): ic is { OR: SchemaFieldPredicate[] } {
-        return ic && 'OR' in ic && Array.isArray(ic.OR);
-    }
-
-    private getPredicates(ic: any): { field: any; fieldValue: any; fieldPath?: string[] }[] {
-        if (this.isSingleIF(ic)) {
-            return [{ field: ic.field, fieldValue: ic.fieldValue, fieldPath: (ic as any).fieldPath }];
-        }
-        if (this.isAND(ic)) {
-            return ic.AND.map(p => ({ field: (p as any).field, fieldValue: (p as any).fieldValue ?? (p as any).const, fieldPath: (p as any).fieldPath }));
-        }
-        if (this.isOR(ic)) {
-            return ic.OR.map(p => ({ field: (p as any).field, fieldValue: (p as any).fieldValue ?? (p as any).const, fieldPath: (p as any).fieldPath }));
-        }
-        return [];
-    }
-
-    private evaluateIfCondition(
-        ic: any,
-        subValues: any
-    ): boolean {
-        const preds = this.getPredicates(ic);
-        if (preds.length === 0) {
-            return false;
-        }
-
-        const check = (pred: { field: any; fieldValue: any; fieldPath?: string[] }) => {
-            // For nested sub-schema fields the predicate carries a full path; walk it from subValues.
-            const path = (pred.fieldPath && pred.fieldPath.length > 1)
-                ? pred.fieldPath
-                : [pred.field?.name];
-            if (!path[0]) {
-                return false;
-            }
-            let current = subValues;
-            for (const segment of path) {
-                if (current === null || current === undefined) {
-                    return false;
-                }
-                current = current[segment];
-            }
-            return current === pred.fieldValue;
-        };
-
-        if (this.isSingleIF(ic)) {
-            return check(preds[0]);
-        }
-        if (this.isAND(ic)) {
-            return preds.every(check);
-        }
-        if (this.isOR(ic)) {
-            return preds.some(check);
-        }
-        return false;
     }
 
     private update(schemaFields?: SchemaField[]) {
@@ -306,7 +274,10 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
         const fields: any[] = [];
         for (let i = 0; i < schemaFields.length; i++) {
             const field = schemaFields[i];
-            if (this.hide[field.name]) {
+            if (this.hide[field.name] || this.isHelpText(field)) {
+                continue
+            }
+            if (field.hidden && this.isEmptyValue(this.values?.[field.name])) {
                 continue
             }
             const item: IFieldControl = {
@@ -337,7 +308,10 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
                 }
             }
             if (!field.isArray && field.isRef) {
-                item.fields = field.fields;
+                // Conditions mark these fields, so each view needs its own copies: rows must not share the flags.
+                item.fields = field.conditions?.length ? field.fields?.map((f) => ({ ...f })) : field.fields;
+                // A sub-schema is always open.
+                item.open = true;
             }
 
             if (field.isArray && !field.isRef) {
@@ -393,7 +367,7 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
                 item.count = item.list?.length;
                 item.pageIndex = 0;
                 item.pageSize = this.pageSize;
-                this.loadTableRichTextImages(item);
+                item.openRows = new Set<number>();
             }
             fields.push(item);
         }
@@ -439,6 +413,7 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
 
         const imgSrc = await request;
         this.imgCache.set(key, imgSrc);
+        this.richHtmlCache.clear();
         return imgSrc;
     }
 
@@ -457,25 +432,14 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
         Promise.all(references.map((reference) => this.loadImgReference(reference, true)))
             .finally(() => this.changeDetector.detectChanges());
     }
-    private loadTableRichTextImages(item: IFieldControl): void {
-        const richTextFields = (item.fields || []).filter((field) => field.customType === 'richText');
-        if (!richTextFields.length || !Array.isArray(item.list)) {
-            return;
-        }
-        for (const row of item.list as any[]) {
-            for (const field of richTextFields) {
-                this.loadRichTextImages(row?.[field.name]);
-            }
-        }
-    }
 
     public richTextPopoverValue = '';
 
-    public richTextDialogField: IFieldControl | null = null;
+    public richTextDialogField: IRichTextEntry | null = null;
 
     private richTextHideTimer: any = null;
 
-    public onRichTextCellEnter(event: Event, field: IFieldControl, popover: any): void {
+    public onRichTextCellEnter(event: Event, field: { value: any }, popover: any): void {
         this.clearRichTextHideTimer();
         this.richTextPopoverValue = this.getRichTextValue(field.value);
         if (this.richTextPopoverValue) {
@@ -502,7 +466,7 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
         this.clearRichTextHideTimer();
     }
 
-    public openRichTextDialog(field: IFieldControl, popover: any): void {
+    public openRichTextDialog(field: IRichTextEntry, popover: any): void {
         this.clearRichTextHideTimer();
         popover.hide();
         this.richTextDialogField = field;
@@ -522,6 +486,7 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
+        this.metadataSub?.unsubscribe();
         this.clearRichTextHideTimer();
         this.cancelPreviewSections();
         this.stopPreviewRendering();
@@ -554,10 +519,6 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
         return result;
     }
 
-    public isTime(item: IFieldControl): boolean {
-        return item.type === 'string' && item.format === 'time';
-    }
-
     public isDate(item: IFieldControl): boolean {
         return item.type === 'string' && item.format === 'date';
     }
@@ -578,26 +539,26 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
             || item.pattern === '^ipfs:\/\/.+';
     }
 
-    public displayValue(item: IFieldControl): any {
-        if (!isGeoCustomType(item.customType || '') || !item.value) {
-            return item.value;
+    public displayValue(item: IFieldControl, value: any = item.value): any {
+        if (!isGeoCustomType(item.customType || '') || !value) {
+            return value;
         }
         if (item.customType === 'continent') {
             return getAllContinents()
-                .find((entry) => entry.value === item.value)?.name || item.value;
+                .find((entry) => entry.value === value)?.name || value;
         }
         if (item.customType === 'country') {
             return getAllCountries()
-                .find((entry) => entry.value === item.value)?.name || item.value;
+                .find((entry) => entry.value === value)?.name || value;
         }
-        for (const country of getCountriesOfState(item.value)) {
+        for (const country of getCountriesOfState(value)) {
             const state = getStatesOfCountry(country)
-                .find((entry) => entry.value === item.value);
+                .find((entry) => entry.value === value);
             if (state) {
                 return state.name;
             }
         }
-        return item.value;
+        return value;
     }
 
     public isInput(item: IFieldControl): boolean {
@@ -622,6 +583,10 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
 
     public getRichTextValue(value: unknown): string {
         const markdown = typeof value === 'string' ? value : '';
+        const cached = this.richHtmlCache.get(markdown);
+        if (cached !== undefined) {
+            return cached;
+        }
         const resolved = new Map<string, string>();
         for (const reference of collectImageReferences(markdown)) {
             const source = this.imgCache.get(this.imgKey(reference));
@@ -629,7 +594,9 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
                 resolved.set(reference, source);
             }
         }
-        return withNewTabLinks(markdownToHtml(markdown, resolved));
+        const html = withNewTabLinks(markdownToHtml(markdown, resolved));
+        this.richHtmlCache.set(markdown, html);
+        return html;
     }
 
     public onRichTextLinkClick(event: MouseEvent): void {
@@ -652,6 +619,208 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
 
     public isPostfix(item: IFieldControl): boolean {
         return item.unitSystem === UnitSystem.Postfix;
+    }
+
+    public isHelpText(item: SchemaField): boolean {
+        return item.type === 'null';
+    }
+
+    public isUrl(item: IFieldControl): boolean {
+        return item.type === 'string' && item.format === 'url';
+    }
+
+    public isEmail(item: IFieldControl): boolean {
+        return item.type === 'string' && item.format === 'email';
+    }
+
+    public isGeoLocation(item: IFieldControl): boolean {
+        return isGeoCustomType(item.customType || '');
+    }
+
+    /** Same rule as the edit form's `isFullRow`, minus the enum modes: a value is short. */
+    public isFullRow(item: IFieldControl): boolean {
+        if (item.isArray || item.isRef || this.isRichText(item)) {
+            return true;
+        }
+        const customType = item.customType || '';
+        if (customType === 'table' || customType === 'geo' || customType === 'sentinel' || this.isIPFS(item)) {
+            return true;
+        }
+        if (item.enum || item.remoteLink || this.isGeoLocation(item) || this.isBoolean(item)) {
+            return false;
+        }
+        return item.type === 'string' && !item.format;
+    }
+
+    /**
+     * A cell with no neighbour in its grid row (full rows before and after it): it takes the whole
+     * row, so a long value is not squeezed into one column.
+     */
+    public isLoneField(index: number): boolean {
+        const fields = this.fields || [];
+        const limit = Math.min(fields.length, this.previewRenderLimit);
+        if (index >= limit || this.isFullRow(fields[index])) {
+            return false;
+        }
+        for (let i = index - 1; i >= 0; i--) {
+            if (this.ifFieldVisible(fields[i])) {
+                if (!this.isFullRow(fields[i])) {
+                    return false;
+                }
+                break;
+            }
+        }
+        for (let i = index + 1; i < limit; i++) {
+            if (this.ifFieldVisible(fields[i])) {
+                if (!this.isFullRow(fields[i])) {
+                    return false;
+                }
+                break;
+            }
+        }
+        return true;
+    }
+
+    public isGeoSub(item: IFieldControl): boolean {
+        return item.customType === 'geo' || item.customType === 'sentinel';
+    }
+
+    public dateView(value: unknown, format: 'mediumDate' | 'medium'): string {
+        try {
+            return formatDate(value as any, format, this.locale);
+        } catch {
+            return String(value);
+        }
+    }
+
+    /** The raw value of a field whose stored value does not match its type. */
+    public rawValue(item: IFieldControl): string {
+        const values = item.list?.map((entry) => entry.value) ?? [];
+        const value = values.length === 1 ? values[0] : values;
+        return typeof value === 'object' ? JSON.stringify(value) : String(value);
+    }
+
+    public ipfsLink(link: string): string {
+        return typeof link === 'string' && link.startsWith(IPFS_SCHEMA)
+            ? `${API_IPFS_GATEWAY_URL}${link.substring(IPFS_SCHEMA.length)}`
+            : link;
+    }
+
+    /** Short scalars of a simple array are shown as chips, anything longer as a list. */
+    public isChipList(item: IFieldControl): boolean {
+        if (this.isIPFS(item) || this.isRichText(item) || item.customType === 'table') {
+            return false;
+        }
+        return this.getItemsPage(item).every((entry) => String(entry.value ?? '').length <= 40);
+    }
+
+    public isEmptyField(item: IFieldControl): boolean {
+        if (item.isInvalidType) {
+            return false;
+        }
+        if (item.isArray) {
+            return !item.list?.length;
+        }
+        if (item.isRef) {
+            return this.isEmptyValue(this.values?.[item.name]);
+        }
+        return this.isEmptyValue(item.value);
+    }
+
+    public ruleOf(item: IFieldControl): { failed: boolean; text: string } | undefined {
+        return this.ruleView.get(item.fullPath);
+    }
+
+    public formulaCount(item: IFieldControl): number {
+        const formulas = this.isFormulas(item);
+        try {
+            return formulas?.tree?.get(formulas.schema, formulas.path, formulas.context)?.length ?? 0;
+        } catch {
+            return 0;
+        }
+    }
+
+    public metaTypeOf(item: IFieldControl): string {
+        return metaType(item);
+    }
+
+    public metaPath(item: IFieldControl): string {
+        return this.pathPrefix + item.name;
+    }
+
+    public metaTags(item: IFieldControl): IMetaTag[] {
+        const tags = baseMetaTags(item);
+        const formulas = this.formulaCount(item);
+        if (formulas) {
+            tags.push({ text: `${formulas} formula${formulas === 1 ? '' : 's'}` });
+        }
+        if (this.rules?.[item.fullPath]) {
+            tags.push({ text: 'schema rule' });
+        }
+        return tags;
+    }
+
+    public isTextExpanded(key: string): boolean {
+        return this.expandedText.has(key);
+    }
+
+    public toggleText(key: string): void {
+        if (!this.expandedText.delete(key)) {
+            this.expandedText.add(key);
+        }
+    }
+
+    /** Index of a row of an array across its pages. */
+    public rowIndex(item: IFieldControl, indexOnPage: number): number {
+        return (item.pageIndex || 0) * (item.pageSize || this.pageSize) + indexOnPage;
+    }
+
+    public rowPath(item: IFieldControl, index: number): string {
+        return `${this.pathPrefix}${item.name}.${index}.`;
+    }
+
+    public rowSummary(item: IFieldControl, row: any, index: number): { title: string; sub: string } {
+        const cached = row && typeof row === 'object' ? this.rowSummaryCache.get(row) : undefined;
+        if (cached) {
+            return cached;
+        }
+        const values = (item.fields || [])
+            .filter((field) => !field.isArray && !field.isRef && !field.hidden && !this.hide?.[field.name])
+            .map((field) => this.isRichText(field as IFieldControl) ? markdownToPlainText(row?.[field.name]) : row?.[field.name]);
+        const summary = recordSummary(values, `${item.description} #${index + 1}`);
+        if (row && typeof row === 'object') {
+            this.rowSummaryCache.set(row, summary);
+        }
+        return summary;
+    }
+
+    public isRowOpen(item: IFieldControl, index: number): boolean {
+        return !!item.openRows?.has(index);
+    }
+
+    public toggleRow(item: IFieldControl, index: number): void {
+        item.openRows = item.openRows || new Set<number>();
+        if (!item.openRows.delete(index)) {
+            item.openRows.add(index);
+        }
+    }
+
+    /** Opens every record card of the current page. */
+    public expandAll(item: IFieldControl): void {
+        item.openRows = item.openRows || new Set<number>();
+        const start = (item.pageIndex || 0) * (item.pageSize || this.pageSize);
+        const end = Math.min(item.list.length, start + (item.pageSize || this.pageSize));
+        for (let i = start; i < end; i++) {
+            item.openRows.add(i);
+        }
+    }
+
+    public collapseAll(item: IFieldControl): void {
+        item.openRows?.clear();
+    }
+
+    public hasOpenRows(item: IFieldControl): boolean {
+        return !!item.openRows?.size;
     }
 
     public onPage(item: IFieldControl, event: any): void {
@@ -679,10 +848,6 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
         return item.isArray && item.isRef;
     }
 
-    public isRules(item: IFieldControl) {
-        return this.rules ? this.rules[item.fullPath] : undefined;
-    }
-
     public isRulesStatus(item: IFieldControl) {
         return this.rules?.[item.fullPath]?.status;
     }
@@ -702,12 +867,12 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
     }
 
     public isDiscussion(item: IFieldControl) {
-        return (this.discussionView && (
+        // Comments exist only for published policies.
+        return (this.discussionView && !this.dryRun && (
             this.isInput(item) ||
             this.isDateTime(item) ||
             this.isDate(item) ||
-            this.isBoolean(item) ||
-            this.isInput(item)
+            this.isBoolean(item)
         ));
     }
 
@@ -736,6 +901,15 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
         this.discussionActionEvent.emit($event);
     }
 
+    private markOpened(field: IFieldControl): void {
+        field.open = true;
+        if (field.isArray) {
+            this.expandAll(field);
+        } else if (this.preview) {
+            this.preparePreviewSection(field);
+        }
+    }
+
     public openField(link?: string): void {
         let _rootLink: string | undefined = undefined;
         let _subLink: string | undefined = undefined;
@@ -756,12 +930,10 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
         if (_rootLink && this.fields) {
             for (const field of this.fields) {
                 if (field.fullPath === _rootLink) {
-                    field.open = true;
-                    if (this.preview) this.preparePreviewSection(field);
+                    this.markOpened(field);
                     field.link = _subLink;
                 } else if (field.name === _rootLink) {
-                    field.open = true;
-                    if (this.preview) this.preparePreviewSection(field);
+                    this.markOpened(field);
                     field.link = _subLink;
                 } else {
                     field.link = undefined;
@@ -790,8 +962,7 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
         if (_rootLink && this.fields) {
             for (const field of this.fields) {
                 if (field.fullPath === _rootLink) {
-                    field.open = true;
-                    if (this.preview) this.preparePreviewSection(field);
+                    this.markOpened(field);
                     field.accordionLink = _subLink;
                 } else {
                     field.accordionLink = undefined;
@@ -827,8 +998,7 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
                 break;
             }
 
-            field.open = true;
-            if (this.preview) this.preparePreviewSection(field);
+            this.markOpened(field);
             const remaining = segments.slice(i + 1).join(";") || null;
             field.accordionLink = remaining;
 
@@ -874,109 +1044,6 @@ export class SchemaFormViewComponent implements OnInit, OnDestroy {
                 }
             } catch (e) { }
         }, 1000);
-    }
-
-    public emitAccordionSelect(isOpen: any, item: any, index?: any, childrenAccordionId?: string) {
-        if (!item) return;
-
-        let accordionId = item.fullPath || item.id || '';
-        if (index !== undefined && index !== null && index !== '') {
-            accordionId = `${accordionId}-${index}`;
-        }
-        if (childrenAccordionId) {
-            accordionId = `${accordionId};${childrenAccordionId}`;
-        }
-
-        this.onAccordionSelect.emit({ path: accordionId, isOpen: !!isOpen });
-    }
-
-    public canDrawTable(item: IFieldControl): boolean {
-        const customTypes = ['geo', 'table', 'sentinel', 'country', 'continent', 'state'];
-
-        if (!item.isArray || !item.isRef || item.hidden) {
-            return false;
-        }
-
-        if (customTypes.includes(item.customType || '')) {
-            return false;
-        }
-
-        const visibleFields = item.fields?.filter(f => !f.hidden) || [];
-        if (visibleFields.length === 0) {
-            return false;
-        }
-
-        return !visibleFields.some(f =>
-            f.isArray || f.isRef ||
-            customTypes.includes(f.customType || '')
-        );
-    }
-
-    public getTableHeaderFields(item: IFieldControl): any[] | undefined {
-        if (this.hide) {
-            return item.fields?.filter(f => f.type !== 'null' && !this.hide[f.name] && !f.hidden);
-        }
-        return item.fields?.filter(f => f.type !== 'null' && !f.hidden);
-    }
-
-   private tableRows = new WeakMap<IFieldControl, any[]>();
-
-   public getTableHRowFields(item: IFieldControl): any[] {
-        const cached = this.tableRows.get(item);
-        if (cached) {
-            return cached;
-        }
-        const rows = this.buildTableRowFields(item);
-        this.tableRows.set(item, rows);
-        return rows;
-    }
-
-    private buildTableRowFields(item: IFieldControl): any[] {
-        if (!item.list?.length || !item.fields?.length) {
-            return [];
-        }
-
-        const resultRows: any[] = [];
-
-        for (let i = 0; i < item.list.length; i++) {
-            const dataRow = item.list[i] as any;
-            const rowFields: any[] = [];
-
-            for (let j = 0; j < item.fields.length; j++) {
-                const field = item.fields[j];
-                if (this.hide && this.hide[field.name] || field.hidden || field.type === 'null')
-                    continue;
-
-                const tableField: IFieldControl = {
-                    ...field,
-                    fullPath: field.fullPath || '',
-                    hide: false,
-                    isInvalidType: false,
-                    value: dataRow[field.name] ?? undefined,
-                    loading: false,
-                    list: [],
-                    pageIndex: 0,
-                    pageSize: 0,
-                    count: 0,
-                    imgSrc: '',
-                    open: false
-                };
-
-                if (this.isIPFS(field) && field.customType !== 'file') {
-                    this.loadImg(tableField);
-                }
-
-                if (!field.isArray && field.isRef) {
-                    tableField.fields = field.fields;
-                }
-
-                rowFields.push(tableField);
-            }
-
-            resultRows.push(rowFields);
-        }
-
-        return resultRows;
     }
 
      public onAccordionSelectEvent(isOpen: any, item: any, childrenAccordionId?: string) {

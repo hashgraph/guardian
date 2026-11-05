@@ -1,513 +1,391 @@
-<form>
-    <ng-container *ngFor="let item of fields; let i = index"><ng-container *ngIf="i < previewRenderLimit">
+<!-- The value of one field, or of one entry of a simple array -->
+<ng-template #scalar let-item let-entry="entry" let-key="key">
+    @if (isEmptyValue(entry.value)) {
+        <span class="sf-empty">Not provided</span>
+    } @else if (item.customType === 'table') {
+        <div class="sf-ro-table">
+            <table-viewer
+                [value]="entry.value"
+                [title]="item.title || item.description || item.name"
+            ></table-viewer>
+        </div>
+    } @else if (isRichText(item)) {
+        <div class="sf-ro-rich">
+            <div
+                class="sf-ro-rt rte-view-content"
+                [class.open]="isTextExpanded(key)"
+                appRichTextClip
+                [innerHTML]="getRichTextValue(entry.value)"
+                (click)="onRichTextLinkClick($event)"
+                (mouseenter)="inRecord && onRichTextCellEnter($event, entry, richTextPopover)"
+                (mouseleave)="inRecord && onRichTextCellLeave(richTextPopover)"
+            ></div>
+            <div class="sf-ro-rt-actions">
+                <button type="button" class="sf-link sf-ro-more" (click)="toggleText(key)">
+                    {{ isTextExpanded(key) ? 'Show less' : 'Show more' }}
+                </button>
+                @if (inRecord) {
+                    <button
+                        type="button"
+                        class="sf-link"
+                        [attr.aria-label]="'View ' + item.description"
+                        (click)="openRichTextDialog({ description: item.description, value: entry.value }, richTextPopover)"
+                    >View</button>
+                }
+            </div>
+        </div>
+    } @else if (isIPFS(item) && isInput(item)) {
+        <div class="sf-ro-file">
+            @if (item.customType !== 'file' && entry.imgSrc && !entry.loading) {
+                <img class="sf-ro-thumb" [src]="entry.imgSrc" [alt]="entry.value">
+            } @else if (item.customType !== 'file' && entry.loading) {
+                <span class="sf-ro-thumb sf-ro-thumb-loading" aria-hidden="true"></span>
+            } @else {
+                <svg-icon
+                    class="svg-icon-16 sf-ro-file-icon"
+                    src="/assets/images/icons/16/file.svg"
+                    svgClass="icon-color-primary"
+                ></svg-icon>
+            }
+            <div class="sf-ro-fn">
+                <span class="sf-ro-url">{{ entry.value }}</span>
+            </div>
+            <div class="sf-ro-file-links">
+                <a class="sf-ro-open" [href]="ipfsLink(entry.value)" target="_blank" rel="noopener noreferrer">
+                    <i class="pi pi-external-link" aria-hidden="true"></i>
+                    Open
+                </a>
+                <sf-copy [value]="entry.value" tip="Copy link"></sf-copy>
+                <sf-copy [value]="getCID(entry.value)" tip="Copy CID" label="CID"></sf-copy>
+            </div>
+        </div>
+    } @else if (isBoolean(item)) {
+        <span class="sf-ro-text">{{ isBooleanView(entry.value) }}</span>
+    } @else if (isDateTime(item)) {
+        <span class="sf-ro-text">{{ dateView(entry.value, 'medium') }}</span>
+    } @else if (isDate(item)) {
+        <span class="sf-ro-text">{{ dateView(entry.value, 'mediumDate') }}</span>
+    } @else if (isUrl(item)) {
+        <span class="sf-ro-line">
+            <a class="sf-ro-a" [href]="entry.value" target="_blank" rel="noopener noreferrer">{{ entry.value }}</a>
+            <sf-copy [value]="entry.value" tip="Copy link"></sf-copy>
+        </span>
+    } @else if (isEmail(item)) {
+        <span class="sf-ro-line">
+            <a class="sf-ro-a" [href]="'mailto:' + entry.value">{{ entry.value }}</a>
+        </span>
+    } @else {
+        <span class="sf-ro-line">
+            @if (isPrefix(item)) {
+                <span class="sf-ro-unit">{{ item.unit }}</span>
+            }
+            <span class="sf-ro-text">{{ displayValue(item, entry.value) }}</span>
+            @if (isPostfix(item)) {
+                <span class="sf-ro-unit">{{ item.unit }}</span>
+            }
+        </span>
+    }
+</ng-template>
 
-        <div *ngIf="ifFieldVisible(item) && this.values && this.values[item.name]" class="form-field-container" [attr.field-id]="item.fullPath">
+<!-- The metadata strip, when the per-user flag is on -->
+<ng-template #meta let-item>
+    <div class="sf-meta" [attr.data-meta-id]="item.id">
+        <code>{{ item.name }}</code>
+        <span class="sf-chip">{{ metaTypeOf(item) }}</span>
+        <span class="sf-meta-path">{{ metaPath(item) }}</span>
+        @for (tag of metaTags(item); track tag.text) {
+            <span class="sf-chip" [attr.title]="tag.title">{{ tag.text }}</span>
+        }
+    </div>
+</ng-template>
 
-            <!-- simple field -->
-            <div *ngIf="ifSimpleField(item)" class="form-field">
-                <div class="label-field">{{item.description}}</div>
-
-                <div *ngIf="item.isInvalidType" class="invalid-type">
-                    <b>The field type does not match the field type in the schema</b>
-                </div>
-
-                <div *ngIf="!item.isInvalidType" class="form-field-value" [attr.rules-status]="isRulesStatus(item)">
-                    <div class="form-field-prefix" *ngIf="isPrefix(item)">{{item.unit}}</div>
-
-                    <div *ngIf="item.customType === 'table'" class="form-field-table">
-                        <table-viewer
-                                [value]="item.value"
-                                [title]="item.title || item.description || item.name"
-                        ></table-viewer>
-                    </div>
-
-                    <div *ngIf="isRichText(item)" class="form-field-input guardian-input-container">
-                        <div class="rte-view-content" [innerHTML]="getRichTextValue(item.value)" (click)="onRichTextLinkClick($event)"></div>
-                    </div>
-
-                    <div *ngIf="isInput(item) && !isIPFS(item)" class="form-field-input guardian-input-container">
-                        <app-readonly-textarea [value]="displayValue(item)" [autoResize]="true"></app-readonly-textarea>
-                    </div>
-
-                    <div *ngIf="isInput(item) && isIPFS(item)" class="form-field-ipfs guardian-input-container">
-                        <div class="form-field-url">
-                            <input
-                                pInputText
-                                [value]="item.value"
-                                [readonly]="true"
-                                type="text"/>
-                            <div class="form-field-url-buttons">
-                                <button
-                                    [cdkCopyToClipboard]="item.value"
-                                    class="guardian-button guardian-button-primary">Copy Link</button>
-                                <button
-                                    [cdkCopyToClipboard]="getCID(item.value)"
-                                    class="guardian-button guardian-button-secondary">Copy CID</button>
-                            </div>
-                        </div>
-
-                        <div *ngIf="item?.customType !== 'file'" class="form-field-img">
-                            <img *ngIf="!item.loading; else loading" class="ipfs-image" [src]="item.imgSrc" [alt]="item.value">
-                            <ng-template #loading>
-                                <div class="guardian-loading">
-                                    <div class="guardian-loading-image"></div>
-                                </div>
-                            </ng-template>
-                        </div>
-                    </div>
-
-                    <div *ngIf="isTime(item)" class="form-field-input guardian-input-container">
-                        <input [readonly]="true" [value]="item.value" class="p-field-input" pInputText>
-                    </div>
-
-                    <div *ngIf="isDateTime(item)" class="form-field-input guardian-input-container">
-                        <input [readonly]="true" [value]="item.value | date: 'medium'" class="p-field-input" pInputText>
-                    </div>
-
-                    <div *ngIf="isDate(item)" class="form-field-input guardian-input-container">
-                        <input [readonly]="true" [value]="item.value" class="p-field-input" pInputText>
-                    </div>
-
-                    <div *ngIf="isBoolean(item)" class="form-field-boolean">
-                        <span class="boolean-show">{{ isBooleanView(item.value) }}</span>
-                    </div>
-
-                    <div class="form-field-postfix" *ngIf="isPostfix(item)">{{item.unit}}</div>
-
-                    <div
-                        *ngIf="isFormulas(item) as formulas"
-                        class="form-field-formula">
-                        <button
-                            class="guardian-icon-button guardian-icon-button-secondary"
-                            (click)="showFormulas(formulas)">
-                            <svg-icon
-                                src="/assets/images/icons/function.svg"
-                                svgClass="icon-color-primary"></svg-icon>
-                        </button>
-                    </div>
-
-                    <ng-container *ngIf="isDiscussion(item)">
-                        <div
-                            *ngIf="isDiscussionCount(item) as messageCount; else elseDiscussion"
-                            class="form-field-discussion">
-                            <button
-                                class="guardian-icon-button"
-                                (click)="openDiscussion(item)">
-                                <svg-icon
-                                    src="/assets/images/icons/chat.svg"
-                                    svgClass="icon-color-grey-color-3"
-                                ></svg-icon>
-                            </button>
-                            <div class="icon-count">{{messageCount}}</div>
-                        </div>
-                        <ng-template #elseDiscussion>
-                            <div class="form-field-discussion">
-                                <button
-                                    class="guardian-icon-button"
-                                    (click)="openDiscussion(item)">
-                                    <svg-icon
-                                        src="/assets/images/icons/chat.svg"
-                                        svgClass="icon-color-grey-color-3"
-                                    ></svg-icon>
-                                </button>
-                            </div>
-                        </ng-template>
-                    </ng-container>
-
-                    <div
-                        *ngIf="discussionAction"
-                        class="form-field-discussion discussion-action">
-                        <button
-                            class="guardian-icon-button"
-                            (click)="linkMessage(item)">
-                            <svg-icon
-                                src="/assets/images/icons/hashtag.svg"
-                                svgClass="icon-color-primary"></svg-icon>
-                        </button>
-                    </div>
-
-                    <div
-                        *ngIf="isRules(item) as rule"
-                        class="form-field-rule"
-                        [pTooltip]="rule.tooltip"
-                        tooltipPosition="top"
-                        [showDelay]="1000">
+<!-- The label row: the description on the left, the field actions on the right -->
+<ng-template #labelRow let-item let-actions="actions">
+    <div class="sf-ro-label">
+        <span class="sf-ro-lt" [attr.accordiontabid]="item.fullPath">{{ item.description || item.title || item.name }}</span>
+        @if (actions) {
+            <span class="sf-ro-acts">
+                @if (isFormulas(item); as formulas) {
+                    <button
+                        type="button"
+                        class="sf-ro-act sf-ro-fx"
+                        aria-label="Show formulas"
+                        pTooltip="Formulas"
+                        tooltipStyleClass="guardian-tooltip small-guardian-tooltip"
+                        (click)="showFormulas(formulas)"
+                    >
                         <svg-icon
-                                *ngIf="rule.status === 'Failure' || rule.status === 'Error'"
-                                src="/assets/images/icons/warning-2.svg"
-                                svgClass="icon-color-warning"></svg-icon>
-                        <svg-icon
-                                *ngIf="rule.status === 'Success'"
+                            src="/assets/images/icons/function.svg"
+                            svgClass="icon-color-primary"></svg-icon>
+                    </button>
+                }
+                @if (ruleOf(item); as rule) {
+                    @if (!rule.failed) {
+                        <span
+                            class="sf-ro-act sf-ro-ok"
+                            [pTooltip]="'Rule passed: ' + rule.text"
+                            tooltipStyleClass="guardian-tooltip small-guardian-tooltip"
+                        >
+                            <svg-icon
                                 src="/assets/images/icons/check.svg"
                                 svgClass="icon-color-success"></svg-icon>
-                    </div>
-                </div>
-            </div>
+                        </span>
+                    }
+                }
+                @if (isDiscussion(item)) {
+                    @let messageCount = isDiscussionCount(item);
+                    <button
+                        type="button"
+                        class="sf-ro-act sf-ro-cm"
+                        [class.zero]="!messageCount"
+                        aria-label="Comments"
+                        pTooltip="Comments"
+                        tooltipStyleClass="guardian-tooltip small-guardian-tooltip"
+                        (click)="openDiscussion(item)"
+                    >
+                        <svg-icon
+                            src="/assets/images/icons/chat.svg"
+                            svgClass="icon-color-primary"
+                        ></svg-icon>
+                        @if (messageCount) {
+                            <span class="icon-count">{{ messageCount }}</span>
+                        }
+                    </button>
+                }
+                @if (discussionAction) {
+                    <button
+                        type="button"
+                        class="sf-ro-act"
+                        aria-label="Link a message to this field"
+                        pTooltip="Link a message"
+                        tooltipStyleClass="guardian-tooltip small-guardian-tooltip"
+                        (click)="linkMessage(item)"
+                    >
+                        <svg-icon
+                            src="/assets/images/icons/hashtag.svg"
+                            svgClass="icon-color-primary"></svg-icon>
+                    </button>
+                }
+            </span>
+        }
+    </div>
+</ng-template>
 
-            <!-- array of simple fields -->
-            <div *ngIf="ifSimpleArray(item)" class="form-field-array">
-                <div class="label-field">{{item.description}}</div>
+<!-- A map -->
+<ng-template #mapOf let-item let-value="value">
+    @switch (item.customType) {
+        @case ('geo') {
+            <app-geojson-type [preset]="value" [disabled]="true"></app-geojson-type>
+        }
+        @case ('sentinel') {
+            <app-sentinel-hub-type [disabled]="true" [preset]="value"></app-sentinel-hub-type>
+        }
+    }
+</ng-template>
 
-                <div *ngIf="item.isInvalidType" class="invalid-type">
-                    <b>The field type does not match the field type in the schema</b>
-                </div>
+<div class="sf-ro-grid">
+    @for (item of fields; track item.name; let i = $index) {
+        @if (i < previewRenderLimit && ifFieldVisible(item)) {
 
+            <!-- sub-schema: a sub-heading, then its fields in the same grid -->
+            @if (ifSubSchema(item) && !isGeoSub(item)) {
                 <div
-                    *ngFor="let listItem of getItemsPage(item)"
-                    class="form-field-array-item-container"
-                    [attr.index]="item.list.indexOf(listItem)"
+                    class="form-field-container sf-ro-sub"
+                    [attr.field-id]="item.fullPath"
+                    [attr.accordiontabid]="item.fullPath"
                 >
-                    <div class="form-field-array-item">
-
-                        <div class="form-field-value">
-                            <div class="form-field-prefix" *ngIf="isPrefix(item)">{{item.unit}}</div>
-
-                            <div *ngIf="item.customType === 'table'" class="form-field-table">
-                                <table-viewer
-                                        [value]="listItem.value"
-                                        [title]="item.title || item.description || item.name"
-                                ></table-viewer>
-                            </div>
-
-                            <div *ngIf="isRichText(item)" class="form-field-input guardian-input-container">
-                                <div class="rte-view-content" [innerHTML]="getRichTextValue(listItem.value)" (click)="onRichTextLinkClick($event)"></div>
-                            </div>
-
-                            <div *ngIf="isInput(item) && !isIPFS(item)" class="form-field-input guardian-input-container">
-                                <app-readonly-textarea [value]="listItem.value" [autoResize]="true"></app-readonly-textarea>
-                            </div>
-
-                            <div *ngIf="isInput(item) && isIPFS(item)" class="form-field-ipfs guardian-input-container">
-                                <div class="form-field-url">
-                                    <input
-                                        pInputText
-                                        [value]="listItem.value"
-                                        [readonly]="true"
-                                        type="text"/>
-                                    <div class="form-field-url-buttons">
-                                        <button
-                                                [cdkCopyToClipboard]="listItem.value"
-                                            class="guardian-button guardian-button-primary">Copy Link</button>
-                                        <button
-                                                [cdkCopyToClipboard]="getCID(listItem.value)"
-                                            class="guardian-button guardian-button-secondary">Copy CID</button>
-                                    </div>
-                                </div>
-                                <div class="form-field-img">
-                                    <img *ngIf="!listItem.loading; else loading" class="ipfs-image" [src]="listItem.imgSrc" [alt]="listItem.value">
-                                    <ng-template #loading>
-                                        <div class="guardian-loading">
-                                            <div class="guardian-loading-image"></div>
-                                        </div>
-                                    </ng-template>
-                                </div>
-                            </div>
-
-                            <div *ngIf="isTime(item)" class="form-field-input guardian-input-container">
-                                <input [readonly]="true" [value]="listItem.value" class="p-field-input" pInputText>
-                            </div>
-
-                            <div *ngIf="isDateTime(item)" class="form-field-input guardian-input-container">
-                                <input [readonly]="true" [value]="listItem.value | date: 'medium'" class="p-field-input" pInputText>
-                            </div>
-
-                            <div *ngIf="isDate(item)" class="form-field-input guardian-input-container">
-                                <input [readonly]="true" [value]="listItem.value" class="p-field-input" pInputText>
-                            </div>
-
-                            <div *ngIf="isBoolean(item)" class="boolean-form-field">
-                                <span class="boolean-show">{{ isBooleanView(listItem.value) }}</span>
-                            </div>
-
-                            <div class="form-field-postfix" *ngIf="isPostfix(item)">{{item.unit}}</div>
-                        </div>
+                    <div class="sf-sub-head">
+                        <span>{{ item.description || item.title || item.name }}</span>
+                        @if (isEmptyField(item)) {
+                            <span class="sf-chip">Not added</span>
+                        }
                     </div>
+                    @if (showMetadata) {
+                        <ng-container *ngTemplateOutlet="meta; context: { $implicit: item }"></ng-container>
+                    }
+                    @if (!isEmptyField(item) && (!preview || item.previewReady)) {
+                        <app-schema-form-view
+                            [dryRun]="dryRun"
+                            [private-fields]="hide"
+                            [fields]="item.fields"
+                            [values]="values && values[item.name]"
+                            [rules]="rules"
+                            [formulas]="formulas"
+                            [link]="item.link"
+                            [accordionLink]="item.accordionLink"
+                            [preview]="preview"
+                            [pathPrefix]="pathPrefix + item.name + '.'"
+                            [inRecord]="inRecord"
+                            (previewLoadingChange)="preview && previewLoadingChange.emit($event)"
+                            [discussion]="discussionData"
+                            [discussion-view]="discussionView"
+                            [discussion-action]="discussionAction"
+                            (discussion-action)="onDiscussionAction($event)"
+                            (onAccordionSelect)="onAccordionSelectEvent($event.isOpen, item, $event.path)">
+                        </app-schema-form-view>
+                    }
                 </div>
-                <app-paginator
-                    *ngIf="item.pageSize < item.count"
-                    class="guardian-grid-paginator"
-                    [pageIndex]="item.pageIndex"
-                    [pageSize]="item.pageSize"
-                    [length]="item.count"
-                    (page)="onPage(item, $event)"
-                ></app-paginator>
-            </div>
+            } @else {
+                <div
+                    class="form-field-container sf-ro-cell"
+                    [class.sf-full]="isFullRow(item) || isLoneField(i)"
+                    [attr.field-id]="item.fullPath"
+                    [attr.rules-status]="isRulesStatus(item)"
+                >
+                    <ng-container *ngTemplateOutlet="labelRow; context: { $implicit: item, actions: ifSimpleField(item) }"></ng-container>
+                    @if (showMetadata) {
+                        <ng-container *ngTemplateOutlet="meta; context: { $implicit: item }"></ng-container>
+                    }
 
-            <div *ngIf="ifSubSchema(item)" class="form-field-group">
-                <p-accordion class="guardian-accordion" [value]="item.open ? 0 : null" (valueChange)="item.open = ($event === 0); preview && preparePreviewSection(item); emitAccordionSelect(item.open, item)">
-                    <p-accordion-panel [value]="0">
-                        <p-accordion-header>
-                            <div class="label-field-accordion" [attr.accordiontabid]="item.fullPath">{{item.description}}</div>
-                        </p-accordion-header>
-                        <p-accordion-content>
-                        <ng-container *ngIf="item.open && (!preview || item.previewReady)">
-                            <div *ngIf="this.values && this.values[item.name]" class="form-field-array-item">
-                                <div class="form-field-group">
-                                    <ng-container [ngSwitch]="item.customType">
-                                        <app-geojson-type
-                                            *ngSwitchCase="'geo'"
-                                            [preset]="this.values && this.values[item.name]"
-                                            [disabled]="true">
-                                        </app-geojson-type>
-                                        <app-sentinel-hub-type
-                                            *ngSwitchCase="'sentinel'"
-                                            [disabled]="true"
-                                            [preset]="this.values && this.values[item.name]">
-                                        </app-sentinel-hub-type>
-                                        <app-schema-form-view
-                                            *ngSwitchDefault
-                                            [dryRun]="dryRun"
-                                            [private-fields]="hide"
-                                            [delimiter-hide]="true"
-                                            [fields]="item.fields"
-                                            [values]="this.values && this.values[item.name]"
-                                            [rules]="rules"
-                                            [formulas]="formulas"
-                                            [link]="item.link"
-                                            [accordionLink]="item.accordionLink"
-                                            [preview]="preview"
-                                            (previewLoadingChange)="preview && previewLoadingChange.emit($event)"
-                                            [discussion]="discussionData"
-                                            [discussion-view]="discussionView"
-                                            [discussion-action]="discussionAction"
-                                            (discussion-action)="onDiscussionAction($event)"
-                                            (onAccordionSelect)="onAccordionSelectEvent($event.isOpen, item, $event.path)">
-                                        </app-schema-form-view>
-                                    </ng-container>
+                    <div class="sf-ro-value">
+                        <!-- simple field -->
+                        @if (ifSimpleField(item)) {
+                            <ng-container *ngTemplateOutlet="scalar; context: { $implicit: item, entry: item, key: item.fullPath }"></ng-container>
+                        }
+
+                        <!-- map -->
+                        @if (ifSubSchema(item)) {
+                            @if (isEmptyField(item)) {
+                                <span class="sf-empty">Not provided</span>
+                            } @else {
+                                <ng-container *ngTemplateOutlet="mapOf; context: { $implicit: item, value: values && values[item.name] }"></ng-container>
+                            }
+                        }
+
+                        <!-- array of simple fields -->
+                        @if (ifSimpleArray(item)) {
+                            @if (item.isInvalidType) {
+                                <div class="sf-ro-warn">
+                                    Value doesn't match the schema type (expected a list). Shown as stored:
                                 </div>
-                            </div>
-                        </ng-container>
-                        </p-accordion-content>
-</p-accordion-panel>
-                </p-accordion>
-            </div>
+                                <code class="sf-ro-raw">{{ rawValue(item) }}</code>
+                            } @else if (isEmptyField(item)) {
+                                <span class="sf-empty">Not provided</span>
+                            } @else {
+                                @if (isChipList(item)) {
+                                    <div class="sf-ro-chips">
+                                        @for (listItem of getItemsPage(item); track $index; let li = $index) {
+                                            <span class="sf-ro-chip" [attr.index]="rowIndex(item, li)">
+                                                <ng-container *ngTemplateOutlet="scalar; context: { $implicit: item, entry: listItem, key: item.fullPath + '#' + rowIndex(item, li) }"></ng-container>
+                                            </span>
+                                        }
+                                    </div>
+                                } @else {
+                                    <ul class="sf-ro-list" [class.sf-ro-plain]="isIPFS(item)">
+                                        @for (listItem of getItemsPage(item); track $index; let li = $index) {
+                                            <li [attr.index]="rowIndex(item, li)">
+                                                <ng-container *ngTemplateOutlet="scalar; context: { $implicit: item, entry: listItem, key: item.fullPath + '#' + rowIndex(item, li) }"></ng-container>
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+                                @if (item.pageSize < item.count) {
+                                    <app-paginator
+                                        class="guardian-grid-paginator"
+                                        [pageIndex]="item.pageIndex"
+                                        [pageSize]="item.pageSize"
+                                        [length]="item.count"
+                                        (page)="onPage(item, $event)"
+                                    ></app-paginator>
+                                }
+                            }
+                        }
 
-            <!-- array of objects as table -->
-            <div *ngIf="canDrawTable(item)">
-                <p-table
-                    [value]="getTableHRowFields(item) || []"
-                    [paginator]="preview && item.list.length > 25"
-                    [rows]="preview ? 25 : undefined">
-                    <ng-template pTemplate="header">
-                        <tr [attr.accordiontabid]="item.fullPath">
-                            <th style="width: 3rem">#</th>
-                            <th
-                                *ngFor="let col of getTableHeaderFields(item)"
-                                class="table-header"
-                            >
-                                {{ col.description }}
-                            </th>
-                        </tr>
-                    </ng-template>
-                    <ng-template pTemplate="body" let-rowData let-rowIndex="rowIndex">
-                        <tr>
-                            <td>
-                                <div class="form-field-value">{{ rowIndex + 1 }}</div>
-                            </td>
-                            <td *ngFor="let field of rowData">
-                                <div [attr.accordiontabid]="field.fullPath">
-                                    <div *ngIf="ifSimpleField(field)" class="form-field-value">
-                                        <div *ngIf="isPrefix(field)" class="form-field-prefix">
-                                            {{ field.unit }}
-                                        </div>
-
-                                        <div *ngIf="isInput(field) && !isIPFS(field)" class="form-field-input guardian-input-container">
-                                            <app-readonly-textarea [value]="field.value ?? ''" [resizeNone]="true"></app-readonly-textarea>
-                                        </div>
-
-                                        <div
-                                            *ngIf="isRichText(field)"
-                                            class="rich-text-table-card"
-                                            (mouseenter)="onRichTextCellEnter($event, field, richTextPopover)"
-                                            (mouseleave)="onRichTextCellLeave(richTextPopover)"
-                                        >
-                                            <div
-                                                *ngIf="field.value; else richTextCellEmpty"
-                                                class="rich-text-table-preview"
-                                                appRichTextClip
-                                                [innerHTML]="getRichTextValue(field.value)"
-                                            ></div>
-                                            <ng-template #richTextCellEmpty>
-                                                <span class="rich-text-table-empty">No text</span>
-                                            </ng-template>
+                        <!-- array of sub-schemas: record cards -->
+                        @if (ifSubSchemaArray(item)) {
+                            @if (isEmptyField(item)) {
+                                <span class="sf-empty">Not provided</span>
+                            } @else {
+                                <div class="sf-ro-recbar">
+                                    <span class="sf-ro-muted">{{ item.count }} {{ item.count === 1 ? 'item' : 'items' }}</span>
+                                    <span class="sf-ro-recbar-actions">
+                                        <button type="button" class="sf-link" (click)="expandAll(item)">Expand all</button>
+                                        <button type="button" class="sf-link" [disabled]="!hasOpenRows(item)" (click)="collapseAll(item)">Collapse all</button>
+                                    </span>
+                                </div>
+                                @for (row of getItemsPage(item); track row; let ri = $index) {
+                                    @let idx = rowIndex(item, ri);
+                                    @let summary = rowSummary(item, row, idx);
+                                    <div
+                                        class="sf-record"
+                                        [class.sf-record-open]="isRowOpen(item, idx)"
+                                        [attr.index]="idx"
+                                    >
+                                        <div class="sf-record-head">
                                             <button
-                                                *ngIf="field.value"
                                                 type="button"
-                                                class="rich-text-table-view"
-                                                [title]="'View ' + field.description"
-                                                [attr.aria-label]="'View ' + field.description"
-                                                (click)="openRichTextDialog(field, richTextPopover)"
-                                            ><i class="pi pi-eye"></i></button>
-                                        </div>
-
-                                        <div *ngIf="isInput(field) && isIPFS(field)" class="form-field-ipfs guardian-input-container">
-                                            <div class="form-field-url">
-                                                <input
-                                                    class="p-inputtext"
-                                                    [value]="field.value"
-                                                    [readonly]="true"
-                                                    type="text"/>
-                                                <div class="form-field-url-buttons">
-                                                    <button
-                                                        [cdkCopyToClipboard]="field.value"
-                                                        class="guardian-button guardian-button-primary"
-                                                    >
-                                                        Copy Link
-                                                    </button>
-                                                    <button
-                                                        [cdkCopyToClipboard]="getCID(field.value)"
-                                                        class="guardian-button guardian-button-secondary"
-                                                    >
-                                                        Copy CID
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                            <div *ngIf="field?.customType !== 'file'" class="form-field-img">
-                                                <img *ngIf="!field.loading; else loading" class="ipfs-image" [src]="field.imgSrc" [alt]="field.value">
-                                                <ng-template #loading>
-                                                    <div class="guardian-loading">
-                                                        <div class="guardian-loading-image"></div>
-                                                    </div>
-                                                </ng-template>
-                                            </div>
-                                        </div>
-
-                                        <div *ngIf="isTime(field)" class="form-field-input guardian-input-container">
-                                            <input [readonly]="true" [value]="field.value" class="p-field-input" class="p-inputtext">
-                                        </div>
-
-                                        <div *ngIf="isDateTime(field)" class="form-field-input guardian-input-container">
-                                            <input [readonly]="true" [value]="field.value | date: 'medium'" class="p-field-input" class="p-inputtext">
-                                        </div>
-
-                                        <div *ngIf="isDate(field)" class="form-field-input guardian-input-container">
-                                            <input [readonly]="true" [value]="field.value" class="p-field-input" class="p-inputtext">
-                                        </div>
-
-                                        <div *ngIf="isBoolean(field)" class="form-field-boolean">
-                                            <span class="boolean-show">{{ isBooleanView(field.value) }}</span>
-                                        </div>
-
-                                        <div class="form-field-postfix" *ngIf="isPostfix(field)">{{field.unit}}</div>
-                                        <ng-container *ngIf="isDiscussion(field)">
-                                            <div
-                                                *ngIf="isDiscussionCount(field) as messageCount; else elseDiscussion"
-                                                class="form-field-discussion">
-                                                <button
-                                                    class="guardian-icon-button"
-                                                    (click)="openDiscussion(field)">
-                                                    <svg-icon
-                                                        src="/assets/images/icons/chat.svg"
-                                                        svgClass="icon-color-grey-color-3"
-                                                    ></svg-icon>
-                                                </button>
-                                                <div class="icon-count">{{messageCount}}</div>
-                                            </div>
-                                            <ng-template #elseDiscussion>
-                                                <div class="form-field-discussion">
-                                                    <button
-                                                        class="guardian-icon-button"
-                                                        (click)="openDiscussion(field)">
-                                                        <svg-icon
-                                                            src="/assets/images/icons/chat.svg"
-                                                            svgClass="icon-color-grey-color-3"
-                                                        ></svg-icon>
-                                                    </button>
-                                                </div>
-                                            </ng-template>
-                                        </ng-container>
-
-                                        <div
-                                            *ngIf="discussionAction"
-                                            class="form-field-discussion discussion-action">
-                                            <button
-                                                class="guardian-icon-button"
-                                                (click)="linkMessage(field)">
-                                                <svg-icon
-                                                    src="/assets/images/icons/hashtag.svg"
-                                                    svgClass="icon-color-primary"></svg-icon>
+                                                class="sf-record-toggle"
+                                                [attr.aria-expanded]="isRowOpen(item, idx)"
+                                                (click)="toggleRow(item, idx)"
+                                            >
+                                                <i class="pi pi-chevron-right sf-chev" aria-hidden="true"></i>
+                                                <span class="sf-record-ix">{{ idx + 1 }}</span>
+                                                <span class="sf-record-text">
+                                                    <b>{{ summary.title }}</b>
+                                                    @if (summary.sub) {
+                                                        <small>{{ summary.sub }}</small>
+                                                    }
+                                                </span>
                                             </button>
                                         </div>
+                                        @if (isRowOpen(item, idx)) {
+                                            <div class="sf-record-body">
+                                                @if (isGeoSub(item)) {
+                                                    <ng-container *ngTemplateOutlet="mapOf; context: { $implicit: item, value: row }"></ng-container>
+                                                } @else {
+                                                    <app-schema-form-view
+                                                        [dryRun]="dryRun"
+                                                        [private-fields]="hide"
+                                                        [fields]="item.fields"
+                                                        [values]="row"
+                                                        [rules]="rules"
+                                                        [formulas]="formulas"
+                                                        [link]="item.link"
+                                                        [accordionLink]="item.accordionLink"
+                                                        [preview]="preview"
+                                                        [pathPrefix]="rowPath(item, idx)"
+                                                        [conditions]="item.conditions"
+                                                        [inRecord]="true"
+                                                        (previewLoadingChange)="preview && previewLoadingChange.emit($event)"
+                                                        [discussion]="discussionData"
+                                                        [discussion-view]="discussionView"
+                                                        [discussion-action]="discussionAction"
+                                                        (discussion-action)="onDiscussionAction($event)"
+                                                        (onAccordionSelect)="onAccordionSelectEvent($event.isOpen, item, $event.path)">
+                                                    </app-schema-form-view>
+                                                }
+                                            </div>
+                                        }
                                     </div>
-                                </div>
-                            </td>
-                        </tr>
-                    </ng-template>
-                </p-table>
-            </div>
+                                }
+                                @if (item.pageSize < item.count) {
+                                    <app-paginator
+                                        class="guardian-grid-paginator"
+                                        [pageIndex]="item.pageIndex"
+                                        [pageSize]="item.pageSize"
+                                        [length]="item.count"
+                                        (page)="onPage(item, $event)"
+                                    ></app-paginator>
+                                }
+                            }
+                        }
+                    </div>
 
-            <div *ngIf="ifSubSchemaArray(item) && !canDrawTable(item)" class="form-field-group schema-form-field-array-group">
-                <p-accordion class="guardian-accordion" [value]="item.open ? 0 : null" (valueChange)="item.open = ($event === 0); preview && preparePreviewSection(item); emitAccordionSelect(item.open, item)">
-                    <p-accordion-panel [value]="0">
-                        <p-accordion-header>
-                            <div class="label-field-accordion" [attr.accordiontabid]="item.fullPath">{{item.description}}</div>
-                        </p-accordion-header>
-                        <p-accordion-content>
-                        <ng-container *ngIf="item.open && (!preview || item.previewReady)">
-                            <div
-                                *ngFor="let listItem of getItemsPage(item)"
-                                class="form-field-array-item short-delimiter"
-                                [attr.index]="item.list.indexOf(listItem)"
-                            >
-                                <div class="form-field-group">
-                                    <ng-container [ngSwitch]="item.customType">
-                                        <app-geojson-type
-                                            *ngSwitchCase="'geo'"
-                                            [preset]="listItem"
-                                            [disabled]="true">
-                                        </app-geojson-type>
-                                        <app-sentinel-hub-type
-                                            *ngSwitchCase="'sentinel'"
-                                            [disabled]="true"
-                                            [preset]="listItem">
-                                        </app-sentinel-hub-type>
-                                        <app-schema-form-view
-                                            *ngSwitchDefault
-                                            [delimiter-hide]="true"
-                                            [private-fields]="hide"
-                                            [dryRun]="dryRun"
-                                            [fields]="item.fields"
-                                            [values]="listItem"
-                                            [rules]="rules"
-                                            [formulas]="formulas"
-                                            [link]="item.link"
-                                            [accordionLink]="item.accordionLink"
-                                            [preview]="preview"
-                                            (previewLoadingChange)="preview && previewLoadingChange.emit($event)"
-                                            [discussion]="discussionData"
-                                            [discussion-view]="discussionView"
-                                            [discussion-action]="discussionAction"
-                                            (discussion-action)="onDiscussionAction($event)"
-                                            (onAccordionSelect)="onAccordionSelectEvent($event.isOpen, item, $event.path)"
-                                        >
-                                        </app-schema-form-view>
-                                    </ng-container>
-                                </div>
-                                <!-- <div class="short-delimiter-container">
-                                    <div class="delimiter"></div>
-                                </div> -->
+                    @if (ifSimpleField(item) && ruleOf(item); as rule) {
+                        @if (rule.failed) {
+                            <div class="sf-ro-rule">
+                                <svg-icon
+                                    src="/assets/images/icons/warning-2.svg"
+                                    svgClass="icon-color-warning"></svg-icon>
+                                <span>Rule failed: {{ rule.text }}</span>
                             </div>
-                            <app-paginator
-                                *ngIf="item.pageSize < item.count"
-                                class="guardian-grid-paginator"
-                                [pageIndex]="item.pageIndex"
-                                [pageSize]="item.pageSize"
-                                [length]="item.count"
-                                (page)="onPage(item, $event)"
-                            ></app-paginator>
-                        </ng-container>
-                        </p-accordion-content>
-</p-accordion-panel>
-                </p-accordion>
-            </div>
-
-        </div>
-
-        <div *ngIf="!delimiterHide" class="delimiter"></div>
-
-    </ng-container></ng-container>
-</form>
+                        }
+                    }
+                </div>
+            }
+        }
+    }
+</div>
 
 <p-popover #richTextPopover styleClass="rich-text-view-popover">
     <div
@@ -526,6 +404,7 @@
     [draggable]="false"
     [resizable]="false"
     [style]="{ width: 'min(760px, 95vw)' }"
+    appendTo="body"
     styleClass="schema-form-view-rich-text-dialog"
     (onHide)="closeRichTextDialog()"
 >

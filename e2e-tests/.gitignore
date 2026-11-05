@@ -15,3 +15,6 @@ cypress/fixtures/testJsonDRCid
 .solo/
 .certs/
 .local/
+
+# downloaded artifacts produced by UI tests (e.g. "save logs")
+cypress/downloads/

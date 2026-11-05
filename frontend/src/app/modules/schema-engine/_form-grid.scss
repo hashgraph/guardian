@@ -1,0 +1,260 @@
+// Shared by the edit form (schema-form) and the read-only view (schema-form-view),
+// so a field looks the same in both.
+
+@mixin sf-field-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, max(280px, calc((100% - 54px) / 4))), 1fr));
+    gap: 14px 18px;
+    align-items: start;
+}
+
+@mixin sf-full-row {
+    grid-column: 1 / -1;
+}
+
+@mixin sf-label {
+    display: block;
+    margin-bottom: 6px;
+    font-family: Inter;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--guardian-font-color);
+    text-align: left;
+    width: 100%;
+
+    .sf-chip {
+        margin-left: 6px;
+        vertical-align: 1px;
+    }
+
+    .sf-req {
+        margin-left: 4px;
+    }
+
+    &.sf-help-text {
+        margin-bottom: 0;
+        padding: 4px 0 4px 12px;
+        border-left: 3px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
+        font-weight: 400;
+    }
+}
+
+@mixin sf-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--color-grey-5);
+    background: var(--color-grey-2);
+    white-space: nowrap;
+
+    &.sf-chip-default {
+        color: var(--guardian-warning-color);
+        background: var(--guardian-warning-background);
+    }
+
+    &.sf-chip-ok {
+        color: var(--guardian-success-color);
+        background: var(--guardian-success-background);
+    }
+
+    &.sf-chip-err {
+        color: var(--guardian-failure-color);
+        background: var(--guardian-failure-background);
+    }
+}
+
+@mixin sf-record {
+    border: 1px solid var(--guardian-border-color);
+    border-radius: 10px;
+    background: var(--guardian-background);
+
+    &.sf-record-bad {
+        border-color: color-mix(in srgb, var(--guardian-failure-color) 45%, transparent);
+    }
+
+    .sf-record-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 8px 8px 12px;
+    }
+
+    .sf-record-ix {
+        flex: none;
+        display: grid;
+        place-items: center;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--guardian-primary-background);
+        color: var(--color-primary);
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .sf-record-text {
+        flex: 1;
+        min-width: 0;
+
+        b,
+        small {
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        b {
+            font-size: 13.5px;
+            font-weight: 600;
+        }
+
+        small {
+            font-size: 12px;
+            color: var(--color-grey-5);
+        }
+    }
+
+    .sf-record-head .sf-link {
+        height: 30px;
+        padding: 0 10px;
+        border-radius: 7px;
+        font-size: 12.5px;
+        color: var(--color-grey-5);
+
+        &:hover {
+            background: var(--color-grey-2);
+            color: var(--guardian-font-color);
+            text-decoration: none;
+        }
+    }
+
+    .sf-chip-err {
+        padding: 2px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .sf-remove ::ng-deep .icon-color-delete {
+        fill: var(--color-grey-5);
+    }
+
+    .sf-record-body {
+        min-width: 0;
+        max-width: 100%;
+        overflow-x: auto;
+        padding: 14px 16px 16px;
+        border-top: 1px solid var(--guardian-border-color);
+    }
+}
+
+// A sub-schema inside a grid: a dashed rule, a title row and the nested grid underneath.
+@mixin sf-sub-heading {
+    grid-column: 1 / -1;
+    min-width: 0;
+    margin-top: 2px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--guardian-border-color);
+
+    > .sf-sub-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+        font-family: Inter;
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 18px;
+        color: var(--guardian-font-color);
+    }
+}
+
+// The field metadata strip: key, type, path and tags.
+@mixin sf-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 6px;
+    margin: -2px 0 6px;
+    font-family: Inter;
+    font-size: 11.5px;
+    line-height: 18px;
+    color: var(--color-grey-5);
+
+    code {
+        padding: 0 5px;
+        border: 1px solid var(--guardian-border-color);
+        border-radius: 4px;
+        background: var(--color-grey-2);
+        font-family: ui-monospace, Menlo, monospace;
+        font-size: 11px;
+        color: var(--color-grey-6);
+    }
+
+    .sf-chip {
+        color: var(--color-grey-6);
+    }
+
+    .sf-meta-path {
+        word-break: break-all;
+    }
+}
+
+// Read-only cell: a label row, then the value.
+@mixin sf-ro-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 22px;
+    margin-bottom: 3px;
+    font-family: Inter;
+    font-size: 12.5px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--color-grey-5);
+
+    .sf-ro-lt {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+}
+
+@mixin sf-ro-value {
+    min-width: 0;
+    font-family: Inter;
+    font-size: 13.5px;
+    font-weight: 400;
+    line-height: 20px;
+    color: var(--guardian-font-color);
+    word-break: break-word;
+}
+
+@mixin sf-link {
+    flex: none;
+    border: 0;
+    background: transparent;
+    padding: 0 2px;
+    font-family: Inter;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--color-primary);
+    cursor: pointer;
+    text-decoration: none;
+
+    &:hover,
+    &:focus-visible {
+        text-decoration: underline;
+    }
+
+    &:disabled {
+        color: var(--color-grey-4);
+        cursor: default;
+        text-decoration: none;
+    }
+}

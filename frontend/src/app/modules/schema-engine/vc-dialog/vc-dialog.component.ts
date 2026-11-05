@@ -6,6 +6,7 @@ import { forkJoin } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { SchemaFormPreferencesService } from 'src/app/services/schema-form-preferences.service';
 import { ViewerDialog } from '../../policy-engine/dialogs/viewer-dialog/viewer-dialog.component';
 
 /**
@@ -71,6 +72,7 @@ export class VCViewerDialog {
         private router: Router,
         private ref: ChangeDetectorRef,
         private policyEngineService: PolicyEngineService,
+        public formPreferences: SchemaFormPreferencesService,
     ) {
     }
 

@@ -10,11 +10,14 @@ const userManagementPage = new UserManagementPage();
 import { UserPoliciesPage } from '../../pages/userPoliciesPage';
 const userPoliciesPage = new UserPoliciesPage();
 
+import { randomInt } from '../../../../support/random';
+
 context('Workflow iREC 3 Policy', { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const userUsername = Cypress.env('User');
-    const name = 'test_Field_Validation';
+    // one run name for the whole context run: both tests drive the same policy
+    const runName = randomInt(1000000000) + 'testName';
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
@@ -25,18 +28,17 @@ context('Workflow iREC 3 Policy', { tags: ['ui'] }, () => {
         homePage.login(SRUsername);
         policiesPage.openPoliciesTab();
         policiesPage.importPolicyFromFile('test_Field_Validation.policy');  //iRec3
+        policiesPage.renameImportedPolicy(runName);
+        policiesPage.publishPolicy(runName);
         policiesPage.backToPoliciesList();
-        policiesPage.checkStatus(name, 'Draft');
-        policiesPage.publishPolicy(name);
-        policiesPage.backToPoliciesList();
-        policiesPage.checkStatus(name, 'Published');
+        policiesPage.checkStatus(runName, 'Published');
         userManagementPage.openUserManagementTab();
-        userManagementPage.assignPolicyToUser(userUsername, name);
+        userManagementPage.assignPolicyToUser(userUsername, runName);
         homePage.logOut();
 
         homePage.login(userUsername);
         userPoliciesPage.openPoliciesTab();
-        userPoliciesPage.openPolicy(name);
+        userPoliciesPage.openPolicy(runName);
         userPoliciesPage.registerInPolicySmall('Registrant');
         userPoliciesPage.typeBadIPFS('ipfs://68baf2dbd3a44224b0bab19f');
         userPoliciesPage.validateListOfGeoJSONTypes();
@@ -45,7 +47,7 @@ context('Workflow iREC 3 Policy', { tags: ['ui'] }, () => {
     it('Check geoJSON file input', () => {
         homePage.login(userUsername);
         userPoliciesPage.openPoliciesTab();
-        userPoliciesPage.openPolicy(name);
+        userPoliciesPage.openPolicy(runName);
         userPoliciesPage.validateGeoJSONFileImport('geoJSON.kml');
         userPoliciesPage.validateGeoJSONLargeFileImport('largeGeoJSON.kml');
 

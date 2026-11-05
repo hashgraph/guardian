@@ -1,3 +1,4 @@
+import { randomInt } from '../../../../support/random';
 import { HomePage } from '../../pages/homePage';
 const homepage = new HomePage();
 
@@ -10,7 +11,9 @@ const policiesPage = new PoliciesPage();
 context('Artifacts', { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
-    const name = 'aPolicyForTests';
+    // A per-run policy keeps the artifacts table isolated, so re-runs are clean
+    // even if rows left behind by earlier runs still exist.
+    const runName = randomInt(1000000000) + 'testName';
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
@@ -22,17 +25,24 @@ context('Artifacts', { tags: ['ui'] }, () => {
     it('Verify if it possible to Import artifacts from file', () => {
         policiesPage.openPoliciesTab();
         policiesPage.createPolicy();
-        policiesPage.fillNewPolicyForm(name);
+        policiesPage.fillNewPolicyForm(runName);
         policiesPage.backToPoliciesList();
-        policiesPage.checkStatus(name, 'Draft');
+        policiesPage.checkStatus(runName, 'Draft');
         artifactsPage.openArtifactsTab();
-        artifactsPage.uploadFile('artifactsImport.policy');
-        artifactsPage.checkArtifactsTableContains('artifactsImport');
+        artifactsPage.importArtifactFrom(runName, 'artifactsImport.policy');
+        artifactsPage.filterByPolicy(runName);
+        artifactsPage.checkRowExists(runName, 'artifactsImport');
     });
 
     it('Verify if it possible to delete Imported artifact', () => {
-        artifactsPage.deleteArtifact('artifactsImport');
-        artifactsPage.checkArtifactsTableIsNotContains('artifactsImport');
+        artifactsPage.importArtifactFrom(runName, 'artifactsImport.policy');
+        artifactsPage.filterByPolicy(runName);
+        artifactsPage.deleteAllRowsForPolicy(runName);
+        artifactsPage.assertEmpty();
     });
 
+    after(() => {
+        policiesPage.openPoliciesTab();
+        policiesPage.deletePolicy(runName);
+    });
 });

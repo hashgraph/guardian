@@ -95,7 +95,18 @@
         .option-buttons {
             height: 40px;
             display: flex;
+            align-items: center;
             gap: 8px;
+
+            .field-metadata-toggle {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                margin-right: 8px;
+                white-space: nowrap;
+                font-size: 13px;
+                cursor: pointer;
+            }
         }
     }
 

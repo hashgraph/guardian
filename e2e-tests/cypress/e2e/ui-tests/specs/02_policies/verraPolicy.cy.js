@@ -1,24 +1,7 @@
 import { HomePage } from '../../pages/homePage';
 const homePage = new HomePage();
 
-import { PoliciesPage } from '../../pages/policiesPage';
-const policiesPage = new PoliciesPage();
-
-import { UserManagementPage } from '../../pages/userManagementPage';
-const userManagementPage = new UserManagementPage();
-
-import { UserPoliciesPage } from '../../pages/userPoliciesPage';
-const userPoliciesPage = new UserPoliciesPage();
-
-import { TokensPage } from '../../pages/tokensPage';
-const tokensPage = new TokensPage();
-
 context('Workflow Verra Policy', { tags: ['ui'] }, () => {
-
-    const SRUsername = Cypress.env('SRUser');
-    const userUsername = Cypress.env('User');
-    const user2Username = Cypress.env('User2');
-    const name = 'Verra VM0003';
 
     beforeEach(() => {
         cy.viewport(1920, 1080);

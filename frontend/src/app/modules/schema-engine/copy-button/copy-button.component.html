@@ -1,0 +1,15 @@
+<button
+    type="button"
+    class="sf-copy"
+    [class.copied]="copied"
+    [attr.aria-label]="tip"
+    [pTooltip]="copied ? 'Copied' : tip"
+    tooltipStyleClass="guardian-tooltip small-guardian-tooltip"
+    (click)="copy($event)"
+>
+    @if (!label || copied) {
+        <i class="pi" [ngClass]="copied ? 'pi-check' : 'pi-copy'" aria-hidden="true"></i>
+    } @else {
+        <span>{{ label }}</span>
+    }
+</button>

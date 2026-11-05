@@ -55,13 +55,15 @@ export class DocumentViewComponent implements OnInit {
     public previewReady: boolean = false;
     private previewFrame: number | null = null;
     private previewRenderTimer: ReturnType<typeof setTimeout> | null = null;
-    public isIssuerObject: boolean = false;
-    public issuerOptions: any[] = [];
     public subjects: any[] = [];
     public proofJson!: string;
     public evidenceJson!: string;
     public evidenceEntries: { dataType: string; data: string }[] = [];
     public hasStructuredEvidence: boolean = false;
+    public showProof: boolean = false;
+    public proofType: string = '';
+    public issuerId: string = '';
+    public issuerLine: string = '';
     public pageIndex: number = 0;
     public pageSize: number = 5;
     public schemaMap: { [x: string]: Schema | null } = {};
@@ -97,18 +99,18 @@ export class DocumentViewComponent implements OnInit {
             this.previewLoadingChange.emit(true);
         }
 
-        this.issuerOptions = [];
         this.proofJson = this.document.proof ? JSON.stringify(this.document.proof, null, 4) : '';
         this.evidenceJson = this.document.evidence ? JSON.stringify(this.document.evidence, null, 4) : '';
         this.parseEvidenceEntries();
-        this.isIssuerObject = typeof this.document.issuer === 'object';
-        if (this.isIssuerObject) {
-            for (const key in this.document.issuer) {
-                if (key !== 'id') {
-                    this.issuerOptions.push([key, this.document.issuer[key]]);
-                }
-            }
-        }
+        const proof = Array.isArray(this.document.proof) ? this.document.proof[0] : this.document.proof;
+        this.proofType = typeof proof?.type === 'string' ? proof.type : '';
+        const issuer = this.document.issuer;
+        const issuerIsObject = !!issuer && typeof issuer === 'object';
+        const issuerOptions = issuerIsObject
+            ? Object.keys(issuer).filter((key) => key !== 'id').map((key) => `${key}: ${issuer[key]}`)
+            : [];
+        this.issuerId = issuerIsObject ? (issuer.id || '') : (issuer || '');
+        this.issuerLine = issuerOptions.join(' · ');
         if (this.type === 'VC') {
             if (Array.isArray(this.document.credentialSubject)) {
                 for (const s of this.document.credentialSubject) {
