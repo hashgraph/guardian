@@ -1,5 +1,6 @@
 import URL from '../../../support/GuardianUrls';
 import * as Checks from '../../../support/checkingMethods';
+import { addTag, deleteTag } from '../../../support/tagsExplorer';
 
 const L = {
     // Actions bar
@@ -19,24 +20,13 @@ const L = {
     idCell: 'td.contract-column',
     descCell: 'td.description-column',
     tagsCell: 'td.tags-column',
+    tagsExplorer: 'tags-explorer',
     permissionsCell: 'td.permissions-column',
     operationsCell: 'td.operations-column',
     operationsMenu: 'select-menu-button .select-menu',
     operationsItem: '.select-menu-item',
     operationsItemTitle: '.select-menu-item-title',
 
-    // Tags
-    tagsExplorer: 'tags-explorer',
-    tagCreateButton: 'button:contains("Create a Tag")',
-    tagChip: 'tags-explorer .main-tag',
-    tagDialog: 'tags-explorer-dialog',
-    tagChipInDialog: 'tags-explorer-dialog div.name',
-    tagDetailDelete: 'tags-explorer-dialog .details-container svg-icon[src*="delete"]',
-    tagDeleteButton: 'button',
-    tagCreateDialog: 'tags-create-dialog',
-    tagNameInput: 'tags-create-dialog input[formcontrolname="name"]',
-    tagDescInput: 'tags-create-dialog input[formcontrolname="description"]',
-    tagCreateDialogButton: 'tags-create-dialog button',
 };
 
 const hasDescription = (row, name) => row.querySelector(L.descCell)?.textContent.trim() === name;
@@ -104,40 +94,11 @@ export class ContractsPage {
     }
 
     addTag(contractName, tagName) {
-        this._row(contractName).find(L.tagsExplorer).find(L.tagCreateButton, { timeout: 15000 }).click();
-        cy.get(L.tagCreateDialog, { timeout: 15000 }).should('be.visible');
-        // Create is enabled once the dialog has finished loading; typing earlier is lost on its re-render.
-        cy.contains(L.tagCreateDialogButton, 'Create').should('be.enabled');
-        cy.get(L.tagDescInput).clear();
-        cy.get(L.tagDescInput).type(tagName);
-        cy.get(L.tagNameInput).clear();
-        cy.get(L.tagNameInput).type(tagName);
-        cy.get(L.tagNameInput).should('have.value', tagName);
-        // pButton binds [label], which leaves no attribute in the DOM: find the button by its text.
-        cy.contains(L.tagCreateDialogButton, 'Create').click();
-        cy.get(L.tagCreateDialog).should('not.exist');
-        Checks.waitForLoading();
-        this._row(contractName).find(L.tagChip, { timeout: 30000 }).should('contain.text', tagName);
+        addTag(() => this._row(contractName), tagName);
     }
 
     deleteTag(contractName, tagName) {
-        this._row(contractName).find(L.tagChip).contains(tagName).click();
-        cy.get(L.tagDialog, { timeout: 15000 }).should('be.visible');
-        cy.get(L.tagChipInDialog).contains(tagName).click();
-        cy.get(L.tagDetailDelete, { timeout: 15000 }).first().click();
-        cy.get('body').then((body) => {
-            const confirm = body.find(L.tagDeleteButton).filter((_, button) => button.textContent.trim() === 'Delete');
-            if (confirm.length) {
-                cy.wrap(confirm.first()).click();
-            }
-        });
-        Checks.waitForLoading();
-        cy.get(L.tagDialog).should(($dialog) => {
-            const remaining = $dialog.find(L.tagChipInDialog).filter((_, chip) => chip.textContent.includes(tagName));
-            expect(remaining.length).to.eq(0);
-        });
-        cy.get('body').type('{esc}');
-        cy.get(L.tagDialog).should('not.exist');
+        deleteTag(() => this._row(contractName), tagName);
     }
 
     removeContract(name) {

@@ -2,6 +2,7 @@ import URL from '../../../support/GuardianUrls';
 import * as Checks from '../../../support/checkingMethods';
 import CommonElements from '../../../support/defaultUIElements';
 import { dropFile } from '../../../support/importFlow';
+import { addTag, deleteTag } from '../../../support/tagsExplorer';
 
 // The modules list (PrimeNG table, newest modules first, so a module created by a run is on page 1).
 const List = {
@@ -23,11 +24,6 @@ const List = {
     exportMessageIdButton: 'button:contains("Copy message identifier")',
     tagsExplorer: 'tags-explorer',
     tagCreateButton: 'button:contains("Create a Tag")',
-    tagChip: 'tags-explorer .main-tag',
-    tagCreateDialog: 'tags-create-dialog',
-    tagDialog: 'tags-explorer-dialog',
-    tagChipInDialog: 'tags-explorer-dialog div.name',
-    tagDetailDelete: 'tags-explorer-dialog .details-container svg-icon[src*="delete"]',
 };
 
 const nameCellMatches = (name) => (_, row) => row.querySelector(List.nameCell)?.textContent.trim() === name;
@@ -191,33 +187,11 @@ export class ModulesPage {
     }
 
     addTag(name, tagName) {
-        this._row(name).find(List.tagsExplorer).find(List.tagCreateButton).click();
-        cy.get(List.tagCreateDialog, { timeout: 15000 }).should('be.visible');
-        // Create is enabled once the dialog has finished loading; typing earlier is lost on its re-render.
-        cy.contains('tags-create-dialog button', 'Create').should('be.enabled');
-        cy.get('tags-create-dialog input[formcontrolname="description"]').clear();
-        cy.get('tags-create-dialog input[formcontrolname="description"]').type(tagName);
-        cy.get('tags-create-dialog input[formcontrolname="name"]').clear();
-        cy.get('tags-create-dialog input[formcontrolname="name"]').type(tagName);
-        cy.get('tags-create-dialog input[formcontrolname="name"]').should('have.value', tagName);
-        cy.contains('tags-create-dialog button', 'Create').click();
-        cy.get(List.tagCreateDialog).should('not.exist');
-        Checks.waitForLoading();
-        this._row(name).find(List.tagChip, { timeout: 30000 }).should('contain.text', tagName);
+        addTag(() => this._row(name), tagName);
     }
 
     deleteTag(name, tagName) {
-        this._row(name).find(List.tagChip).contains(tagName).click();
-        cy.get(List.tagDialog, { timeout: 15000 }).should('be.visible');
-        cy.get(List.tagChipInDialog).contains(tagName).click();
-        cy.get(List.tagDetailDelete, { timeout: 15000 }).first().click();
-        Checks.waitForLoading();
-        cy.get(List.tagDialog).should(($dialog) => {
-            const remaining = $dialog.find(List.tagChipInDialog).filter((_, chip) => chip.textContent.includes(tagName));
-            expect(remaining.length).to.eq(0);
-        });
-        cy.get('body').type('{esc}');
-        cy.get(List.tagDialog).should('not.exist');
+        deleteTag(() => this._row(name), tagName);
     }
 
     verifyButtonsAndHeaders() {
