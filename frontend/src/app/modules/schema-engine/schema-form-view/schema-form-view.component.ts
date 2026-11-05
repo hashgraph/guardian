@@ -21,7 +21,7 @@ import { collectImageReferences, markdownToHtml, markdownToPlainText } from '../
 import { SchemaFormPreferencesService } from 'src/app/services/schema-form-preferences.service';
 import { baseMetaTags, IMetaTag, metaType } from '../schema-form/schema-form-metadata';
 import { recordSummary } from '../schema-form/schema-form-records';
-import { applyNestedConditions } from './schema-form-view-conditions';
+import { applyNestedConditions, applyViewConditions } from './schema-form-view-conditions';
 
 const PREVIEW_RENDER_CHUNK = 10;
 
@@ -78,6 +78,8 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
     @Input('discussion-action') discussionAction: boolean = false;
     @Input('discussion-view') discussionView: boolean = false;
     @Input() link?: string | undefined;
+    /** Conditions of the array this view renders one row of; judged by this row's values. */
+    @Input() conditions?: any[];
     @Input() accordionLink?: string | undefined;
     @Input() preview: boolean = false;
     /** Path of this view's values, so the metadata strip shows the same path as the edit form. */
@@ -116,6 +118,7 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
     private expandedText = new Set<string>();
 
     ngOnInit(): void {
+        applyViewConditions(this.fields, this.conditions, this.values);
         applyNestedConditions(this.fields, this.values);
         this.metadataSub = this.preferences.showFieldMetadata$.subscribe((value) => {
             this.showMetadata = value;
@@ -305,7 +308,8 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
                 }
             }
             if (!field.isArray && field.isRef) {
-                item.fields = field.fields;
+                // Conditions mark these fields, so each view needs its own copies: rows must not share the flags.
+                item.fields = field.conditions?.length ? field.fields?.map((f) => ({ ...f })) : field.fields;
                 // A sub-schema is always open.
                 item.open = true;
             }

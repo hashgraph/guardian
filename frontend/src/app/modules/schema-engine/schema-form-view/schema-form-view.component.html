@@ -344,6 +344,7 @@
                                                         [accordionLink]="item.accordionLink"
                                                         [preview]="preview"
                                                         [pathPrefix]="rowPath(item, idx)"
+                                                        [conditions]="item.conditions"
                                                         [inRecord]="true"
                                                         (previewLoadingChange)="preview && previewLoadingChange.emit($event)"
                                                         [discussion]="discussionData"

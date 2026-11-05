@@ -4,6 +4,7 @@ interface IConditionField {
     name: string;
     fields?: IConditionField[];
     conditions?: any[];
+    isArray?: boolean;
     notCorrespondCondition?: boolean;
 }
 
@@ -103,14 +104,15 @@ export function applyViewConditions(
 
 /**
  * The conditions that sit on sub-schema fields apply to the fields of that sub-schema,
- * and are judged by the values of the sub-schema.
+ * and are judged by the values of the sub-schema. Arrays are skipped: each row is judged by
+ * its own values, by the row view (see `applyViewConditions`).
  */
 export function applyNestedConditions(fields: IConditionField[] | undefined, values: any): void {
     if (!fields) {
         return;
     }
     for (const item of fields) {
-        if (!item.conditions || !Array.isArray(item.conditions)) {
+        if (item.isArray || !item.conditions || !Array.isArray(item.conditions)) {
             continue;
         }
         applyViewConditions(item.fields, item.conditions, values ? values[item.name] : {});

@@ -390,6 +390,25 @@ describe('SchemaFormViewComponent', () => {
             expect(texts(fixture, '.sf-record-text')).toEqual(['Heading Some bold text']);
         });
 
+        it('judges the conditions of an array by each row', () => {
+            const conditional = field('rows', {
+                isArray: true,
+                isRef: true,
+                fields: [field('kind', {}, 'rows'), field('area', { type: 'number' }, 'rows'), field('other', {}, 'rows')],
+                conditions: [{
+                    ifCondition: { field: { name: 'kind' }, fieldValue: 'land' },
+                    thenFields: [{ name: 'area' }],
+                    elseFields: [{ name: 'other' }],
+                }],
+            });
+            const fixture = render([conditional], { rows: [{ kind: 'land', area: 5 }, { kind: 'sea', other: 'x' }] });
+            (fixture.nativeElement.querySelector('.sf-ro-recbar-actions .sf-link') as HTMLElement).click();
+            fixture.detectChanges();
+            const bodies = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.sf-record-body'));
+            const labels = bodies.map((body) => Array.from(body.querySelectorAll('.sf-ro-lt')).map((node) => node.textContent!.trim()));
+            expect(labels).toEqual([['Kind', 'Area'], ['Kind', 'Other']]);
+        });
+
         it('lists a record per row with a count and expands a card on click', () => {
             const fixture = render([rows], values);
             expect(texts(fixture, '.sf-ro-muted')).toEqual(['2 items']);

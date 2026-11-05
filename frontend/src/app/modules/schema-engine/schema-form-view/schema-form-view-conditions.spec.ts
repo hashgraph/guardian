@@ -63,5 +63,17 @@ describe('schema-form-view-conditions', () => {
             expect((inner[0] as any).notCorrespondCondition).toBeTrue();
             expect((inner[1] as any).notCorrespondCondition).toBeUndefined();
         });
+
+        it('leaves the conditions of an array to its rows', () => {
+            const inner = [name('x')];
+            const fields: any[] = [{
+                name: 'rows',
+                isArray: true,
+                fields: inner,
+                conditions: [{ ifCondition: { field: name('kind'), fieldValue: 'a' }, thenFields: [name('x')], elseFields: [] }],
+            }];
+            applyNestedConditions(fields, { rows: [{ kind: 'a' }] });
+            expect((inner[0] as any).notCorrespondCondition).toBeUndefined();
+        });
     });
 });
