@@ -1,6 +1,39 @@
 import URL from '../../../support/GuardianUrls';
 import * as Checks from '../../../support/checkingMethods';
 import CommonElements from '../../../support/defaultUIElements';
+import { dropFile } from '../../../support/importFlow';
+
+// The modules list (PrimeNG table, newest modules first, so a module created by a run is on page 1).
+const List = {
+    row: 'tr.guardian-grid-row',
+    nameCell: 'td .text-truncate',
+    statusCell: 'td:nth-child(4)',
+    headerCell: 'tr.guardian-grid-header th',
+    publishButton: 'button:contains("Publish")',
+    exportIcon: 'svg-icon[src*="export.svg"]',
+    editIcon: 'svg-icon[src*="edit.svg"]',
+    deleteIcon: 'svg-icon[src*="delete.svg"]',
+    toolbarButton: 'p-button.toolbar-btn-primary',
+    // The new-module dialog is a custom PrimeNG dialog, the others are guardian dialogs.
+    dialog: 'div.p-dialog',
+    deleteConfirm: 'button.button-color-red',
+    ipfsInput: 'input#timestamp',
+    previewImportButton: 'div.dialog-footer button:contains("Import")',
+    exportFileButton: 'button:contains("Save to file")',
+    exportMessageIdButton: 'button:contains("Copy message identifier")',
+    tagsExplorer: 'tags-explorer',
+    tagCreateButton: 'button:contains("Create a Tag")',
+    tagChip: 'tags-explorer .main-tag',
+    tagCreateDialog: 'tags-create-dialog',
+    tagDialog: 'tags-explorer-dialog',
+    tagChipInDialog: 'tags-explorer-dialog div.name',
+    tagDetailDelete: 'tags-explorer-dialog .details-container svg-icon[src*="delete"]',
+};
+
+const nameCellMatches = (name) => (_, row) => row.querySelector(List.nameCell)?.textContent.trim() === name;
+
+// Importing an archive whose name is taken adds a `_<timestamp>` suffix to the new module.
+const importedNameMatches = (name) => (_, row) => new RegExp(`^${name}(_\\d+)?$`).test(row.querySelector(List.nameCell)?.textContent.trim());
 
 const ModulesPageLocators = {
     createNewButton: 'Create a Module',
@@ -55,65 +88,90 @@ export class ModulesPage {
     openModulesTab() {
         cy.visit(URL.Root + URL.Modules);
         Checks.waitForLoading();
+        // The list is loaded once either its rows or the empty-state message are rendered.
+        cy.get(`${List.row}, div.not-exist`, { timeout: 30000 }).should('exist');
+    }
+
+    _row(name) {
+        return cy.get(List.row, { timeout: 30000 }).filter(nameCellMatches(name));
     }
 
     createNewModule(moduleName) {
-        cy.contains(ModulesPageLocators.createNewButton).click();
-        cy.get(ModulesPageLocators.nameInput).type(moduleName);
-        cy.get(ModulesPageLocators.descriptionInput).type(moduleName);
-        cy.get(ModulesPageLocators.finalCreateButton).click();
+        cy.contains(List.toolbarButton, 'Create a Module').click();
+        cy.get(List.dialog, { timeout: 15000 }).find('input#name').type(moduleName);
+        cy.get(List.dialog).find('input#name').should('have.value', moduleName);
+        cy.get(List.dialog).contains('button', 'Create').click();
         Checks.waitForLoading();
-        cy.contains(moduleName).should('exist');
+        this._row(moduleName).should('exist');
+    }
+
+    _openImportDialog() {
+        cy.contains(List.toolbarButton, 'Import').click();
+        cy.get(CommonElements.dialogWindow, { timeout: 15000 }).should('be.visible');
+    }
+
+    // The preview dialog that follows both imports: its footer holds the Import button that creates the module.
+    // Imported archives keep their own name, so success means one more row than before, not just a row.
+    _importAndExpectNewRow(name, startImport) {
+        const countRows = () => cy.get('body').then(($body) => $body.find(List.row).filter(importedNameMatches(name)).length);
+        countRows().then((rowsBefore) => {
+            this._openImportDialog();
+            startImport();
+            // The preview opens over the import dialog and both footers have an Import button: the preview is "Import module".
+            cy.contains(CommonElements.dialogWindow, 'Import module', { timeout: 60000 })
+                .find(List.previewImportButton).should('not.be.disabled').click();
+            Checks.waitForLoading();
+            cy.get(List.row, { timeout: 30000 }).should(($rows) => {
+                expect($rows.filter(importedNameMatches(name)).length).to.eq(rowsBefore + 1);
+            });
+        });
     }
 
     importNewModuleIPFS(messageId, name) {
-        cy.contains(ModulesPageLocators.importButton).click();
-        cy.contains(ModulesPageLocators.importIPFSButton).click();
-        cy.get(ModulesPageLocators.timestampInput).type(messageId);
-        cy.get(CommonElements.dialogWindow).find(ModulesPageLocators.moduleImportButton).click();
-        Checks.waitForElement("div:contains('Details')")
-        cy.get(ModulesPageLocators.moduleImportButton).last().click();
-        Checks.waitForLoading();
-        cy.contains(name).should('exist');
+        this._importAndExpectNewRow(name, () => {
+            cy.get(CommonElements.dialogWindow).contains('Import from IPFS').click();
+            // The field re-renders as soon as the typed text is a valid id and drops the rest of the
+            // keystrokes, so set the whole value at once.
+            cy.get(List.ipfsInput).invoke('val', messageId).trigger('input');
+            cy.get(List.ipfsInput).should('have.value', messageId);
+            cy.get(CommonElements.dialogWindow).find(List.previewImportButton).should('not.be.disabled').click();
+        });
     }
 
     importNewModuleFile(fileName, name) {
-        Checks.waitForLoading();
-        cy.contains(ModulesPageLocators.importButton).click();
-        cy.get(CommonElements.fileInput).selectFile('cypress/fixtures/' + fileName, { force: true });
-        Checks.waitForElement("div:contains('Details')")
-        cy.get(ModulesPageLocators.moduleImportButton).last().click();
-        Checks.waitForLoading();
-        cy.contains(name).should('exist');
+        this._importAndExpectNewRow(name, () => dropFile(fileName));
     }
 
     deleteModule(moduleName) {
+        // Only drafts can be deleted, and imported archives may share their name with a published module.
+        const isDraft = (_, row) => row.querySelector(List.statusCell)?.textContent.trim() === 'Draft';
+        const draftRows = () => cy.get(List.row, { timeout: 30000 }).filter(importedNameMatches(moduleName)).filter(isDraft);
+        draftRows().first().find(List.deleteIcon).click();
+        cy.get(List.dialog, { timeout: 15000 }).find(List.deleteConfirm).click();
         Checks.waitForLoading();
-        cy.contains(moduleName).siblings().find(ModulesPageLocators.moduleDeleteIcon).click();
-        cy.get(ModulesPageLocators.moduleDeleteButton).click();
-        Checks.waitForLoading();
-        cy.contains(moduleName).should('not.exist')
+        cy.get('body').should(($body) => {
+            expect($body.find(List.row).filter(importedNameMatches(moduleName)).filter(isDraft).length).to.eq(0);
+        });
     }
 
     checkStatus(name, status) {
-        cy.contains('td', name).siblings().contains(status).should('exist');
+        this._row(name).find(List.statusCell).should('contain.text', status);
     }
 
     openExportModal(name) {
-        cy.contains('td', name).siblings().find(ModulesPageLocators.exportModule).click();
+        this._row(name).find(List.exportIcon).click();
+        cy.get(CommonElements.dialogWindow, { timeout: 15000 }).should('be.visible');
     }
 
     exportModuleAsFile(name) {
         this.openExportModal(name);
-        Checks.waitForLoading();
-        cy.get(CommonElements.dialogWindow).contains(ModulesPageLocators.exportFileButton).click();
+        cy.get(CommonElements.dialogWindow).find(List.exportFileButton).click();
         cy.verifyDownload('.module', { contains: true });
     }
 
     exportModuleAsMessageId(name) {
         this.openExportModal(name);
-        Checks.waitForLoading();
-        cy.get(CommonElements.dialogWindow).contains(ModulesPageLocators.exportMessageIdButton).realClick();
+        cy.get(CommonElements.dialogWindow).find(List.exportMessageIdButton).realClick();
         cy.window().then((win) => {
             win.navigator.clipboard.readText().then((text) => {
                 //regex numbers.numbers
@@ -122,69 +180,74 @@ export class ModulesPage {
         });
     }
 
-    verifyThatButtonDisabled(buttonName) {
-        cy.contains(buttonName).should('be.disabled');
+    verifyThatButtonDisabled(buttonText) {
+        cy.get(CommonElements.dialogWindow).contains('button', buttonText).should('be.disabled');
     }
 
     publishModule(moduleName) {
-        cy.contains(moduleName).parent().contains(ModulesPageLocators.publishButton).click();
+        this._row(moduleName).find(List.publishButton).click();
         Checks.waitForLoading();
-        cy.contains(moduleName).parent().contains(ModulesPageLocators.publishedStatus);
+        this.checkStatus(moduleName, 'Published');
     }
 
     addTag(name, tagName) {
-        cy.contains(name).siblings().contains(ModulesPageLocators.createTagButton).click();
-        cy.get(ModulesPageLocators.tagNameInput).type(tagName);
-        cy.get(ModulesPageLocators.tagDescInput).type(tagName);
-        cy.get(ModulesPageLocators.createButton).click();
-        cy.contains(tagName).should('exist');
+        this._row(name).find(List.tagsExplorer).find(List.tagCreateButton).click();
+        cy.get(List.tagCreateDialog, { timeout: 15000 }).should('be.visible');
+        // Create is enabled once the dialog has finished loading; typing earlier is lost on its re-render.
+        cy.contains('tags-create-dialog button', 'Create').should('be.enabled');
+        cy.get('tags-create-dialog input[formcontrolname="description"]').clear();
+        cy.get('tags-create-dialog input[formcontrolname="description"]').type(tagName);
+        cy.get('tags-create-dialog input[formcontrolname="name"]').clear();
+        cy.get('tags-create-dialog input[formcontrolname="name"]').type(tagName);
+        cy.get('tags-create-dialog input[formcontrolname="name"]').should('have.value', tagName);
+        cy.contains('tags-create-dialog button', 'Create').click();
+        cy.get(List.tagCreateDialog).should('not.exist');
+        Checks.waitForLoading();
+        this._row(name).find(List.tagChip, { timeout: 30000 }).should('contain.text', tagName);
     }
 
     deleteTag(name, tagName) {
-        cy.contains(name).siblings().contains(tagName).click();
-        cy.get(ModulesPageLocators.deleteTagIcon).click();
-        cy.get(ModulesPageLocators.closeWindowButton).click();
-        cy.contains(tagName).should('not.exist');
+        this._row(name).find(List.tagChip).contains(tagName).click();
+        cy.get(List.tagDialog, { timeout: 15000 }).should('be.visible');
+        cy.get(List.tagChipInDialog).contains(tagName).click();
+        cy.get(List.tagDetailDelete, { timeout: 15000 }).first().click();
+        Checks.waitForLoading();
+        cy.get(List.tagDialog).should(($dialog) => {
+            const remaining = $dialog.find(List.tagChipInDialog).filter((_, chip) => chip.textContent.includes(tagName));
+            expect(remaining.length).to.eq(0);
+        });
+        cy.get('body').type('{esc}');
+        cy.get(List.tagDialog).should('not.exist');
     }
 
     verifyButtonsAndHeaders() {
-        cy.contains(ModulesPageLocators.createNewButton).should('exist');
-        cy.contains(ModulesPageLocators.importButton).should('exist');
-        cy.get(ModulesPageLocators.headerSelector).should(($header) => {
-            expect($header.get(0).innerText).to.eq('NAME')
-            expect($header.get(1).innerText).to.eq('DESCRIPTION')
-            expect($header.get(2).innerText).to.eq('TAGS')
-            expect($header.get(3).innerText).to.eq('STATUS')
-            expect($header.get(4).innerText).to.eq('OPERATIONS')
-        })
+        cy.contains(List.toolbarButton, 'Create a Module').should('be.visible');
+        cy.contains(List.toolbarButton, 'Import').should('be.visible');
+        const expected = ['Name', 'Description', 'Tags', 'Status', 'Operations'];
+        cy.get(List.headerCell).should('have.length', expected.length).each(($th, i) => {
+            expect($th.text().trim()).to.eq(expected[i]);
+        });
     }
 
     verifyDraftModuleDataAndActions(name) {
-        cy.contains(new RegExp('^' + name + '$', 'g')).parent().should(($module) => {
-            const draftModuleChildren = $module.get(0).childNodes;
-            expect(draftModuleChildren.item(0).innerText).to.eq(name);
-            expect(draftModuleChildren.item(2).getElementsByTagName('button').item(0).innerText).to.eq('Create a Tag');
-            expect(draftModuleChildren.item(3).firstChild.innerText).to.eq('Draft');
-            expect(draftModuleChildren.item(4).getElementsByTagName('button').item(0).innerText).to.eq('Publish');
-            expect(draftModuleChildren.item(4).getElementsByTagName('svg-icon').item(0).getAttribute('ng-reflect-src')).to.eq('/assets/images/icons/export.sv');
-            expect(draftModuleChildren.item(4).getElementsByTagName('svg-icon').item(1).getAttribute('ng-reflect-src')).to.eq('/assets/images/icons/edit.svg');
-            expect(draftModuleChildren.item(4).getElementsByTagName('svg-icon').item(2).getAttribute('ng-reflect-src')).to.eq('/assets/images/icons/delete.sv');
-            expect(draftModuleChildren.item(4).getElementsByTagName('svg-icon').item(2).getAttribute('ng-reflect-svg-class')).to.eq('accent-color-red');
-        })
+        this._row(name).should(($row) => {
+            expect($row.find(List.tagsExplorer).find(List.tagCreateButton).length, 'Create a Tag').to.eq(1);
+            expect($row.find(List.statusCell).text().trim()).to.eq('Draft');
+            expect($row.find(List.publishButton).prop('disabled'), 'Publish is enabled').to.eq(false);
+            expect($row.find(List.exportIcon).length, 'export').to.eq(1);
+            expect($row.find(List.editIcon).length, 'edit').to.eq(1);
+            expect($row.find(List.deleteIcon).length, 'delete').to.eq(1);
+        });
     }
 
     verifyPublishedModuleDataAndActions(name) {
-        cy.contains(name).parent().should(($module) => {
-            const publishedModuleChildren = $module.get(0).childNodes;
-            expect(publishedModuleChildren.item(0).innerText).to.eq(name);
-            expect(publishedModuleChildren.item(2).getElementsByTagName('button').item(0).innerText).to.eq('Create a Tag');
-            expect(publishedModuleChildren.item(3).getElementsByTagName('div').item(0).innerText).to.eq('Published');
-            expect(publishedModuleChildren.item(4).getElementsByTagName('svg-icon').item(0).getAttribute('ng-reflect-src')).to.eq('/assets/images/icons/export.sv');
-            expect(publishedModuleChildren.item(4).getElementsByTagName('svg-icon').item(1).getAttribute('ng-reflect-src')).to.eq('/assets/images/icons/edit.svg');
-            expect(publishedModuleChildren.item(4).getElementsByTagName('svg-icon').item(2).getAttribute('ng-reflect-src')).to.eq('/assets/images/icons/delete.sv');
-            expect(publishedModuleChildren.item(4).getElementsByTagName('svg-icon').item(2).getAttribute('ng-reflect-svg-class')).to.eq('disabled-color');
-            expect(publishedModuleChildren.item(4).getElementsByTagName('button').item(0).getAttribute('disabled')).exist;
-        })
+        this._row(name).should(($row) => {
+            expect($row.find(List.statusCell).text().trim()).to.eq('Published');
+            expect($row.find(List.publishButton).prop('disabled'), 'Publish is disabled').to.eq(true);
+            expect($row.find(List.exportIcon).length, 'export').to.eq(1);
+            expect($row.find(List.editIcon).length, 'edit').to.eq(1);
+            expect($row.find(List.deleteIcon).length, 'delete').to.eq(1);
+        });
     }
 
     openEditingModule(name) {
