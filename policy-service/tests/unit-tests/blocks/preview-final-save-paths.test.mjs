@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { randomUUID } from 'node:crypto';
 import esmock from 'esmock';
 import { installCredentialPreparation } from '../helpers/credential-preparation-stubs.mjs';
 import { createPreviewDocument } from '../helpers/preview-document-fixture.mjs';
@@ -34,8 +35,11 @@ const restore = () => {
 };
 
 const previewStep = () => new RecordActionStep(() => undefined, 0, true, true, undefined, true);
-const vcJson = (subject) => createPreviewDocument({ policyId: 'policy-1', tag: 't' }, null,
-    { id: 'did:subject', type: 'Plot', ...subject }, null, 'did:user', null).document;
+const vcJson = (subject) => ({
+    ...createPreviewDocument({ policyId: 'policy-1', tag: 't' }, null,
+        { id: 'did:subject', type: 'Plot', ...subject }, null, 'did:user', null).document,
+    id: `urn:uuid:${randomUUID()}`
+});
 const saveBlock = () => {
     const server = createPreviewDatabaseServer(new DatabaseServer(null), null);
     return makeBlock(SendToGuardianBlock, {
