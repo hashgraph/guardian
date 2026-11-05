@@ -439,14 +439,15 @@ export class PoliciesPage {
             const chip = $cell.find('.main-tags');
             if (chip.length) {
                 cy.wrap(chip.first()).click();
-                cy.get('tags-explorer-dialog button[label="Create a Tag"]', { timeout: 15000 }).click();
+                cy.contains('tags-explorer-dialog button', 'Create a Tag', { timeout: 15000 }).click();
             } else {
                 cy.wrap($cell.find('button.p-button-outlined').first()).click();
             }
         });
         cy.get('tags-create-dialog input.p-field-input[formcontrolname="name"]', { timeout: 15000 }).clear();
         cy.get('tags-create-dialog input.p-field-input[formcontrolname="name"]').type(name);
-        cy.get('tags-create-dialog button[label="Create"]').click();
+        // pButton binds [label], which leaves no attribute in the DOM: find the button by its text.
+        cy.contains('tags-create-dialog button', 'Create').click();
         cy.get('tags-create-dialog', { timeout: 15000 }).should('not.exist');
         // In the chip branch the explorer stays open behind; close it so the
         // list row underneath is interactable for the next step.
@@ -468,8 +469,9 @@ export class PoliciesPage {
         cy.get('tags-explorer-dialog', { timeout: 15000 }).contains('div.name', name).click();
         cy.get('tags-explorer-dialog .details-container svg-icon[src*="delete"]', { timeout: 15000 }).first().click();
         cy.get('body').then((body) => {
-            if (body.find('button[label="Delete"]').length) {
-                cy.get('button[label="Delete"]').click();
+            const confirm = body.find('button').filter((_, button) => button.textContent.trim() === 'Delete');
+            if (confirm.length) {
+                cy.wrap(confirm.first()).click();
             }
         });
         Checks.waitForLoading();

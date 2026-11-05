@@ -23,11 +23,8 @@ export class PPPage {
 
         cy.get('td').first().parent().get('td').eq('4').click();
         cy.wait(8000);
-        cy.get(PPPageLocators.roleSelect)
-            .click()
-            .get('mat-option')
-            .contains(role)
-            .click();
+        cy.get(PPPageLocators.roleSelect).click();
+        cy.get('mat-option').contains(role).click();
 
         // const inputGroup = cy.get(PPPageLocators.inputGroupLabel);
         // inputGroup.type("PPGroupTest");
@@ -68,11 +65,8 @@ export class PPPage {
 
         cy.get('td').first().parent().get('td').eq('4').click();
         cy.wait(8000);
-        cy.get(PPPageLocators.validateDD)
-            .click()
-            .get('mat-option')
-            .contains('VVBTestName')
-            .click();
+        cy.get(PPPageLocators.validateDD).click();
+        cy.get('mat-option').contains('VVBTestName').click();
         cy.wait(12000);
     }
 }

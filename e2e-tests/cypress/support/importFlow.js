@@ -110,8 +110,8 @@ export function settleToolRowChecks(retries = 3, settleTimeout = 30000) {
     });
 
     // A preview of an entity without tools has no rows to settle.
-    return cy.get('div.guardian-dialog div.tools-table__row').then(($rows) => {
-        if (!$rows.length) {
+    return cy.get('div.guardian-dialog').then(($dialog) => {
+        if (!$dialog.find('div.tools-table__row').length) {
             return;
         }
         return pass(retries);

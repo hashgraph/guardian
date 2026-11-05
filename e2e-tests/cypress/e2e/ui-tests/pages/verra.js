@@ -19,11 +19,8 @@ export class VerraPage {
 
         cy.get('td').first().parent().get('td').eq('5').click();
         cy.wait(8000);
-        cy.get(VerraPageLocators.roleSelect)
-            .click()
-            .get('mat-option')
-            .contains(role)
-            .click();
+        cy.get(VerraPageLocators.roleSelect).click();
+        cy.get('mat-option').contains(role).click();
 
         // const inputGroup = cy.get(VerraPageLocators.inputGroupLabel);
         // inputGroup.type("VVB Group Test");
@@ -62,9 +59,8 @@ export class VerraPage {
             .its('navigator.clipboard')
             .invoke('readText')
             .then((text) => {
-                cy.get(VerraPageLocators.inputInvitation)
-                    .click()
-                    .invoke('val', text);
+                cy.get(VerraPageLocators.inputInvitation).click();
+                cy.get(VerraPageLocators.inputInvitation).invoke('val', text);
             });
         cy.wait(8000);
         // cy.get(VerraPageLocators.submitBtn).click();

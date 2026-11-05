@@ -47,11 +47,8 @@ export class InstallerPage {
         cy.wait(5000);
         cy.get('td').first().parent().get('td').eq('5').click();
         cy.wait(8000);
-        cy.get(InstallerPageLocators.roleSelect)
-            .click()
-            .get('mat-option')
-            .contains(role)
-            .click();
+        cy.get(InstallerPageLocators.roleSelect).click();
+        cy.get('mat-option').contains(role).click();
         cy.get(InstallerPageLocators.submitBtn).click();
         cy.wait(20000);
     }
@@ -59,9 +56,8 @@ export class InstallerPage {
     accociateUserWithToken() {
         //associate the user (Installer) with the provided Hedera token
         cy.contains(InstallerPageLocators.profileTab).click();
-        cy.contains(InstallerPageLocators.tokensBtn, { timeout: 180000 })
-            .click()
-            .then(() => {
+        cy.contains(InstallerPageLocators.tokensBtn, { timeout: 180000 }).click();
+        cy.then(() => {
                 cy.get('td')
                     .first()
                     .then((policyName) => {

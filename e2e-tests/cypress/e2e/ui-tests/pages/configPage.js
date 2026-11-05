@@ -158,8 +158,10 @@ export class ConfigPage {
 		if (hederaId === 'random') {
 			cy.contains('button', 'Generate').should('be.visible');
 		} else {
-			cy.get('#operatorId').clear().type(hederaId);
-			cy.get('#operatorKey').clear().type(hederaKey);
+			cy.get('#operatorId').clear();
+			cy.get('#operatorId').type(hederaId);
+			cy.get('#operatorKey').clear();
+			cy.get('#operatorKey').type(hederaKey);
 		}
 	}
 

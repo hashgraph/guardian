@@ -232,9 +232,11 @@ export class ModulesPage {
     editModuleProperty(property, name) {
         cy.wait(500)
         if (property == 'Description')
-            {cy.contains('td.cellName', new RegExp('^' + property + '$', 'g')).parent().find(CommonElements.textarea).clear().type(name);}
+            {cy.contains('td.cellName', new RegExp('^' + property + '$', 'g')).parent().find(CommonElements.textarea).clear();
+            cy.contains('td.cellName', new RegExp('^' + property + '$', 'g')).parent().find(CommonElements.textarea).type(name);}
         else
-            {cy.contains('td.cellName', new RegExp('^' + property + '$', 'g')).parent().find(CommonElements.Input).clear().type(name);}
+            {cy.contains('td.cellName', new RegExp('^' + property + '$', 'g')).parent().find(CommonElements.Input).clear();
+            cy.contains('td.cellName', new RegExp('^' + property + '$', 'g')).parent().find(CommonElements.Input).type(name);}
     }
 
     saveModuleEditing() {

@@ -76,9 +76,8 @@ export class AuthenticationPage {
         cy.wait(8000);
         cy.contains("*[type^='submit']", 'Create').click();
         cy.get('body').then((body) => {
-            cy.get('[role="combobox"]')
-                .click()
-                .then(() => {
+            cy.get('[role="combobox"]').click();
+            cy.then(() => {
                     cy.get('[role="option"]').contains('StandardRegistry').click();
                     cy.contains(AuthPageLocators.generateBtn).click();
                     cy.wait(5000);
@@ -92,7 +91,8 @@ export class AuthenticationPage {
         cy.get(AuthPageLocators.createNewBtn).click();
         cy.contains(AuthPageLocators.roleName, 'Standard Registry').click();
         cy.wait(8000);
-        cy.get(AuthPageLocators.usernameInput).clear().type(login);
+        cy.get(AuthPageLocators.usernameInput).clear();
+        cy.get(AuthPageLocators.usernameInput).type(login);
         cy.contains("*[type^='submit']", 'Create').click();
         cy.contains(AuthPageLocators.generateBtn).click();
         AuthenticationPage.waitForTask();

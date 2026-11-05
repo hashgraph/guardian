@@ -83,9 +83,12 @@ export class HomePage {
 		cy.fixture('credentials').then(({ goodPassword }) => {
 			const pwd = password ?? goodPassword;
 			this.selectAccoutTypeToCreate(accType);
-			cy.get(CommonElements.dialogWindow).find(HomePageLocators.usernameInput).click().type(username);
-			cy.get(CommonElements.dialogWindow).find(HomePageLocators.passInput).click().type(pwd);
-			cy.get(CommonElements.dialogWindow).find(HomePageLocators.confirmPassInput).click().type(pwd);
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.usernameInput).click();
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.usernameInput).type(username);
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.passInput).click();
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.passInput).type(pwd);
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.confirmPassInput).click();
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.confirmPassInput).type(pwd);
 			cy.get(CommonElements.dialogWindow).find(HomePageLocators.requestAccessButton).click();
 		});
 	}
@@ -207,7 +210,7 @@ export class HomePage {
 
 	// The wizard footer's last step is labelled "Confirm" instead of "Next".
 	_wizardStepNext() {
-		cy.get('div.user-profile-finish-buttons button[label="Next"], div.user-profile-finish-buttons button[label="Confirm"]', { timeout: 60000 })
+		cy.contains('div.user-profile-finish-buttons button', /^\s*(Next|Confirm)\s*$/, { timeout: 60000 })
 			.should('not.be.disabled')
 			.click();
 	}
@@ -289,16 +292,20 @@ export class HomePage {
 
 	checkCreateDisabledUserNameEmpty() {
 		cy.fixture('credentials').then(({ goodPassword }) => {
-			cy.get(CommonElements.dialogWindow).find(HomePageLocators.passInput).click().type(goodPassword);
-			cy.get(CommonElements.dialogWindow).find(HomePageLocators.confirmPassInput).click().type(goodPassword);
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.passInput).click();
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.passInput).type(goodPassword);
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.confirmPassInput).click();
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.confirmPassInput).type(goodPassword);
 			cy.get(CommonElements.dialogWindow).find(HomePageLocators.requestAccessButton).should('be.disabled');
 		});
 	}
 
 	checkCreateDisabledPasswordEmpty(username) {
 		cy.fixture('credentials').then(({ goodPassword }) => {
-			cy.get(CommonElements.dialogWindow).find(HomePageLocators.usernameInput).click().type(username);
-			cy.get(CommonElements.dialogWindow).find(HomePageLocators.confirmPassInput).click().type(goodPassword);
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.usernameInput).click();
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.usernameInput).type(username);
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.confirmPassInput).click();
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.confirmPassInput).type(goodPassword);
 			cy.get(CommonElements.dialogWindow).contains(HomePageLocators.passwordDifError).should('exist');
 			cy.get(CommonElements.dialogWindow).find(HomePageLocators.requestAccessButton).should('be.disabled');
 		});
@@ -306,17 +313,22 @@ export class HomePage {
 
 	checkCreateDisabledConfirmPasswordEmpty(username) {
 		cy.fixture('credentials').then(({ goodPassword }) => {
-			cy.get(CommonElements.dialogWindow).find(HomePageLocators.passInput).click().type(goodPassword);
-			cy.get(CommonElements.dialogWindow).find(HomePageLocators.usernameInput).click().type(username);
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.passInput).click();
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.passInput).type(goodPassword);
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.usernameInput).click();
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.usernameInput).type(username);
 			cy.get(CommonElements.dialogWindow).find(HomePageLocators.requestAccessButton).should('be.disabled');
 		});
 	}
 
 	checkCreateDisabledPasswordMismatch(username) {
 		cy.fixture('credentials').then(({ goodPassword, altPassword }) => {
-			cy.get(CommonElements.dialogWindow).find(HomePageLocators.usernameInput).click().type(username);
-			cy.get(CommonElements.dialogWindow).find(HomePageLocators.passInput).click().type(goodPassword);
-			cy.get(CommonElements.dialogWindow).find(HomePageLocators.confirmPassInput).click().type(altPassword);
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.usernameInput).click();
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.usernameInput).type(username);
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.passInput).click();
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.passInput).type(goodPassword);
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.confirmPassInput).click();
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.confirmPassInput).type(altPassword);
 			cy.get(CommonElements.dialogWindow).contains(HomePageLocators.passwordDifError).should('exist');
 			cy.get(CommonElements.dialogWindow).find(HomePageLocators.requestAccessButton).should('be.disabled');
 		});

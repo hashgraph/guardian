@@ -218,7 +218,8 @@ export class UserPoliciesPage {
     }
 
     typeBadIPFS(IPFS) {
-        cy.get(UserPoliciesPageLocators.IPFSInput).type(IPFS).blur();
+        cy.get(UserPoliciesPageLocators.IPFSInput).type(IPFS);
+		cy.get(UserPoliciesPageLocators.IPFSInput).blur();
         cy.contains(UserPoliciesPageLocators.IPFSErrorLabel).should('exist');
     }
 
