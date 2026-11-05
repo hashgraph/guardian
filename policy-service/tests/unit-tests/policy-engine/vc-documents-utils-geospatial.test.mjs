@@ -60,8 +60,10 @@ describe('PolicyVcDocumentsUtils geospatial validation', function () {
         };
         const state = arrange(inherited, []);
         let checked;
-        GeospatialFileValidator.validateDocument = async subject => {
+        GeospatialFileValidator.validateDocument = async (subject, userId, previous) => {
             checked = subject;
+            assert.equal(userId, 'user-1');
+            assert.deepEqual(previous.place, inherited);
             if (subject.place.geoFile.fileId === 'large') throw new Error('over limit');
         };
 
