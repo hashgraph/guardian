@@ -4,7 +4,7 @@
 **Component:** `e2e-tests/cypress/e2e`, `e2e-tests/cypress/support`
 **Severity:** low for the style rules; medium for the fixed waits, which make runs slow and flaky
 
-Measured with `npx eslint cypress/e2e cypress/support` from `e2e-tests` (172 findings on 5 Nov 2026). Running `npx eslint cypress` also lints `cypress/reports` and `cypress/test_results`, which are generated and git-ignored: that adds roughly 10,000 findings of pure noise (the bundled report app), so lint the two source folders only, or exclude the generated ones in `eslint.config.mjs` (a tooling change that needs approval).
+Measured with `npx eslint cypress` from `e2e-tests` (172 findings on 5 Nov 2026). The generated folders (`cypress/reports`, `cypress/test_results`, `cypress/screenshots`, `cypress/downloads`) are excluded in `eslint.config.mjs`; before that, linting `cypress` added roughly 10,000 findings of noise from the bundled report app.
 
 ## Fixed waits (`cypress/no-unnecessary-waiting`, 91 findings)
 
