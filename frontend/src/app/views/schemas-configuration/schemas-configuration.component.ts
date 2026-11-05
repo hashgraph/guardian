@@ -2051,6 +2051,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (!id) {
             return;
         }
+        if (schema && schema.fields === undefined) {
+            return;
+        }
         const signature = this.schemaSignature(schema);
         if (signature === null) {
             this.savedSignatures.delete(id);
@@ -3842,6 +3845,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return { ...raw, document: { ...doc, $defs: defs } };
     }
 
+    private rebaselineLazyLoadedSchema(schema: Schema): void {
+        const id = schema.id || (schema as any)._id;
+        if (id && !this.dirtySchemaIds.has(id) && !this.savedSignatures.has(id)) {
+            this.snapshotSchema(schema, id);
+        }
+    }
+
     private hydrateSubSchemaFields(subSchema: Schema): void {
         const id = subSchema.id || (subSchema as any)._id;
         if (!id) { return; }
@@ -3876,6 +3886,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     if (selectedField && selectedField.type === subSchema.iri) {
                         selectedField.fields = subSchema.fields;
                     }
+                    this.rebaselineLazyLoadedSchema(subSchema);
                     const entry = this.drillStack.find(e => e.schemaIri === subSchema.iri);
                     if (entry) { entry.fields = subSchema.fields; }
                     if (this.previewSchemaRef === subSchema) { this.rebuildPreview(); }
@@ -3897,6 +3908,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         // and subSchema.fields remain the same reference and saveAll can find the edits.
         if (subSchema && !subSchema.fields?.length && field.fields?.length) {
             subSchema.fields = [...field.fields];
+            this.rebaselineLazyLoadedSchema(subSchema);
         }
         const fields = subSchema?.fields ?? field.fields ?? [];
         if (subSchema && (!fields.length || !subSchema.document)) { this.hydrateSubSchemaFields(subSchema); }

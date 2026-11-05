@@ -37,6 +37,17 @@ describe('SchemasConfigurationComponent', () => {
         };
     }
 
+    /** enterSubSchema pulls in view and suggestion plumbing that is irrelevant to dirty tracking */
+    function stubDrillPlumbing(component: any): void {
+        component._elRef = { nativeElement: { querySelector: () => null } };
+        component.fieldTypes = [];
+        component.activeCanvasTab = 'fields';
+        for (const name of ['persistSuggestionsForContext', 'restoreOrClearSuggestionsForContext',
+            'autoLoadSuggestionsFor', 'resetArrayDependencyEditor', 'loadParentSchemas']) {
+            component[name] = () => {};
+        }
+    }
+
     function createComponent(state: any = {}): any {
         const component: any = Object.create(SchemasConfigurationComponent.prototype);
 
@@ -387,6 +398,60 @@ describe('SchemasConfigurationComponent', () => {
             component.saveAll();
             expect(component.updated.length).toBe(1);
             expect(component.updated[0].fields).toBe(component.drillCurrentFields);
+        });
+
+        it('keeps a drilled sub-schema dirty after deleting every field when the list copy had no fields', () => {
+            const ev = { stopPropagation: () => {} };
+            // the sidebar list carries the sub-schema without its fields
+            const sub: any = makeSchema({ id: 'sub', iri: '#sub' });
+            sub.fields = undefined;
+            const refField = makeField({
+                name: 'ref', type: '#sub', isRef: true,
+                fields: [makeField({ name: 'a' }), makeField({ name: 'b' })],
+            });
+            const root: any = makeSchema({ id: 'root', iri: '#root', fields: [refField] });
+            const component = createComponent({ schemas: [root, sub], selectedSchema: root });
+            stubDrillPlumbing(component);
+            component.snapshotSchema(sub); // list load: baseline of a schema without fields
+
+            component.enterSubSchema(refField, ev);
+            expect(component.drillCurrentFields.length).toBe(2);
+            expect(component.hasUnsavedChanges).toBeFalse();
+
+            component.deleteDrillField(component.drillCurrentFields[0], ev);
+            component.deleteDrillField(component.drillCurrentFields[0], ev);
+            expect(component.drillCurrentFields.length).toBe(0);
+
+            expect(component.hasUnsavedChanges).toBeTrue();
+            component.saveAll();
+            expect(component.updated.length).toBe(1);
+            expect(component.updated[0].id).toBe('sub');
+            expect(component.updated[0].fields.length).toBe(0);
+        });
+
+        it('keeps the drilled edit dirty when the list reloads field-less copies after drill-in', () => {
+            const ev = { stopPropagation: () => {} };
+            const sub: any = makeSchema({ id: 'sub', iri: '#sub' });
+            sub.fields = undefined;
+            const refField = makeField({
+                name: 'ref', type: '#sub', isRef: true,
+                fields: [makeField({ name: 'a' }), makeField({ name: 'b' })],
+            });
+            const root: any = makeSchema({ id: 'root', iri: '#root', fields: [refField] });
+            const component = createComponent({ schemas: [root, sub], selectedSchema: root });
+            stubDrillPlumbing(component);
+            component.snapshotSchema(sub);
+            component.enterSubSchema(refField, ev);
+            component.deleteDrillField(component.drillCurrentFields[0], ev);
+
+            const fresh: any = makeSchema({ id: 'sub', iri: '#sub' });
+            fresh.fields = undefined;
+            component.schemas = [root, fresh];
+            component.snapshotSchema(fresh); // what loadSchemas does for list items
+
+            component.deleteDrillField(component.drillCurrentFields[0], ev);
+            expect(component.drillCurrentFields.length).toBe(0);
+            expect(component.hasUnsavedChanges).toBeTrue();
         });
 
         it('drops the sub-schema key when the search does not return it', () => {
@@ -2601,15 +2666,19 @@ describe('SchemasConfigurationComponent', () => {
             expect(component.hasUnsavedChanges).toBeTrue();
         });
 
-        it('still records a baseline for the schemas that are not open', () => {
+        it('records no baseline for list copies that carry no fields, and keeps an existing one', () => {
             const full = makeFullSchema('a');
             const component = createComponent({ schemas: [full], selectedSchema: full });
             component.loadedSchemaId = 'a';
             component.snapshotSchema(full);
+            // a baseline taken once the fields were loaded (e.g. on drill-in)
+            component.savedSignatures.set('c', 'loaded-baseline');
 
-            loadList(component, ['a', 'b']);
+            loadList(component, ['a', 'b', 'c']);
 
-            expect(component.savedSignatures.has('b')).toBeTrue();
+            // "no fields" would be a fabricated saved state: deleting every field would match it
+            expect(component.savedSignatures.has('b')).toBeFalse();
+            expect(component.savedSignatures.get('c')).toBe('loaded-baseline');
         });
     });
 
