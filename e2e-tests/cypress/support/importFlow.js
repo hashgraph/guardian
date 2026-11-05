@@ -163,9 +163,10 @@ export function replaceInaccessibleTools() {
     settleToolRowChecks(3, 30000);
     // A row that still resolves inaccessible after its replacement holds the
     // Import button forever; fail immediately with the row names.
-    cy.get('div.guardian-dialog').find('div.tools-table__row', { timeout: 60000 }).then(($rows) => {
+    cy.get('div.guardian-dialog').then(($dialog) => {
         const inaccessible = [];
-        $rows.each((_, row) => {
+        // An entity that references no tools has no rows to check.
+        $dialog.find('div.tools-table__row').each((_, row) => {
             const input = row.querySelector('input.input');
             if (input && input.getAttribute('status') !== 'valid') {
                 const name = (row.querySelector('label.tools-table__name') || {}).title || '?';

@@ -454,7 +454,7 @@ export class PoliciesPage {
         cy.get('body').then(($body) => {
             const explorer = $body.find('tags-explorer-dialog');
             if (explorer.length) {
-                cy.wrap(explorer).closest('div.p-dynamic-dialog, div.p-dialog').find('button.p-dialog-close').click();
+                cy.get('body').type('{esc}');
             }
         });
         cy.get('tags-explorer-dialog', { timeout: 15000 }).should('not.exist');
@@ -481,7 +481,7 @@ export class PoliciesPage {
         cy.get('body').then(($body) => {
             const explorer = $body.find('tags-explorer-dialog');
             if (explorer.length) {
-                cy.wrap(explorer).closest('div.p-dynamic-dialog, div.p-dialog').find('button.p-dialog-close').click();
+                cy.get('body').type('{esc}');
             }
         });
         cy.get('tags-explorer-dialog', { timeout: 15000 }).should('not.exist');
@@ -707,23 +707,24 @@ export class PoliciesPage {
 
     // ---- Dry-run wizard users ----
 
+    // The virtual users are managed from the "Acting as" chip of the policy viewer.
+    _openActingAsMenu() {
+        cy.get('div.user-chip', { timeout: 30000 }).click();
+        cy.get('div.viewer-menu--users', { timeout: 15000 }).should('be.visible');
+    }
+
     createDryRunUser() {
-        cy.contains('Create User').click();
+        this._openActingAsMenu();
+        cy.contains('div.viewer-menu-action', 'Create virtual user').click();
         Checks.waitForLoading();
     }
 
     openDryRunUser(user = '1') {
-        if (user === 'Administrator') {
-            cy.contains('Users').realClick();
-            cy.get(CommonElements.Loading).should('not.exist');
-            cy.contains(user).click();
-            Checks.waitForLoading();
-        } else {
-            cy.contains('Users').realClick();
-            cy.get(CommonElements.Loading).should('not.exist');
-            cy.contains(`Virtual User ${user}`).click();
-            Checks.waitForLoading();
-        }
+        const label = user === 'Administrator' ? user : `Virtual User ${user}`;
+        this._openActingAsMenu();
+        // A user with a role is listed as "<name> - <role>", so match the start of the title.
+        cy.contains('div.viewer-menu-title', label).click();
+        Checks.waitForLoading();
     }
 
     registerAs(role) {

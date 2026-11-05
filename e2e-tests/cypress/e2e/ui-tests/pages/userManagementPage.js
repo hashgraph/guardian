@@ -22,7 +22,7 @@ export class UserManagementPage {
 
     openUserManagementTab() {
         cy.visit(URL.Root + URL.UserManagement);
-        waitForPageReady('table.guardian-grid-table, div.not-exist', 3);
+        waitForPageReady('p-table.guardian-grid-table, div.not-exist', 3);
     }
 
     /**
