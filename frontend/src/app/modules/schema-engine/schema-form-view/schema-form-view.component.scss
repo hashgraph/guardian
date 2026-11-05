@@ -295,11 +295,6 @@
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 3;
     overflow: hidden;
-    padding: 0;
-    min-height: 0;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
     font-size: 13.5px;
     line-height: 20px;
 
@@ -381,18 +376,21 @@
     }
 }
 
-:host ::ng-deep .rte-view-content {
-    padding: 8px 12px;
-    min-height: 40px;
-    font-size: 14px;
-    line-height: 1.6;
+// Rich text content. The popover and the dialog are rendered in the overlay, outside this
+// component's host, so they get the same rules through the mixins.
+@mixin rich-text-tables {
+    table { border-collapse: collapse; margin: 0.5em 0; width: auto; max-width: 100%; }
+    th, td { border: 1px solid var(--guardian-border-color); padding: 4px 8px; vertical-align: top; }
+    th { background: var(--guardian-grey-color); font-weight: 600; text-align: left; }
+    th:empty::after, td:empty::after { content: '\00a0'; }
+}
+
+@mixin rich-text-type {
+    @include rich-text-tables;
     color: var(--guardian-font-color);
     word-break: break-word;
-    border: 1px solid var(--guardian-border-color);
-    border-radius: 4px;
-    background: var(--guardian-disabled-background);
-    width: 100%;
-    overflow-x: auto;
+    font-size: 14px;
+    line-height: 1.6;
 
     b, strong { font-weight: 700; }
     i, em     { font-style: italic; }
@@ -402,25 +400,14 @@
     ul        { list-style-type: disc; margin-left: 1.6em; }
     ol        { list-style-type: decimal; margin-left: 1.6em; }
     a         { color: var(--color-primary); text-decoration: underline; }
-    table     { border-collapse: collapse; margin: 0.5em 0; width: auto; max-width: 100%; }
-    th, td    { border: 1px solid var(--guardian-border-color); padding: 4px 8px; vertical-align: top; }
-    th        { background: var(--guardian-grey-color); font-weight: 600; text-align: left; }
-    th:empty::after, td:empty::after { content: '\00a0'; }
 }
 
-
-// The popover and the dialog are rendered in the overlay, outside this component's host.
-::ng-deep .rich-text-view-popover .rich-text-view-popover-content,
-::ng-deep .schema-form-view-rich-text-dialog .rte-view-content {
-    table { border-collapse: collapse; margin: 0.5em 0; width: auto; max-width: 100%; }
-    th, td { border: 1px solid var(--guardian-border-color); padding: 4px 8px; vertical-align: top; }
-    th { background: var(--guardian-grey-color); font-weight: 600; text-align: left; }
-    th:empty::after, td:empty::after { content: '\00a0'; }
-    ul { list-style-type: disc; margin-left: 1.6em; }
-    ol { list-style-type: decimal; margin-left: 1.6em; }
+:host ::ng-deep .rte-view-content {
+    @include rich-text-type;
 }
 
 ::ng-deep .rich-text-view-popover .rich-text-view-popover-content {
+    @include rich-text-tables;
     width: min(420px, 60vw);
     max-height: 220px;
     overflow: auto;
@@ -466,17 +453,14 @@
         border-bottom-left-radius: 16px;
         border-bottom-right-radius: 16px;
     }
-}
 
-::ng-deep .schema-form-view-rich-text-dialog .rte-view-content {
-    max-height: 70vh;
-    overflow: auto;
-    padding: 0;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
+    .rte-view-content {
+        @include rich-text-type;
+        max-height: 70vh;
+        overflow: auto;
 
-    img {
-        max-width: 100%;
+        img {
+            max-width: 100%;
+        }
     }
 }

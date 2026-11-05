@@ -241,19 +241,7 @@ form {
 }
 
 .sf-link {
-    border: 0;
-    background: transparent;
-    padding: 0 2px;
-    font-family: Inter;
-    font-size: 12.5px;
-    font-weight: 500;
-    color: var(--color-primary);
-    cursor: pointer;
-
-    &:hover,
-    &:focus-visible {
-        text-decoration: underline;
-    }
+    @include form-grid.sf-link;
 }
 
 .sf-adorn {

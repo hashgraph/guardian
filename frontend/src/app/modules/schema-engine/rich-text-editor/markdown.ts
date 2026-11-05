@@ -1,4 +1,4 @@
-import { isSafeHref } from './rich-text-sanitizer';
+import { isSafeHref, richTextToText } from './rich-text-sanitizer';
 
 export function escapeHtml(value: string): string {
     return value
@@ -404,10 +404,5 @@ export function markdownToPlainText(markdown: string | null | undefined): string
     if (!markdown) {
         return '';
     }
-    const html = markdownToHtml(markdown)
-        .replace(/<img[^>]*\balt="([^"]*)"[^>]*>/gi, ' $1 ')
-        .replace(/<\/(p|h[1-6]|li|tr|td|th|div|pre|blockquote)>|<br\s*\/?>/gi, ' ')
-        .replace(/<[^>]+>/g, '');
-    const text = new DOMParser().parseFromString(html, 'text/html').body.textContent || '';
-    return text.replace(/\s+/g, ' ').trim();
+    return richTextToText(markdownToHtml(markdown).replace(/<img[^>]*\balt="([^"]*)"[^>]*>/gi, ' $1 '));
 }

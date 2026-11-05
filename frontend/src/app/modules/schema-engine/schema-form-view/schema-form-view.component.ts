@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Inject, Input, LOCALE_ID, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { formatDate } from '@angular/common';
+import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from 'src/app/services/api';
 import { Subscription } from 'rxjs';
 import {
     getAllContinents,
@@ -92,6 +93,9 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
     private pageSize: number = 25;
     // Resolved images by link; null marks a link that failed to resolve.
     private imgCache = new Map<string, string | null>();
+    /** Rendered rich text per markdown value; dropped whenever an image resolves, since that changes the HTML. */
+    private richHtmlCache = new Map<string, string>();
+    private rowSummaryCache = new WeakMap<object, { title: string; sub: string }>();
     private imgRequests = new Map<string, Promise<string | null>>();
     private previewFrames = new Map<IFieldControl, number>();
     public previewRenderLimit: number = Infinity;
@@ -221,6 +225,7 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
             changes.schemaFields ||
             changes.hide
         ) {
+            this.rowSummaryCache = new WeakMap();
             if (this.preview) this.cancelPreviewSections();
             this.hide = this.hide || {};
             if (this.schemaFields) {
@@ -404,6 +409,7 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
 
         const imgSrc = await request;
         this.imgCache.set(key, imgSrc);
+        this.richHtmlCache.clear();
         return imgSrc;
     }
 
@@ -509,10 +515,6 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
         return result;
     }
 
-    public isTime(item: IFieldControl): boolean {
-        return item.type === 'string' && item.format === 'time';
-    }
-
     public isDate(item: IFieldControl): boolean {
         return item.type === 'string' && item.format === 'date';
     }
@@ -577,6 +579,10 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
 
     public getRichTextValue(value: unknown): string {
         const markdown = typeof value === 'string' ? value : '';
+        const cached = this.richHtmlCache.get(markdown);
+        if (cached !== undefined) {
+            return cached;
+        }
         const resolved = new Map<string, string>();
         for (const reference of collectImageReferences(markdown)) {
             const source = this.imgCache.get(this.imgKey(reference));
@@ -584,7 +590,9 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
                 resolved.set(reference, source);
             }
         }
-        return withNewTabLinks(markdownToHtml(markdown, resolved));
+        const html = withNewTabLinks(markdownToHtml(markdown, resolved));
+        this.richHtmlCache.set(markdown, html);
+        return html;
     }
 
     public onRichTextLinkClick(event: MouseEvent): void {
@@ -689,8 +697,8 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     public ipfsLink(link: string): string {
-        return typeof link === 'string' && link.startsWith('ipfs://')
-            ? `https://ipfs.io/ipfs/${link.substring('ipfs://'.length)}`
+        return typeof link === 'string' && link.startsWith(IPFS_SCHEMA)
+            ? `${API_IPFS_GATEWAY_URL}${link.substring(IPFS_SCHEMA.length)}`
             : link;
     }
 
@@ -768,10 +776,18 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     public rowSummary(item: IFieldControl, row: any, index: number): { title: string; sub: string } {
+        const cached = row && typeof row === 'object' ? this.rowSummaryCache.get(row) : undefined;
+        if (cached) {
+            return cached;
+        }
         const values = (item.fields || [])
             .filter((field) => !field.isArray && !field.isRef && !field.hidden && !this.hide?.[field.name])
             .map((field) => this.isRichText(field as IFieldControl) ? markdownToPlainText(row?.[field.name]) : row?.[field.name]);
-        return recordSummary(values, `${item.description} #${index + 1}`);
+        const summary = recordSummary(values, `${item.description} #${index + 1}`);
+        if (row && typeof row === 'object') {
+            this.rowSummaryCache.set(row, summary);
+        }
+        return summary;
     }
 
     public isRowOpen(item: IFieldControl, index: number): boolean {
@@ -826,10 +842,6 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
 
     public ifSubSchemaArray(item: IFieldControl): boolean {
         return item.isArray && item.isRef;
-    }
-
-    public isRules(item: IFieldControl) {
-        return this.rules ? this.rules[item.fullPath] : undefined;
     }
 
     public isRulesStatus(item: IFieldControl) {
@@ -1028,20 +1040,6 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
                 }
             } catch (e) { }
         }, 1000);
-    }
-
-    public emitAccordionSelect(isOpen: any, item: any, index?: any, childrenAccordionId?: string) {
-        if (!item) return;
-
-        let accordionId = item.fullPath || item.id || '';
-        if (index !== undefined && index !== null && index !== '') {
-            accordionId = `${accordionId}-${index}`;
-        }
-        if (childrenAccordionId) {
-            accordionId = `${accordionId};${childrenAccordionId}`;
-        }
-
-        this.onAccordionSelect.emit({ path: accordionId, isOpen: !!isOpen });
     }
 
      public onAccordionSelectEvent(isOpen: any, item: any, childrenAccordionId?: string) {
