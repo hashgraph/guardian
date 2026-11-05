@@ -4,6 +4,7 @@ import API from '../../../support/ApiUrls';
 import * as Checks from '../../../support/checkingMethods';
 import * as Authorization from '../../../support/authorization';
 import * as IpfsSeeding from '../../../support/CustomHelpers/ipfsSeeding';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, () => {
 
@@ -64,7 +65,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 requestWithAuth(METHOD.PUT, publishUrl(policyId), authorization, {
                     body: { policyVersion: '1.2.5' },
-                    timeout: 18000000,
+                    timeout: TIMEOUTS.longOperation,
                 }).then((response) => {
                     expect(response.status).to.eq(STATUS_CODE.OK);
                 });

@@ -1,3 +1,4 @@
+import { TIMEOUTS, POLL_INTERVAL } from './CustomHelpers/timeouts';
 // After a full page boot the app runs its workspace bootstrap (session, profile,
 // notifications, per-service state) and keeps the route content gated while it
 // is in flight. A single hung one-shot fetch in that bootstrap (the gateway
@@ -10,9 +11,8 @@
 // Give the marker a budget per attempt, reload between attempts, then let one
 // final standard assertion fail loudly if the marker never appeared.
 export function waitForPageReady(marker, attempts = 3) {
-	const BUDGET_MS = 45000;
 	const runAttempt = (remaining) => {
-		const deadline = Date.now() + BUDGET_MS;
+		const deadline = Date.now() + TIMEOUTS.backend;
 		const poll = () => {
 			cy.window().then((win) => {
 				if (win.document.querySelector(marker)) {
@@ -24,15 +24,14 @@ export function waitForPageReady(marker, attempts = 3) {
 					}
 					return;
 				}
-				// eslint-disable-next-line cypress/no-unnecessary-waiting -- pacing of the self-scheduling poll; an assertion timeout cannot be branched on in Cypress 15
-				cy.wait(2000).then(poll);
+				cy.wait(POLL_INTERVAL).then(poll);
 			});
 		};
 		poll();
 	};
 	runAttempt(attempts);
 	// Definitive assertion: fails loudly (and screenshots) if the marker never appeared
-	cy.get(marker, { timeout: 15000 });
+	cy.get(marker, { timeout: TIMEOUTS.ui });
 }
 
 export default waitForPageReady;

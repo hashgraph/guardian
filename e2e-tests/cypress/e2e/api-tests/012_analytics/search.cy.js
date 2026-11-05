@@ -1,6 +1,7 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Analytics', { tags: ['analytics', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
@@ -23,7 +24,7 @@ context('Analytics', { tags: ['analytics', 'thirdPool', 'all', 'all-no-mgs'] }, 
                         'content-type': 'binary/octet-stream',
                         authorization,
                     },
-                    timeout: 180000,
+                    timeout: TIMEOUTS.longOperation,
                 })).then((response) => {
                     expect(response.status, 'policy import').to.eq(STATUS_CODE.SUCCESS);
                     policyId = JSON.parse(new TextDecoder().decode(response.body)).at(0).id;

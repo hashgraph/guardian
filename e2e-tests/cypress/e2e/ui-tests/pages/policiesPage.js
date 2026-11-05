@@ -4,6 +4,7 @@ import CommonElements from '../../../support/defaultUIElements';
 import { waitForPageReady } from '../../../support/pageReadiness';
 import { dropFile, waitForTaskRoundtrip, replaceInaccessibleTools } from '../../../support/importFlow';
 import { clickButtonInWizardSteps, clickWizardTab } from '../../../support/wizardSteps';
+import { TIMEOUTS, POLL_INTERVAL } from '../../../support/CustomHelpers/timeouts';
 
 // The current app renders the policy engine on a PrimeNG 21 base. Static template
 // attributes survive to the DOM (`label="Apply"` on pButton), but bound directive
@@ -147,7 +148,7 @@ export class PoliciesPage {
         // created). Don't trust the app's editor redirect: re-derive the
         // editor from the freshly created row instead.
         this.backToPoliciesList();
-        this._row(name).find(L.editIcon, { timeout: 60000 }).click();
+        this._row(name).find(L.editIcon, { timeout: TIMEOUTS.backend }).click();
         waitForPageReady(L.editorViews, 4);
     }
 
@@ -167,7 +168,7 @@ export class PoliciesPage {
      */
     _row(name) {
         this._searchUntilListed(name, 1);
-        return cy.get(L.row, { timeout: 30000 }).filter(nameCellMatches(name));
+        return cy.get(L.row, { timeout: TIMEOUTS.backend }).filter(nameCellMatches(name));
     }
 
     // A policy created by an async task can be missing from the list for a few seconds after
@@ -184,8 +185,7 @@ export class PoliciesPage {
             if (attempt >= MAX_ATTEMPTS) {
                 throw new Error(`policy "${name}" is not listed after ${MAX_ATTEMPTS} searches`);
             }
-            // eslint-disable-next-line cypress/no-unnecessary-waiting -- the list has no DOM signal for "still being created"; pace the reload
-            cy.wait(3000);
+            cy.wait(POLL_INTERVAL);
             this.backToPoliciesList();
             this._searchUntilListed(name, attempt + 1);
         });
@@ -195,7 +195,7 @@ export class PoliciesPage {
         // A dialog left open by an unconfirmed previous step would swallow
         // every list interaction: fail on the mask itself so the screenshot
         // shows the culprit.
-        cy.get(L.dialogMask, { timeout: 10000 }).should('not.exist');
+        cy.get(L.dialogMask, { timeout: TIMEOUTS.ui }).should('not.exist');
         // separate commands: the framework re-renders the input on each
         // keystroke, so a .clear().type() chain can detach mid-command
         cy.get(L.searchInput).clear();
@@ -210,16 +210,16 @@ export class PoliciesPage {
     // Row menu
     _openRowMenu(name) {
         this._row(name).find(L.menuIcon).click();
-        cy.get(L.menuItem, { timeout: 15000 }).should('be.visible');
+        cy.get(L.menuItem, { timeout: TIMEOUTS.ui }).should('be.visible');
     }
 
     deletePolicy(policyName) {
         this._openRowMenu(policyName);
-        cy.get(L.menuItem, { timeout: 15000 }).contains('Delete Policy').click();
+        cy.get(L.menuItem, { timeout: TIMEOUTS.ui }).contains('Delete Policy').click();
         cy.get(L.dialog).find(L.deleteButton).click();
         Checks.waitForElement(L.createPolicyButton);
         this._search(policyName);
-        cy.get(L.row, { timeout: 30000 }).filter((_, el) => {
+        cy.get(L.row, { timeout: TIMEOUTS.backend }).filter((_, el) => {
             const span = el.querySelector('.text-truncate');
             return span && span.textContent.trim() === policyName;
         }).should('not.exist');
@@ -227,23 +227,23 @@ export class PoliciesPage {
 
     startDryRun(name) {
         this._row(name).find(L.statusDropdown).click();
-        cy.get(L.statusOption, { timeout: 15000 }).contains('Dry Run').click();
+        cy.get(L.statusOption, { timeout: TIMEOUTS.ui }).contains('Dry Run').click();
         // the 'Dry Run' option opens a confirm dialog; its primary button kicks
         // off the (async) push dry-run
-        cy.get(L.dialog).find('button.guardian-button-primary', { timeout: 15000 })
+        cy.get(L.dialog).find('button.guardian-button-primary', { timeout: TIMEOUTS.ui })
             .should('contain.text', 'Start Dry-Run').click();
         this._waitForAsyncStatusChange();
     }
 
     stopDryRun(name) {
         this._row(name).find(L.statusDropdown).click();
-        cy.get(L.statusOption, { timeout: 15000 }).contains('Stop').click();
+        cy.get(L.statusOption, { timeout: TIMEOUTS.ui }).contains('Stop').click();
         Checks.waitForLoading();
     }
 
     publishPolicy(name) {
         this._row(name).find(L.statusDropdown).click();
-        cy.get(L.statusOption, { timeout: 15000 }).contains('Publish').click();
+        cy.get(L.statusOption, { timeout: TIMEOUTS.ui }).contains('Publish').click();
         // eslint-disable-next-line cypress/unsafe-to-chain-command
         cy.get(L.dialog).find('input#version').clear().type('0.8.4');
         cy.get(L.dialog).contains(CommonElements.Button, 'Publish').click();
@@ -264,7 +264,7 @@ export class PoliciesPage {
 
     discontinuePolicy(name) {
         this._row(name).find(L.statusDropdown).click();
-        cy.get(L.statusOption, { timeout: 15000 }).contains('Discontinue').click();
+        cy.get(L.statusOption, { timeout: TIMEOUTS.ui }).contains('Discontinue').click();
         // this dialog is a plain p-dialog (no guardian-dialog class)
         cy.get(L.plainDialog).filter((_, el) => (el.textContent || '').includes('Discontinue policy')).as('disc');
         cy.get('@disc').find('.p-selectbutton').contains('Immediate').click();
@@ -275,7 +275,7 @@ export class PoliciesPage {
     // Import (toolbar "Import" -> file/IPFS dialog -> preview)
     _openImportDialog() {
         cy.get(L.importPolicyButton).click();
-        cy.get(L.dialog, { timeout: 15000 }).should('be.visible');
+        cy.get(L.dialog, { timeout: TIMEOUTS.ui }).should('be.visible');
     }
 
     /**
@@ -312,14 +312,14 @@ export class PoliciesPage {
      * which the :contains match covers).
      */
     _choosePreviewImport() {
-        cy.get(L.dialog).find('div.segmented', { timeout: 60000 }).as('preview');
+        cy.get(L.dialog).find('div.segmented', { timeout: TIMEOUTS.backend }).as('preview');
         cy.get('@preview').contains('New policy').click();
         // Policies referencing tools this gateway cannot resolve show the rows
         // invalid and hold the Import button ("inaccessible Tools"); re-point
         // each row at the same-named workspace tool first.
         replaceInaccessibleTools();
         cy.get('@preview').closest(L.dialog).find('div.dialog-footer button:contains("Import")')
-            .should('not.be.disabled', { timeout: 30000 })
+            .should('not.be.disabled', { timeout: TIMEOUTS.backend })
             .click();
     }
 
@@ -337,12 +337,12 @@ export class PoliciesPage {
     }
 
     openPolicy(name) {
-        this._row(name).find(L.instanceButton, { timeout: 30000 }).click();
+        this._row(name).find(L.instanceButton, { timeout: TIMEOUTS.backend }).click();
         waitForPageReady(L.viewerIdentity, 3);
     }
 
     openEditingPolicy(name) {
-        this._row(name).find(L.editIcon, { timeout: 30000 }).click();
+        this._row(name).find(L.editIcon, { timeout: TIMEOUTS.backend }).click();
         waitForPageReady(L.editorViews, 4);
     }
 
@@ -434,21 +434,21 @@ export class PoliciesPage {
         // tag the cell shows the tag chip, which opens the explorer dialog that
         // hosts the button. Click the control itself - the cell center can fall
         // in dead space and the click would be a no-op.
-        const cell = this._row(policyName).find('tags-explorer', { timeout: 15000 });
+        const cell = this._row(policyName).find('tags-explorer', { timeout: TIMEOUTS.ui });
         cell.then(($cell) => {
             const chip = $cell.find('.main-tags');
             if (chip.length) {
                 cy.wrap(chip.first()).click();
-                cy.contains('tags-explorer-dialog button', 'Create a Tag', { timeout: 15000 }).click();
+                cy.contains('tags-explorer-dialog button', 'Create a Tag', { timeout: TIMEOUTS.ui }).click();
             } else {
                 cy.wrap($cell.find('button.p-button-outlined').first()).click();
             }
         });
-        cy.get('tags-create-dialog input.p-field-input[formcontrolname="name"]', { timeout: 15000 }).clear();
+        cy.get('tags-create-dialog input.p-field-input[formcontrolname="name"]', { timeout: TIMEOUTS.ui }).clear();
         cy.get('tags-create-dialog input.p-field-input[formcontrolname="name"]').type(name);
         // pButton binds [label], which leaves no attribute in the DOM: find the button by its text.
         cy.contains('tags-create-dialog button', 'Create').click();
-        cy.get('tags-create-dialog', { timeout: 15000 }).should('not.exist');
+        cy.get('tags-create-dialog', { timeout: TIMEOUTS.ui }).should('not.exist');
         // In the chip branch the explorer stays open behind; close it so the
         // list row underneath is interactable for the next step.
         cy.get('body').then(($body) => {
@@ -457,17 +457,17 @@ export class PoliciesPage {
                 cy.get('body').type('{esc}');
             }
         });
-        cy.get('tags-explorer-dialog', { timeout: 15000 }).should('not.exist');
+        cy.get('tags-explorer-dialog', { timeout: TIMEOUTS.ui }).should('not.exist');
         Checks.waitForLoading();
     }
 
     deleteTag(policyName, name) {
         // The cell renders the tag chip once the policy has a tag; click the chip
         // (not the cell, whose center can fall in dead space) to open the explorer.
-        this._row(policyName).find('tags-explorer .main-tags', { timeout: 15000 }).first().click();
+        this._row(policyName).find('tags-explorer .main-tags', { timeout: TIMEOUTS.ui }).first().click();
         Checks.waitForLoading();
-        cy.get('tags-explorer-dialog', { timeout: 15000 }).contains('div.name', name).click();
-        cy.get('tags-explorer-dialog .details-container svg-icon[src*="delete"]', { timeout: 15000 }).first().click();
+        cy.get('tags-explorer-dialog', { timeout: TIMEOUTS.ui }).contains('div.name', name).click();
+        cy.get('tags-explorer-dialog .details-container svg-icon[src*="delete"]', { timeout: TIMEOUTS.ui }).first().click();
         cy.get('body').then((body) => {
             const confirm = body.find('button').filter((_, button) => button.textContent.trim() === 'Delete');
             if (confirm.length) {
@@ -475,7 +475,7 @@ export class PoliciesPage {
             }
         });
         Checks.waitForLoading();
-        cy.get('tags-explorer-dialog').contains('div.name', name).should('not.exist', { timeout: 15000 });
+        cy.get('tags-explorer-dialog').contains('div.name', name).should('not.exist', { timeout: TIMEOUTS.ui });
         // The explorer stays open after the deletion; close it so the list row
         // underneath is interactable for the next step.
         cy.get('body').then(($body) => {
@@ -484,15 +484,15 @@ export class PoliciesPage {
                 cy.get('body').type('{esc}');
             }
         });
-        cy.get('tags-explorer-dialog', { timeout: 15000 }).should('not.exist');
+        cy.get('tags-explorer-dialog', { timeout: TIMEOUTS.ui }).should('not.exist');
     }
 
     // ---- Export ----
 
     openExportModal(name) {
         this._openRowMenu(name);
-        cy.get(L.menuItem, { timeout: 15000 }).filter((_, el) => el.textContent.trim() === 'Export policy').click();
-        cy.get(L.dialog, { timeout: 15000 }).should('be.visible');
+        cy.get(L.menuItem, { timeout: TIMEOUTS.ui }).filter((_, el) => el.textContent.trim() === 'Export policy').click();
+        cy.get(L.dialog, { timeout: TIMEOUTS.ui }).should('be.visible');
     }
 
     exportPolicyAsFile(name) {
@@ -517,7 +517,7 @@ export class PoliciesPage {
 
     verifyThatDeleteButtonIsNotActive(name) {
         this._openRowMenu(name);
-        cy.get(L.menuItem, { timeout: 15000 }).filter((_, el) => el.textContent.trim() === 'Delete Policy').find('button').should('be.disabled');
+        cy.get(L.menuItem, { timeout: TIMEOUTS.ui }).filter((_, el) => el.textContent.trim() === 'Delete Policy').find('button').should('be.disabled');
     }
 
     // ---- Editor (policy-configuration) ----
@@ -528,8 +528,6 @@ export class PoliciesPage {
      * selected block's Tag through the right-hand inspector.
      */
     editPolicyProperty(property, name) {
-        // eslint-disable-next-line cypress/no-unnecessary-waiting -- editor settle time before editing a property
-        cy.wait(500);
         if (property === 'Tag') {
             cy.get('.right-bottom-toolbar').find('td.cellName', new RegExp('^' + property + '$')).parent().find('input.prop-input').clear();
             cy.get('.right-bottom-toolbar').find('td.cellName', new RegExp('^' + property + '$')).parent().find('input.prop-input').type(name);
@@ -546,14 +544,14 @@ export class PoliciesPage {
     _ensureSettingsDrawer() {
         // The editor renders a full-page preloader while it loads and it swallows
         // the identity click underneath, so wait for it to clear first.
-        cy.get(L.loadingOverlay, { timeout: 60000 }).should('not.exist');
+        cy.get(L.loadingOverlay, { timeout: TIMEOUTS.backend }).should('not.exist');
         cy.get('body').then(($body) => {
             if ($body.find(L.drawerPanel + '.open').length === 0) {
-                cy.get(L.settingsIdentity, { timeout: 15000 }).click();
-                cy.get(L.identityAction, { timeout: 15000 }).click();
+                cy.get(L.settingsIdentity, { timeout: TIMEOUTS.ui }).click();
+                cy.get(L.identityAction, { timeout: TIMEOUTS.ui }).click();
             }
         });
-        cy.get(L.drawerPanel + '.open', { timeout: 15000 }).should('exist');
+        cy.get(L.drawerPanel + '.open', { timeout: TIMEOUTS.ui }).should('exist');
     }
 
     _closeSettingsDrawer() {
@@ -586,8 +584,8 @@ export class PoliciesPage {
     // Settings drawer (opened from the policy identity popover)
     openSettingsDrawer() {
         cy.get(L.settingsIdentity).click();
-        cy.get(L.settingsAction, { timeout: 15000 }).click();
-        cy.get('.psd-panel.open', { timeout: 15000 }).should('be.visible');
+        cy.get(L.settingsAction, { timeout: TIMEOUTS.ui }).click();
+        cy.get('.psd-panel.open', { timeout: TIMEOUTS.ui }).should('be.visible');
     }
 
     closeSettingsDrawer() {
@@ -597,9 +595,9 @@ export class PoliciesPage {
     addNewBlock(name) {
         // The drag chip is an opacity-0 overlay, so filter the palette and click the
         // visible component button, which carries the onAdd handler.
-        cy.get(L.componentsSearch, { timeout: 15000 }).clear();
+        cy.get(L.componentsSearch, { timeout: TIMEOUTS.ui }).clear();
         cy.get(L.componentsSearch).type(name);
-        cy.contains(L.componentBtn, name, { timeout: 15000 }).click();
+        cy.contains(L.componentBtn, name, { timeout: TIMEOUTS.ui }).click();
         cy.get(L.componentsSearch).clear();
     }
 
@@ -621,9 +619,7 @@ export class PoliciesPage {
     }
 
     checkBlockNotExist(name) {
-        // eslint-disable-next-line cypress/no-unnecessary-waiting -- settle time for the removed block to disappear
-        cy.wait(10000);
-        cy.get(L.blockItemName(name)).should('not.exist');
+        cy.get(L.blockItemName(name), { timeout: TIMEOUTS.ui }).should('not.exist');
     }
 
     clickOnDeleteBlockButton() {
@@ -635,8 +631,6 @@ export class PoliciesPage {
     }
 
     verifyIfSearchResultContains(text) {
-        // eslint-disable-next-line cypress/no-unnecessary-waiting -- settle time for the search result to render
-        cy.wait(1000);
         cy.get(L.componentsContainer).contains(text).should('exist');
     }
 
@@ -656,11 +650,11 @@ export class PoliciesPage {
     // The Design/JSON/YAML segment of the editor toolbar; "Tree" is the Design view.
     switchView(view) {
         const label = view === 'Tree' ? 'Design' : view;
-        cy.get(L.viewSegmentItem, { timeout: 15000 }).contains(label).click();
+        cy.get(L.viewSegmentItem, { timeout: TIMEOUTS.ui }).contains(label).click();
     }
 
     runValidation() {
-        cy.get(L.validation, { timeout: 15000 }).click();
+        cy.get(L.validation, { timeout: TIMEOUTS.ui }).click();
     }
 
     verifyIfSearchResultIsEmpty() {
@@ -709,8 +703,8 @@ export class PoliciesPage {
 
     // The virtual users are managed from the "Acting as" chip of the policy viewer.
     _openActingAsMenu() {
-        cy.get('div.user-chip', { timeout: 30000 }).click();
-        cy.get('div.viewer-menu--users', { timeout: 15000 }).should('be.visible');
+        cy.get('div.user-chip', { timeout: TIMEOUTS.backend }).click();
+        cy.get('div.viewer-menu--users', { timeout: TIMEOUTS.ui }).should('be.visible');
     }
 
     createDryRunUser() {
@@ -728,7 +722,7 @@ export class PoliciesPage {
     }
 
     registerAs(role) {
-        cy.get(L.rolesForm, { timeout: 30000 }).then(($form) => {
+        cy.get(L.rolesForm, { timeout: TIMEOUTS.backend }).then(($form) => {
             const card = $form.find(`button[data-role="${role}"]`).first();
             if (card.length) {
                 cy.wrap(card).click();

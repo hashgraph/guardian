@@ -1,5 +1,6 @@
 import { METHOD, STATUS_CODE } from './api/api-const';
 import API from './ApiUrls';
+import { TIMEOUTS, POLL_INTERVAL } from './CustomHelpers/timeouts';
 
 // The CDM library tool archives were exported from testnet, so the nested tool
 // references they contain carry testnet messageIds. Those messages do not
@@ -96,8 +97,7 @@ const requestWithRetry = (options, label, expectedStatus, attempts = 3) => {
             return response;
         }
         if (response.status === 500 && attempts > 1) {
-            // eslint-disable-next-line cypress/no-unnecessary-waiting -- back off between retries
-            return cy.wait(3000).then(() => requestWithRetry(options, label, expectedStatus, attempts - 1));
+            return cy.wait(POLL_INTERVAL).then(() => requestWithRetry(options, label, expectedStatus, attempts - 1));
         }
         throw new Error(`${label}: status ${response.status} (expected ${expectedStatus}), body: ${decodeBody(response.body).slice(0, 500)}`);
     });
@@ -123,7 +123,7 @@ const importAndPublishTool = (name, authorization, local) => {
                 url: API.ApiServer + API.ToolsImportFileMetadata,
                 body: form,
                 headers: { authorization },
-                timeout: 180000,
+                timeout: TIMEOUTS.longOperation,
             }, `importing tool ${name}`, STATUS_CODE.SUCCESS);
         })
         .then((response) => {
@@ -135,7 +135,7 @@ const importAndPublishTool = (name, authorization, local) => {
                 url: `${API.ApiServer}${API.Tools}${tool.id}/publish`,
                 body: { toolVersion: '1.0.0' },
                 headers: { authorization, 'content-type': 'application/json' },
-                timeout: 180000,
+                timeout: TIMEOUTS.longOperation,
             }, `publishing tool ${name}`, STATUS_CODE.OK);
         })
         .then((response) => {
@@ -183,7 +183,7 @@ export const importPolicyArchive = (archivePath, fileName, displayName, authoriz
                 url: API.ApiServer + API.PolicisImportFileMetadata,
                 body: form,
                 headers: { authorization },
-                timeout: 180000,
+                timeout: TIMEOUTS.longOperation,
             }, `importing policy ${displayName}`, STATUS_CODE.SUCCESS);
         })
         .then((response) => {
@@ -205,7 +205,7 @@ export const importPolicyFile = (archivePath, fileName, displayName, authorizati
             url: API.ApiServer + API.PolicisImportFile,
             body: file,
             headers: { 'content-type': 'binary/octet-stream', authorization },
-            timeout: 180000,
+            timeout: TIMEOUTS.longOperation,
         }, `importing policy ${displayName}`, STATUS_CODE.SUCCESS))
         .then((response) => {
             const policies = parseImportResponse(response);

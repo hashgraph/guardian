@@ -46,7 +46,6 @@ context('Check logs page', { tags: ['ui'] }, () => {
 
     it('Verify if it possible to save logs', () => {
         logs.clickOnButton('Save logs');
-        cy.wait(2000);
         cy.checkIfFileExistByPartialName('logs');
     });
 

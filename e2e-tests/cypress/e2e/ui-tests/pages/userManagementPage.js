@@ -1,5 +1,6 @@
 import URL from '../../../support/GuardianUrls';
 import { waitForPageReady } from '../../../support/pageReadiness';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 const L = {
     // user grid (route /user-management)
@@ -36,18 +37,18 @@ export class UserManagementPage {
         // Enter commits the filter before the row click: a plain click blurs the
         // search input, and that change navigation would win the race against the
         // row's detail navigation, leaving the test on the list page.
-        cy.get(L.searchInput, { timeout: 30000 }).clear();
+        cy.get(L.searchInput, { timeout: TIMEOUTS.backend }).clear();
         cy.get(L.searchInput).type(userName + '{enter}');
-        cy.location('search', { timeout: 15000 }).should('include', `username=${encodeURIComponent(userName)}`);
-        cy.get(L.userRow, { timeout: 30000 }).filter((_, el) => {
+        cy.location('search', { timeout: TIMEOUTS.ui }).should('include', `username=${encodeURIComponent(userName)}`);
+        cy.get(L.userRow, { timeout: TIMEOUTS.backend }).filter((_, el) => {
             const cell = el.querySelector(L.userName);
             return cell && cell.textContent.trim() === userName;
         }).click();
 
-        cy.get(L.detailName, { timeout: 30000 }).should('contain.text', userName);
-        cy.get(L.assignedTab, { timeout: 15000 }).contains('Assigned policies').click();
+        cy.get(L.detailName, { timeout: TIMEOUTS.backend }).should('contain.text', userName);
+        cy.get(L.assignedTab, { timeout: TIMEOUTS.ui }).contains('Assigned policies').click();
 
-        cy.get(L.policyTable, { timeout: 30000 });
+        cy.get(L.policyTable, { timeout: TIMEOUTS.backend });
         this._policyRow(policyName, 0).then(($name) => {
 
             return cy.wrap($name).closest('tr').find(L.assignSwitch);
@@ -70,22 +71,23 @@ export class UserManagementPage {
         if (depth > 10) {
             throw new Error(`Policy "${policyName}" not found in the assigned policies table`);
         }
-        return cy.get(`${L.policyTable} ${L.policyName}`, { timeout: 30000, log: false }).then(($names) => {
+        return cy.get(`${L.policyTable} ${L.policyName}`, { timeout: TIMEOUTS.backend, log: false }).then(($names) => {
             const row = $names.toArray().find((el) => Cypress.$.trim(el.textContent) === policyName);
             if (row) {
                 return cy.wrap(row, { log: false });
             }
-            return cy.get(L.paginatorRange, { timeout: 10000, log: false }).then(($range) => {
+            return cy.get(L.paginatorRange, { timeout: TIMEOUTS.ui, log: false }).then(($range) => {
                 const match = ($range.text() || '').match(/(\d+)\s*–\s*(\d+)\s*of\s*(\d+)/);
                 const hasMore = match && Number(match[2]) < Number(match[3]);
                 if (!hasMore) {
                     throw new Error(`Policy "${policyName}" not found in the assigned policies table (${($range.text() || '').trim()})`);
                 }
-                // eslint-disable-next-line cypress/unsafe-to-chain-command
-                return cy.get(L.paginatorNext, { timeout: 10000 }).click({ force: true })
-                    // eslint-disable-next-line cypress/no-unnecessary-waiting -- settle time for the paged table to render
-                    .then(() => cy.wait(1500, { log: false }))
-                    .then(() => this._policyRow(policyName, depth + 1));
+                const rangeBefore = $range.text();
+                cy.get(L.paginatorNext, { timeout: TIMEOUTS.ui }).click({ force: true });
+                cy.get(L.paginatorRange, { timeout: TIMEOUTS.ui, log: false }).should(($next) => {
+                    expect($next.text(), 'the paginator range after Next').to.not.eq(rangeBefore);
+                });
+                return this._policyRow(policyName, depth + 1);
             });
         });
     }

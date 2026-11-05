@@ -3,6 +3,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import { seededMessageId } from '../../../support/CustomHelpers/ipfsSeeding';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Analytics', { tags: ['analytics', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
@@ -26,7 +27,7 @@ context('Analytics', { tags: ['analytics', 'thirdPool', 'all', 'all-no-mgs'] }, 
         toolIds,
     });
 
-    const importToolWithAuth = (authorization, messageId, timeout = 180000) =>
+    const importToolWithAuth = (authorization, messageId, timeout = TIMEOUTS.longOperation) =>
         cy.request({
             method: METHOD.POST,
             url: URLS.toolsImportMsg,

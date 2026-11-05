@@ -3,6 +3,7 @@ import * as Checks from '../../../support/checkingMethods';
 import CommonElements from '../../../support/defaultUIElements';
 import { dropFile } from '../../../support/importFlow';
 import { addTag, deleteTag } from '../../../support/tagsExplorer';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 // The modules list (PrimeNG table, newest modules first, so a module created by a run is on page 1).
 const List = {
@@ -85,16 +86,16 @@ export class ModulesPage {
         cy.visit(URL.Root + URL.Modules);
         Checks.waitForLoading();
         // The list is loaded once either its rows or the empty-state message are rendered.
-        cy.get(`${List.row}, div.not-exist`, { timeout: 30000 }).should('exist');
+        cy.get(`${List.row}, div.not-exist`, { timeout: TIMEOUTS.backend }).should('exist');
     }
 
     _row(name) {
-        return cy.get(List.row, { timeout: 30000 }).filter(nameCellMatches(name));
+        return cy.get(List.row, { timeout: TIMEOUTS.backend }).filter(nameCellMatches(name));
     }
 
     createNewModule(moduleName) {
         cy.contains(List.toolbarButton, 'Create a Module').click();
-        cy.get(List.dialog, { timeout: 15000 }).find('input#name').type(moduleName);
+        cy.get(List.dialog, { timeout: TIMEOUTS.ui }).find('input#name').type(moduleName);
         cy.get(List.dialog).find('input#name').should('have.value', moduleName);
         cy.get(List.dialog).contains('button', 'Create').click();
         Checks.waitForLoading();
@@ -103,7 +104,7 @@ export class ModulesPage {
 
     _openImportDialog() {
         cy.contains(List.toolbarButton, 'Import').click();
-        cy.get(CommonElements.dialogWindow, { timeout: 15000 }).should('be.visible');
+        cy.get(CommonElements.dialogWindow, { timeout: TIMEOUTS.ui }).should('be.visible');
     }
 
     // The preview dialog that follows both imports: its footer holds the Import button that creates the module.
@@ -114,10 +115,10 @@ export class ModulesPage {
             this._openImportDialog();
             startImport();
             // The preview opens over the import dialog and both footers have an Import button: the preview is "Import module".
-            cy.contains(CommonElements.dialogWindow, 'Import module', { timeout: 60000 })
+            cy.contains(CommonElements.dialogWindow, 'Import module', { timeout: TIMEOUTS.backend })
                 .find(List.previewImportButton).should('not.be.disabled').click();
             Checks.waitForLoading();
-            cy.get(List.row, { timeout: 30000 }).should(($rows) => {
+            cy.get(List.row, { timeout: TIMEOUTS.backend }).should(($rows) => {
                 expect($rows.filter(importedNameMatches(name)).length).to.eq(rowsBefore + 1);
             });
         });
@@ -141,9 +142,9 @@ export class ModulesPage {
     deleteModule(moduleName) {
         // Only drafts can be deleted, and imported archives may share their name with a published module.
         const isDraft = (_, row) => row.querySelector(List.statusCell)?.textContent.trim() === 'Draft';
-        const draftRows = () => cy.get(List.row, { timeout: 30000 }).filter(importedNameMatches(moduleName)).filter(isDraft);
+        const draftRows = () => cy.get(List.row, { timeout: TIMEOUTS.backend }).filter(importedNameMatches(moduleName)).filter(isDraft);
         draftRows().first().find(List.deleteIcon).click();
-        cy.get(List.dialog, { timeout: 15000 }).find(List.deleteConfirm).click();
+        cy.get(List.dialog, { timeout: TIMEOUTS.ui }).find(List.deleteConfirm).click();
         Checks.waitForLoading();
         cy.get('body').should(($body) => {
             expect($body.find(List.row).filter(importedNameMatches(moduleName)).filter(isDraft).length).to.eq(0);
@@ -156,7 +157,7 @@ export class ModulesPage {
 
     openExportModal(name) {
         this._row(name).find(List.exportIcon).click();
-        cy.get(CommonElements.dialogWindow, { timeout: 15000 }).should('be.visible');
+        cy.get(CommonElements.dialogWindow, { timeout: TIMEOUTS.ui }).should('be.visible');
     }
 
     exportModuleAsFile(name) {
@@ -226,11 +227,10 @@ export class ModulesPage {
 
     openEditingModule(name) {
         cy.contains(name).parent().find(ModulesPageLocators.moduleEditButton).click();
-        Checks.waitForElement(ModulesPageLocators.moduleBlock, undefined, 5000);
+        Checks.waitForElement(ModulesPageLocators.moduleBlock);
     }
 
     editModuleProperty(property, name) {
-        cy.wait(500)
         if (property == 'Description')
             {cy.contains('td.cellName', new RegExp('^' + property + '$', 'g')).parent().find(CommonElements.textarea).clear();
             cy.contains('td.cellName', new RegExp('^' + property + '$', 'g')).parent().find(CommonElements.textarea).type(name);}
@@ -274,8 +274,7 @@ export class ModulesPage {
     }
 
     checkBlockNotExist(name) {
-        cy.wait(10000)
-        cy.get(ModulesPageLocators.blockItemName(name)).should('not.exist');
+        cy.get(ModulesPageLocators.blockItemName(name), { timeout: TIMEOUTS.ui }).should('not.exist');
     }
 
     clickOnDeleteBlockButton() {

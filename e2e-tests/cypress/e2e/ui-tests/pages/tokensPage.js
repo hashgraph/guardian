@@ -2,6 +2,7 @@ import URL from '../../../support/GuardianUrls';
 import * as Checks from '../../../support/checkingMethods';
 import { waitForPageReady } from '../../../support/pageReadiness';
 import { addTag, deleteTag } from '../../../support/tagsExplorer';
+import { TIMEOUTS, POLL_INTERVAL } from '../../../support/CustomHelpers/timeouts';
 
 // The token lists (/tokens, /tokens-user) and the per-token user views share one
 // grid markup: rows are tr.guardian-grid-row and the first cell is a
@@ -65,11 +66,11 @@ export class TokensPage {
      * name, and the list is newest-first, so the current run's token leads page 1.
      */
     _tokenRow(policyName) {
-        return cy.contains(L.gridRow, policyName, { timeout: 60000 });
+        return cy.contains(L.gridRow, policyName, { timeout: TIMEOUTS.backend });
     }
 
     // The user row of the open per-token user view, matched on the first cell.
-    _userRow(username, timeout = 60000) {
+    _userRow(username, timeout = TIMEOUTS.backend) {
         return cy.get(L.gridRow, { timeout }).filter((_, el) => {
             const cell = el.querySelector('span.text-truncate');
             return cell && cell.textContent.trim() === username;
@@ -84,30 +85,27 @@ export class TokensPage {
      * pass: a stored row scope (alias or get) detaches when the view
      * re-renders and would fail the subject check.
      */
-    _waitForLabelFlip(rowQuery, buttonSelector, expected, retries = 30) {
-        const check = (left) => {
+    _waitForLabelFlip(rowQuery, buttonSelector, expected, timeout = TIMEOUTS.backend) {
+        const check = (deadline) => {
             rowQuery().first()
-                .find(buttonSelector, { timeout: 20000 })
+                .find(buttonSelector, { timeout: TIMEOUTS.ui })
                 .first()
                 .invoke('text')
                 .then((text) => {
                     if (Cypress.$.trim(text).includes(expected)) {
                         return;
                     }
-                    expect(left, `task did not land after ${30 - left} refreshes`)
-                        .to.be.greaterThan(0);
-                    // Pacing: let the backend task finish before re-querying, so each
-                    // refresh has a real chance of landing the new state.
-                    // eslint-disable-next-line cypress/no-unnecessary-waiting
-                    cy.wait(5000);
+                    expect(Date.now(), `"${expected}" did not show up within ${timeout} ms (last label: "${Cypress.$.trim(text)}")`)
+                        .to.be.lessThan(deadline);
+                    cy.wait(POLL_INTERVAL, { log: false });
                     rowQuery().first()
-                        .find(L.refreshIcon, { timeout: 20000 })
+                        .find(L.refreshIcon, { timeout: TIMEOUTS.ui })
                         .first()
                         .click({ force: true });
-                    check(left - 1);
+                    check(deadline);
                 });
         };
-        check(retries);
+        cy.then(() => check(Date.now() + timeout));
     }
 
     /**
@@ -117,7 +115,7 @@ export class TokensPage {
      */
     storeTokenId(policyName) {
         this._tokenRow(policyName)
-            .find('hedera-explorer', { timeout: 15000 })
+            .find('hedera-explorer', { timeout: TIMEOUTS.ui })
             .first()
             .invoke('text')
             .then((tokenId) => {
@@ -142,9 +140,9 @@ export class TokensPage {
             cy.visit(`${URL.Root}${URL.TokensUser}?tokenId=${btoa(tokenId)}`);
         });
         waitForPageReady(L.grid, 3);
-        cy.get(L.gridRow, { timeout: 30000 }).first().as('accountRow');
+        cy.get(L.gridRow, { timeout: TIMEOUTS.backend }).first().as('accountRow');
         cy.get('@accountRow')
-            .find(L.associateButton, { timeout: 30000 })
+            .find(L.associateButton, { timeout: TIMEOUTS.backend })
             .then(($button) => {
                 const label = Cypress.$.trim($button.first().text());
                 if (label === 'Associate') {
@@ -152,17 +150,17 @@ export class TokensPage {
                 }
                 cy.log('Account is already associated');
             });
-        this._waitForLabelFlip(() => cy.get(L.gridRow, { timeout: 20000 }), L.associateButton, 'Dissociate');
+        this._waitForLabelFlip(() => cy.get(L.gridRow, { timeout: TIMEOUTS.ui }), L.associateButton, 'Dissociate');
     }
 
     // Grants KYC to `username` in the run's token. Runs after associatePolicyToken
     // (the switch stays disabled while the account is not associated).
     grantKYC(policyName, username) {
         this.openTokensTab();
-        this._tokenRow(policyName).find(L.tokenUsersIcon, { timeout: 15000 }).click();
+        this._tokenRow(policyName).find(L.tokenUsersIcon, { timeout: TIMEOUTS.ui }).click();
         waitForPageReady(L.grid, 3);
         this._userRow(username)
-            .find(L.kycButton, { timeout: 30000 })
+            .find(L.kycButton, { timeout: TIMEOUTS.backend })
             .then(($button) => {
                 const label = Cypress.$.trim($button.first().text());
                 if (label === 'Grant KYC') {
@@ -176,12 +174,12 @@ export class TokensPage {
     // Waits until `username`'s balance on the run's token reaches `balance`.
     verifyBalance(policyName, username, balance = ' 1 ') {
         this.openTokensTab();
-        this._tokenRow(policyName).find(L.tokenUsersIcon, { timeout: 15000 }).click();
+        this._tokenRow(policyName).find(L.tokenUsersIcon, { timeout: TIMEOUTS.ui }).click();
         waitForPageReady(L.grid, 3);
         // the balance cell renders only for an associated account; a missing cell
         // means the association state has not landed, so fail with a clear wait
         this._userRow(username)
-            .find(L.balance, { timeout: 120000 })
+            .find(L.balance, { timeout: TIMEOUTS.backend })
             .should('exist');
         Checks.waitForBalanceIncrease(balance, username);
     }
@@ -190,7 +188,7 @@ export class TokensPage {
 
     // The token row with a cell reading exactly `name` (names are unique per run, newest tokens first).
     _manageRow(name) {
-        return cy.get(L.gridRow, { timeout: 30000 }).filter((_, row) =>
+        return cy.get(L.gridRow, { timeout: TIMEOUTS.backend }).filter((_, row) =>
             Array.from(row.querySelectorAll(L.manage.textCell)).some((cell) => cell.textContent.trim() === name));
     }
 
@@ -208,7 +206,7 @@ export class TokensPage {
 
     createToken(name, published = false, nft = false, adminKey = true, wipeKey = true, freeze = false, KYC = false) {
         cy.contains('p-button', 'Create token').click();
-        cy.get(L.manage.dialog, { timeout: 15000 }).should('be.visible');
+        cy.get(L.manage.dialog, { timeout: TIMEOUTS.ui }).should('be.visible');
         this._setInput(L.manage.tokenNameInput, name);
         if (published) {
             cy.get(L.manage.dialog).find(L.manage.statusSwitch).first().click({ force: true });
@@ -238,7 +236,7 @@ export class TokensPage {
     deleteToken(name) {
         // The icons ignore pointer events; the click is handled by the button around them.
         this._manageRow(name).find(L.manage.deleteIcon).closest(L.manage.iconButton).click();
-        cy.get(L.manage.deleteDialog, { timeout: 15000 }).find(L.manage.deleteConfirm).click();
+        cy.get(L.manage.deleteDialog, { timeout: TIMEOUTS.ui }).find(L.manage.deleteConfirm).click();
         Checks.waitForTaskComplete();
         Checks.waitForLoading();
         cy.get('body').should(($body) => {
@@ -255,7 +253,7 @@ export class TokensPage {
 
     editToken(name, editname, editSymbol) {
         this._manageRow(name).find(L.manage.editIcon).closest(L.manage.iconButton).click();
-        cy.get(L.manage.dialog, { timeout: 15000 }).should('be.visible');
+        cy.get(L.manage.dialog, { timeout: TIMEOUTS.ui }).should('be.visible');
         this._setInput(L.manage.tokenNameInput, editname);
         this._setInput(L.manage.tokenSymbolInput, editSymbol);
         cy.get(L.manage.dialog).contains('button', 'Save').click();

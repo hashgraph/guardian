@@ -2,6 +2,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import { randomInt } from '../../../support/random';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Create Policy by Wizard', { tags: ['wizard', 'firstPool', 'all', 'all-no-mgs'] }, () => {
 
@@ -267,7 +268,7 @@ context('Create Policy by Wizard', { tags: ['wizard', 'firstPool', 'all', 'all-n
                 headers: {
                     authorization,
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.longOperation
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.SUCCESS);
             });

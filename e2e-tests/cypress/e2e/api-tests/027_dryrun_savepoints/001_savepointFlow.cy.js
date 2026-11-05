@@ -2,6 +2,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import * as Checks from '../../../support/checkingMethods';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
@@ -15,7 +16,7 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                 headers: {
                     authorization,
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 response.body.forEach(element => {
@@ -29,7 +30,7 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                     headers: {
                         authorization
                     },
-                    timeout: 180000
+                    timeout: TIMEOUTS.backend
                 })
             })
         })
@@ -44,7 +45,7 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                 headers: {
                     authorization
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.SUCCESS);
                 //Save DIDs
@@ -60,10 +61,10 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                     body: {
                         did: registrantDid
                     },
-                    timeout: 180000
+                    timeout: TIMEOUTS.backend
                 }).then(() => {
                     //Block wait
-                    cy.wait(5000);
+                    Checks.waitForBlockAvailable(API.ApiServer + API.Policies + policyId + '/' + API.ChooseRegistrantRole, authorization);
                     //Choose registrant role
                     cy.request({
                         method: METHOD.POST,
@@ -74,10 +75,10 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                         body: {
                             role: 'Registrant'
                         },
-                        timeout: 180000
+                        timeout: TIMEOUTS.backend
                     }).then(() => {
                         //Block wait
-                        cy.wait(5000);
+                        Checks.waitForBlockAvailable(API.ApiServer + API.Policies + policyId + '/' + API.CreateApplication, authorization);
                         //Create application
                         cy.request({
                             method: METHOD.POST,
@@ -93,10 +94,10 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                                 },
                                 ref: null
                             },
-                            timeout: 180000
+                            timeout: TIMEOUTS.backend
                         }).then(() => {
-                            //Block wait
-                            cy.wait(5000);
+                            // The registrant reaches wait_for_approve only once the application is saved, which SV1 has to contain
+                            Checks.waitForBlockAvailable(API.BlockByTag(policyId, 'wait_for_approve'), authorization);
                             cy.request({
                                 method: METHOD.POST,
                                 url: API.ApiServer + API.Policies + policyId + '/' + API.Savepoint,
@@ -107,7 +108,7 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                                     'name': 'SV1',
                                     'savepointPath': []
                                 },
-                                timeout: 180000
+                                timeout: TIMEOUTS.backend
                             }).then((response) => {
                                 expect(response.status).to.eq(STATUS_CODE.OK);
                                 sv1 = response.body.savepoint.id;
@@ -130,17 +131,20 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                 body: {
                     did: adminDid
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then(() => {
-                cy.wait(5000);
                 //Get document id for approve
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.Policies + policyId + '/' + API.GetApplications,
-                    headers: {
-                        authorization
+                Checks.pollUntil({
+                    request: {
+                        method: METHOD.GET,
+                        url: API.ApiServer + API.Policies + policyId + '/' + API.GetApplications,
+                        headers: {
+                            authorization
+                        },
+                        timeout: TIMEOUTS.backend
                     },
-                    timeout: 180000
+                    predicate: (response) => response.body?.data?.at(0) && response,
+                    description: 'the application in the registrants grid'
                 }).then((response) => {
                     //Block wait
                     let appData = response.body.data.at(0)
@@ -156,17 +160,19 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                             document: appData,
                             tag: 'Button_0'
                         },
-                        timeout: 180000
+                        timeout: TIMEOUTS.backend
                     }).then(() => {
-                        //Block wait
-                        cy.wait(5000);
-                        cy.request({
-                            method: METHOD.GET,
-                            url: API.ApiServer + API.Policies + policyId + '/' + API.GetApplications,
-                            headers: {
-                                authorization
+                        Checks.pollUntil({
+                            request: {
+                                method: METHOD.GET,
+                                url: API.ApiServer + API.Policies + policyId + '/' + API.GetApplications,
+                                headers: {
+                                    authorization
+                                },
+                                timeout: TIMEOUTS.backend
                             },
-                            timeout: 180000
+                            predicate: (response) => response.body?.data?.at(0)?.option?.status === 'Approved' && response,
+                            description: 'the application to be Approved'
                         }).then((response) => {
                             expect(response.body.data.at(0).option.status).to.eq('Approved')
                             cy.request({
@@ -179,7 +185,7 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                                     'name': 'SV2',
                                     'savepointPath': [sv1]
                                 },
-                                timeout: 180000
+                                timeout: TIMEOUTS.backend
                             }).then((response) => {
                                 expect(response.status).to.eq(STATUS_CODE.OK);
                             })
@@ -189,17 +195,20 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                                 headers: {
                                     authorization
                                 },
-                                timeout: 180000
+                                timeout: TIMEOUTS.backend
                             }).then((response) => {
                                 expect(response.status).to.eq(STATUS_CODE.OK);
-                                cy.wait(5000);
-                                cy.request({
-                                    method: METHOD.GET,
-                                    url: API.ApiServer + API.Policies + policyId + '/' + API.GetApplications,
-                                    headers: {
-                                        authorization
+                                Checks.pollUntil({
+                                    request: {
+                                        method: METHOD.GET,
+                                        url: API.ApiServer + API.Policies + policyId + '/' + API.GetApplications,
+                                        headers: {
+                                            authorization
+                                        },
+                                        timeout: TIMEOUTS.backend
                                     },
-                                    timeout: 180000
+                                    predicate: (response) => response.body?.data?.at(0)?.option?.status === 'Waiting for approval' && response,
+                                    description: 'the restored application to be Waiting for approval'
                                 }).then((response) => {
                                     expect(response.body.data.at(0).option.status).to.eq('Waiting for approval')
                                 })
@@ -222,17 +231,20 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                 body: {
                     did: adminDid
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then(() => {
-                cy.wait(5000);
                 //Get document id for approve
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.Policies + policyId + '/' + API.GetApplications,
-                    headers: {
-                        authorization
+                Checks.pollUntil({
+                    request: {
+                        method: METHOD.GET,
+                        url: API.ApiServer + API.Policies + policyId + '/' + API.GetApplications,
+                        headers: {
+                            authorization
+                        },
+                        timeout: TIMEOUTS.backend
                     },
-                    timeout: 180000
+                    predicate: (response) => response.body?.data?.at(0) && response,
+                    description: 'the application in the registrants grid'
                 }).then((response) => {
                     //Block wait
                     let appData = response.body.data.at(0)
@@ -248,17 +260,19 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                             document: appData,
                             tag: 'Button_0'
                         },
-                        timeout: 180000
+                        timeout: TIMEOUTS.backend
                     }).then(() => {
-                        //Block wait
-                        cy.wait(5000);
-                        cy.request({
-                            method: METHOD.GET,
-                            url: API.ApiServer + API.Policies + policyId + '/' + API.GetApplications,
-                            headers: {
-                                authorization
+                        Checks.pollUntil({
+                            request: {
+                                method: METHOD.GET,
+                                url: API.ApiServer + API.Policies + policyId + '/' + API.GetApplications,
+                                headers: {
+                                    authorization
+                                },
+                                timeout: TIMEOUTS.backend
                             },
-                            timeout: 180000
+                            predicate: (response) => response.body?.data?.at(0)?.option?.status === 'Approved' && response,
+                            description: 'the application to be Approved'
                         }).then((response) => {
                             expect(response.body.data.at(0).option.status).to.eq('Approved')
                         })
@@ -280,10 +294,10 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                 body: {
                     did: registrantDid
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then(() => {
                 //Block wait
-                cy.wait(5000);
+                Checks.waitForBlockAvailable(API.ApiServer + API.Policies + policyId + '/' + API.CreateDevice, authorization);
                 //Create device
                 cy.request({
                     method: METHOD.POST,
@@ -342,7 +356,7 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                             }
                         }
                     },
-                    timeout: 180000
+                    timeout: TIMEOUTS.backend
                 })
             })
         })
@@ -360,23 +374,25 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                 body: {
                     did: adminDid
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then(() => {
-                //Block wait
-                cy.wait(5000);
                 //Get device document id
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.Policies + policyId + '/' + API.GetDevices,
-                    headers: {
-                        authorization
+                Checks.pollUntil({
+                    request: {
+                        method: METHOD.GET,
+                        url: API.ApiServer + API.Policies + policyId + '/' + API.GetDevices,
+                        headers: {
+                            authorization
+                        },
+                        timeout: TIMEOUTS.backend
                     },
-                    timeout: 180000
+                    predicate: (response) => response.body?.data?.at(0) && response,
+                    description: 'the device in the devices grid'
                 }).then((response) => {
                     let deviceData = response.body.data.at(0)
                     deviceData.option.status = 'Approved'
                     //Block wait
-                    cy.wait(5000);
+                    Checks.waitForBlockAvailable(API.ApiServer + API.Policies + policyId + '/' + API.ApproveDevice, authorization);
                     //Approve device
                     cy.request({
                         method: METHOD.POST,
@@ -388,17 +404,19 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                             document: deviceData,
                             tag: 'Button_0'
                         },
-                        timeout: 180000
+                        timeout: TIMEOUTS.backend
                     }).then(() => {
-                        //Block wait
-                        cy.wait(5000);
-                        cy.request({
-                            method: METHOD.GET,
-                            url: API.ApiServer + API.Policies + policyId + '/' + API.GetDevices,
-                            headers: {
-                                authorization
+                        Checks.pollUntil({
+                            request: {
+                                method: METHOD.GET,
+                                url: API.ApiServer + API.Policies + policyId + '/' + API.GetDevices,
+                                headers: {
+                                    authorization
+                                },
+                                timeout: TIMEOUTS.backend
                             },
-                            timeout: 180000
+                            predicate: (response) => response.body?.data?.at(0)?.option?.status === 'Approved' && response,
+                            description: 'the device to be Approved'
                         }).then((response) => {
                             expect(response.body.data.at(0).option.status).to.eq('Approved')
                             cy.request({
@@ -411,7 +429,7 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                                     'name': 'SV3',
                                     'savepointPath': [sv1]
                                 },
-                                timeout: 180000
+                                timeout: TIMEOUTS.backend
                             }).then((response) => {
                                 expect(response.status).to.eq(STATUS_CODE.OK);
                                 sv3 = response.body.savepoint.id;
@@ -435,10 +453,10 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                 body: {
                     did: registrantDid
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then(() => {
                 //Block wait
-                cy.wait(5000);
+                Checks.waitForBlockAvailable(API.ApiServer + API.Policies + policyId + '/' + API.CreateIssue, authorization);
                 //Create issue request
                 cy.request({
                     method: METHOD.POST,
@@ -496,7 +514,7 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                             field18: 'example'
                         }
                     },
-                    timeout: 180000
+                    timeout: TIMEOUTS.backend
                 })
             })
         })
@@ -514,10 +532,21 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                 body: {
                     did: adminDid
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then(() => {
-                cy.wait(5000);
-                //Block wait
+                // SV4 has to contain the issue request the registrant created
+                Checks.pollUntil({
+                    request: {
+                        method: METHOD.GET,
+                        url: API.ApiServer + API.Policies + policyId + '/' + API.GetIssues,
+                        headers: {
+                            authorization
+                        },
+                        timeout: TIMEOUTS.backend
+                    },
+                    predicate: (response) => response.body?.data?.at(0),
+                    description: 'the issue request in the issue requests grid'
+                });
                 cy.request({
                     method: METHOD.POST,
                     url: API.ApiServer + API.Policies + policyId + '/' + API.Savepoint,
@@ -528,12 +557,11 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                         'name': 'SV4',
                         'savepointPath': [sv1, sv3]
                     },
-                    timeout: 180000
+                    timeout: TIMEOUTS.backend
                 }).then((response) => {
                     expect(response.status).to.eq(STATUS_CODE.OK);
                     sv4 = response.body.savepoint.id;
                 })
-                cy.wait(5000);
                 //Get issue document id
                 cy.request({
                     method: METHOD.GET,
@@ -541,11 +569,11 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                     headers: {
                         authorization
                     },
-                    timeout: 180000
+                    timeout: TIMEOUTS.backend
                 }).then((response) => {
                     let issueData = response.body.data.at(0)
                     //Block wait
-                    cy.wait(5000);
+                    Checks.waitForBlockAvailable(API.ApiServer + API.Policies + policyId + '/' + API.ApproveIssueRequestsBtn, authorization);
                     //Approve issue
                     cy.request({
                         method: METHOD.POST,
@@ -557,7 +585,7 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                             document: issueData,
                             tag: 'Button_0'
                         },
-                        timeout: 180000
+                        timeout: TIMEOUTS.backend
                     })
                 })
             })
@@ -576,22 +604,35 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                 body: {
                     did: adminDid
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then(() => {
-                //Block wait
-                cy.wait(5000);
                 //Get token amount
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.Policies + policyId + '/' + API.GetTokenAmountTag + API.Blocks,
-                    headers: {
-                        authorization
+                Checks.pollUntil({
+                    request: {
+                        method: METHOD.GET,
+                        url: API.ApiServer + API.Policies + policyId + '/' + API.GetTokenAmountTag + API.Blocks,
+                        headers: {
+                            authorization
+                        },
+                        timeout: TIMEOUTS.backend
                     },
-                    timeout: 180000
+                    predicate: (response) => response.body?.data?.at(0)?.amount === 1 && response,
+                    description: 'the minted amount in the VP grid'
                 }).then((response) => {
                     expect(response.body.data.at(0).amount).to.eq(1)
-                    //Block wait
-                    cy.wait(5000);
+                    // The mint saves the issue request as Minted after the VP appears, and SV5 has to contain that status
+                    Checks.pollUntil({
+                        request: {
+                            method: METHOD.GET,
+                            url: API.ApiServer + API.Policies + policyId + '/' + API.GetIssues,
+                            headers: {
+                                authorization
+                            },
+                            timeout: TIMEOUTS.backend
+                        },
+                        predicate: (response) => response.body?.data?.at(0)?.option?.status === 'Minted',
+                        description: 'the issue request to be Minted'
+                    });
                     cy.request({
                         method: METHOD.POST,
                         url: API.ApiServer + API.Policies + policyId + '/' + API.Savepoint,
@@ -602,7 +643,7 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                             'name': 'SV5',
                             'savepointPath': [sv1, sv3, sv4]
                         },
-                        timeout: 180000
+                        timeout: TIMEOUTS.backend
                     }).then((response) => {
                         expect(response.status).to.eq(STATUS_CODE.OK);
                         sv5 = response.body.savepoint.id;
@@ -613,7 +654,6 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
     })
 
     it('Dry-run flow - Restore savepoint and reject mint', () => {
-        cy.wait(5000);
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.PUT,
@@ -621,10 +661,9 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                 headers: {
                     authorization
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
-                cy.wait(5000);
                 cy.request({
                     method: METHOD.POST,
                     url: API.ApiServer + API.Policies + policyId + '/' + API.DryRunLogin,
@@ -634,7 +673,7 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                     body: {
                         did: adminDid
                     },
-                    timeout: 180000
+                    timeout: TIMEOUTS.backend
                 }).then(() => {
                     const waitIssueApproveStatus = {
                         method: METHOD.GET,
@@ -642,7 +681,7 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                         headers: {
                             authorization
                         },
-                        timeout: 180000,
+                        timeout: TIMEOUTS.backend,
                         failOnStatusCode: false
                     }
                     Checks.whileRequestProccessing(waitIssueApproveStatus, 'Waiting for approval', 'data.0.option.status')
@@ -659,16 +698,19 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                                 document: issueData,
                                 tag: 'Button_1'
                             },
-                            timeout: 180000
+                            timeout: TIMEOUTS.backend
                         }).then(() => {
-                            cy.wait(10000);
-                            cy.request({
-                                method: METHOD.GET,
-                                url: API.ApiServer + API.Policies + policyId + '/' + API.GetIssues + '?savepointIds=%5B%22' + sv1 + '%22,%22' + sv3 + '%22,%22' + sv4 + '%22%5D',
-                                headers: {
-                                    authorization
+                            Checks.pollUntil({
+                                request: {
+                                    method: METHOD.GET,
+                                    url: API.ApiServer + API.Policies + policyId + '/' + API.GetIssues + '?savepointIds=%5B%22' + sv1 + '%22,%22' + sv3 + '%22,%22' + sv4 + '%22%5D',
+                                    headers: {
+                                        authorization
+                                    },
+                                    timeout: TIMEOUTS.backend
                                 },
-                                timeout: 180000
+                                predicate: (response) => response.body?.data?.at(0)?.option?.status === 'Rejected' && response,
+                                description: 'the issue request to be Rejected'
                             }).then((response) => {
                                 expect(response.body.data.at(0).option.status).to.eq('Rejected');
                             })
@@ -687,17 +729,20 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                 headers: {
                     authorization
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
-                cy.wait(5000);
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.Policies + policyId + '/' + API.GetIssues,
-                    headers: {
-                        authorization
+                Checks.pollUntil({
+                    request: {
+                        method: METHOD.GET,
+                        url: API.ApiServer + API.Policies + policyId + '/' + API.GetIssues,
+                        headers: {
+                            authorization
+                        },
+                        timeout: TIMEOUTS.backend
                     },
-                    timeout: 180000
+                    predicate: (response) => response.body?.data?.at(0)?.option?.status === 'Minted' && response,
+                    description: 'the restored issue request to be Minted'
                 }).then((response) => {
                     expect(response.body.data.at(0).option.status).to.eq('Minted');
                 })
@@ -713,17 +758,20 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                 headers: {
                     authorization
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
-                cy.wait(10000);
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.Policies + policyId + '/' + API.GetIssues,
-                    headers: {
-                        authorization
+                Checks.pollUntil({
+                    request: {
+                        method: METHOD.GET,
+                        url: API.ApiServer + API.Policies + policyId + '/' + API.GetIssues,
+                        headers: {
+                            authorization
+                        },
+                        timeout: TIMEOUTS.backend
                     },
-                    timeout: 180000
+                    predicate: (response) => response.body?.data?.at(0)?.option?.status === 'Waiting for approval' && response,
+                    description: 'the restored issue request to be Waiting for approval'
                 }).then((response) => {
                     expect(response.body.data.at(0).option.status).to.eq('Waiting for approval');
                 })

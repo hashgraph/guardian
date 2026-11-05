@@ -1,3 +1,4 @@
+import { TIMEOUTS } from './CustomHelpers/timeouts';
 // Navigation helpers for the policy UI (the policy-viewer wizard).
 //
 // A policy renders as `div.policy-content` containing a progress tracker
@@ -28,7 +29,7 @@ const isVisible = (el) => {
 const WIZARD_ZONE = 'div.policy-content, div.guardian-dialog';
 
 export const clickButtonInWizardSteps = (selector, options = {}) => {
-    const { zone = WIZARD_ZONE, settleMs = 2000, walkTabs = true } = options;
+    const { zone = WIZARD_ZONE, walkTabs = true } = options;
     const exploredTabs = [];
     const exploredSteps = [];
 
@@ -45,8 +46,7 @@ export const clickButtonInWizardSteps = (selector, options = {}) => {
             }
             exploredTabs.push((tabs[index].textContent || '').trim());
             cy.wrap(tabs[index], { log: false }).click({ log: false });
-
-            cy.wait(settleMs, { log: false });
+            cy.wrap(tabs[index], { log: false }).should('have.attr', 'aria-selected', 'true');
             return findVisible().then((el) => {
                 if (el) {
                     return cy.wrap(el, { log: false }).click({ log: false });
@@ -68,9 +68,12 @@ export const clickButtonInWizardSteps = (selector, options = {}) => {
                 );
             }
             exploredSteps.push((steps[index].textContent || '').trim());
+            // only a reachable step navigates when clicked; it then becomes the active one
+            const reachable = steps[index].classList.contains('reach');
             cy.wrap(steps[index], { log: false }).click({ log: false });
-
-            cy.wait(settleMs, { log: false });
+            if (reachable) {
+                cy.wrap(steps[index], { log: false }).should('have.class', 'active');
+            }
             return findVisible().then((el) => {
                 if (el) {
                     return cy.wrap(el, { log: false }).click({ log: false });
@@ -98,7 +101,7 @@ export const clickButtonInWizardSteps = (selector, options = {}) => {
 // Used to steer a flow to a specific tab (e.g. 'Approve VVB') before acting on it.
 export const clickWizardTab = (text) => {
     return cy
-        .get('div.policy-content p-tab', { includeHidden: true, timeout: 30000, log: false })
+        .get('div.policy-content p-tab', { includeHidden: true, timeout: TIMEOUTS.backend, log: false })
         .then(($tabs) => {
             const visible = $tabs.toArray().filter(isVisible);
             const tab =
@@ -110,8 +113,7 @@ export const clickWizardTab = (text) => {
                     `Visible tabs: ${visible.map((el) => (el.textContent || '').trim()).join(' | ') || 'none'}`
                 );
             }
-            return cy.wrap(tab).click();
-        })
-        // eslint-disable-next-line cypress/no-unnecessary-waiting -- settle time for the switched tab body to render
-        .then(() => cy.wait(2000));
+            cy.wrap(tab).click();
+            return cy.wrap(tab).should('have.attr', 'aria-selected', 'true');
+        });
 };

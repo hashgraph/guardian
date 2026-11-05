@@ -2,6 +2,7 @@ import URL from '../../../support/GuardianUrls';
 import * as Checks from '../../../support/checkingMethods';
 import { dropFile } from '../../../support/importFlow';
 import { addTag, deleteTag } from '../../../support/tagsExplorer';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 // The schemas list (tree table grouped by policy, newest first) and the full-page schema editor.
 const List = {
@@ -43,7 +44,7 @@ export class SchemaPage {
         cy.visit(`${URL.Root}${URL.Schemas}?type=${type}`);
         Checks.waitForLoading();
         // The list is loaded once either its rows or the empty-state message are rendered.
-        cy.get(`${List.row}, div.guardian-user-not-data`, { timeout: 30000 }).should('exist');
+        cy.get(`${List.row}, div.guardian-user-not-data`, { timeout: TIMEOUTS.backend }).should('exist');
     }
 
     openSchemasSubtab(name) {
@@ -65,15 +66,15 @@ export class SchemaPage {
                 Checks.waitForLoading();
             }
         });
-        return cy.get(List.row, { timeout: 30000 }).filter(nameCellMatches(name));
+        return cy.get(List.row, { timeout: TIMEOUTS.backend }).filter(nameCellMatches(name));
     }
 
     // Creates a draft schema with one field (an empty schema cannot be saved) in the editor, for
     // the tab the list is on.
     createSchema(schemaName) {
         cy.get(List.toolbarButton('Create a Schema')).click();
-        cy.location('pathname', { timeout: 15000 }).should('include', 'schema-configuration');
-        cy.get(Editor.newSchemaNameInput, { timeout: 15000 }).invoke('val', schemaName).trigger('input');
+        cy.location('pathname', { timeout: TIMEOUTS.ui }).should('include', 'schema-configuration');
+        cy.get(Editor.newSchemaNameInput, { timeout: TIMEOUTS.ui }).invoke('val', schemaName).trigger('input');
         cy.get(Editor.newSchemaNameInput).should('have.value', schemaName);
         cy.contains('button', 'Create').click();
         cy.contains(Editor.sidebarTab, 'Fields').click();
@@ -81,8 +82,8 @@ export class SchemaPage {
         cy.get(Editor.fieldDescriptionInput).type('A field');
         this._saveEditor();
         cy.get(Editor.backCrumb).click();
-        cy.location('pathname', { timeout: 15000 }).should('not.include', 'schema-configuration');
-        cy.get(`${List.row}, div.guardian-user-not-data`, { timeout: 30000 }).should('exist');
+        cy.location('pathname', { timeout: TIMEOUTS.ui }).should('not.include', 'schema-configuration');
+        cy.get(`${List.row}, div.guardian-user-not-data`, { timeout: TIMEOUTS.backend }).should('exist');
         this._row(schemaName).should('exist');
     }
 
@@ -107,7 +108,7 @@ export class SchemaPage {
     // Activating a schema deactivates the active one of its entity, so a spec that activates its own
     // schema gives the entity back to the built-in schema (the one without an owner).
     activateBuiltInSystemSchema(entity) {
-        cy.get(List.row, { timeout: 30000 })
+        cy.get(List.row, { timeout: TIMEOUTS.backend })
             .filter((_, row) => row.querySelector('td:nth-child(3)')?.textContent.trim() === entity
                 && row.querySelector('td:nth-child(2)')?.textContent.trim() === '')
             .find(List.activateButton)
@@ -123,7 +124,7 @@ export class SchemaPage {
 
     // Imports the schema into the first policy offered by the preview dialog.
     _importFromPreview(schemaName) {
-        cy.contains(List.dialog, 'Schema Import Preview', { timeout: 60000 }).as('preview');
+        cy.contains(List.dialog, 'Schema Import Preview', { timeout: TIMEOUTS.backend }).as('preview');
         cy.get('@preview').find(List.policyDropdown).click();
         cy.get(List.option).first().click();
         cy.get('@preview').contains('button', 'Import').should('not.be.disabled').click();
@@ -152,7 +153,7 @@ export class SchemaPage {
 
     publishPolicySchema(name, version = '1.0.0') {
         this._row(name).find(List.publishButton).click();
-        cy.get(List.versionInput, { timeout: 15000 }).invoke('val', version).trigger('input');
+        cy.get(List.versionInput, { timeout: TIMEOUTS.ui }).invoke('val', version).trigger('input');
         cy.get(List.versionInput).should('have.value', version);
         cy.get(List.dialog).contains('button', 'Ok').click();
         Checks.waitForTaskComplete();
@@ -162,16 +163,16 @@ export class SchemaPage {
 
     _openMenu(name) {
         this._row(name).find(List.menuIcon).click();
-        cy.get(List.menuButton, { timeout: 15000 }).should('be.visible');
+        cy.get(List.menuButton, { timeout: TIMEOUTS.ui }).should('be.visible');
     }
 
     // Only schemas that are neither published nor active (drafts, or inactive system schemas) can
     // be deleted, and the same schema name can exist under several policies.
     deleteSchema(name) {
         this._row(name).filter(DELETABLE).first().find(List.menuIcon).click();
-        cy.get(List.menuButton, { timeout: 15000 }).should('be.visible');
+        cy.get(List.menuButton, { timeout: TIMEOUTS.ui }).should('be.visible');
         cy.contains(List.menuButton, 'Delete schema').click();
-        cy.get(List.deleteConfirm, { timeout: 15000 }).click();
+        cy.get(List.deleteConfirm, { timeout: TIMEOUTS.ui }).click();
         Checks.waitForLoading();
         cy.get('body').should(($body) => {
             expect($body.find(List.row).filter(nameCellMatches(name)).filter(DELETABLE).length).to.eq(0);
@@ -186,8 +187,8 @@ export class SchemaPage {
 
     editPolicySchema(name, newName) {
         this._row(name).find(List.editIcon).click();
-        cy.location('pathname', { timeout: 15000 }).should('include', 'schema-configuration');
-        cy.get(Editor.schemaNameInput, { timeout: 15000 }).invoke('val', newName).trigger('input');
+        cy.location('pathname', { timeout: TIMEOUTS.ui }).should('include', 'schema-configuration');
+        cy.get(Editor.schemaNameInput, { timeout: TIMEOUTS.ui }).invoke('val', newName).trigger('input');
         cy.get(Editor.schemaNameInput).should('have.value', newName);
         this._saveEditor();
         this.openSchemasTab();

@@ -4,6 +4,7 @@ import API from '../../../support/ApiUrls';
 import * as Checks from '../../../support/checkingMethods';
 import * as Authorization from '../../../support/authorization';
 import * as Contracts from '../../../support/api/contracts';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Contracts', { tags: ['policy_labels', 'formulas', 'trustchains', 'contracts', 'firstPool', 'all', 'all-no-mgs'] }, () => {
 	const SRUsername = Cypress.env('SRUser');
@@ -19,7 +20,7 @@ context('Contracts', { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 		authorization,
 		contractId,
 		action,                  // API.Disable | API.Enable
-		timeout = 180000,
+		timeout = TIMEOUTS.backend,
 		failOnStatusCode = true,
 	}) => cy.request({
 		method: METHOD.POST,
@@ -119,7 +120,7 @@ context('Contracts', { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 							headers: {
 								authorization
 							},
-							timeout: 600000,
+							timeout: TIMEOUTS.longOperation,
 							failOnStatusCode: false,
 						}).then((response) => {
 							if (response.status === STATUS_CODE.ERROR && response.body.message !== 'Policy already published')
@@ -230,7 +231,7 @@ context('Contracts', { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 				},
 				predicate: (response) => response.status === STATUS_CODE.OK,
 				description: 'the Registrant role to be applied to the policy',
-				timeout: 120000,
+				timeout: TIMEOUTS.backend,
 			})
 
 			//Create app and wait while it in progress
@@ -476,7 +477,7 @@ context('Contracts', { tags: ['policy_labels', 'formulas', 'trustchains', 'contr
 				authorization,
 				contractId: contractIdW,
 				action: API.Disable,
-				timeout: 180000,
+				timeout: TIMEOUTS.longOperation,
 				failOnStatusCode: true,
 			}).then((response) => {
 				expect(response.status).eql(STATUS_CODE.OK);

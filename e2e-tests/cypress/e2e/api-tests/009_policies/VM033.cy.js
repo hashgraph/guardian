@@ -5,6 +5,7 @@ import * as Authorization from '../../../support/authorization';
 import { randomInt } from '../../../support/random';
 import { importPolicyArchive } from '../../../support/cdmTools';
 import { seededMessageId, usesSeededMessages } from '../../../support/CustomHelpers/ipfsSeeding';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 // Skipped until the VM0033 policy is updated: see pending-issues/vm0033-*.md
 // (dotted field key rejected on publish, and the calculate_project_fields script emits fields its schema forbids).
@@ -45,7 +46,7 @@ context.skip('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
         url: API.ApiServer + API.Policies + policyId + '/' + tag,
         headers: { authorization },
         failOnStatusCode: false,
-        timeout: 60000,
+        timeout: TIMEOUTS.backend,
         ...extra
     });
 
@@ -65,7 +66,7 @@ context.skip('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                 url: API.ApiServer + API.Policies + policyId + '/' + API.ChooseRole,
                 headers: { authorization },
                 body: { role },
-                timeout: 180000,
+                timeout: TIMEOUTS.backend,
             });
         });
     };
@@ -83,7 +84,7 @@ context.skip('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                 url: API.ApiServer + API.Policies + policyId + '/' + API.ProjectBtn,
                 headers: { authorization },
                 body: { document, ref: null },
-                timeout: 600000
+                timeout: TIMEOUTS.backend
             }).then(() => Checks.waitForRow(
                 blockRequest(authorization, API.ProjectGridPP2),
                 (row) => projectNameOf(row) === name && statusOf(row) === 'Waiting to be Added'
@@ -143,7 +144,7 @@ context.skip('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                         headers: {
                             authorization
                         },
-                        timeout: 1800000,
+                        timeout: TIMEOUTS.longOperation,
                     });
                 })
                 // Publishing answers 200 whether or not it published; only `isValid` says so, and
@@ -201,7 +202,7 @@ context.skip('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                 method: METHOD.GET,
                 url: API.ApiServer + API.ListOfTokens,
                 headers: { authorization },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             };
             cy.request(listTokens).then((response) => {
                 const token = response.body.find(element =>
@@ -216,7 +217,7 @@ context.skip('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                     method: METHOD.PUT,
                     url: API.ApiServer + API.ListOfTokens + tokenId + '/associate',
                     headers: { authorization },
-                    timeout: 180000
+                    timeout: TIMEOUTS.backend
                 }).then(() => cy.request(listTokens)
                     .then((refreshed) => refreshed.body.find(element => element.tokenId === tokenId)));
             }).then((token) => {
@@ -228,7 +229,7 @@ context.skip('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                         method: METHOD.PUT,
                         url: API.ApiServer + API.ListOfTokens + tokenId + '/' + PPUser + '/grant-kyc',
                         headers: { authorization: srAuthorization },
-                        timeout: 180000
+                        timeout: TIMEOUTS.backend
                     }).then((response) => {
                         expect(response.status).eql(STATUS_CODE.OK);
                     });
@@ -415,10 +416,10 @@ context.skip('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                             document,
                             ref: projectDataRef
                         },
-                        timeout: 600000
+                        timeout: TIMEOUTS.backend
                     }).then(() => {
                         Checks.waitForRow(
-                            blockRequest(authorization, API.ReportGridPP, { timeout: 600000 }),
+                            blockRequest(authorization, API.ReportGridPP, { timeout: TIMEOUTS.backend }),
                             (row) => projectNameOf(row) === projectName && statusOf(row) === 'Waiting for Verification'
                         )
                     })
@@ -430,7 +431,7 @@ context.skip('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
     it('Assign report', () => {
         Authorization.getAccessToken(PPUser).then((authorization) => {
             Checks.waitForRow(
-                blockRequest(authorization, API.ReportGridPP, { timeout: 120000 }),
+                blockRequest(authorization, API.ReportGridPP, { timeout: TIMEOUTS.backend }),
                 (row) => projectNameOf(row) === projectName && statusOf(row) === 'Waiting for Verification'
             ).then((reportAssignData) => {
                 reportAssignData.assignedTo = VVBDid;
@@ -441,7 +442,7 @@ context.skip('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                         authorization
                     },
                     body: reportAssignData,
-                    timeout: 60000
+                    timeout: TIMEOUTS.backend
                 })
             })
         })
@@ -464,7 +465,7 @@ context.skip('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                         document: reportVerifyData,
                         tag: 'Button_0'
                     },
-                    timeout: 60000
+                    timeout: TIMEOUTS.backend
                 }).then(() => {
                     Checks.waitForRow(
                         blockRequest(authorization, API.ReportGridVVB),
@@ -496,7 +497,7 @@ context.skip('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                             document: payload,
                             ref: referenceValidationReport
                         },
-                        timeout: 60000
+                        timeout: TIMEOUTS.backend
                     })
                 })
             })
@@ -520,7 +521,7 @@ context.skip('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                         document: reportVerifyData,
                         tag: 'Approve_Button_Validation'
                     },
-                    timeout: 60000
+                    timeout: TIMEOUTS.backend
                 })
             })
         })
@@ -545,7 +546,7 @@ context.skip('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                             document: payload,
                             ref: referenceVerificationReport
                         },
-                        timeout: 60000
+                        timeout: TIMEOUTS.backend
                     })
                 })
             })
@@ -569,7 +570,7 @@ context.skip('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                         document: reportVerifyData,
                         tag: 'Option_0'
                     },
-                    timeout: 60000
+                    timeout: TIMEOUTS.backend
                 })
             })
         })

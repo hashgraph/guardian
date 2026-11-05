@@ -1,6 +1,7 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Export Policy Themes', { tags: ['themes', 'secondPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
@@ -16,7 +17,7 @@ context('Export Policy Themes', { tags: ['themes', 'secondPool', 'all', 'all-no-
                 headers: {
                     authorization,
                 },
-                timeout: 60000,
+                timeout: TIMEOUTS.backend,
             }).then((response) => {
                 themeId = response.body.at(0).id;
             });
@@ -31,7 +32,7 @@ context('Export Policy Themes', { tags: ['themes', 'secondPool', 'all', 'all-no-
                 headers: {
                     authorization,
                 },
-                timeout: 60000,
+                timeout: TIMEOUTS.backend,
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
                 expect(response.headers).to.have.property('content-type','application/zip');

@@ -4,6 +4,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import * as Checks from '../../../support/checkingMethods';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('IPFS', { tags: ['ipfs', 'secondPool', 'all', 'all-no-mgs'] }, () => {
 
@@ -24,7 +25,7 @@ context('IPFS', { tags: ['ipfs', 'secondPool', 'all', 'all-no-mgs'] }, () => {
                 'content-type': 'binary/octet-stream',
                 authorization,
             },
-            timeout: 200000,
+            timeout: TIMEOUTS.backend,
         });
 
     const addFileWithoutAuth = (headers = {}) =>

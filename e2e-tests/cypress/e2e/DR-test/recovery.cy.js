@@ -1,6 +1,7 @@
 import { randomInt } from '../../support/random';
 import { HomePage } from '../ui-tests/pages/homePage';
 import { ConfigPage } from '../ui-tests/pages/configPage';
+import { TIMEOUTS } from '../../support/CustomHelpers/timeouts';
 
 const homepage = new HomePage();
 const configpage = new ConfigPage();
@@ -24,7 +25,7 @@ describe('Disaster Recovery Testing', { tags: '@recovery' }, () => {
             homepage.createAccount('SR', recoveredName);
             configpage.verifyUserCreated(recoveredName);
             configpage.restoreProfileFromHedera(credentials);
-            cy.contains('The DID document already exists.', { timeout: 300000 });
+            cy.contains('The DID document already exists.', { timeout: TIMEOUTS.longOperation });
         });
     });
 });

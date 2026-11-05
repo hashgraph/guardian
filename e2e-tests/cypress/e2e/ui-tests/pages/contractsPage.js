@@ -1,6 +1,7 @@
 import URL from '../../../support/GuardianUrls';
 import * as Checks from '../../../support/checkingMethods';
 import { addTag, deleteTag } from '../../../support/tagsExplorer';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 const L = {
     // Actions bar
@@ -40,18 +41,18 @@ export class ContractsPage {
 
     openContractTypeTab(type) {
         const label = type === 'wipe' ? 'Token Wiping Contracts' : 'Token Retirement Contracts';
-        cy.get(L.tab, { timeout: 15000 }).contains(label).click();
+        cy.get(L.tab, { timeout: TIMEOUTS.ui }).contains(label).click();
         Checks.waitForLoading();
     }
 
     _row(name) {
-        return cy.get(L.row, { timeout: 30000 })
+        return cy.get(L.row, { timeout: TIMEOUTS.backend })
             .filter((_, row) => hasDescription(row, name));
     }
 
     createContract() {
-        cy.get(L.createButton, { timeout: 15000 }).click();
-        cy.get(L.dialog, { timeout: 15000 }).should('be.visible');
+        cy.get(L.createButton, { timeout: TIMEOUTS.ui }).click();
+        cy.get(L.dialog, { timeout: TIMEOUTS.ui }).should('be.visible');
     }
 
     // Shared by create/import: fills the Description field, confirms, and waits
@@ -87,8 +88,8 @@ export class ContractsPage {
     }
 
     importContract(contractId) {
-        cy.get(L.importButton, { timeout: 15000 }).click();
-        cy.get(L.dialog, { timeout: 15000 }).should('be.visible');
+        cy.get(L.importButton, { timeout: TIMEOUTS.ui }).click();
+        cy.get(L.dialog, { timeout: TIMEOUTS.ui }).should('be.visible');
         cy.get(L.dialogInput('contractId')).clear();
         cy.get(L.dialogInput('contractId')).type(contractId);
     }
@@ -105,7 +106,7 @@ export class ContractsPage {
         this._row(name).find(L.operationsMenu).click();
         // Match the title exactly: the "Remove wiper" description also reads "Remove contract wiper."
         // The title ignores pointer events, so the click goes to the menu item around it.
-        cy.contains(L.operationsItemTitle, /^Remove contract$/, { timeout: 15000 }).parent().click();
+        cy.contains(L.operationsItemTitle, /^Remove contract$/, { timeout: TIMEOUTS.ui }).parent().click();
         Checks.waitForLoading();
         cy.get('body').should(($body) => {
             expect($body.find(L.row).filter((_, row) => hasDescription(row, name)).length).to.eq(0);

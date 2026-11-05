@@ -1,6 +1,7 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Savepoints CRUD', { tags: ['savepoints', 'secondPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
@@ -19,7 +20,7 @@ context('Savepoints CRUD', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                             'content-type': 'binary/octet-stream',
                             authorization,
                         },
-                        timeout: 180000,
+                        timeout: TIMEOUTS.longOperation,
                     }).then((response) => {
                         expect(response.status).to.eq(STATUS_CODE.SUCCESS);
                         cy.request({
@@ -28,7 +29,7 @@ context('Savepoints CRUD', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                             headers: {
                                 authorization,
                             },
-                            timeout: 180000
+                            timeout: TIMEOUTS.backend
                         }).then((response) => {
                             expect(response.status).to.eq(STATUS_CODE.OK);
                             const policy = response.body.find((element) => element.name === 'iRecDRS');
@@ -44,7 +45,7 @@ context('Savepoints CRUD', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                                     headers: {
                                         authorization,
                                     },
-                                    timeout: 180000,
+                                    timeout: TIMEOUTS.longOperation,
                                 }).then((response) => {
                                     expect(response.status).to.eq(STATUS_CODE.OK);
                                 });
@@ -65,7 +66,7 @@ context('Savepoints CRUD', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                 method: METHOD.GET,
                 url: API.ApiServer + API.Policies + policyId + '/' + API.Savepoint,
                 headers: { authorization },
-                timeout: 180000,
+                timeout: TIMEOUTS.backend,
             }).then((response) => {
                 const savepoints = response.body?.items ?? response.body ?? [];
                 if (savepoints.length === 0) {
@@ -75,7 +76,7 @@ context('Savepoints CRUD', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                     method: METHOD.POST,
                     url: `${API.ApiServer}${API.Policies}${policyId}/${API.DryRun}restart`,
                     headers: { authorization },
-                    timeout: 400000,
+                    timeout: TIMEOUTS.longOperation,
                 });
             });
         });
@@ -93,7 +94,7 @@ context('Savepoints CRUD', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                     'name': 'SV1',
                     'savepointPath': []
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 sv1 = response.body.savepoint.id;
@@ -159,7 +160,7 @@ context('Savepoints CRUD', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                 headers: {
                     authorization
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 expect(response.body.items.length).to.eq(1);
@@ -218,7 +219,7 @@ context('Savepoints CRUD', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                 body: {
                     name: 'SV1U'
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 expect(response.body.savepoint.id).to.eq(sv1);
@@ -323,7 +324,7 @@ context('Savepoints CRUD', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                 body: {
                     'savepointIds': [sv1]
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 cy.request({
@@ -332,7 +333,7 @@ context('Savepoints CRUD', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                     headers: {
                         authorization
                     },
-                    timeout: 180000
+                    timeout: TIMEOUTS.backend
                 }).then((response) => {
                     expect(response.status).to.eq(STATUS_CODE.OK);
                     expect(response.body.items.length).to.eq(0);
@@ -353,7 +354,7 @@ context('Savepoints CRUD', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                     'name': 'SV1',
                     'savepointPath': []
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 sv1 = response.body.savepoint.id;
@@ -367,7 +368,7 @@ context('Savepoints CRUD', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                         'name': 'SV2',
                         'savepointPath': [sv1]
                     },
-                    timeout: 180000
+                    timeout: TIMEOUTS.backend
                 }).then((response) => {
                     expect(response.status).to.eq(STATUS_CODE.OK);
                     sv2 = response.body.savepoint.id;
@@ -381,7 +382,7 @@ context('Savepoints CRUD', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                             'name': 'SV3',
                             'savepointPath': [sv1, sv2]
                         },
-                        timeout: 180000
+                        timeout: TIMEOUTS.backend
                     }).then((response) => {
                         expect(response.status).to.eq(STATUS_CODE.OK);
                         sv3 = response.body.savepoint.id;
@@ -395,7 +396,7 @@ context('Savepoints CRUD', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                                 'name': 'SV4',
                                 'savepointPath': [sv1, sv2, sv3]
                             },
-                            timeout: 180000
+                            timeout: TIMEOUTS.backend
                         }).then((response) => {
                             expect(response.status).to.eq(STATUS_CODE.OK);
                             sv4 = response.body.savepoint.id;
@@ -409,7 +410,7 @@ context('Savepoints CRUD', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                                     'name': 'SV5',
                                     'savepointPath': [sv1, sv2, sv3, sv4]
                                 },
-                                timeout: 180000
+                                timeout: TIMEOUTS.backend
                             }).then((response) => {
                                 expect(response.status).to.eq(STATUS_CODE.OK);
                                 sv5 = response.body.savepoint.id;
@@ -424,7 +425,7 @@ context('Savepoints CRUD', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
                                         'savepointPath': [sv1, sv2, sv3, sv4, sv5]
                                     },
                                     failOnStatusCode: false,
-                                    timeout: 180000
+                                    timeout: TIMEOUTS.backend
                                 }).then((response) => {
                                     expect(response.status).to.eq(STATUS_CODE.ERROR);
                                     expect(response.body.message).to.eq('Savepoints limit reached (5). Delete existing savepoints to create a new one.');

@@ -3,6 +3,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import { seededMessageId } from '../../../support/CustomHelpers/ipfsSeeding';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
@@ -53,7 +54,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
     before(() => {
         seededMessageId('irec_policy').then((policyMessageId) => {
             Authorization.getAccessToken(SRUsername).then((authorization) => {
-                postWithAuth(authorization, importMsgUrl, { messageId: policyMessageId }, { timeout: 600000 })
+                postWithAuth(authorization, importMsgUrl, { messageId: policyMessageId }, { timeout: TIMEOUTS.longOperation })
                     .then((response) => {
                         expect(response.status).to.eq(STATUS_CODE.SUCCESS);
                         policyId = response.body.at(0).id;
@@ -64,7 +65,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
 
     it('Run policy without making any persistent changes or executing transaction', { tags: ['analytics', 'schema', 'tokens', 'smoke'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            putWithAuth(authorization, dryRunBase(policyId), { timeout: 180000 }).then((response) => {
+            putWithAuth(authorization, dryRunBase(policyId), { timeout: TIMEOUTS.backend }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
             });
         });

@@ -29,11 +29,18 @@ import API from './ApiUrls';
 import { randomInt } from './random';
 import * as Authorization from './authorization';
 import { importPolicyFromMessage, seededMessageId } from './CustomHelpers/ipfsSeeding';
+import { TIMEOUTS, POLL_INTERVAL } from './CustomHelpers/timeouts';
 
+// The browser writes a download asynchronously after the click: look again until it lands.
 Cypress.Commands.add('checkIfFileExistByPartialName', (partialName) => {
-    cy.task('checkFile', partialName).then(fileExists => {
-        expect(fileExists).to.be.true;
+    const check = (deadline) => cy.task('checkFile', partialName, { log: false }).then((fileExists) => {
+        if (fileExists || Date.now() >= deadline) {
+            expect(fileExists, `a downloaded file named like "${partialName}"`).to.be.true;
+            return;
+        }
+        cy.wait(POLL_INTERVAL, { log: false }).then(() => check(deadline));
     });
+    return cy.then(() => check(Date.now() + TIMEOUTS.ui));
 });
 
 Cypress.Commands.add('createTag', (token, name, target, entity) => {
@@ -61,7 +68,7 @@ Cypress.Commands.add('searchTags', (token, targetId, entity) => {
             targets: [targetId]
         },
         failOnStatusCode: false,
-        timeout: 200000
+        timeout: TIMEOUTS.backend
     });
 });
 
@@ -80,7 +87,7 @@ Cypress.Commands.add('getPublishedTagSchemas', (token) => {
         url: `${API.ApiServer}${API.Tags}schemas/published`,
         headers: token ? { authorization: token } : {},
         failOnStatusCode: false,
-        timeout: 200000
+        timeout: TIMEOUTS.longOperation
     });
 });
 
@@ -96,7 +103,7 @@ Cypress.Commands.add('importPolicyFile', (token, fileName) => {
                     'content-type': 'binary/octet-stream',
                     authorization: token,
                 },
-                timeout: 180000,
+                timeout: TIMEOUTS.longOperation,
             });
         });
 });
@@ -161,7 +168,7 @@ Cypress.Commands.add('getOrCreateTestToken', (srToken, listToken, listQs = {}) =
                 tokenSymbol: 'string',
                 tokenType: 'string',
             },
-            timeout: 180000,
+            timeout: TIMEOUTS.backend,
         }).then((response) => {
             expect(response.status).to.eql(STATUS_CODE.SUCCESS);
             // The POST response doesn't include tokenId, so re-fetch to find the token
@@ -223,7 +230,7 @@ Cypress.Commands.add('getOrCreateRetireContractId', (authorization) => {
             url: API.ApiServer + API.ListOfContracts,
             headers: { authorization, 'api-version': 2 },
             body: { description: `TagsAPIContractR_${randomInt(999999)}`, type: 'RETIRE' },
-            timeout: 180000,
+            timeout: TIMEOUTS.backend,
         }).then((created) => created.body.id ?? created.body._id);
     });
 });
@@ -269,7 +276,7 @@ Cypress.Commands.add('getOrCreatePolicy', (authorization) => {
             url: API.ApiServer + API.Policies,
             headers: { authorization },
             body: { name: `TagsAPIPolicy_${runId}`, policyTag: `TagsAPIPolicyTag_${runId}` },
-            timeout: 180000,
+            timeout: TIMEOUTS.backend,
             // creating a policy answers with the full policy list
         }).then((created) => created.body.at(0));
     });
@@ -314,7 +321,7 @@ Cypress.Commands.add('getOrCreateSchemaId', (authorization) => {
                         additionalProperties: false,
                     },
                 },
-                timeout: 180000,
+                timeout: TIMEOUTS.backend,
             }).then(() => cy.request({
                 method: METHOD.GET,
                 url: API.ApiServer + API.Schemas + policy.topicId,
@@ -346,7 +353,7 @@ Cypress.Commands.add('getOrCreateIRec4Policy', (username, { publish: shouldPubli
         method: METHOD.GET,
         url: API.ApiServer + API.Policies,
         headers: { authorization },
-        timeout: 180000,
+        timeout: TIMEOUTS.backend,
     }).then((response) => {
         expect(response.status).to.eq(STATUS_CODE.OK);
         //Guardian keeps policy names unique by appending a timestamp, so every import after the
@@ -378,7 +385,7 @@ Cypress.Commands.add('getOrCreateIRec4Policy', (username, { publish: shouldPubli
             url: `${API.ApiServer}${API.Policies}${policy.id}/${API.Publish}`,
             body: { policyVersion: '1.2.5' },
             headers: { authorization },
-            timeout: 600000,
+            timeout: TIMEOUTS.longOperation,
             failOnStatusCode: false,
         }).then((response) => {
             const message = String(response.body?.message ?? '');
@@ -425,7 +432,7 @@ Cypress.Commands.add('getBlockByTag', (authorization, policyId, tag) => {
         method: METHOD.GET,
         url: API.BlockByTag(policyId, tag),
         headers: { authorization },
-        timeout: 600000
+        timeout: TIMEOUTS.backend
     })
 });
 
@@ -434,13 +441,8 @@ Cypress.Commands.add('getHederaKeys', (token) => {
         method: 'GET',
         url: `${API.ApiServer}${API.RandomKey}`,
         headers: { authorization: token },
-        timeout: 600000
-    }).then((res) =>
-        // The value has to be returned from inside the wait: a `.then()` callback that
-        // enqueues cy commands does not yield a synchronously returned value.
-        cy.wait(3000) // Wait for Hedera propagation
-            .then(() => ({ id: res.body.id, key: res.body.key }))
-    );
+        timeout: TIMEOUTS.backend
+    }).then((res) => ({ id: res.body.id, key: res.body.key }));
 });
 
 Cypress.Commands.add('setupLocalProfile', (username, auth, additionalBody = {}) => {
@@ -455,7 +457,6 @@ Cypress.Commands.add('setupLocalProfile', (username, auth, additionalBody = {}) 
                 url: API.ApiServer + API.RandomKey,
                 headers: { authorization: auth }
             }).then((keyRes) => {
-                cy.wait(3000); // Wait for Hedera propagation
                 const baseBody = {
                     hederaAccountId: keyRes.body.id,
                     hederaAccountKey: keyRes.body.key,
@@ -467,7 +468,7 @@ Cypress.Commands.add('setupLocalProfile', (username, auth, additionalBody = {}) 
                     url: `${API.ApiServer}profiles/${username}`,
                     headers: { authorization: auth },
                     body: { ...baseBody, ...additionalBody },
-                    timeout: 400000
+                    timeout: TIMEOUTS.longOperation
                 });
             });
         }

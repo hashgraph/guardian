@@ -1,6 +1,7 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 // Exclude "all" tag, if needs to stop using MGS in CI tests run
 // Skipped until the shared remote Guardian environment and its credentials are available: see pending-issues/folders-blocked-by-environment.md
 context.skip('Policies', { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
@@ -51,7 +52,7 @@ context.skip('Policies', { tags: ['remote_policy', 'secondPool', 'all'] }, () =>
                             'content-type': 'binary/octet-stream',
                             authorization,
                         },
-                        timeout: 180000,
+                        timeout: TIMEOUTS.longOperation,
                     }).then((response) => {
                         expect(response.status).to.eq(STATUS_CODE.SUCCESS);
                         cy.request({
@@ -60,7 +61,7 @@ context.skip('Policies', { tags: ['remote_policy', 'secondPool', 'all'] }, () =>
                             headers: {
                                 authorization,
                             },
-                            timeout: 180000
+                            timeout: TIMEOUTS.backend
                         }).then((response) => {
                             expect(response.status).to.eq(STATUS_CODE.OK);
                             response.body.forEach(element => {
@@ -78,7 +79,7 @@ context.skip('Policies', { tags: ['remote_policy', 'secondPool', 'all'] }, () =>
                                 headers: {
                                     authorization,
                                 },
-                                timeout: 180000,
+                                timeout: TIMEOUTS.longOperation,
                             }).then((response) => {
                                 expect(response.status).to.eq(STATUS_CODE.OK);
                                 cy.request({
@@ -87,7 +88,7 @@ context.skip('Policies', { tags: ['remote_policy', 'secondPool', 'all'] }, () =>
                                     headers: {
                                         authorization,
                                     },
-                                    timeout: 180000
+                                    timeout: TIMEOUTS.backend
                                 }).then((response) => {
                                     expect(response.status).to.eq(STATUS_CODE.OK);
                                     remoteMessageId = response.body.messageId;
@@ -110,7 +111,7 @@ context.skip('Policies', { tags: ['remote_policy', 'secondPool', 'all'] }, () =>
                 headers: {
                     authorization,
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.longOperation
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 Authorization.getAccessToken(DepSRUsername).then((authorization) => {
@@ -120,7 +121,7 @@ context.skip('Policies', { tags: ['remote_policy', 'secondPool', 'all'] }, () =>
                         headers: {
                             authorization,
                         },
-                        timeout: 180000
+                        timeout: TIMEOUTS.backend
                     }).then((response) => {
                         expect(response.status).to.eq(STATUS_CODE.ACCEPTED);
                     })
@@ -140,7 +141,7 @@ context.skip('Policies', { tags: ['remote_policy', 'secondPool', 'all'] }, () =>
                 headers: {
                     authorization,
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.longOperation
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 let userKey = response.body.key;
@@ -155,7 +156,7 @@ context.skip('Policies', { tags: ['remote_policy', 'secondPool', 'all'] }, () =>
                         headers: {
                             authorization,
                         },
-                        timeout: 180000
+                        timeout: TIMEOUTS.longOperation
                     }).then((response) => {
                         expect(response.status).to.eq(STATUS_CODE.OK);
                     })
@@ -178,7 +179,7 @@ context.skip('Policies', { tags: ['remote_policy', 'secondPool', 'all'] }, () =>
                 headers: {
                     authorization,
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.SUCCESS);
             })
@@ -196,7 +197,7 @@ context.skip('Policies', { tags: ['remote_policy', 'secondPool', 'all'] }, () =>
                 headers: {
                     authorization,
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 response.body.forEach(element => {
@@ -210,7 +211,7 @@ context.skip('Policies', { tags: ['remote_policy', 'secondPool', 'all'] }, () =>
                     headers: {
                         authorization,
                     },
-                    timeout: 180000
+                    timeout: TIMEOUTS.backend
                 }).then((response) => {
                     expect(response.status).to.eq(STATUS_CODE.OK);
                     response.body.forEach(element => {
@@ -227,7 +228,7 @@ context.skip('Policies', { tags: ['remote_policy', 'secondPool', 'all'] }, () =>
                         body: {
                             isValid: true
                         },
-                        timeout: 180000
+                        timeout: TIMEOUTS.backend
                     }).then((response) => {
                         expect(response.status).to.eq(STATUS_CODE.OK);
                         Authorization.getAccessTokenMGS(MainSRUsername, tenantId).then((authorization) => {
@@ -240,7 +241,7 @@ context.skip('Policies', { tags: ['remote_policy', 'secondPool', 'all'] }, () =>
                                 body: {
                                     isValid: true
                                 },
-                                timeout: 180000
+                                timeout: TIMEOUTS.backend
                             }).then((response) => {
                                 expect(response.status).to.eq(STATUS_CODE.OK);
                             })

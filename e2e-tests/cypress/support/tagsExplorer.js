@@ -1,4 +1,5 @@
 import * as Checks from './checkingMethods';
+import { TIMEOUTS } from './CustomHelpers/timeouts';
 
 // Tags are managed through the tags-explorer widget a list row embeds. `getRow` re-queries the row
 // on every call, because the list re-renders after each tag change and a stored subject detaches.
@@ -17,7 +18,7 @@ const L = {
 
 export const addTag = (getRow, tagName) => {
     getRow().find(L.explorer).find(L.createButton).click();
-    cy.get(L.createDialog, { timeout: 15000 }).should('be.visible');
+    cy.get(L.createDialog, { timeout: TIMEOUTS.ui }).should('be.visible');
     // Create is enabled once the dialog has finished loading; typing earlier is lost on its re-render,
     // and so is the rest of a field typed before the other one (hence description first, name last).
     cy.contains(L.createDialogButton, 'Create').should('be.enabled');
@@ -30,14 +31,14 @@ export const addTag = (getRow, tagName) => {
     cy.contains(L.createDialogButton, 'Create').click();
     cy.get(L.createDialog).should('not.exist');
     Checks.waitForLoading();
-    getRow().find(L.chip, { timeout: 30000 }).should('contain.text', tagName);
+    getRow().find(L.chip, { timeout: TIMEOUTS.backend }).should('contain.text', tagName);
 };
 
 export const deleteTag = (getRow, tagName) => {
     getRow().find(L.chip).contains(tagName).click();
-    cy.get(L.listDialog, { timeout: 15000 }).should('be.visible');
+    cy.get(L.listDialog, { timeout: TIMEOUTS.ui }).should('be.visible');
     cy.get(L.chipInListDialog).contains(tagName).click();
-    cy.get(L.detailDelete, { timeout: 15000 }).first().click();
+    cy.get(L.detailDelete, { timeout: TIMEOUTS.ui }).first().click();
     Checks.waitForLoading();
     // The last tag leaves no chip at all, so assert on the dialog rather than chaining find().
     cy.get(L.listDialog).should(($dialog) => {

@@ -1,6 +1,7 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Tokens', { tags: ['tokens', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
@@ -48,7 +49,7 @@ context('Tokens', { tags: ['tokens', 'thirdPool', 'all', 'all-no-mgs'] }, () => 
                         url: API.ApiServer + 'policies/' + policyId + '/publish',
                         body: { policyVersion: '1.2.5' },
                         headers: { authorization },
-                        timeout: 600000
+                        timeout: TIMEOUTS.longOperation
                     })
                 }
             }).then(() => {

@@ -1,6 +1,7 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Profiles', { tags: ['profiles', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
@@ -58,7 +59,7 @@ context('Profiles', { tags: ['profiles', 'thirdPool', 'all', 'all-no-mgs'] }, ()
                                             '@context': []
                                         }
                                     },
-                                    timeout: 200000
+                                    timeout: TIMEOUTS.backend
                                 })
                                     .then(() => {
                                         //get info about StandardRegistry and put it in the file

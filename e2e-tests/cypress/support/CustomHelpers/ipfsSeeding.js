@@ -3,8 +3,9 @@ import API from '../ApiUrls';
 import { exportModuleMessage, importModuleFile, parseBinaryJson, publishModule } from '../api/modules';
 import * as Authorization from '../authorization';
 import { randomInt } from '../random';
+import { TIMEOUTS, POLL_INTERVAL } from './timeouts';
 
-const PUBLISH_TIMEOUT = 1800000;
+const PUBLISH_TIMEOUT = TIMEOUTS.longOperation;
 
 /**
  * Where the seeding spec (000_accounts_creating/seedHederaArtefacts) records the Hedera message of
@@ -300,8 +301,7 @@ export const importPolicyFromMessage = (username, messageId, body = {}, attempts
         // each failed attempt already costs the Guardian side IPFS timeout, so keep the budget small
         if (attempts < 3 && message.includes('IPFS_UNAVAILABLE')) {
             cy.log(`IPFS content for ${messageId} not available yet, retry ${attempts + 1}`);
-            // eslint-disable-next-line cypress/no-unnecessary-waiting -- back off while the gateway catches up
-            cy.wait(30000);
+            cy.wait(POLL_INTERVAL);
             return importPolicyFromMessage(username, messageId, body, attempts + 1);
         }
         throw new Error(`Import of policy ${messageId} failed: ${response.status} ${message}`);

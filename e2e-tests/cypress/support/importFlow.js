@@ -1,3 +1,4 @@
+import { TIMEOUTS } from './CustomHelpers/timeouts';
 // Shared mechanics for the import dialogs (policy/tool/...) and the async
 // task pages that follow them.
 
@@ -43,8 +44,8 @@ export function dropFile(source) {
  * the task lands would snapshot the pre-completion state forever. Wait for
  * the full round trip instead.
  */
-export function waitForTaskRoundtrip(timeout = 180000) {
-    cy.location('pathname', { timeout: 30000 }).should('include', '/task');
+export function waitForTaskRoundtrip(timeout = TIMEOUTS.longOperation) {
+    cy.location('pathname', { timeout: TIMEOUTS.backend }).should('include', '/task');
     cy.location('pathname', { timeout }).should('not.include', '/task');
 }
 
@@ -59,7 +60,7 @@ export function waitForTaskRoundtrip(timeout = 180000) {
  * the wait repeats. After the last attempt a stuck row fails the test with
  * the offending messageIds so a hung gateway is diagnosable in seconds.
  */
-export function settleToolRowChecks(retries = 3, settleTimeout = 30000) {
+export function settleToolRowChecks(retries = 3, settleTimeout = TIMEOUTS.backend) {
     const rows = 'div.guardian-dialog div.tools-table__row input.input';
     const isStuck = (el) => el.getAttribute('status') === 'load';
 
@@ -99,7 +100,7 @@ export function settleToolRowChecks(retries = 3, settleTimeout = 30000) {
         expect(stuck, `the gateway never answered these import checks: ${stuck.join(', ')}`).to.be.empty;
     });
 
-    const pass = (left) => cy.get(rows, { timeout: settleTimeout }).then({ timeout: settleTimeout + 10000 }, ($in) => waitSettled($in)).then((stuck) => {
+    const pass = (left) => cy.get(rows, { timeout: settleTimeout }).then({ timeout: settleTimeout + TIMEOUTS.ui }, ($in) => waitSettled($in)).then((stuck) => {
         if (!stuck) {
             return;
         }
@@ -131,7 +132,7 @@ export function replaceInaccessibleTools() {
     // (disabled) Import button, so footer visibility cannot mark the switch.
     // Only the preview renders the search bar, so wait for that before reading
     // the tool rows.
-    cy.get('div.guardian-dialog').find('div.search-bar', { timeout: 60000 }).should('exist');
+    cy.get('div.guardian-dialog').find('div.search-bar', { timeout: TIMEOUTS.backend }).should('exist');
     settleToolRowChecks(3, 60000);
     cy.get('div.guardian-dialog').then(($d) => {
         const rows = $d.find('div.tools-table__row');
@@ -141,7 +142,7 @@ export function replaceInaccessibleTools() {
         // The per-row work must run after the settle above: a .then
         // callback queues synchronously, so reading the rows there would see
         // the pre-verdict "load" status and skip every row.
-        cy.get('div.guardian-dialog').find('div.tools-table__row input.input', { timeout: 60000 })
+        cy.get('div.guardian-dialog').find('div.tools-table__row input.input', { timeout: TIMEOUTS.backend })
             .then(() => {
                 rows.each((_, row) => {
                     const input = row.querySelector('input.input');
@@ -150,12 +151,12 @@ export function replaceInaccessibleTools() {
                     }
                     const name = (row.querySelector('label.tools-table__name') || {}).title || '';
                     cy.wrap(row).find('div.guardian-icon-button').click();
-                    cy.get('search-tool-dialog input.search-policy-input', { timeout: 15000 }).clear();
+                    cy.get('search-tool-dialog input.search-policy-input', { timeout: TIMEOUTS.ui }).clear();
                     cy.get('search-tool-dialog input.search-policy-input').type(name);
-                    cy.get('search-tool-dialog div.grid-row', { timeout: 30000 })
+                    cy.get('search-tool-dialog div.grid-row', { timeout: TIMEOUTS.backend })
                         .filter((_, el) => ((el.querySelector('div.col-auto') || {}).textContent || '').trim() === name)
                         .find('button:contains("Select")').first().click();
-                    cy.get('search-tool-dialog').should('not.exist', { timeout: 15000 });
+                    cy.get('search-tool-dialog').should('not.exist', { timeout: TIMEOUTS.ui });
                 });
             });
     });

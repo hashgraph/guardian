@@ -3,6 +3,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import { importPolicyFromMessage, seededMessageId } from '../../../support/CustomHelpers/ipfsSeeding';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('IPFS', { tags: ['ipfs', 'secondPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
@@ -21,7 +22,7 @@ context('IPFS', { tags: ['ipfs', 'secondPool', 'all', 'all-no-mgs'] }, () => {
             headers: { authorization },
         });
 
-    const postIpfsDryRunWithAuth = (authorization, policyId, body, timeout = 200000) =>
+    const postIpfsDryRunWithAuth = (authorization, policyId, body, timeout = TIMEOUTS.backend) =>
         cy.request({
             method: METHOD.POST,
             url: dryRunUrl(policyId),

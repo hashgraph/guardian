@@ -2,6 +2,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Checks from '../../../support/checkingMethods';
 import * as Authorization from '../../../support/authorization';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, () => {
 
@@ -23,7 +24,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
                             'content-type': 'binary/octet-stream',
                             authorization,
                         },
-                        timeout: 18000000,
+                        timeout: TIMEOUTS.longOperation,
                     }).then((response) => {
                         expect(response.status).to.eq(STATUS_CODE.SUCCESS);
                         policyId = JSON.parse(new TextDecoder().decode(response.body)).at(0).id;
@@ -35,7 +36,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
                                 headers: {
                                     authorization
                                 },
-                                timeout: 18000000,
+                                timeout: TIMEOUTS.longOperation,
                             }).then((response) => {
                                 expect(response.status).to.eq(STATUS_CODE.OK);
                             });
@@ -54,7 +55,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
                 headers: {
                     authorization
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.SUCCESS);
                 //Save DIDs
@@ -70,10 +71,10 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
                     body: {
                         did: registrantDid
                     },
-                    timeout: 180000
+                    timeout: TIMEOUTS.backend
                 }).then(() => {
                     //Block wait
-                    cy.wait(5000);
+                    Checks.waitForBlockAvailable(API.ApiServer + API.Policies + policyId + '/' + API.ChooseRegistrantRole, authorization);
                     //Choose registrant role
                     cy.request({
                         method: METHOD.POST,
@@ -84,7 +85,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
                         body: {
                             role: 'Registrant'
                         },
-                        timeout: 180000
+                        timeout: TIMEOUTS.backend
                     }).then(() => {
                         //Block wait
                         cy.fixture('tableField.csv', 'binary')
@@ -123,7 +124,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
                                             },
                                             ref: null
                                         },
-                                        timeout: 180000
+                                        timeout: TIMEOUTS.backend
                                     })
                                 })
                             })
@@ -144,17 +145,19 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
                 body: {
                     did: adminDid
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then(() => {
-                //Block wait
-                cy.wait(10000);
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.Policies + policyId + '/' + API.GetApplications,
-                    headers: {
-                        authorization
+                Checks.pollUntil({
+                    request: {
+                        method: METHOD.GET,
+                        url: API.ApiServer + API.Policies + policyId + '/' + API.GetApplications,
+                        headers: {
+                            authorization
+                        },
+                        timeout: TIMEOUTS.backend
                     },
-                    timeout: 180000
+                    predicate: (response) => response.body?.data?.[0] && response,
+                    description: 'the application in the registrants grid'
                 }).then((response) => {
                     //Block wait
                     expect(response.status).to.eq(STATUS_CODE.OK);

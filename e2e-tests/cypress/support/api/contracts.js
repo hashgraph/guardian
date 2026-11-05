@@ -1,5 +1,9 @@
 import { METHOD, STATUS_CODE } from './api-const';
 import API from '../ApiUrls';
+import { TIMEOUTS, POLL_INTERVAL } from '../CustomHelpers/timeouts';
+import { pollUntil } from '../checkingMethods';
+
+export { pollUntil };
 
 /**
  * Helpers shared by the `013_contracts` specs.
@@ -31,7 +35,7 @@ export const listContracts = (authorization, type, qs = {}) =>
         url: API.ApiServer + API.ListOfContracts,
         headers: { authorization },
         qs: { type, cacheBust: nextCacheBust(), ...qs },
-        timeout: 180000,
+        timeout: TIMEOUTS.backend,
     });
 
 //The listing is ordered by `createDate` descending (see `GET_CONTRACTS` in
@@ -56,40 +60,6 @@ export const getContractByContractId = (authorization, type, contractId) =>
         return cy.wrap(contract, { log: false });
     });
 
-/**
- * Polls `request` until `predicate(response)` returns a truthy value, then yields it.
- *
- * Throws when `timeout` elapses, quoting the last response: a poll that gives up quietly
- * turns a missing event into a confusing `undefined` several lines further down, and costs
- * the full timeout on every run.
- */
-export const pollUntil = ({
-    request,
-    predicate,
-    description,
-    timeout = 180000,
-    interval = 5000,
-}) => {
-    const deadline = Date.now() + timeout;
-
-    const attempt = () => cy.request({ failOnStatusCode: false, ...request }).then((response) => {
-        const match = predicate(response);
-        if (match) {
-            return cy.wrap(match, { log: false });
-        }
-        if (Date.now() >= deadline) {
-            throw new Error(
-                `Timed out after ${timeout} ms waiting for ${description}. ` +
-                `Last response: ${response.status} ${JSON.stringify(response.body)}`
-            );
-        }
-        // eslint-disable-next-line cypress/no-unnecessary-waiting -- back off between polls
-        return cy.wait(interval, { log: false }).then(attempt);
-    });
-
-    return attempt();
-};
-
 const wipeRequestsRequest = (authorization, contractId) => ({
     method: METHOD.GET,
     url: API.ApiServer + API.WipeRequests,
@@ -103,7 +73,7 @@ const wipeRequestsRequest = (authorization, contractId) => ({
  * Pass `token` when more than one request can be outstanding on the contract, so the wait
  * ends on the request this step raised rather than on one left by an earlier step.
  */
-export const waitForWipeRequest = (authorization, contractId, { token, timeout = 180000 } = {}) =>
+export const waitForWipeRequest = (authorization, contractId, { token, timeout = TIMEOUTS.longOperation } = {}) =>
     pollUntil({
         request: wipeRequestsRequest(authorization, contractId),
         predicate: (response) => response.status === STATUS_CODE.OK &&
@@ -122,10 +92,8 @@ export const waitForWipeRequest = (authorization, contractId, { token, timeout =
  * re-read throughout it rather than only at the end, so a request that appears and is removed
  * again is still caught.
  */
-export const expectNoWipeRequest = (authorization, contractId, { token, window: waitWindow = 90000, interval = 5000 } = {}) => {
-    const deadline = Date.now() + waitWindow;
-
-    const attempt = () => cy.request(wipeRequestsRequest(authorization, contractId)).then((response) => {
+export const expectNoWipeRequest = (authorization, contractId, { token, window: waitWindow = 90000 } = {}) => {
+    const attempt = (deadline) => cy.request(wipeRequestsRequest(authorization, contractId)).then((response) => {
         expect(response.status).to.eql(STATUS_CODE.OK);
         const unexpected = (response.body ?? []).filter((request) => !token || request.token === token);
         expect(
@@ -135,17 +103,16 @@ export const expectNoWipeRequest = (authorization, contractId, { token, window: 
         if (Date.now() >= deadline) {
             return cy.wrap(response.body, { log: false });
         }
-        // eslint-disable-next-line cypress/no-unnecessary-waiting -- the window has to outlast one sync cycle
-        return cy.wait(interval, { log: false }).then(attempt);
+        return cy.wait(POLL_INTERVAL, { log: false }).then(() => attempt(deadline));
     });
 
-    return attempt();
+    return cy.then(() => attempt(Date.now() + waitWindow));
 };
 
 /**
  * Waits for the retire request a user raises against a pool, and yields it.
  */
-export const waitForRetireRequest = (authorization, contractId, { timeout = 180000 } = {}) =>
+export const waitForRetireRequest = (authorization, contractId, { timeout = TIMEOUTS.longOperation } = {}) =>
     pollUntil({
         request: {
             method: METHOD.GET,
@@ -165,7 +132,7 @@ export const waitForRetireRequest = (authorization, contractId, { timeout = 1800
  * A pool is only listed to a plain user once the retire contract holds the wiper role on
  * every token of the pool, which happens when the wipe request is approved.
  */
-export const waitForRetirePool = (authorization, { contractId, tokenId, timeout = 180000 } = {}) =>
+export const waitForRetirePool = (authorization, { contractId, tokenId, timeout = TIMEOUTS.longOperation } = {}) =>
     pollUntil({
         request: {
             method: METHOD.GET,
@@ -183,7 +150,7 @@ export const waitForRetirePool = (authorization, { contractId, tokenId, timeout 
 /**
  * Waits until the token balance of `hederaAccountId` reaches `expected`, and yields it.
  */
-export const waitForTokenBalance = (authorization, { tokenId, expected, timeout = 600000 } = {}) =>
+export const waitForTokenBalance = (authorization, { tokenId, expected, timeout = TIMEOUTS.longOperation } = {}) =>
     pollUntil({
         request: {
             method: METHOD.GET,
@@ -225,7 +192,7 @@ export const createWipeBoundToken = (authorization, { tokenName, tokenSymbol, wi
             wipeContractId,
             tokenId: null,
         },
-        timeout: 180000,
+        timeout: TIMEOUTS.backend,
     }).then((response) => {
         expect(response.status).to.eql(STATUS_CODE.SUCCESS);
         //The response is the registry's whole token list, and earlier runs leave tokens of the same
@@ -269,9 +236,9 @@ export const findWipeBoundToken = (authorization, wipeContractId) =>
  * already has a request outstanding reverts inside the retire contract's `try/catch` - but it does
  * cost gas, hence the interval well above the poll default.
  */
-export const setRetirePool = (authorization, { contractId, tokenId, count = 1, immediately = false, timeout = 120000 }) =>
+export const setRetirePool = (authorization, { contractId, tokenId, count = 1, immediately = false, timeout = TIMEOUTS.backend }) =>
     pollUntil({
-        interval: 10000,
+        interval: 2000,
         request: {
             method: METHOD.POST,
             url: `${API.ApiServer}${API.RetireContract}${contractId}/${API.PoolContract}`,
@@ -280,7 +247,7 @@ export const setRetirePool = (authorization, { contractId, tokenId, count = 1, i
                 tokens: [{ token: tokenId, count }],
                 immediately,
             },
-            timeout: 180000,
+            timeout: TIMEOUTS.backend,
         },
         predicate: (response) => response.status === STATUS_CODE.OK,
         description: `token ${tokenId} to be accepted into a pool of contract ${contractId}`,

@@ -1,6 +1,7 @@
 import { METHOD, STATUS_CODE } from './api-const';
 import API from '../ApiUrls';
 import { randomInt } from '../random';
+import { TIMEOUTS } from '../CustomHelpers/timeouts';
 
 // Shared helpers for the modules specs (007_modules and the module part of 012_analytics).
 //
@@ -70,7 +71,7 @@ export const publishModule = (authorization, uuid, opts = {}) =>
     cy.request({
         method: METHOD.PUT,
         url: `${modulesUrl}${uuid}/${API.Publish}`,
-        timeout: 180000,
+        timeout: TIMEOUTS.longOperation,
         ...requestOptions(authorization, opts),
     });
 
@@ -79,7 +80,7 @@ export const validateModule = (authorization, body, opts = {}) =>
         method: METHOD.POST,
         url: `${modulesUrl}${API.Validate}`,
         body,
-        timeout: 180000,
+        timeout: TIMEOUTS.backend,
         ...requestOptions(authorization, opts),
     });
 
@@ -87,7 +88,7 @@ export const exportModuleMessage = (authorization, uuid, opts = {}) =>
     cy.request({
         method: METHOD.GET,
         url: `${modulesUrl}${uuid}/${API.ExportMessage}`,
-        timeout: 600000,
+        timeout: TIMEOUTS.backend,
         ...requestOptions(authorization, opts),
     });
 
@@ -96,7 +97,7 @@ export const exportModuleFileResponse = (authorization, uuid, opts = {}) =>
         method: METHOD.GET,
         url: `${modulesUrl}${uuid}/${API.ExportFile}`,
         encoding: null,
-        timeout: 180000,
+        timeout: TIMEOUTS.backend,
         ...requestOptions(authorization, opts),
     });
 
@@ -112,7 +113,7 @@ export const importModuleFile = (authorization, file, opts = {}) =>
         method: METHOD.POST,
         url: `${modulesUrl}${API.ImportFile}`,
         body: file,
-        timeout: 180000,
+        timeout: TIMEOUTS.longOperation,
         ...requestOptions(authorization, opts, { 'content-type': 'binary/octet-stream' }),
     });
 

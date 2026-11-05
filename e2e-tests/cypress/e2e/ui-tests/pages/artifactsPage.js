@@ -1,5 +1,6 @@
 import URL from '../../../support/GuardianUrls';
 import * as Checks from '../../../support/checkingMethods';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 const L = {
     table: 'div.guardian-grid-table',
@@ -29,24 +30,24 @@ export class ArtifactsPage {
     // Opens the import dialog, attaches the file to the given policy (the import
     // fires on file load) and waits for the dialog to close.
     importArtifactFrom(policyName, fileName) {
-        cy.get(L.importButton, { timeout: 15000 }).should('be.visible').click();
-        cy.get(L.dialog, { timeout: 15000 }).should('be.visible');
+        cy.get(L.importButton, { timeout: TIMEOUTS.ui }).should('be.visible').click();
+        cy.get(L.dialog, { timeout: TIMEOUTS.ui }).should('be.visible');
         cy.get(L.policyDropdown).click();
-        cy.contains(L.filterOption, policyName, { timeout: 15000 }).click();
+        cy.contains(L.filterOption, policyName, { timeout: TIMEOUTS.ui }).click();
         cy.fixture(fileName, { encoding: null }).then((file) =>
             cy.get(L.fileInput).selectFile({ contents: file, fileName }, { force: true }));
-        cy.get(L.dialog, { timeout: 20000 }).should('not.exist');
+        cy.get(L.dialog, { timeout: TIMEOUTS.ui }).should('not.exist');
         Checks.waitForLoading();
     }
 
     filterByPolicy(policyName) {
-        cy.get(L.filterSelect, { timeout: 15000 }).click();
-        cy.contains(L.filterOption, policyName, { timeout: 15000 }).click();
+        cy.get(L.filterSelect, { timeout: TIMEOUTS.ui }).click();
+        cy.contains(L.filterOption, policyName, { timeout: TIMEOUTS.ui }).click();
         Checks.waitForLoading();
     }
 
     checkRowExists(policyName, artifactName) {
-        cy.get(L.row, { timeout: 20000 }).filter((_, row) => hasPolicyName(row, policyName))
+        cy.get(L.row, { timeout: TIMEOUTS.ui }).filter((_, row) => hasPolicyName(row, policyName))
             .should('contain.text', artifactName);
     }
 
@@ -67,7 +68,7 @@ export class ArtifactsPage {
                     return;
                 }
                 cy.wrap(rows.first()).find(L.deleteIcon).click();
-                cy.get(L.deleteDialog, { timeout: 15000 }).find(L.deleteConfirm).click();
+                cy.get(L.deleteDialog, { timeout: TIMEOUTS.ui }).find(L.deleteConfirm).click();
                 Checks.waitForLoading();
                 step(deleted + 1);
             });
@@ -76,6 +77,6 @@ export class ArtifactsPage {
     }
 
     assertEmpty() {
-        cy.get(L.empty, { timeout: 15000 }).should('contain.text', 'No Artifacts');
+        cy.get(L.empty, { timeout: TIMEOUTS.ui }).should('contain.text', 'No Artifacts');
     }
 }

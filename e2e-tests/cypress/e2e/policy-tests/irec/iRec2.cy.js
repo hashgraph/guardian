@@ -1,6 +1,7 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Policy autotest', { tags: ['policyAT'] }, () => {
     const SRUsername = Cypress.env('SRUser');
@@ -18,7 +19,7 @@ context('Policy autotest', { tags: ['policyAT'] }, () => {
                             'content-type': 'binary/octet-stream',
                             authorization,
                         },
-                        timeout: 180000,
+                        timeout: TIMEOUTS.longOperation,
                     }).then((response) => {
                         // `cy.request` returns the body as an ArrayBuffer for binary
                         // requests, so decode it back to JSON before asserting.

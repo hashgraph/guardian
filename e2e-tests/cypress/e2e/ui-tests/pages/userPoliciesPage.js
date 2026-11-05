@@ -1,5 +1,6 @@
 import CommonElements from '../../../support/defaultUIElements';
 import * as Checks from '../../../support/checkingMethods';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 const d = new Date(2022, 3, 3);
 
@@ -235,7 +236,6 @@ export class UserPoliciesPage {
     validateGeoJSONFileImport(fileName) {
         cy.get(UserPoliciesPageLocators.addLocButton).click();
         cy.get(UserPoliciesPageLocators.switchButtonGeoJSONInput).click();
-        cy.wait(1000);
         cy.get(CommonElements.fileInput).selectFile('cypress/fixtures/' + fileName, { force: true });
         cy.contains(UserPoliciesPageLocators.includeAllButton).click();
         cy.get(UserPoliciesPageLocators.locationPanel).should('have.length', 2);
@@ -245,7 +245,6 @@ export class UserPoliciesPage {
 
     validateGeoJSONLargeFileImport(fileName) {
         cy.get(UserPoliciesPageLocators.switchButtonGeoJSONInput).click();
-        cy.wait(1000);
         cy.get(CommonElements.fileInput).selectFile('cypress/fixtures/' + fileName, { force: true });
         cy.contains(UserPoliciesPageLocators.includeAllButton).click();
         cy.contains(UserPoliciesPageLocators.largeFileLabelHeader).should('exist');
@@ -303,9 +302,8 @@ export class UserPoliciesPage {
     }
 
     checkRevokeButtonDisappear() {
-        cy.wait(2000);
         Checks.waitForLoading();
-        cy.get(UserPoliciesPageLocators.revokeButton).should('not.exist')
+        cy.get(UserPoliciesPageLocators.revokeButton, { timeout: TIMEOUTS.backend }).should('not.exist')
     }
 
     approveDeviceInPolicy() {
@@ -517,7 +515,7 @@ export class UserPoliciesPage {
         // cy.get(RegistrantPageLocators.roleSelect).click().get("p-dropdownitem").contains(role).click();
         // cy.get(RegistrantPageLocators.submitBtn).click({ force: true });
         // cy.intercept("/api/v1/profiles/" + role).as("waitForRegister" + role);
-        // cy.wait("@waitForRegister" + role, { timeout: 180000 });
+        // cy.wait("@waitForRegister" + role, { timeout: TIMEOUTS.longOperation });
         // cy.get(RegistrantPageLocators.applicationRegBtns).contains("Next").click();
         // cy.get(RegistrantPageLocators.applicationRegBtns).contains("Next").click();
         // cy.get(RegistrantPageLocators.applicationRegBtns).contains("Create").click();
@@ -542,7 +540,7 @@ export class UserPoliciesPage {
         // cy.get(RegistrantPageLocators.roleSelect).click().get("p-dropdownitem").contains(role).click();
         // cy.get(RegistrantPageLocators.submitBtn).click({force: true});
         // cy.intercept("/api/v1/profiles/" + role).as("waitForRegister" + role);
-        // cy.wait("@waitForRegister" + role, { timeout: 180000 });
+        // cy.wait("@waitForRegister" + role, { timeout: TIMEOUTS.longOperation });
         // cy.get(RegistrantPageLocators.applicationRegBtns).contains("Next").click();
         // cy.get(RegistrantPageLocators.applicationRegBtns).contains("Next").click();
         // cy.get(RegistrantPageLocators.applicationRegBtns).contains("Create").click();
@@ -554,21 +552,21 @@ export class UserPoliciesPage {
         // cy.intercept(RegistrantPageLocators.policiesList).as(
         //     "waitForPoliciesList"
         // );
-        // cy.wait("@waitForPoliciesList", {timeout: 100000})
+        // cy.wait("@waitForPoliciesList", {timeout: TIMEOUTS.backend})
     }
 
     static waitForBalance() {
         // cy.intercept(RegistrantPageLocators.balance).as(
         //     "waitForBalance"
         // );
-        // cy.wait(['@waitForBalance', '@waitForBalance'], {timeout: 100000})
+        // cy.wait(['@waitForBalance', '@waitForBalance'], {timeout: TIMEOUTS.backend})
     }
 
     static waitForRegistrant() {
         // cy.intercept(RegistrantPageLocators.profilePage).as(
         //     "waitForRegistrant"
         // );
-        // cy.wait("@waitForRegistrant", {timeout: 100000})
+        // cy.wait("@waitForRegistrant", {timeout: TIMEOUTS.backend})
     }
 
     chooseRole(role) {
@@ -592,7 +590,7 @@ export class UserPoliciesPage {
         // cy.get("td").first().parent().get("td").eq("6").contains("Open").click();
         // cy.contains("Devices").click({force: true});
         // cy.intercept("/api/v1/profiles/Registrant").as("waitForRegisterRegistrant");
-        // cy.wait("@waitForRegisterRegistrant", { timeout: 180000 });
+        // cy.wait("@waitForRegisterRegistrant", { timeout: TIMEOUTS.longOperation });
         // cy.contains(RegistrantPageLocators.createDeviceBtn).click();
         // cy.get(RegistrantPageLocators.submitBtn).last().click();
         // cy.wait(60000);
@@ -606,7 +604,7 @@ export class UserPoliciesPage {
         // cy.get("td").first().parent().get("td").eq("6").contains("Open").click();
         // cy.contains("Devices").click({force: true});
         // cy.intercept("/api/v1/profiles/Registrant").as("waitForRegisterRegistrant");
-        // cy.wait("@waitForRegisterRegistrant", { timeout: 180000 });
+        // cy.wait("@waitForRegisterRegistrant", { timeout: TIMEOUTS.longOperation });
         // cy.contains(RegistrantPageLocators.createIsssueRequestBtn).click();
         // cy.get(RegistrantPageLocators.submitBtn).last().click();
         // cy.wait(60000);
@@ -626,7 +624,7 @@ export class UserPoliciesPage {
         // cy.intercept(RegistrantPageLocators.tokensWaiter).as(
         //     "waitForTokens"
         // );
-        // cy.wait("@waitForTokens", {timeout: 60000})
+        // cy.wait("@waitForTokens", {timeout: TIMEOUTS.backend})
         // cy.get("td").last().parent().find("td").eq("2").should('have.text', " 123 ");
         // let tokenId;
         // cy.readFile('cypress/fixtures/tokenId.txt').then(file => {
