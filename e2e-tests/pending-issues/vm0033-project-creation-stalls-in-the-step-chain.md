@@ -1,6 +1,7 @@
 # VM0033: a created project never leaves the `new_project` step chain
 
-**Status:** open — re-verified 31 Oct 2026, still open (see "Re-verified")
+**Status:** open — `VM033.cy.js` is skipped (`context.skip`) until the VM0033 policy is updated; re-enable it once both VM0033 notes are resolved.
+**Previous status:** open — re-verified 31 Oct 2026, still open (see "Re-verified")
 **Component:** `policy-service` — `interfaceStepBlock` / `tool` block execution
 **Severity:** medium — the API reports success, the document is issued, and it then reaches no grid
 **Found by:** `e2e-tests/cypress/e2e/api-tests/009_policies/VM033.cy.js` — `Create application`

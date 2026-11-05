@@ -25,6 +25,17 @@ npm run guardian:test -- 'cypress/e2e/api-tests/010_tokens/*.cy.js' cypress/e2e/
 npm run guardian:down        # stops the services and removes the containers
 ```
 
+The two halves can run in different places, for example when the tests are driven from a dev container that has no docker:
+
+```bash
+npm run guardian:infra:up        # on the host: MongoDB, NATS, Valkey and Kubo containers
+npm run guardian:services:up     # in the dev container: every Guardian service, gateway on http://127.0.0.1:3002
+npm run guardian:services:down   # restart the services without touching the infra or the database
+npm run guardian:infra:down      # on the host: removes the containers
+```
+
+`INFRA_HOST` is where the services reach the infra and the Hedera network: `127.0.0.1` by default, `host.docker.internal` when `/.dockerenv` exists. Export it to override the detection. The dev container has its own network namespace, so point Cypress at `http://127.0.0.1:3002` there (`--env apiServer=http://127.0.0.1:3002`).
+
 ## Running tests manually
 
 Unless specified otherwise, the tests are idempotent and can be run multiple times without side effects, and in any order.

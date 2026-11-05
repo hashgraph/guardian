@@ -3,10 +3,19 @@
 # the same way .github/workflows/e2e-tests.yml does, and runs the e2e suite against it.
 #
 #   npm run solo:up                          # once, creates the network and .solo/solo.env
-#   scripts/local-guardian.sh up             # infra containers + Guardian services, waits until ready
+#   scripts/local-guardian.sh infra-up       # infra containers only (needs docker: run it where docker is)
+#   scripts/local-guardian.sh services-up    # Guardian services only, waits until ready (can run in a dev container)
+#   scripts/local-guardian.sh up             # infra-up + services-up
 #   scripts/local-guardian.sh test [SPEC...] # Cypress, every test; SPECs limit it to spec files or globs
 #   scripts/local-guardian.sh smoke          # Cypress, only the tests tagged smoke
-#   scripts/local-guardian.sh down           # stops the services and removes the infra containers
+#   scripts/local-guardian.sh services-down  # stops the services
+#   scripts/local-guardian.sh infra-down     # removes the infra containers
+#   scripts/local-guardian.sh down           # services-down + infra-down
+#
+# The services reach the infra and the Hedera network at INFRA_HOST: 127.0.0.1 on the machine that runs
+# the containers, host.docker.internal inside a dev container (detected through /.dockerenv, override it
+# by exporting INFRA_HOST). A dev container has its own network namespace, so the gateway is then
+# http://127.0.0.1:3002 there and a service left over on the host cannot hold its ports.
 #
 # Infra (MongoDB, NATS, Valkey, Kubo) is recreated on every `up`: the ledger is empty after each
 # solo:up, so a database left over from an earlier run would point at accounts that no longer exist.
@@ -21,6 +30,9 @@ LOG_DIR="$STATE_DIR/logs"
 PID_FILE="$STATE_DIR/pids"
 SOLO_ENV="$E2E_DIR/.solo/solo.env"
 WORKER_COUNT=5
+if [[ -z "${INFRA_HOST:-}" ]]; then
+  if [[ -f /.dockerenv ]]; then INFRA_HOST=host.docker.internal; else INFRA_HOST=127.0.0.1; fi
+fi
 INFRA_CONTAINERS=(guardian-e2e-cache guardian-e2e-nats guardian-e2e-mongo guardian-e2e-ipfs)
 
 fail() { echo "error: $*" >&2; exit 1; }
@@ -38,13 +50,19 @@ load_environment() {
 export_service_environment() {
   export GUARDIAN_LOG_DIR="$LOG_DIR" WORKER_COUNT
   export NODE_OPTIONS="--openssl-legacy-provider"
-  export IPFS_PROVIDER=local IPFS_NODE_ADDRESS=http://127.0.0.1:5001
-  export IPFS_PUBLIC_GATEWAY='http://127.0.0.1:8080/ipfs/{cid}'
+  export MQ_ADDRESS="$INFRA_HOST" DB_HOST="$INFRA_HOST" DB_LOGGER_HOST="$INFRA_HOST" HOST_CACHE="$INFRA_HOST"
+  export NATS_MONITOR="http://$INFRA_HOST:8222"
+  export IPFS_PROVIDER=local IPFS_NODE_ADDRESS="http://$INFRA_HOST:5001"
+  export IPFS_PUBLIC_GATEWAY="http://$INFRA_HOST:8080/ipfs/{cid}"
   export IPFS_TIMEOUT=720 ACCESS_TOKEN_UPDATE_INTERVAL=600000
   export INITIAL_BALANCE=10000 INITIAL_STANDARD_REGISTRY_BALANCE=100000
   export MIN_PASSWORD_LENGTH=4 PASSWORD_COMPLEXITY=easy
   # Large NATS replies are fetched from this host, and a laptop's hostname often does not resolve.
   export DIRECT_MESSAGE_HOST=127.0.0.1
+  # solo.env points at the network through the loopback of the machine that runs it.
+  export LOCALNODE_ADDRESS="${LOCALNODE_ADDRESS//127.0.0.1/$INFRA_HOST}"
+  export OVERRIDE_HEDERA_CONSENSUS_NODES="${OVERRIDE_HEDERA_CONSENSUS_NODES//127.0.0.1/$INFRA_HOST}"
+  export OVERRIDE_HEDERA_MIRROR_NODES="${OVERRIDE_HEDERA_MIRROR_NODES//127.0.0.1/$INFRA_HOST}"
 }
 
 start_infra() {
@@ -129,12 +147,19 @@ run_tests() {                # run_tests <tags> [spec...]
 }
 
 case "${1:-}" in
-  up)
+  infra-up)
+    start_infra
+    echo "Infra is up (MongoDB 27017, NATS 4222, Valkey 6379, Kubo 5001/8080)"
+    ;;
+  services-up)
     load_environment
     export_service_environment
-    start_infra
     start_services
     echo "Guardian is up on http://127.0.0.1:3002; logs in $LOG_DIR"
+    ;;
+  up)
+    "$0" infra-up
+    "$0" services-up
     ;;
   test)
     load_environment
@@ -145,11 +170,17 @@ case "${1:-}" in
     load_environment
     run_tests smoke
     ;;
+  services-down)
+    stop_services
+    ;;
+  infra-down)
+    stop_infra
+    ;;
   down)
     stop_services
     stop_infra
     ;;
   *)
-    fail "usage: local-guardian.sh up|test [SPEC...]|smoke|down"
+    fail "usage: local-guardian.sh infra-up|services-up|up|test [SPEC...]|smoke|services-down|infra-down|down"
     ;;
 esac
