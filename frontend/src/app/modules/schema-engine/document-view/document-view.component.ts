@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { DocumentValidators, Schema, SchemaRuleValidateResult } from '@guardian/interfaces';
 import { forkJoin, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -49,7 +49,6 @@ export class DocumentViewComponent implements OnInit {
     /** The host draws the navigation (a presentation); this view shows one page. */
     @Input() navHidden: boolean = false;
     /** The page to show: `overview`, `details` or a section id. */
-    @Input() activePage: string | null = null;
 
     @Output() pagesChange = new EventEmitter<IRailCard[]>();
     @Output('discussion-action') discussionActionEvent = new EventEmitter<any>();
@@ -86,7 +85,8 @@ export class DocumentViewComponent implements OnInit {
     /** Presentation: 0 is "Presentation details", the credentials follow. */
     public vpIndex = 0;
     public vpCards: IRailCard[] = [];
-    public vpActivePage: string | null = null;
+    /** The credential view of a presentation: it owns the pages, the rail only tells it which to show. */
+    @ViewChild('nestedView') nestedView?: DocumentViewComponent;
     public pagesReady = false;
     private subjectViews = new Map<any, ISubjectView>();
     public railSections: IRailSection[] = [];
@@ -151,9 +151,6 @@ export class DocumentViewComponent implements OnInit {
 
     ngOnChanges(changes: SimpleChanges): void {
         this.updateFormulasResults();
-        if (changes.activePage && this.activePage) {
-            this.showPage(this.activePage);
-        }
         if (this.pagesReady && (changes.discussionData || changes.discussionView || changes.hideFields)) {
             this.refreshPages();
         }
@@ -405,7 +402,8 @@ export class DocumentViewComponent implements OnInit {
     }
 
     public get barLabel(): string {
-        return this.screen === 'section' ? `Section ${this.activeIndex + 1} of ${this.railSections.length}` : '';
+        // Document details is the first rail row but not a section
+        return this.screen === 'section' && this.activeIndex > 0 ? `Section ${this.activeIndex} of ${this.railSections.length - 1}` : '';
     }
 
     /** The link as the open page's field view reads it: without the promoted root's name. */
@@ -604,13 +602,11 @@ export class DocumentViewComponent implements OnInit {
     public openCredential(index: number): void {
         this.vpIndex = index;
         this.vpCards = [];
-        this.vpActivePage = null;
         this.ref.detectChanges();
     }
 
     public onVpCard(card: IRailCard): void {
-        this.vpActivePage = card.id;
-        this.ref.detectChanges();
+        this.nestedView?.showPage(card.id);
     }
 
     public onNestedPages(cards: IRailCard[]): void {

@@ -194,7 +194,7 @@
                     <h2 class="sf-overview-title">{{ overviewTitle }}</h2>
                   </div>
                   <div overviewExtra>
-                    @for (location of locations; track location.sectionIndex + location.label) {
+                    @for (location of locations; track location.id) {
                       <div class="sf-location">
                         <div class="sf-location-map">
                           <app-geojson-type [preset]="location.value" [disabled]="true"></app-geojson-type>
@@ -285,6 +285,7 @@
               } @else {
                 @for (item of [subjects[vpIndex - 1]]; track item) {
                   <app-document-view
+                    #nestedView
                     [policyId]="policyId"
                     [document]="item"
                     [formulas]="formulas"
@@ -292,7 +293,6 @@
                     [hide-fields]="hideFields"
                     type="VC"
                     [navHidden]="true"
-                    [activePage]="vpActivePage"
                     (pagesChange)="onNestedPages($event)"
                     [preview]="preview"
                     (previewLoadingChange)="preview && previewLoadingChange.emit($event)"
