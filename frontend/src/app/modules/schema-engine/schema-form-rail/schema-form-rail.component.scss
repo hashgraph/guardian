@@ -1,10 +1,7 @@
+@use '../sections' as sections;
+
 :host {
-    // Same derived greys as the policy navigation (progress-tracker)
-    --sf-text-2: color-mix(in srgb, var(--guardian-font-color) 75%, transparent);
-    --sf-text-3: var(--color-grey-5);
-    --sf-disabled: var(--color-grey-4);
-    --sf-sunken: color-mix(in srgb, var(--guardian-border-color) 30%, var(--guardian-grey-background));
-    --sf-border-strong: color-mix(in srgb, var(--guardian-border-color) 70%, var(--guardian-font-color));
+    @include sections.sf-vars;
     display: block;
     min-height: 0;
 }
@@ -140,26 +137,11 @@
     }
 }
 
-.sf-ring {
+.sf-ri-prefix {
     flex-shrink: 0;
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 12px;
+    color: var(--sf-text-3);
 }
 
-.sf-ring-track {
-    stroke: var(--guardian-border-color);
-}
-
-.sf-ring-bar {
-    stroke: var(--color-primary);
-}
-
-.sf-ring-fill {
-    fill: var(--guardian-success-color);
-}
-
-.sf-ring-check {
-    stroke: var(--guardian-background);
-}
-
-.sf-ring-dash {
-    stroke: var(--sf-disabled);
-}
+@include sections.sf-badges;

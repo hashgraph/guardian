@@ -136,6 +136,15 @@ export class BrandingService {
             if (brandingData.headerColor1) {
                 document.body.style.setProperty('--guardian-menu-color-2', brandingData.headerColor1);
             }
+            // Accent: the menu color when custom menu colors are on, otherwise the primary color.
+            const useMenuAccent = (brandingData.useCustomMenuColors ?? !!brandingData.headerColor)
+                && brandingData.headerColor;
+            const schemaAccent = useMenuAccent ? brandingData.headerColor : brandingData.primaryColor;
+            if (schemaAccent) {
+                document.body.style.setProperty('--guardian-schema-accent', schemaAccent);
+            } else {
+                document.body.style.removeProperty('--guardian-schema-accent');
+            }
             // Custom menu colors are driven by the stored flags; configs saved
             // before the flags existed fall back to "enabled when a menu color
             // is set" so existing installations keep their current look.

@@ -2,6 +2,7 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { IFormCompletion } from '../schema-form/schema-form-completion';
 import { IFormSection } from '../schema-form-root/schema-form-sections';
+import { SchemaFormRingComponent } from '../schema-form-nav/schema-form-ring.component';
 import { SchemaFormRailComponent } from './schema-form-rail.component';
 
 describe('SchemaFormRailComponent', () => {
@@ -32,7 +33,7 @@ describe('SchemaFormRailComponent', () => {
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            declarations: [SchemaFormRailComponent],
+            declarations: [SchemaFormRailComponent, SchemaFormRingComponent],
             schemas: [NO_ERRORS_SCHEMA],
         }).compileComponents();
     });
@@ -101,5 +102,41 @@ describe('SchemaFormRailComponent', () => {
         fixture.componentRef.setInput('inDrawer', true);
         fixture.detectChanges();
         expect(fixture.nativeElement.querySelector('.sf-rail-hide').textContent.trim()).toBe('Close');
+    });
+
+    describe('view mode', () => {
+        const viewSections = [
+            { id: 'a', title: 'Alpha', prefix: '1.1', status: 'ok', badges: [{ kind: 'warn', count: 2, tooltip: '2 rule warnings' }] },
+            { id: 'b', title: 'Beta', status: 'bad', badges: [{ kind: 'comment', count: 1, tooltip: '1 comment' }] },
+            { id: 'c', title: 'Gamma', status: 'none' },
+        ] as any[];
+
+        it('hides the summary and the rings, and shows the prefix, status dot and badges', () => {
+            create({ mode: 'view', sections: viewSections, completion: null });
+            expect(fixture.nativeElement.querySelector('.sf-rail-sum')).toBeNull();
+            expect(fixture.nativeElement.querySelector('app-schema-form-ring')).toBeNull();
+            expect(fixture.nativeElement.querySelector('.sf-ri-err')).toBeNull();
+            const [, alpha, beta, gamma] = items();
+            expect(alpha.querySelector('.sf-ri-prefix')!.textContent!.trim()).toBe('1.1');
+            expect(alpha.querySelector('.sf-status-ok')).not.toBeNull();
+            expect(alpha.querySelector('.sf-badge-warn')!.textContent!.trim()).toBe('2');
+            expect(beta.querySelector('.sf-status-bad')).not.toBeNull();
+            expect(beta.querySelector('.sf-badge-comment')).not.toBeNull();
+            expect(gamma.querySelector('.sf-status-dot:not(.sf-status-ok):not(.sf-status-bad)')).not.toBeNull();
+        });
+
+        it('describes a row by its badges, or by its status', () => {
+            create({ mode: 'view', sections: viewSections, completion: null });
+            const rail = fixture.componentInstance;
+            expect(rail.tooltip(0)).toBe('2 rule warnings');
+            expect(rail.tooltip(1)).toBe('1 comment');
+            expect(rail.tooltip(2)).toBe('Not evaluated');
+        });
+
+        it('hides the first row when the overview label is null and takes a custom title', () => {
+            create({ mode: 'view', sections: viewSections, completion: null, overviewLabel: null, title: 'Credentials' });
+            expect(items().map(item => item.querySelector('.sf-ri-label')!.textContent!.trim())).toEqual(['Alpha', 'Beta', 'Gamma']);
+            expect(fixture.nativeElement.querySelector('.sf-rail-title').textContent.trim()).toBe('Credentials');
+        });
     });
 });

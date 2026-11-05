@@ -1,7 +1,7 @@
 import { UntypedFormGroup } from '@angular/forms';
 import { Schema, SchemaDataTypes } from '@guardian/interfaces';
 import { FieldForm } from '../schema-form-model/field-form';
-import { buildSections, promotedRootName } from './schema-form-sections';
+import { buildSections, buildViewSections, promotedRootName, splitSections, viewPromotedRoot } from './schema-form-sections';
 
 describe('buildSections', () => {
     const def = (id: string, title: string, properties: any, required: string[] = []) => ({
@@ -117,6 +117,78 @@ describe('buildSections', () => {
             const form = build({ ...properties, extra: text('Extra') }, ['root'], nested, { root: { a: {}, b: {} } });
             expect(promotedRootName(form)).toBeNull();
             form.destroy();
+        });
+    });
+
+    describe('buildViewSections', () => {
+        const schemaOf = (properties: any, required: string[], definitions: any): Schema => new Schema({
+            iri: '#sections&1.0.0',
+            document: {
+                $id: '#sections&1.0.0',
+                $comment: JSON.stringify({ '@id': 'ctx:#sections&1.0.0', term: 'sections&1.0.0' }),
+                type: SchemaDataTypes.object,
+                properties,
+                required,
+                $defs: definitions
+            }
+        } as any);
+        const shown = (field: any) => !field.notCorrespondCondition;
+        const titles = (list: { title: string }[]) => list.map(item => item.title);
+
+        it('splits like the edit form, with "Other details"', () => {
+            const properties = {
+                name: text('Name'),
+                a: { $ref: '#a', title: 'Alpha', description: 'Alpha' },
+                b: { $ref: '#b', title: 'Beta', description: 'Beta' },
+                tail: text('Tail'),
+            };
+            const form = build(properties, ['name'], defs, { a: {}, b: {} });
+            const view = buildViewSections(schemaOf(properties, ['name'], defs).fields, shown);
+            expect(titles(view)).toEqual(titles(buildSections(form)));
+            expect(titles(view)).toEqual(['Alpha', 'Beta', 'Other details']);
+            expect(view[0].fields.map(item => item.name)).toEqual(['name', 'a']);
+            form.destroy();
+        });
+
+        it('promotes a single root sub-schema, like the edit form', () => {
+            const nested: any = {
+                '#root': def('#root', 'Root', {
+                    head: text('Head'),
+                    a: { $ref: '#a', title: 'Alpha', description: 'Alpha' },
+                    b: { $ref: '#b', title: 'Beta', description: 'Beta' },
+                }, ['head']),
+                ...defs,
+            };
+            const properties = { root: { $ref: '#root', title: 'Root', description: 'Root' } };
+            const form = build(properties, ['root'], nested, { root: { a: {}, b: {} } });
+            const fields = schemaOf(properties, ['root'], nested).fields;
+            expect(viewPromotedRoot(fields, shown)?.name).toBe('root');
+            expect(titles(buildViewSections(fields, shown))).toEqual(titles(buildSections(form)));
+            form.destroy();
+        });
+
+        it('leaves out fields that are not visible and returns [] for a flat document', () => {
+            const fields: any[] = [
+                { name: 'one', isRef: false, notCorrespondCondition: true },
+                { name: 'two', isRef: false },
+                { name: 'a', isRef: true, description: 'Alpha' },
+            ];
+            const view = buildViewSections(fields, shown);
+            expect(view[0].fields.map(item => item.name)).toEqual(['two', 'a']);
+            expect(buildViewSections([{ name: 'x', isRef: false } as any], shown)).toEqual([]);
+        });
+
+        it('does not count a hidden sub-schema as the one that closes a section', () => {
+            const fields: any[] = [{ name: 'x', isRef: false }, { name: 'a', isRef: true, notCorrespondCondition: true }];
+            expect(buildViewSections(fields, shown)).toEqual([]);
+        });
+    });
+
+    describe('splitSections', () => {
+        it('titles a section by the item that closes it', () => {
+            const result = splitSections<string, string>(['x', 'S1', 'y'], item => item.startsWith('S'),
+                (title, items, last) => `${last ?? title}:${items.join('+')}`);
+            expect(result).toEqual(['S1:x+S1', 'Other details:y']);
         });
     });
 });

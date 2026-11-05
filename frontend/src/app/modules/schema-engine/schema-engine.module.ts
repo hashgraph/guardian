@@ -1,3 +1,4 @@
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -15,7 +16,6 @@ import { AgGridModule } from 'ag-grid-angular';
 import { SchemaFormComponent } from './schema-form/schema-form.component';
 import { ImportSchemaDialog } from './import-schema/import-schema-dialog.component';
 import { SchemaFormViewComponent } from './schema-form-view/schema-form-view.component';
-import { ReadonlyTextareaComponent } from './schema-form-view/readonly-textarea/readonly-textarea.component';
 import { FormTextareaComponent } from './schema-form/form-textarea/form-textarea.component';
 import { DocumentViewComponent } from './document-view/document-view.component';
 import { SetVersionDialog } from './set-version-dialog/set-version-dialog.component';
@@ -59,9 +59,13 @@ import { SchemaDeleteWarningDialogComponent } from './schema-delete-warning-dial
 import { SchemaDeleteDialogComponent } from './schema-delete-dialog/schema-delete-dialog.component';
 import { IwaUpgradeDialogComponent } from './iwa-upgrade-dialog/iwa-upgrade-dialog.component';
 import { SchemaFormRailComponent } from './schema-form-rail/schema-form-rail.component';
-import { SchemaFormViewNavigationComponent } from './schema-form-view-navigation/schema-form-view-navigation.component';
+import { SchemaFormNavComponent } from './schema-form-nav/schema-form-nav.component';
+import { SchemaFormOverviewComponent } from './schema-form-nav/schema-form-overview.component';
+import { SchemaFormRingComponent } from './schema-form-nav/schema-form-ring.component';
 import { RichTextEditorComponent } from './rich-text-editor/rich-text-editor.component';
 import { RichTextClipDirective } from './rich-text-editor/rich-text-clip.directive';
+
+import { CopyButtonComponent } from './copy-button/copy-button.component';
 
 @NgModule({
     declarations: [
@@ -69,7 +73,6 @@ import { RichTextClipDirective } from './rich-text-editor/rich-text-clip.directi
         CopySchemaDialog,
         ImportSchemaDialog,
         SchemaFormViewComponent,
-        ReadonlyTextareaComponent,
         FormTextareaComponent,
         DocumentViewComponent,
         SetVersionDialog,
@@ -95,9 +98,12 @@ import { RichTextClipDirective } from './rich-text-editor/rich-text-clip.directi
         TableFieldComponent,
         TableViewerComponent,
         SchemaFormRailComponent,
-        SchemaFormViewNavigationComponent,
+        SchemaFormNavComponent,
+        SchemaFormOverviewComponent,
+        SchemaFormRingComponent,
         RichTextEditorComponent,
-        RichTextClipDirective
+        RichTextClipDirective,
+        CopyButtonComponent
     ],
     imports: [
         CommonModule,
@@ -125,6 +131,7 @@ import { RichTextClipDirective } from './rich-text-editor/rich-text-clip.directi
         AngularSvgIconModule.forRoot(),
         DynamicDialogModule,
         DialogModule,
+        ToggleSwitchModule,
     ],
     exports: [
         TruncateTooltipDirective,
@@ -140,7 +147,9 @@ import { RichTextClipDirective } from './rich-text-editor/rich-text-clip.directi
         SchemaFormDialog,
         SchemaFormRootComponent,
         SchemaFormRailComponent,
-        SchemaFormViewNavigationComponent,
+        SchemaFormNavComponent,
+        SchemaFormOverviewComponent,
+        SchemaFormRingComponent,
         RichTextEditorComponent,
         RichTextClipDirective
     ],

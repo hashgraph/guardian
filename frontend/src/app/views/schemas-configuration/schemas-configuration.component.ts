@@ -4557,7 +4557,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return paths;
     }
 
-    // Root-level (non-ref) fields selectable as a then/else member of this condition: not
+    // Root-level fields selectable as a then/else member of this condition: not
     // read-only, not the condition's own trigger, not already a member of this condition.
     // A field already owned by a DIFFERENT condition is still listed, but disabled with a
     // tooltip - a field can only belong to one condition's then/else at a time.
@@ -4568,7 +4568,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const owned = this.conditionOwnedFieldNames;
         const triggers = this._triggerFieldPaths(cond);
         return schema.fields
-            .filter(f => !f.readOnly && !f.isRef && !ownedByThis.has(f.name) && !triggers.has(f.name))
+            .filter(f => !f.readOnly && !ownedByThis.has(f.name) && !triggers.has(f.name))
             .map(f => ({
                 pathStr: f.name,
                 label: f.description || f.title || f.name,
