@@ -3,7 +3,8 @@ import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import * as Checks from '../../../support/checkingMethods';
 // Exclude "all" tag, if needs to stop using MGS in CI tests run
-context('Policies', { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
+// Skipped until the shared remote Guardian environment and its credentials are available: see pending-issues/folders-blocked-by-environment.md
+context.skip('Policies', { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
 
     const MainSRUsername = Cypress.env('MainSRUser');
     const DepUserUsername = Cypress.env('DepUser');
