@@ -283,6 +283,28 @@ describe('DocumentViewComponent pages', () => {
         expect(q(fixture, '.sf-dd-card')).toBeNull();
     }));
 
+    it('words the tiles by their count', fakeAsync(() => {
+        const fixture = render(sectioned(), credential(subject()), 'VC', { 'discussion-view': true });
+        const view = fixture.componentInstance;
+        const path = (view.view.sections[0].fields.find(item => item.name === 'a') as any).fields.find((item: any) => item.name === 'one').fullPath;
+        const label = (name: string) => view.overviewTiles.map(item => item.label).find(item => item.startsWith(name));
+        // two sections, no comments yet
+        expect(label('Section')).toBe('Sections');
+        expect(label('Comment')).toBe('Comments');
+        fixture.componentRef.setInput('discussion', { [path]: 1 });
+        fixture.detectChanges();
+        expect(label('Comment')).toBe('Comment');
+        fixture.componentRef.setInput('discussion', { [path]: 2 });
+        fixture.detectChanges();
+        expect(label('Comment')).toBe('Comments');
+    }));
+
+    it('reports the schema name once it is known', fakeAsync(() => {
+        const fixture = render(sectioned(), credential(subject()));
+        const schema = fixture.componentInstance.schemaMap['report']!;
+        expect(fixture.componentInstance.schemaName).toBe(schema.name || schema.description || '');
+    }));
+
     it('falls back to the schema name when the first string field has no value', fakeAsync(() => {
         const fixture = render(sectioned(), credential(subject({ title: '' })));
         const schema = fixture.componentInstance.schemaMap['report']!;

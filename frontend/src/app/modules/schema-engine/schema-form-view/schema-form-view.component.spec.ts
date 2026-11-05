@@ -551,6 +551,15 @@ describe('SchemaFormViewComponent', () => {
             expect(texts(fixture, '.sf-meta')[0]).toContain('unit kg');
         });
 
+        it('offers to copy the path of a field', () => {
+            const fixture = render([field('amount', { type: 'number' })], { amount: 3 });
+            preferences.showFieldMetadata$.next(true);
+            fixture.detectChanges();
+            const copy = fixture.nativeElement.querySelector('.sf-meta sf-copy');
+            expect(copy).not.toBeNull();
+            expect(copy.getAttribute('tip')).toBe('Copy path');
+        });
+
         it('shows the path of a field in a row with the row index', () => {
             const rows = field('rows', { isArray: true, isRef: true, fields: [field('name', {}, 'rows')] });
             const fixture = render([rows], { rows: [{ name: 'a' }, { name: 'b' }] });

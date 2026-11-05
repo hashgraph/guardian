@@ -16,6 +16,7 @@ export class PolicyProgressService {
     private _componentRefsMap: Map<string, ComponentRef<any>> = new Map();
     private _role: string;
     private _hasNavigation: boolean;
+    private _policy: { id: string; name: string } | null = null;
 
     private dataSubject: BehaviorSubject<any> = new BehaviorSubject(null);
     data$: Observable<any> = this.dataSubject.asObservable();
@@ -27,6 +28,23 @@ export class PolicyProgressService {
     activeStep$: Observable<ActiveStep | null> = this.activeStepSubject.asObservable();
 
     constructor() {
+    }
+
+    get activeStep(): ActiveStep | null {
+        return this.activeStepSubject.value;
+    }
+
+    setPolicy(id: string, name: string): void {
+        this._policy = { id, name };
+    }
+
+    clearPolicy(): void {
+        this._policy = null;
+    }
+
+    // The name of the policy being viewed, or '' when `policyId` is not that policy
+    policyName(policyId?: string | null): string {
+        return this._policy && policyId && this._policy.id === policyId ? (this._policy.name || '') : '';
     }
 
     updateData(data: any): void {

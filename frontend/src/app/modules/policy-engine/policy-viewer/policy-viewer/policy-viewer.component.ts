@@ -294,6 +294,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
     ngOnDestroy() {
         this.formTakeover.close();
+        this.policyProgressService.clearPolicy();
         this.subscription.unsubscribe();
         clearInterval(this.timer);
         this.destroy$.next(true);
@@ -412,6 +413,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 }
 
                 this.policyProgressService.updateData({ role: this.policyInfo.userRole });
+                this.policyProgressService.setPolicy(policyId, this.policyInfo.name);
 
                 this.refreshSavepointsCount();
 

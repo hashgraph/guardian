@@ -26,6 +26,8 @@ export class VCViewerDialog {
     public json: string = '';
     public text: string = '';
     public viewDocument!: boolean | string | number;
+    // Set the first time the document view is shown, then kept so flipping views doesn't reload it
+    public documentMounted = false;
     public isVcDocument!: boolean;
     public document: any;
     public type: any;
@@ -36,8 +38,8 @@ export class VCViewerDialog {
     public dryRun: boolean = false;
     public getByUser: boolean = false;
     public viewDocumentOptions = [
-        { label: 'Form View', value: true, icon: 'file' },
-        { label: 'Code View', value: false, icon: 'number' }
+        { label: 'Document', value: true },
+        { label: 'JSON', value: false }
     ];
 
     public policyId?: string;
@@ -83,6 +85,11 @@ export class VCViewerDialog {
             !!this.user?.ANALYTIC_DOCUMENT_READ &&
             (this.isVcDocument || this.isVpDocument)
         );
+    }
+
+    public setView(value: boolean | string | number) {
+        this.viewDocument = value;
+        this.documentMounted ||= value === true;
     }
 
     ngOnInit() {
@@ -141,6 +148,7 @@ export class VCViewerDialog {
             this.isJsonDocument = true;
         }
         this.viewDocument = (viewDocument || false) && (this.isVcDocument || this.isVpDocument);
+        this.documentMounted = this.viewDocument === true;
         this.schema = schema;
         this.viewDocumentOptions = [...this.viewDocumentOptions, ...additionalOptions];
         this.additionalOptionsData = additionalOptionsData;

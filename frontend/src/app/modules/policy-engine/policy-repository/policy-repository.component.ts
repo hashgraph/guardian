@@ -218,7 +218,6 @@ export class PolicyRepositoryComponent implements OnInit {
             maskStyleClass: 'guardian-fullscreen-dialog',
             data: {
                 type: 'VC',
-                backLabel: 'Back to Policy',
                 title: schema,
                 viewDocument: true,
                 dryRun: !!row.dryRunId,

@@ -276,6 +276,8 @@ export class GeojsonTypeComponent implements OnChanges {
     @Input('preset') presetDocument: any = null;
     @Input('form-model') formModel!: GeoForm;
     @Input('disabled') isDisabled: boolean = false;
+    /** Hides the Form / JSON switch, for read-only previews that only show the map. */
+    @Input('hide-view-switch') hideViewSwitch: boolean = false;
     @Input('available-options') availableOptions?: string[] = [];
 
     type: GeoJsonType = GeoJsonType.POINT;

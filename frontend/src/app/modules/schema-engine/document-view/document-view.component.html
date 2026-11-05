@@ -197,7 +197,7 @@
                     @for (location of locations; track location.id) {
                       <div class="sf-location">
                         <div class="sf-location-map">
-                          <app-geojson-type [preset]="location.value" [disabled]="true"></app-geojson-type>
+                          <app-geojson-type [preset]="location.value" [disabled]="true" [hide-view-switch]="true"></app-geojson-type>
                         </div>
                         <div class="sf-location-text">
                           <div class="sf-eyebrow">Location</div>

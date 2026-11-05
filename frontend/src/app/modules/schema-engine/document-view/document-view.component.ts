@@ -51,9 +51,12 @@ export class DocumentViewComponent implements OnInit {
     /** The page to show: `overview`, `details` or a section id. */
 
     @Output() pagesChange = new EventEmitter<IRailCard[]>();
+    /** The name of the document's schema, once it is known. */
+    @Output() schemaNameChange = new EventEmitter<string>();
     @Output('discussion-action') discussionActionEvent = new EventEmitter<any>();
     @Output() previewLoadingChange = new EventEmitter<boolean>();
 
+    public schemaName: string = '';
     public loading: boolean = false;
     public previewRendering: boolean = false;
     public previewReady: boolean = false;
@@ -653,14 +656,14 @@ export class DocumentViewComponent implements OnInit {
         const results = Object.values(this.rulesResults || {});
         const failed = results.filter(item => item.status === 'Failure' || item.status === 'Error').length;
         const tiles: IOverviewTile[] = [
-            { value: String(view.sections.length), label: 'Sections' },
-            { value: `${total.total - total.missing} of ${total.total}`, label: 'Fields provided' },
+            { value: String(view.sections.length), label: view.sections.length === 1 ? 'Section' : 'Sections' },
+            { value: `${total.total - total.missing} of ${total.total}`, label: total.total === 1 ? 'Field provided' : 'Fields provided' },
         ];
         if (results.length) {
-            tiles.push({ value: `${failed} of ${results.length}`, label: 'Rule checks failed', tone: failed ? 'warn' : 'ok' });
+            tiles.push({ value: `${failed} of ${results.length}`, label: results.length === 1 ? 'Rule check failed' : 'Rule checks failed', tone: failed ? 'warn' : 'ok' });
         }
         if (this.discussionView) {
-            tiles.push({ value: String(total.comments), label: 'Comments' });
+            tiles.push({ value: String(total.comments), label: total.comments === 1 ? 'Comment' : 'Comments' });
         }
         this.overviewTiles = tiles;
         this.overviewCards = [
@@ -681,6 +684,10 @@ export class DocumentViewComponent implements OnInit {
         this.locations = collectLocations(view.sections, view.values, this.hideFields || {});
         const schema = this.schemaMap[this.subject?.type];
         const schemaName = schema?.name || schema?.description || '';
+        if (schemaName !== this.schemaName) {
+            this.schemaName = schemaName;
+            this.schemaNameChange.emit(schemaName);
+        }
         this.overviewEyebrow = schemaName ? `Overview · ${schemaName}` : 'Overview';
         this.overviewTitle = this.titleOf(view) || schemaName;
         this.pagesChange.emit(this.pages);

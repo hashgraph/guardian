@@ -1,3 +1,24 @@
+@use '../doc-toggle' as toggle;
+@use '../doc-chrome' as chrome;
+
+:host(.takeover) {
+    // The view takes over the content area of the policy viewer, as the request form does
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    background: var(--guardian-background);
+    color: var(--guardian-font-color);
+
+    .vc-fullscreen-dialog {
+        height: 100%;
+        min-height: 0;
+    }
+}
+
 .vc-fullscreen-dialog {
     width: 100%;
     height: 100vh;
@@ -5,84 +26,91 @@
     flex-direction: column;
     overflow: hidden;
 
-    .vc-fullscreen-dialog-header {
+    .vc-fullscreen-dialog-header,
+    .vc-fullscreen-dialog-bar {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        flex: none;
         width: 100%;
-        height: 139px;
-        min-height: 139px;
-        max-height: 139px;
-        position: relative;
-        padding: 28px 28px 0px 48px;
-        overflow: hidden;
+        box-sizing: border-box;
+        border-bottom: 1px solid var(--guardian-border-color);
+        background: var(--guardian-background);
+
+        // The 30px buttons of the mockup
+        .guardian-button-secondary {
+            @include chrome.compact-button;
+            @include chrome.secondary-button;
+            min-width: 0;
+        }
+    }
+
+    // Row 1: the request form's header (Back, heading) plus Download and Edit
+    .vc-fullscreen-dialog-header {
+        gap: 12px;
+        min-height: 64px;
+        padding: 12px 20px;
 
         .back-button {
-            margin-bottom: 12px;
-
-            button {
-                padding-right: 16px;
-                height: 40px;
-            }
+            @include chrome.back-button;
         }
 
         .header-container {
+            flex: 1;
+            min-width: 180px;
             display: flex;
-            vertical-align: middle;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .header-eyebrow {
+            @include chrome.heading-eyebrow;
+        }
+
+        .header-title-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .header-text {
-            font-family: Poppins;
-            font-weight: 600;
-            font-size: 32px;
-            line-height: 40px;
-            vertical-align: middle;
-            color: var(--guardian-font-color, #23252e);
-            margin-top: 16px;
-            margin-bottom: 16px;
+            @include chrome.heading-title;
+            color: var(--guardian-font-color);
         }
 
         .header-toolbar {
-            position: absolute;
-            top: 28px;
-            right: 20px;
             display: flex;
-            flex-direction: row;
-
-            .field-metadata-toggle {
-                display: inline-flex;
-                align-items: center;
-                gap: 8px;
-                height: 40px;
-                margin-right: 16px;
-                white-space: nowrap;
-                font-size: 13px;
-                cursor: pointer;
-            }
+            gap: 8px;
+            align-items: center;
 
             .download-btn {
-                min-width: 90px;
-                height: 40px;
-                margin-right: 8px;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
             }
+        }
+    }
 
-            .export-btn {
-                width: 68px;
-                height: 40px;
-                margin-right: 8px;
-            }
+    // Row 2: the VC dialog's bar
+    .vc-fullscreen-dialog-bar {
+        gap: 8px;
+        padding: 8px 20px;
 
-            .compare-btn {
-                width: 200px;
-                height: 40px;
-                margin-right: 8px;
-            }
+        .form-toggle {
+            @include toggle.doc-toggle;
+        }
 
-            .version-dropdown {
-                height: 40px;
-                margin-right: 8px;
-            }
+        .bar-spacer {
+            flex: 1;
+        }
 
-            .mode-btn {
-                height: 40px;
-            }
+        .field-metadata-toggle {
+            @include chrome.ghost-toggle;
+        }
+
+        .version-dropdown {
+            height: 30px;
         }
     }
 
@@ -90,7 +118,8 @@
         display: flex;
         flex-direction: column;
         width: 100%;
-        height: 100%;
+        flex: 1;
+        min-height: 0;
 
         // Same look as the request form's .form-notice.
         .form-notice {
@@ -98,6 +127,7 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 10px;
+            flex: none;
             margin: 16px 40px 0;
             padding: 9px 12px;
             border: 1px dashed color-mix(in srgb, var(--color-primary) 30%, transparent);
@@ -112,32 +142,27 @@
             }
         }
 
-        .tab-container {
-            padding: 0px 48px 0px 40px;
-            border-bottom: 1px solid var(--guardian-border-color);
-            height: 41px;
-            min-height: 41px;
-            max-height: 41px;
-        }
-
         .step-body-container {
-            position: relative;
+            display: flex;
+            flex-direction: row;
             width: 100%;
-            height: 100%;
+            flex: 1;
+            min-height: 0;
 
             .document-content {
-                background: var(--guardian-grey-background, #f9fafc);
-                padding: 24px 48px;
-                position: absolute;
-                left: 0px;
-                top: 0px;
-                bottom: 0px;
-                right: 400px;
+                background: var(--guardian-grey-background);
+                position: relative;
+                display: flex;
+                flex-direction: column;
+                flex: 1;
+                min-width: 0;
+                min-height: 0;
                 overflow: auto;
 
                 .disconnected-message {
+                    flex: none;
                     height: 40px;
-                    margin-bottom: 16px;
+                    margin: 16px 24px 0;
                     background: #FFF6E3;
                     border: 1px solid #DA9B22;
                     border-radius: 8px;
@@ -157,16 +182,6 @@
                     }
                 }
 
-                &[disconnected="true"] {
-                    .json-container {
-                        height: calc(100vh - 284px);
-                    }
-                }
-
-                &[comments="false"] {
-                    right: 0px !important;
-                }
-
                 .document-viewer {
                     &::ng-deep>form {
                         position: absolute;
@@ -176,7 +191,7 @@
                         bottom: 0;
 
                         &>.form-body {
-                            padding: 24px 48px;
+                            padding: 16px 24px;
                             display: block;
                             overflow: auto;
                             width: 100%;
@@ -186,13 +201,14 @@
                 }
 
                 .json-container {
-                    border: 1px solid #eee;
+                    border: 1px solid var(--guardian-border-color);
                     border-radius: 8px;
-                    height: calc(100vh - 228px);
-                    width: 100%;
+                    flex: 1;
+                    min-height: 0;
+                    margin: 16px 24px;
                     overflow: auto;
                     padding: 24px;
-                    background: var(--guardian-background, #fff);
+                    background: var(--guardian-background);
 
                     .json {
                         word-break: keep-all;
@@ -207,20 +223,18 @@
             }
 
             .comments-content {
-                position: absolute;
-                top: 0px;
-                bottom: 0px;
-                right: 0px;
-                width: 400px;
+                flex: none;
+                width: 340px;
+                min-height: 0;
                 overflow: hidden;
-                border-left: 1px solid #e1e7ef;
+                border-left: 1px solid var(--guardian-border-color);
+
+                &[hidden] {
+                    display: none;
+                }
             }
 
             &[collapse="true"] {
-                .document-content {
-                    right: 76px;
-                }
-
                 .comments-content {
                     width: 76px;
                 }
@@ -231,7 +245,8 @@
             padding: 24px 48px;
             overflow: auto;
             width: 100%;
-            height: calc(100% - 129px);
+            flex: 1;
+            min-height: 0;
         }
     }
 
@@ -240,33 +255,15 @@
         justify-content: flex-start;
         align-items: center;
         flex-wrap: wrap;
-        margin-left: 16px;
         column-gap: 8px;
         row-gap: 8px;
 
         .tag-item {
-            display: flex;
-            column-gap: 8px;
-            align-items: center;
-            justify-content: space-between;
-            background-color: var(--color-secondary);
-            border: 1px solid var(--color-primary);
-            padding: 6px 12px;
-            border-radius: 6px;
+            @include chrome.tag-pill;
             transition: all 0.25s ease-in-out;
-            cursor: pointer;
 
             .tag-icon {
                 fill: var(--color-primary, #0031ff);
-            }
-
-            .name {
-                color: var(--color-primary, #0031ff);
-                font-family: Inter, sans-serif;
-                font-size: 14px;
-                font-style: normal;
-                font-weight: 400;
-                line-height: 16px;
             }
 
             .count {
@@ -304,11 +301,39 @@
     }
 }
 
+@media (max-width: 760px) {
+    .vc-fullscreen-dialog {
+        .vc-fullscreen-dialog-header,
+        .vc-fullscreen-dialog-bar {
+            padding: 10px 14px;
+        }
+
+        .vc-fullscreen-dialog-header .header-toolbar {
+            flex: 1 0 100%;
+        }
+
+        .vc-fullscreen-dialog-body .step-body-container .document-content {
+            .document-viewer::ng-deep > form > .form-body {
+                padding: 12px 14px;
+            }
+
+            .json-container {
+                margin: 12px 14px;
+            }
+        }
+    }
+}
+
 :host ::ng-deep {
+    .compare-container .guardian-button {
+        @include chrome.compare-button;
+    }
+
     .version-dropdown {
         .p-select {
             border: 1px solid var(--guardian-primary-color);
             border-radius: 6px;
+            height: 30px;
             color: var(--guardian-primary-color);
 
             box-shadow: none !important;
