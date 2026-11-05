@@ -6,11 +6,11 @@ context('Policy autotest', { tags: ['policyAT'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     it('Import policy iRec_9', () => {
-        Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.readFile('../Methodology Library/International Renewable Energy Certificate (iREC)/Policies/iRec Policy 9 (Module) (1707132260.399505507).policy', 'binary')
+        return Authorization.getAccessToken(SRUsername).then((authorization) => {
+            return cy.readFile('../Methodology Library/International Renewable Energy Certificate (iREC)/Policies/iRec Policy 9 (Module) (1707132260.399505507).policy', 'binary')
                 .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
                 .then((file) => {
-                    cy.request({
+                    return cy.request({
                         method: METHOD.POST,
                         url: API.ApiServer + API.PolicisImportFile,
                         body: file,
