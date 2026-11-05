@@ -126,3 +126,87 @@ describe('DocumentViewComponent Preview rendering', () => {
         expect(changes.calls.allArgs()).toEqual([[true], [false]]);
     }));
 });
+
+describe('DocumentViewComponent Document details', () => {
+    const render = (document: any, inputs: { [name: string]: any } = {}) => {
+        TestBed.resetTestingModule();
+        TestBed.configureTestingModule({
+            declarations: [DocumentViewComponent],
+            imports: [CommonModule],
+            providers: [
+                { provide: SchemaService, useValue: { getSchemasByType: () => of(null) } },
+                { provide: SchemaRulesService, useValue: { getSchemaRuleData: () => of(null) } },
+                { provide: FormulasService, useValue: {} },
+            ],
+            schemas: [NO_ERRORS_SCHEMA],
+        });
+        const fixture = TestBed.createComponent(DocumentViewComponent);
+        fixture.componentRef.setInput('document', document);
+        fixture.componentRef.setInput('type', 'VC');
+        for (const [name, value] of Object.entries(inputs)) {
+            fixture.componentRef.setInput(name, value);
+        }
+        fixture.detectChanges();
+        return fixture;
+    };
+
+    const credential = () => ({
+        id: 'urn:uuid:1234',
+        issuer: { id: 'did:example:issuer', name: 'Acme', country: 'DE' },
+        issuanceDate: '2024-03-05T10:20:00Z',
+        evidence: [{ dataType: 'message', data: 'Checked on site' }, { dataType: 'file', data: 'https://example.com/a.pdf' }],
+        proof: { type: 'BbsBlsSignature2020', jws: 'abc' },
+        credentialSubject: [{ type: 'report' }],
+    });
+
+    const cells = (fixture: any): { [label: string]: string } => {
+        const result: { [label: string]: string } = {};
+        for (const cell of Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.sf-ro-cell'))) {
+            result[cell.querySelector('.sf-ro-label')!.textContent!.trim()] = cell.querySelector('.sf-ro-value')!.textContent!.replace(/\s+/g, ' ').trim();
+        }
+        return result;
+    };
+
+    it('shows the id, the issuer with its other keys, the issue date and the evidence', () => {
+        const fixture = render(credential());
+        const values = cells(fixture);
+        expect(values['Document ID']).toContain('urn:uuid:1234');
+        expect(values['Issuer']).toContain('did:example:issuer');
+        expect(values['Issuer']).toContain('name: Acme · country: DE');
+        expect(values['Issued']).toContain('Mar 5, 2024');
+        expect(values['Evidence']).toContain('Checked on site');
+        expect(fixture.nativeElement.querySelector('.evidence-entry-file a').getAttribute('href')).toBe('https://example.com/a.pdf');
+        expect(Object.keys(values)).not.toContain('Relayer account');
+    });
+
+    it('shows a string issuer as its id and the relayer account when it is set', () => {
+        const fixture = render({ ...credential(), issuer: 'did:example:plain' }, { 'relayer-account': '0.0.1234' });
+        const values = cells(fixture);
+        expect(values['Issuer']).toBe('did:example:plain');
+        expect(values['Relayer account']).toContain('0.0.1234');
+    });
+
+    it('shows the raw JSON when the evidence is not a list of entries', () => {
+        const fixture = render({ ...credential(), evidence: { note: 'free form' } });
+        expect(fixture.nativeElement.querySelector('.sf-dd-json').textContent).toContain('free form');
+    });
+
+    it('keeps the proof collapsed until it is asked for', () => {
+        const fixture = render(credential());
+        expect(fixture.nativeElement.querySelector('.sf-dd-json')).toBeNull();
+        const toggle = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.sf-ro-cell button'))
+            .find((button) => button.textContent!.includes('Show proof'))!;
+        expect(toggle.textContent!.trim()).toBe('Show proof · BbsBlsSignature2020');
+        toggle.click();
+        fixture.detectChanges();
+        expect(fixture.nativeElement.querySelector('.sf-dd-json').textContent).toContain('"jws": "abc"');
+        expect(toggle.textContent!.trim()).toBe('Hide proof');
+    });
+
+    it('shows the disconnected notice above the card', () => {
+        const fixture = render(credential(), { disconnected: true });
+        const notice = fixture.nativeElement.querySelector('.disconnected-message');
+        expect(notice.textContent).toContain('User that created this document was disconnected.');
+        expect(notice.nextElementSibling.classList).toContain('sf-dd-card');
+    });
+});

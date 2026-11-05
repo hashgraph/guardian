@@ -1,3 +1,4 @@
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -15,7 +16,6 @@ import { AgGridModule } from 'ag-grid-angular';
 import { SchemaFormComponent } from './schema-form/schema-form.component';
 import { ImportSchemaDialog } from './import-schema/import-schema-dialog.component';
 import { SchemaFormViewComponent } from './schema-form-view/schema-form-view.component';
-import { ReadonlyTextareaComponent } from './schema-form-view/readonly-textarea/readonly-textarea.component';
 import { FormTextareaComponent } from './schema-form/form-textarea/form-textarea.component';
 import { DocumentViewComponent } from './document-view/document-view.component';
 import { SetVersionDialog } from './set-version-dialog/set-version-dialog.component';
@@ -63,13 +63,14 @@ import { SchemaFormViewNavigationComponent } from './schema-form-view-navigation
 import { RichTextEditorComponent } from './rich-text-editor/rich-text-editor.component';
 import { RichTextClipDirective } from './rich-text-editor/rich-text-clip.directive';
 
+import { CopyButtonComponent } from './copy-button/copy-button.component';
+
 @NgModule({
     declarations: [
         SchemaFormComponent,
         CopySchemaDialog,
         ImportSchemaDialog,
         SchemaFormViewComponent,
-        ReadonlyTextareaComponent,
         FormTextareaComponent,
         DocumentViewComponent,
         SetVersionDialog,
@@ -97,7 +98,8 @@ import { RichTextClipDirective } from './rich-text-editor/rich-text-clip.directi
         SchemaFormRailComponent,
         SchemaFormViewNavigationComponent,
         RichTextEditorComponent,
-        RichTextClipDirective
+        RichTextClipDirective,
+        CopyButtonComponent
     ],
     imports: [
         CommonModule,
@@ -125,6 +127,7 @@ import { RichTextClipDirective } from './rich-text-editor/rich-text-clip.directi
         AngularSvgIconModule.forRoot(),
         DynamicDialogModule,
         DialogModule,
+        ToggleSwitchModule,
     ],
     exports: [
         TruncateTooltipDirective,

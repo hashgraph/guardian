@@ -114,7 +114,7 @@
                       <div class="sf-lock">
                         <i class="pi pi-lock" aria-hidden="true"></i>
                         <code>{{ item.control.value }}</code>
-                        <button type="button" class="sf-link" (click)="copyValue(item)">Copy</button>
+                        <sf-copy [value]="'' + item.control.value" tip="Copy value"></sf-copy>
                       </div>
                     } @else {
                     @if (item.customType === 'table') {
@@ -1144,7 +1144,7 @@
     <span class="sf-chip">{{ metaType(item) }}</span>
     @if (item.path) {
       <span class="sf-meta-path">{{ metaPath(item) }}</span>
-      <button type="button" class="sf-meta-copy" (click)="copyPath(item)">Copy path</button>
+      <sf-copy [value]="metaPath(item)" tip="Copy path"></sf-copy>
     }
     @for (tag of metaTags(item); track tag.text) {
       <span class="sf-chip" [attr.title]="tag.title">{{ tag.text }}</span>
