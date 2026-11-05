@@ -23,19 +23,20 @@ const L = {
     operationsCell: 'td.operations-column',
     operationsMenu: 'select-menu-button .select-menu',
     operationsItem: '.select-menu-item',
+    operationsItemTitle: '.select-menu-item-title',
 
     // Tags
     tagsExplorer: 'tags-explorer',
-    tagCreateButton: 'tags-explorer button:contains("Create a Tag")',
+    tagCreateButton: 'button:contains("Create a Tag")',
     tagChip: 'tags-explorer .main-tag',
     tagDialog: 'tags-explorer-dialog',
     tagChipInDialog: 'tags-explorer-dialog div.name',
     tagDetailDelete: 'tags-explorer-dialog .details-container svg-icon[src*="delete"]',
-    tagDeleteConfirm: 'button[label="Delete"]',
+    tagDeleteButton: 'button',
     tagCreateDialog: 'tags-create-dialog',
     tagNameInput: 'tags-create-dialog input[formcontrolname="name"]',
     tagDescInput: 'tags-create-dialog input[formcontrolname="description"]',
-    tagCreateSubmit: 'tags-create-dialog button[label="Create"]',
+    tagCreateDialogButton: 'tags-create-dialog button',
 };
 
 const hasDescription = (row, name) => row.querySelector(L.descCell)?.textContent.trim() === name;
@@ -77,6 +78,24 @@ export class ContractsPage {
         this._row(name);
     }
 
+    // Creates a contract of the given type ('wipe' | 'retire') and waits for its row.
+    createContractNamed(type, name) {
+        this.openContractTypeTab(type);
+        this.createContract();
+        this.fillContract(name);
+    }
+
+    // Yields the Hedera contract id shown in the row of the contract.
+    getContractId(name) {
+        return this._row(name).find(L.idCell).invoke('text').then((text) => text.trim());
+    }
+
+    // Removes the contract of the given type from the list.
+    removeContractNamed(type, name) {
+        this.openContractTypeTab(type);
+        this.removeContract(name);
+    }
+
     importContract(contractId) {
         cy.get(L.importButton, { timeout: 15000 }).click();
         cy.get(L.dialog, { timeout: 15000 }).should('be.visible');
@@ -87,13 +106,18 @@ export class ContractsPage {
     addTag(contractName, tagName) {
         this._row(contractName).find(L.tagsExplorer).find(L.tagCreateButton, { timeout: 15000 }).click();
         cy.get(L.tagCreateDialog, { timeout: 15000 }).should('be.visible');
-        cy.get(L.tagNameInput).clear();
-        cy.get(L.tagNameInput).type(tagName);
+        // Create is enabled once the dialog has finished loading; typing earlier is lost on its re-render.
+        cy.contains(L.tagCreateDialogButton, 'Create').should('be.enabled');
         cy.get(L.tagDescInput).clear();
         cy.get(L.tagDescInput).type(tagName);
-        cy.get(L.tagCreateSubmit).click();
+        cy.get(L.tagNameInput).clear();
+        cy.get(L.tagNameInput).type(tagName);
+        cy.get(L.tagNameInput).should('have.value', tagName);
+        // pButton binds [label], which leaves no attribute in the DOM: find the button by its text.
+        cy.contains(L.tagCreateDialogButton, 'Create').click();
+        cy.get(L.tagCreateDialog).should('not.exist');
         Checks.waitForLoading();
-        this._row(contractName).find(L.tagChip).should('contain.text', tagName);
+        this._row(contractName).find(L.tagChip, { timeout: 30000 }).should('contain.text', tagName);
     }
 
     deleteTag(contractName, tagName) {
@@ -102,17 +126,25 @@ export class ContractsPage {
         cy.get(L.tagChipInDialog).contains(tagName).click();
         cy.get(L.tagDetailDelete, { timeout: 15000 }).first().click();
         cy.get('body').then((body) => {
-            if (body.find(L.tagDeleteConfirm).length) {
-                cy.get(L.tagDeleteConfirm).click();
+            const confirm = body.find(L.tagDeleteButton).filter((_, button) => button.textContent.trim() === 'Delete');
+            if (confirm.length) {
+                cy.wrap(confirm.first()).click();
             }
         });
         Checks.waitForLoading();
-        cy.get(L.tagDialog).find(L.tagChipInDialog).contains(tagName).should('not.exist', { timeout: 15000 });
+        cy.get(L.tagDialog).should(($dialog) => {
+            const remaining = $dialog.find(L.tagChipInDialog).filter((_, chip) => chip.textContent.includes(tagName));
+            expect(remaining.length).to.eq(0);
+        });
+        cy.get('body').type('{esc}');
+        cy.get(L.tagDialog).should('not.exist');
     }
 
     removeContract(name) {
         this._row(name).find(L.operationsMenu).click();
-        cy.get(L.operationsItem, { timeout: 15000 }).contains('Remove contract').click();
+        // Match the title exactly: the "Remove wiper" description also reads "Remove contract wiper."
+        // The title ignores pointer events, so the click goes to the menu item around it.
+        cy.contains(L.operationsItemTitle, /^Remove contract$/, { timeout: 15000 }).parent().click();
         Checks.waitForLoading();
         cy.get('body').should(($body) => {
             expect($body.find(L.row).filter((_, row) => hasDescription(row, name)).length).to.eq(0);
