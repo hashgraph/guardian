@@ -3,6 +3,8 @@ import API from '../../../support/ApiUrls';
 import * as Checks from '../../../support/checkingMethods';
 import * as Authorization from '../../../support/authorization';
 import { randomInt } from '../../../support/random';
+import { importPolicyArchive } from '../../../support/cdmTools';
+import { seededMessageId, usesSeededMessages } from '../../../support/CustomHelpers/ipfsSeeding';
 
 context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
 
@@ -12,8 +14,13 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
 
     // The policy under test is the fixture in this repository, imported from file.
     //
-    // The fixture embeds both tools in full (`tools/*.json` inside the archive), so importing it
-    // from file needs no IPFS seeding and no Hedera message at all.
+    // The archive references its two tools by testnet messageId and the import does not resolve the
+    // tools embedded in it, so off testnet those references are remapped to the tools the seeding
+    // spec published (same archives, same versions) - the technique the CDM specs use.
+    const TOOL_REMAPS = {
+        '1747119324.564353000': 'tool_for_compare1', // AR Tool 05 (3.0.2)
+        '1753864157.889867000': 'tool_for_compare2', // AR Tool 14 (5.0.7)
+    };
     const VM0033Fixture = 'VM0033_7_23.policy';
 
     // A fresh copy is imported per run, so its grids only ever hold this run's documents. The
@@ -97,6 +104,21 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
         })
     };
 
+    // Maps each embedded tool reference to the published tool that stands in for it on this network.
+    const resolveToolRemaps = () => {
+        if (!usesSeededMessages()) {
+            return cy.wrap({}, { log: false });
+        }
+        const remaps = {};
+        return Cypress._.reduce(
+            TOOL_REMAPS,
+            (chain, envKey, sourceMessageId) => chain
+                .then(() => seededMessageId(envKey))
+                .then((localMessageId) => { remaps[sourceMessageId] = localMessageId; }),
+            cy.wrap(null, { log: false })
+        ).then(() => remaps);
+    };
+
     it('Register PP and VVB', () => {
         linkToStandardRegistry(PPUser);
         linkToStandardRegistry(VVBUser);
@@ -104,22 +126,12 @@ context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
 
     it('Import, publish, assign policy', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.fixture(VM0033Fixture, 'binary')
-                .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
-                .then((file) => cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + API.PolicisImportFile,
-                    body: file,
-                    headers: {
-                        'content-type': 'binary/octet-stream',
-                        authorization,
-                    },
-                    timeout: 1800000,
-                }))
-                .then((response) => {
-                    expect(response.status, `import of ${VM0033Fixture}`).to.eq(STATUS_CODE.SUCCESS);
-                    // The request body is a Blob, so the response comes back as an ArrayBuffer.
-                    policyId = JSON.parse(new TextDecoder().decode(response.body)).at(0).id;
+            resolveToolRemaps()
+                .then((toolRemaps) => importPolicyArchive(
+                    `cypress/fixtures/${VM0033Fixture}`, VM0033Fixture, 'VM0033', authorization, toolRemaps
+                ))
+                .then((policy) => {
+                    policyId = policy.id;
                     return cy.request({
                         method: METHOD.PUT,
                         url: API.ApiServer + API.Policies + policyId + '/' + API.Publish,
