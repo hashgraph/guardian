@@ -75,4 +75,28 @@ describe('Workers.addTask enqueue handling', () => {
         assert.equal(result, null);
         assert.equal(calls, 1);
     });
+
+    it('does not turn a boolean data.dryRun into the queued task dryRun id', async () => {
+        let queued;
+        const w = makeWorkers(async (_subject, task) => {
+            queued = task;
+            return { ok: true };
+        });
+
+        await w.addTask(options({ task: { type: 'GET_TOPIC_MESSAGES', data: { dryRun: false } } }));
+
+        assert.notEqual(typeof queued.dryRun, 'boolean', 'the queue entity stores dryRun as a string id');
+    });
+
+    it('keeps a string data.dryRun as the queued task dryRun id', async () => {
+        let queued;
+        const w = makeWorkers(async (_subject, task) => {
+            queued = task;
+            return { ok: true };
+        });
+
+        await w.addTask(options({ task: { type: 'CREATE_TOPIC', data: { dryRun: 'policy-1' } } }));
+
+        assert.equal(queued.dryRun, 'policy-1');
+    });
 });

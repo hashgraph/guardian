@@ -355,7 +355,10 @@ export class Workers extends NatsService {
         task.attempts = options.attempts;
         task.userId = options.userId;
         task.interception = options.interception;
-        task.dryRun = task.dryRun || options.dryRun || task.data?.dryRun;
+        // Some callers send `data.dryRun: false`; the queue entity stores dryRun as a string id and
+        // the queue service crashes when saving a boolean.
+        const dataDryRunId = typeof task.data?.dryRun === 'string' ? task.data.dryRun : null;
+        task.dryRun = task.dryRun || options.dryRun || dataDryRunId;
         task.mockId = task.mockId || options.mockId || task.data?.mockId;
 
         const addTaskToQueue = async (): Promise<void> => {
