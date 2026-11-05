@@ -1,68 +1,7 @@
 import URL from '../../../support/GuardianUrls';
 import * as Checks from '../../../support/checkingMethods';
-import CommonElements from '../../../support/defaultUIElements';
 import { dropFile } from '../../../support/importFlow';
 import { addTag, deleteTag } from '../../../support/tagsExplorer';
-
-const SchemaPageLocators = {
-
-    schemaSubtub: (name) => `${name} Schemas`,
-
-    //Buttons
-    schemaCreateButton: 'p-button[ng-reflect-content="Create a Schema"]',
-    dialogSaveButton: 'button:contains("Save")',
-    importIPFSButton: ' Import from IPFS ',
-    importFileButton: ' Import from File ',
-    exportFileButton: 'Save to file',
-    exportIPFSButton: 'Copy message identifier',
-    schemaImportButton: 'p-button[ng-reflect-content="Import"]',
-    schemaFinalImportButton: '[ng-reflect-label="Import"]',
-    pImportButton: 'p-button[label="Import"]',
-    oneMoreImportButton: "button:contains('Import')",
-    publishButton: 'div:contains("Publish ")',
-    deleteSchemaButton: 'button.accent-color-red',
-    menuSchemaButton: 'div[ptooltip="Menu"]',
-    dialogPublishButton: 'button[ng-reflect-label="Ok"]',
-    confirmDeleteButton: 'button.guardian-button-delete',
-    documentSchemaButton: 'p-button[ng-reflect-content="View schema details"]',
-    schemaEditBtn: "div[ptooltip='Edit']",
-    saveBtn: 'button[ng-reflect-label="Save"]',
-    schemaExportBtn: 'p-button[ng-reflect-content="Export schema"]',
-    compareBtn: 'p-button[ng-reflect-content="Compare"]',
-    compareFinalBtn: 'button[ng-reflect-label="Compare"]',
-    deleteTagIcon: "svg-icon[svgclass='accent-color-red']",
-    closeWindowButton: "[ng-reflect-label='Close']",
-    createButton: "[ng-reflect-label='Create']",
-    createTagButton: ' Create a Tag ',
-    activateButton: 'div.btn-approve',
-    systemSchemaEntity: 'p-dropdown[formcontrolname="entity"]',
-
-    //Inputs
-    schemaNameInput: "input[formcontrolname='name']",
-    messageTimestampInput: "input[formcontrolname='timestamp']",
-    versionInput: "input[id='version']",
-    tagNameInput: '[ng-reflect-name="name"]',
-    tagDescInput: '[ng-reflect-name="description"]',
-
-    //Other elements
-    documentHeader: 'div.header-text',
-    documentContent: 'div.dialog-body',
-    filterDropdown: "p-dropdown[placeholder='Policy']",
-    filterDropdownComparePolicy: "p-dropdown[placeholder='Select Policy']",
-    filterDropdownCompareSchema: "p-dropdown[placeholder='Select Schema']",
-    entityList: '[formcontrolname="entity"]',
-    entityOption: (entityType) => `li[aria-label=${entityType}]`,
-    compareSchemaName: 'div.schema-info-field-value',
-    activeStatus: 'Active',
-
-    policyChooseInput: "mat-select[role='combobox']",
-    entityChoosing: 'mat-select[formcontrolname="entity"]',
-
-    policyComboboxItem: 'span.mat-option-text',
-    dialogContainer: 'mat-dialog-container',
-    userEntity: 'mat-option[value="USER"]',
-    dialogActions: 'mat-dialog-actions',
-};
 
 // The schemas list (tree table grouped by policy, newest first) and the full-page schema editor.
 const List = {
@@ -71,6 +10,7 @@ const List = {
     searchInput: 'input[placeholder="Search"]',
     toolbarButton: (tooltip) => `span[ptooltip="${tooltip}"] p-button`,
     publishButton: 'div.btn-approve:contains("Publish")',
+    activateButton: 'div.btn-approve:contains("Active")',
     editIcon: 'div[ptooltip="Edit"]',
     menuIcon: 'div[ptooltip="Menu"]',
     menuButton: '.menu-container p-button',
@@ -89,14 +29,18 @@ const Editor = {
     schemaNameInput: 'input.sc-schema-props-name',
     fieldDescriptionInput: 'input[placeholder="Field description"]',
     sidebarTab: 'button.sc-sidebar-tab',
+    backCrumb: 'button.sc-back-crumb',
 };
+
+const DELETABLE = ':not(:has(.status-PUBLISHED))';
 
 const nameCellMatches = (name) => (_, row) => row.querySelector(List.nameCell)?.textContent.trim() === name;
 
 export class SchemaPage {
 
-    openSchemasTab() {
-        cy.visit(URL.Root + URL.Schemas);
+    // `type` is the schemas tab: policy | tool | module | tag | system.
+    openSchemasTab(type = 'policy') {
+        cy.visit(`${URL.Root}${URL.Schemas}?type=${type}`);
         Checks.waitForLoading();
         // The list is loaded once either its rows or the empty-state message are rendered.
         cy.get(`${List.row}, div.guardian-user-not-data`, { timeout: 30000 }).should('exist');
@@ -111,15 +55,21 @@ export class SchemaPage {
         Checks.waitForLoading();
     }
 
-    // The list is searched server-side by name, so a schema is found whatever page or policy group it is in.
+    // The policy list is searched server-side by name, so a schema is found whatever page or policy
+    // group it is in; the tag and system lists are short flat tables without a search box.
     _row(name) {
-        cy.get(List.searchInput).clear();
-        cy.get(List.searchInput).type(`${name}{enter}`);
-        Checks.waitForLoading();
+        cy.get('body').then(($body) => {
+            if ($body.find(List.searchInput).length) {
+                cy.get(List.searchInput).clear();
+                cy.get(List.searchInput).type(`${name}{enter}`);
+                Checks.waitForLoading();
+            }
+        });
         return cy.get(List.row, { timeout: 30000 }).filter(nameCellMatches(name));
     }
 
-    // Creates a draft policy schema with one field (an empty schema cannot be saved) in the editor.
+    // Creates a draft schema with one field (an empty schema cannot be saved) in the editor, for
+    // the tab the list is on.
     createSchema(schemaName) {
         cy.get(List.toolbarButton('Create a Schema')).click();
         cy.location('pathname', { timeout: 15000 }).should('include', 'schema-configuration');
@@ -130,8 +80,39 @@ export class SchemaPage {
         cy.contains('String').click();
         cy.get(Editor.fieldDescriptionInput).type('A field');
         this._saveEditor();
-        this.openSchemasTab();
+        cy.get(Editor.backCrumb).click();
+        cy.location('pathname', { timeout: 15000 }).should('not.include', 'schema-configuration');
+        cy.get(`${List.row}, div.guardian-user-not-data`, { timeout: 30000 }).should('exist');
         this._row(schemaName).should('exist');
+    }
+
+    publishTagSchema(name) {
+        this._row(name).find(List.publishButton).click();
+        Checks.waitForTaskComplete();
+        Checks.waitForLoading();
+        this._row(name).should('contain.text', 'Published');
+    }
+
+    activateSystemSchema(name) {
+        this._row(name).find(List.activateButton).click();
+        Checks.waitForLoading();
+        this._row(name).should('contain.text', 'Active');
+    }
+
+    // Yields the entity type (third column) of a system schema.
+    systemSchemaEntity(name) {
+        return this._row(name).find('td:nth-child(3)').invoke('text').then((text) => text.trim());
+    }
+
+    // Activating a schema deactivates the active one of its entity, so a spec that activates its own
+    // schema gives the entity back to the built-in schema (the one without an owner).
+    activateBuiltInSystemSchema(entity) {
+        cy.get(List.row, { timeout: 30000 })
+            .filter((_, row) => row.querySelector('td:nth-child(3)')?.textContent.trim() === entity
+                && row.querySelector('td:nth-child(2)')?.textContent.trim() === '')
+            .find(List.activateButton)
+            .click();
+        Checks.waitForLoading();
     }
 
     _saveEditor() {
@@ -184,15 +165,16 @@ export class SchemaPage {
         cy.get(List.menuButton, { timeout: 15000 }).should('be.visible');
     }
 
-    // Only drafts can be deleted, and the same schema name can exist under several policies.
+    // Only schemas that are neither published nor active (drafts, or inactive system schemas) can
+    // be deleted, and the same schema name can exist under several policies.
     deleteSchema(name) {
-        this._row(name).filter(':contains("Draft")').first().find(List.menuIcon).click();
+        this._row(name).filter(DELETABLE).first().find(List.menuIcon).click();
         cy.get(List.menuButton, { timeout: 15000 }).should('be.visible');
         cy.contains(List.menuButton, 'Delete schema').click();
         cy.get(List.deleteConfirm, { timeout: 15000 }).click();
         Checks.waitForLoading();
         cy.get('body').should(($body) => {
-            expect($body.find(List.row).filter(nameCellMatches(name)).filter(':contains("Draft")').length).to.eq(0);
+            expect($body.find(List.row).filter(nameCellMatches(name)).filter(DELETABLE).length).to.eq(0);
         });
     }
 
@@ -239,78 +221,4 @@ export class SchemaPage {
         deleteTag(() => this._row(name), tagName);
     }
 
-    createSystemSchema(){
-        cy.get(SchemaPageLocators.schemaCreateButton).click();
-        cy.get(SchemaPageLocators.schemaNameInput).type(schemaName);
-        cy.get(SchemaPageLocators.systemSchemaEntity).click();
-        cy.get(CommonElements.dropdownOption).first().click();
-        cy.get(SchemaPageLocators.dialogSaveButton).click();
-        Checks.waitForTaskComplete();
-        cy.contains(schemaName).should('exist');}
-
-    activateSystemSchema(schemaNameForActivate) {
-        cy.contains(schemaNameForActivate).parent().find(SchemaPageLocators.activateButton).click();
-        cy.contains(schemaNameForActivate).parent().contains(SchemaPageLocators.activeStatus).should('exist');
-    }
-
-    publishTagSchema(name) {
-        cy.contains(name).parent().find(SchemaPageLocators.publishButton).first().click();
-        Checks.waitForLoading();
-        cy.contains(name).first().parent().contains('Published').should('exist');
-    }
-
-    createTagSchema(schemaName) {
-        cy.intercept(SchemaPageLocators.getTagSchemasList).as(
-            'waitForSchemaList'
-        );
-        cy.contains('mat-label', 'Type').parent().parent().parent().click()
-        cy.contains(SchemaPageLocators.tagSchemaTabButton).click();
-        cy.get(SchemaPageLocators.schemaCreateButton).click();
-        cy.get(SchemaPageLocators.schemaNameInput).click().type(schemaName);
-        cy.get(SchemaPageLocators.dialogSaveButton).click();
-        cy.wait('@waitForSchemaList', { timeout: 10000 });
-        cy.contains(schemaName).should('exist');
-    }
-
-    publishTagSchemaOld(schemaName) {
-        cy.intercept(SchemaPageLocators.tagSchemasList).as(
-            'waitForSchemaList'
-        );
-        cy.get(SchemaPageLocators.publishButton.trim()).first().click();
-        cy.wait(10000)
-        cy.wait('@waitForSchemaList', { timeout: 100000 });
-        cy.contains(schemaName).should('be.visible').first().parent()
-            .contains('Published').should('exist');
-    }
-
-    deleteTagSchema(schemaNameForDeletion) {
-        cy.contains(schemaNameForDeletion).parent().find(SchemaPageLocators.deleteSchemaButton).click();
-        cy.intercept(SchemaPageLocators.tagSchemasList).as(
-            'waitForSchemaList'
-        );
-        cy.contains(SchemaPageLocators.bigOkButton).click();
-        cy.wait(10000)
-        cy.wait('@waitForSchemaList', { timeout: 100000 });
-        cy.contains(schemaNameForDeletion).should('not.exist');
-    }
-
-    activateOtherSystemSchema(schemaNameForActivate) {
-        cy.intercept(SchemaPageLocators.systemSchemasList).as(
-            'waitForSchemaList'
-        );
-        cy.contains(SchemaPageLocators.systemSchemaTabButton).click();
-        cy.wait('@waitForSchemaList', { timeout: 10000 });
-        cy.get(SchemaPageLocators.activateButton).first().click();
-        cy.contains(schemaNameForActivate).parent().contains(SchemaPageLocators.activeStatus).should('not.exist');
-    }
-
-    deleteSystemSchema(schemaNameForDeletion) {
-        cy.contains(schemaNameForDeletion).parent().find(SchemaPageLocators.deleteSchemaButton).click();
-        cy.intercept(SchemaPageLocators.systemSchemasList).as(
-            'waitForSchemaList'
-        );
-        cy.get(SchemaPageLocators.dialogActions).contains(SchemaPageLocators.bigOkButton).click();
-        cy.wait('@waitForSchemaList', { timeout: 10000 });
-        cy.contains(schemaNameForDeletion).should('not.exist');
-    }
 }
