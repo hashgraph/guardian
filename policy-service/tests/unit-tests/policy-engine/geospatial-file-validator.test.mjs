@@ -395,6 +395,12 @@ describe('geospatial content and selected values', () => {
         assert.equal(logged.debug.length, 1);
         assert.equal(logged.debug[0], `Geospatial file "site.geojson" (GEOJSON) in policy policy-1 checked: 1 feature, 5 vertices, ${Buffer.byteLength(text)} bytes (${stored.length} bytes compressed)`);
     });
+    it('preserves archive bytes in the existing KMZ no-preview info entry', async () => {
+        const archive = await kmz('<kml><Placemark><Point><coordinates>1,2</coordinates></Point></Placemark></kml>');
+        const { validator, logged } = setup(archive);
+        await validator.validate({ place: { ...point, geoFile: link({ format: 'kmz', noPreview: true }) } });
+        assert.match(logged.info[0], new RegExp(`accepted without preview: ${archive.length} bytes, limit 100000 bytes`));
+    });
     for (const archive of [false, true]) {
         it(`accepts and warns for linked ${archive ? 'KMZ' : 'KML'}`, async () => {
             const text = '<kml><Placemark><Point><coordinates>1,2</coordinates></Point></Placemark><NetworkLink/></kml>';

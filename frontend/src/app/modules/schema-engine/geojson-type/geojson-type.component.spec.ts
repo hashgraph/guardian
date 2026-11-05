@@ -436,7 +436,7 @@ describe('GeojsonTypeComponent original file link', () => {
             await component.importFromFile(file);
 
             expect(geoFiles.keepOriginal).toHaveBeenCalledOnceWith(file, 'geojson', 'same-hash');
-            expect(settings.getGeospatialLimits).not.toHaveBeenCalled();
+            expect(settings.getGeospatialLimits).toHaveBeenCalled();
             expect(component.geometriesList.length).toBe(1);
             expect(value.coordinates).toEqual([1, 2]);
             expect(value.geoFile).toEqual({ ...lost, idbKey: 'new-key' });
@@ -1005,7 +1005,7 @@ describe('GeojsonTypeComponent original file link', () => {
             geospatialMaxFileSizeMb: 1,
             geospatialPreviewMaxFeatures: 5000
         }));
-        const result = component.importFromFile(new File(['{}'], 'site.geojson'));
+        const result = component.importFromFile(new File(['{"type":"FeatureCollection","features":[]}'], 'site.geojson'));
         close.next('Upload without preview');
         close.complete();
         await result;
@@ -1248,8 +1248,12 @@ describe('GeojsonTypeComponent original file link', () => {
         spyOn((component as any).kmzReader, 'inspect').and.resolveTo({
             entry, previewSizeBytes: 20
         });
-        const coordinate = spyOn((component as any).kmzReader, 'readCoordinate')
-            .and.resolveTo([12, 34]);
+        const coordinate = spyOn(component['kmzReader'], 'readCoordinate')
+            .and.callFake(async (_file, _entry, scanner) => {
+                scanner.write('<kml><Placemark><Point><coordinates>12,34</coordinates></Point></Placemark></kml>');
+                scanner.finish();
+                return scanner.coordinate;
+            });
         settings.getGeospatialLimits.and.returnValue(of({
             kmlPreviewMaxFileSizeMb: 0.00001,
             geojsonPreviewMaxFileSizeMb: 5,
@@ -1280,9 +1284,11 @@ describe('GeojsonTypeComponent original file link', () => {
         value = oldValue;
         spyOn((component as any).kmzReader, 'inspect')
             .and.rejectWith(new Error('The KMZ central directory is missing.'));
-        await component.importFromFile(new File(['bad'], 'site.kmz'));
+        const result = component.importFromFile(new File(['bad'], 'site.kmz'));
+        close.next('Go Back'); close.complete();
+        await result;
         expect(value).toBe(oldValue);
-        expect(component.importError).toBe('The KMZ central directory is missing.');
+        expect(dialog.open.calls.mostRecent().args[1]?.data).toEqual(jasmine.objectContaining({ header: 'Unsupported file format' }));
         expect(geoFiles.keepOriginal).not.toHaveBeenCalled();
     });
 
@@ -1299,7 +1305,177 @@ describe('GeojsonTypeComponent original file link', () => {
         );
         await component.importFromFile(new File(['zip'], 'site.kmz'));
         expect(value).toBe(oldValue);
+        expect(component.importError).toBe('This browser cannot open KMZ files.');
+        expect(dialog.open).not.toHaveBeenCalled();
         expect(geoFiles.keepOriginal).not.toHaveBeenCalled();
+    });
+    describe('complete file checks and ticket dialogs', () => {
+        const invalidDialog = (reason: string) => ({
+            header: 'Unsupported file format',
+            texts: ["This file couldn't be read. Please upload a valid GeoJSON (RFC 7946) or KML file.", reason],
+            buttons: [{ name: 'Go Back', class: 'primary' }]
+        });
+        const linksDialog = {
+            header: "Linked content won't be imported",
+            texts: ['This file contains NetworkLink features that reference external content and will not be imported. The rest of the file will be used as normal.'],
+            buttons: [{ name: 'Cancel', class: 'secondary' }, { name: 'Continue without links', class: 'primary' }]
+        };
+        const linked = '<kml><Placemark><Point><coordinates>1,2</coordinates></Point></Placemark><NetworkLink><Region><LatLonAltBox><north>2</north><south>0</south><east>2</east><west>0</west></LatLonAltBox></Region></NetworkLink></kml>';
+        let answers: string[];
+        let oldValue: unknown;
+        beforeEach(() => {
+            answers = [];
+            oldValue = { type: 'Point', coordinates: [9, 9] };
+            value = oldValue;
+            dialog.open.and.callFake(() => {
+                const reference = new DynamicDialogRef();
+                queueMicrotask(() => reference.close(answers.shift()));
+                return reference;
+            });
+            geoFiles.keepOriginal.and.callFake(async (file, format) => ({
+                idbKey: 'new-key', name: file.name, format, sizeBytes: file.size, previewSizeBytes: file.size
+            }));
+            geoFiles.discard.and.resolveTo();
+            spyOn<any>(component, 'setupMap');
+            spyOn<any>(component, 'centerMap');
+            component['geoJsonService'].getFileNames = () => new Map<string, string>();
+        });
+        for (const large of [false, true]) {
+            it(`rejects an invalid ${large ? 'large' : 'small'} GeoJSON with the ticket copy`, async () => {
+                if (large) settings.getGeospatialLimits.and.returnValue(of({
+                    kmlPreviewMaxFileSizeMb: 0, geojsonPreviewMaxFileSizeMb: 0,
+                    geospatialMaxFileSizeMb: 100, geospatialPreviewMaxFeatures: 1500
+                }));
+                answers.push(...(large ? ['Upload without preview', 'Go Back'] : ['Go Back']));
+                await component.importFromFile(new File(['{"type":"Point","coordinates":[200,2]}'], 'invalid.geojson'));
+                expect(dialog.open.calls.mostRecent().args[1]?.data).toEqual(invalidDialog('Coordinates at $.coordinates must use WGS 84 longitude and latitude.'));
+                expect(dialog.open.calls.count()).toBe(large ? 2 : 1);
+                expect(value).toBe(oldValue);
+                expect(geoFiles.keepOriginal).not.toHaveBeenCalled();
+            });
+        }
+        it('shows the shared missing-properties reason for a GeoJSON Feature', async () => {
+            answers.push('Go Back');
+            await component.importFromFile(new File(['{"type":"Feature","geometry":{"type":"Point","coordinates":[1,2]}}'], 'feature.geojson'));
+            expect(dialog.open.calls.mostRecent().args[1]?.data).toEqual(invalidDialog('Properties must be an object or null at $.properties.'));
+            expect(value).toBe(oldValue);
+            expect(geoFiles.keepOriginal).not.toHaveBeenCalled();
+        });
+        for (const reason of [
+            'The KMZ central directory is missing.',
+            'The KMZ central directory is invalid.',
+            'Multi-disk KMZ files are not supported.',
+            'The KMZ file does not contain a root KML file.',
+            'Encrypted KMZ entries are not supported.',
+            'The KMZ compression method is not supported.'
+        ]) {
+            it(`shows the archive inspection reason: ${reason}`, async () => {
+                spyOn(component['kmzReader'], 'inspect').and.rejectWith(new Error(reason));
+                answers.push('Go Back');
+                await component.importFromFile(new File(['bad'], 'invalid.kmz'));
+                expect(dialog.open.calls.count()).toBe(1);
+                expect(dialog.open.calls.mostRecent().args[1]?.data).toEqual(invalidDialog(reason));
+                expect(value).toBe(oldValue);
+                expect(component.importError).toBe('');
+                expect(geoFiles.keepOriginal).not.toHaveBeenCalled();
+            });
+        }
+        for (const reason of ['The uncompressed KML size is invalid.', 'The KMZ local header is truncated.',
+            'The KMZ local header is invalid.', 'The KMZ local header does not match its directory entry.', 'The KMZ entry range is invalid.',
+            'This browser cannot open KMZ files.']) for (const large of [false, true]) {
+            it(`shows ${reason} with ${large ? 'no preview' : 'preview'}`, async () => {
+                if (large) settings.getGeospatialLimits.and.returnValue(of({
+                    kmlPreviewMaxFileSizeMb: 0, geojsonPreviewMaxFileSizeMb: 5,
+                    geospatialMaxFileSizeMb: 100, geospatialPreviewMaxFeatures: 1500
+                }));
+                spyOn(component['kmzReader'], 'inspect').and.resolveTo({
+                    entry: { name: 'doc.kml', flags: 0, compressionMethod: 0, compressedSize: 3, uncompressedSize: 20, localHeaderOffset: 0 }, previewSizeBytes: 20
+                });
+                if (large) spyOn(component['kmzReader'], 'readCoordinate').and.rejectWith(new Error(reason));
+                else spyOn(component['kmzReader'], 'readText').and.rejectWith(new Error(reason));
+                answers.push(...(large ? ['Upload without preview', 'Go Back'] : ['Go Back']));
+                await component.importFromFile(new File(['zip'], 'invalid.kmz'));
+                if (reason === 'This browser cannot open KMZ files.') {
+                    expect(component.importError).toBe(reason);
+                    expect(dialog.open.calls.count()).toBe(large ? 1 : 0);
+                } else {
+                    expect(dialog.open.calls.count()).toBe(large ? 2 : 1);
+                    expect(dialog.open.calls.mostRecent().args[1]?.data).toEqual(invalidDialog(reason));
+                }
+                expect(value).toBe(oldValue);
+                expect(geoFiles.keepOriginal).not.toHaveBeenCalled();
+            });
+        }
+        for (const archive of [false, true]) {
+            for (const proceed of [false, true]) {
+                it(`${proceed ? 'continues' : 'cancels'} the ${archive ? 'KMZ' : 'KML'} link warning`, async () => {
+                    if (archive) {
+                        spyOn(component['kmzReader'], 'inspect').and.resolveTo({
+                            entry: { name: 'doc.kml', flags: 0, compressionMethod: 0, compressedSize: linked.length, uncompressedSize: linked.length, localHeaderOffset: 0 }, previewSizeBytes: linked.length
+                        });
+                        spyOn(component['kmzReader'], 'readText').and.resolveTo(linked);
+                    }
+                    answers.push(proceed ? 'Continue without links' : 'Cancel');
+                    await component.importFromFile(new File([linked], archive ? 'linked.kmz' : 'linked.kml'));
+                    expect(dialog.open.calls.count()).toBe(1);
+                    expect(dialog.open.calls.mostRecent().args[1]?.data).toEqual(linksDialog);
+                    if (proceed) {
+                        expect(geoFiles.keepOriginal).toHaveBeenCalled();
+                        expect(component['pendingGeoFile']).toBeTruthy();
+                        expect(component['geoJsonService'].saveFile).toHaveBeenCalledWith(archive ? 'linked.kmz' : 'linked.kml',
+                            jasmine.objectContaining({ features: jasmine.arrayContaining([
+                                jasmine.objectContaining({ geometry: jasmine.objectContaining({ type: 'Polygon' }) })
+                            ]) }));
+                    } else {
+                        expect(value).toBe(oldValue);
+                        expect(geoFiles.keepOriginal).not.toHaveBeenCalled();
+                    }
+                });
+            }
+            it(`rejects broken ${archive ? 'KMZ' : 'KML'} before warning about links`, async () => {
+                const broken = '<kml><NetworkLink/><Point></kml>';
+                if (archive) {
+                    spyOn(component['kmzReader'], 'inspect').and.resolveTo({
+                        entry: { name: 'doc.kml', flags: 0, compressionMethod: 0, compressedSize: broken.length, uncompressedSize: broken.length, localHeaderOffset: 0 }, previewSizeBytes: broken.length
+                    });
+                    spyOn(component['kmzReader'], 'readText').and.resolveTo(broken);
+                }
+                answers.push('Go Back');
+                await component.importFromFile(new File([broken], archive ? 'broken.kmz' : 'broken.kml'));
+                expect(dialog.open.calls.count()).toBe(1);
+                expect(dialog.open.calls.mostRecent().args[1]?.data).toEqual(invalidDialog('The KML markup is not well-formed.'));
+                expect(value).toBe(oldValue);
+            });
+        }
+        it('shows no-shapes before links when a KML holds only a link without a Region', async () => {
+            answers.push('Ok');
+            await component.importFromFile(new File(['<kml><NetworkLink/></kml>'], 'empty.kml'));
+            expect(dialog.open.calls.count()).toBe(1);
+            expect(dialog.open.calls.mostRecent().args[1]?.data).toEqual(jasmine.objectContaining({ header: 'File cannot be imported' }));
+            expect(value).toBe(oldValue);
+        });
+        it('shows the shape-limit warning before links and reads links after the first coordinate', async () => {
+            settings.getGeospatialLimits.and.returnValue(of({
+                kmlPreviewMaxFileSizeMb: 10, geojsonPreviewMaxFileSizeMb: 5,
+                geospatialMaxFileSizeMb: 100, geospatialPreviewMaxFeatures: 1
+            }));
+            answers.push('Upload without preview', 'Continue without links');
+            await component.importFromFile(new File([linked], 'linked.kml'));
+            expect(dialog.open.calls.count()).toBe(2);
+            expect(dialog.open.calls.argsFor(0)[1]?.data).toEqual(jasmine.objectContaining({ header: 'File too large to preview' }));
+            expect(dialog.open.calls.argsFor(1)[1]?.data).toEqual(linksDialog);
+            expect(component['pendingGeoFile']?.noPreview).toBeTrue();
+            expect(component['pendingGeoFile']?.automaticPoint).toEqual([1, 2]);
+        });
+        it('checks invalid trailing content after the first no-preview coordinate', async () => {
+            settings.getGeospatialLimits.and.returnValue(of({
+                kmlPreviewMaxFileSizeMb: 0, geojsonPreviewMaxFileSizeMb: 0, geospatialMaxFileSizeMb: 100, geospatialPreviewMaxFeatures: 1500
+            }));
+            answers.push('Upload without preview', 'Go Back');
+            await component.importFromFile(new File(['{"type":"Point","coordinates":[1,2]}' + ' '.repeat(1024 * 1024) + 'bad'], 'tail.geojson'));
+            expect(dialog.open.calls.mostRecent().args[1]?.data).toEqual(invalidDialog('The file is not valid JSON.'));
+            expect(geoFiles.keepOriginal).not.toHaveBeenCalled();
+        });
     });
 });
 

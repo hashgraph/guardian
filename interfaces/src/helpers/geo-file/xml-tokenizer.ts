@@ -3,7 +3,10 @@ export type XmlToken =
     | { type: 'end'; name: string }
     | { type: 'text'; value: string };
 
+const XML_NAME = /^[:A-Z_a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD\u{10000}-\u{EFFFF}][:A-Z_a-z0-9.\-\u00B7\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0300-\u036F\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u203F-\u2040\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD\u{10000}-\u{EFFFF}]*/u;
+
 export class XmlTokenizer {
+    public invalid = false;
     private buffer = '';
     private cursor = 0;
     private entityTail = '';
@@ -12,7 +15,8 @@ export class XmlTokenizer {
 
     constructor(
         private readonly emit: (token: XmlToken) => void,
-        private readonly shouldStop: () => boolean = () => false
+        private readonly shouldStop: () => boolean = () => false,
+        private readonly strictMarkup = false
     ) {}
 
     write(text: string): void {
@@ -104,9 +108,12 @@ export class XmlTokenizer {
             }
             const end = this.findTagEnd(this.cursor + 1);
             if (end < 0) return;
-            const raw = this.buffer.slice(this.cursor + 1, end).trim();
+            const markup = this.buffer.slice(this.cursor + 1, end);
+            const raw = markup.trim();
+            if (this.strictMarkup && (/^[\t\r\n ]/.test(markup) || /\/[\t\r\n ]+$/.test(markup))) this.invalid = true;
             this.cursor = end + 1;
-            if (!raw) continue;
+            if (!raw) { if (this.strictMarkup) this.invalid = true; continue; }
+            if (this.strictMarkup && !this.validTag(raw)) this.invalid = true;
             if (raw[0] === '/') {
                 this.emit({ type: 'end', name: raw.slice(1).trim().split(/\s/, 1)[0] });
                 continue;
@@ -117,6 +124,33 @@ export class XmlTokenizer {
             this.emit({ type: 'start', name, selfClosing });
             if (selfClosing) this.emit({ type: 'end', name });
         }
+    }
+
+    private validTag(raw: string): boolean {
+        const closing = raw.startsWith('/');
+        const selfClosing = raw.endsWith('/');
+        const body = closing ? raw.slice(1) : selfClosing ? raw.slice(0, -1) : raw;
+        const name = body.match(XML_NAME)?.[0];
+        if (!name) return false;
+        let rest = body.slice(name.length);
+        if (closing) return !selfClosing && !rest.trim();
+        const attributes = new Set<string>();
+        while (rest.trim()) {
+            if (!/^[\t\n\r ]/.test(rest)) return false;
+            rest = rest.trimStart();
+            const attribute = rest.match(XML_NAME)?.[0];
+            if (!attribute || attributes.has(attribute)) return false;
+            attributes.add(attribute);
+            rest = rest.slice(attribute.length).trimStart();
+            if (!rest.startsWith('=')) return false;
+            rest = rest.slice(1).trimStart();
+            const quote = rest[0];
+            if (quote !== '"' && quote !== "'") return false;
+            const end = rest.indexOf(quote, 1);
+            if (end < 0 || rest.slice(1, end).includes('<')) return false;
+            rest = rest.slice(end + 1);
+        }
+        return true;
     }
 
     private isPartialMarkup(): boolean {

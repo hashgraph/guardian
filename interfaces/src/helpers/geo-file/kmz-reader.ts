@@ -30,6 +30,10 @@ interface EndRecord {
     absoluteOffset: number;
 }
 
+export class KmzSizeError extends Error {
+    constructor(public readonly size: number) { super('The uncompressed KML size is invalid.'); }
+}
+
 export class KmzReader {
     public async inspect(file: Blob): Promise<KmzInspection> {
         const end = await this.readEndRecord(file);
@@ -155,8 +159,8 @@ export class KmzReader {
             if (next > bytes.length) throw new Error('The KMZ central directory is invalid.');
             if (flags & 1) throw new Error('Encrypted KMZ entries are not supported.');
             if (method !== 0 && method !== 8) throw new Error('The KMZ compression method is not supported.');
-            if (disk !== 0) throw new Error('Multi-disk KMZ files are not supported.');
-            if ([compressedSize, uncompressedSize, localHeaderOffset].includes(ZIP64_32)) {
+            if (disk !== 0 && disk !== ZIP64_16) throw new Error('Multi-disk KMZ files are not supported.');
+            if (disk === ZIP64_16 || [compressedSize, uncompressedSize, localHeaderOffset].includes(ZIP64_32)) {
                 let cursor = offset + 46 + nameLength;
                 const limit = cursor + extraLength;
                 let found = false;
@@ -178,6 +182,11 @@ export class KmzReader {
                         if (uncompressedSize === ZIP64_32) uncompressedSize = read();
                         if (compressedSize === ZIP64_32) compressedSize = read();
                         if (localHeaderOffset === ZIP64_32) localHeaderOffset = read();
+                        if (disk === ZIP64_16) {
+                            if (cursor + 4 > end) throw new Error('The KMZ central directory is invalid.');
+                            if (view.getUint32(cursor, true) !== 0) throw new Error('Multi-disk KMZ files are not supported.');
+                            cursor += 4;
+                        }
                         if (cursor > end) throw new Error('The KMZ central directory is invalid.');
                         found = true;
                         break;
@@ -240,7 +249,8 @@ export class KmzReader {
                     return false;
                 }
                 outputSize += result.value.byteLength;
-                if (outputSize > maximumBytes || outputSize > entry.uncompressedSize) {
+                if (outputSize > maximumBytes) throw new KmzSizeError(outputSize);
+                if (outputSize > entry.uncompressedSize) {
                     throw new Error('The uncompressed KML size is invalid.');
                 }
                 if (consume(result.value)) {

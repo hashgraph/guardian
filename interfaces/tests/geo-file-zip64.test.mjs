@@ -13,6 +13,12 @@ describe('ZIP64 KMZ records', () => {
             assert.equal(await reader.readText(file, result.entry, 1000), text);
         });
     }
+    it('reads a ZIP64 disk-start marker whose replacement is disk zero', async () => {
+        const file = new Blob([kmz('<kml/>', { zip64: true, diskMarker: true })]);
+        const reader = new KmzReader();
+        const result = await reader.inspect(file);
+        assert.equal(await reader.readText(file, result.entry, 1000), '<kml/>');
+    });
     for (const options of [{ missingExtra: true }, { unsafeOffset: true }]) {
         it(`rejects invalid extended information ${JSON.stringify(options)}`, async () => {
             await assert.rejects(new KmzReader().inspect(new Blob([kmz('<kml/>', { zip64: true, ...options })])), /central directory is invalid/);

@@ -311,9 +311,10 @@ export function polygonValueError(value: unknown): string | null {
     if (type === 'FeatureCollection' || type === 'GeometryCollection') {
         const items = Reflect.get(value, type === 'FeatureCollection' ? 'features' : 'geometries');
         if (!Array.isArray(items)) return null;
-        for (const item of items) {
-            const error = polygonValueError(item);
-            if (error) return error;
+        const selected = type === 'FeatureCollection' ? items.filter(item => item?.geometry && item.geometry.type !== 'GeometryCollection') : items;
+        for (let index = 0; index < selected.length; index += 1) {
+            const error = polygonValueError(selected[index]);
+            if (error) return type === 'FeatureCollection' ? `Feature #${index}: ${error}` : error;
         }
         return null;
     }

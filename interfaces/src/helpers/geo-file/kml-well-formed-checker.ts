@@ -4,7 +4,7 @@ export class KmlWellFormedChecker {
     private readonly open: string[] = [];
     private roots = 0;
     private broken = false;
-    private readonly tokenizer = new XmlTokenizer(token => this.accept(token));
+    private readonly tokenizer = new XmlTokenizer(token => this.accept(token), () => false, true);
 
     public write(text: string): void {
         if (this.broken) return;
@@ -13,7 +13,7 @@ export class KmlWellFormedChecker {
 
     public finish(): boolean {
         try { this.tokenizer.finish(); } catch { this.broken = true; }
-        return !this.broken && !this.tokenizer.incomplete && this.roots === 1 && this.open.length === 0;
+        return !this.broken && !this.tokenizer.incomplete && !this.tokenizer.invalid && this.roots === 1 && this.open.length === 0;
     }
 
     private accept(token: XmlToken): void {

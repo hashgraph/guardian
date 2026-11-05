@@ -3,7 +3,7 @@ import { KmlWellFormedChecker, NetworkLinkFinder, KmlCoordinateScanner, readFirs
 
 describe('KML well formed text', () => {
     const valid = ['<kml/>', '<?xml version="1.0"?><!DOCTYPE kml [<!ENTITY a "b">]><kml><!-- text --><![CDATA[<test>]]><Point/></kml>', '\n<kml> text </kml>\n'];
-    const invalid = ['', '<kml>', '<kml><Point></kml>', '<kml/><kml/>', '<kml/>text', '<kml><!--', '<kml><![CDATA[', '<kml><Point', '<kml><?xml', '<kml/><!'];
+    const invalid = ['<kml a=bad/>', '<kml a="a" a="b"/>', '<kml><></kml>', '<kml <Point/>', '<kml></kml extra>', '', '<kml>', '<kml><Point></kml>', '<kml/><kml/>', '<kml/>text', '<kml><!--', '<kml><![CDATA[', '<kml><Point', '<kml><?xml', '<kml/><!'];
     for (const text of [...valid, ...invalid]) {
         for (const size of [1, 7, Math.max(1, text.length)]) {
             it(`checks ${JSON.stringify(text)} in chunks of ${size}`, () => {

@@ -46,13 +46,36 @@ class TupleSequence {
     }
 }
 
+class PointTuple {
+    private token = '';
+    private values: number[] = [];
+    public write(text: string): void {
+        for (const character of text) {
+            if (character === ',') this.flush();
+            else if (!/\s/.test(character) && this.token.length < 256) this.token += character;
+        }
+    }
+    private flush(): void {
+        const value = Number.parseFloat(this.token);
+        if (!Number.isNaN(value) && this.values.length < 3) this.values.push(value);
+        this.token = '';
+    }
+    public finish(): GeoCoordinate | null {
+        this.flush();
+        return this.values.length >= 3 ? [this.values[0], this.values[1], this.values[2]]
+            : this.values.length >= 2 ? [this.values[0], this.values[1]] : null;
+    }
+}
+
 interface GeometryState {
     name: string;
     depth: number;
     tuples?: TupleSequence;
-    pointText: string;
+    point?: PointTuple;
     trackText: string;
     trackCount: number;
+    unprefixedTrackCount: number;
+    prefixedTrackCount: number;
     candidate: GeoCoordinate | null;
     polygonRings: number;
     vertices: number;
@@ -145,7 +168,7 @@ export class KmlFeatureCounter {
             const eligible = parent === 'Placemark' || this.placemark.containerDepths.has(depth - 1);
             if (eligible && !this.placemark.geometry) {
                 this.placemark.geometry = {
-                    name, depth, vertices: 0, pointText: '', trackText: '', trackCount: 0,
+                    name, depth, vertices: 0, point: name === 'Point' ? new PointTuple() : undefined, trackText: '', trackCount: 0, unprefixedTrackCount: 0, prefixedTrackCount: 0,
                     candidate: null, polygonRings: 0,
                     tuples: name === 'LineString' || name === 'LinearRing' ? new TupleSequence() : undefined
                 };
@@ -177,7 +200,7 @@ export class KmlFeatureCounter {
         const current = this.tags[this.tags.length - 1];
         if (geometry && current === 'coordinates') {
             if (geometry.name === 'Point') {
-                if (geometry.pointText.length < 256) geometry.pointText += value;
+                geometry.point?.write(value);
             } else if (geometry.name === 'Polygon') {
                 geometry.ring?.write(value);
             } else {
@@ -256,13 +279,7 @@ export class KmlFeatureCounter {
 
     private finishCoordinates(geometry: GeometryState): void {
         if (geometry.name === 'Point') {
-            const values = geometry.pointText
-                .replace(/\s*/g, '')
-                .split(',')
-                .map(value => Number.parseFloat(value))
-                .filter(value => !Number.isNaN(value))
-                .slice(0, 3);
-            if (values.length >= 2) geometry.candidate = values.length >= 3 ? [values[0], values[1], values[2]] : [values[0], values[1]];
+            geometry.candidate = geometry.point?.finish() || null;
         } else if (geometry.name !== 'Polygon') {
             geometry.tuples?.finish();
             geometry.candidate = geometry.tuples?.first || null;
@@ -270,12 +287,15 @@ export class KmlFeatureCounter {
     }
 
     private finishTrackCoordinate(geometry: GeometryState): void {
-        const values = geometry.trackText.split(' ').map(value => Number.parseFloat(value));
+        if (geometry.name !== 'Track' && geometry.name !== 'gx:Track') return;
+        const unprefixed = this.tags[this.tags.length - 1] === 'coord';
+        const first = unprefixed ? geometry.unprefixedTrackCount === 0
+            : geometry.unprefixedTrackCount === 0 && geometry.prefixedTrackCount === 0;
+        if (unprefixed) geometry.unprefixedTrackCount += 1;
+        else geometry.prefixedTrackCount += 1;
+        geometry.trackCount = geometry.unprefixedTrackCount || geometry.prefixedTrackCount;
+        if (first) geometry.candidate = [0, 0];
         geometry.trackText = '';
-        if (values.length >= 2 && !values.some(value => Number.isNaN(value))) {
-            if (!geometry.candidate) geometry.candidate = values.length >= 3 ? [values[0], values[1], values[2]] : [values[0], values[1]];
-            geometry.trackCount += 1;
-        }
     }
 
     private finishGeometry(geometry: GeometryState): void {

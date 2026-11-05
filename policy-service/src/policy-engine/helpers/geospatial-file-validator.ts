@@ -252,7 +252,7 @@ export class GeospatialFileValidator {
             logs.push({ level: 'debug', message: `Geospatial file "${this.fileName(link)}" (${format}) in policy ${policyId} checked: ${result.counts.features} ${result.counts.features === 1 ? 'feature' : 'features'}, ${result.counts.vertices} ${result.counts.vertices === 1 ? 'vertex' : 'vertices'}, ${sizes}` });
             if (result.links) logs.push({ level: 'warn', message: `Geospatial file "${this.fileName(link)}" (${format}) in policy ${policyId} contains ${result.links} NetworkLink ${result.links === 1 ? 'element' : 'elements'}; linked content is not imported` });
         }
-        if (link.noPreview === true) logs.push({ level: 'info', message: `Geospatial file "${this.fileName(link)}" (${link.format?.toUpperCase()}) in field ${path} was accepted without preview: ${measured} bytes, limit ${this.maximumBytes} bytes` });
+        if (link.noPreview === true) logs.push({ level: 'info', message: `Geospatial file "${this.fileName(link)}" (${link.format?.toUpperCase()}) in field ${path} was accepted without preview: ${zip ? length : measured} bytes, limit ${this.maximumBytes} bytes` });
         return logs;
     }
 

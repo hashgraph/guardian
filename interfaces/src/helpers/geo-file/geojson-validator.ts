@@ -92,6 +92,7 @@ export class GeoJsonValidator {
                 members: new Map(), count: 0, allNumbers: true, numbers: [], childErrors: {}, features: 0, vertices: 0 });
         } else if (event.type === 'endObject' || event.type === 'endArray') {
             const frame = this.stack.pop();
+            if (!frame) throw new Error('Unexpected JSON closing token.');
             this.deliver(frame.kind === 'object' ? this.object(frame) : this.array(frame));
         } else {
             const { path } = this.location();
@@ -116,7 +117,7 @@ export class GeoJsonValidator {
         }
         parent.count += 1;
         if (parent.role === 'coordinates' || parent.role === 'bbox') {
-            if (child.kind === 'number' && parent.allNumbers) parent.numbers.push(child.number);
+            if (child.kind === 'number' && child.number !== undefined && parent.allNumbers) parent.numbers.push(child.number);
             else { parent.allNumbers = false; parent.numbers = []; }
             if (!parent.first) parent.first = child;
             parent.last = child;
@@ -147,7 +148,7 @@ export class GeoJsonValidator {
         const lineError = frame.count < 2 ? `A LineString at ${frame.path} must contain at least two positions.` : pointsError;
         const ringError = frame.count < 4 ? `A Polygon ring at ${frame.path} must contain at least four positions.` : pointsError ||
             (!frame.first?.numbers || !frame.last?.numbers || frame.first.numbers.length !== frame.last.numbers.length ||
-                frame.first.numbers.some((number, index) => number !== frame.last.numbers[index])
+                frame.first.numbers.some((number, index) => number !== frame.last?.numbers?.[index])
                 ? `Polygon ring at ${frame.path} is not closed.` : undefined);
         result.errors = { Point: positionError, MultiPoint: pointsError, LineString: lineError,
             MultiLineString: frame.childErrors.LineString,
@@ -168,16 +169,17 @@ export class GeoJsonValidator {
         const result: Summary = { kind: 'object', path: frame.path, geoType: type, features: 1, vertices: 0 };
         if (frame.role !== 'geo') return result;
         const invalid = (reason: string) => { result.error ||= reason; };
-        if (!types.includes(type)) invalid(`A valid GeoJSON type is required at ${frame.path}.`);
+        if (!type || !types.includes(type)) invalid(`A valid GeoJSON type is required at ${frame.path}.`);
         const geometry = type !== 'Feature' && type !== 'FeatureCollection';
         const forbidden = geometry ? ['geometry', 'properties', 'features'] : type === 'Feature' ? ['coordinates', 'geometries', 'features'] : ['coordinates', 'geometries', 'geometry', 'properties'];
         for (const name of forbidden) if (m.has(name)) invalid(`Member "${name}" is not allowed on ${type} at ${frame.path}.`);
         let content: Summary | undefined;
-        if (shapes.some(shape => shape === type)) {
+        const shape = shapes.find(shape => shape === type);
+        if (shape) {
             content = m.get('coordinates');
             if (content?.kind !== 'array') invalid(`Coordinates must be an array at ${frame.path}.coordinates.`);
             else if (content.length) {
-                const error = content.errors?.[type];
+                const error = content.errors?.[shape];
                 if (error) invalid(error);
             }
             result.countable = true;
