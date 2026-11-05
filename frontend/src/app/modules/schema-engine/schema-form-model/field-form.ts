@@ -2,7 +2,7 @@ import { UntypedFormGroup, UntypedFormControl, UntypedFormArray, ValidatorFn, Va
 import { Schema, SchemaCondition, SchemaConditionTarget, SchemaField, SchemaHelper, SchemaPredicateComparator, SchemaRuleValidateResult, GenerateUUIDv4, isGeoCustomType } from '@guardian/interfaces';
 import { fullFormats } from 'ajv-formats/dist/formats';
 import moment from 'moment';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, Subscription, takeUntil } from 'rxjs';
 import { uriValidator } from 'src/app/validators/uri.validator';
 import { GeoForm } from './geo-form';
 import { SentinelHubForm } from './sentinel-hub-form';
@@ -131,6 +131,7 @@ export class FieldForm {
     private readonly ancestorChildPaths: Map<string, Set<string>>;
     public rootForm: FieldForm;
     public keepDefaultLabels: boolean = false;
+    private arrayDependencies: ReturnType<typeof SchemaHelper.collectArrayDependencies> = [];
     public errorsRevealed = false;
     public showMetadata = false;
     /** Dot path of the field with the row index of every array it sits in. */
@@ -151,6 +152,7 @@ export class FieldForm {
     /** Every array control that is a dependent in some group; built together with `arrayGroupCache`. */
     private managedSet: Set<IFieldControl<any>> | null = null;
     private fieldOrder: Map<string, number> | null = null;
+    private readonly arrayDependencySources = new Map<UntypedFormArray, Subscription>();
 
     private readonly destroy$: Subject<boolean>;
 
@@ -183,6 +185,7 @@ export class FieldForm {
 
     public destroy() {
         this.destroy$.next(true);
+        this.arrayDependencySources.clear();
         this.destroy$.unsubscribe();
         this.controlsChanged$.complete();
     }
@@ -225,6 +228,9 @@ export class FieldForm {
         }
         if (data.schema) {
             this.schema = data.schema;
+            this.arrayDependencies = SchemaHelper.collectArrayDependencies(
+                data.schema.document, data.schema.arrayDependencies
+            );
         }
         if (data.fields) {
             this.fields = data.fields;
@@ -267,7 +273,7 @@ export class FieldForm {
         this.fieldOrder = fields ? new Map(fields.map((f, index) => [f.name, index])) : null;
         this.fieldControls = this.buildFields(fields);
         this.conditionControls = this.buildConditions(conditions);
-        if (this.schema?.arrayDependencies?.length) {
+        if (this.arrayDependencies?.length) {
             this.alignArrayGroups();
             this.syncArrayDependencyValues();
             this.subscribeArrayDependencyValues();
@@ -621,7 +627,7 @@ export class FieldForm {
                 }
             }
         }
-        if (this.rootForm.schema?.arrayDependencies?.length) {
+        if (this.rootForm.arrayDependencies?.length) {
             this.rootForm.syncArrayDependencyValues();
         }
     }
@@ -642,7 +648,7 @@ export class FieldForm {
 
     private buildArrayGroups(): Map<IFieldControl<any>, IArrayGroupEntry[]> {
         const map = new Map<IFieldControl<any>, IArrayGroupEntry[]>();
-        for (const dependency of (this.schema?.arrayDependencies || [])) {
+        for (const dependency of (this.arrayDependencies || [])) {
             const source = this.resolveArrayEntry(dependency.on);
             const target = this.resolveArrayEntry(dependency.field);
             if (!source || !target || source.control === target.control) { continue; }
@@ -695,8 +701,15 @@ export class FieldForm {
     }
 
     private syncArrayDependencyValues(): void {
+        const pending = (this.arrayDependencies || []).filter(dependency => dependency.valueMappings?.length);
+        const ordered: typeof pending = [];
+        while (pending.length) {
+            const next = pending.findIndex(dependency => !pending.some(other =>
+                other !== dependency && other.field.join('.') === dependency.on.join('.')));
+            ordered.push(...pending.splice(Math.max(next, 0), 1));
+        }
         let changed = false;
-        for (const dependency of (this.schema?.arrayDependencies || [])) {
+        for (const dependency of ordered) {
             if (!dependency.valueMappings?.length) { continue; }
             const source = this.resolveArrayEntry(dependency.on);
             const target = this.resolveArrayEntry(dependency.field);
@@ -720,11 +733,21 @@ export class FieldForm {
     }
 
     private subscribeArrayDependencyValues(): void {
-        for (const dependency of (this.schema?.arrayDependencies || [])) {
+        const sources = new Set<UntypedFormArray>();
+        for (const dependency of (this.arrayDependencies || [])) {
             if (!dependency.valueMappings?.length) { continue; }
-            this.resolveArrayEntry(dependency.on)?.control.control.valueChanges
-                .pipe(takeUntil(this.destroy$))
-                .subscribe(() => this.syncArrayDependencyValues());
+            const source = this.resolveArrayEntry(dependency.on)?.control.control;
+            if (!(source instanceof UntypedFormArray)) { continue; }
+            sources.add(source);
+            if (this.arrayDependencySources.has(source)) { continue; }
+            this.arrayDependencySources.set(source, source.valueChanges.pipe(takeUntil(this.destroy$))
+                .subscribe(() => this.syncArrayDependencyValues()));
+        }
+        for (const [source, subscription] of this.arrayDependencySources) {
+            if (!sources.has(source)) {
+                subscription.unsubscribe();
+                this.arrayDependencySources.delete(source);
+            }
         }
     }
 
@@ -737,7 +760,7 @@ export class FieldForm {
     public getEntryTitle(item: IFieldControl<any>, listItem: IFieldIndexControl<any>): string {
         const fallback = `${item.description} #${listItem.index2}`;
         const index = Number(listItem.index);
-        for (const dependency of (this.rootForm.schema?.arrayDependencies || [])) {
+        for (const dependency of (this.rootForm.arrayDependencies || [])) {
             if (!dependency.title?.length) { continue; }
             const titlePath = dependency.title.join('.');
             const source = this.rootForm.resolveArrayEntry(dependency.on);
@@ -755,7 +778,7 @@ export class FieldForm {
     }
 
     public getEntryTitleLabel(item: IFieldControl<any>): string | null {
-        for (const dependency of (this.rootForm.schema?.arrayDependencies || [])) {
+        for (const dependency of (this.rootForm.arrayDependencies || [])) {
             if (!dependency.title?.length) { continue; }
             const source = this.rootForm.resolveArrayEntry(dependency.on);
             const dependent = this.rootForm.resolveArrayEntry(dependency.field);
@@ -1513,7 +1536,7 @@ export class FieldForm {
             item.name,
         )
         this.form.addControl(item.name, item.control);
-        if (this.rootForm.schema?.arrayDependencies?.length) {
+        if (this.rootForm.arrayDependencies?.length) {
             this.rootForm.arrayGroupCache = null;
             this.rootForm.managedSet = null;
             this.rootForm.alignArrayGroups();
@@ -1522,7 +1545,8 @@ export class FieldForm {
         if (this.rootForm !== this) {
             this.rootForm.rebuildCrossSchemaConditions(true);
         }
-        if (this.rootForm.schema?.arrayDependencies?.length) {
+        if (this.rootForm.arrayDependencies?.length) {
+            this.rootForm.subscribeArrayDependencyValues();
             this.rootForm.syncArrayDependencyValues();
         }
     }
@@ -1559,6 +1583,8 @@ export class FieldForm {
         item.control = null;
         item.model?.destroy();
         this.form.removeControl(item.name);
+        this.rootForm.arrayGroupCache = null;
+        this.rootForm.subscribeArrayDependencyValues();
     }
 
     public hasSameRequiredFields(paths: string[] | null): boolean {

@@ -384,4 +384,46 @@ describe('DocumentsSourceBlockComponent', () => {
             expect(field.__sortable).toBeFalse();
         });
     });
+    describe('opening a document in the fullscreen dialog', () => {
+        const open = (progress: any) => {
+            const component: any = Object.create(DocumentsSourceBlockComponent.prototype);
+            const dialogService = { open: jasmine.createSpy('open').and.returnValue({ onClose: { subscribe: () => undefined } }) };
+            component.dialogService = dialogService;
+            component.policyProgress = progress;
+            component.policyId = 'p1';
+            component._destroy$ = {};
+            component.onDialog({ id: 'row-1', doc: { id: 'vc-1' } }, { name: 'doc', dialogContent: 'Project' });
+            return dialogService.open.calls.mostRecent().args[1].data;
+        };
+
+        it('passes the policy name and the active step as the context line', () => {
+            const data = open({
+                policyName: (id: string) => (id === 'p1' ? 'Carbon' : ''),
+                activeStep: { label: 'Registration' },
+            });
+            expect(data.subtitle).toBe('Carbon · Registration');
+            expect('backLabel' in data).toBeFalse();
+        });
+
+        it('takes over the viewer instead of opening a dialog when it can', () => {
+            const component: any = Object.create(DocumentsSourceBlockComponent.prototype);
+            const closed = { subscribe: jasmine.createSpy('subscribe') };
+            component.formTakeover = { open: jasmine.createSpy('open').and.returnValue({ instance: { closed } }) };
+            component.dialogService = { open: jasmine.createSpy('dialog') };
+            component.policyProgress = null;
+            component.policyId = 'p1';
+            component._destroy$ = {};
+            component.onDialog({ id: 'row-1', doc: { id: 'vc-1' } }, { name: 'doc', dialogContent: 'VC' });
+            expect(component.dialogService.open).not.toHaveBeenCalled();
+            const [, inputs] = component.formTakeover.open.calls.mostRecent().args;
+            expect(inputs.config.id).toBe('row-1');
+            expect('backLabel' in inputs.config).toBeFalse();
+            expect(closed.subscribe).toHaveBeenCalled();
+        });
+
+        it('drops the missing parts of the context line', () => {
+            expect(open({ policyName: () => '', activeStep: null }).subtitle).toBe('');
+            expect(open(null).subtitle).toBe('');
+        });
+    });
 });

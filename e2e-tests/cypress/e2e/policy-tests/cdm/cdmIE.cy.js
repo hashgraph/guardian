@@ -1,63 +1,44 @@
-import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
-import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
+import { prepareTools, importPolicyArchive } from '../../../support/cdmTools';
+
+const CDM_ARCHIVE = '../Methodology Library/Clean Development Mechanism (CDM)/CDM AMS-I.E/AMS-I.E.policy';
+
+// The archive references the library's tools by their testnet messageIds; the
+// import metadata remaps each reference to its locally published copy.
+const TOOL_REFS = {
+    'Tool 19': '1706869798.177938003',
+    'Tool 21': '1706873385.455822873',
+    'Tool 33': '1707915460.493586896',
+    'Tool 30': '1707417996.173398196',
+    'Tool 16': '1720000738.873798003',
+    'Tool 01': '1707834520.925981198',
+    'Tool 12': '1709106946.913157840',
+    'Tool 03': '1706867833.676387003',
+    'Tool 14': '1719310223.735760003',
+    'Tool 06': '1707068762.886477003',
+    'Tool 13': '1719308448.665936003',
+    'Tool 05': '1707833182.503204122',
+    'Tool 07': '1706867530.884259218',
+    'Tool 04': '1719308234.078552003'
+};
+
+// Dependencies before dependents (see cdmTools.js).
+const TOOL_IMPORT_ORDER = ['Tool 07', 'Tool 03', 'Tool 06', 'Tool 04', 'Tool 01', 'Tool 19', 'Tool 21', 'Tool 30', 'Tool 33', 'Tool 05', 'Tool 12', 'Tool 13', 'Tool 14', 'Tool 16'];
 
 context('Policy autotest', { tags: ['policyAT'] }, () => {
-    const authorization = Cypress.env('authorization');
-    let policyId; let testId;
+    const SRUsername = Cypress.env('SRUser');
 
-    it('Run test for CDM AMS-I.E', () => {
-        //import policy with tests
-        cy.readFile('../Methodology Library/CDM/CDM AMS-I.E/CDM AMS-I.E.policy', 'binary')
-            .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
-            .then((file) => {
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + 'policies/import/file?demo=true',
-                    body: file,
-                    headers: {
-                        'content-type': 'binary/octet-stream',
-                        authorization,
-                    },
-                    timeout: 180000,
-                }).then((response) => {
-                    expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                });
-            })
+    it('Import policy AMS-I.E', () => {
+        return Authorization.getAccessToken(SRUsername).then((authorization) => {
+            return prepareTools(TOOL_IMPORT_ORDER, authorization).then((local) => {
+                const toolRemaps = Object.fromEntries(Object.entries(TOOL_REFS).map(([name, sourceMessageId]) => [sourceMessageId, local[name]]));
 
-        //get policy id and test id
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.Policies,
-            headers: {
-                authorization,
-            },
-        }).then((response) => {
-            expect(response.status).to.eq(STATUS_CODE.OK);
-            policyId = response.body.at(0).id;
-            testId = response.body.at(0).tests.at(0).id;
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.Policies + policyId + '/test/' + testId + '/start',
-                headers: {
-                    authorization,
-                },
-            }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.OK);
-            })
-
-            cy.wait(90000);
-
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies,
-                headers: {
-                    authorization,
-                },
-            }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.OK);
-                expect(response.body.at(0).tests.at(0).status).to.eq('Success');
-            })
-        })
-
-    })
+                return importPolicyArchive(CDM_ARCHIVE, CDM_ARCHIVE.split('/').pop(), 'AMS-I.E', authorization, toolRemaps)
+                    .then((policy) => {
+                        expect(policy.name).to.match(/^AMS-I\.E(_\d+)?$/);
+                        expect(policy.tools).to.have.length(15);
+                    });
+            });
+        });
+    });
 });

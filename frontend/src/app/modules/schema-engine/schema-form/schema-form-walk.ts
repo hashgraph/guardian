@@ -23,7 +23,7 @@ export function walkFields(controls: IFieldControl<any>[] | null | undefined): I
     return targets;
 }
 
-export function fieldLabel(field: IFieldControl<any>): string {
+export function fieldLabel(field: { description?: string; title?: string; name: string }): string {
     return field.description || field.title || field.name;
 }
 

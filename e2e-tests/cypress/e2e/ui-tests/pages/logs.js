@@ -1,23 +1,22 @@
 import URL from '../../../support/GuardianUrls';
-import CommonElements from '../../../support/defaultUIElements';
+import { waitForPageReady } from '../../../support/pageReadiness';
 
 const LogsPageLocators = {
     LogModal: 'div.p-dialog',
-    detailsButton: 'Details',
+    detailsButton: 'button:contains("Details")',
     apllyBtn: 'button[label="Apply"]',
     messageField: '[placeholder="Message"]',
-    logData: 'tr.row-item',
-    typeSelect: '[ng-reflect-name="type"]',
+    logData: 'tr.guardian-grid-row',
+    typeSelect: 'p-select.message-type-container',
     typeDefaultOption: '[aria-label="Message Type"]',
-    typeOption: '.mat-option-text',
+    typeOption: '.p-select-option',
     logType: '.log-type',
     tableBody: 'tbody tr',
     calendarIcon: 'button.p-datepicker-trigger',
     todayDate: '.p-datepicker-today>span',
-    attributesSelect: '[formcontrolname="attributes"]',
+    attributesSelect: 'p-multiselect[placeholder="Attributes"]',
     attributesInput: '[ng-reflect-placeholder="Attributes"]',
-    attributesOption: 'p-multiselectitem[ng-reflect-option]',
-    attributeReflect: '[ng-reflect-name="attributes"]',
+    attributesOption: '.p-multiselect-option',
     startDate: '[formcontrolname="startDate"]',
     endDate: '[formcontrolname="endDate"]',
 };
@@ -25,12 +24,12 @@ const LogsPageLocators = {
 export class LogsPage {
 
     openLogsTab() {
-        cy.get(CommonElements.navBar).contains(CommonElements.administrationTab).click();
-        cy.get(CommonElements.navBar).contains(CommonElements.logsTab).click();
+        cy.visit(URL.Root + URL.Logs);
+        waitForPageReady(LogsPageLocators.messageField);
     }
 
     openDetailsModal() {
-        cy.contains(LogsPageLocators.detailsButton).first().click();
+        cy.get(LogsPageLocators.detailsButton).first().click();
     }
 
     verifyLogModalIsDisplayed() {
@@ -48,6 +47,7 @@ export class LogsPage {
 
     clickOnApplyButton() {
         cy.get(LogsPageLocators.apllyBtn).click();
+        // eslint-disable-next-line cypress/no-unnecessary-waiting -- brief settle for the table refetch after Apply; the following assertions retry on their own, this only keeps the first poll tight
         cy.wait(500);
     }
 
@@ -59,12 +59,12 @@ export class LogsPage {
 
     selectMessageType(type) {
         cy.get(LogsPageLocators.typeSelect).click();
-        cy.contains(type).click();
+        cy.get(LogsPageLocators.typeOption).contains(type).click();
     }
 
     verifyIfTypeColumnContains(type) {
         cy.get('body').then(($body) => {
-            if ($body.find(LogsPageLocators.logData).length != 0)
+            if ($body.find(LogsPageLocators.logData).length !== 0)
                 {cy.wrap($body).find(LogsPageLocators.logData).each($element => {
                     cy.wrap($element).find('td').eq(0).contains(type);
                 });}
@@ -107,9 +107,10 @@ export class LogsPage {
     }
 
     verifyIfAttributeFieldIsEmpty() {
-        cy.get(LogsPageLocators.attributeReflect).should(($element) => {
-            expect($element).not.to.have.attr('role', 'listbox');
-        });
+        // With no selection the multiselect label falls back to its "Attributes" placeholder.
+        cy.get(LogsPageLocators.attributesSelect)
+            .find('.p-multiselect-label')
+            .should('contain.text', 'Attributes');
     }
 
 }

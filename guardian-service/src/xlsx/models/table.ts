@@ -240,6 +240,11 @@ export class Table {
                 .setStyle(this.fieldHeadersStyle)
                 .setWidth(50)
         );
+        this._fieldHeaders.set(Dictionary.REPEATABLE_LINKS,
+            new TableHeader(Dictionary.REPEATABLE_LINKS, false)
+                .setStyle(this.fieldHeadersStyle)
+                .setWidth(40)
+        );
         // Separate from _fieldHeaders so aliases do not count as columns
         this._fieldAliases = new Map(LEGACY_FIELD_HEADERS);
 
@@ -340,6 +345,7 @@ export class Table {
         this._fieldHeaders.get(Dictionary.SUGGEST).setPoint(col++, row);
         this._fieldHeaders.get(Dictionary.ANSWER).setPoint(col++, row);
         this._fieldHeaders.get(Dictionary.IWA_PROPERTY).setPoint(col++, row);
+        this._fieldHeaders.get(Dictionary.REPEATABLE_LINKS).setPoint(col++, row);
 
         this.end = {
             c: this.start.c + this._fieldHeaders.size,

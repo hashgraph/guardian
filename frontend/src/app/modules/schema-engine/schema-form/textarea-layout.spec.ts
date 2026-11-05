@@ -10,8 +10,6 @@ import { IPFSService } from 'src/app/services/ipfs.service';
 import { FieldForm } from '../schema-form-model/field-form';
 import { SchemaFormComponent } from './schema-form.component';
 import { FormTextareaComponent } from './form-textarea/form-textarea.component';
-import { SchemaFormViewComponent } from '../schema-form-view/schema-form-view.component';
-import { ReadonlyTextareaComponent } from '../schema-form-view/readonly-textarea/readonly-textarea.component';
 
 describe('Textarea layout in the request form and the document view', () => {
     const long = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. '.repeat(12);
@@ -86,89 +84,5 @@ describe('Textarea layout in the request form and the document view', () => {
         expectLayout(fixture.nativeElement, false, null);
         style.remove();
         fixture.nativeElement.remove();
-    });
-
-    it('stretches every document-view textarea to its container and grows plain fields with their text', async () => {
-        const style = environment();
-        TestBed.configureTestingModule({
-            declarations: [SchemaFormViewComponent, ReadonlyTextareaComponent],
-            imports: [CommonModule, TableModule, Textarea],
-            providers: [{ provide: IPFSService, useValue: {} }, { provide: DialogService, useValue: {} }],
-            schemas: [NO_ERRORS_SCHEMA],
-        });
-        const fixture = TestBed.createComponent(SchemaFormViewComponent);
-        fixture.componentRef.setInput('private-fields', {});
-        fixture.componentRef.setInput('schema', schema());
-        fixture.componentRef.setInput('values', values);
-        fixture.nativeElement.style.display = 'block';
-        fixture.nativeElement.style.width = '900px';
-        document.body.appendChild(fixture.nativeElement);
-        fixture.detectChanges();
-        await new Promise((resolve) => setTimeout(resolve, 50));
-        fixture.detectChanges();
-        expectLayout(fixture.nativeElement);
-        const textareas: HTMLTextAreaElement[] = Array.from(fixture.nativeElement.querySelectorAll('textarea'));
-        expect(textareas.map((textarea) => [textarea.readOnly, getComputedStyle(textarea).opacity, getComputedStyle(textarea).cursor]))
-            .toEqual(textareas.map(() => [true, '0.6', 'not-allowed']));
-        style.remove();
-        fixture.nativeElement.remove();
-    });
-
-    it('fits a document-view textarea to its text again after it is shown and after its width changes', async () => {
-        const style = environment();
-        TestBed.configureTestingModule({
-            declarations: [ReadonlyTextareaComponent],
-            imports: [Textarea],
-        });
-        const frames = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve, 20))));
-        const wrapper = document.createElement('div');
-        wrapper.style.width = '900px';
-        wrapper.hidden = true;
-        document.body.appendChild(wrapper);
-        const fixture = TestBed.createComponent(ReadonlyTextareaComponent);
-        fixture.componentRef.setInput('value', long);
-        fixture.componentRef.setInput('autoResize', true);
-        wrapper.appendChild(fixture.nativeElement);
-        fixture.detectChanges();
-        await frames();
-        const textarea: HTMLTextAreaElement = fixture.nativeElement.querySelector('textarea');
-        wrapper.hidden = false;
-        await frames();
-        const wide = parseFloat(textarea.style.height);
-        expect(wide).toBeGreaterThan(40);
-        wrapper.style.width = '600px';
-        await frames();
-        expect(parseFloat(textarea.style.height)).toBeGreaterThan(wide);
-        style.remove();
-        wrapper.remove();
-    });
-
-    it('fits a document-view textarea measured while hidden and shown before the first size notification', async () => {
-        const style = environment();
-        TestBed.configureTestingModule({
-            declarations: [ReadonlyTextareaComponent],
-            imports: [Textarea],
-        });
-        const frames = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve, 20))));
-        const wrapper = document.createElement('div');
-        wrapper.style.width = '900px';
-        wrapper.hidden = true;
-        document.body.appendChild(wrapper);
-        const fixture = TestBed.createComponent(ReadonlyTextareaComponent);
-        fixture.componentRef.setInput('value', long);
-        fixture.componentRef.setInput('autoResize', true);
-        wrapper.appendChild(fixture.nativeElement);
-        fixture.detectChanges();
-        const textarea: HTMLTextAreaElement = fixture.nativeElement.querySelector('textarea');
-        expect(textarea.style.height).toBe('0px');
-        wrapper.hidden = false;
-        await frames();
-        const wide = parseFloat(textarea.style.height);
-        expect(wide).toBeGreaterThan(40);
-        wrapper.style.width = '600px';
-        await frames();
-        expect(parseFloat(textarea.style.height)).toBeGreaterThan(wide);
-        style.remove();
-        wrapper.remove();
     });
 });

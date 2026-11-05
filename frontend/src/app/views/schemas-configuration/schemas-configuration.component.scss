@@ -1,3 +1,4 @@
+$sc-accent: var(--guardian-schema-accent, var(--color-primary, #4169E2));
 @import '../../modules/formulas/formula-type';
 
 
@@ -50,8 +51,8 @@
     gap: 8px;
     padding: 7px 16px;
     border-bottom: 1px solid var(--guardian-border-color, #E1E7EF);
-    background: var(--guardian-warning-background, #FFF6E3);
-    color: color-mix(in srgb, var(--color-accent-yellow-1, #DA9B22) 70%, #000);
+    background: color-mix(in srgb, $sc-accent 10%, #fff);
+    color: color-mix(in srgb, $sc-accent 75%, #000);
     font-size: 13px;
     flex-shrink: 0;
 
@@ -60,7 +61,7 @@
     }
 
     strong {
-        color: color-mix(in srgb, var(--color-accent-yellow-1, #DA9B22) 82%, #000);
+        color: color-mix(in srgb, $sc-accent 75%, #000);
         font-weight: 600;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -80,7 +81,7 @@
 .st-applied-template-version {
     padding: 2px 6px;
     border-radius: 6px;
-    background: color-mix(in srgb, var(--color-accent-yellow-1, #DA9B22) 15%, transparent);
+    background: color-mix(in srgb, $sc-accent 15%, transparent);
     font-size: 11px;
     line-height: 14px;
 }
@@ -220,7 +221,7 @@
     min-width: 0;
     padding-bottom: 8px;
     margin-bottom: 8px;
-    border-bottom: 1px solid color-mix(in srgb, var(--color-accent-green-1, #19BE47) 20%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, $sc-accent 20%, transparent);
 }
 
 .st-schema-identity-icon {
@@ -663,7 +664,7 @@
     line-height: 12px;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: color-mix(in srgb, var(--color-accent-green-1, #19BE47) 82%, #000);
+    color: color-mix(in srgb, $sc-accent 75%, #000);
 }
 
 .st-guidelines-textarea {
@@ -1108,7 +1109,7 @@
     cursor: pointer;
     transition: border-color 0.15s;
 
-    &:hover { border-color: color-mix(in srgb, var(--color-primary, #4169E2) 35%, var(--guardian-border-color, #E1E7EF)); }
+    &:hover { border-color: color-mix(in srgb, $sc-accent 35%, var(--guardian-border-color, #E1E7EF)); }
 
     &.sc-schema-row--no-drop {
         cursor: default;
@@ -1117,13 +1118,13 @@
     }
 
     &.active {
-        border-color: color-mix(in srgb, var(--color-primary, #4169E2) 35%, var(--guardian-border-color, #E1E7EF));
-        background: var(--guardian-primary-background, #E1E7FA);
+        border-color: color-mix(in srgb, $sc-accent 35%, var(--guardian-border-color, #E1E7EF));
+        background: color-mix(in srgb, $sc-accent 10%, #fff);
 
-        .sc-schema-name { color: var(--color-primary, #4169E2); }
+        .sc-schema-name { color: $sc-accent; }
 
         .sc-schema-icon {
-            background: var(--color-primary, #4169E2);
+            background: $sc-accent;
             i { color: #fff; }
         }
     }
@@ -1329,8 +1330,8 @@
     width: 54px;
     height: 54px;
     border-radius: 12px;
-    background: var(--guardian-success-background, #EEFBF0);
-    color: var(--color-accent-green-1, #19BE47);
+    background: color-mix(in srgb, $sc-accent 10%, #fff);
+    color: $sc-accent;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1364,9 +1365,9 @@
     gap: 8px;
     margin-top: 6px;
     padding: 0 16px;
-    border: 1px solid var(--color-accent-green-1, #19BE47);
+    border: 1px solid $sc-accent;
     border-radius: 8px;
-    background: var(--color-accent-green-1, #19BE47);
+    background: $sc-accent;
     color: #fff;
     cursor: pointer;
     font-family: inherit;
@@ -1377,8 +1378,8 @@
     i { font-size: 13px; }
 
     &:hover {
-        background: color-mix(in srgb, var(--color-accent-green-1, #19BE47) 82%, #000);
-        border-color: color-mix(in srgb, var(--color-accent-green-1, #19BE47) 82%, #000);
+        background: color-mix(in srgb, $sc-accent 82%, #000);
+        border-color: color-mix(in srgb, $sc-accent 82%, #000);
     }
 
     &:active {
@@ -1426,31 +1427,31 @@
     transition: background 0.15s, outline 0.15s;
 
     &.sc-drop-active {
-        background: color-mix(in srgb, var(--color-accent-green-1, #19BE47) 4%, transparent);
+        background: color-mix(in srgb, $sc-accent 4%, transparent);
         outline: 2px dashed var(--color-primary, #4169E2);
         outline-offset: -6px;
         border-radius: var(--sc-radius-sm);
     }
 }
 
-/* ── Schema properties panel (root = green, sub = purple) ── */
+/* ── Schema properties panel (root and drilled sub-schema share the branding accent) ── */
 .sc-schema-props {
-    background: var(--guardian-success-background, #EEFBF0);
+    background: color-mix(in srgb, $sc-accent 10%, #fff);
     border-bottom: 1px solid var(--guardian-border-color, #E1E7EF);
     padding: 10px 16px 10px;
     flex-shrink: 0;
 
     &--sub {
-        background: var(--guardian-primary-background, #E1E7FA);
-        border-bottom-color: color-mix(in srgb, var(--color-primary, #4169E2) 35%, var(--guardian-border-color, #E1E7EF));
+        background: color-mix(in srgb, $sc-accent 10%, #fff);
+        border-bottom-color: color-mix(in srgb, $sc-accent 35%, var(--guardian-border-color, #E1E7EF));
 
-        .sc-schema-props-title { color: color-mix(in srgb, var(--color-primary, #4169E2) 82%, #000); }
-        .sc-schema-props-toggle { color: var(--color-primary, #4169E2); }
-        .sc-schema-props-label { color: var(--color-primary, #4169E2); }
+        .sc-schema-props-title { color: color-mix(in srgb, $sc-accent 82%, #000); }
+        .sc-schema-props-toggle { color: $sc-accent; }
+        .sc-schema-props-label { color: $sc-accent; }
         .sc-schema-props-name,
         .sc-schema-props-desc {
-            border-color: color-mix(in srgb, var(--color-primary, #4169E2) 25%, transparent);
-            &:focus { border-color: var(--color-primary, #4169E2); box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary, #4169E2) 12%, transparent); }
+            border-color: color-mix(in srgb, $sc-accent 25%, transparent);
+            &:focus { border-color: $sc-accent; box-shadow: 0 0 0 2px color-mix(in srgb, $sc-accent 12%, transparent); }
         }
     }
 
@@ -1486,7 +1487,7 @@
     gap: 5px;
     font-size: 10px;
     font-weight: 600;
-    color: color-mix(in srgb, var(--color-accent-green-1, #19BE47) 82%, #000);
+    color: color-mix(in srgb, $sc-accent 75%, #000);
     text-transform: uppercase;
     letter-spacing: 0.05em;
 
@@ -1522,7 +1523,7 @@
     border: none;
     cursor: pointer;
     font-family: inherit;
-    color: color-mix(in srgb, var(--color-accent-green-1, #19BE47) 82%, #000);
+    color: color-mix(in srgb, $sc-accent 75%, #000);
     opacity: 0.65;
     display: flex;
     align-items: center;
@@ -1540,7 +1541,7 @@
     font-weight: 500;
     padding: 0 12px;
     border-radius: var(--sc-radius-sm);
-    border: 1px solid color-mix(in srgb, var(--color-accent-green-1, #19BE47) 30%, transparent);
+    border: 1px solid color-mix(in srgb, $sc-accent 35%, transparent);
     background: var(--guardian-background, #fff);
     color: var(--guardian-font-color, #23252E);
     font-family: inherit;
@@ -1548,7 +1549,7 @@
 
     &:focus {
         border-color: var(--color-primary, #4169E2);
-        box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent-green-1, #19BE47) 12%, transparent);
+        box-shadow: 0 0 0 2px color-mix(in srgb, $sc-accent 20%, transparent);
     }
 }
 
@@ -1596,8 +1597,8 @@
     white-space: nowrap;
 
     &--v3 {
-        background: var(--guardian-success-background, #EEFBF0);
-        color: color-mix(in srgb, var(--color-accent-green-1, #19BE47) 82%, #000);
+        background: color-mix(in srgb, $sc-accent 10%, #fff);
+        color: color-mix(in srgb, $sc-accent 75%, #000);
     }
 
     &--v1 {
@@ -1611,7 +1612,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: color-mix(in srgb, var(--color-accent-green-1, #19BE47) 82%, #000);
+    color: color-mix(in srgb, $sc-accent 75%, #000);
     opacity: 0.75;
 }
 
@@ -1648,7 +1649,7 @@
     font-size: 13px;
     padding: 6px 10px;
     border-radius: var(--sc-radius-sm);
-    border: 1px solid color-mix(in srgb, var(--color-accent-green-1, #19BE47) 30%, transparent);
+    border: 1px solid color-mix(in srgb, $sc-accent 35%, transparent);
     background: var(--guardian-background, #fff);
     color: var(--guardian-font-color, #23252E);
     font-family: inherit;
@@ -1752,27 +1753,27 @@
     }
 
     &.active {
-        border: 1.5px solid var(--color-primary, #4169E2);
-        box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary, #4169E2) 10%, transparent);
+        border: 1.5px solid $sc-accent;
+        box-shadow: 0 0 0 3px color-mix(in srgb, $sc-accent 10%, transparent);
 
         .sc-field-type-icon {
-            background: var(--guardian-primary-background, #E1E7FA);
-            i { color: var(--color-primary, #4169E2); }
+            background: color-mix(in srgb, $sc-accent 10%, #fff);
+            i { color: $sc-accent; }
         }
 
         .sc-field-card-actions { opacity: 1; }
     }
 
     &.sc-field-card--ref {
-        border-color: color-mix(in srgb, var(--color-primary, #4169E2) 35%, var(--guardian-border-color, #E1E7EF));
+        border-color: color-mix(in srgb, $sc-accent 35%, var(--guardian-border-color, #E1E7EF));
         border-width: 1.5px;
-        background: var(--guardian-primary-background, #E1E7FA);
+        background: color-mix(in srgb, $sc-accent 10%, #fff);
 
-        &:hover { border-color: color-mix(in srgb, var(--color-primary, #4169E2) 45%, var(--guardian-border-color, #E1E7EF)); }
+        &:hover { border-color: color-mix(in srgb, $sc-accent 45%, var(--guardian-border-color, #E1E7EF)); }
 
         &.active {
-            border-color: var(--color-primary, #4169E2);
-            box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary, #4169E2) 12%, transparent);
+            border-color: $sc-accent;
+            box-shadow: 0 0 0 3px color-mix(in srgb, $sc-accent 12%, transparent);
         }
     }
 
@@ -1794,18 +1795,18 @@
 
     // Reorder: whole-card highlight (hover = this is where source lands)
     &.sc-field-card--drag-target {
-        outline: 2px dashed var(--color-primary, #4169E2);
+        outline: 2px dashed $sc-accent;
         outline-offset: -1px;
-        background: var(--guardian-success-background, #EEFBF0);
+        background: color-mix(in srgb, $sc-accent 10%, #fff);
     }
 
     // Sidebar insert: line between cards
     &.sc-field-card--drag-top {
-        border-top: 2px solid var(--color-primary, #4169E2);
+        border-top: 2px solid $sc-accent;
     }
 
     &.sc-field-card--drag-bot {
-        border-bottom: 2px solid var(--color-primary, #4169E2);
+        border-bottom: 2px solid $sc-accent;
     }
 }
 
@@ -1815,7 +1816,7 @@
     gap: 4px;
     padding: 4px 10px;
     border-radius: 6px;
-    background: var(--color-primary, #4169E2);
+    background: $sc-accent;
     color: #fff;
     border: none;
     font-size: 12px;
@@ -1864,8 +1865,8 @@
     align-items: center;
     gap: 2px;
     padding: 8px 14px;
-    background: var(--guardian-primary-background, #E1E7FA);
-    border-bottom: 1px solid color-mix(in srgb, var(--color-primary, #4169E2) 35%, var(--guardian-border-color, #E1E7EF));
+    background: color-mix(in srgb, $sc-accent 10%, #fff);
+    border-bottom: 1px solid color-mix(in srgb, $sc-accent 35%, var(--guardian-border-color, #E1E7EF));
     flex-shrink: 0;
     flex-wrap: wrap;
 }
@@ -1876,7 +1877,7 @@
     gap: 4px;
     font-size: 14px;
     font-weight: 500;
-    color: var(--color-primary, #4169E2);
+    color: $sc-accent;
     background: none;
     border: none;
     cursor: pointer;
@@ -1886,15 +1887,15 @@
     transition: background 0.12s;
 
     i { font-size: 14px; }
-    &:hover { background: color-mix(in srgb, var(--color-primary, #4169E2) 10%, transparent); }
+    &:hover { background: color-mix(in srgb, $sc-accent 10%, transparent); }
 
     &--root { color: var(--guardian-font-color-secondary, #848FA9); }
-    &--current { color: var(--color-primary, #4169E2); font-weight: 600; cursor: default; &:hover { background: none; } }
+    &--current { color: $sc-accent; font-weight: 600; cursor: default; &:hover { background: none; } }
 }
 
 .sc-drill-sep {
     font-size: 10px;
-    color: color-mix(in srgb, var(--color-primary, #4169E2) 40%, var(--guardian-border-color, #E1E7EF));
+    color: color-mix(in srgb, $sc-accent 40%, var(--guardian-border-color, #E1E7EF));
 }
 
 .sc-drill-content {
@@ -1929,12 +1930,12 @@
 
     &.active {
         background: var(--guardian-background, #fff);
-        border: 1.5px solid var(--color-primary, #4169E2);
-        box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent-green-1, #19BE47) 10%, transparent);
+        border: 1.5px solid $sc-accent;
+        box-shadow: 0 0 0 3px color-mix(in srgb, $sc-accent 10%, transparent);
 
         .sc-drill-card-icon {
-            background: var(--guardian-success-background, #EEFBF0);
-            i { color: var(--color-primary, #4169E2); }
+            background: color-mix(in srgb, $sc-accent 10%, #fff);
+            i { color: $sc-accent; }
         }
 
         .sc-drill-card-actions { opacity: 1; }
@@ -1942,19 +1943,19 @@
 
     /* Sub-schema ref field: left accent stripe instead of full border */
     &--ref {
-        border-left: 3px solid var(--color-primary, #4169E2);
-        background: var(--guardian-primary-background, #E1E7FA);
+        border-left: 3px solid $sc-accent;
+        background: color-mix(in srgb, $sc-accent 10%, #fff);
 
-        &:hover { background: var(--guardian-background, #fff); border-left-color: color-mix(in srgb, var(--color-primary, #4169E2) 82%, #000); }
+        &:hover { background: var(--guardian-background, #fff); border-left-color: color-mix(in srgb, $sc-accent 82%, #000); }
 
         &.active {
-            border-color: var(--color-primary, #4169E2);
+            border-color: $sc-accent;
             border-left-width: 3px;
-            box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary, #4169E2) 10%, transparent);
+            box-shadow: 0 0 0 3px color-mix(in srgb, $sc-accent 10%, transparent);
 
             .sc-drill-card-icon {
-                background: var(--guardian-primary-background, #E1E7FA);
-                i { color: var(--color-primary, #4169E2); }
+                background: color-mix(in srgb, $sc-accent 10%, #fff);
+                i { color: $sc-accent; }
             }
         }
     }
@@ -1976,17 +1977,17 @@
     }
 
     &--drag-target {
-        outline: 2px dashed var(--color-primary, #4169E2);
+        outline: 2px dashed $sc-accent;
         outline-offset: -1px;
-        background: var(--guardian-primary-background, #E1E7FA);
+        background: color-mix(in srgb, $sc-accent 10%, #fff);
     }
 
     &--drag-top {
-        border-top: 2px solid var(--color-primary, #4169E2);
+        border-top: 2px solid $sc-accent;
     }
 
     &--drag-bot {
-        border-bottom: 2px solid var(--color-primary, #4169E2);
+        border-bottom: 2px solid $sc-accent;
     }
 }
 
@@ -2003,8 +2004,8 @@
     i { font-size: 14px; color: var(--guardian-font-color-secondary, #848FA9); }
 
     &--ref {
-        background: var(--guardian-primary-background, #E1E7FA);
-        i { color: var(--color-primary, #4169E2); }
+        background: color-mix(in srgb, $sc-accent 10%, #fff);
+        i { color: $sc-accent; }
     }
 }
 
@@ -2058,7 +2059,7 @@
     width: 24px;
     height: 24px;
     border-radius: 6px;
-    background: var(--color-primary, #4169E2);
+    background: $sc-accent;
     color: #fff;
     border: none;
     font-size: 11px;
@@ -2089,23 +2090,23 @@
 
     /* Optional: light purple tint */
     &--opt {
-        background: color-mix(in srgb, var(--color-primary, #4169E2) 7%, transparent);
-        border-color: color-mix(in srgb, var(--color-primary, #4169E2) 18%, transparent);
-        color: var(--color-primary, #4169E2);
+        background: color-mix(in srgb, $sc-accent 7%, transparent);
+        border-color: color-mix(in srgb, $sc-accent 18%, transparent);
+        color: $sc-accent;
     }
 
     /* Array: purple tint */
     &--arr {
-        background: color-mix(in srgb, var(--color-primary, #4169E2) 7%, transparent);
-        border-color: color-mix(in srgb, var(--color-primary, #4169E2) 18%, transparent);
-        color: var(--color-primary, #4169E2);
+        background: color-mix(in srgb, $sc-accent 7%, transparent);
+        border-color: color-mix(in srgb, $sc-accent 18%, transparent);
+        color: $sc-accent;
     }
 
     /* Condition: slightly stronger purple */
     &--cond {
-        background: color-mix(in srgb, var(--color-primary, #4169E2) 12%, transparent);
-        border-color: color-mix(in srgb, var(--color-primary, #4169E2) 25%, transparent);
-        color: var(--color-primary, #4169E2);
+        background: color-mix(in srgb, $sc-accent 12%, transparent);
+        border-color: color-mix(in srgb, $sc-accent 25%, transparent);
+        color: $sc-accent;
         display: inline-flex;
         align-items: center;
         gap: 3px;
@@ -2114,22 +2115,22 @@
 
     /* Data type: muted purple-tinted */
     &--type {
-        background: color-mix(in srgb, var(--color-primary, #4169E2) 6%, transparent);
-        border-color: color-mix(in srgb, var(--color-primary, #4169E2) 14%, transparent);
-        color: var(--color-primary, #4169E2);
+        background: color-mix(in srgb, $sc-accent 6%, transparent);
+        border-color: color-mix(in srgb, $sc-accent 14%, transparent);
+        color: $sc-accent;
     }
 
     /* Referenced schema name — solid purple */
     &--ref-name {
-        background: var(--color-primary, #4169E2);
-        border-color: color-mix(in srgb, var(--color-primary, #4169E2) 82%, #000);
+        background: $sc-accent;
+        border-color: color-mix(in srgb, $sc-accent 82%, #000);
         color: #fff;
         max-width: 120px;
         overflow: hidden;
         text-overflow: ellipsis;
     }
     &--hidden { background: var(--guardian-grey-background, #F9FAFC); border-color: var(--guardian-border-color, #E1E7EF); color: var(--guardian-font-color-secondary, #848FA9); }
-    &--auto { background: var(--guardian-warning-background, #FFF6E3); border-color: color-mix(in srgb, var(--color-primary, #4169E2) 10%, transparent); color: var(--color-primary, #4169E2); }
+    &--auto { background: var(--guardian-warning-background, #FFF6E3); border-color: color-mix(in srgb, $sc-accent 10%, transparent); color: $sc-accent; }
     &--upd    { background: var(--guardian-success-background, #EEFBF0); border-color: color-mix(in srgb, var(--color-accent-green-1, #19BE47) 20%, transparent); color: color-mix(in srgb, var(--color-accent-green-1, #19BE47) 82%, #000); }
     &--priv { background: var(--guardian-info-background, #E9F1FF); border-color: color-mix(in srgb, var(--color-accent-blue-1, #2D6CDF) 25%, transparent); color: color-mix(in srgb, var(--color-accent-blue-1, #2D6CDF) 82%, #000); }
 }
@@ -2177,8 +2178,8 @@
     }
 
     &--ref {
-        background: var(--guardian-primary-background, #E1E7FA);
-        i { color: var(--color-primary, #4169E2); }
+        background: color-mix(in srgb, $sc-accent 10%, #fff);
+        i { color: $sc-accent; }
     }
 }
 
@@ -2226,7 +2227,7 @@
 
     &--req  { background: var(--guardian-failure-background, #FFEAEA); color: color-mix(in srgb, var(--color-accent-red-1, #FF432A) 82%, #000); }
     &--opt  { background: var(--guardian-grey-background, #F9FAFC); color: var(--guardian-font-color-secondary, #848FA9); }
-    &--arr  { background: var(--guardian-primary-background, #E1E7FA); color: var(--color-primary, #4169E2); }
+    &--arr  { background: color-mix(in srgb, $sc-accent 10%, #fff); color: $sc-accent; }
     &--type { background: var(--guardian-grey-background, #F9FAFC); color: var(--guardian-font-color-secondary, #848FA9); }
     &--cond,
     &--formula {
@@ -2235,8 +2236,8 @@
         gap: 3px;
     }
     &--cond {
-        background: var(--guardian-primary-background, #E1E7FA);
-        color: var(--color-primary, #4169E2);
+        background: color-mix(in srgb, $sc-accent 10%, #fff);
+        color: $sc-accent;
         i { font-size: 9px; }
     }
     &--cond-member {
@@ -2249,14 +2250,14 @@
     }
     /* Referenced schema name — solid purple, same style as v5 subschema-ref-badge */
     &--ref-name {
-        background: var(--color-primary, #4169E2);
+        background: $sc-accent;
         color: #fff;
         max-width: 160px;
         overflow: hidden;
         text-overflow: ellipsis;
     }
     &--hidden { background: var(--guardian-grey-background, #F9FAFC); color: var(--guardian-font-color-secondary, #848FA9); }
-    &--auto { background: var(--guardian-primary-background, #E1E7FA); color: color-mix(in srgb, var(--color-primary, #4169E2) 82%, #000); }
+    &--auto { background: color-mix(in srgb, $sc-accent 10%, #fff); color: color-mix(in srgb, $sc-accent 82%, #000); }
     &--upd { background: var(--guardian-success-background, #EEFBF0); color: color-mix(in srgb, var(--color-accent-green-1, #19BE47) 82%, #000); }
     &--priv { background: var(--guardian-info-background, #E9F1FF); color: color-mix(in srgb, var(--color-accent-blue-1, #2D6CDF) 82%, #000); }
     &--formula {
@@ -2349,13 +2350,13 @@
     &:hover {
         border-color: var(--color-primary, #4169E2);
         color: var(--color-primary, #4169E2);
-        background: var(--guardian-success-background, #EEFBF0);
+        background: color-mix(in srgb, $sc-accent 10%, #fff);
     }
 
     &--reorder {
         border-color: var(--color-primary, #4169E2);
         color: var(--color-primary, #4169E2);
-        background: var(--guardian-success-background, #EEFBF0);
+        background: color-mix(in srgb, $sc-accent 10%, #fff);
     }
 
     &--disabled {
@@ -2491,8 +2492,8 @@
     font-weight: 500;
     padding: 2px 8px;
     border-radius: 20px;
-    background: var(--guardian-success-background, #EEFBF0);
-    color: color-mix(in srgb, var(--color-accent-green-1, #19BE47) 82%, #000);
+    background: color-mix(in srgb, $sc-accent 10%, #fff);
+    color: color-mix(in srgb, $sc-accent 75%, #000);
     text-transform: capitalize;
 }
 
@@ -2503,8 +2504,8 @@
     margin: 12px 14px 0;
     padding: 9px 10px;
     border-radius: 8px;
-    background: var(--guardian-warning-background, #FFF6E3);
-    color: color-mix(in srgb, var(--color-accent-yellow-1, #DA9B22) 70%, #000);
+    background: color-mix(in srgb, $sc-accent 22%, #fff);
+    color: color-mix(in srgb, $sc-accent 60%, #000);
     font-size: 12px;
     line-height: 16px;
 
@@ -2638,7 +2639,7 @@
     &:not([readonly]):focus {
         border-color: var(--color-primary, #4169E2);
         background: var(--guardian-background, #fff);
-        box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent-green-1, #19BE47) 10%, transparent);
+        box-shadow: 0 0 0 3px color-mix(in srgb, $sc-accent 10%, transparent);
     }
 
     &[readonly] {
@@ -2996,7 +2997,7 @@
     &:hover {
         border-color: var(--color-primary, #4169E2);
         color: var(--color-primary, #4169E2);
-        background: var(--guardian-success-background, #EEFBF0);
+        background: color-mix(in srgb, $sc-accent 10%, #fff);
     }
 }
 
@@ -3416,7 +3417,7 @@
     &:hover:not(:disabled) {
         border-color: var(--color-primary, #4169E2);
         color: var(--color-primary, #4169E2);
-        background: color-mix(in srgb, var(--color-accent-green-1, #19BE47) 5%, transparent);
+        background: color-mix(in srgb, $sc-accent 5%, transparent);
     }
 
     &:disabled {
@@ -3974,7 +3975,7 @@
     &--drag-target {
         outline: 2px dashed var(--color-primary, #4169E2);
         outline-offset: -1px;
-        background: var(--guardian-success-background, #EEFBF0);
+        background: color-mix(in srgb, $sc-accent 10%, #fff);
     }
 }
 
@@ -4817,6 +4818,13 @@
     .sc-array-link-field-hint {
         color: var(--guardian-font-color-secondary);
         font-size: 11px;
+        line-height: 1.35;
+    }
+
+    .sc-array-link-field-error {
+        color: var(--color-accent-red-1);
+        font-size: 11px;
+        font-weight: 500;
         line-height: 1.35;
     }
 

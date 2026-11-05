@@ -32,30 +32,35 @@
         <div class="guardian-loading-image"></div>
       </div>
     }
-    @if (((isVcDocument || isVpDocument) && toggle) || isCompare) {
+    @let barShown = ((isVcDocument || isVpDocument) && toggle) || isCompare;
+    @if (barShown || ((isVcDocument || isVpDocument) && viewDocument === true)) {
       <div class="view-dialog-bar">
         @if ((isVcDocument || isVpDocument) && toggle) {
-          <p-selectButton
-            class="guardian-select-button"
-            [options]="viewDocumentOptions"
-            [(ngModel)]="viewDocument"
-            optionLabel="label"
-            optionValue="value"
-            [unselectable]="true"
-            [disabled]="false"
-            >
-            <ng-template let-item pTemplate>
-              <div class="guardian-select-button-item">
-                <svg-icon
-                  class="svg-icon-16"
-                src="/assets/images/icons/16/{{item.icon}}.svg"></svg-icon>
-                <span>{{item.label}}</span>
-              </div>
-            </ng-template>
-          </p-selectButton>
+          <div class="form-toggle" role="group" aria-label="Document view">
+            @for (item of viewDocumentOptions; track item.value) {
+              <button
+                type="button"
+                [class.on]="viewDocument === item.value"
+                [attr.aria-pressed]="viewDocument === item.value"
+                (click)="setView(item.value)">{{ item.label }}</button>
+            }
+          </div>
         }
         <div class="option-buttons">
-          @if (messageId && !dryRun && canExport) {
+          @if ((isVcDocument || isVpDocument) && viewDocument === true) {
+            @let showMeta = formPreferences.showFieldMetadata$ | async;
+            <button
+              type="button"
+              class="field-metadata-toggle"
+              [attr.aria-pressed]="!!showMeta"
+              (click)="formPreferences.setShowFieldMetadata(!formPreferences.showFieldMetadata)">
+              @if (showMeta) {
+                <i class="pi pi-check" aria-hidden="true"></i>
+              }
+              Field metadata
+            </button>
+          }
+          @if (barShown && messageId && !dryRun && canExport) {
             <button
               (click)="onFindInExport()"
             class="guardian-button guardian-button-secondary">Export</button>
@@ -67,7 +72,7 @@
               class="compare-container"
             buttonStyle="guardian"></app-compare-btn>
           }
-          @if (allVcDocs.length > 1) {
+          @if (barShown && allVcDocs.length > 1) {
             <p-select
               [options]="versionOptions"
               [(ngModel)]="selectedVersionIndex"
@@ -82,8 +87,9 @@
       </div>
     }
     <div class="view-dialog-content">
-      @if (viewDocument === true) {
-        @if (!loading) {
+      <!-- Kept alive and hidden on the other views, so flipping back doesn't reload the document -->
+      @if (!loading && documentMounted) {
+        <div class="view-dialog-document" [hidden]="viewDocument !== true">
           <app-document-view
             [policyId]="policyId"
             [documentId]="documentId"
@@ -94,7 +100,7 @@
             [schema]="schema"
             [type]="type"
           [dialogContext]="'viewer'"></app-document-view>
-        }
+        </div>
       }
       @if (viewDocument === false) {
         @if (fileSize <= 1) {
@@ -140,7 +146,7 @@
     <div class="dialog-button">
       <button
         (click)="onDownloadJsonFile()"
-      class="guardian-button guardian-button-secondary">Download</button>
+      class="guardian-button guardian-button-secondary"><i class="pi pi-download" aria-hidden="true"></i> Download</button>
     </div>
     <div class="dialog-button">
       <button

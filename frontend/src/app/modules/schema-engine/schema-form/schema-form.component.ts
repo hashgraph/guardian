@@ -17,9 +17,11 @@ import { FormulaItem } from 'src/app/modules/formulas/models/formula-tree';
 import { FieldForm, IFieldControl, IFieldIndexControl } from '../schema-form-model/field-form';
 import { getErrorMessage, showError } from './schema-form-errors';
 import { countRequired } from './schema-form-completion';
+import { baseMetaTags, metaType } from './schema-form-metadata';
+import { recordSummary } from './schema-form-records';
 import { getMinutesAgoStream } from 'src/app/utils/autosave-utils';
 import { withNewTabLinks } from '../rich-text-editor/rich-text-sanitizer';
-import { markdownToHtml } from '../rich-text-editor/markdown';
+import { markdownToHtml, markdownToPlainText } from '../rich-text-editor/markdown';
 import {
     GeoOption,
     GeoResolverField,
@@ -690,19 +692,6 @@ export class SchemaFormComponent implements OnInit, DoCheck {
             && !this.isGeoLocation(item) && this.isChosen(item) && typeof value !== 'object';
     }
 
-    public copyValue(item: IFieldControl<any>): void {
-        const value = item.control?.value;
-        if (value !== undefined && value !== null) {
-            this.writeClipboard(String(value));
-        }
-    }
-
-    private writeClipboard(text: string): void {
-        if (typeof navigator !== 'undefined' && navigator.clipboard) {
-            navigator.clipboard.writeText(text).catch(() => { });
-        }
-    }
-
     public get showMetadata(): boolean {
         return !!this.formModel?.rootForm?.showMetadata;
     }
@@ -711,10 +700,7 @@ export class SchemaFormComponent implements OnInit, DoCheck {
     public metaType(item: IFieldControl<any>): string {
         let type = this.metaTypeCache.get(item);
         if (type === undefined) {
-            const base = item.customType
-                || (item.isRef ? 'object · sub-schema' : null)
-                || (item.format ? `${item.type} · ${item.format}` : String(item.type || ''));
-            type = item.isArray ? `array · ${base}` : base;
+            type = metaType(item);
             this.metaTypeCache.set(item, type);
         }
         return type;
@@ -740,20 +726,7 @@ export class SchemaFormComponent implements OnInit, DoCheck {
     }
 
     private buildMetaTags(item: IFieldControl<any>): { text: string; title?: string }[] {
-        const tags: { text: string; title?: string }[] = [];
-        const values: any[] = Array.isArray(item.enumValues) ? item.enumValues : [];
-        if (values.length) {
-            tags.push({
-                text: `${values.length} allowed value${values.length === 1 ? '' : 's'}`,
-                title: values.map((value) => String(value)).join(', ')
-            });
-        }
-        if (item.unit) {
-            tags.push({ text: `unit ${item.unit}` });
-        }
-        if (item.default !== undefined && item.default !== null && item.default !== '' && typeof item.default !== 'object') {
-            tags.push({ text: `default ${item.default}` });
-        }
+        const tags: { text: string; title?: string }[] = baseMetaTags(item);
         if (this.formModel?.isConditional(item)) {
             tags.push({ text: 'conditional' });
         }
@@ -768,13 +741,6 @@ export class SchemaFormComponent implements OnInit, DoCheck {
 
     public metaPath(item: IFieldControl<any>): string {
         return this.formModel.metadataPath(item);
-    }
-
-    public copyPath(item: IFieldControl<any>): void {
-        const path = this.metaPath(item);
-        if (path) {
-            this.writeClipboard(path);
-        }
     }
 
     /** Required counts of a card, cached per card until its subtree or the set of controls changes (S1). */
@@ -830,22 +796,17 @@ export class SchemaFormComponent implements OnInit, DoCheck {
     }
 
     private buildRecordText(item: IFieldControl<any>, listItem: IFieldIndexControl<any>): { title: string; sub: string } {
-        const values: string[] = [];
-        for (const field of listItem.model?.controls || []) {
-            const value = field.control?.value;
-            if (field.isRef || field.isArray || value === null || value === undefined || value === '' || typeof value === 'object') {
-                continue;
-            }
-            values.push(String(value));
-            if (values.length === 4) {
-                break;
-            }
+        const geo = ['geo', 'sentinel'].includes(item.customType || '');
+        const values = (listItem.model?.controls || []).map((field: IFieldControl<any>) =>
+            field.isRef || field.isArray ? undefined
+                : this.isRichText(field) ? markdownToPlainText(field.control?.value) : field.control?.value
+        );
+        const summary = recordSummary(values, geo ? `${item.description} #${listItem.index2}` : `New ${item.description}`);
+        const filled = values.some((value: unknown) => value !== null && value !== undefined && value !== '' && typeof value !== 'object');
+        if (!filled && !geo) {
+            summary.sub = 'Not filled in yet';
         }
-        if (!values.length) {
-            const geo = ['geo', 'sentinel'].includes(item.customType || '');
-            return { title: geo ? `${item.description} #${listItem.index2}` : `New ${item.description}`, sub: geo ? '' : 'Not filled in yet' };
-        }
-        return { title: values[0], sub: values.slice(1).join(' · ') };
+        return summary;
     }
 
     public toggleOpen(item: IFieldControl<any> | IFieldIndexControl<any>, open: boolean): void {

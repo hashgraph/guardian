@@ -8,6 +8,7 @@ import { IPFSService } from 'src/app/services/ipfs.service';
 import { FieldForm, IFieldControl } from '../schema-form-model/field-form';
 import { FormTextareaComponent } from './form-textarea/form-textarea.component';
 import { SchemaFormComponent } from './schema-form.component';
+import { baseMetaTags, metaType } from './schema-form-metadata';
 
 describe('SchemaFormComponent field metadata', () => {
     const document: any = {
@@ -154,5 +155,33 @@ describe('SchemaFormComponent field metadata', () => {
         fixture.componentRef.setInput('rules', { [name.fullPath]: { status: 'Success', rules: [] } });
         fixture.detectChanges();
         expect(view.metaTags(name).map((tag) => tag.text)).toEqual(['schema rule']);
+    });
+});
+
+describe('metaType and baseMetaTags', () => {
+    it('names the type, the format and the custom type', () => {
+        expect(metaType({ type: 'string' })).toBe('string');
+        expect(metaType({ type: 'string', format: 'date' })).toBe('string · date');
+        expect(metaType({ type: 'string', customType: 'richText' })).toBe('richText');
+    });
+
+    it('calls a sub-schema "object · sub-schema" and prefixes an array', () => {
+        expect(metaType({ type: '#a', isRef: true })).toBe('object · sub-schema');
+        expect(metaType({ type: '#a', isRef: true, isArray: true })).toBe('array · object · sub-schema');
+        expect(metaType({ type: 'number', isArray: true })).toBe('array · number');
+    });
+
+    it('lists the allowed values, the unit and the default', () => {
+        expect(baseMetaTags({ enumValues: ['A', 'B'], unit: 'kg', default: 3 })).toEqual([
+            { text: '2 allowed values', title: 'A, B' },
+            { text: 'unit kg' },
+            { text: 'default 3' },
+        ]);
+    });
+
+    it('skips an empty default and an object default', () => {
+        expect(baseMetaTags({ default: '' })).toEqual([]);
+        expect(baseMetaTags({ default: { a: 1 } })).toEqual([]);
+        expect(baseMetaTags({ enumValues: ['A'] })[0].text).toBe('1 allowed value');
     });
 });

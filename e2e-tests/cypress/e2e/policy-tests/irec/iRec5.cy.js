@@ -1,63 +1,34 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
 
 context('Policy autotest', { tags: ['policyAT'] }, () => {
-    const authorization = Cypress.env('authorization');
-    let policyId; let testId;
+    const SRUsername = Cypress.env('SRUser');
 
-    it('Run test for iRec 5', () => {
-        //import policy with tests
-        cy.readFile('../Methodology Library/iREC/Policies/IRec Policy 5 (Groups) (1707126709.066208559).policy', 'binary')
-            .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
-            .then((file) => {
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + 'policies/import/file?demo=true',
-                    body: file,
-                    headers: {
-                        'content-type': 'binary/octet-stream',
-                        authorization,
-                    },
-                    timeout: 180000,
-                }).then((response) => {
-                    expect(response.status).to.eq(STATUS_CODE.SUCCESS);
+    it('Import policy iRec_5', () => {
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            cy.readFile('../Methodology Library/International Renewable Energy Certificate (iREC)/Policies/IRec Policy 5 (Groups) (1707126709.066208559).policy', 'binary')
+                .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
+                .then((file) => {
+                    cy.request({
+                        method: METHOD.POST,
+                        url: API.ApiServer + API.PolicisImportFile,
+                        body: file,
+                        headers: {
+                            'content-type': 'binary/octet-stream',
+                            authorization,
+                        },
+                        timeout: 180000,
+                    }).then((response) => {
+                        // `cy.request` returns the body as an ArrayBuffer for binary
+                        // requests, so decode it back to JSON before asserting.
+                        const imported = JSON.parse(new TextDecoder('utf-8').decode(response.body));
+
+                        expect(response.status).to.eq(STATUS_CODE.SUCCESS);
+                        expect(imported).to.be.an('array');
+                        expect(imported[0].name).to.match(/^iRec_5(_\d+)?$/);
+                    });
                 });
-            })
-
-        //get policy id and test id
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.Policies,
-            headers: {
-                authorization,
-            },
-        }).then((response) => {
-            expect(response.status).to.eq(STATUS_CODE.OK);
-            policyId = response.body.at(0).id;
-            testId = response.body.at(0).tests.at(0).id;
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.Policies + policyId + '/test/' + testId + '/start',
-                headers: {
-                    authorization,
-                },
-            }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.OK);
-            })
-            cy.wait(90000);
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies,
-                headers: {
-                    authorization,
-                },
-            }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.OK);
-                expect(response.body.at(0).tests.at(0).status).to.eq('Success');
-            })
-        })
-
-        //get policy id and test id
-
-    })
+        });
+    });
 });

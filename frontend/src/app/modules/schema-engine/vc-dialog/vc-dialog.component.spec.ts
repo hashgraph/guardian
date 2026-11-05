@@ -66,11 +66,39 @@ describe('VCViewerDialog', () => {
             fixture.detectChanges();
         };
 
-        it('removes the form of a document on the code view', fakeAsync(() => {
+        it('keeps the document alive, hidden, on the code view', fakeAsync(() => {
             const fixture = render({ type: 'VC', viewDocument: true, document: { id: 'vc-1' } });
             expect(view(fixture).preview).toBeUndefined();
+            const before = view(fixture);
             show(fixture, false);
-            expect(view(fixture)).toBeNull();
+            expect(view(fixture)).toBe(before);
+            expect(view(fixture).closest('.view-dialog-document').hidden).toBeTrue();
+            show(fixture, true);
+            expect(view(fixture)).toBe(before);
+            expect(view(fixture).closest('.view-dialog-document').hidden).toBeFalse();
+        }));
+
+        const toggleButtons = (fixture: ComponentFixture<VCViewerDialog>) =>
+            Array.from(fixture.nativeElement.querySelectorAll('.view-dialog-bar .form-toggle button')) as HTMLButtonElement[];
+
+        it('renders one toggle button per view option, including appended ones', fakeAsync(() => {
+            const fixture = render({
+                type: 'VC',
+                viewDocument: true,
+                document: { id: 'vc-1' },
+                additionalOptions: [{ label: 'Map', value: 'map', icon: 'file' }],
+            });
+            expect(toggleButtons(fixture).map((b) => b.textContent?.trim())).toEqual(['Document', 'JSON', 'Map']);
+            expect(toggleButtons(fixture).map((b) => b.getAttribute('aria-pressed'))).toEqual(['true', 'false', 'false']);
+        }));
+
+        it('switches the view when a toggle button is clicked', fakeAsync(() => {
+            const fixture = render({ type: 'VC', viewDocument: true, document: { id: 'vc-1' } });
+            toggleButtons(fixture)[1].click();
+            fixture.componentRef.changeDetectorRef.markForCheck();
+            fixture.detectChanges();
+            expect(fixture.componentInstance.viewDocument).toBeFalse();
+            expect(toggleButtons(fixture).map((b) => b.getAttribute('aria-pressed'))).toEqual(['false', 'true']);
         }));
 
         it('adds no preview overlay to the document dialog', fakeAsync(() => {

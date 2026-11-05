@@ -1,0 +1,17 @@
+@use '../sections' as sections;
+
+:host {
+    @include sections.sf-vars;
+    display: block;
+}
+
+.sf-overview {
+    font-family: Inter;
+    font-size: 14px;
+    color: var(--guardian-font-color);
+}
+
+@include sections.sf-tiles;
+@include sections.sf-cards;
+@include sections.sf-badges;
+@include sections.sf-section-links;

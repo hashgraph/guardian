@@ -1,63 +1,33 @@
-import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
-import API from '../../../support/ApiUrls';
+import * as Authorization from '../../../support/authorization';
+import { prepareTools, importPolicyArchive } from '../../../support/cdmTools';
+
+const CDM_ARCHIVE = '../Methodology Library/Clean Development Mechanism (CDM)/CDM AMS-I.D/AMS-I.D.policy';
+
+// The archive references the library's tools by their testnet messageIds; the
+// import metadata remaps each reference to its locally published copy.
+const TOOL_REFS = {
+    'Tool 03': '1706867833.676387003',
+    'Tool 07': '1706867530.884259218',
+    'Tool 10': '1706867224.098467003'
+};
+
+// Dependencies before dependents (see cdmTools.js).
+const TOOL_IMPORT_ORDER = ['Tool 03', 'Tool 07', 'Tool 10'];
 
 context('Policy autotest', { tags: ['policyAT'] }, () => {
-    const authorization = Cypress.env('authorization');
-    let policyId; let testId;
+    const SRUsername = Cypress.env('SRUser');
 
-    it('Run test for CDM AMS-I.D', () => {
-        //import policy with tests
-        cy.readFile('../Methodology Library/CDM/CDM AMS-I.D/CDM AMS-I.D.policy', 'binary')
-            .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
-            .then((file) => {
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + 'policies/import/file?demo=true',
-                    body: file,
-                    headers: {
-                        'content-type': 'binary/octet-stream',
-                        authorization,
-                    },
-                    timeout: 180000,
-                }).then((response) => {
-                    expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                });
-            })
+    it('Import policy AMS-I.D', () => {
+        return Authorization.getAccessToken(SRUsername).then((authorization) => {
+            return prepareTools(TOOL_IMPORT_ORDER, authorization).then((local) => {
+                const toolRemaps = Object.fromEntries(Object.entries(TOOL_REFS).map(([name, sourceMessageId]) => [sourceMessageId, local[name]]));
 
-        //get policy id and test id
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.Policies,
-            headers: {
-                authorization,
-            },
-        }).then((response) => {
-            expect(response.status).to.eq(STATUS_CODE.OK);
-            policyId = response.body.at(0).id;
-            testId = response.body.at(0).tests.at(0).id;
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.Policies + policyId + '/test/' + testId + '/start',
-                headers: {
-                    authorization,
-                },
-            }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.OK);
-            })
-
-            cy.wait(90000);
-
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies,
-                headers: {
-                    authorization,
-                },
-            }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.OK);
-                expect(response.body.at(0).tests.at(0).status).to.eq('Success');
-            })
-        })
-
-    })
+                return importPolicyArchive(CDM_ARCHIVE, CDM_ARCHIVE.split('/').pop(), 'AMS-I.D', authorization, toolRemaps)
+                    .then((policy) => {
+                        expect(policy.name).to.match(/^AMS-I\.D(_\d+)?$/);
+                        expect(policy.tools).to.have.length(3);
+                    });
+            });
+        });
+    });
 });

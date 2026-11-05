@@ -1,0 +1,135 @@
+// Chrome shared by the request form's header and the VC dialogs (fullscreen and modal):
+// the Back button, the heading, the tag pills, the compact buttons and the bar's ghost button.
+// Colours are what the request form's --sf-* host variables resolve to, so the mixins also
+// work in hosts that don't define them.
+
+@mixin back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border: 1px solid var(--guardian-border-color);
+    border-radius: 8px;
+    background: var(--guardian-background);
+    color: color-mix(in srgb, var(--guardian-font-color) 75%, transparent);
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 18px;
+    cursor: pointer;
+
+    &:hover {
+        background: color-mix(in srgb, var(--guardian-border-color) 30%, var(--guardian-grey-background));
+        color: var(--guardian-font-color);
+    }
+}
+
+@mixin heading-eyebrow {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-grey-5);
+}
+
+@mixin heading-title {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 22px;
+}
+
+@mixin tag-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 1px 9px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--guardian-primary-color) 12%, transparent);
+    color: var(--guardian-primary-color);
+    font-size: 12px;
+    line-height: 16px;
+    cursor: pointer;
+
+    .name {
+        color: inherit;
+        font-family: Inter, sans-serif;
+        font-size: 12px;
+        font-weight: 400;
+        line-height: 16px;
+    }
+}
+
+// The 30px buttons of the bars and headers
+@mixin compact-button {
+    height: 30px;
+    padding: 0 10px;
+    font-family: Inter, sans-serif;
+    font-size: 12.5px;
+    font-weight: 600;
+    border-radius: 7px;
+}
+
+// The 36px buttons of the footers
+@mixin regular-button {
+    height: 36px;
+    padding: 0 14px;
+    font-family: Inter, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 8px;
+    white-space: nowrap;
+}
+
+// The request form's neutral secondary button, in place of the blue outline
+@mixin secondary-button {
+    border: 1px solid color-mix(in srgb, var(--guardian-border-color) 70%, var(--guardian-font-color));
+    background: var(--guardian-background);
+    color: var(--guardian-font-color);
+
+    &:hover:not(:disabled) {
+        background: color-mix(in srgb, var(--guardian-border-color) 30%, var(--guardian-grey-background));
+    }
+}
+
+// "Field metadata": a text button that shows a check while it is on
+@mixin ghost-toggle {
+    @include compact-button;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 0;
+    background: transparent;
+    color: color-mix(in srgb, var(--guardian-font-color) 75%, transparent);
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+
+    &:hover {
+        background: color-mix(in srgb, var(--guardian-border-color) 30%, var(--guardian-grey-background));
+        color: var(--guardian-font-color);
+    }
+
+    .pi {
+        font-size: 11px;
+    }
+}
+
+// The Compare button inside a document dialog bar: a label-only 30px button
+@mixin compare-button {
+    @include compact-button;
+    min-width: 0;
+    width: auto;
+
+    .guardian-button-icon {
+        display: none;
+    }
+
+    // The icon is hidden, so the label needs no gap before it
+    .guardian-button-label {
+        padding: 0;
+    }
+
+    &.guardian-button-secondary {
+        @include secondary-button;
+    }
+}

@@ -1,3 +1,4 @@
+import URL from '../../../support/GuardianUrls';
 import * as Checks from '../../../support/checkingMethods';
 import CommonElements from '../../../support/defaultUIElements';
 
@@ -52,12 +53,7 @@ const ModulesPageLocators = {
 export class ModulesPage {
 
     openModulesTab() {
-        cy.get(CommonElements.navBar).should('exist')
-        cy.get('body').then(($body) => {
-            if ($body.find(`span:contains(${CommonElements.modulesTab})`).length == 0)
-                {cy.get(CommonElements.navBar).contains(CommonElements.mainPoliciesTab).click();}
-        })
-        cy.get(CommonElements.navBar).contains(CommonElements.modulesTab).click();
+        cy.visit(URL.Root + URL.Modules);
         Checks.waitForLoading();
     }
 

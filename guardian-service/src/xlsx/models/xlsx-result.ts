@@ -1,5 +1,5 @@
 import { Hyperlink, Worksheet } from './workbook.js';
-import { ISchema, Schema, SchemaCondition, SchemaField } from '@guardian/interfaces';
+import { ISchema, ISchemaArrayDependency, Schema, SchemaCondition, SchemaField, SchemaHelper } from '@guardian/interfaces';
 import { XlsxError } from '../interfaces/error.interface.js';
 import { Policy } from '@guardian/common/entity/policy';
 import { PolicyTool } from '@guardian/common/entity/tool';
@@ -11,6 +11,7 @@ import { XlsxSchema, XlsxTool } from './xlsx-schema.js';
 
 export class XlsxResult {
     private _policy: Policy;
+    private readonly dependencyCells = new WeakMap<ISchemaArrayDependency, { worksheet: Worksheet; row: number; col: number }>();
     private readonly _schemas: XlsxSchema[];
     private readonly _toolSchemas: Schema[];
     private readonly _tools: PolicyTool[];
@@ -207,6 +208,65 @@ export class XlsxResult {
         cache.push(schema);
     }
 
+    public registerArrayDependency(
+        dependency: ISchemaArrayDependency, worksheet: Worksheet, row: number, col: number
+    ): void {
+        this.dependencyCells.set(dependency, { worksheet, row, col });
+    }
+
+    private removeArrayDependencyConflicts(): void {
+        const rejected = new Map<Schema, Set<ISchemaArrayDependency>>();
+        const schemas = [...this.schemas, ...this.toolSchemas];
+        for (const root of this.schemas) {
+            const declarations: { owner: Schema; original: ISchemaArrayDependency; link: ISchemaArrayDependency }[] = [];
+            const visit = (owner: Schema, path: string[], ancestors: Set<Schema>): void => {
+                if (ancestors.has(owner)) { return; }
+                for (const original of owner.arrayDependencies || []) {
+                    declarations.push({ owner, original, link: {
+                        ...original, on: [...path, ...original.on], field: [...path, ...original.field]
+                    } });
+                }
+                for (const field of owner.fields || []) {
+                    if (!field.isRef || field.isArray) { continue; }
+                    const child = schemas.find(schema => schema.iri === field.type);
+                    if (child) {
+                        visit(child, [...path, field.name], new Set([...ancestors, owner]));
+                    }
+                }
+            };
+            visit(root, [], new Set());
+            for (const declaration of declarations) {
+                if (!declarations.some(other => other.link.field.join('.') === declaration.link.field.join('.')
+                    && !SchemaHelper.equalArrayDependencies(other.link, declaration.link))) { continue; }
+                const links = rejected.get(declaration.owner) || new Set<ISchemaArrayDependency>();
+                if (!links.has(declaration.original)) {
+                    const origin = this.dependencyCells.get(declaration.original);
+                    const array = declaration.link.field.join('.');
+                    this.addError({
+                        type: 'error',
+                        text: `Conflicting repeatable relationships for array "${array}".`,
+                        message: `Both different relationships for "${array}" are skipped. The rest of the file can be imported. After import, open the schema editor and configure one relationship for this array.`,
+                        worksheet: origin?.worksheet.name,
+                        row: origin?.row,
+                        col: origin?.col,
+                        cell: origin ? origin.worksheet.getPath(origin.col, origin.row) : undefined
+                    }, declaration.owner);
+                }
+                links.add(declaration.original);
+                rejected.set(declaration.owner, links);
+            }
+        }
+        for (const [owner, links] of rejected) {
+            owner.arrayDependencies = (owner.arrayDependencies || []).filter(link => !links.has(link));
+        }
+        if (rejected.size) {
+            const cache: Schema[] = [];
+            for (const schema of this.schemas) {
+                this.updateRefs(schema, cache);
+            }
+        }
+    }
+
     public updateSchemas(skipTools: boolean = false): void {
         try {
             const schemaNames = new Set<string>();
@@ -275,6 +335,7 @@ export class XlsxResult {
             for (const schema of this.schemas) {
                 this.updateRefs(schema);
             }
+            this.removeArrayDependencyConflicts();
             const allSchemas = [...this.schemas, ...this.toolSchemas];
             for (const schema of this._schemas) {
                 try {

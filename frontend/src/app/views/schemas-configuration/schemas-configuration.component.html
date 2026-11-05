@@ -2077,6 +2077,9 @@
                                     (mouseover)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
                             </ng-template>
                         </p-select>
+                        @if (arrayDependencyError) {
+                            <small class="sc-array-link-field-error" role="alert">{{ arrayDependencyError }}</small>
+                        }
                     </label>
                     <label>
                         <span>Entry display name <small>(optional)</small></span>

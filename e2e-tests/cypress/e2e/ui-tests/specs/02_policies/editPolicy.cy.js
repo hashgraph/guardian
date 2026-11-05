@@ -8,7 +8,9 @@ const policiesPage = new PoliciesPage();
 context('Edit Policy', { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
-    const name = randomInt(999) + 'testName';
+    // A 1000-space name collides with policies left behind by earlier runs (the app
+    // suffixes duplicates, so a name search then matches both) - 1e9 keeps re-runs unique.
+    const name = randomInt(1000000000) + 'testName';
     let newName;
 
     beforeEach(() => {

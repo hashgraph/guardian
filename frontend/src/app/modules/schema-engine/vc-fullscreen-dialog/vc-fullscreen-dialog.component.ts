@@ -2,7 +2,12 @@ import {
     ChangeDetectorRef,
     Component,
     ElementRef,
+    EventEmitter,
+    HostBinding,
+    Input,
     OnDestroy,
+    Optional,
+    Output,
     ViewChild,
     ViewChildren,
     QueryList,
@@ -42,6 +47,7 @@ import { ToastService } from 'src/app/services/toast.service';
 import { ApproveUpdateVcDocumentDialogComponent } from '../../policy-engine/dialogs/approve-update-vc-document-dialog/approve-update-vc-document-dialog.component';
 import { TablePersistenceService } from 'src/app/services/table-persistence.service';
 import { GeoFilePersistenceService } from 'src/app/services/geo-file-persistence.service';
+import { SchemaFormPreferencesService } from 'src/app/services/schema-form-preferences.service';
 import { prepareVcData } from '../../common/models/prepare-vc-data';
 import { ViewerDialog } from '../../policy-engine/dialogs/viewer-dialog/viewer-dialog.component';
 
@@ -62,11 +68,21 @@ export class VCFullscreenDialog implements OnDestroy {
     @ViewChild('documentViewComponent', { static: false })
     documentViewComponent: DocumentViewComponent;
 
+    /** The options when the view takes over the policy viewer; a dialog gets them from its config. */
+    @Input() config?: any;
+    @Output() closed = new EventEmitter<void>();
+    @HostBinding('class.takeover') get isTakeover(): boolean {
+        return !this.dialogRef;
+    }
+
+    /** The name of the document's schema, which is the heading once it is known. */
+    public schemaTitle: string = '';
+
     public loading: boolean = true;
 
     public user: UserPermissions = new UserPermissions();
 
-    public backLabel: string = '';
+    public subtitle: string = '';
     public title: string = '';
     public type: 'VP' | 'VC' | 'JSON' | 'TEXT' = 'JSON';
     public toggle: boolean = false;
@@ -121,8 +137,8 @@ export class VCFullscreenDialog implements OnDestroy {
     private _subscription?: Subscription | null;
 
     constructor(
-        public dialogRef: DynamicDialogRef,
-        public dialogConfig: DynamicDialogConfig,
+        @Optional() public dialogRef: DynamicDialogRef,
+        @Optional() public dialogConfig: DynamicDialogConfig,
         private dialogService: DialogService,
         private profileService: ProfileService,
         private commentsService: CommentsService,
@@ -138,7 +154,8 @@ export class VCFullscreenDialog implements OnDestroy {
         private toastService: ToastService,
         private dialog: DialogService,
         private tablePersist: TablePersistenceService,
-        private geoFilePersist: GeoFilePersistenceService
+        private geoFilePersist: GeoFilePersistenceService,
+        public formPreferences: SchemaFormPreferencesService
     ) {
         this.dataForm = this.fb.group({});
     }
@@ -173,7 +190,7 @@ export class VCFullscreenDialog implements OnDestroy {
         const {
             type,
             title,
-            backLabel,
+            subtitle,
             dryRun,
             id,
             row,
@@ -185,9 +202,9 @@ export class VCFullscreenDialog implements OnDestroy {
             commentsReadonly,
             openComments,
             destroy,
-        } = this.dialogConfig.data;
+        } = this.config ?? this.dialogConfig?.data ?? {};
 
-        this.backLabel = backLabel || 'Back';
+        this.subtitle = subtitle || '';
 
         if (type === 'VC') {
             this.type = 'VC';
@@ -312,6 +329,13 @@ export class VCFullscreenDialog implements OnDestroy {
         }
     }
 
+    public onSchemaName(name: string): void {
+        // A title configured by the policy author wins; the bare type ("VC") is only a placeholder
+        const placeholder = !this.title || this.title === this.type || /^V[CP] Document$/.test(this.title);
+        this.schemaTitle = placeholder ? name : '';
+        this.ref.markForCheck();
+    }
+
     public onToggle(index: number) {
         this.currentTab = index;
     }
@@ -338,14 +362,20 @@ export class VCFullscreenDialog implements OnDestroy {
         try {
             this._subscription?.unsubscribe();
             this._subscription = null;
-            this.dialogRef.close(null);
+            this.closeView();
         } catch (error) {
             console.error(error);
         }
     }
 
+    /** Closes the view: the takeover through `closed`, the dialog through its ref. */
+    private closeView(): void {
+        this.closed.emit();
+        this.dialogRef?.close(null);
+    }
+
     public onFindInExport(): void {
-        this.dialogRef.close(null);
+        this.closeView();
         this.router.navigate([], {
             relativeTo: this.route,
             queryParams: {

@@ -19,15 +19,17 @@
     <p class="geo-preview-file">{{ originalFileLabel() }}</p>
   </div>
 }
-<div class="switch-btn">
-  <switch-button
-    [on-label]="'JSON'"
-    [off-label]="'Form'"
-    [(value)]="isJSON"
-    [disalbed]="loading"
-    (valueChange)="onViewTypeChange()">
-  </switch-button>
-</div>
+@if (!hideViewSwitch) {
+  <div class="switch-btn">
+    <switch-button
+      [on-label]="'JSON'"
+      [off-label]="'Form'"
+      [(value)]="isJSON"
+      [disalbed]="loading"
+      (valueChange)="onViewTypeChange()">
+    </switch-button>
+  </div>
+}
 @if (isJSON) {
   <div class="form-group type-selector">
     <label for="geoJsonInput" class="form-label coordinates-input">GeoJSON</label>
