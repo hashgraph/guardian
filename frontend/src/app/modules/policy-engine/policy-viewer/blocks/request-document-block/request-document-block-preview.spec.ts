@@ -168,6 +168,11 @@ describe('request document preview wiring', () => {
         component.showPreviewErrors();
         expect(component.previewShowErrors).toBeTrue();
         expect(component.previewHeading).toBe('The preview is incomplete');
+        component.showPreviewResults();
+        expect(component.previewShowErrors).toBeFalse();
+        expect(component.previewHeading).toBe('Preview results');
+        expect(component.previewItems.length).toBe(1);
+        expect(component.screen).toBe('presults');
     });
 
     it('opens results before error details when no document was calculated', async () => {

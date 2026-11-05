@@ -552,6 +552,9 @@
   <div class="form-footer">
     <div class="footer-actions">
       <button type="button" class="guardian-button guardian-button-secondary" (click)="showForm()">Back to the form</button>
+      @if (previewShowErrors) {
+        <button type="button" class="guardian-button guardian-button-secondary" (click)="showPreviewResults()">Back to results</button>
+      }
       <div class="footer-spacer"></div>
       <button type="button" class="guardian-button guardian-button-primary" [disabled]="loading || isPreviewBusy" (click)="previewAgain()">Preview again</button>
     </div>

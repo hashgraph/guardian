@@ -271,6 +271,10 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         }
     }
 
+    public showPreviewResults(): void {
+        this.previewShowErrors = false;
+    }
+
     public get previewSelected(): IPreviewItemView | null {
         return this.previewItems[this.previewIndex] ?? null;
     }
