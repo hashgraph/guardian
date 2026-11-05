@@ -2183,6 +2183,70 @@ export class SchemaHelper {
         return parsed;
     }
 
+    public static equalArrayDependencies(a: ISchemaArrayDependency, b: ISchemaArrayDependency): boolean {
+        const mappings = (link: ISchemaArrayDependency) => (link.valueMappings || [])
+            .map(pair => JSON.stringify([pair.source, pair.target])).sort();
+        return JSON.stringify([a.on, a.field, a.kind, a.title || [], mappings(a)])
+            === JSON.stringify([b.on, b.field, b.kind, b.title || [], mappings(b)]);
+    }
+
+    public static collectArrayDependencies(
+        document: ISchemaDocument | null | undefined,
+        dependencies?: ISchemaArrayDependency[]
+    ): ISchemaArrayDependency[] {
+        const result: ISchemaArrayDependency[] = [...(dependencies
+            ?? SchemaHelper.parseSchemaComment(document?.$comment).arrayDependencies ?? [])];
+        const key = (path: string[]): string => JSON.stringify(path);
+        const sourceOf = (path: string[]): ISchemaArrayDependency | undefined =>
+            result.find(link => key(link.field) === key(path));
+        const isAbove = (path: string[], start: string[]): boolean => {
+            const seen = new Set<string>();
+            for (let current = start; current && !seen.has(key(current)); current = sourceOf(current)?.on) {
+                if (key(current) === key(path)) {
+                    return true;
+                }
+                seen.add(key(current));
+            }
+            return false;
+        };
+        const add = (links: ISchemaArrayDependency[], path: string[]): void => {
+            const own = links.map(link => ({ ...link, on: [...path, ...link.on], field: [...path, ...link.field] }));
+            for (const link of own) {
+                if (!result.some(existing => SchemaHelper.equalArrayDependencies(existing, link))
+                    && !isAbove(link.field, link.on)) {
+                    result.push(link);
+                }
+            }
+        };
+        const visit = (node: any, path: string[], defs: any, ancestors: Set<object>, own = true): void => {
+            if (!node || typeof node !== 'object' || ancestors.has(node)) {
+                return;
+            }
+            const next = new Set([...ancestors, node]);
+            const definitions = node.$defs || defs;
+            if (own) {
+                const links = SchemaHelper.parseSchemaComment(node.$comment).arrayDependencies;
+                add(Array.isArray(links) ? links : [], path);
+            }
+            for (const name of Object.keys(node.properties || {})) {
+                const property = node.properties[name];
+                if (!property || property.type === 'array' || property.items) {
+                    continue;
+                }
+                const child = property.$ref ? definitions?.[property.$ref] : property;
+                visit(child, [...path, name], definitions, next);
+            }
+            for (const branch of node.allOf || []) {
+                visit(branch, path, definitions, next, false);
+            }
+            for (const branch of [node.then, node.else]) {
+                visit(branch, path, definitions, next, false);
+            }
+        };
+        visit(document, [], document?.$defs, new Set(), false);
+        return result;
+    }
+
     /**
      * Build Schema comment
      * @param type

@@ -340,7 +340,8 @@ export class VCJS {
         const valid = validate(vcObject);
         let errors = this.enhanceConditionErrors(validate.errors as any[], schema);
         const geoErrors = validateGeoConsistency(subject, schemaObject?.fields || []);
-        const groupErrors = validateArrayGroups(subject, schemaObject?.arrayDependencies || []);
+        const groupErrors = validateArrayGroups(subject, schemaObject
+            ? SchemaHelper.collectArrayDependencies(schemaObject.document, schemaObject.arrayDependencies) : []);
         const conditionErrors = VCJS.conditionErrors(subject, schemaObject);
         errors = [...(errors || []), ...geoErrors, ...groupErrors, ...conditionErrors];
 
@@ -937,8 +938,7 @@ export class VCJS {
      */
     private readArrayDependencies(schema: any): ISchemaArrayDependency[] {
         try {
-            const { arrayDependencies } = SchemaHelper.parseSchemaComment(schema?.$comment);
-            return Array.isArray(arrayDependencies) ? arrayDependencies : [];
+            return SchemaHelper.collectArrayDependencies(schema);
         } catch (error) {
             return [];
         }
