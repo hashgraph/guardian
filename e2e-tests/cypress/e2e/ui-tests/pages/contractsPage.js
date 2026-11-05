@@ -10,7 +10,8 @@ const L = {
     // Dialogs (create/import use the shared data-input dialog)
     dialog: 'div.guardian-dialog',
     dialogConfirm: 'div.guardian-dialog button.guardian-button-primary',
-    dialogInput: (name) => `div.guardian-dialog input[formcontrolname="${name}"]`,
+    // The dialog binds [formControlName], which leaves no attribute in the DOM: address inputs by placeholder.
+    dialogInput: (name) => `div.guardian-dialog input[placeholder="${{ contractId: 'Contract Identifier', description: 'Description' }[name]}"]`,
 
     // Table
     row: 'tr.card-row',
@@ -37,6 +38,8 @@ const L = {
     tagCreateSubmit: 'tags-create-dialog button[label="Create"]',
 };
 
+const hasDescription = (row, name) => row.querySelector(L.descCell)?.textContent.trim() === name;
+
 export class ContractsPage {
 
     openContractsTab() {
@@ -52,7 +55,7 @@ export class ContractsPage {
 
     _row(name) {
         return cy.get(L.row, { timeout: 30000 })
-            .filter(`:has(${L.descCell}:text-is("${name}"))`);
+            .filter((_, row) => hasDescription(row, name));
     }
 
     createContract() {
@@ -111,7 +114,9 @@ export class ContractsPage {
         this._row(name).find(L.operationsMenu).click();
         cy.get(L.operationsItem, { timeout: 15000 }).contains('Remove contract').click();
         Checks.waitForLoading();
-        cy.get(L.row).filter(`:has(${L.descCell}:text-is("${name}"))`).should('not.exist', { timeout: 20000 });
+        cy.get('body').should(($body) => {
+            expect($body.find(L.row).filter((_, row) => hasDescription(row, name)).length).to.eq(0);
+        });
     }
 
     contractIdRowExists(contractId) {

@@ -11,9 +11,13 @@ const L = {
     policyDropdown: 'p-select#policyDropdown',
     fileInput: 'app-file-drag-n-drop input[type="file"]',
     deleteIcon: 'svg-icon[src*="delete.svg"]',
-    deleteConfirm: 'button.guardian-button-delete',
+    deleteDialog: 'div.p-dialog',
+    deleteConfirm: 'button.button-color-red',
     empty: 'div.not-exist',
 };
+
+const hasPolicyName = (row, policyName) => Array.from(row.querySelectorAll('span'))
+    .some((span) => span.textContent.trim() === policyName);
 
 export class ArtifactsPage {
 
@@ -30,7 +34,7 @@ export class ArtifactsPage {
         cy.get(L.policyDropdown).click();
         cy.contains(L.filterOption, policyName, { timeout: 15000 }).click();
         cy.fixture(fileName, { encoding: null }).then((file) =>
-            cy.get(L.fileInput).selectFile(file, { force: true }));
+            cy.get(L.fileInput).selectFile({ contents: file, fileName }, { force: true }));
         cy.get(L.dialog, { timeout: 20000 }).should('not.exist');
         Checks.waitForLoading();
     }
@@ -42,7 +46,7 @@ export class ArtifactsPage {
     }
 
     checkRowExists(policyName, artifactName) {
-        cy.get(L.row, { timeout: 20000 }).filter(`:has(span:text-is("${policyName}"))`)
+        cy.get(L.row, { timeout: 20000 }).filter((_, row) => hasPolicyName(row, policyName))
             .should('contain.text', artifactName);
     }
 
@@ -58,12 +62,12 @@ export class ArtifactsPage {
         const max = 10;
         const step = (deleted) => {
             cy.get('body').then(($body) => {
-                const rows = $body.find(L.row).filter(`:has(span:text-is("${policyName}"))`);
+                const rows = $body.find(L.row).filter((_, row) => hasPolicyName(row, policyName));
                 if (deleted >= max || rows.length === 0) {
                     return;
                 }
                 cy.wrap(rows.first()).find(L.deleteIcon).click();
-                cy.get(L.dialog, { timeout: 15000 }).find(L.deleteConfirm).click();
+                cy.get(L.deleteDialog, { timeout: 15000 }).find(L.deleteConfirm).click();
                 Checks.waitForLoading();
                 step(deleted + 1);
             });

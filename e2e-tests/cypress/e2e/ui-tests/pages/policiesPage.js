@@ -120,6 +120,11 @@ const L = {
     exportMessageIdButton: 'button:contains("Copy message identifier")',
 };
 
+const nameCellMatches = (name) => (_, el) => {
+    const span = el.querySelector('.text-truncate');
+    return span && span.textContent.trim() === name;
+};
+
 export class PoliciesPage {
 
     openPoliciesTab() {
@@ -161,10 +166,28 @@ export class PoliciesPage {
      * paginated and leftover policies from earlier runs fill the first page.
      */
     _row(name) {
+        this._searchUntilListed(name, 1);
+        return cy.get(L.row, { timeout: 30000 }).filter(nameCellMatches(name));
+    }
+
+    // A policy created by an async task can be missing from the list for a few seconds after
+    // the app returns to it, and the search filters the already loaded list client-side:
+    // reload the list and search again until its row shows up.
+    _searchUntilListed(name, attempt) {
+        const MAX_ATTEMPTS = 12;
         this._search(name);
-        return cy.get(L.row, { timeout: 30000 }).filter((_, el) => {
-            const span = el.querySelector('.text-truncate');
-            return span && span.textContent.trim() === name;
+        Checks.waitForLoading();
+        cy.get('body').then(($body) => {
+            if ($body.find(L.row).filter(nameCellMatches(name)).length) {
+                return;
+            }
+            if (attempt >= MAX_ATTEMPTS) {
+                throw new Error(`policy "${name}" is not listed after ${MAX_ATTEMPTS} searches`);
+            }
+            // eslint-disable-next-line cypress/no-unnecessary-waiting -- the list has no DOM signal for "still being created"; pace the reload
+            cy.wait(3000);
+            this.backToPoliciesList();
+            this._searchUntilListed(name, attempt + 1);
         });
     }
 
