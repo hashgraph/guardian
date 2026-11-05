@@ -100,7 +100,6 @@
     border: 0;
     background: transparent;
     color: color-mix(in srgb, var(--guardian-font-color) 75%, transparent);
-    font-family: Inter, sans-serif;
     font-weight: 500;
     white-space: nowrap;
     cursor: pointer;
@@ -112,5 +111,25 @@
 
     .pi {
         font-size: 11px;
+    }
+}
+
+// The Compare button inside a document dialog bar: a label-only 30px button
+@mixin compare-button {
+    @include compact-button;
+    min-width: 0;
+    width: auto;
+
+    .guardian-button-icon {
+        display: none;
+    }
+
+    // The icon is hidden, so the label needs no gap before it
+    .guardian-button-label {
+        padding: 0;
+    }
+
+    &.guardian-button-secondary {
+        @include secondary-button;
     }
 }

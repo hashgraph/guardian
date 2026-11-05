@@ -215,7 +215,7 @@ describe('VCFullscreenDialog', () => {
         }));
 
         it('always labels the back button "Back"', fakeAsync(() => {
-            const fixture = render({ backLabel: 'Back to Policy' });
+            const fixture = render({});
             expect(el(fixture, '.back-button')?.textContent?.trim()).toBe('Back');
         }));
 
@@ -253,14 +253,12 @@ describe('VCFullscreenDialog', () => {
 
         it('hides the discussions in the JSON view without removing them', fakeAsync(() => {
             const fixture = render({ comments: true });
-            expect(el(fixture, '.document-content')?.getAttribute('comments')).toBe('true');
             expect(el(fixture, '.comments-content')?.hidden).toBeFalse();
 
             fixture.componentInstance.onToggle(1);
             refresh(fixture);
             expect(el(fixture, '.comments-content')).not.toBeNull();
             expect(el(fixture, '.comments-content')?.hidden).toBeTrue();
-            expect(el(fixture, '.document-content')?.getAttribute('comments')).toBe('false');
         }));
     });
 });

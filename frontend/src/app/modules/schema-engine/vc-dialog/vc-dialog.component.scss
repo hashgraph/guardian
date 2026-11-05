@@ -218,22 +218,7 @@
 
 :host ::ng-deep {
     .compare-container .guardian-button {
-        @include chrome.compact-button;
-        min-width: 0;
-        width: auto;
-
-        .guardian-button-icon {
-            display: none;
-        }
-
-        // The icon is hidden, so the label needs no gap before it
-        .guardian-button-label {
-            padding: 0;
-        }
-
-        &.guardian-button-secondary {
-            @include chrome.secondary-button;
-        }
+        @include chrome.compare-button;
     }
 
     .version-dropdown {

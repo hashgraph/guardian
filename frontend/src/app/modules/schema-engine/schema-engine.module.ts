@@ -1,4 +1,3 @@
-import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -43,7 +42,6 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
 import { SentinelHubTypeComponent } from './sentinel-hub-type/sentinel-hub-type.component';
 import { TooltipModule } from 'primeng/tooltip';
 import { PopoverModule } from 'primeng/popover';
-import { SelectButtonModule } from 'primeng/selectbutton';
 import { AccordionModule } from 'primeng/accordion';
 import { TableModule } from 'primeng/table';
 import { DateTimeComponent } from './schema-form/controls/date-time/date-time.component';
@@ -124,14 +122,12 @@ import { CopyButtonComponent } from './copy-button/copy-button.component';
         TooltipModule,
         PopoverModule,
         RadioButtonModule,
-        SelectButtonModule,
         AccordionModule,
         TableModule,
         FormulasModule,
         AngularSvgIconModule.forRoot(),
         DynamicDialogModule,
         DialogModule,
-        ToggleSwitchModule,
     ],
     exports: [
         TruncateTooltipDirective,

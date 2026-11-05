@@ -42,18 +42,19 @@
                 type="button"
                 [class.on]="viewDocument === item.value"
                 [attr.aria-pressed]="viewDocument === item.value"
-                (click)="viewDocument = item.value">{{ item.label }}</button>
+                (click)="setView(item.value)">{{ item.label }}</button>
             }
           </div>
         }
         <div class="option-buttons">
           @if ((isVcDocument || isVpDocument) && viewDocument === true) {
+            @let showMeta = formPreferences.showFieldMetadata$ | async;
             <button
               type="button"
               class="field-metadata-toggle"
-              [attr.aria-pressed]="!!(formPreferences.showFieldMetadata$ | async)"
+              [attr.aria-pressed]="!!showMeta"
               (click)="formPreferences.setShowFieldMetadata(!formPreferences.showFieldMetadata)">
-              @if (formPreferences.showFieldMetadata$ | async) {
+              @if (showMeta) {
                 <i class="pi pi-check" aria-hidden="true"></i>
               }
               Field metadata
@@ -87,7 +88,7 @@
     }
     <div class="view-dialog-content">
       <!-- Kept alive and hidden on the other views, so flipping back doesn't reload the document -->
-      @if (!loading && (viewDocument === true || ((isVcDocument || isVpDocument) && toggle))) {
+      @if (!loading && documentMounted) {
         <div class="view-dialog-document" [hidden]="viewDocument !== true">
           <app-document-view
             [policyId]="policyId"

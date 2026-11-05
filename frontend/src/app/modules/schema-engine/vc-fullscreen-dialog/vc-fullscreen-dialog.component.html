@@ -78,12 +78,13 @@
       <div class="bar-spacer"></div>
 
       @if (toggle && currentTab === 0 && (type === 'VC' || type === 'VP')) {
+        @let showMeta = formPreferences.showFieldMetadata$ | async;
         <button
           type="button"
           class="field-metadata-toggle"
-          [attr.aria-pressed]="!!(formPreferences.showFieldMetadata$ | async)"
+          [attr.aria-pressed]="!!showMeta"
           (click)="formPreferences.setShowFieldMetadata(!formPreferences.showFieldMetadata)">
-          @if (formPreferences.showFieldMetadata$ | async) {
+          @if (showMeta) {
             <i class="pi pi-check" aria-hidden="true"></i>
           }
           Field metadata
@@ -116,7 +117,7 @@
   <div class="vc-fullscreen-dialog-body">
     @if (!loading) {
       <div class="step-body-container" [attr.collapse]="collapse">
-        <div class="document-content" [attr.comments]="comments && currentTab === 0" [attr.disconnected]="disconnected">
+        <div class="document-content">
           <!-- Kept alive and hidden in the JSON view, so flipping back doesn't reload the document -->
           @if (toggle || currentTab === 0) {
             <div class="document-view" [hidden]="currentTab !== 0">
