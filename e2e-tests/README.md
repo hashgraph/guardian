@@ -47,6 +47,16 @@ TAG=preparing ./run-test-by-tag.sh
 
 See [Running Tests with Tags](#running-tests-with-tags) below for more details.
 
+## Linting the tests
+
+Run the linter on the specs and helpers (the folders Cypress generates, such as `cypress/reports` and `cypress/test_results`, are excluded in `eslint.config.mjs`) and fix what it reports before committing:
+
+```bash
+npx eslint cypress
+```
+
+The findings that are still open, with the fix for each rule, are listed in [`pending-issues/eslint-findings-in-the-cypress-suites.md`](pending-issues/eslint-findings-in-the-cypress-suites.md).
+
 ## Guardian E2E via Docker
 
 ### Prerequisites
