@@ -30,7 +30,8 @@ const List = {
 const nameCellMatches = (name) => (_, row) => row.querySelector(List.nameCell)?.textContent.trim() === name;
 
 // Importing an archive whose name is taken adds a `_<timestamp>` suffix to the new module.
-const importedNameMatches = (name) => (_, row) => new RegExp(`^${name}(_\\d+)?$`).test(row.querySelector(List.nameCell)?.textContent.trim());
+// Each import of an already taken name appends another `_<number>`, and the seeded module may already carry one.
+const importedNameMatches = (name) => (_, row) => new RegExp(`^${name}(_\\d+)*$`).test(row.querySelector(List.nameCell)?.textContent.trim());
 
 const ModulesPageLocators = {
     createNewButton: 'Create a Module',

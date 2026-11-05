@@ -90,8 +90,9 @@ export class ContractsPage {
     importContract(contractId) {
         cy.get(L.importButton, { timeout: TIMEOUTS.ui }).click();
         cy.get(L.dialog, { timeout: TIMEOUTS.ui }).should('be.visible');
-        cy.get(L.dialogInput('contractId')).clear();
-        cy.get(L.dialogInput('contractId')).type(contractId);
+        // the dialog drops keystrokes while it re-renders: set the whole value at once
+        cy.get(L.dialogInput('contractId')).invoke('val', contractId).trigger('input');
+        cy.get(L.dialogInput('contractId')).should('have.value', contractId);
     }
 
     addTag(contractName, tagName) {
