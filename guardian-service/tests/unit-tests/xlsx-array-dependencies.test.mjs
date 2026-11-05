@@ -138,9 +138,42 @@ describe('Repeatable links in the Excel schema sheet', () => {
         assert.deepEqual(result.schema.arrayDependencies, []);
     });
 
-    it('fails the export when a giving field is not on the sheet', () => {
-        assert.throws(() => write(makeSchema([{ on: ['missing'], field: ['instances'], kind: 'array' }], [])),
-            /Repeatable link refers to unknown field "missing"/);
+    it('skips a link whose giving field is not on the sheet and writes the others', () => {
+        const { worksheet } = write(makeSchema([
+            { on: ['missing'], field: ['instances'], kind: 'array' },
+            { on: ['instances'], field: ['reports'], kind: 'array' }
+        ], []));
+        const rows = rowsOf(worksheet);
+        assert.ok(isEmpty(worksheet, rows.get('instances')));
+        assert.equal(cell(worksheet, rows.get('reports')).getFormulae(), ref(rows.get('instances')));
+    });
+
+    it('skips a link whose display name field is not on the sheet', () => {
+        const { worksheet } = write(makeSchema([
+            { on: ['locations'], field: ['instances'], kind: 'array', title: ['missing'],
+                valueMappings: [{ source: ['name'], target: ['locationName'] }] }
+        ], []));
+        const rows = rowsOf(worksheet);
+        assert.ok(isEmpty(worksheet, rows.get('instances')));
+        assert.ok(isEmpty(worksheet, rows.get('instances.locationName')));
+    });
+
+    it('skips only a copied value whose source field is not on the sheet', async () => {
+        const { workbook, worksheet } = write(makeSchema([
+            { on: ['locations'], field: ['instances'], kind: 'array', title: ['name'], valueMappings: [
+                { source: ['missing'], target: ['locationName'] },
+                { source: ['area'], target: ['approach'] }
+            ] }
+        ], []));
+        const rows = rowsOf(worksheet);
+        assert.equal(cell(worksheet, rows.get('instances')).getFormulae(),
+            `${ref(rows.get('locations'))}&" | "&${ref(rows.get('locations.name'))}`);
+        assert.ok(isEmpty(worksheet, rows.get('instances.locationName')));
+        assert.equal(cell(worksheet, rows.get('instances.approach')).getFormulae(), ref(rows.get('locations.area')));
+        const { result, errors } = await read(workbook);
+        assert.deepEqual(errors, []);
+        assert.deepEqual(result.schema.arrayDependencies, [{ on: ['locations'], field: ['instances'], kind: 'array',
+            title: ['name'], valueMappings: [{ source: ['area'], target: ['approach'] }] }]);
     });
 
     it('skips a link whose receiving field is not on the sheet', () => {

@@ -371,12 +371,9 @@ export class JsonToXlsx {
         };
         collect(schema.fields, [], new Set());
 
-        const keyCell = (path: string[]): string => {
+        const keyCell = (path: string[]): string | null => {
             const rowField = fieldCache.get(path.join('.'));
-            if (!rowField) {
-                throw new Error(`Repeatable link refers to unknown field "${path.join('.')}".`);
-            }
-            return worksheet.getPath(table.getCol(Dictionary.KEY), rowField.row);
+            return rowField ? worksheet.getPath(table.getCol(Dictionary.KEY), rowField.row) : null;
         };
         const written = new Set<number>();
         const write = (path: string[], formula: string): void => {
@@ -388,16 +385,16 @@ export class JsonToXlsx {
         };
         for (const dependency of dependencies) {
             const source = keyCell(dependency.on);
-            const formula = dependency.title?.length
-                ? `${source}&" | "&${keyCell([...dependency.on, ...dependency.title])}`
-                : source;
-            const mappings = (dependency.valueMappings || []).map(mapping => ({
-                target: [...dependency.field, ...mapping.target],
-                formula: keyCell([...dependency.on, ...mapping.source])
-            }));
-            write(dependency.field, formula);
-            for (const mapping of mappings) {
-                write(mapping.target, mapping.formula);
+            const title = dependency.title?.length ? keyCell([...dependency.on, ...dependency.title]) : null;
+            if (!source || (dependency.title?.length && !title)) {
+                continue;
+            }
+            write(dependency.field, title ? `${source}&" | "&${title}` : source);
+            for (const mapping of dependency.valueMappings || []) {
+                const mappingSource = keyCell([...dependency.on, ...mapping.source]);
+                if (mappingSource) {
+                    write([...dependency.field, ...mapping.target], mappingSource);
+                }
             }
         }
     }

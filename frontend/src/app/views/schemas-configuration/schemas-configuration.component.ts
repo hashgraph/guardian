@@ -180,6 +180,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public newArrayDependencyMappingTarget: string | null = null;
     public newArrayDependencyValueMappings: ISchemaArrayDependencyMapping[] = [];
     public editingArrayDependency: ISchemaArrayDependency | null = null;
+    private arrayDependencyDataVersion = 0;
+    private arrayDependencyErrorCache: { key: unknown[]; result: string | null } | null = null;
     public templateConfigSaving: boolean = false;
     private templateConfigDirty: boolean = false;
 
@@ -3559,6 +3561,22 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public get arrayDependencyError(): string | null {
+        const key = [
+            this.selectedSchema, this.schemas, this._subSchemasByIri, this.drillStack,
+            this.newArrayDependencyField, this.newArrayDependencyOn,
+            this.newArrayDependencyTitle, this.newArrayDependencyValueMappings, this.editingArrayDependency,
+            this.schemaEditVersion, this.arrayDependencyDataVersion
+        ];
+        const cache = this.arrayDependencyErrorCache;
+        if (cache && cache.key.every((value, index) => value === key[index])) {
+            return cache.result;
+        }
+        const result = this.computeArrayDependencyError();
+        this.arrayDependencyErrorCache = { key, result };
+        return result;
+    }
+
+    private computeArrayDependencyError(): string | null {
         const schema = this.selectedSchema;
         const field = this.newArrayDependencyField;
         const on = this.newArrayDependencyOn;
@@ -3853,6 +3871,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                             this._subSchemasByIri.set(child.iri, child);
                         }
                     }
+                    this.arrayDependencyDataVersion++;
                     const selectedField = this.selectedField;
                     if (selectedField && selectedField.type === subSchema.iri) {
                         selectedField.fields = subSchema.fields;

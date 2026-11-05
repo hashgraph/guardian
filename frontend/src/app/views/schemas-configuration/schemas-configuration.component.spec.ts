@@ -1794,6 +1794,35 @@ describe('SchemasConfigurationComponent', () => {
             expect(component.canApplyArrayDependency()).toBeFalse();
         });
 
+        it('computes the relationship error once per state and again after a change', () => {
+            const component = createLinkComponent([]);
+            const child = makeSchema({ id: 'section', fields: [arrayField('one'), arrayField('two')] });
+            child.arrayDependencies = [link('one', 'two')];
+            component.selectedSchema.fields.push(makeField({
+                name: 'section', type: child.iri, isRef: true, fields: child.fields
+            }));
+            component.schemas.push(child);
+            component.resolveRefSchema = (iri: string) => iri === child.iri ? child : undefined;
+            component.newArrayDependencyOn = 'one';
+            component.newArrayDependencyField = 'section.two';
+            const tree = spyOn(component, 'arrayDependencyTree').and.callThrough();
+            expect(component.arrayDependencyError).toContain('section.two');
+            const calls = tree.calls.count();
+            expect(calls).toBeGreaterThan(0);
+            expect(component.arrayDependencyError).toContain('section.two');
+            expect(component.canApplyArrayDependency()).toBeFalse();
+            expect(tree.calls.count()).toBe(calls);
+            component.newArrayDependencyField = 'three';
+            expect(component.arrayDependencyError).toBeNull();
+            expect(tree.calls.count()).toBeGreaterThan(calls);
+            const afterChange = tree.calls.count();
+            component.selectedSchema.arrayDependencies = [link('two', 'three')];
+            expect(component.arrayDependencyError).toBeNull();
+            expect(tree.calls.count()).toBe(afterChange);
+            component.schemaEditVersion++;
+            expect(component.arrayDependencyError).toContain('already linked to "two"');
+        });
+
         it('allows an unchanged Excel copy but rejects changes to its title', () => {
             const copy = { on: ['section', 'one'], field: ['section', 'two'], kind: 'array' };
             const component = createLinkComponent([copy]);
