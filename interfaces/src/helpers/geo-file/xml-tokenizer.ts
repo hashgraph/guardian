@@ -7,6 +7,7 @@ export class XmlTokenizer {
     private buffer = '';
     private cursor = 0;
     private entityTail = '';
+    public incomplete = false;
     private section: 'comment' | 'cdata' | null = null;
 
     constructor(
@@ -28,6 +29,7 @@ export class XmlTokenizer {
             return;
         }
         this.parse(true);
+        this.incomplete = this.section !== null || this.buffer.slice(this.cursor).startsWith('<');
         if (this.shouldStop()) {
             this.clear();
             return;

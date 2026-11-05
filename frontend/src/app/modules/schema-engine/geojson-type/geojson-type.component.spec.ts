@@ -11,7 +11,7 @@ import { GeoJsonService } from 'src/app/services/geo-json.service';
 import { SwitchButton } from '../../common/switch-button/switch-button.component';
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { gzipBlob } from '../geo-file/geo-file-compression';
-import { KmlCoordinateScanner } from '../geo-file/kml-coordinate-scanner';
+import { KmlCoordinateScanner } from '@guardian/interfaces';
 import { GeoForm, ORIGINAL_FILE_ERRORS_KEY } from '../schema-form-model/geo-form';
 import { GeojsonTypeComponent } from './geojson-type.component';
 

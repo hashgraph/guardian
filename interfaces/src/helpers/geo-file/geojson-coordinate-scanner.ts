@@ -1,4 +1,4 @@
-import { CoordinateScanner, GeoCoordinate } from './first-coordinate-reader';
+import { CoordinateScanner, GeoCoordinate } from './first-coordinate-reader.js';
 
 type JsonToken =
     | { type: 'punctuation'; value: '{' | '}' | '[' | ']' | ':' | ',' }

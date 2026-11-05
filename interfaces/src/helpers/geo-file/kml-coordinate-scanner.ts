@@ -1,5 +1,5 @@
-import { CoordinateScanner, GeoCoordinate } from './first-coordinate-reader';
-import { XmlToken, XmlTokenizer } from './xml-tokenizer';
+import { CoordinateScanner, GeoCoordinate } from './first-coordinate-reader.js';
+import { XmlToken, XmlTokenizer } from './xml-tokenizer.js';
 
 class TupleSequence {
     public first: GeoCoordinate | null = null;
