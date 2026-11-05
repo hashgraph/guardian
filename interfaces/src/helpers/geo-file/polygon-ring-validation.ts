@@ -303,3 +303,46 @@ export function polygonHolesError(rings: readonly (readonly Position[])[]): stri
     }
     return null;
 }
+
+export function polygonValueError(value: unknown): string | null {
+    if (!value || typeof value !== 'object') return null;
+    const type = Reflect.get(value, 'type');
+    if (type === 'Feature') return polygonValueError(Reflect.get(value, 'geometry'));
+    if (type === 'FeatureCollection' || type === 'GeometryCollection') {
+        const items = Reflect.get(value, type === 'FeatureCollection' ? 'features' : 'geometries');
+        if (!Array.isArray(items)) return null;
+        for (const item of items) {
+            const error = polygonValueError(item);
+            if (error) return error;
+        }
+        return null;
+    }
+    const coordinates = Reflect.get(value, 'coordinates');
+    if (!Array.isArray(coordinates)) return null;
+    const isPosition = (position: unknown): position is number[] => Array.isArray(position) &&
+        position.length >= 2 && position.every(number => typeof number === 'number' && Number.isFinite(number)) &&
+        Math.abs(position[0]) <= 180 && Math.abs(position[1]) <= 90;
+    const isRing = (ring: unknown): ring is number[][] => Array.isArray(ring) && ring.every(isPosition);
+    const check = (rings: unknown[]): string | null => {
+        for (let index = 0; index < rings.length; index += 1) {
+            const ring = rings[index];
+            if (!isRing(ring)) continue;
+            const error = polygonRingError(ring);
+            if (error) return `Polygon: ring #${index} ${error}`;
+        }
+        if (rings.length > 1 && rings.every(isRing)) {
+            const error = polygonHolesError(rings);
+            if (error) return `Polygon: ${error}`;
+        }
+        return null;
+    };
+    if (type === 'Polygon') return check(coordinates);
+    if (type === 'MultiPolygon') {
+        for (let index = 0; index < coordinates.length; index += 1) {
+            if (!Array.isArray(coordinates[index])) continue;
+            const error = check(coordinates[index]);
+            if (error) return `MultiPolygon: polygon #${index}: ${error.replace(/^Polygon: /, '')}`;
+        }
+    }
+    return null;
+}

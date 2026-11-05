@@ -5,3 +5,6 @@ export * from './xml-tokenizer.js';
 export * from './kmz-reader.js';
 export * from './kml-well-formed-checker.js';
 export * from './network-link-finder.js';
+export * from './json-tokenizer.js';
+export * from './geojson-validator.js';
+export * from './polygon-ring-validation.js';
