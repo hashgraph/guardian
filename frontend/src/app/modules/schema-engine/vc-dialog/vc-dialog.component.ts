@@ -36,8 +36,8 @@ export class VCViewerDialog {
     public dryRun: boolean = false;
     public getByUser: boolean = false;
     public viewDocumentOptions = [
-        { label: 'Form View', value: true, icon: 'file' },
-        { label: 'Code View', value: false, icon: 'number' }
+        { label: 'Document', value: true, icon: 'file' },
+        { label: 'JSON', value: false, icon: 'number' }
     ];
 
     public policyId?: string;

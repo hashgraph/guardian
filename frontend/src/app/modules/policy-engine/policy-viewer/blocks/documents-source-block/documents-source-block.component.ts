@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { DialogBlock } from '../../dialog-block/dialog-block.component';
@@ -14,6 +14,8 @@ import { CommentsService } from 'src/app/services/comments.service';
 import { richTextToText, withNewTabLinks } from 'src/app/modules/schema-engine/rich-text-editor/rich-text-sanitizer';
 import { collectImageReferences, markdownToHtml } from 'src/app/modules/schema-engine/rich-text-editor/markdown';
 import { IPFSService } from 'src/app/services/ipfs.service';
+import { PolicyProgressService } from '../../../services/policy-progress.service';
+import { FormTakeoverService } from '../../form-takeover/form-takeover.service';
 
 /**
  * Component for display block of 'interfaceDocumentsSource' types.
@@ -56,6 +58,8 @@ export class DocumentsSourceBlockComponent implements OnInit {
     readonly: boolean = false;
 
     private _destroy$ = new Subject<void>();
+    private policyProgress = inject(PolicyProgressService, { optional: true });
+    private formTakeover = inject(FormTakeoverService, { optional: true });
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -313,40 +317,52 @@ export class DocumentsSourceBlockComponent implements OnInit {
             dialogRef.onClose.subscribe(async (result) => {
             });
         } else {
+            const data = {
+                type: 'VC',
+                title: field.dialogContent,
+                subtitle: [
+                    this.policyProgress?.policyName(this.policyId),
+                    this.policyProgress?.activeStep?.label
+                ].filter(Boolean).join(' · '),
+                viewDocument: true,
+                dryRun: !!row.dryRunId,
+                id: row.id,
+                row: row,
+                document: document,
+                openComments: comments,
+                destroy: this._destroy$
+            };
+            if (this.formTakeover) {
+                // As the request form: the view takes over the content area of the viewer
+                const ref = this.formTakeover.open(VCFullscreenDialog, { config: data });
+                ref.instance.closed.subscribe(() => this.refreshCommentsCount(row));
+                return;
+            }
             const dialogRef = this.dialogService.open(VCFullscreenDialog, {
                 showHeader: false,
                 width: '90%',
                 styleClass: 'guardian-dialog',
                 maskStyleClass: 'guardian-fullscreen-dialog',
-                data: {
-                    type: 'VC',
-                    backLabel: 'Back to Policy',
-                    title: field.dialogContent,
-                    viewDocument: true,
-                    dryRun: !!row.dryRunId,
-                    id: row.id,
-                    row: row,
-                    document: document,
-                    openComments: comments,
-                    destroy: this._destroy$
-                }
+                data
             })!;
-            dialogRef.onClose.subscribe(async (result) => {
-                if (row.dryRunId) {
-                    // dry-run documents are never persisted as real VC records,
-                    // so the backend cannot resolve a count for this row.
-                    return;
-                }
-                this.commentsService
-                    .getPolicyCommentsCount(this.policyId, row.id)
-                    .subscribe(
-                        (count) => {
-                            row.comments = count?.count ?? row.comments;
-                        },
-                        (error) => console.error('[documents-source] comment count failed', error)
-                    );
-            });
+            dialogRef.onClose.subscribe(() => this.refreshCommentsCount(row));
         }
+    }
+
+    private refreshCommentsCount(row: any): void {
+        if (row.dryRunId) {
+            // dry-run documents are never persisted as real VC records,
+            // so the backend cannot resolve a count for this row.
+            return;
+        }
+        this.commentsService
+            .getPolicyCommentsCount(this.policyId, row.id)
+            .subscribe(
+                (count) => {
+                    row.comments = count?.count ?? row.comments;
+                },
+                (error) => console.error('[documents-source] comment count failed', error)
+            );
     }
 
     public richTextValue = '';

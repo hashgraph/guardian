@@ -36,35 +36,28 @@
     @if (barShown || ((isVcDocument || isVpDocument) && viewDocument === true)) {
       <div class="view-dialog-bar">
         @if ((isVcDocument || isVpDocument) && toggle) {
-          <p-selectButton
-            class="guardian-select-button"
-            [options]="viewDocumentOptions"
-            [(ngModel)]="viewDocument"
-            optionLabel="label"
-            optionValue="value"
-            [unselectable]="true"
-            [disabled]="false"
-            >
-            <ng-template let-item pTemplate>
-              <div class="guardian-select-button-item">
-                <svg-icon
-                  class="svg-icon-16"
-                src="/assets/images/icons/16/{{item.icon}}.svg"></svg-icon>
-                <span>{{item.label}}</span>
-              </div>
-            </ng-template>
-          </p-selectButton>
+          <div class="form-toggle" role="group" aria-label="Document view">
+            @for (item of viewDocumentOptions; track item.value) {
+              <button
+                type="button"
+                [class.on]="viewDocument === item.value"
+                [attr.aria-pressed]="viewDocument === item.value"
+                (click)="viewDocument = item.value">{{ item.label }}</button>
+            }
+          </div>
         }
         <div class="option-buttons">
           @if ((isVcDocument || isVpDocument) && viewDocument === true) {
-            <label class="field-metadata-toggle" for="vcDialogFieldMetadata">
-              <p-toggleswitch
-                inputId="vcDialogFieldMetadata"
-                [ngModel]="formPreferences.showFieldMetadata$ | async"
-                (onChange)="formPreferences.setShowFieldMetadata($event.checked)">
-              </p-toggleswitch>
+            <button
+              type="button"
+              class="field-metadata-toggle"
+              [attr.aria-pressed]="!!(formPreferences.showFieldMetadata$ | async)"
+              (click)="formPreferences.setShowFieldMetadata(!formPreferences.showFieldMetadata)">
+              @if (formPreferences.showFieldMetadata$ | async) {
+                <i class="pi pi-check" aria-hidden="true"></i>
+              }
               Field metadata
-            </label>
+            </button>
           }
           @if (barShown && messageId && !dryRun && canExport) {
             <button
@@ -93,8 +86,9 @@
       </div>
     }
     <div class="view-dialog-content">
-      @if (viewDocument === true) {
-        @if (!loading) {
+      <!-- Kept alive and hidden on the other views, so flipping back doesn't reload the document -->
+      @if (!loading && (viewDocument === true || ((isVcDocument || isVpDocument) && toggle))) {
+        <div class="view-dialog-document" [hidden]="viewDocument !== true">
           <app-document-view
             [policyId]="policyId"
             [documentId]="documentId"
@@ -105,7 +99,7 @@
             [schema]="schema"
             [type]="type"
           [dialogContext]="'viewer'"></app-document-view>
-        }
+        </div>
       }
       @if (viewDocument === false) {
         @if (fileSize <= 1) {
@@ -151,7 +145,7 @@
     <div class="dialog-button">
       <button
         (click)="onDownloadJsonFile()"
-      class="guardian-button guardian-button-secondary">Download</button>
+      class="guardian-button guardian-button-secondary"><i class="pi pi-download" aria-hidden="true"></i> Download</button>
     </div>
     <div class="dialog-button">
       <button

@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ViewerDialog } from '../../dialogs/viewer-dialog/viewer-dialog.component';
 import { VCFullscreenDialog } from 'src/app/modules/schema-engine/vc-fullscreen-dialog/vc-fullscreen-dialog.component';
+import { PolicyProgressService } from '../../services/policy-progress.service';
 import { PolicyTestAutomationService, PolicyTestCaseOutput } from './policy-test-automation.service';
 
 @Component({
@@ -11,6 +12,8 @@ import { PolicyTestAutomationService, PolicyTestCaseOutput } from './policy-test
     standalone: false
 })
 export class PolicyTestAutomationPopupComponent {
+    private policyProgress = inject(PolicyProgressService, { optional: true });
+
     constructor(
         public automationService: PolicyTestAutomationService,
         private dialogService: DialogService
@@ -73,8 +76,8 @@ export class PolicyTestAutomationPopupComponent {
             maskStyleClass: 'guardian-fullscreen-dialog',
             data: {
                 type,
-                backLabel: 'Back',
                 title,
+                subtitle: this.policyProgress?.policyName(policyId) || '',
                 dryRun: true,
                 id: output.documentId,
                 row: {

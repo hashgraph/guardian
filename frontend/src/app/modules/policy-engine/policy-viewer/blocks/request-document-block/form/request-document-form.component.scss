@@ -1,4 +1,6 @@
 @use '../../../../../schema-engine/preview-loading' as preview;
+@use '../../../../../schema-engine/doc-toggle' as toggle;
+@use '../../../../../schema-engine/doc-chrome' as chrome;
 
 :host {
     // Same derived greys as the policy navigation (progress-tracker)
@@ -42,24 +44,7 @@ form {
     border-bottom: 1px solid var(--guardian-border-color);
 
     .form-back {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 10px;
-        border: 1px solid var(--guardian-border-color);
-        border-radius: 8px;
-        background: var(--guardian-background);
-        color: var(--sf-text-2);
-        font-family: Inter, sans-serif;
-        font-size: 14px;
-        font-weight: 500;
-        line-height: 18px;
-        cursor: pointer;
-
-        &:hover {
-            background: var(--sf-sunken);
-            color: var(--guardian-font-color);
-        }
+        @include chrome.back-button;
     }
 
     .form-heading {
@@ -67,16 +52,11 @@ form {
         min-width: 0;
 
         .form-heading-step {
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--sf-text-3);
+            @include chrome.heading-eyebrow;
         }
 
         .form-heading-title {
-            margin: 0;
-            font-size: 17px;
-            font-weight: 600;
-            line-height: 22px;
+            @include chrome.heading-title;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -471,29 +451,7 @@ form {
 }
 
 .form-toggle {
-    display: inline-flex;
-    padding: 3px;
-    border-radius: 8px;
-    background: var(--sf-sunken);
-
-    button {
-        padding: 4px 12px;
-        border: 0;
-        border-radius: 6px;
-        background: transparent;
-        color: var(--sf-text-2);
-        font-family: inherit;
-        font-size: 12.5px;
-        font-weight: 500;
-        line-height: 18px;
-        cursor: pointer;
-
-        &.on {
-            background: var(--guardian-background);
-            color: var(--guardian-font-color);
-            box-shadow: 0 1px 2px var(--guardian-shadow);
-        }
-    }
+    @include toggle.doc-toggle;
 }
 
 .form-submitted-json {

@@ -92,7 +92,10 @@
     <div class="sf-meta" [attr.data-meta-id]="item.id">
         <code>{{ item.name }}</code>
         <span class="sf-chip">{{ metaTypeOf(item) }}</span>
-        <span class="sf-meta-path">{{ metaPath(item) }}</span>
+        @if (metaPath(item)) {
+            <span class="sf-meta-path">{{ metaPath(item) }}</span>
+            <sf-copy [value]="metaPath(item)" tip="Copy path"></sf-copy>
+        }
         @for (tag of metaTags(item); track tag.text) {
             <span class="sf-chip" [attr.title]="tag.title">{{ tag.text }}</span>
         }
