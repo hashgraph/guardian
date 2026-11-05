@@ -1,31 +1,35 @@
 <div class="sf-rail">
   <div class="sf-rail-head">
-    <span class="sf-rail-title">Sections</span>
+    <span class="sf-rail-title">{{ title }}</span>
     <button type="button" class="sf-rail-hide" (click)="hide.emit()">{{ inDrawer ? 'Close' : 'Hide menu' }}</button>
   </div>
-  <div class="sf-rail-sum">
-    @if (total === 0) {
-      No required fields
-    } @else {
-      {{ answered }} of {{ total }} required answered
-      <div class="sf-bar" role="progressbar" aria-label="Required answers" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="percent">
-        <i [style.width.%]="percent"></i>
+  @if (mode === 'edit') {
+    <div class="sf-rail-sum">
+      @if (total === 0) {
+        No required fields
+      } @else {
+        {{ answered }} of {{ total }} required answered
+        <div class="sf-bar" role="progressbar" aria-label="Required answers" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="percent">
+          <i [style.width.%]="percent"></i>
+        </div>
+      }
+    </div>
+  }
+  <div class="sf-rail-list">
+    @if (overviewLabel !== null) {
+      <div
+        class="sf-ri sf-ri-overview"
+        [class.sf-ri-on]="screen === 'overview'"
+        [attr.aria-current]="screen === 'overview' ? 'step' : null"
+        tabindex="0"
+        role="button"
+        (click)="select.emit('overview')"
+        (keydown.enter)="onKey($event, 'overview')"
+        (keydown.space)="onKey($event, 'overview')"
+        >
+        <span class="sf-ri-label">{{ overviewLabel }}</span>
       </div>
     }
-  </div>
-  <div class="sf-rail-list">
-    <div
-      class="sf-ri sf-ri-overview"
-      [class.sf-ri-on]="screen === 'overview'"
-      [attr.aria-current]="screen === 'overview' ? 'step' : null"
-      tabindex="0"
-      role="button"
-      (click)="select.emit('overview')"
-      (keydown.enter)="onKey($event, 'overview')"
-      (keydown.space)="onKey($event, 'overview')"
-      >
-      <span class="sf-ri-label">Overview</span>
-    </div>
     @for (section of sections; track section.id; let i = $index) {
       <div
         class="sf-ri"
@@ -40,27 +44,23 @@
         (keydown.enter)="onKey($event, i)"
         (keydown.space)="onKey($event, i)"
         >
-        <span class="sf-ri-label">{{ section.title }}</span>
-        @if (showErrorDot(i)) {
-          <span class="sf-ri-err" title="Has errors"></span>
-        }
-        @if (isOptional(i)) {
-          <svg class="sf-ring" width="20" height="20" viewBox="0 0 20 20" aria-label="No required fields">
-            <path d="M7 10h6" class="sf-ring-dash" stroke-width="2" stroke-linecap="round" />
-          </svg>
-        } @else if (isComplete(i)) {
-          <svg class="sf-ring sf-ring-done" width="20" height="20" viewBox="0 0 20 20" aria-label="Complete">
-            <circle cx="10" cy="10" r="10" class="sf-ring-fill" />
-            <path d="M6 10.3l2.8 2.8L14 7.6" fill="none" class="sf-ring-check" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
+        @if (mode === 'view') {
+          @if (section.prefix) {
+            <span class="sf-ri-prefix">{{ section.prefix }}</span>
+          }
+          <span class="sf-ri-label">{{ section.title }}</span>
+          @if (section.status) {
+            <span class="sf-status-dot" [class.sf-status-ok]="section.status === 'ok'" [class.sf-status-bad]="section.status === 'bad'"></span>
+          }
+          @for (badge of section.badges ?? []; track badge.kind) {
+            <span class="sf-badge" [class.sf-badge-warn]="badge.kind === 'warn'" [class.sf-badge-comment]="badge.kind === 'comment'">{{ badge.count }}</span>
+          }
         } @else {
-          <svg class="sf-ring" width="20" height="20" viewBox="0 0 20 20" aria-label="In progress">
-            <circle cx="10" cy="10" [attr.r]="ringRadius" fill="none" class="sf-ring-track" stroke-width="2.5" />
-            <circle
-              cx="10" cy="10" [attr.r]="ringRadius" fill="none" class="sf-ring-bar" stroke-width="2.5" stroke-linecap="round"
-              [attr.stroke-dasharray]="ringLength" [attr.stroke-dashoffset]="ringOffset(i)" transform="rotate(-90 10 10)"
-              />
-          </svg>
+          <span class="sf-ri-label">{{ section.title }}</span>
+          @if (showErrorDot(i)) {
+            <span class="sf-ri-err" title="Has errors"></span>
+          }
+          <app-schema-form-ring size="sm" [state]="ringState(i)" [pct]="ringPct(i)"></app-schema-form-ring>
         }
       </div>
       @if (screen === 'section' && activeIndex === i && cards.length) {

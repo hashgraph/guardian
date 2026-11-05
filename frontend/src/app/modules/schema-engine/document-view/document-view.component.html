@@ -1,47 +1,126 @@
-<div class="content" #contentContainer>
-  @if (type !== 'VP' && navCollapsed) {
-    <div class="nav-collapse-rail">
-      <button
-        class="nav-collapse-btn"
-        type="button"
-        title="Expand panel"
-        aria-label="Expand panel"
-        (click)="toggleNav()">
-        <i class="pi pi-chevron-right"></i>
-      </button>
-    </div>
-  }
-  @if (type !== 'VP') {
-    <div class="schema-form-view-nav" #navContainer [hidden]="navCollapsed">
-      <div class="nav-collapse-header">
-        <span class="nav-collapse-title">Sections</span>
-        <button
-          class="nav-collapse-btn"
-          type="button"
-          title="Collapse panel"
-          aria-label="Collapse panel"
-          (click)="toggleNav()">
-          <i class="pi pi-chevron-left"></i>
-        </button>
+<ng-template #detailsCard>
+  <section class="sf-dd-card" aria-label="Document details">
+    <div class="sf-dd-head">Document details</div>
+    <div class="sf-dd-grid">
+      <div class="sf-ro-cell">
+        <div class="sf-ro-label"><span class="sf-ro-lt">Document ID</span></div>
+        <div class="sf-ro-value sf-dd-row">
+          <span class="sf-dd-mono">{{ document.id || '' }}</span>
+          @if (document.id) {
+            <sf-copy [value]="document.id" tip="Copy document ID"></sf-copy>
+          }
+        </div>
       </div>
-      <app-schema-form-view-navigation #schemaNav
-        [subjects]="subjects"
-        [schemaMap]="schemaMap"
-        [dialogContext]="dialogContext"
-        [groupBaseTitle]="type === 'VC' ? 'Credential Subject' : 'Verifiable Credential'"
-        [private-fields]="hideFields"
-        [preview]="preview"
-        (selectEvent)="navigateToField($event)"
-        >
-      </app-schema-form-view-navigation>
+      @if (type === 'VC') {
+        <div class="sf-ro-cell">
+          <div class="sf-ro-label"><span class="sf-ro-lt">Issuer</span></div>
+          <div class="sf-ro-value">
+            <div class="sf-dd-row">
+              <span class="sf-dd-mono">{{ issuerId }}</span>
+              @if (issuerId) {
+                <sf-copy [value]="issuerId" tip="Copy issuer"></sf-copy>
+              }
+            </div>
+            @if (issuerLine) {
+              <div class="sf-dd-muted">{{ issuerLine }}</div>
+            }
+          </div>
+        </div>
+        <div class="sf-ro-cell">
+          <div class="sf-ro-label"><span class="sf-ro-lt">Issued</span></div>
+          <div class="sf-ro-value">
+            @if (document.issuanceDate) {
+              {{ document.issuanceDate | date: 'medium' }}
+            } @else {
+              <span class="sf-dd-empty">Not provided</span>
+            }
+          </div>
+        </div>
+      }
+      @if (relayerAccount) {
+        <div class="sf-ro-cell">
+          <div class="sf-ro-label"><span class="sf-ro-lt">Relayer account</span></div>
+          <div class="sf-ro-value sf-dd-row">
+            <span class="sf-dd-mono">{{ relayerAccount }}</span>
+            <sf-copy [value]="relayerAccount" tip="Copy relayer account"></sf-copy>
+          </div>
+        </div>
+      }
+      @if (evidenceJson) {
+        <div class="sf-ro-cell sf-full">
+          <div class="sf-ro-label"><span class="sf-ro-lt">Evidence</span></div>
+          <div class="sf-ro-value">
+            @if (hasStructuredEvidence) {
+              <div class="evidence-entries">
+                @for (entry of evidenceEntries; track entry) {
+                  <div class="evidence-entry">
+                    @if (entry.dataType === 'message') {
+                      <div class="evidence-entry-message">
+                        <svg-icon class="svg-icon-16" src="/assets/images/icons/16/text.svg" svgClass="icon-color-primary"></svg-icon>
+                        <span>{{ entry.data }}</span>
+                      </div>
+                    }
+                    @if (entry.dataType === 'file') {
+                      <div class="evidence-entry-file">
+                        <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="icon-color-primary"></svg-icon>
+                        <a [href]="entry.data" target="_blank" rel="noopener">{{ entry.data }}</a>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            } @else {
+              <pre class="sf-dd-json">{{ evidenceJson }}</pre>
+            }
+          </div>
+        </div>
+      }
+      @if (proofJson) {
+        <div class="sf-ro-cell sf-full">
+          <div class="sf-ro-label"><span class="sf-ro-lt">Proof</span></div>
+          <div class="sf-ro-value">
+            <button
+              type="button"
+              class="sf-link"
+              [attr.aria-expanded]="showProof"
+              (click)="showProof = !showProof"
+            >{{ showProof ? 'Hide proof' : 'Show proof' + (proofType ? ' · ' + proofType : '') }}</button>
+            @if (showProof) {
+              <pre class="sf-dd-json">{{ proofJson }}</pre>
+            }
+          </div>
+        </div>
+      }
     </div>
+  </section>
+</ng-template>
+
+<ng-template #fieldPage let-fields="fields" let-values="values" let-prefix="prefix">
+  @for (key of [pageKey]; track key) {
+    <section class="sf-dd-card sf-dd-fields">
+      <div class="sf-dd-body">
+        <app-schema-form-view
+          [private-fields]="hideFields"
+          [fields]="fields"
+          [values]="values"
+          [pathPrefix]="prefix"
+          [dryRun]="dryRun"
+          [rules]="rulesResults"
+          [formulas]="formulasFor(subject)"
+          [preview]="preview"
+          (previewLoadingChange)="preview && previewLoadingChange.emit($event)"
+          [link]="pageLink"
+          [discussion]="discussionData"
+          [discussion-view]="discussionView"
+          [discussion-action]="discussionAction"
+          (discussion-action)="onDiscussionAction($event)">
+        </app-schema-form-view>
+      </div>
+    </section>
   }
-  @if (type !== 'VP' && !navCollapsed) {
-    <div
-      class="resize-handler"
-      (mousedown)="onResizeStart($event)"
-    ></div>
-  }
+</ng-template>
+
+<div class="content">
   <div class="schema-form-content">
     <form [class.preview-loading]="preview && (loading || previewRendering)">
       @if (!preview && loading) {
@@ -62,185 +141,151 @@
               User that created this document was disconnected.
             </div>
           }
-          <section class="sf-dd-card" aria-label="Document details">
-            <div class="sf-dd-head">Document details</div>
-            <div class="sf-dd-grid">
-              <div class="sf-ro-cell">
-                <div class="sf-ro-label"><span class="sf-ro-lt">Document ID</span></div>
-                <div class="sf-ro-value sf-dd-row">
-                  <span class="sf-dd-mono">{{ document.id || '' }}</span>
-                  @if (document.id) {
-                    <sf-copy [value]="document.id" tip="Copy document ID"></sf-copy>
+          @if (type === 'VC' && subjects.length > 0 && pagesReady && (!preview || previewReady)) {
+            <app-schema-form-nav
+              mode="view"
+              [sections]="navHidden ? [] : railSections"
+              [screen]="screen"
+              [activeIndex]="activeIndex"
+              [barLabel]="barLabel"
+              (select)="onNavSelect($event)"
+              >
+              @if (subjects.length > 1) {
+                <div class="sf-subjects">
+                  <span class="sf-subjects-label">Credential subject</span>
+                  @for (item of subjectLabels; track item.index) {
+                    <button type="button" class="sf-subject" [class.sf-subject-on]="item.index === subjectIndex" (click)="selectSubject(item.index)">{{ item.text }}</button>
+                  }
+                  @if (pageSize < subjects.length) {
+                    <app-paginator
+                      class="guardian-grid-paginator"
+                      [pageIndex]="pageIndex"
+                      [pageSize]="pageSize"
+                      [length]="subjects.length"
+                      (page)="onPage($event)"
+                    ></app-paginator>
                   }
                 </div>
-              </div>
-              @if (type === 'VC') {
-                <div class="sf-ro-cell">
-                  <div class="sf-ro-label"><span class="sf-ro-lt">Issuer</span></div>
-                  <div class="sf-ro-value">
-                    <div class="sf-dd-row">
-                      <span class="sf-dd-mono">{{ issuerId }}</span>
-                      @if (issuerId) {
-                        <sf-copy [value]="issuerId" tip="Copy issuer"></sf-copy>
-                      }
-                    </div>
-                    @if (issuerLine) {
-                      <div class="sf-dd-muted">{{ issuerLine }}</div>
-                    }
-                  </div>
-                </div>
-                <div class="sf-ro-cell">
-                  <div class="sf-ro-label"><span class="sf-ro-lt">Issued</span></div>
-                  <div class="sf-ro-value">
-                    @if (document.issuanceDate) {
-                      {{ document.issuanceDate | date: 'medium' }}
-                    } @else {
-                      <span class="sf-dd-empty">Not provided</span>
-                    }
-                  </div>
-                </div>
               }
-              @if (relayerAccount) {
-                <div class="sf-ro-cell">
-                  <div class="sf-ro-label"><span class="sf-ro-lt">Relayer account</span></div>
-                  <div class="sf-ro-value sf-dd-row">
-                    <span class="sf-dd-mono">{{ relayerAccount }}</span>
-                    <sf-copy [value]="relayerAccount" tip="Copy relayer account"></sf-copy>
+              @if (hasSections && screen === 'overview') {
+                <app-schema-form-overview
+                  [tiles]="overviewTiles"
+                  [cards]="overviewCards"
+                  footerLink="Document details"
+                  (open)="openPage($event)"
+                  (footer)="openPage(0)"
+                  >
+                  <div overviewHead class="sf-dv-head">
+                    <div class="sf-eyebrow">{{ overviewEyebrow }}</div>
+                    <h2 class="sf-overview-title">{{ overviewTitle }}</h2>
                   </div>
-                </div>
-              }
-              @if (evidenceJson) {
-                <div class="sf-ro-cell sf-full">
-                  <div class="sf-ro-label"><span class="sf-ro-lt">Evidence</span></div>
-                  <div class="sf-ro-value">
-                    @if (hasStructuredEvidence) {
-                      <div class="evidence-entries">
-                        @for (entry of evidenceEntries; track entry) {
-                          <div class="evidence-entry">
-                            @if (entry.dataType === 'message') {
-                              <div class="evidence-entry-message">
-                                <svg-icon class="svg-icon-16" src="/assets/images/icons/16/text.svg" svgClass="icon-color-primary"></svg-icon>
-                                <span>{{ entry.data }}</span>
-                              </div>
-                            }
-                            @if (entry.dataType === 'file') {
-                              <div class="evidence-entry-file">
-                                <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="icon-color-primary"></svg-icon>
-                                <a [href]="entry.data" target="_blank" rel="noopener">{{ entry.data }}</a>
-                              </div>
-                            }
-                          </div>
-                        }
+                  <div overviewExtra>
+                    @for (location of locations; track location.sectionIndex + location.label) {
+                      <div class="sf-location">
+                        <div class="sf-location-map">
+                          <app-geojson-type [preset]="location.value" [disabled]="true"></app-geojson-type>
+                        </div>
+                        <div class="sf-location-text">
+                          <div class="sf-eyebrow">Location</div>
+                          <b>{{ location.label }}</b>
+                          <span>in {{ location.sectionTitle }}</span>
+                          <button type="button" class="sf-section-link" (click)="openPage(location.sectionIndex + 1)">Open {{ location.sectionTitle }} →</button>
+                        </div>
                       </div>
+                    }
+                  </div>
+                </app-schema-form-overview>
+              } @else {
+                @if (section; as current) {
+                  <div class="sf-section-head">
+                    <h2 class="sf-section-title">{{ current.title }}</h2>
+                    @if (sectionStat; as stats) {
+                      @if (stats.warnings) {
+                        <span class="sf-badge sf-badge-warn">{{ stats.warnings }} rule {{ stats.warnings === 1 ? 'warning' : 'warnings' }}</span>
+                      }
+                      @if (discussionView && stats.comments) {
+                        <span class="sf-badge sf-badge-comment">{{ stats.comments }} {{ stats.comments === 1 ? 'comment' : 'comments' }}</span>
+                      }
+                      <span class="sf-chip">{{ stats.total - stats.missing }} of {{ stats.total }} fields provided</span>
+                    }
+                  </div>
+                }
+                @if (showDetails) {
+                  <ng-container *ngTemplateOutlet="detailsCard"></ng-container>
+                }
+                @if (!hasSections) {
+                  <ng-container *ngTemplateOutlet="fieldPage; context: { fields: view.fields, values: view.values, prefix: '' }"></ng-container>
+                } @else if (section; as current) {
+                  <ng-container *ngTemplateOutlet="fieldPage; context: { fields: current.fields, values: view.values, prefix: view.pathPrefix }"></ng-container>
+                }
+                @if (screen === 'section' && railSections.length > 1) {
+                  <div class="sf-section-links">
+                    @if (activeIndex > 0) {
+                      <button type="button" class="sf-section-link" (click)="openPage(activeIndex - 1)">
+                        <i class="pi pi-arrow-left" aria-hidden="true"></i>
+                        {{ railSections[activeIndex - 1].title }}
+                      </button>
                     } @else {
-                      <pre class="sf-dd-json">{{ evidenceJson }}</pre>
+                      <span></span>
+                    }
+                    @if (activeIndex < railSections.length - 1) {
+                      <button type="button" class="sf-section-link" (click)="openPage(activeIndex + 1)">
+                        {{ railSections[activeIndex + 1].title }}
+                        <i class="pi pi-arrow-right" aria-hidden="true"></i>
+                      </button>
                     }
                   </div>
+                }
+              }
+            </app-schema-form-nav>
+          } @else if (type === 'VP' && subjects.length > 0 && (!preview || previewReady)) {
+            <app-schema-form-nav
+              mode="view"
+              title="Credentials"
+              screen="section"
+              barLabel="Verifiable presentation"
+              [overviewLabel]="null"
+              [sections]="vpSections"
+              [activeIndex]="vpIndex"
+              [cards]="vpCards"
+              (select)="onVpSelect($event)"
+              (selectCard)="onVpCard($event)"
+              >
+              @if (vpIndex === 0) {
+                <ng-container *ngTemplateOutlet="detailsCard"></ng-container>
+                <div class="sf-vc-rows">
+                  @for (item of subjects; track item; let i = $index) {
+                    <button type="button" class="sf-vc-row" (click)="openCredential(i + 1)">
+                      <b>{{ credentialTitle(item, i) }}</b>
+                      <span>{{ item.issuanceDate | date: 'medium' }}</span>
+                    </button>
+                  }
                 </div>
+              } @else {
+                @for (item of [subjects[vpIndex - 1]]; track item) {
+                  <app-document-view
+                    [policyId]="policyId"
+                    [document]="item"
+                    [formulas]="formulas"
+                    [dryRun]="dryRun"
+                    [hide-fields]="hideFields"
+                    type="VC"
+                    [navHidden]="true"
+                    [activePage]="vpActivePage"
+                    (pagesChange)="onNestedPages($event)"
+                    [preview]="preview"
+                    (previewLoadingChange)="preview && previewLoadingChange.emit($event)"
+                    [dialogContext]="dialogContext"
+                    [discussion]="discussionData"
+                    [discussion-view]="discussionView"
+                    [discussion-action]="discussionAction"
+                    (discussion-action)="onDiscussionAction($event)">
+                  </app-document-view>
+                }
               }
-              @if (proofJson) {
-                <div class="sf-ro-cell sf-full">
-                  <div class="sf-ro-label"><span class="sf-ro-lt">Proof</span></div>
-                  <div class="sf-ro-value">
-                    <button
-                      type="button"
-                      class="sf-link"
-                      [attr.aria-expanded]="showProof"
-                      (click)="showProof = !showProof"
-                    >{{ showProof ? 'Hide proof' : 'Show proof' + (proofType ? ' · ' + proofType : '') }}</button>
-                    @if (showProof) {
-                      <pre class="sf-dd-json">{{ proofJson }}</pre>
-                    }
-                  </div>
-                </div>
-              }
-            </div>
-          </section>
-          @if (type === 'VC' && subjects.length > 0 && (!preview || previewReady)) {
-            <div class="group-container">
-              @if (subjects.length > 1) {
-                <div class="group-multiple-header">Credential Subjects</div>
-              }
-              @for (item of getItemsPage(subjects); track item) {
-                <div class="guardian-accordion-container">
-                  <p-accordion [multiple]="true" [value]="['0']" class="guardian-accordion">
-                    <p-accordion-panel value="0">
-                      <p-accordion-header>{{getCredentialSubject(item)}}</p-accordion-header>
-                      <p-accordion-content>
-                        <app-schema-form-view
-                          #schemaView
-                          [private-fields]="hideFields"
-                          [schema]="schemaMap[item.type]"
-                          [dryRun]="dryRun"
-                          [values]="item"
-                          [rules]="rulesResults"
-                          [formulas]="formulasFor(item)"
-                          [preview]="preview"
-                          (previewLoadingChange)="preview && previewLoadingChange.emit($event)"
-                          [link]="link"
-                          [discussion]="discussionData"
-                          [discussion-view]="discussionView"
-                          [discussion-action]="discussionAction"
-                          (discussion-action)="onDiscussionAction($event)"
-                          (onAccordionSelect)="schemaNav?.expandedByAccordionId({ path: item.type + ';' + $event.path, isOpen: $event.isOpen })">
-                        </app-schema-form-view>
-                      </p-accordion-content>
-                    </p-accordion-panel>
-                  </p-accordion>
-                </div>
-              }
-              @if (pageSize < subjects.length) {
-                <app-paginator
-                  class="guardian-grid-paginator"
-                  [pageIndex]="pageIndex"
-                  [pageSize]="pageSize"
-                  [length]="subjects.length"
-                  (page)="onPage($event)"
-                ></app-paginator>
-              }
-            </div>
-          }
-          @if (type === 'VP' && subjects.length > 0 && (!preview || previewReady)) {
-            <div class="group-container">
-              @if (subjects.length > 1) {
-                <div class="group-multiple-header">Verifiable Credentials</div>
-              }
-              @for (item of getItemsPage(subjects); track item) {
-                <div class="guardian-accordion-container">
-                  <p-accordion [multiple]="true" [value]="['0']" class="guardian-accordion">
-                    <p-accordion-panel value="0">
-                      <p-accordion-header>{{getVerifiableCredential(item)}}</p-accordion-header>
-                      <p-accordion-content>
-                        <app-document-view
-                          [policyId]="policyId"
-                          [document]="item"
-                          [formulas]="formulas"
-                          [dryRun]="dryRun"
-                          [hide-fields]="hideFields"
-                          type="VC"
-                          [preview]="preview"
-                          (previewLoadingChange)="preview && previewLoadingChange.emit($event)"
-                          [dialogContext]="dialogContext"
-                          [discussion]="discussionData"
-                          [discussion-view]="discussionView"
-                          [discussion-action]="discussionAction"
-                          (discussion-action)="onDiscussionAction($event)">
-                        </app-document-view>
-                      </p-accordion-content>
-                    </p-accordion-panel>
-                  </p-accordion>
-                </div>
-              }
-              @if (pageSize < subjects.length) {
-                <app-paginator
-                  class="guardian-grid-paginator"
-                  [pageIndex]="pageIndex"
-                  [pageSize]="pageSize"
-                  [length]="subjects.length"
-                  (page)="onPage($event)"
-                ></app-paginator>
-              }
-            </div>
+            </app-schema-form-nav>
+          } @else {
+            <ng-container *ngTemplateOutlet="detailsCard"></ng-container>
           }
         </div>
       }

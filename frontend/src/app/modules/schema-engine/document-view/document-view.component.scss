@@ -1,5 +1,15 @@
 @use '../form-grid' as form-grid;
-@import '../nav-collapse';
+@use '../sections' as sections;
+
+:host {
+    @include sections.sf-vars;
+    display: block;
+}
+
+app-schema-form-nav {
+    --sf-content-pad: 16px 0 0;
+    --sf-nav-gap: 20px;
+}
 
 form {
     display: flex;
@@ -99,10 +109,6 @@ form {
     cursor: not-allowed !important;
 }
 
-.guardian-accordion-container::ng-deep .guardian-accordion-container {
-    background: var(--guardian-grey-background, #F9FAFC);
-}
-
 .tags-container {
     display: flex;
     flex-direction: column;
@@ -119,52 +125,12 @@ form {
     width: 100%;
 }
 
-.schema-form-view-nav {
-    width: 25%;
-    min-width: 0%;
-    max-width: 75%;
-    align-self: flex-start;
-    position: sticky;
-    top: 0;
-    max-height: calc(100vh - 230px);
-    box-sizing: border-box;
-    overflow-y: auto;
-    border: 1px solid var(--guardian-border-color, rgba(0, 0, 0, 0.06));
-    border-radius: 6px;
-    transition: width 0.2s ease;
-
-    // The panel now owns the border and the scroll; the sticky collapse
-    // header stays pinned while the tree scrolls underneath it.
-    ::ng-deep .schema-nav {
-        max-height: none !important;
-        overflow: visible;
-        border: none;
-        border-radius: 0;
-    }
-}
-
 .schema-form-content {
     flex: 1;
     min-width: 0;
 
     form.preview-loading {
         min-height: 240px;
-    }
-}
-
-:host ::ng-deep .guardian-accordion {
-
-    .p-accordionpanel,
-    .p-accordioncontent,
-    .p-motion,
-    .p-accordioncontent-wrapper,
-    .p-accordioncontent-content {
-        min-width: 0;
-        max-width: 100%;
-    }
-
-    .p-accordioncontent-content {
-        overflow-x: auto;
     }
 }
 
@@ -245,5 +211,130 @@ form {
 
     .sf-link {
         @include form-grid.sf-link;
+    }
+}
+
+.sf-dd-fields .sf-dd-body {
+    padding: 14px 16px;
+}
+
+// Projected into the nav and the Overview, so styled here
+@include sections.sf-overview-text;
+@include sections.sf-section-head;
+@include sections.sf-section-links;
+@include sections.sf-badges;
+
+.sf-dv-head {
+    margin-bottom: 16px;
+}
+
+.sf-subjects {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    font-family: Inter;
+    font-size: 13px;
+
+    .sf-subjects-label {
+        color: var(--sf-text-3);
+    }
+}
+
+.sf-subject {
+    height: 30px;
+    padding: 0 12px;
+    border: 1px solid var(--guardian-border-color);
+    border-radius: 8px;
+    background: var(--guardian-background);
+    font-family: Inter;
+    font-size: 13px;
+    color: var(--guardian-font-color);
+    cursor: pointer;
+
+    &:hover {
+        background: var(--guardian-hover);
+    }
+
+    &.sf-subject-on {
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+    }
+}
+
+.sf-location {
+    display: grid;
+    grid-template-columns: minmax(220px, 2fr) 3fr;
+    gap: 16px;
+    margin-bottom: 18px;
+    padding: 14px;
+    border: 1px solid var(--guardian-border-color);
+    border-radius: 12px;
+    background: var(--guardian-background);
+
+    .sf-location-map {
+        min-width: 0;
+        height: 150px;
+        overflow: hidden;
+        border-radius: 8px;
+    }
+
+    .sf-location-text {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+        min-width: 0;
+        font-family: Inter;
+        font-size: 12.5px;
+        color: var(--sf-text-2);
+
+        b {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--guardian-font-color);
+        }
+
+        .sf-section-link {
+            margin-top: auto;
+            padding-left: 0;
+            color: var(--color-primary);
+        }
+    }
+
+    @container sf-nav (max-width: 760px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.sf-vc-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sf-vc-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    border: 1px solid var(--guardian-border-color);
+    border-radius: 10px;
+    background: var(--guardian-background);
+    font-family: Inter;
+    font-size: 14px;
+    text-align: left;
+    color: var(--guardian-font-color);
+    cursor: pointer;
+
+    &:hover {
+        border-color: var(--sf-border-strong);
+    }
+
+    span {
+        font-size: 12px;
+        color: var(--sf-text-3);
     }
 }

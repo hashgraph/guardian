@@ -1,55 +1,22 @@
 <div class="schema-form-root" #contentContainer>
-  @if (model && hasSections && !railHidden) {
-    <aside class="sf-rail-col" [attr.inert]="isPreviewLocked ? '' : null" #railContainer>
-      <app-schema-form-rail
-        [sections]="sections"
-        [completion]="completion"
-        [screen]="screen"
-        [activeIndex]="activeIndex"
-        [cards]="activeCards"
-        [errorsRevealed]="errorsRevealed"
-        (select)="onRailSelect($event)"
-        (selectCard)="onRailCard($event)"
-        (hide)="toggleRail()"
-        >
-      </app-schema-form-rail>
-    </aside>
-  }
-  <div class="schema-form-content">
-    @if (model) {
+  @if (model) {
+    <app-schema-form-nav
+      [sections]="hasSections ? sections : []"
+      [completion]="completion"
+      [screen]="screen"
+      [activeIndex]="activeIndex"
+      [cards]="activeCards"
+      [errorsRevealed]="errorsRevealed"
+      [barLabel]="barLabel"
+      [locked]="isPreviewLocked"
+      (select)="onRailSelect($event)"
+      (selectCard)="onRailCard($event)"
+      >
+      <ng-container ngProjectAs="[navTop]"><ng-content select="[sfNotice]"></ng-content></ng-container>
       @if (hasSections) {
-        <div
-          class="sf-section-bar"
-          role="button"
-          tabindex="0"
-          aria-haspopup="dialog"
-          [attr.inert]="isPreviewLocked ? '' : null"
-          (click)="setDrawer(true)"
-          (keydown.enter)="setDrawer(true)"
-          >
-          <i class="pi pi-bars sf-section-bar-icon" aria-hidden="true"></i>
-          <div class="sf-section-bar-text">
-            @if (screen === 'section') {
-              <small>Section {{ activeIndex + 1 }} of {{ sections.length }}</small>
-              <b>{{ activeSection?.title }}</b>
-            } @else {
-              <b>Overview</b>
-            }
-          </div>
-          <i class="pi pi-chevron-down" aria-hidden="true"></i>
-        </div>
-      }
-      <div class="sf-content-inner">
-        <ng-content select="[sfNotice]"></ng-content>
-        @if (hasSections) {
-          @if (railHidden) {
-            <button type="button" class="sf-show-menu" (click)="toggleRail()">
-              <i class="pi pi-angle-double-right" aria-hidden="true"></i>
-              Show menu
-            </button>
-          }
-          @if (screen === 'overview') {
-            <div class="sf-overview" [attr.inert]="isPreviewLocked ? '' : null">
+        @if (screen === 'overview') {
+          <app-schema-form-overview [cards]="overviewCards" [locked]="isPreviewLocked" (open)="openSection($event)">
+            <div overviewHead>
               @if (promotedName) {
                 <div class="sf-notice">
                   <i class="pi pi-info-circle" aria-hidden="true"></i>
@@ -83,65 +50,18 @@
                   </div>
                 </div>
                 @if (!overviewNothingRequired) {
-                <div class="sf-overview-total">
-                  <div class="sf-bigring">
-                    <svg width="96" height="96" viewBox="0 0 96 96" aria-hidden="true">
-                      <circle cx="48" cy="48" [attr.r]="bigRingRadius" fill="none" class="sf-ring-track" stroke-width="8" />
-                      <circle
-                        cx="48" cy="48" [attr.r]="bigRingRadius" fill="none" stroke-width="8" stroke-linecap="round"
-                        [class.sf-ring-done]="overviewComplete" [class.sf-ring-bar]="!overviewComplete"
-                        [attr.stroke-dasharray]="bigRingLength" [attr.stroke-dashoffset]="bigRingLength * (1 - percent / 100)"
-                        transform="rotate(-90 48 48)"
-                        />
-                    </svg>
-                    <span>{{ percent }}%</span>
+                  <div class="sf-overview-total">
+                    <app-schema-form-ring size="lg" [state]="overviewComplete ? 'done' : 'progress'" [pct]="percent">{{ percent }}%</app-schema-form-ring>
+                    <div>
+                      <b class="sf-overview-count">{{ completion?.answered ?? 0 }} of {{ completion?.total ?? 0 }}</b>
+                      <div class="sf-overview-caption">required answers</div>
+                    </div>
                   </div>
-                  <div>
-                    <b class="sf-overview-count">{{ completion?.answered ?? 0 }} of {{ completion?.total ?? 0 }}</b>
-                    <div class="sf-overview-caption">required answers</div>
-                  </div>
-                </div>
-                }
-              </div>
-              <div class="sf-cards">
-                @for (stats of completion?.sections ?? []; track stats.id; let i = $index) {
-                  <button type="button" class="sf-overview-card" (click)="openSection(i)">
-                    <span class="sf-overview-card-top">
-                      <span class="sf-overview-card-state">{{ sectionState(stats) }}</span>
-                      @if (stats.total === 0) {
-                        <svg width="24" height="24" viewBox="0 0 24 24" aria-label="No required fields">
-                          <path d="M8 12h8" class="sf-ring-dash" stroke-width="2" stroke-linecap="round" />
-                        </svg>
-                      } @else if (stats.answered >= stats.total) {
-                        <svg width="24" height="24" viewBox="0 0 24 24" aria-label="Complete">
-                          <circle cx="12" cy="12" r="12" class="sf-ring-fill" />
-                          <path d="M7 12.3l3.3 3.3L17 9" fill="none" class="sf-ring-check" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
-                      } @else {
-                        <svg width="24" height="24" viewBox="0 0 24 24" aria-label="In progress">
-                          <circle cx="12" cy="12" [attr.r]="cardRingRadius" fill="none" class="sf-ring-track" stroke-width="3" />
-                          <circle
-                            cx="12" cy="12" [attr.r]="cardRingRadius" fill="none" class="sf-ring-bar" stroke-width="3" stroke-linecap="round"
-                            [attr.stroke-dasharray]="cardRingLength" [attr.stroke-dashoffset]="ringOffset(stats, cardRingLength)"
-                            transform="rotate(-90 12 12)"
-                            />
-                        </svg>
-                      }
-                    </span>
-                    <span class="sf-overview-card-name">{{ stats.title }}</span>
-                    <span class="sf-overview-card-meta">
-                      @if (stats.total === 0) {
-                        Optional
-                      } @else {
-                        {{ stats.answered }} of {{ stats.total }} required answered
-                      }
-                    </span>
-                    <span class="sf-overview-card-go">{{ sectionAction(stats) }} →</span>
-                  </button>
                 }
               </div>
             </div>
-          } @else {
+          </app-schema-form-overview>
+        } @else {
             <div class="sf-section-head">
               <h2 class="sf-section-title">{{ activeSection?.title }}</h2>
               @if (completion?.sections?.[activeIndex]; as stats) {
@@ -164,87 +84,68 @@
                 <button type="button" class="sf-link" (click)="setAllOpen(true)">Expand all</button>
               }
             </div>
-          }
         }
-          @if (showChildForm) {
-            <app-schema-form
-              #childForm
-              [form-model]="formOwner!"
-              [renderControls]="formControls"
-              [previewMissingFieldIds]="previewMissingFieldIds"
-              [previewValidation]="requiredFields !== null"
-              [previewBusy]="isPreviewLocked"
-              [formulas]="formulaModel"
-              [private-fields]="hide"
-              [readonly-fields]="readonly"
-              [delimiter-hide]="delimiterHide"
-              [example]="example"
-              [cancelText]="cancelText"
-              [saveText]="saveText"
-              [submitText]="submitText"
-              [cancelHidden]="cancelHidden"
-              [submitHidden]="submitHidden"
-              [saveShown]="saveShown"
-              [showButtons]="showButtons"
-              [isChildSchema]="isChildSchema"
-              [comesFromDialog]="comesFromDialog"
-              [dryRun]="dryRun"
-              [policyId]="policyId"
-              [blockId]="blockId"
-              [rules]="rules"
-              [isFormForFinishSetup]="isFormForFinishSetup"
-              [isFormForRequestBlock]="isFormForRequestBlock"
-              [lastSavedAt]="lastSavedAt"
-              [isEditMode]="isEditMode"
-              (change)="onChange($event)"
-              (destroy)="onDestroy($event)"
-              (buttons)="onButtons($event)"
-              (cancelBtnEvent)="onCancelBtnEvent($event)"
-              (submitBtnEvent)="onSubmitBtnEvent($event)"
-              (saveBtnEvent)="onSaveBtnEvent($event)"
-              (updatableBtnEvent)="onUpdatableBtnEvent()"
-              (previewLoadingChange)="onPreviewLoadingChange($event)"
-              >
-            </app-schema-form>
+      }
+@if (showChildForm) {
+        <app-schema-form
+          #childForm
+          [form-model]="formOwner!"
+          [renderControls]="formControls"
+          [previewMissingFieldIds]="previewMissingFieldIds"
+          [previewValidation]="requiredFields !== null"
+          [previewBusy]="isPreviewLocked"
+          [formulas]="formulaModel"
+          [private-fields]="hide"
+          [readonly-fields]="readonly"
+          [delimiter-hide]="delimiterHide"
+          [example]="example"
+          [cancelText]="cancelText"
+          [saveText]="saveText"
+          [submitText]="submitText"
+          [cancelHidden]="cancelHidden"
+          [submitHidden]="submitHidden"
+          [saveShown]="saveShown"
+          [showButtons]="showButtons"
+          [isChildSchema]="isChildSchema"
+          [comesFromDialog]="comesFromDialog"
+          [dryRun]="dryRun"
+          [policyId]="policyId"
+          [blockId]="blockId"
+          [rules]="rules"
+          [isFormForFinishSetup]="isFormForFinishSetup"
+          [isFormForRequestBlock]="isFormForRequestBlock"
+          [lastSavedAt]="lastSavedAt"
+          [isEditMode]="isEditMode"
+          (change)="onChange($event)"
+          (destroy)="onDestroy($event)"
+          (buttons)="onButtons($event)"
+          (cancelBtnEvent)="onCancelBtnEvent($event)"
+          (submitBtnEvent)="onSubmitBtnEvent($event)"
+          (saveBtnEvent)="onSaveBtnEvent($event)"
+          (updatableBtnEvent)="onUpdatableBtnEvent()"
+          (previewLoadingChange)="onPreviewLoadingChange($event)"
+          >
+        </app-schema-form>
+      }
+      @if (screen === 'section' && sections.length > 1) {
+        <div class="sf-section-links" [attr.inert]="isPreviewLocked ? '' : null">
+          @if (activeIndex > 0) {
+            <button type="button" class="sf-section-link" (click)="openSection(activeIndex - 1)">
+              <i class="pi pi-arrow-left" aria-hidden="true"></i>
+              {{ sections[activeIndex - 1].title }}
+            </button>
+          } @else {
+            <span></span>
           }
-          @if (screen === 'section' && sections.length > 1) {
-            <div class="sf-section-links" [attr.inert]="isPreviewLocked ? '' : null">
-              @if (activeIndex > 0) {
-                <button type="button" class="sf-section-link" (click)="openSection(activeIndex - 1)">
-                  <i class="pi pi-arrow-left" aria-hidden="true"></i>
-                  {{ sections[activeIndex - 1].title }}
-                </button>
-              } @else {
-                <span></span>
-              }
-              @if (activeIndex < sections.length - 1) {
-                <button type="button" class="sf-section-link" (click)="openSection(activeIndex + 1)">
-                  {{ sections[activeIndex + 1].title }}
-                  <i class="pi pi-arrow-right" aria-hidden="true"></i>
-                </button>
-              }
-            </div>
+          @if (activeIndex < sections.length - 1) {
+            <button type="button" class="sf-section-link" (click)="openSection(activeIndex + 1)">
+              {{ sections[activeIndex + 1].title }}
+              <i class="pi pi-arrow-right" aria-hidden="true"></i>
+            </button>
           }
-      </div>
-    }
-  </div>
-  @if (model && hasSections && drawerOpen) {
-    <div class="sf-drawer-bg" (click)="setDrawer(false)"></div>
-    <aside class="sf-drawer" aria-label="Sections">
-      <app-schema-form-rail
-        [sections]="sections"
-        [completion]="completion"
-        [screen]="screen"
-        [activeIndex]="activeIndex"
-        [cards]="activeCards"
-        [errorsRevealed]="errorsRevealed"
-        [inDrawer]="true"
-        (select)="onRailSelect($event)"
-        (selectCard)="onRailCard($event)"
-        (hide)="setDrawer(false)"
-        >
-      </app-schema-form-rail>
-    </aside>
+        </div>
+      }
+    </app-schema-form-nav>
   }
 </div>
 @if (requiredFields === null ? loading : !previewActionsDisabled && (loading || previewLoadingCount > 0)) {

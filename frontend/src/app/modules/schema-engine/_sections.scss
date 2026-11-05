@@ -1,0 +1,331 @@
+// Shared by every host of the section navigation: the edit form (schema-form-root), the read-only
+// document view and the label document view. The class names are used by the E2E helpers
+// (.sf-section-bar, .sf-section-links, .sf-overview-actions), so they stay as they are.
+
+// Same derived greys as the policy navigation (progress-tracker). A component declares them on
+// its own host, because a standalone view inherits them from nobody.
+@mixin sf-vars {
+    --sf-text-2: color-mix(in srgb, var(--guardian-font-color) 75%, transparent);
+    --sf-text-3: var(--color-grey-5);
+    --sf-disabled: var(--color-grey-4);
+    --sf-sunken: color-mix(in srgb, var(--guardian-border-color) 30%, var(--guardian-grey-background));
+    --sf-border-strong: color-mix(in srgb, var(--guardian-border-color) 70%, var(--guardian-font-color));
+}
+
+@mixin sf-rings {
+    .sf-ring {
+        flex-shrink: 0;
+    }
+
+    .sf-ring-track {
+        stroke: var(--guardian-border-color);
+    }
+
+    .sf-ring-bar {
+        stroke: var(--color-primary);
+    }
+
+    .sf-ring-done {
+        stroke: var(--guardian-success-color);
+    }
+
+    .sf-ring-fill {
+        fill: var(--guardian-success-color);
+    }
+
+    .sf-ring-check {
+        stroke: var(--guardian-background);
+    }
+
+    .sf-ring-dash {
+        stroke: var(--sf-disabled);
+    }
+}
+
+// A small count badge: a rule warning or the number of comments
+@mixin sf-badges {
+    .sf-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        flex-shrink: 0;
+        padding: 0 6px;
+        border-radius: 999px;
+        font-family: Inter;
+        font-size: 11px;
+        font-weight: 600;
+        line-height: 18px;
+        white-space: nowrap;
+
+        &.sf-badge-warn {
+            color: var(--guardian-warning-color);
+            background: var(--guardian-warning-background);
+        }
+
+        &.sf-badge-comment {
+            color: var(--color-primary);
+            background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+        }
+    }
+
+    .sf-status-dot {
+        flex-shrink: 0;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--sf-disabled);
+
+        &.sf-status-ok {
+            background: var(--guardian-success-color);
+        }
+
+        &.sf-status-bad {
+            background: var(--guardian-failure-color);
+        }
+    }
+}
+
+@mixin sf-overview-text {
+    .sf-eyebrow {
+        margin-bottom: 4px;
+        font-size: 12px;
+        color: var(--sf-text-3);
+    }
+
+    .sf-overview-title {
+        margin: 0 0 6px;
+        font-family: Inter;
+        font-size: 24px;
+        line-height: 1.2;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+    }
+
+    .sf-lead {
+        max-width: 520px;
+        margin: 0;
+        color: var(--sf-text-2);
+    }
+}
+
+@mixin sf-tiles {
+    .sf-tiles {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+
+    .sf-tile {
+        padding: 10px 14px;
+        border: 1px solid var(--guardian-border-color);
+        border-radius: 10px;
+        background: var(--guardian-background);
+        font-size: 12.5px;
+        color: var(--sf-text-2);
+
+        b {
+            display: block;
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--guardian-font-color);
+        }
+
+        &.sf-tile-warn b {
+            color: var(--guardian-warning-color);
+        }
+
+        &.sf-tile-bad b {
+            color: var(--guardian-failure-color);
+        }
+
+        &.sf-tile-ok b {
+            color: var(--guardian-success-color);
+        }
+    }
+}
+
+@mixin sf-cards {
+    .sf-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+        gap: 12px;
+    }
+
+    .sf-overview-card {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        min-height: 132px;
+        padding: 16px;
+        border: 1px solid var(--guardian-border-color);
+        border-radius: 12px;
+        background: var(--guardian-background);
+        box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+        font-family: Inter;
+        font-size: 14px;
+        text-align: left;
+        color: var(--guardian-font-color);
+        cursor: pointer;
+
+        &:hover {
+            border-color: var(--sf-border-strong);
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--color-primary);
+            outline-offset: 2px;
+        }
+    }
+
+    .sf-overview-card-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .sf-overview-card-state {
+        font-size: 12px;
+        color: var(--sf-text-3);
+    }
+
+    .sf-overview-card-name {
+        font-family: Inter;
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 1.3;
+    }
+
+    .sf-overview-card-prefix {
+        margin-right: 6px;
+        font-family: ui-monospace, Menlo, monospace;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--sf-text-3);
+    }
+
+    .sf-overview-card-meta {
+        font-size: 12.5px;
+        color: var(--sf-text-2);
+    }
+
+    .sf-overview-card-fill {
+        height: 4px;
+        border-radius: 2px;
+        background: var(--guardian-border-color);
+        overflow: hidden;
+
+        i {
+            display: block;
+            height: 100%;
+            background: var(--sf-text-3);
+        }
+    }
+
+    .sf-overview-card-badges {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+
+        &:empty {
+            display: none;
+        }
+    }
+
+    .sf-overview-card-go {
+        margin-top: auto;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--color-primary);
+    }
+}
+
+@mixin sf-section-head {
+    .sf-section-head {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .sf-section-title {
+        flex: 1;
+        min-width: 200px;
+        margin: 0;
+        font-family: Inter;
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--guardian-font-color);
+    }
+
+    .sf-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 6px;
+        border-radius: 4px;
+        font-family: Inter;
+        font-size: 11px;
+        font-weight: 500;
+        line-height: 18px;
+        color: var(--sf-text-3);
+        background: var(--sf-sunken);
+        white-space: nowrap;
+
+        &.sf-chip-ok {
+            color: var(--guardian-success-color);
+            background: var(--guardian-success-background);
+        }
+
+        &.sf-chip-err {
+            color: var(--guardian-failure-color);
+            background: var(--guardian-failure-background);
+        }
+    }
+
+    .sf-link {
+        border: 0;
+        background: transparent;
+        padding: 0 2px;
+        font-family: Inter;
+        font-size: 12.5px;
+        font-weight: 500;
+        color: var(--color-primary);
+        cursor: pointer;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
+@mixin sf-section-links {
+    .sf-section-links {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 18px;
+    }
+
+    .sf-section-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        font-family: Inter;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--sf-text-3);
+        cursor: pointer;
+
+        &:hover {
+            background: var(--guardian-hover);
+            color: var(--guardian-font-color);
+        }
+    }
+}

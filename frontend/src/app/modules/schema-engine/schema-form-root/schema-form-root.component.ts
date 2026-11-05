@@ -9,9 +9,11 @@ import { FormFormulas, IFormulaLinkScope } from 'src/app/modules/formulas/models
 import { getErrorMessage } from '../schema-form/schema-form-errors';
 import { IFormTarget, isIndexSegment, isRefLeaf, walkFields } from '../schema-form/schema-form-walk';
 import { IFormCompletion, ISectionCompletion, computeCompletion, isAnswered } from '../schema-form/schema-form-completion';
-import { BooleanProperty } from '../../policy-engine/structures/storage/boolean-prop';
 import { SchemaFormPreferencesService } from '../../../services/schema-form-preferences.service';
 import { IFormSection, buildSections, promotedRootName } from './schema-form-sections';
+import { IRailCard } from '../schema-form-rail/schema-form-rail.component';
+import { SchemaFormNavComponent, getScrollParent } from '../schema-form-nav/schema-form-nav.component';
+import { IOverviewCard } from '../schema-form-nav/schema-form-overview.component';
 
 /**
  * Form built by schema
@@ -25,8 +27,6 @@ export interface IFormIssue {
 }
 
 export type SchemaFormLayout = 'sections' | 'single';
-
-const RAIL_HIDDEN_KEY = 'SCHEMA_FORM_RAIL_HIDDEN';
 
 function sameSections(a: IFormSection[], b: IFormSection[]): boolean {
     return a.length === b.length && a.every((item, index) => {
@@ -63,29 +63,14 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     public completion: IFormCompletion | null = null;
     public screen: 'overview' | 'section' = 'overview';
     public activeIndex = 0;
-    public drawerOpen = false;
     public promotedName: string | null = null;
-    public readonly bigRingRadius = 42;
-    public readonly bigRingLength = 2 * Math.PI * this.bigRingRadius;
-    public readonly cardRingRadius = 10;
-    public readonly cardRingLength = 2 * Math.PI * this.cardRingRadius;
-    private readonly railHiddenProp = new BooleanProperty(RAIL_HIDDEN_KEY, false);
     public formulaModel: FormFormulas | null = null;
     private formulaSub?: Subscription;
     private controlsSub?: Subscription;
     private completionSub?: Subscription;
 
-    private railElement: HTMLElement | null = null;
-    private railScrollParent: HTMLElement | null = null;
-    private railResizeObserver: ResizeObserver | null = null;
-
     @ViewChild('childForm') private childForm?: SchemaFormComponent;
-    @ViewChild('railContainer') set railContainer(ref: ElementRef<HTMLElement> | undefined) {
-        const element = ref?.nativeElement ?? null;
-        if (element === this.railElement) return;
-        this.railElement = element;
-        this.setupRailHeightSync();
-    }
+    @ViewChild(SchemaFormNavComponent) private nav?: SchemaFormNavComponent;
     @ViewChild('contentContainer') contentContainerRef?: ElementRef;
 
     @Input('schema') schema: Schema;
@@ -161,7 +146,6 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     ) {
         this.group = this.fb.group({});
         this.model = null;
-        this.railHiddenProp.load();
         this.preferences?.reload();
         this.metadataSub = this.preferences?.showFieldMetadata$.subscribe((value) => {
             if (this.model) {
@@ -171,16 +155,17 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         });
     }
 
-    public get railHidden(): boolean {
-        return this.railHiddenProp.value;
-    }
-
     public get hasSections(): boolean {
         return this.layout === 'sections' && this.sections.length > 0;
     }
 
     public get activeSection(): IFormSection | null {
         return this.hasSections ? this.sections[this.activeIndex] ?? null : null;
+    }
+
+    /** The small line of the section bar. */
+    public get barLabel(): string {
+        return this.screen === 'section' ? `Section ${this.activeIndex + 1} of ${this.sections.length}` : '';
     }
 
     public get formOwner(): FieldForm | null {
@@ -219,48 +204,6 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     ngAfterViewInit(): void {
     }
 
-    // The rail is sticky inside the host's scroll container, whose height depends on the dialog
-    // size and the banners shown above the form. Sync the rail height to that container.
-    private setupRailHeightSync(): void {
-        this.railResizeObserver?.disconnect();
-        this.railResizeObserver = null;
-        this.railScrollParent = null;
-        if (!this.railElement) {
-            return;
-        }
-        this.railScrollParent = this.getScrollParent(this.railElement);
-        if (!this.railScrollParent) {
-            return;
-        }
-        this.railResizeObserver = new ResizeObserver(() => this.updateRailHeight());
-        this.railResizeObserver.observe(this.railScrollParent);
-        this.updateRailHeight();
-    }
-
-    private updateRailHeight(): void {
-        if (!this.railElement || !this.railScrollParent) {
-            return;
-        }
-        // The rail fills the visible height of the scroll area, however short the section is
-        const style = getComputedStyle(this.railScrollParent);
-        const padding = (parseFloat(style.paddingTop) || 0) + (parseFloat(style.paddingBottom) || 0);
-        const height = `${Math.max(0, this.railScrollParent.clientHeight - padding)}px`;
-        this.railElement.style.maxHeight = height;
-        this.railElement.style.minHeight = height;
-    }
-
-    private getScrollParent(element: HTMLElement): HTMLElement | null {
-        let node: HTMLElement | null = element.parentElement;
-        while (node) {
-            const overflowY = getComputedStyle(node).overflowY;
-            if (overflowY === 'auto' || overflowY === 'scroll') {
-                return node;
-            }
-            node = node.parentElement;
-        }
-        return null;
-    }
-
     ngOnChanges(changes: SimpleChanges) {
         if (changes.formulas && this.model) {
             this.buildFormulaModel();
@@ -272,7 +215,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         if (changes.schema && !changes.schema.firstChange) {
             this.screen = 'overview';
             this.activeIndex = 0;
-            this.drawerOpen = false;
+            this.nav?.closeDrawer();
         }
         if (this.model && !changes.schema && !changes.fields && !changes.hide && !changes.readonly
             && !changes.conditions && !changes.presetDocument && !changes.requiredFields) {
@@ -390,8 +333,6 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         if (this.model) {
             this.model.destroy();
         }
-        this.railResizeObserver?.disconnect();
-        this.railResizeObserver = null;
     }
 
     private buildFields() {
@@ -705,6 +646,24 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         return true;
     }
 
+    /** The Overview cards, one per section; rebuilt with the completion. */
+    public overviewCards: IOverviewCard[] = [];
+
+    private buildOverviewCards(): IOverviewCard[] {
+        return (this.completion?.sections ?? []).map((stats) => ({
+            id: stats.id,
+            title: stats.title,
+            pill: { text: this.sectionState(stats) },
+            ring: {
+                pct: stats.total ? Math.min(1, stats.answered / stats.total) * 100 : 0,
+                done: stats.total > 0 && stats.answered >= stats.total,
+                optional: stats.total === 0
+            },
+            meta: stats.total === 0 ? 'Optional' : `${stats.answered} of ${stats.total} required answered`,
+            action: this.sectionAction(stats)
+        }));
+    }
+
     /** Sub-schemas and array rows inside the sub-schema of the active section, for Expand/Collapse all. */
     public nestedCards: { open: boolean }[] = [];
     /** The direct sub-schema cards inside the active section, listed under it in the rail. */
@@ -752,6 +711,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         if (!model) {
             this.sections = [];
             this.completion = null;
+            this.overviewCards = [];
             this.nestedCards = [];
             this.activeCards = [];
             this.promotedName = null;
@@ -765,7 +725,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             this.activeIndex = kept >= 0 ? kept : Math.min(this.activeIndex, Math.max(0, sections.length - 1));
             if (!sections.length) {
                 this.screen = 'overview';
-                this.drawerOpen = false;
+                this.nav?.closeDrawer();
             }
         }
         this.updateNestedCards();
@@ -773,6 +733,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         const completion = computeCompletion(model.controls, sections);
         if (!sameCompletion(this.completion, completion)) {
             this.completion = completion;
+            this.overviewCards = this.buildOverviewCards();
             this.completionChange.emit(completion);
         }
     }
@@ -862,7 +823,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             this.loading = true;
             this.previewBusyChange.emit(true);
         }
-        this.drawerOpen = false;
+        this.nav?.closeDrawer();
         change();
         this.updateNestedCards();
         this.changeDetectorRef.detectChanges();
@@ -883,7 +844,8 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         }
     }
 
-    public onRailCard(card: IFieldControl<any>): void {
+    public onRailCard(railCard: IRailCard): void {
+        const card = railCard as IFieldControl<any>;
         // The card is drawn by the nested form of its section's sub-schema, which draws nothing while
         // that sub-schema is closed and registers its own cards in Preview
         for (const item of this.activeSection?.controls ?? []) {
@@ -892,22 +854,11 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             }
         }
         card.open = true;
-        this.drawerOpen = false;
+        this.nav?.closeDrawer();
         this.changeDetectorRef.detectChanges();
         this.childForm?.prepareOpenPreviewSections?.();
         this.changeDetectorRef.detectChanges();
         this.scrollToField(card.id);
-    }
-
-    public toggleRail(): void {
-        this.railHiddenProp.value = !this.railHiddenProp.value;
-        this.railHiddenProp.save();
-        this.drawerOpen = false;
-        this.changeDetectorRef.detectChanges();
-    }
-
-    public setDrawer(open: boolean): void {
-        this.drawerOpen = open;
     }
 
     /** First section with required answers left; the primary Overview action opens it. */
@@ -974,10 +925,6 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         return stats.answered > 0 ? 'Continue' : 'Start';
     }
 
-    public ringOffset(stats: ISectionCompletion, length: number): number {
-        return length * (1 - (stats.total ? Math.min(1, stats.answered / stats.total) : 0));
-    }
-
     public get percent(): number {
         const { answered = 0, total = 0 } = this.completion ?? {};
         return total ? Math.round((answered / total) * 100) : 0;
@@ -987,7 +934,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         setTimeout(() => {
             const container: HTMLElement | undefined = this.contentContainerRef?.nativeElement;
             if (container) {
-                this.getScrollParent(container)?.scrollTo({ top: 0 });
+                getScrollParent(container)?.scrollTo({ top: 0 });
             }
         });
     }
