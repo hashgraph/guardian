@@ -178,6 +178,7 @@
             }
           </div>
           @if (comments) {
+            <!-- Hidden on purpose in the JSON view: discussions are tied to the rendered fields -->
             <div class="comments-content" [hidden]="currentTab !== 0">
               <policy-comments
                 #discussionComponent

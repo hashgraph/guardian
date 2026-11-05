@@ -170,6 +170,13 @@ describe('VCFullscreenDialog', () => {
             expect(el(fixture, '.header-text')?.textContent?.trim()).toBe('Project Description');
         }));
 
+        it('keeps a title configured by the policy author', fakeAsync(() => {
+            const fixture = render({ title: 'Project submittal' });
+            fixture.componentInstance.onSchemaName('Project Description');
+            refresh(fixture);
+            expect(el(fixture, '.header-text')?.textContent?.trim()).toBe('Project submittal');
+        }));
+
         it('keeps the document alive in the JSON view', fakeAsync(() => {
             const fixture = render({});
             fixture.componentInstance.onToggle(1);

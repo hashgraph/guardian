@@ -557,7 +557,7 @@ describe('SchemaFormViewComponent', () => {
             fixture.detectChanges();
             const copy = fixture.nativeElement.querySelector('.sf-meta sf-copy');
             expect(copy).not.toBeNull();
-            expect(copy.querySelector('button')?.getAttribute('aria-label') ?? copy.textContent).toBeDefined();
+            expect(copy.getAttribute('tip')).toBe('Copy path');
         });
 
         it('shows the path of a field in a row with the row index', () => {

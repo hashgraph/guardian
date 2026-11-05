@@ -330,7 +330,9 @@ export class VCFullscreenDialog implements OnDestroy {
     }
 
     public onSchemaName(name: string): void {
-        this.schemaTitle = name;
+        // A title configured by the policy author wins; the bare type ("VC") is only a placeholder
+        const placeholder = !this.title || this.title === this.type || /^V[CP] Document$/.test(this.title);
+        this.schemaTitle = placeholder ? name : '';
         this.ref.markForCheck();
     }
 
