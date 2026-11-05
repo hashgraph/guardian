@@ -26,15 +26,18 @@ export class ConfigPage {
 	}
 
 	// Types values into a schema-driven form (app-schema-form-root) by field name. Each
-	// field renders as .form-field whose .label-field shows the schema `description`
-	// (prefixed with * when required); the editable control is the textarea inside it.
+	// field renders as .form-field whose .sf-label-text shows the schema `description`
+	// (required fields carry a * outside it); the editable control is the textarea inside it.
 	fillSchemaFormFields(fields) {
 		for (const [name, value] of Object.entries(fields)) {
-			cy.get('app-schema-form-root .form-field', { timeout: 30000 }).each(($field) => {
-				const label = $field.find('.label-field').first().text().replace(/[*\s]/g, '');
-				if (label === name.replace(/[*\s]/g, '')) {
-					cy.wrap($field).find('textarea, input').first().click().clear().type(value);
-				}
+			cy.get('app-schema-form-root .form-field', { timeout: 30000 }).then(($fields) => {
+				const $field = $fields.filter((_, field) => (
+					field.querySelector('.sf-label-text')?.textContent.replace(/[*\s]/g, '') === name.replace(/[*\s]/g, '')
+				));
+				expect($field, `form field "${name}"`).to.have.length(1);
+				cy.wrap($field).find('textarea, input').first().click();
+				cy.wrap($field).find('textarea, input').first().clear();
+				cy.wrap($field).find('textarea, input').first().type(value);
 			});
 		}
 	}
@@ -174,6 +177,10 @@ export class ConfigPage {
 		if (hederaId === 'random') {
 			this.generateHederaAccount(reHedera);
 		}
+		// Read before leaving the step: a recovery spec needs the generated credentials.
+		const credentials = {};
+		cy.get('#operatorId').invoke('val').then((accountId) => { credentials.accountId = accountId; });
+		cy.get('#operatorKey').invoke('val').then((accountKey) => { credentials.accountKey = accountKey; });
 		cy.contains('button', 'Next').should('be.enabled');
 		this.clickLabeledButton('Next');
 		cy.contains('Generate new DID document.').should('be.visible', { timeout: 15000 });
@@ -196,6 +203,48 @@ export class ConfigPage {
 		cy.location('pathname', { timeout: 60000 }).should('include', '/task');
 		cy.location('pathname', { timeout: 180000 }).should('not.include', '/task');
 		cy.contains('did:hedera', { timeout: 15000 });
+		return cy.then(() => credentials);
+	}
+
+	// Restores a Standard Registry profile from its Hedera credentials: the
+	// profile-less account opens the wizard at the HEDERA step, "Restore data"
+	// skips the custom DID document, and the topic found on the account is submitted.
+	// The restore task itself runs after this returns; the caller asserts its outcome.
+	restoreProfileFromHedera({ accountId, accountKey }) {
+		this.hederaStep(accountId, accountKey);
+		cy.contains('button', 'Restore data').should('be.enabled');
+		this.clickLabeledButton('Restore data');
+		cy.contains('button', 'Next').should('be.enabled');
+		this.clickLabeledButton('Next');
+		this.loadRestorableTopic();
+		this.clickLabeledButton('Proceed');
+	}
+
+	// "Load topics" is a worker task and the newest topic is then selected automatically
+	// (which is what enables Proceed). guardian-service caches the main topic for 2 minutes,
+	// so a registry created since the last read only shows up once that cache expires: click
+	// again until a topic is selected.
+	loadRestorableTopic() {
+		const MAX_ATTEMPTS = 12;
+		const RETRY_PACING_MS = 15000;
+		const attempt = (number) => {
+			this.clickLabeledButton('Load topics');
+			// eslint-disable-next-line cypress/no-unnecessary-waiting -- the task result has no DOM signal when it finds nothing; give it time to land before checking
+			cy.wait(5000);
+			cy.window().then((win) => {
+				const proceed = Array.from(win.document.querySelectorAll('button'))
+					.find((b) => (b.textContent || '').trim() === 'Proceed');
+				if (proceed && !proceed.disabled) {
+					return;
+				}
+				if (number >= MAX_ATTEMPTS) {
+					throw new Error(`no restorable topic found after ${MAX_ATTEMPTS} attempts`);
+				}
+				// eslint-disable-next-line cypress/no-unnecessary-waiting -- pacing against the 2 minute server-side cache
+				cy.wait(RETRY_PACING_MS).then(() => attempt(number + 1));
+			});
+		};
+		attempt(1);
 	}
 
 	// Completes the user onboarding wizard for any account that landed on
