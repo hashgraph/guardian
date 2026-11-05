@@ -13,11 +13,15 @@ const userPoliciesPage = new UserPoliciesPage();
 import { TokensPage } from '../../pages/tokensPage';
 const tokensPage = new TokensPage();
 
+import { randomInt } from '../../../../support/random';
+
+const IREC3_FILE = '../Methodology Library/International Renewable Energy Certificate (iREC)/Policies/IRec Policy 3 (1707126011.005978889).policy';
+
 context('Workflow iREC 3 Policy', { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const userUsername = Cypress.env('User');
-    const name = 'iRec_3';
+    const runName = randomInt(1000000000) + 'testName';
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
@@ -25,59 +29,70 @@ context('Workflow iREC 3 Policy', { tags: ['ui'] }, () => {
     })
 
     it('checks iREC 3 policy workflow', () => {
-        //Import and publish policy
+        //Import and publish policy (file import: the localnode gateway does not
+        //answer the IPFS message lookups the IPFS import needs)
         homePage.login(SRUsername);
         policiesPage.openPoliciesTab();
-        policiesPage.importPolicyFromIPFS('1707126011.005978889');  //iRec3
+        policiesPage.importPolicyFromFile(IREC3_FILE);
+        policiesPage.renameImportedPolicy(runName);
+        policiesPage.publishPolicy(runName);
         policiesPage.backToPoliciesList();
-        policiesPage.checkStatus(name, 'Draft');
-        policiesPage.publishPolicy(name);
-        policiesPage.backToPoliciesList();
-        policiesPage.checkStatus(name, 'Published');
+        policiesPage.checkStatus(runName, 'Published');
 
-        //Give permissions to user
-        userManagementPage.openUserManagementTab();
-        userManagementPage.assignPolicyToUser(userUsername, name);
+        //The token must be associated with the user's Hedera account before
+        //the workflow can transfer it. /tokens-user is restricted to the USER
+        //role, so the SR (STANDARD_REGISTRY) cannot open it: the SR reads the
+        //token id from the /tokens grid, and the user then self-associates
+        //from the per-token view, which lists the viewer's own account.
+        tokensPage.openTokensTab();
+        tokensPage.storeTokenId(runName);
         homePage.logOut();
 
-        //Token associate
         homePage.login(userUsername);
-        tokensPage.openUserTokensTab();
-        tokensPage.associatePolicyToken(name);
+        tokensPage.associatePolicyToken();
+        homePage.logOut();
+
+        //Give permissions to user
+        homePage.login(SRUsername);
+        userManagementPage.openUserManagementTab();
+        userManagementPage.assignPolicyToUser(userUsername, runName);
+        homePage.logOut();
+
         //Register user as Registrant and create application
+        homePage.login(userUsername);
         userPoliciesPage.openPoliciesTab();
-        userPoliciesPage.openPolicy(name);
+        userPoliciesPage.openPolicy(runName);
         userPoliciesPage.registerInPolicy();
         homePage.logOut();
 
         //Token grant KYC
         homePage.login(SRUsername);
         tokensPage.openTokensTab();
-        tokensPage.grantKYC(name, userUsername);
+        tokensPage.grantKYC(runName, userUsername);
         //Approve application
         policiesPage.openPoliciesTab();
-        policiesPage.openPolicy(name);
+        policiesPage.openPolicy(runName);
         policiesPage.approveUserInPolicy();
         homePage.logOut();
 
         //Create device
         homePage.login(userUsername);
         userPoliciesPage.openPoliciesTab();
-        userPoliciesPage.openPolicy(name);
+        userPoliciesPage.openPolicy(runName);
         userPoliciesPage.createDeviceInPolicy();
         homePage.logOut();
 
         //Approve device
         homePage.login(SRUsername);
         policiesPage.openPoliciesTab();
-        policiesPage.openPolicy(name);
+        policiesPage.openPolicy(runName);
         policiesPage.approveDeviceInPolicy();
         homePage.logOut();
 
         //Create issue request
         homePage.login(userUsername);
         userPoliciesPage.openPoliciesTab();
-        userPoliciesPage.openPolicy(name);
+        userPoliciesPage.openPolicy(runName);
         //TBD: verify that datepicker works
         userPoliciesPage.createIssueRequestInPolicy();
         homePage.logOut();
@@ -85,10 +100,10 @@ context('Workflow iREC 3 Policy', { tags: ['ui'] }, () => {
         //Approve issue request and verify balance increase
         homePage.login(SRUsername);
         policiesPage.openPoliciesTab();
-        policiesPage.openPolicy(name);
+        policiesPage.openPolicy(runName);
         policiesPage.approveIssueRequestInPolicy();
         tokensPage.openTokensTab();
-        tokensPage.verifyBalance(name, userUsername);
+        tokensPage.verifyBalance(runName, userUsername);
         homePage.logOut();
     });
 });

@@ -10,14 +10,13 @@ const userManagementPage = new UserManagementPage();
 import { UserPoliciesPage } from '../../pages/userPoliciesPage';
 const userPoliciesPage = new UserPoliciesPage();
 
-import { TokensPage } from '../../pages/tokensPage';
-const tokensPage = new TokensPage();
+import { randomInt } from '../../../../support/random';
 
 context('Workflow iREC 3 Policy', { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const userUsername = Cypress.env('User');
-    const name = 'iRec_3_BtnFix';
+    const runName = randomInt(1000000000) + 'testName';
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
@@ -28,32 +27,31 @@ context('Workflow iREC 3 Policy', { tags: ['ui'] }, () => {
         homePage.login(SRUsername);
         policiesPage.openPoliciesTab();
         policiesPage.importPolicyFromFile('iRec_3_BtnFix.policy');  //iRec3
+        policiesPage.renameImportedPolicy(runName);
+        policiesPage.publishPolicy(runName);
         policiesPage.backToPoliciesList();
-        policiesPage.checkStatus(name, 'Draft');
-        policiesPage.publishPolicy(name);
-        policiesPage.backToPoliciesList();
-        policiesPage.checkStatus(name, 'Published');
+        policiesPage.checkStatus(runName, 'Published');
         userManagementPage.openUserManagementTab();
-        userManagementPage.assignPolicyToUser(userUsername, name);
+        userManagementPage.assignPolicyToUser(userUsername, runName);
         homePage.logOut();
 
         homePage.login(userUsername);
         userPoliciesPage.openPoliciesTab();
-        userPoliciesPage.openPolicy(name);
+        userPoliciesPage.openPolicy(runName);
         userPoliciesPage.registerInPolicy();
         homePage.logOut();
 
         homePage.login(SRUsername);
         policiesPage.openPoliciesTab();
-        policiesPage.openPolicy(name);
+        policiesPage.openPolicy(runName);
         policiesPage.approveUserInPolicy();
         policiesPage.backToPoliciesListBtn();
-        policiesPage.discontinuePolicy(name);
+        policiesPage.discontinuePolicy(runName);
         homePage.logOut();
 
         homePage.login(userUsername);
         userPoliciesPage.openPoliciesTab();
-        userPoliciesPage.openPolicy(name);
+        userPoliciesPage.openPolicy(runName);
         userPoliciesPage.checkRevokeButtonDisappear();
         homePage.logOut();
     });

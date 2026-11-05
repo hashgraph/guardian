@@ -8,7 +8,9 @@ const policiesPage = new PoliciesPage();
 context('Edit Policy. Validation flow', { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
-    const name = randomInt(999) + 'testName';
+    // A 1000-space name collides with policies left behind by earlier runs (the app
+    // suffixes duplicates, so a name search then matches both) - 1e9 keeps re-runs unique.
+    const name = randomInt(1000000000) + 'testName';
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
@@ -23,14 +25,14 @@ context('Edit Policy. Validation flow', { tags: ['ui'] }, () => {
         policiesPage.backToPoliciesList();
         policiesPage.checkStatus(name, 'Draft');
         policiesPage.openEditingPolicy(name);
-        policiesPage.clickOnButtonByText('Validation');
+        policiesPage.runValidation();
         policiesPage.verifyIfValidationIsSuccessful();
     });
 
     it('Verify that the validation is displayed successfully', () => {
         policiesPage.openEditingPolicy(name);
         policiesPage.addNewBlock('Action');
-        policiesPage.clickOnButtonByText('Validation');
+        policiesPage.runValidation();
         policiesPage.verifyIfValidationIsDisplayed();
     });
 
@@ -38,7 +40,7 @@ context('Edit Policy. Validation flow', { tags: ['ui'] }, () => {
         policiesPage.openEditingPolicy(name);
         policiesPage.addNewBlock('Action');
         policiesPage.addNewBlock('Button');
-        policiesPage.clickOnButtonByText('Validation');
+        policiesPage.runValidation();
         policiesPage.verifyIfValidationCountContains(2);
     });
 

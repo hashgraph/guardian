@@ -95,6 +95,7 @@ const API = {
     Tools: 'tools/',
     ToolsImportMsg: 'tools/import/message',
     ToolsImportFile: 'tools/import/file',
+    ToolsImportFileMetadata: 'tools/import/file-metadata',
     ToolsAsBlock: 'tools/menu/all',
 
     //TrustChains
@@ -122,6 +123,7 @@ const API = {
     PolicisImportMsg: 'policies/import/message/',
     PolicisImportMsgPush: 'policies/push/import/message/',
     PolicisImportFile: 'policies/import/file/',
+    PolicisImportFileMetadata: 'policies/import/file-metadata',
     PolicisImportMsgPreview: 'policies/import/message/preview',
     PolicisImportMsgPreviewPush: 'policies/push/import/message/preview',
     PolicyGroups: 'groups/',

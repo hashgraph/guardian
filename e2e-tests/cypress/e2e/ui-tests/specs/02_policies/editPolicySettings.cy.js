@@ -8,7 +8,9 @@ const policiesPage = new PoliciesPage();
 context('Edit Policy. Settings flow', { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
-    const name = randomInt(999) + 'testName';
+    // A 1000-space name collides with policies left behind by earlier runs (the app
+    // suffixes duplicates, so a name search then matches both) - 1e9 keeps re-runs unique.
+    const name = randomInt(1000000000) + 'testName';
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
@@ -23,20 +25,14 @@ context('Edit Policy. Settings flow', { tags: ['ui'] }, () => {
         policiesPage.backToPoliciesList();
         policiesPage.checkStatus(name, 'Draft');
         policiesPage.openEditingPolicy(name);
-        policiesPage.clickOnButtonByText('Settings');
-        policiesPage.verifyIfTextExists('Settings');
-        policiesPage.verifyIfTextExists('Cancel');
-        policiesPage.verifyIfTextExists('Save');
-        policiesPage.verifyIfTextExists('Theme');
-        policiesPage.verifyIfTextExists('New');
-        policiesPage.verifyIfTextExists('Copy');
-        policiesPage.verifyIfTextExists('Import');
-        policiesPage.verifyIfTextExists('Blocks');
-        policiesPage.verifyIfTextExists('Syntax');
-        policiesPage.verifyIfTextExists('Condition');
-        policiesPage.verifyIfTextExists('Style');
+        policiesPage.openSettingsDrawer();
+        policiesPage.verifyIfTextExists('Name');
         policiesPage.verifyIfTextExists('Description');
-        policiesPage.clickOnButtonByText(' Cancel ');
+        policiesPage.closeSettingsDrawer();
+        policiesPage.switchView('JSON');
+        policiesPage.verifyIfContainerJsonIsDisplayed();
+        policiesPage.switchView('Tree');
+        policiesPage.verifyIfTreeContainerIsDisplayed();
     });
 
     after(() => {
