@@ -168,30 +168,30 @@ export const seededMessageId = (envKey) => {
 };
 
 /**
- * Creates a minimal schema in an existing topic and publishes it, which uploads the schema to IPFS
- * and submits the publishing message to Hedera. Same reasoning as publishPolicyFixture: a schema
- * message hardcoded in the test config eventually becomes unretrievable.
+ * Creates a minimal draft schema in the topic of an existing policy, where POLICY category schemas
+ * belong. Same reasoning as publishPolicyFixture: a schema message hardcoded in the test config
+ * eventually becomes unretrievable.
  *
- * Yields `{ messageId, topicId }` of the freshly published schema.
+ * Yields `{ id, uuid, name, topicId }` of the schema.
  */
-export const publishSchema = (username) =>
+export const createDraftSchema = (username) =>
     Authorization.getAccessToken(username).then((authorization) => cy.request({
         method: METHOD.GET,
         url: API.ApiServer + API.Policies,
         headers: { authorization },
     }).then((response) => {
         expect(response.status).to.eq(STATUS_CODE.OK);
-        // a policy topic, so the schema is created where POLICY category schemas belong
         const topicId = response.body.at(0)?.topicId;
         expect(topicId, 'topic of an existing policy to create the schema in').to.be.a('string');
         const uuid = `0000b23a-b1ea-408f-a573${randomInt(999999)}a2060a`;
+        const name = `seededSchema${randomInt(999999)}`;
         return cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.Schemas + topicId,
             headers: { authorization },
             body: {
                 uuid,
-                name: `seededSchema${randomInt(999999)}`,
+                name,
                 entity: 'VC',
                 status: 'DRAFT',
                 readonly: false,
@@ -242,31 +242,41 @@ export const publishSchema = (username) =>
             expect(listResponse.status).to.eq(STATUS_CODE.OK);
             const schema = listResponse.body.find((item) => item?.uuid === uuid);
             expect(schema, 'created schema').to.not.be.undefined;
-            return cy.request({
-                method: METHOD.PUT,
-                url: `${API.ApiServer}${API.Schemas}${schema.id}/publish`,
-                headers: { authorization },
-                body: { version: `1.${randomInt(999)}` },
-                timeout: PUBLISH_TIMEOUT,
-            }).then((publishResponse) => {
-                expect(publishResponse.status, 'schema publish').to.be.oneOf([STATUS_CODE.OK, STATUS_CODE.SUCCESS]);
-                const published = publishResponse.body.find((item) => item?.uuid === uuid);
-                expect(published, 'published schema').to.not.be.undefined;
-                expect(published.status, 'published schema status').to.eq('PUBLISHED');
-                return cy.request({
-                    method: METHOD.GET,
-                    url: `${API.ApiServer}${API.Schemas}${schema.id}/${API.ExportMessage}`,
-                    headers: { authorization },
-                    timeout: PUBLISH_TIMEOUT,
-                });
-            }).then((exportResponse) => {
-                expect(exportResponse.status).to.eq(STATUS_CODE.OK);
-                const { messageId } = exportResponse.body;
-                expect(messageId, 'Hedera message ID of the published schema').to.match(HEDERA_MESSAGE_ID);
-                return cy.wrap({ messageId, topicId }, { log: false });
-            });
+            return cy.wrap({ id: schema.id, uuid, name, topicId }, { log: false });
         });
     }));
+
+/**
+ * Creates a minimal schema in an existing topic (see createDraftSchema) and publishes it, which
+ * uploads the schema to IPFS and submits the publishing message to Hedera.
+ *
+ * Yields `{ messageId, topicId, name }` of the freshly published schema.
+ */
+export const publishSchema = (username) =>
+    createDraftSchema(username).then(({ id, uuid, name, topicId }) =>
+        Authorization.getAccessToken(username).then((authorization) => cy.request({
+            method: METHOD.PUT,
+            url: `${API.ApiServer}${API.Schemas}${id}/publish`,
+            headers: { authorization },
+            body: { version: `1.${randomInt(999)}` },
+            timeout: PUBLISH_TIMEOUT,
+        }).then((publishResponse) => {
+            expect(publishResponse.status, 'schema publish').to.be.oneOf([STATUS_CODE.OK, STATUS_CODE.SUCCESS]);
+            const published = publishResponse.body.find((item) => item?.uuid === uuid);
+            expect(published, 'published schema').to.not.be.undefined;
+            expect(published.status, 'published schema status').to.eq('PUBLISHED');
+            return cy.request({
+                method: METHOD.GET,
+                url: `${API.ApiServer}${API.Schemas}${id}/${API.ExportMessage}`,
+                headers: { authorization },
+                timeout: PUBLISH_TIMEOUT,
+            });
+        }).then((exportResponse) => {
+            expect(exportResponse.status).to.eq(STATUS_CODE.OK);
+            const { messageId } = exportResponse.body;
+            expect(messageId, 'Hedera message ID of the published schema').to.match(HEDERA_MESSAGE_ID);
+            return cy.wrap({ messageId, topicId, name }, { log: false });
+        })));
 
 /**
  * Imports a policy from a Hedera message, retrying while the freshly pinned IPFS content is still

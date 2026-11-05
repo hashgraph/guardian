@@ -1,6 +1,8 @@
 import URL from '../../../support/GuardianUrls';
 import * as Checks from '../../../support/checkingMethods';
 import CommonElements from '../../../support/defaultUIElements';
+import { dropFile } from '../../../support/importFlow';
+import { addTag, deleteTag } from '../../../support/tagsExplorer';
 
 const SchemaPageLocators = {
 
@@ -62,27 +64,179 @@ const SchemaPageLocators = {
     dialogActions: 'mat-dialog-actions',
 };
 
+// The schemas list (tree table grouped by policy, newest first) and the full-page schema editor.
+const List = {
+    row: 'tr.guardian-grid-row',
+    nameCell: 'td .text-truncate',
+    searchInput: 'input[placeholder="Search"]',
+    toolbarButton: (tooltip) => `span[ptooltip="${tooltip}"] p-button`,
+    publishButton: 'div.btn-approve:contains("Publish")',
+    editIcon: 'div[ptooltip="Edit"]',
+    menuIcon: 'div[ptooltip="Menu"]',
+    menuButton: '.menu-container p-button',
+    dialog: 'div.p-dialog',
+    deleteConfirm: 'button.guardian-button-delete',
+    versionInput: 'input#version',
+    ipfsInput: 'input#timestamp',
+    policyDropdown: 'p-select#policyDropdown',
+    option: 'li[role="option"]',
+    exportFileButton: 'button:contains("Save to file")',
+    exportMessageIdButton: 'button:contains("Copy message identifier")',
+};
+
+const Editor = {
+    newSchemaNameInput: 'input.sc-rp-input[placeholder="e.g. Monitoring Report"]',
+    schemaNameInput: 'input.sc-schema-props-name',
+    fieldDescriptionInput: 'input[placeholder="Field description"]',
+    sidebarTab: 'button.sc-sidebar-tab',
+};
+
+const nameCellMatches = (name) => (_, row) => row.querySelector(List.nameCell)?.textContent.trim() === name;
+
 export class SchemaPage {
 
     openSchemasTab() {
         cy.visit(URL.Root + URL.Schemas);
         Checks.waitForLoading();
+        // The list is loaded once either its rows or the empty-state message are rendered.
+        cy.get(`${List.row}, div.guardian-user-not-data`, { timeout: 30000 }).should('exist');
     }
 
     openSchemasSubtab(name) {
-        cy.contains(SchemaPageLocators.schemaSubtub(name)).then(($tab) => {
-            if ($tab.get(0).getAttribute('aria-selected') == 'false')
-                {cy.wrap($tab).click();}
-        })
+        cy.contains('p-tab', `${name} Schemas`).then(($tab) => {
+            if ($tab.attr('data-p-active') !== 'true') {
+                cy.wrap($tab).click();
+            }
+        });
         Checks.waitForLoading();
     }
 
+    // The list is searched server-side by name, so a schema is found whatever page or policy group it is in.
+    _row(name) {
+        cy.get(List.searchInput).clear();
+        cy.get(List.searchInput).type(`${name}{enter}`);
+        Checks.waitForLoading();
+        return cy.get(List.row, { timeout: 30000 }).filter(nameCellMatches(name));
+    }
+
+    // Creates a draft policy schema with one field (an empty schema cannot be saved) in the editor.
     createSchema(schemaName) {
-        cy.get(SchemaPageLocators.schemaCreateButton).click();
-        cy.get(SchemaPageLocators.schemaNameInput).type(schemaName);
-        cy.get(SchemaPageLocators.dialogSaveButton).click();
+        cy.get(List.toolbarButton('Create a Schema')).click();
+        cy.location('pathname', { timeout: 15000 }).should('include', 'schema-configuration');
+        cy.get(Editor.newSchemaNameInput, { timeout: 15000 }).invoke('val', schemaName).trigger('input');
+        cy.get(Editor.newSchemaNameInput).should('have.value', schemaName);
+        cy.contains('button', 'Create').click();
+        cy.contains(Editor.sidebarTab, 'Fields').click();
+        cy.contains('String').click();
+        cy.get(Editor.fieldDescriptionInput).type('A field');
+        this._saveEditor();
+        this.openSchemasTab();
+        this._row(schemaName).should('exist');
+    }
+
+    _saveEditor() {
+        cy.contains('button', 'Save all').click();
+        Checks.waitForLoading();
+        cy.contains('button', 'Save all').should('not.have.class', 'dirty');
+    }
+
+    // Imports the schema into the first policy offered by the preview dialog.
+    _importFromPreview(schemaName) {
+        cy.contains(List.dialog, 'Schema Import Preview', { timeout: 60000 }).as('preview');
+        cy.get('@preview').find(List.policyDropdown).click();
+        cy.get(List.option).first().click();
+        cy.get('@preview').contains('button', 'Import').should('not.be.disabled').click();
         Checks.waitForTaskComplete();
-        cy.contains(schemaName).should('exist');
+        Checks.waitForLoading();
+        this._row(schemaName).should('exist');
+    }
+
+    importPolicySchemaIPFS(schemaMessageId, schemaName) {
+        cy.get(List.toolbarButton('Import')).click();
+        cy.contains(List.dialog, 'Select action').contains('Import from IPFS').click();
+        // The field re-renders as soon as the typed text is a valid id and drops the remaining
+        // keystrokes, so the whole value is set at once.
+        cy.get(List.ipfsInput).invoke('val', schemaMessageId).trigger('input');
+        cy.get(List.ipfsInput).should('have.value', schemaMessageId);
+        cy.contains(List.dialog, 'Select action').contains('button', 'Import').click();
+        this._importFromPreview(schemaName);
+    }
+
+    importSchemaFile(schemaFileName, schemaName) {
+        cy.get(List.toolbarButton('Import')).click();
+        cy.contains(List.dialog, 'Select action').contains('Import from File').click();
+        dropFile(schemaFileName);
+        this._importFromPreview(schemaName);
+    }
+
+    publishPolicySchema(name, version = '1.0.0') {
+        this._row(name).find(List.publishButton).click();
+        cy.get(List.versionInput, { timeout: 15000 }).invoke('val', version).trigger('input');
+        cy.get(List.versionInput).should('have.value', version);
+        cy.get(List.dialog).contains('button', 'Ok').click();
+        Checks.waitForTaskComplete();
+        Checks.waitForLoading();
+        this._row(name).should('contain.text', 'Published');
+    }
+
+    _openMenu(name) {
+        this._row(name).find(List.menuIcon).click();
+        cy.get(List.menuButton, { timeout: 15000 }).should('be.visible');
+    }
+
+    // Only drafts can be deleted, and the same schema name can exist under several policies.
+    deleteSchema(name) {
+        this._row(name).filter(':contains("Draft")').first().find(List.menuIcon).click();
+        cy.get(List.menuButton, { timeout: 15000 }).should('be.visible');
+        cy.contains(List.menuButton, 'Delete schema').click();
+        cy.get(List.deleteConfirm, { timeout: 15000 }).click();
+        Checks.waitForLoading();
+        cy.get('body').should(($body) => {
+            expect($body.find(List.row).filter(nameCellMatches(name)).filter(':contains("Draft")').length).to.eq(0);
+        });
+    }
+
+    documentView(name) {
+        this._openMenu(name);
+        cy.contains(List.menuButton, /^\s*Schema\s*$/).click();
+        cy.contains(List.dialog, 'Schema').should('exist');
+    }
+
+    editPolicySchema(name, newName) {
+        this._row(name).find(List.editIcon).click();
+        cy.location('pathname', { timeout: 15000 }).should('include', 'schema-configuration');
+        cy.get(Editor.schemaNameInput, { timeout: 15000 }).invoke('val', newName).trigger('input');
+        cy.get(Editor.schemaNameInput).should('have.value', newName);
+        this._saveEditor();
+        this.openSchemasTab();
+        this._row(newName).should('exist');
+    }
+
+    exportSchemaFile(name) {
+        this._openMenu(name);
+        cy.contains(List.menuButton, 'Export schema').click();
+        cy.get(List.dialog).find(List.exportFileButton).click();
+        cy.verifyDownload('.schema', { contains: true });
+    }
+
+    exportSchemaIPFS(name) {
+        this._openMenu(name);
+        cy.contains(List.menuButton, 'Export schema').click();
+        cy.get(List.dialog).find(List.exportMessageIdButton).realClick();
+        cy.window().then((win) => {
+            win.navigator.clipboard.readText().then((text) => {
+                //regex numbers.numbers
+                expect(text).to.match(/\d+\.\d+/g);
+            });
+        });
+    }
+
+    addTag(name, tagName) {
+        addTag(() => this._row(name), tagName);
+    }
+
+    deleteTag(name, tagName) {
+        deleteTag(() => this._row(name), tagName);
     }
 
     createSystemSchema(){
@@ -93,120 +247,6 @@ export class SchemaPage {
         cy.get(SchemaPageLocators.dialogSaveButton).click();
         Checks.waitForTaskComplete();
         cy.contains(schemaName).should('exist');}
-
-    importPolicySchemaIPFS(schemaMessageId, schemaName) {
-        cy.get(SchemaPageLocators.schemaImportButton).click();
-        cy.contains(SchemaPageLocators.importIPFSButton).click();
-        cy.get(SchemaPageLocators.messageTimestampInput).type(schemaMessageId);
-        cy.get(SchemaPageLocators.schemaFinalImportButton).click();
-        Checks.waitForElement("div:contains('Description')");
-        cy.get(CommonElements.dialogWindow).last().find(CommonElements.dropdown).click();
-        cy.get(CommonElements.dropdownOption).eq(1).click();
-        cy.get(SchemaPageLocators.oneMoreImportButton).click();
-        Checks.waitForTaskComplete();
-        cy.contains(schemaName).should('exist');
-    }
-
-    importSchemaFile(schemaFileName, schemaName) {
-        cy.get(SchemaPageLocators.schemaImportButton).click();
-        cy.contains(SchemaPageLocators.importFileButton).click();
-        cy.get('input[type=file]').selectFile('cypress/fixtures/' + schemaFileName, { force: true });
-        Checks.waitForElement("div:contains('Description')");
-        cy.get(CommonElements.dialogWindow).find(CommonElements.dropdown).click();
-        cy.get(CommonElements.dropdownOption).eq(1).click();
-        cy.get(SchemaPageLocators.oneMoreImportButton).click();
-        Checks.waitForTaskComplete();
-        cy.contains(schemaName).should('exist');
-    }
-
-    publishPolicySchema(name) {
-        cy.contains(name).parent().find(SchemaPageLocators.publishButton).first().click();
-        cy.get(SchemaPageLocators.versionInput).type('0.8.4');
-        cy.get(SchemaPageLocators.dialogPublishButton).click();
-        Checks.waitForTaskComplete();
-        cy.contains(name).first().parent().contains('Published').should('exist');
-    }
-
-    deleteSchema(name) {
-        cy.contains(name).parent().find(SchemaPageLocators.menuSchemaButton).click();
-        cy.get(SchemaPageLocators.deleteSchemaButton).click();
-        cy.get(SchemaPageLocators.confirmDeleteButton).click();
-        Checks.waitForLoading();
-        cy.contains(name).should('not.exist');
-    }
-
-    documentView(name) {
-        cy.contains(name).parent().find(SchemaPageLocators.menuSchemaButton).click();
-        cy.get(SchemaPageLocators.documentSchemaButton).click();
-        cy.get(SchemaPageLocators.documentHeader).should('have.text', 'Schema');
-        cy.get(SchemaPageLocators.documentContent).should('exist');
-    }
-
-    filterByLastPolicy() {
-        cy.get(SchemaPageLocators.filterDropdown).click();
-        cy.get(CommonElements.dropdownOption).eq(1).click();
-        Checks.waitForLoading();
-    }
-
-    editPolicySchema(name) {
-        cy.contains(name).parent().find(SchemaPageLocators.schemaEditBtn).click();
-        Checks.waitForLoading();
-        cy.get(SchemaPageLocators.schemaNameInput).clear().type(name + ' updated');
-        cy.get(SchemaPageLocators.dialogSaveButton).click({ force: true });
-        Checks.waitForLoading();
-        cy.contains(name + ' updated').should('exist');
-    }
-
-    exportSchemaFile(name) {
-        cy.contains(name).parent().find(SchemaPageLocators.menuSchemaButton).click();
-        cy.get(SchemaPageLocators.schemaExportBtn).click();
-        cy.contains(SchemaPageLocators.exportFileButton).click();
-        cy.verifyDownload('.schema', { contains: true });
-    }
-
-    exportSchemaIPFS(name) {
-        cy.contains(name).parent().find(SchemaPageLocators.menuSchemaButton).click();
-        cy.get(SchemaPageLocators.schemaExportBtn).click();
-        cy.contains(SchemaPageLocators.exportIPFSButton).realClick();
-        cy.window().then((win) => {
-            win.navigator.clipboard.readText().then((text) => {
-                //regex numbers.numbers
-                expect(text).to.match(/\d+\.\d+/g);
-            });
-        });
-    }
-
-    comparePolicySchema(schemaPolicy1, schemaPolicy2) {
-        cy.get(SchemaPageLocators.compareBtn).click();
-        cy.get(SchemaPageLocators.filterDropdownComparePolicy).first().click();
-        cy.get(CommonElements.dropdownOption).eq(1).click();
-        cy.get(SchemaPageLocators.filterDropdownComparePolicy).last().click();
-        cy.get(CommonElements.dropdownOption).eq(1).click();
-        cy.get(SchemaPageLocators.filterDropdownCompareSchema).first().click();
-        cy.get(CommonElements.dropdownOption).eq(0).click();
-        cy.get(SchemaPageLocators.filterDropdownCompareSchema).last().click();
-        cy.get(CommonElements.dropdownOption).eq(0).click();
-        cy.screenshot();
-        cy.get(SchemaPageLocators.compareFinalBtn).click();
-        Checks.waitForLoading();
-        cy.contains(SchemaPageLocators.compareSchemaName, schemaPolicy1).should('exist');
-        cy.contains(SchemaPageLocators.compareSchemaName, schemaPolicy2).should('exist');
-    }
-
-    addTag(name, tagName) {
-        cy.contains(name).siblings().contains(SchemaPageLocators.createTagButton).click();
-        cy.get(SchemaPageLocators.tagNameInput).type(tagName);
-        cy.get(SchemaPageLocators.tagDescInput).type(tagName);
-        cy.get(SchemaPageLocators.createButton).click();
-        cy.contains(tagName).should('exist');
-    }
-
-    deleteTag(name, tagName) {
-        cy.contains(name).siblings().contains(tagName).click();
-        cy.get(SchemaPageLocators.deleteTagIcon).click();
-        cy.get(SchemaPageLocators.closeWindowButton).click();
-        cy.contains(tagName).should('not.exist');
-    }
 
     activateSystemSchema(schemaNameForActivate) {
         cy.contains(schemaNameForActivate).parent().find(SchemaPageLocators.activateButton).click();
