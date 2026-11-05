@@ -62,6 +62,10 @@ export class DocumentViewComponent implements OnInit {
     public evidenceJson!: string;
     public evidenceEntries: { dataType: string; data: string }[] = [];
     public hasStructuredEvidence: boolean = false;
+    public showProof: boolean = false;
+    public proofType: string = '';
+    public issuerId: string = '';
+    public issuerLine: string = '';
     public pageIndex: number = 0;
     public pageSize: number = 5;
     public schemaMap: { [x: string]: Schema | null } = {};
@@ -101,7 +105,9 @@ export class DocumentViewComponent implements OnInit {
         this.proofJson = this.document.proof ? JSON.stringify(this.document.proof, null, 4) : '';
         this.evidenceJson = this.document.evidence ? JSON.stringify(this.document.evidence, null, 4) : '';
         this.parseEvidenceEntries();
-        this.isIssuerObject = typeof this.document.issuer === 'object';
+        const proof = Array.isArray(this.document.proof) ? this.document.proof[0] : this.document.proof;
+        this.proofType = typeof proof?.type === 'string' ? proof.type : '';
+        this.isIssuerObject = !!this.document.issuer && typeof this.document.issuer === 'object';
         if (this.isIssuerObject) {
             for (const key in this.document.issuer) {
                 if (key !== 'id') {
@@ -109,6 +115,8 @@ export class DocumentViewComponent implements OnInit {
                 }
             }
         }
+        this.issuerId = this.isIssuerObject ? (this.document.issuer.id || '') : (this.document.issuer || '');
+        this.issuerLine = this.issuerOptions.map(([key, value]) => `${key}: ${value}`).join(' · ');
         if (this.type === 'VC') {
             if (Array.isArray(this.document.credentialSubject)) {
                 for (const s of this.document.credentialSubject) {

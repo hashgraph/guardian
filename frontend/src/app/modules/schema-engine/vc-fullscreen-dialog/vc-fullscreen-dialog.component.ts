@@ -42,6 +42,7 @@ import { ToastService } from 'src/app/services/toast.service';
 import { ApproveUpdateVcDocumentDialogComponent } from '../../policy-engine/dialogs/approve-update-vc-document-dialog/approve-update-vc-document-dialog.component';
 import { TablePersistenceService } from 'src/app/services/table-persistence.service';
 import { GeoFilePersistenceService } from 'src/app/services/geo-file-persistence.service';
+import { SchemaFormPreferencesService } from 'src/app/services/schema-form-preferences.service';
 import { prepareVcData } from '../../common/models/prepare-vc-data';
 import { ViewerDialog } from '../../policy-engine/dialogs/viewer-dialog/viewer-dialog.component';
 
@@ -138,7 +139,8 @@ export class VCFullscreenDialog implements OnDestroy {
         private toastService: ToastService,
         private dialog: DialogService,
         private tablePersist: TablePersistenceService,
-        private geoFilePersist: GeoFilePersistenceService
+        private geoFilePersist: GeoFilePersistenceService,
+        public formPreferences: SchemaFormPreferencesService
     ) {
         this.dataForm = this.fb.group({});
     }

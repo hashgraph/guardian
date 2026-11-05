@@ -62,139 +62,100 @@
               User that created this document was disconnected.
             </div>
           }
-          <div class="guardian-accordion-container">
-            <p-accordion [value]="'0'" class="guardian-accordion">
-              <p-accordion-panel value="0">
-                <p-accordion-header>General Information</p-accordion-header>
-                <p-accordion-content>
-                  <div class="form-field-container">
-                    <div class="form-field">
-                      <div class="label-field">Id</div>
-                      <div class="form-field-value">
-                        <div class="form-field-input guardian-input-container">
-                          <input pInputText [value]="document.id || ''" [readonly]="true" type="text"/>
-                        </div>
-                      </div>
+          <section class="sf-dd-card" aria-label="Document details">
+            <div class="sf-dd-head">Document details</div>
+            <div class="sf-dd-grid">
+              <div class="sf-ro-cell">
+                <div class="sf-ro-label"><span class="sf-ro-lt">Document ID</span></div>
+                <div class="sf-ro-value sf-dd-row">
+                  <span class="sf-dd-mono">{{ document.id || '' }}</span>
+                  @if (document.id) {
+                    <sf-copy [value]="document.id" tip="Copy document ID"></sf-copy>
+                  }
+                </div>
+              </div>
+              @if (type === 'VC') {
+                <div class="sf-ro-cell">
+                  <div class="sf-ro-label"><span class="sf-ro-lt">Issuer</span></div>
+                  <div class="sf-ro-value">
+                    <div class="sf-dd-row">
+                      <span class="sf-dd-mono">{{ issuerId }}</span>
+                      @if (issuerId) {
+                        <sf-copy [value]="issuerId" tip="Copy issuer"></sf-copy>
+                      }
                     </div>
+                    @if (issuerLine) {
+                      <div class="sf-dd-muted">{{ issuerLine }}</div>
+                    }
                   </div>
-                  @if (relayerAccount) {
-                    <div class="form-field-container">
-                      <div class="form-field">
-                        <div class="label-field">Relayer Account</div>
-                        <div class="form-field-value">
-                          <div class="form-field-input guardian-input-container">
-                            <input pInputText [value]="relayerAccount" [readonly]="true" type="text"/>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  }
-                  @if (type === 'VC') {
-                    <div class="form-field-container">
-                      @if (!isIssuerObject) {
-                        <div class="form-field">
-                          <div class="label-field">Issuer</div>
-                          <div class="form-field-value">
-                            <div class="form-field-input guardian-input-container">
-                              <input pInputText [value]="document.issuer || ''" [readonly]="true" type="text"/>
-                            </div>
-                          </div>
-                        </div>
-                      }
-                      @if (isIssuerObject) {
-                        <div class="form-field">
-                          <div class="label-field">Issuer</div>
-                          <div class="issuer-option">
-                            <div class="form-field">
-                              <div class="label-field">Issuer ID</div>
-                              <div class="form-field-value">
-                                <div class="form-field-input guardian-input-container">
-                                  <input pInputText [value]="document.issuer.id || ''" [readonly]="true" type="text"/>
-                                </div>
-                              </div>
-                            </div>
-                            @for (item of issuerOptions; track item) {
-                              <div class="form-field">
-                                <div class="label-field">{{item[0]}}</div>
-                                <div class="form-field-value">
-                                  <div class="form-field-input guardian-input-container">
-                                    <input pInputText [value]="item[1] || ''" [readonly]="true" type="text"/>
-                                  </div>
-                                </div>
+                </div>
+                <div class="sf-ro-cell">
+                  <div class="sf-ro-label"><span class="sf-ro-lt">Issued</span></div>
+                  <div class="sf-ro-value">
+                    @if (document.issuanceDate) {
+                      {{ document.issuanceDate | date: 'medium' }}
+                    } @else {
+                      <span class="sf-dd-empty">Not provided</span>
+                    }
+                  </div>
+                </div>
+              }
+              @if (relayerAccount) {
+                <div class="sf-ro-cell">
+                  <div class="sf-ro-label"><span class="sf-ro-lt">Relayer account</span></div>
+                  <div class="sf-ro-value sf-dd-row">
+                    <span class="sf-dd-mono">{{ relayerAccount }}</span>
+                    <sf-copy [value]="relayerAccount" tip="Copy relayer account"></sf-copy>
+                  </div>
+                </div>
+              }
+              @if (evidenceJson) {
+                <div class="sf-ro-cell sf-full">
+                  <div class="sf-ro-label"><span class="sf-ro-lt">Evidence</span></div>
+                  <div class="sf-ro-value">
+                    @if (hasStructuredEvidence) {
+                      <div class="evidence-entries">
+                        @for (entry of evidenceEntries; track entry) {
+                          <div class="evidence-entry">
+                            @if (entry.dataType === 'message') {
+                              <div class="evidence-entry-message">
+                                <svg-icon class="svg-icon-16" src="/assets/images/icons/16/text.svg" svgClass="icon-color-primary"></svg-icon>
+                                <span>{{ entry.data }}</span>
                               </div>
                             }
-                          </div>
-                        </div>
-                      }
-                    </div>
-                    <div class="form-field-container">
-                      <div class="form-field">
-                        <div class="label-field">Issuance Date</div>
-                        <div class="form-field-value">
-                          <div class="form-field-input guardian-input-container">
-                            <input pInputText [value]="document.issuanceDate | date: 'short'" [readonly]="true" type="text"/>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  }
-                  @if (evidenceJson) {
-                    <div class="form-field-container">
-                      <div class="form-field">
-                        <div class="label-field">Evidence Attachments</div>
-                        @if (hasStructuredEvidence) {
-                          <div class="evidence-entries">
-                            @for (entry of evidenceEntries; track entry) {
-                              <div class="evidence-entry">
-                                @if (entry.dataType === 'message') {
-                                  <div class="evidence-entry-message">
-                                    <svg-icon class="svg-icon-16" src="/assets/images/icons/16/text.svg" svgClass="icon-color-primary"></svg-icon>
-                                    <span>{{ entry.data }}</span>
-                                  </div>
-                                }
-                                @if (entry.dataType === 'file') {
-                                  <div class="evidence-entry-file">
-                                    <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="icon-color-primary"></svg-icon>
-                                    <a [href]="entry.data" target="_blank" rel="noopener">{{ entry.data }}</a>
-                                  </div>
-                                }
+                            @if (entry.dataType === 'file') {
+                              <div class="evidence-entry-file">
+                                <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="icon-color-primary"></svg-icon>
+                                <a [href]="entry.data" target="_blank" rel="noopener">{{ entry.data }}</a>
                               </div>
                             }
-                          </div>
-                        } @else {
-                          <div class="form-field-value">
-                            <div class="form-field-textarea guardian-textarea-container">
-                              <textarea
-                                [readOnly]="true"
-                                [rows]="5" [value]="evidenceJson"
-                                pInputTextarea
-                              type="text"></textarea>
-                            </div>
                           </div>
                         }
                       </div>
-                    </div>
-                  }
-                  @if (proofJson) {
-                    <div class="form-field-container">
-                      <div class="form-field">
-                        <div class="label-field">Proof</div>
-                        <div class="form-field-value">
-                          <div class="form-field-textarea guardian-textarea-container">
-                            <textarea
-                              [readOnly]="true"
-                              [rows]="5" [value]="proofJson"
-                              pInputTextarea
-                            type="text"></textarea>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  }
-                </p-accordion-content>
-              </p-accordion-panel>
-            </p-accordion>
-          </div>
+                    } @else {
+                      <pre class="sf-dd-json">{{ evidenceJson }}</pre>
+                    }
+                  </div>
+                </div>
+              }
+              @if (proofJson) {
+                <div class="sf-ro-cell sf-full">
+                  <div class="sf-ro-label"><span class="sf-ro-lt">Proof</span></div>
+                  <div class="sf-ro-value">
+                    <button
+                      type="button"
+                      class="sf-link"
+                      [attr.aria-expanded]="showProof"
+                      (click)="showProof = !showProof"
+                    >{{ showProof ? 'Hide proof' : 'Show proof' + (proofType ? ' · ' + proofType : '') }}</button>
+                    @if (showProof) {
+                      <pre class="sf-dd-json">{{ proofJson }}</pre>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </section>
           @if (type === 'VC' && subjects.length > 0 && (!preview || previewReady)) {
             <div class="group-container">
               @if (subjects.length > 1) {
@@ -210,7 +171,6 @@
                           #schemaView
                           [private-fields]="hideFields"
                           [schema]="schemaMap[item.type]"
-                          [delimiter-hide]="true"
                           [dryRun]="dryRun"
                           [values]="item"
                           [rules]="rulesResults"

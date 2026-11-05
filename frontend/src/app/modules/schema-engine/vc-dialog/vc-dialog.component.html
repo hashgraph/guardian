@@ -32,7 +32,8 @@
         <div class="guardian-loading-image"></div>
       </div>
     }
-    @if (((isVcDocument || isVpDocument) && toggle) || isCompare) {
+    @let barShown = ((isVcDocument || isVpDocument) && toggle) || isCompare;
+    @if (barShown || ((isVcDocument || isVpDocument) && viewDocument === true)) {
       <div class="view-dialog-bar">
         @if ((isVcDocument || isVpDocument) && toggle) {
           <p-selectButton
@@ -55,7 +56,17 @@
           </p-selectButton>
         }
         <div class="option-buttons">
-          @if (messageId && !dryRun && canExport) {
+          @if ((isVcDocument || isVpDocument) && viewDocument === true) {
+            <label class="field-metadata-toggle" for="vcDialogFieldMetadata">
+              <p-toggleswitch
+                inputId="vcDialogFieldMetadata"
+                [ngModel]="formPreferences.showFieldMetadata$ | async"
+                (onChange)="formPreferences.setShowFieldMetadata($event.checked)">
+              </p-toggleswitch>
+              Field metadata
+            </label>
+          }
+          @if (barShown && messageId && !dryRun && canExport) {
             <button
               (click)="onFindInExport()"
             class="guardian-button guardian-button-secondary">Export</button>
@@ -67,7 +78,7 @@
               class="compare-container"
             buttonStyle="guardian"></app-compare-btn>
           }
-          @if (allVcDocs.length > 1) {
+          @if (barShown && allVcDocs.length > 1) {
             <p-select
               [options]="versionOptions"
               [(ngModel)]="selectedVersionIndex"

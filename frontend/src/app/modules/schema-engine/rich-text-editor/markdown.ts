@@ -398,3 +398,16 @@ export function htmlToMarkdown(html: string | null | undefined): string {
     collectBlocks(inert.body, blocks);
     return blocks.join('\n\n');
 }
+
+/** The text of a markdown value without its markup, on one line: for titles and summaries. */
+export function markdownToPlainText(markdown: string | null | undefined): string {
+    if (!markdown) {
+        return '';
+    }
+    const html = markdownToHtml(markdown)
+        .replace(/<img[^>]*\balt="([^"]*)"[^>]*>/gi, ' $1 ')
+        .replace(/<\/(p|h[1-6]|li|tr|td|th|div|pre|blockquote)>|<br\s*\/?>/gi, ' ')
+        .replace(/<[^>]+>/g, '');
+    const text = new DOMParser().parseFromString(html, 'text/html').body.textContent || '';
+    return text.replace(/\s+/g, ' ').trim();
+}
