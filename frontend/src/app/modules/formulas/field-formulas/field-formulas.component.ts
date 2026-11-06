@@ -49,31 +49,27 @@ export class FieldFormulasComponent {
 
     public openDetails(event: Event, item?: FormulaItem): void {
         event.stopPropagation();
+        let data: any;
         if (this.source) {
-            this.dialogService.open(FormulasViewDialog, {
-                showHeader: false,
-                width: '90%',
-                styleClass: 'guardian-dialog',
-                data: { ...this.source, itemId: item?.uuid, origin: 'document' },
-            });
-            return;
-        }
-        const field = this.model?.fields[this.fullPath];
-        if (!field) {
-            return;
+            data = { ...this.source, origin: 'document' };
+        } else {
+            const field = this.model?.fields[this.fullPath];
+            if (!field) {
+                return;
+            }
+            data = {
+                tree: field.tree,
+                schema: field.schema,
+                path: field.path,
+                context: this.model.context(this.entries),
+                origin: 'form'
+            };
         }
         this.dialogService.open(FormulasViewDialog, {
             showHeader: false,
             width: '90%',
             styleClass: 'guardian-dialog',
-            data: {
-                tree: field.tree,
-                schema: field.schema,
-                path: field.path,
-                context: this.model.context(this.entries),
-                itemId: item?.uuid,
-                origin: 'form'
-            },
+            data: { ...data, itemId: item?.uuid },
         });
     }
 }

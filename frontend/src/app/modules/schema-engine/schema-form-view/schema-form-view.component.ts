@@ -14,8 +14,6 @@ import {
     UnitSystem
 } from '@guardian/interfaces';
 import { IPFSService } from 'src/app/services/ipfs.service';
-import { FormulasViewDialog } from '../../formulas/dialogs/formulas-view-dialog/formulas-view-dialog.component';
-import { DialogService } from 'primeng/dynamicdialog';
 import { isSafeHref, withNewTabLinks } from '../rich-text-editor/rich-text-sanitizer';
 import { collectImageReferences, markdownToHtml, markdownToPlainText } from '../rich-text-editor/markdown';
 import { SchemaFormPreferencesService } from 'src/app/services/schema-form-preferences.service';
@@ -105,7 +103,6 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
 
     constructor(
         private ipfs: IPFSService,
-        private dialogService: DialogService,
         private changeDetector: ChangeDetectorRef,
         private preferences: SchemaFormPreferencesService,
         @Inject(LOCALE_ID) private locale: string = 'en-US'
@@ -733,11 +730,7 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
 
     public formulaCount(item: IFieldControl): number {
         const formulas = this.isFormulas(item);
-        try {
-            return formulas?.tree?.get(formulas.schema, formulas.path, formulas.context)?.length ?? 0;
-        } catch {
-            return 0;
-        }
+        return formulas ? this.formulaItems(formulas).length : 0;
     }
 
     public metaTypeOf(item: IFieldControl): string {
@@ -862,20 +855,14 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
     public formulaItems(formulas: any): any[] {
         let items = this.formulaItemsCache.get(formulas);
         if (!items) {
-            items = formulas.tree?.get(formulas.schema, formulas.path, formulas.context) ?? [];
+            try {
+                items = formulas.tree?.get(formulas.schema, formulas.path, formulas.context) ?? [];
+            } catch {
+                items = [];
+            }
             this.formulaItemsCache.set(formulas, items!);
         }
         return items!;
-    }
-
-    public showFormulas(formulas: any) {
-        const dialogRef = this.dialogService.open(FormulasViewDialog, {
-            showHeader: false,
-            width: '90%',
-            styleClass: 'guardian-dialog',
-            data: { ...formulas, origin: 'document' },
-        })!;
-        dialogRef.onClose.subscribe((result: any) => { });
     }
 
     public isDiscussion(item: IFieldControl) {

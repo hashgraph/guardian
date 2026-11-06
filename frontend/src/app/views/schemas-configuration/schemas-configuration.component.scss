@@ -1,3 +1,4 @@
+@use '../../modules/schema-engine/doc-chrome' as chrome;
 $sc-accent: var(--guardian-schema-accent, var(--color-primary, #4169E2));
 @import '../../modules/formulas/formula-type';
 
@@ -2401,29 +2402,7 @@ $sc-accent: var(--guardian-schema-accent, var(--color-primary, #4169E2));
 
 // Same look as the "Field metadata" button in the document dialogs
 .sc-field-metadata-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    height: 30px;
-    padding: 0 10px;
-    border: 0;
-    border-radius: 7px;
-    background: transparent;
-    color: color-mix(in srgb, var(--guardian-font-color) 75%, transparent);
-    font-family: Inter, sans-serif;
-    font-size: 12.5px;
-    font-weight: 500;
-    white-space: nowrap;
-    cursor: pointer;
-
-    &:hover {
-        background: color-mix(in srgb, var(--guardian-border-color) 30%, var(--guardian-grey-background));
-        color: var(--guardian-font-color);
-    }
-
-    .pi {
-        font-size: 11px;
-    }
+    @include chrome.ghost-toggle;
 }
 
 .sc-preview-viewport {

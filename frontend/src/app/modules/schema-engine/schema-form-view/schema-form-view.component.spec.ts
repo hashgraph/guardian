@@ -27,7 +27,7 @@ describe('SchemaFormViewComponent', () => {
         };
         cdr = { detectChanges: jasmine.createSpy('detectChanges'), markForCheck: jasmine.createSpy('markForCheck') };
         preferences = { showFieldMetadata$: new BehaviorSubject<boolean>(false) };
-        component = new SchemaFormViewComponent(ipfs as any, dialogService as any, cdr as any, preferences as any);
+        component = new SchemaFormViewComponent(ipfs as any, cdr as any, preferences as any);
         component.hide = {};
         component.values = {};
     });
@@ -232,7 +232,6 @@ describe('SchemaFormViewComponent', () => {
             imports: [CommonModule],
             providers: [
                 { provide: IPFSService, useValue: ipfs },
-                { provide: DialogService, useValue: dialogService },
                 { provide: SchemaFormPreferencesService, useValue: preferences },
             ],
             schemas: [NO_ERRORS_SCHEMA],
@@ -589,7 +588,6 @@ describe('SchemaFormViewComponent', () => {
                 imports: [CommonModule],
                 providers: [
                     { provide: IPFSService, useValue: ipfs },
-                    { provide: DialogService, useValue: dialogService },
                     { provide: SchemaFormPreferencesService, useValue: preferences },
                 ],
                 schemas: [NO_ERRORS_SCHEMA],
@@ -666,7 +664,6 @@ describe('SchemaFormViewComponent', () => {
                 imports: [CommonModule],
                 providers: [
                     { provide: IPFSService, useValue: ipfs },
-                    { provide: DialogService, useValue: dialogService },
                     { provide: SchemaFormPreferencesService, useValue: preferences },
                 ],
                 schemas: [NO_ERRORS_SCHEMA],
@@ -734,7 +731,6 @@ describe('SchemaFormViewComponent', () => {
                 imports: [CommonModule],
                 providers: [
                     { provide: IPFSService, useValue: ipfs },
-                    { provide: DialogService, useValue: dialogService },
                     { provide: SchemaFormPreferencesService, useValue: preferences },
                 ],
                 schemas: [NO_ERRORS_SCHEMA],

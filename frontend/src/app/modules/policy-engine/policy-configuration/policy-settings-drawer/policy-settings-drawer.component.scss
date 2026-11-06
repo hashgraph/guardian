@@ -111,7 +111,7 @@
     i.icon-hbar {
         display: inline-block;
         height: 16px;
-        background-color: var(--guardian-disabled-color, #848FA9);
+        background-color: currentColor;
         -webkit-mask: url('/assets/images/icons/hedera-hbar.svg') no-repeat center / contain;
         mask: url('/assets/images/icons/hedera-hbar.svg') no-repeat center / contain;
     }
@@ -126,10 +126,6 @@
 
         i {
             color: var(--color-primary, #4169E2);
-        }
-
-        i.icon-hbar {
-            background-color: var(--color-primary, #4169E2);
         }
     }
 }
