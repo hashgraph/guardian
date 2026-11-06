@@ -136,10 +136,28 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public get selectedField(): SchemaField | null { return this._selectedField; }
     public set selectedField(field: SchemaField | null) {
         this._selectedField = field;
+        this.advisoryTextEnabled = !!field?.advisoryText?.trim();
         this.rightPanelSuggestionExpanded = false;
         this.rightPanelSuggestLoading = false;
         this.rightPanelSuggestUnavailable = false;
         this._rebuildRefPreset();
+    }
+
+    public advisoryTextEnabled = false;
+
+    public get selectedFieldSupportsAdvisoryText(): boolean {
+        const field = this.selectedField;
+        return !!field && !field.readOnly && !field.autocalculate
+            && !['policyId', 'ref', 'guardianVersion'].includes(field.name)
+            && field.type !== 'null'
+            && (!field.isRef || field.customType === 'geo' || field.customType === 'sentinel');
+    }
+
+    public toggleAdvisoryText(enabled: boolean): void {
+        if (!this.selectedField || !this.selectedFieldSupportsAdvisoryText) { return; }
+        this.advisoryTextEnabled = enabled;
+        if (!enabled) { delete this.selectedField.advisoryText; }
+        this.markDirty();
     }
 
     public refPresetFormFields: SchemaField[] | null = null;

@@ -1030,6 +1030,23 @@
                                 [(ngModel)]="selectedField.description"
                                 (ngModelChange)="markDirty(); invalidateSelectedFieldSuggestion()" />
                         </div>
+                        @if (selectedFieldSupportsAdvisoryText) {
+                            <div class="sc-rp-group">
+                                <label class="sc-rp-label" for="field-advisory-toggle">Advisory text</label>
+                                <p-toggleswitch
+                                    inputId="field-advisory-toggle"
+                                    [ngModel]="advisoryTextEnabled"
+                                    (ngModelChange)="toggleAdvisoryText($event)"></p-toggleswitch>
+                                @if (advisoryTextEnabled) {
+                                    <textarea
+                                        class="sc-rp-input sc-rp-textarea"
+                                        rows="3"
+                                        aria-label="Advisory text"
+                                        [(ngModel)]="selectedField.advisoryText"
+                                        (ngModelChange)="markDirty()"></textarea>
+                                }
+                            </div>
+                        }
                         <div class="sc-rp-group">
                             <div class="sc-rp-label">Type</div>
                             <div class="sc-type-grid">
