@@ -35,7 +35,7 @@ A dry run makes it easy to hit, because the user switch takes well under 2 s. A 
 
 ## Test impact
 
-`dryRunMint.cy.js` is skipped with a pointer to this note. Making the test wait for the update would only hide the defect.
+`dryRunMint.cy.js` is skipped with a pointer to this note. The outcome depends on timing: the spec failed on a local stack and passed on a CI runner (run 42263973153), where the user switch is presumably slower than the 2 s update delay. Making the test wait for the update would only hide the defect.
 
 ## What a fix needs
 
