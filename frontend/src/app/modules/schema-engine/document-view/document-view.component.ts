@@ -231,6 +231,7 @@ export class DocumentViewComponent implements OnInit {
                     this.schemaId = `#${type}`;
                 }
             }
+            this.updateFormulasResults();
             for (const [type, schema] of Object.entries(this.schemaMap)) {
                 if (!schema) {
                     if (this.getByUser) {

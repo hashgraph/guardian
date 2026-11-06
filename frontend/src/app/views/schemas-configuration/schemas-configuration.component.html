@@ -762,17 +762,22 @@
                     <div class="sc-preview" [class.sc-preview--hidden]="activeTab !== 'preview'">
                         <div class="sc-preview-bar">
                             <span>View as:</span>
-                            <button class="sc-view-pill" [class.active]="previewPill === 'submitter'" (click)="setPreviewPill('submitter')">Submitter</button>
-                            <button class="sc-view-pill" [class.active]="previewPill === 'readonly'" (click)="setPreviewPill('readonly')">Read-only</button>
+                            <div class="sc-nav-tabs">
+                                <button class="sc-nav-tab" [class.active]="previewPill === 'submitter'" (click)="setPreviewPill('submitter')">Submitter</button>
+                                <button class="sc-nav-tab" [class.active]="previewPill === 'readonly'" (click)="setPreviewPill('readonly')">Read-only</button>
+                            </div>
                             <span class="sc-spacer"></span>
-                            <label class="sc-preview-meta" for="scFieldMetadata">
-                                <p-toggleswitch
-                                    inputId="scFieldMetadata"
-                                    [ngModel]="formPreferences.showFieldMetadata$ | async"
-                                    (onChange)="formPreferences.setShowFieldMetadata($event.checked)">
-                                </p-toggleswitch>
-                                Show field metadata
-                            </label>
+                            @let showMeta = formPreferences.showFieldMetadata$ | async;
+                            <button
+                                type="button"
+                                class="sc-field-metadata-toggle"
+                                [attr.aria-pressed]="!!showMeta"
+                                (click)="formPreferences.setShowFieldMetadata(!formPreferences.showFieldMetadata)">
+                                @if (showMeta) {
+                                    <i class="pi pi-check" aria-hidden="true"></i>
+                                }
+                                Field metadata
+                            </button>
                         </div>
                         <div class="sc-preview-viewport">
                             @for (key of [previewKey]; track key) {

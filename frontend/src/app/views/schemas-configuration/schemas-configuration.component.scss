@@ -2399,30 +2399,30 @@ $sc-accent: var(--guardian-schema-accent, var(--color-primary, #4169E2));
     z-index: 5;
 }
 
-.sc-preview-meta {
+// Same look as the "Field metadata" button in the document dialogs
+.sc-field-metadata-toggle {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    height: 30px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: color-mix(in srgb, var(--guardian-font-color) 75%, transparent);
+    font-family: Inter, sans-serif;
+    font-size: 12.5px;
+    font-weight: 500;
     white-space: nowrap;
     cursor: pointer;
-}
 
-.sc-view-pill {
-    font-size: 14px;
-    padding: 4px 12px;
-    border-radius: 20px;
-    border: 1px solid var(--guardian-border-color, #E1E7EF);
-    background: transparent;
-    color: var(--guardian-font-color-secondary, #848FA9);
-    cursor: pointer;
-    font-family: inherit;
-    transition: all 0.15s;
-
-    &.active,
     &:hover {
-        background: var(--color-primary, #4169E2);
-        border-color: var(--color-primary, #4169E2);
-        color: #fff;
+        background: color-mix(in srgb, var(--guardian-border-color) 30%, var(--guardian-grey-background));
+        color: var(--guardian-font-color);
+    }
+
+    .pi {
+        font-size: 11px;
     }
 }
 

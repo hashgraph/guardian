@@ -108,20 +108,6 @@
         <span class="sf-ro-lt" [attr.accordiontabid]="item.fullPath">{{ item.description || item.title || item.name }}</span>
         @if (actions) {
             <span class="sf-ro-acts">
-                @if (isFormulas(item); as formulas) {
-                    <button
-                        type="button"
-                        class="sf-ro-act sf-ro-fx"
-                        aria-label="Show formulas"
-                        pTooltip="Formulas"
-                        tooltipStyleClass="guardian-tooltip small-guardian-tooltip"
-                        (click)="showFormulas(formulas)"
-                    >
-                        <svg-icon
-                            src="/assets/images/icons/function.svg"
-                            svgClass="icon-color-primary"></svg-icon>
-                    </button>
-                }
                 @if (ruleOf(item); as rule) {
                     @if (!rule.failed) {
                         <span
@@ -238,6 +224,15 @@
                     <ng-container *ngTemplateOutlet="labelRow; context: { $implicit: item, actions: ifSimpleField(item) }"></ng-container>
                     @if (showMetadata) {
                         <ng-container *ngTemplateOutlet="meta; context: { $implicit: item }"></ng-container>
+                    }
+
+                    @if (ifSimpleField(item) && isFormulas(item); as formulas) {
+                        <app-field-formulas
+                            class="sf-ro-formulas"
+                            [items]="formulaItems(formulas)"
+                            [source]="formulas"
+                            [fullPath]="item.fullPath">
+                        </app-field-formulas>
                     }
 
                     <div class="sf-ro-value">

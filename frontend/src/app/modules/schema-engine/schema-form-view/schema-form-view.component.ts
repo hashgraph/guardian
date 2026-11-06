@@ -856,6 +856,18 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
         return this.formulas ? this.formulas[item.fullPath] : undefined;
     }
 
+    private formulaItemsCache = new WeakMap<object, any[]>();
+
+    /** Formula items of a field for the inline card; one array per link so OnPush bindings stay stable. */
+    public formulaItems(formulas: any): any[] {
+        let items = this.formulaItemsCache.get(formulas);
+        if (!items) {
+            items = formulas.tree?.get(formulas.schema, formulas.path, formulas.context) ?? [];
+            this.formulaItemsCache.set(formulas, items!);
+        }
+        return items!;
+    }
+
     public showFormulas(formulas: any) {
         const dialogRef = this.dialogService.open(FormulasViewDialog, {
             showHeader: false,

@@ -107,6 +107,15 @@
         text-align: center;
     }
 
+    // Custom Hedera mark, tinted by the item colour like the PrimeIcons
+    i.icon-hbar {
+        display: inline-block;
+        height: 16px;
+        background-color: var(--guardian-disabled-color, #848FA9);
+        -webkit-mask: url('/assets/images/icons/hedera-hbar.svg') no-repeat center / contain;
+        mask: url('/assets/images/icons/hedera-hbar.svg') no-repeat center / contain;
+    }
+
     &:hover {
         background: var(--guardian-hover, #F0F3FC);
     }
@@ -117,6 +126,10 @@
 
         i {
             color: var(--color-primary, #4169E2);
+        }
+
+        i.icon-hbar {
+            background-color: var(--color-primary, #4169E2);
         }
     }
 }

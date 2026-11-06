@@ -109,31 +109,55 @@
     margin: 14px 0 6px;
 }
 
+// Each variable is a small grid so a narrow field wraps the description under the symbol
 table.vars {
+    display: block;
     width: 100%;
-    border-collapse: collapse;
     font-size: 13px;
 
-    td {
+    tbody {
+        display: block;
+    }
+
+    tr {
+        display: grid;
+        grid-template-columns: minmax(0, max-content) minmax(0, 1fr) auto;
+        grid-template-areas:
+            'sym kind val'
+            'desc desc desc';
+        column-gap: 12px;
+        align-items: baseline;
         padding: 6px 8px;
         border-top: 1px solid var(--guardian-border-color, #F0F2F7);
-        vertical-align: middle;
+    }
+
+    td {
+        padding: 0;
+        min-width: 0;
+        overflow-wrap: anywhere;
     }
 
     td.sym {
-        width: 140px;
+        grid-area: sym;
         font-size: 15px;
-        white-space: nowrap;
     }
 
     td.kind {
-        width: 80px;
+        grid-area: kind;
         color: var(--color-grey-5, #848FA9);
         font-size: 12px;
     }
 
+    td.desc {
+        grid-area: desc;
+    }
+
+    td.desc:empty {
+        display: none;
+    }
+
     td.val {
-        width: 120px;
+        grid-area: val;
         text-align: right;
         font-variant-numeric: tabular-nums;
     }

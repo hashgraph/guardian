@@ -16,7 +16,7 @@
   </svg>
 } @else if (state === 'done') {
   <svg class="sf-ring sf-ring-done" [attr.width]="shape.box" [attr.height]="shape.box" [attr.viewBox]="'0 0 ' + shape.box + ' ' + shape.box" [attr.aria-label]="label">
-    <circle [attr.cx]="center" [attr.cy]="center" [attr.r]="center" class="sf-ring-fill" />
+    <circle [attr.cx]="center" [attr.cy]="center" [attr.r]="center - 0.5" class="sf-ring-fill" />
     <path [attr.d]="shape.check" fill="none" class="sf-ring-check" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
   </svg>
 } @else {
