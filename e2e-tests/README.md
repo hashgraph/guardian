@@ -57,6 +57,8 @@ npx eslint cypress
 
 The findings that are still open, with the fix for each rule, are listed in [`pending-issues/eslint-findings-in-the-cypress-suites.md`](pending-issues/eslint-findings-in-the-cypress-suites.md).
 
+To check that a change adds no finding, compare with the findings of the last commit. Extract it with `git archive HEAD e2e-tests/cypress/e2e e2e-tests/cypress/support e2e-tests/eslint.config.mjs e2e-tests/package.json | tar -x -C <dir>`, symlink `node_modules` into it and run `npx eslint cypress` there. ESLint pads its columns to the longest message of each file, so squeeze repeated spaces before diffing the two outputs.
+
 ## Guardian E2E via Docker
 
 ### Prerequisites
@@ -248,6 +250,10 @@ UI_GATEWAY_ORIGIN=http://host.docker.internal:3002/ \
 - **Import-preview tool checks** (`importFlow.js` → `settleToolRowChecks()` / `replaceInaccessibleTools()`): a preview row settles to valid/invalid when its per-row check request answers, but that request has no client-side timeout — one check the gateway never answers pins its row at `load`, which keeps the Import button disabled forever. The helper waits with a deadline, re-issues the checks for rows still loading (the row's change handler re-runs them), and after the last attempt fails the test with the stuck `messageIds`. Rows pointing at tool messages this gateway cannot resolve are re-pointed at the same-named workspace tool through the row's search picker — and the picker only lists *published* tools, which is why `toolsPage.js` → `ensureToolPublished()` imports the Methodology Library tools and publishes them on demand first (published ones are left alone, drafts are published, missing ones imported).
 - **Background-window visibility** (`homePage.js` → `logOut()`): `getClientRects()` and `getBoundingClientRect()` can report zero for genuinely rendered elements in the backgrounded electron window, so branch signals must be DOM presence, not layout metrics. The new header renders the sign-out icon and the hover flyout in mutually exclusive `@if` states (and the flyout only shows on a real `:hover` a test cannot produce), so `logOut()` branches on which of the two is in the DOM and expands a collapsed menu first rather than trying to hover it.
 - **Wizard navigation without position assumptions** (`wizardSteps.js`): a policy opens on whichever step the viewer last visited for that user, and step bodies may contain nested tab containers. `clickButtonInWizardSteps` probes the visible step body for the control, then walks the visible tabs, then the step items — throwing a listing of everything it explored when the control is nowhere — and `clickWizardTab` steers a flow to a named tab.
+- **Dialogs drop keystrokes while they re-render** (tag create, contract import, token edit): `type()` into such a field can lose characters, so set the value in one step with `cy.get(sel).invoke('val', value).trigger('input')` and assert it with `should('have.value', value)`.
+- **Row action icons have `pointer-events: none`**: click their wrapper (`div.guardian-icon-button`, `.select-menu-item`), not the icon.
+- **The request form is a sectioned wizard** (`userPoliciesPage.js`): it opens on an overview, so start with `openOverviewSection()` (Start, or Continue when answers are pending), then find fields by their label (`.sf-label-text`). `answerMissingFields()` follows the footer's "Jump to next missing" link. A required repeating entry counts as one answer, so the link lands on its card without focusing a field; the helper then opens the entries (Edit) and their cards and fills what is invalid inside. A date picker stays open over the fields below it until Escape closes it.
+- **Lists filter client-side on the loaded page**, and modules and tokens list newest first. **Cached GETs go stale** after a change they do not invalidate; a request with another `pageSize` bypasses the cache.
 
 Product bugs surfaced while making the suites idempotent are documented in [`pending-issues/`](pending-issues/), one file per issue.
 
@@ -894,6 +900,25 @@ Start the app with the `proxy.hostdocker.js` logger (see [Preparing the app for 
 - `(auth)` / `(NO-AUTH)` is the presence of the `Authorization` header, so a tokenless call stands out.
 - A request that is logged as sent but **never gets a `<- <status>` line** was accepted by the gateway and is hanging — the typical cause is the gateway auth guard waiting forever on a NATS reply from the auth service (see `pending-issues/gateway-auth-guard-hangs-*.md`). In the UI this shows as a page stuck on a spinner; a page reload is the workaround the UI tests apply.
 - `WS-UPGRADE` lines without a follow-up indicate the WebSocket was accepted but never used by the app.
+
+##### The services run old code after a pull
+
+`npm start` runs each service from `dist/`, so a stale build silently runs the previous code. Rebuild with `npx tsc -p .` in `interfaces`, `common` and `hedera`, in this order, then in every service, and restart the services (`npm run guardian:services:down` and `up`). A stale `hedera` package is easy to miss: `policy-service` then fails with `createUnsignedCredential` missing on `VcHelper`, which lives in `hedera`, not `common`.
+
+##### UI registration waits for "Confirm" (`00_account_registration`)
+
+An active `USER` system schema adds a VC step to the user registration wizard. `api-tests/011_schemas/putActiveSystemSchema` leaves one active, and the API refuses to deactivate or delete an active schema. Set `active: false` on it in `guardian_db.schema` (`{ system: true, active: true, entity: 'USER' }`), or run the UI `00` specs before `011_schemas`.
+
+##### Workers stop receiving tasks
+
+A queued task whose `dryRun` is a boolean crash-loops `queue-service`. Delete it from `queue_db.task_entity` (`{ dryRun: { $type: 'bool' } }`). From a dev container MongoDB is at `mongodb://host.docker.internal:27017` (`guardian_db`, `queue_db`, `logger_db`, `auth_db`).
+
+##### Cypress behaviours that look like bugs
+
+- `.should('be.visible', { timeout })` ignores the timeout, because assertion options are not command options: put the timeout on the `cy.get` or `cy.contains`.
+- A `cy.request` that sends a binary body (a Blob) yields the response body as an `ArrayBuffer` from another realm, even for a JSON response, so `instanceof ArrayBuffer` is false. Check `byteLength` instead, as `decodeBody` in `support/cdmTools.js` does.
+- A `Cypress.on('fail')` handler can fire more than once (retries), so it must be idempotent, and `cy.writeFile` throws inside it.
+- List endpoints return a capped page (`/tools/` the first 100), and the base routes ignore `page`: pass `pageIndex` and `pageSize`.
 
 ##### Docker Connection Issues
 
