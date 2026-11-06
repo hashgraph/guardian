@@ -209,7 +209,32 @@ describe('requiredWithoutControl', () => {
 
     it('lists required fields inside a sub-schema that was not added, once each', () => {
         const form = build({}, ['name', 'extra.inner', 'extra.other']);
-        expect(requiredWithoutControl(form.controls, ['name', 'extra.inner', 'extra.other', 'extra.inner'])).toEqual(['extra.inner', 'extra.other']);
+        expect(requiredWithoutControl(form.controls, ['name', 'extra.inner', 'extra.other', 'extra.inner', 'extra.list.0.v'])).toEqual(['extra.inner', 'extra.other']);
+        form.destroy();
+    });
+
+    it('lists a sub-schema that was not added when the path names the sub-schema itself', () => {
+        const form = build({}, ['name']);
+        expect(requiredWithoutControl(form.controls, ['extra'])).toEqual(['extra']);
+        form.destroy();
+        const added = build({ extra: {} }, ['name']);
+        expect(requiredWithoutControl(added.controls, ['extra'])).toEqual([]);
+        added.destroy();
+    });
+
+    it('counts a field of a sub-schema that was not added inside an existing row, not a cell of a missing row', () => {
+        const rowDocument: any = {
+            ...document,
+            properties: { ...document.properties, rows: { type: SchemaDataTypes.array, title: 'Rows', description: 'Rows', items: { $ref: '#row' } } },
+            $defs: {
+                ...document.$defs,
+                '#row': { $id: '#row', type: SchemaDataTypes.object, properties: { extra: { $ref: '#group', title: 'Extra', description: 'Extra' } } },
+            },
+        };
+        const form = new FieldForm(new UntypedFormGroup({}));
+        form.setData({ schema: new Schema({ iri: '#rw&1.0.0', document: rowDocument }), preset: { rows: [{}] }, requiredFields: ['name'] });
+        form.build();
+        expect(requiredWithoutControl(form.controls, ['rows.0.extra.inner', 'rows.1.extra.inner'])).toEqual(['rows.0.extra.inner']);
         form.destroy();
     });
 

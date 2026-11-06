@@ -839,14 +839,45 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
      * optional sub-schema that was not added. The form can't flag them, so the results list them.
      */
     private unlistedMissingFields(targets: IFormTarget[], listed: IFormIssue[]): IFormIssue[] {
-        const known = new Set([...targets.map((target) => target.path), ...listed.map((issue) => issue.path)]);
-        return this.previewMissingFields
-            .filter((path) => !known.has(path))
-            .map((path) => ({
-                path,
-                label: this.missingFieldLabel(path),
-                message: 'Enter a value'
-            }));
+        const byPath = new Map(targets.map((target) => [target.path, target]));
+        const listedPaths = new Set(listed.map((issue) => issue.path));
+        const isEmptyTable = (target: IFormTarget) => !target.row && !!target.field.isArray && !target.field.list?.length;
+        const result: IFormIssue[] = [];
+        const add = (path: string, message: string) => {
+            if (!listedPaths.has(path) && !result.some((issue) => issue.path === path)) {
+                result.push({ path, label: this.missingFieldLabel(path), message });
+            }
+        };
+        for (const path of this.previewMissingFields) {
+            const own = byPath.get(path);
+            if (own) {
+                if (!own.hidden && isEmptyTable(own)) {
+                    add(path, 'Add an entry');
+                } else if (!own.hidden && !own.control) {
+                    add(path, 'Enter a value');
+                }
+                continue;
+            }
+            const parts = path.split('.');
+            let length = parts.length - 1;
+            let parent = byPath.get(parts.slice(0, length).join('.'));
+            while (!parent && length > 1) {
+                length--;
+                parent = byPath.get(parts.slice(0, length).join('.'));
+            }
+            if (!parent) {
+                if (!parts.some(isIndexSegment)) {
+                    add(path, 'Enter a value');
+                }
+            } else if (!parent.hidden) {
+                if (!parts.slice(length).some(isIndexSegment)) {
+                    add(path, 'Enter a value');
+                } else if (isIndexSegment(parts[length]) && isEmptyTable(parent)) {
+                    add(parent.path, 'Add an entry');
+                }
+            }
+        }
+        return result;
     }
 
     /** A row index reads as `#n`; the schema path up to each other segment gives that field's name. */
@@ -1035,9 +1066,16 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
                 this.setPreviewRequiredFields(required);
                 this.previewMissingFields = [...validation.missingFields];
                 if (!previewFields) {
+                    await this.runPreview(true, true);
+                    if (!this.previewMode || this.previewRequest !== request + 1) {
+                        return;
+                    }
+                    this.setPreviewRequiredFields([...new Set([...(this.previewRequiredFields ?? []), ...required])].sort());
+                    this.previewMissingFields = [...new Set([...validation.missingFields, ...this.previewMissingFields])];
+                    const after = this.previewRequiredFields ?? [];
                     // New requirements first reach the form, so the results list what is missing.
                     // The same requirements need no pass: the form already has them.
-                    const unchanged = !!before && before.length === required.length && before.every((path, i) => path === required[i]);
+                    const unchanged = !!before && before.length === after.length && before.every((path, i) => path === after[i]);
                     if (!unchanged) {
                         this.changeDetectorRef.detectChanges();
                     }

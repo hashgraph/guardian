@@ -221,6 +221,73 @@ describe('request document preview wiring', () => {
         expect(component.formRoot.revealErrors).toHaveBeenCalledWith(false);
     });
 
+    it('asks for every field of the branch when Preview answers 422 and lists them all', async () => {
+        spyOn(console, 'error');
+        const error = new HttpErrorResponse({ status: 422, error: { data: { preview: true, fields: ['period'], missingFields: ['period'] } } });
+        const { component, calls } = form([Promise.reject(error), Promise.resolve(response(['title', 'period', 'burning'], ['period', 'burning', 'rows.0.cell']))], blockParent());
+        component.previewMode = true;
+        component.previewRequiredFields = ['title'];
+        await component.onStep();
+        expect(calls.map((call) => call.previewFields)).toEqual([false, true]);
+        expect(component.previewRequiredFields).toEqual(['burning', 'period', 'rows.0.cell', 'title']);
+        expect(component.previewMissingFields).toEqual(['period', 'burning', 'rows.0.cell']);
+        expect(component.issues.map((issue: any) => issue.path)).toEqual(['period', 'burning']);
+        expect(component.screen).toBe('results');
+        expect(component.loading).toBeFalse();
+    });
+
+    it('keeps what only the 422 names, such as a section that was not added, next to the fields found again', async () => {
+        spyOn(console, 'error');
+        const error = new HttpErrorResponse({ status: 422, error: { data: { preview: true, fields: ['monitoring'], missingFields: ['monitoring'] } } });
+        const { component } = form([Promise.reject(error), Promise.resolve(response(['title'], ['monitoring.rows.0.cell']))], blockParent());
+        component.previewMode = true;
+        component.previewRequiredFields = ['title'];
+        await component.onStep();
+        expect(component.previewRequiredFields).toEqual(['monitoring', 'monitoring.rows.0.cell', 'title']);
+        expect(component.previewMissingFields).toEqual(['monitoring', 'monitoring.rows.0.cell']);
+        expect(component.issues.map((issue: any) => issue.path)).toEqual(['monitoring']);
+        expect(component.screen).toBe('results');
+    });
+
+    it('lists a table that the 422 names while it has no rows', async () => {
+        spyOn(console, 'error');
+        const error = new HttpErrorResponse({ status: 422, error: { data: { preview: true, fields: ['rows'], missingFields: ['rows'] } } });
+        const { component } = form([Promise.reject(error), Promise.resolve(response(['rows'], ['rows.0.cell']))], blockParent());
+        component.formRoot.model = { controls: [{ name: 'rows', title: 'Rows', isArray: true, list: [], control: { disabled: false, invalid: false } }] };
+        component.previewMode = true;
+        await component.onStep();
+        expect(component.issues.map((issue: any) => [issue.path, issue.message])).toEqual([['rows', 'Add an entry']]);
+        expect(component.screen).toBe('results');
+    });
+
+    it('lists an empty table inside an existing row instead of the cells of its missing rows', async () => {
+        spyOn(console, 'error');
+        const error = new HttpErrorResponse({ status: 422, error: { data: { preview: true, fields: ['rows.0.values'], missingFields: ['rows.0.values'] } } });
+        const { component } = form([Promise.reject(error), Promise.resolve(response(['rows.0.values.0.v'], ['rows.0.values.0.v', 'rows.0.extra.v']))], blockParent());
+        const values = { name: 'values', title: 'Values', isArray: true, list: [], control: { disabled: false, invalid: false } };
+        const extra = { name: 'extra', title: 'Extra', isRef: true, control: null };
+        const row = { control: { disabled: false, invalid: false }, model: { controls: [values, extra] } };
+        component.formRoot.model = { controls: [{ name: 'rows', title: 'Rows', isArray: true, isRef: true, list: [row], control: { disabled: false, invalid: false } }] };
+        component.previewMode = true;
+        await component.onStep();
+        expect(component.issues.map((issue: any) => [issue.path, issue.message])).toEqual([
+            ['rows.0.values', 'Add an entry'],
+            ['rows.0.extra.v', 'Enter a value'],
+        ]);
+    });
+
+    it('keeps the list of the 422 when asking for every field fails', async () => {
+        spyOn(console, 'error');
+        const error = new HttpErrorResponse({ status: 422, error: { data: { preview: true, fields: ['period'], missingFields: ['period'] } } });
+        const { component, calls } = form([Promise.reject(error), Promise.reject(new HttpErrorResponse({ status: 500 }))], blockParent());
+        component.previewMode = true;
+        await component.onStep();
+        expect(calls.map((call) => call.previewFields)).toEqual([false, true]);
+        expect(component.previewRequiredFields).toEqual(['period']);
+        expect(component.previewMissingFields).toEqual(['period']);
+        expect(component.screen).toBe('results');
+    });
+
     it('keeps the form open when the field discovery answers 422', async () => {
         spyOn(console, 'error');
         const error = new HttpErrorResponse({ status: 422, error: { data: { preview: true, fields: ['amount'], missingFields: ['amount'] } } });

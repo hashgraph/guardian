@@ -59,9 +59,9 @@ export function hasInvalidFields(controls: IFieldControl<any>[] | null | undefin
 }
 
 /**
- * Required paths that have no control yet, for example inside a sub-schema that was not added.
- * A path with a row number, a path that has a control, and a path whose nearest existing parent
- * is hidden or missing are left out.
+ * Required paths that have no control yet: a sub-schema that was not added, or a field inside it.
+ * A cell of a table row that does not exist, a path that has a control, and a hidden path or one
+ * whose nearest existing parent is hidden or missing are left out.
  */
 export function requiredWithoutControl(
     controls: IFieldControl<any>[] | null | undefined,
@@ -71,14 +71,24 @@ export function requiredWithoutControl(
     const result: string[] = [];
     for (const path of paths || []) {
         const parts = path.split('.');
-        if (parts.some(isIndexSegment) || targets.has(path) || result.includes(path)) {
+        if (result.includes(path)) {
             continue;
         }
-        let parent: IFormTarget | undefined;
-        for (let length = parts.length - 1; length > 0 && !parent; length--) {
+        const own = targets.get(path);
+        if (own) {
+            if (!own.control && !own.hidden) {
+                result.push(path);
+            }
+            continue;
+        }
+        let length = parts.length - 1;
+        let parent = targets.get(parts.slice(0, length).join('.'));
+        while (!parent && length > 1) {
+            length--;
             parent = targets.get(parts.slice(0, length).join('.'));
         }
-        if (parent && !parent.hidden) {
+        const missingRow = parts.slice(length).some(isIndexSegment);
+        if (parent && !parent.hidden && !missingRow) {
             result.push(path);
         }
     }
