@@ -9,6 +9,8 @@ In the full `api-tests` run of 5–6 Nov 2026 (after the waits in the suites wer
 
 The `before` hook stores the number of new notifications of the Standard Registry and the id of the third one; the test deletes up to that id and expects the response to be the stored number minus two. The response was two higher than expected.
 
+On 6 Nov 2026 the same test passed in a full `api-tests` run on a freshly seeded database, so the failure needs the notification traffic of a database that has already been used (cause still not established).
+
 ## To find out
 
 Whether notifications created by asynchronous work of earlier specs (tasks, policy steps) land between the `before` hook and the delete. If so, the test should assert on the notifications it deleted (for example that the deleted ids are gone) instead of on the total.
