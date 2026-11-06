@@ -171,7 +171,7 @@ module.exports = defineConfig({
             'cypress/e2e/api-tests/024_formulas/*.cy.js',
             'cypress/e2e/api-tests/025_policy_labels/*.cy.js',
             'cypress/e2e/api-tests/026_remote_policy/*.cy.js',
-            'cypress/e2e/DR-test/*.cy.js',
+            'cypress/e2e/dr-test/*.cy.js',
             'cypress/e2e/ui-tests/specs/00_account_creating/*.cy.js',
             'cypress/e2e/ui-tests/specs/00_account_registration/*.cy.js',
             'cypress/e2e/ui-tests/specs/01_administration/*.cy.js',
@@ -232,6 +232,11 @@ module.exports = defineConfig({
                     const files = fs.readdirSync(config.env.downloadFolder);
                     const matchingFiles = files.filter(file => file.includes(partialName));
                     return matchingFiles.length > 0;
+                },
+            });
+            on('task', {
+                forgetRegistry(did) {
+                    return require('./cypress/tasks/forgetRegistry').forgetRegistry(config, did);
                 },
             });
             on('task', {

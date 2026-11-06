@@ -178,6 +178,7 @@ If you built the Guardian in Docker, set the `portApi` variable in `cypress.env.
 - `operatorId` - Hedera operator ID (empty by default – must be supplied)
 - `operatorKey` - Hedera operator key (empty by default – must be supplied)
 - `ipfsStorageApiKey` - IPFS storage API key (empty by default; only needed for a non-local `IPFS_PROVIDER`)
+- `mongoUrl` - MongoDB of the Guardian stack (default: `mongodb://localhost:27017`, then `mongodb://host.docker.internal:27017`). Only the disaster-recovery spec uses it: it removes the original registry from `guardian_db` and `auth_db` before restoring it, as on a new, empty instance
 - `MGSAdmin` - MGS tenant name
 - `MGSIndexerAPIToken` - MGS Indexer API token
 
@@ -338,7 +339,7 @@ npx cypress run --browser chrome --env "grepTags=preparing policies,grepFilterSp
 - `api-all` - all API tests
 - `policy-all` - all policy tests (CDM and iREC; `policyAT` selects the same specs)
 - `ui-all` - all UI tests
-- `dr-all` - the disaster-recovery test
+- `dr-all` - the disaster-recovery test (needs direct access to MongoDB, see `mongoUrl`)
 - `all-no-mgs` - every test except the ones that need MGS
 - `preparing` - special test used for generating accounts for tests (should be run before feature-specific tests)
 - `smoke` - all tests for the most important and frequently used functionality

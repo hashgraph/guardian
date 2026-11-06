@@ -37,6 +37,7 @@
         "eslint": "^10.8.1",
         "eslint-plugin-cypress": "^7.0.0",
         "globals": "^17.9.0",
+        "mongodb": "6.21.0",
         "node-fetch": "3.3.2"
     },
     "dependencies": {
