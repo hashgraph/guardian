@@ -4,7 +4,7 @@ import { xlsxToBoolean, xlsxToEntity, xlsxToFont, xlsxToPresetArray, xlsxToPrese
 import { Table } from './models/table.js';
 import * as mathjs from 'mathjs';
 import { XlsxSchemaConditions } from './models/schema-condition.js';
-import { isAncestorType, isRelationType, ISchemaArrayDependency, IwaVersion, ModelHelper, relationParent, SchemaCategory, SchemaEntity, SchemaField } from '@guardian/interfaces';
+import { isAncestorType, isRelationType, ISchemaArrayDependency, IwaVersion, ModelHelper, relationParent, SchemaCategory, SchemaEntity, SchemaField, SchemaHelper } from '@guardian/interfaces';
 import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import { XlsxResult } from './models/xlsx-result.js';
 import { XlsxEnum } from './models/xlsx-enum.js';
@@ -798,8 +798,7 @@ export class XlsxToJson {
             XlsxToJson.readFieldFlags(worksheet, table, field, fieldType, row, xlsxResult, entity, nested);
 
             if (table.hasCol(Dictionary.ADVISORY_TEXT)
-                && field.type !== 'null' && !field.autocalculate && type !== 'Auto-Calculate'
-                && (!field.isRef || field.customType === 'geo' || field.customType === 'sentinel')) {
+                && type !== 'Auto-Calculate' && SchemaHelper.supportsAdvisoryText(field)) {
                 const advisoryText = worksheet.getCell(table.getCol(Dictionary.ADVISORY_TEXT), row).getValue<string>();
                 if (typeof advisoryText === 'string' && advisoryText.trim()) {
                     field.advisoryText = advisoryText.trim();

@@ -48,6 +48,47 @@ describe('Schema field advisory text', () => {
         assert.equal(JsonToSchema.fromField({ ...json, advisoryText: '   ' }, 0, [], 'VC', new Set(), new ErrorContext()).advisoryText, undefined);
     });
 
+    it('supports simple inputs, GeoJSON and SentinelHUB only', () => {
+        const supported = [
+            field('x'), { ...field('x'), type: 'number' }, { ...field('x'), hidden: true },
+            { ...field('x'), isRef: true, type: '#GeoJSON', customType: 'geo' },
+            { ...field('x'), isRef: true, type: '#SentinelHUB', customType: 'sentinel' },
+        ];
+        const unsupported = [
+            { ...field('x'), type: 'null' },
+            { ...field('x'), isRef: true, type: '#child', customType: 'subSchema' },
+            { ...field('x'), isRef: true, type: '#child' },
+            { ...field('x'), autocalculate: true },
+            { ...field('x'), readOnly: true },
+            ...['policyId', 'ref', 'guardianVersion'].map(name => ({ ...field('x'), name })),
+        ];
+        for (const item of supported) {
+            assert.equal(SchemaHelper.supportsAdvisoryText(item), true, JSON.stringify(item));
+        }
+        for (const item of unsupported) {
+            assert.equal(SchemaHelper.supportsAdvisoryText(item), false, JSON.stringify(item));
+        }
+    });
+
+    it('does not save guidance on fields that cannot show it', () => {
+        const save = (extra, name = 'project') => JSON.parse(SchemaHelper.buildFieldComment({ ...field('Guidance'), ...extra }, name, 'ctx'));
+        assert.equal(save({ isRef: true, type: '#child', customType: 'subSchema' }).advisoryText, undefined);
+        assert.equal(save({ type: 'null' }).advisoryText, undefined);
+        assert.equal(save({ autocalculate: true }).advisoryText, undefined);
+        assert.equal(save({}, 'ref').advisoryText, undefined);
+        assert.equal(save({ isRef: true, type: '#GeoJSON', customType: 'geo' }).advisoryText, 'Guidance');
+    });
+
+    it('drops hidden guidance from a sub-schema field imported from JSON', () => {
+        const schema = new Schema({ iri: '#advisory', document: {
+            $id: '#advisory', type: 'object', $defs: {}, properties: {
+                child: { $ref: '#child', $comment: JSON.stringify({ term: 'child', customType: 'subSchema', advisoryText: 'Hidden' }) },
+            },
+        } });
+        schema.update(schema.fields, schema.conditions);
+        assert.equal(JSON.parse(schema.document.properties.child.$comment).advisoryText, undefined);
+    });
+
     it('leaves document validation and values unchanged', () => {
         const validate = new Ajv().compile({ type: 'object', properties: { project: property('Guidance') }, required: ['project'] });
         const document = { project: 'Project Hub' };

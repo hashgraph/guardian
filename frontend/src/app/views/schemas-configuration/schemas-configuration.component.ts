@@ -146,11 +146,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public advisoryTextEnabled = false;
 
     public get selectedFieldSupportsAdvisoryText(): boolean {
-        const field = this.selectedField;
-        return !!field && !field.readOnly && !field.autocalculate
-            && !['policyId', 'ref', 'guardianVersion'].includes(field.name)
-            && field.type !== 'null'
-            && (!field.isRef || field.customType === 'geo' || field.customType === 'sentinel');
+        return !!this.selectedField && SchemaHelper.supportsAdvisoryText(this.selectedField);
     }
 
     public toggleAdvisoryText(enabled: boolean): void {

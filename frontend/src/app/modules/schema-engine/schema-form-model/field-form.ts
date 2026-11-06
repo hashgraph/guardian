@@ -1293,10 +1293,7 @@ export class FieldForm {
             ...field,
             hide: false,
             autocalculate: !!comment?.autocalculate,
-            advisoryText: !field.readOnly && !field.autocalculate && !comment?.autocalculate
-                && !['policyId', 'ref', 'guardianVersion'].includes(field.name)
-                && field.type !== 'null'
-                && (!field.isRef || field.customType === 'geo' || field.customType === 'sentinel')
+            advisoryText: SchemaHelper.supportsAdvisoryText(field) && !comment?.autocalculate
                 ? field.advisoryText?.trim() || undefined : undefined,
             id: GenerateUUIDv4(),
             field,

@@ -1682,6 +1682,17 @@ export class SchemaHelper {
     }
 
     /**
+     * Check that the field can carry advisory text
+     * @param field
+     */
+    public static supportsAdvisoryText(field: SchemaField): boolean {
+        return !!field && !field.readOnly && !field.autocalculate
+            && !['policyId', 'ref', 'guardianVersion'].includes(field.name)
+            && field.type !== 'null'
+            && (!field.isRef || field.customType === 'geo' || field.customType === 'sentinel');
+    }
+
+    /**
      * Build Field comment
      * @param field
      * @param name
@@ -1697,7 +1708,7 @@ export class SchemaHelper {
         if (![null, undefined].includes(field.isPrivate)) {
             comment.isPrivate = field.isPrivate;
         }
-        if (field.advisoryText?.trim()) {
+        if (field.advisoryText?.trim() && SchemaHelper.supportsAdvisoryText({ ...field, name })) {
             comment.advisoryText = field.advisoryText.trim();
         }
         if (field.unit) {
