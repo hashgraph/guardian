@@ -123,6 +123,78 @@ function typeInField(label, value) {
 // Fills the form section by section: opens the overview's Start (or Continue) when the
 // form opens on it, runs fill(), then follows the footer's Next until it disappears.
 // Works with the rail (wide windows) and with the section bar (Cypress default 1000px).
+// Opens every collapsed group of the section, then answers every radio group that has no answer
+// with its first option (jQuery lookups: a section without them must not fail).
+function answerExpandableSections() {
+    const form = UserPoliciesPageLocators.requestForm;
+    cy.get('body').then(($body) => {
+        $body.find(`${form} button, ${form} a, ${form} span`).filter((_, el) => el.children.length === 0 && el.textContent.trim() === 'Expand all')
+            .first().each((_, link) => link.click());
+    });
+    inForm('input.p-radiobutton-input').then(($radios) => {
+        const groups = {};
+        $radios.each((_, radio) => { (groups[radio.name] = groups[radio.name] || []).push(radio); });
+        Object.values(groups).forEach((group) => {
+            if (!group.some((radio) => radio.checked)) {
+                cy.wrap(group[0]).click({ force: true });
+            }
+        });
+    });
+}
+
+// Follows the form's "Jump to next missing" link, which puts the focus on the next required field
+// that is empty, and answers what it lands on until the link is gone. Answering a choice can bring
+// new required fields into the form a moment later, so the link must stay gone for a few reads.
+// Fails with the label of a field that stays empty after it was answered, or when the form keeps
+// asking for more than 150 answers.
+const MISSING_LINK_GONE_READS = 6;
+const MAX_ANSWERS = 150;
+
+function answerMissingFields(state = { label: undefined, repeats: 0, answered: 0, goneReads: 0 }) {
+    const form = UserPoliciesPageLocators.requestForm;
+    cy.get('body').then(($body) => {
+        const jump = $body.find(`${form} .form-progress-link`);
+        if (!jump.length) {
+            if (state.goneReads + 1 >= MISSING_LINK_GONE_READS) {
+                return;
+            }
+            // eslint-disable-next-line cypress/no-unnecessary-waiting -- new required fields appear after the form has validated the last answer
+            cy.wait(500, { log: false });
+            answerMissingFields({ ...state, goneReads: state.goneReads + 1 });
+            return;
+        }
+        if (state.answered >= MAX_ANSWERS) {
+            throw new Error(`The form still has required fields left after answering ${MAX_ANSWERS} of them`);
+        }
+        jump[0].click();
+        cy.focused({ timeout: TIMEOUTS.ui }).then(($field) => {
+            const label = $field.closest('.form-field').find('.sf-label-text').first().text().trim();
+            const repeats = label === state.label ? state.repeats + 1 : 0;
+            if (repeats >= 2) {
+                throw new Error(`The required field "${label}" stays empty after it was answered`);
+            }
+            const placeholder = $field.attr('placeholder');
+            if ($field.is('.p-datepicker-input')) {
+                cy.focused().type('2025-01-03', { force: true });
+                cy.focused().blur({ force: true });
+            } else if ($field.is('textarea, input[type="text"]')) {
+                const answer = placeholder === '123' ? '1'
+                    : placeholder === 'example@email.com' ? 'asd@dsa.dsa'
+                    : $field.is('#coordinatesInput') ? '[1.23,4.56]'
+                    : 'Test text';
+                cy.focused().type(answer, { force: true });
+                cy.focused().blur({ force: true });
+            } else if ($field.is('[role="radio"], .p-radiobutton-input')) {
+                cy.focused().click({ force: true });
+            } else {
+                cy.focused().click({ force: true });
+                cy.get(CommonElements.dropdownOption).first().click();
+            }
+            answerMissingFields({ label, repeats, answered: state.answered + 1, goneReads: 0 });
+        });
+    });
+}
+
 function openOverviewSection() {
     const form = UserPoliciesPageLocators.requestForm;
     const start = `${form} .sf-overview-actions button:contains('Start'), ${form} .sf-overview-actions button:contains('Continue')`;
@@ -513,6 +585,7 @@ export class UserPoliciesPage {
         Checks.waitForLoading();
         cy.get(UserPoliciesPageLocators.newProjectButton).click();
         fillFormSections(() => {
+            answerExpandableSections();
             inForm(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
                 cy.log(els.length);
                 [...els].forEach((el) => {
@@ -569,7 +642,9 @@ export class UserPoliciesPage {
                 });
             });
         });
-        cy.get(UserPoliciesPageLocators.createButton).click();
+        answerMissingFields();
+        cy.get(UserPoliciesPageLocators.requestForm).find(UserPoliciesPageLocators.submitButton).click();
+        this.closeSubmitted();
         Checks.waitForElement(UserPoliciesPageLocators.waitingForValidation);
     }
 
