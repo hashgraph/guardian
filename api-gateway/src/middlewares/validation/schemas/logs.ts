@@ -13,11 +13,11 @@ export class SeqUrlResponseDTO {
 
 export class LogFilterDTO {
     @ApiProperty({
-        enum: ['INFO', 'WARN', 'ERROR'],
+        enum: ['DEBUG', 'INFO', 'WARN', 'ERROR'],
         nullable: true,
         description: 'Log severity filter. When empty, all logs are returned.'
     })
-    type?: 'INFO' | 'WARN' | 'ERROR';
+    type?: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
 
     @ApiProperty({
         type: 'string',
@@ -73,9 +73,9 @@ export class LogItemDTO {
     message: string;
 
     @ApiProperty({
-        enum: ['INFO', 'WARN', 'ERROR']
+        enum: ['DEBUG', 'INFO', 'WARN', 'ERROR']
     })
-    type: 'INFO' | 'WARN' | 'ERROR';
+    type: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
 
     @ApiProperty({
         type: 'string',

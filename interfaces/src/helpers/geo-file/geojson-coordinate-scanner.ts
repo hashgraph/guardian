@@ -1,4 +1,4 @@
-import { CoordinateScanner, GeoCoordinate } from './first-coordinate-reader';
+import { CoordinateScanner, GeoCoordinate } from './first-coordinate-reader.js';
 
 type JsonToken =
     | { type: 'punctuation'; value: '{' | '}' | '[' | ']' | ':' | ',' }
@@ -62,24 +62,24 @@ export class GeoJsonCoordinateScanner implements CoordinateScanner {
     public write(text: string): void {
         for (const character of text) {
             this.consume(character);
-            if (this.settled) return;
+            if (this.settled) { return; }
         }
     }
 
     public finish(): void {
-        if (this.mode === 'number') this.emitNumber();
-        else if (this.mode === 'literal') this.emitLiteral();
+        if (this.mode === 'number') { this.emitNumber(); }
+        else if (this.mode === 'literal') { this.emitLiteral(); }
         this.settled = true;
     }
 
     private consume(character: string): void {
         if (this.mode === 'string') {
-            if (character === '\\') this.mode = 'escape';
+            if (character === '\\') { this.mode = 'escape'; }
             else if (character === '"') {
                 this.mode = 'plain';
                 this.emit({ type: 'string', value: this.stringValue });
                 this.stringValue = '';
-            } else if (this.stringValue.length <= 64) this.stringValue += character;
+            } else if (this.stringValue.length <= 64) { this.stringValue += character; }
             return;
         }
         if (this.mode === 'escape') {
@@ -91,7 +91,7 @@ export class GeoJsonCoordinateScanner implements CoordinateScanner {
                 this.unicode = '';
                 this.mode = 'unicode';
             } else {
-                if (this.stringValue.length <= 64) this.stringValue += escapes[character] ?? character;
+                if (this.stringValue.length <= 64) { this.stringValue += escapes[character] ?? character; }
                 this.mode = 'string';
             }
             return;
@@ -109,7 +109,7 @@ export class GeoJsonCoordinateScanner implements CoordinateScanner {
         }
         if (this.mode === 'number') {
             if (/[0-9eE+\-.]/.test(character)) {
-                if (this.token.length <= MAX_TOKEN_LENGTH) this.token += character;
+                if (this.token.length <= MAX_TOKEN_LENGTH) { this.token += character; }
                 return;
             }
             this.emitNumber();
@@ -118,14 +118,14 @@ export class GeoJsonCoordinateScanner implements CoordinateScanner {
         }
         if (this.mode === 'literal') {
             if (/[A-Za-z]/.test(character)) {
-                if (this.token.length <= MAX_TOKEN_LENGTH) this.token += character;
+                if (this.token.length <= MAX_TOKEN_LENGTH) { this.token += character; }
                 return;
             }
             this.emitLiteral();
             this.consume(character);
             return;
         }
-        if (/\s/.test(character)) return;
+        if (/\s/.test(character)) { return; }
         if (character === '"') {
             this.stringValue = '';
             this.mode = 'string';
@@ -168,14 +168,14 @@ export class GeoJsonCoordinateScanner implements CoordinateScanner {
             return;
         }
         const frame = this.frames[this.frames.length - 1];
-        if (!frame) return;
+        if (!frame) { return; }
         if (frame.kind === 'object' && frame.state === 'keyOrEnd' && token.type === 'string') {
             frame.key = token.value.length <= 64 ? token.value : '';
             frame.state = 'colon';
             return;
         }
         if (frame.kind === 'object' && frame.state === 'value') {
-            if (frame.key === 'type' && token.type === 'string') frame.geometryType = token.value;
+            if (frame.key === 'type' && token.type === 'string') { frame.geometryType = token.value; }
             this.completeValue(frame);
         } else if (frame.kind === 'array' && frame.state === 'valueOrEnd') {
             this.captureNumber(token);
@@ -190,7 +190,7 @@ export class GeoJsonCoordinateScanner implements CoordinateScanner {
             parent.state === 'value' && parent.key === 'coordinates' && parent.geometry
             ? parent
             : null;
-        if (parent) this.completeValue(parent);
+        if (parent) { this.completeValue(parent); }
         if (value === '{') {
             const geometry = path.length === 0 ||
                 (path[path.length - 1] === 'geometry' &&
@@ -202,14 +202,14 @@ export class GeoJsonCoordinateScanner implements CoordinateScanner {
         } else {
             const frame: ArrayFrame = { kind: 'array', path, state: 'valueOrEnd', coordinateOwner: owner };
             this.frames.push(frame);
-            if (owner) this.capture = { owner, depth: 1, numberDepth: null, numbers: [], failed: false };
-            else if (this.capture) this.capture.depth += 1;
+            if (owner) { this.capture = { owner, depth: 1, numberDepth: null, numbers: [], failed: false }; }
+            else if (this.capture) { this.capture.depth += 1; }
         }
     }
 
     private close(value: '}' | ']'): void {
         const frame = this.frames.pop();
-        if (!frame) return;
+        if (!frame) { return; }
         if (value === ']' && this.capture) {
             if (this.capture.numberDepth === this.capture.depth) {
                 const [longitude, latitude, altitude] = this.capture.numbers;
@@ -224,7 +224,7 @@ export class GeoJsonCoordinateScanner implements CoordinateScanner {
                     this.capture.failed = true;
                 }
                 this.capture.depth -= 1;
-                if (this.capture.depth === 0) this.capture = null;
+                if (this.capture.depth === 0) { this.capture = null; }
             }
         }
         if (value === '}' && frame.kind === 'object' && frame.geometry) {
@@ -238,9 +238,9 @@ export class GeoJsonCoordinateScanner implements CoordinateScanner {
 
     private separator(value: ':' | ','): void {
         const frame = this.frames[this.frames.length - 1];
-        if (!frame) return;
+        if (!frame) { return; }
         if (frame.kind === 'object') {
-            if (value === ':' && frame.state === 'colon') frame.state = 'value';
+            if (value === ':' && frame.state === 'colon') { frame.state = 'value'; }
             else if (value === ',' && frame.state === 'commaOrEnd') {
                 frame.state = 'keyOrEnd';
                 frame.key = null;
@@ -251,8 +251,8 @@ export class GeoJsonCoordinateScanner implements CoordinateScanner {
     }
 
     private childPath(parent?: Frame): string[] {
-        if (!parent) return [];
-        if (parent.kind === 'array') return parent.path;
+        if (!parent) { return []; }
+        if (parent.kind === 'array') { return parent.path; }
         return parent.key ? [...parent.path, parent.key] : parent.path;
     }
 
@@ -261,12 +261,12 @@ export class GeoJsonCoordinateScanner implements CoordinateScanner {
     }
 
     private captureNumber(token: JsonToken): void {
-        if (!this.capture || token.type !== 'number' || this.capture.failed) return;
+        if (!this.capture || token.type !== 'number' || this.capture.failed) { return; }
         if (!Number.isFinite(token.value)) {
             this.capture.failed = true;
             return;
         }
-        if (this.capture.numberDepth === null) this.capture.numberDepth = this.capture.depth;
+        if (this.capture.numberDepth === null) { this.capture.numberDepth = this.capture.depth; }
         if (this.capture.numberDepth === this.capture.depth && this.capture.numbers.length < 3) {
             this.capture.numbers.push(token.value);
         }

@@ -1,7 +1,7 @@
 import { UntypedFormControl } from '@angular/forms';
 import { GeoJsonType } from '@guardian/interfaces';
 import { GeoForm } from './geo-form';
-import { polygonHolesError, polygonRingError } from './polygon-ring-validation';
+import { polygonHolesError, polygonRingError } from '@guardian/interfaces';
 
 describe('Selected polygon ring validation', () => {
     const square = [[0, 0], [4, 0], [4, 4], [0, 4], [0, 0]];

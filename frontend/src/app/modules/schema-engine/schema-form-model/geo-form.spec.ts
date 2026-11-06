@@ -1,5 +1,5 @@
 import { UntypedFormControl } from '@angular/forms';
-import { GeoJsonType } from '@guardian/interfaces';
+import { GeoJsonType, polygonValueError } from '@guardian/interfaces';
 import { GeoForm, MISSING_ORIGINAL_FILE_ERROR, ORIGINAL_FILE_ERRORS_KEY } from './geo-form';
 
 describe('GeoForm no-preview validation', () => {
@@ -143,5 +143,39 @@ describe('GeoForm original file link', () => {
 
         expect(check).not.toHaveBeenCalled();
         expect(control.valid).toBeTrue();
+    });
+});
+
+describe('GeoForm shared GeoJSON checks', () => {
+    const square = [[0, 0], [4, 0], [4, 4], [0, 4], [0, 0]];
+    function validate(value: unknown) {
+        const control = new UntypedFormControl(value);
+        new GeoForm(control).build();
+        control.updateValueAndValidity();
+        return control;
+    }
+    it('reports the shared reason for unclosed rings and missing or forbidden Feature members', () => {
+        for (const [value, reason] of [
+            [{ type: 'Polygon', coordinates: [[[0, 0], [4, 0], [4, 4], [0, 4]]] }, 'Polygon ring at $.coordinates[0] is not closed.'],
+            [{ type: 'Feature', geometry: { type: 'Point', coordinates: [1, 2] } }, 'Properties must be an object or null at $.properties.'],
+            [{ type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [1, 2] }, coordinates: [] }, 'Member "coordinates" is not allowed on Feature at $.']
+        ]) expect(validate(value).errors?.geoJsonFieldErrors.standard).toEqual([
+            `The value is not valid GeoJSON (RFC 7946). ${reason}`
+        ]);
+    });
+    it('uses the same selected-polygon wording as the API helper', () => {
+        const bow = [[0, 0], [4, 4], [0, 4], [4, 0], [0, 0]];
+        const outside = [[5, 5], [6, 5], [6, 6], [5, 5]];
+        for (const coordinates of [[bow], [square, outside]]) {
+            const geometry = { type: 'Polygon', coordinates };
+            for (const value of [geometry, { type: 'Feature', geometry, properties: {} },
+                { type: 'FeatureCollection', features: [{ type: 'Feature', geometry, properties: {} }] }]) {
+                expect(validate(value).errors?.geoJsonFieldErrors[0][0]).toBe(polygonValueError(value));
+            }
+        }
+    });
+    it('accepts form-closed polygons and preserves the empty-value message' , () => {
+        expect(validate({ type: 'Polygon', coordinates: [square] }).valid).toBeTrue();
+        expect(validate({}).errors?.geoJsonFieldErrors.standard).toBeUndefined();
     });
 });

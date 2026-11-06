@@ -133,7 +133,8 @@ export class PolicyVcDocumentsUtils {
 
         await GeospatialFileValidator.validateDocument(
             newCredentialSubject,
-            user.userId
+            user.userId,
+            Array.isArray(oldVCDoc.credentialSubject) ? oldVCDoc.credentialSubject[0] : oldVCDoc.credentialSubject
         );
 
         let newDoc = await PolicyVcDocumentsUtils.createVerifiableCredential(

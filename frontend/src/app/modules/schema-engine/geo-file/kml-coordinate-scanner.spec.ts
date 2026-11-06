@@ -1,7 +1,7 @@
 import { DOMParser } from '@xmldom/xmldom';
 import { kml } from '@tmcw/togeojson';
-import { GeoCoordinate, readFirstCoordinate } from './first-coordinate-reader';
-import { KmlCoordinateScanner } from './kml-coordinate-scanner';
+import { GeoCoordinate, readFirstCoordinate } from '@guardian/interfaces';
+import { KmlCoordinateScanner } from '@guardian/interfaces';
 
 function firstPosition(text: string): GeoCoordinate | null {
     const converted = kml(new DOMParser().parseFromString(text, 'application/xml'));

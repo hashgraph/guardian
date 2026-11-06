@@ -3,15 +3,13 @@ import { PinoLogType } from '@guardian/interfaces';
 import { levelTypeMapping, MAP_TRANSPORTS } from '../../../dist/helpers/pino-logger.js';
 
 describe('levelTypeMapping', () => {
-    it('is an array of three entries (info / warn / error)', () => {
+    it('is an array of four entries (debug / info / warn / error)', () => {
         assert.ok(Array.isArray(levelTypeMapping));
-        assert.equal(levelTypeMapping.length, 3);
+        assert.equal(levelTypeMapping.length, 4);
     });
 
-    it('orders levels INFO -> WARN -> ERROR', () => {
-        assert.equal(levelTypeMapping[0], PinoLogType.INFO);
-        assert.equal(levelTypeMapping[1], PinoLogType.WARN);
-        assert.equal(levelTypeMapping[2], PinoLogType.ERROR);
+    it('orders levels DEBUG -> INFO -> WARN -> ERROR', () => {
+        assert.deepEqual(levelTypeMapping, [PinoLogType.DEBUG, PinoLogType.INFO, PinoLogType.WARN, PinoLogType.ERROR]);
     });
 });
 
