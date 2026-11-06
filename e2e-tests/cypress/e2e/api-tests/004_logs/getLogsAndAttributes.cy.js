@@ -5,7 +5,7 @@ import * as Authorization from '../../../support/authorization';
 
 context('Logs', { tags: ['logs', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-    let workerName; let workersNumber;
+    let workerName;
 
     const logsUrl = `${API.ApiServer}${API.Logs}`;
     const logsAttributesUrl = `${API.ApiServer}${API.LogsAttributes}`;
@@ -74,7 +74,6 @@ context('Logs', { tags: ['logs', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             getLogsAttributesWithAuth(authorization, { name: 'WORKER' }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                workersNumber = response.body.length;
                 workerName = response.body.at(-1);
             });
         });
@@ -88,7 +87,7 @@ context('Logs', { tags: ['logs', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
                 true
             ).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                expect(workersNumber - 1).eql(response.body.length);
+                expect(response.body).to.not.include(workerName);
             });
         });
     });
