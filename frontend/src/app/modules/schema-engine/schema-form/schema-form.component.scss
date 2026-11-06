@@ -434,6 +434,12 @@ form {
         padding-right: 8px;
     }
 
+    // Starts under the chevron, at the toggle's left padding
+    > .sf-meta {
+        margin: 0;
+        padding: 0 14px 12px;
+    }
+
     .sf-card-toggle {
         flex: 1;
         min-width: 0;

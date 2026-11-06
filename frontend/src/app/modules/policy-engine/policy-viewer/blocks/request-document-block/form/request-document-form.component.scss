@@ -80,6 +80,20 @@ form {
         }
     }
 
+    .form-header-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        flex: 0 0 auto;
+        height: 32px;
+        padding: 0 12px;
+        border-radius: 7px;
+        font-family: Inter;
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
     .form-menu {
         position: relative;
         flex: 0 0 auto;
@@ -154,6 +168,11 @@ form {
                     flex: 0 0 auto;
                     pointer-events: none;
                 }
+            }
+
+            .form-menu-switch[aria-disabled='true'] {
+                opacity: 0.5;
+                cursor: default;
             }
 
             .form-menu-hint {
@@ -232,7 +251,7 @@ form {
     // The form fills the whole area: the section rail is flush to the top and left,
     // and the form gives its own content column the padding
     &.fill {
-        --sf-content-pad: 24px 32px 40px;
+        --sf-content-pad: 20px 32px 40px;
         padding: 0;
 
         .body-dialog-template {
@@ -262,12 +281,16 @@ form {
     background: var(--guardian-dry-run-background);
     color: var(--guardian-font-color);
 
-    > .pi, > svg {
+    > .pi {
         color: var(--color-primary);
     }
 
     .form-notice-text {
         flex: 1 1 180px;
+    }
+
+    .form-notice-action {
+        margin-left: auto;
     }
 
     .guardian-button {
@@ -731,25 +754,6 @@ form {
         font-size: 12px;
         line-height: 14px;
         letter-spacing: 0%;
-    }
-}
-
-.form-header .calculation-preview-toggle {
-    flex: 0 0 auto;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    white-space: nowrap;
-    color: var(--sf-text-2);
-    font-size: 12.5px;
-    font-weight: 500;
-    --p-toggleswitch-width: 34px;
-    --p-toggleswitch-height: 20px;
-    --p-toggleswitch-handle-size: 16px;
-    --p-toggleswitch-gap: 2px;
-
-    label {
-        cursor: pointer;
     }
 }
 

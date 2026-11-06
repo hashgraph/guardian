@@ -98,6 +98,8 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     @Input() rules: SchemaRuleValidateResult;
     @Input() layout: SchemaFormLayout = 'sections';
     @Input() overviewHint: string | null = null;
+    /** False opens the first section and drops the Overview row, for hosts that only present the schema. */
+    @Input() showOverview: boolean = true;
     @Input() isFormForFinishSetup: boolean = false;
     @Input() isFormForRequestBlock: boolean = false;
     @Input() lastSavedAt?: Date;
@@ -213,7 +215,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             if (!changes.requiredFields.firstChange && changes.requiredFields.previousValue !== null) this.previewBusyChange.emit(false);
         }
         if (changes.schema && !changes.schema.firstChange) {
-            this.screen = 'overview';
+            this.screen = this.showOverview ? 'overview' : 'section';
             this.activeIndex = 0;
             this.nav?.closeDrawer();
         }
@@ -727,6 +729,9 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
                 this.screen = 'overview';
                 this.nav?.closeDrawer();
             }
+        }
+        if (!this.showOverview && sections.length && this.screen === 'overview') {
+            this.screen = 'section';
         }
         this.updateNestedCards();
         this.promotedName = sections.length ? promotedRootName(model) : null;
