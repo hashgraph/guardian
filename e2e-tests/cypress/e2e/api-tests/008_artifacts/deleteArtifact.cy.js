@@ -2,6 +2,8 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { randomInt } from '../../../support/random';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Artifacts', { tags: ['artifacts', 'secondPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
@@ -9,7 +11,10 @@ context('Artifacts', { tags: ['artifacts', 'secondPool', 'all', 'all-no-mgs'] },
 
     const artifactsUrl = `${API.ApiServer}${API.Artifacts}`;
 
-    let artifactId; let artifactId2;
+    const policiesUrl = `${API.ApiServer}${API.Policies}`;
+    const policyName = `PolicyForArtifactDelete_${randomInt(999999)}`;
+
+    let policyId; let artifactId; let artifactId2;
 
     const listArtifactsWithAuth = (authorization) =>
         cy.request({
@@ -34,12 +39,52 @@ context('Artifacts', { tags: ['artifacts', 'secondPool', 'all', 'all-no-mgs'] },
             failOnStatusCode: false,
         });
 
+    // Only the artifacts of a DRAFT policy can be deleted, and the policies other specs leave at the
+    // top of the list are not guaranteed to be DRAFT, so the spec provisions its own policy.
+    const uploadArtifact = (authorization, filename) =>
+        cy.fixture('artifactsImport.policy', 'binary').then((file) => {
+            const formData = new FormData();
+            formData.append('artifacts', Cypress.Blob.binaryStringToBlob(file), filename);
+            return cy.request({
+                method: METHOD.POST,
+                url: artifactsUrl + policyId,
+                headers: { authorization, 'Content-Type': 'multipart/form-data' },
+                body: formData,
+            });
+        });
+
     before(() => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
+            cy.request({
+                method: METHOD.POST,
+                url: policiesUrl,
+                headers: { authorization },
+                body: { name: policyName, policyTag: policyName },
+                timeout: TIMEOUTS.backend,
+            }).then((response) => {
+                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
+                policyId = response.body.find((policy) => policy.name === policyName).id;
+            });
+            uploadArtifact(authorization, 'artifactToDelete.policy');
+            uploadArtifact(authorization, 'artifactToKeep.policy');
             listArtifactsWithAuth(authorization).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
-                artifactId = response.body.at(0).id;
-                artifactId2 = response.body.at(1).id;
+                const policyArtifacts = response.body.filter((artifact) => artifact.policyId === policyId);
+                expect(policyArtifacts, 'artifacts of the provisioned policy').to.have.length(2);
+                artifactId = policyArtifacts[0].id;
+                artifactId2 = policyArtifacts[1].id;
+            });
+        });
+    });
+
+    after(() => {
+        if (!policyId) {return;}
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            cy.request({
+                method: METHOD.DELETE,
+                url: `${policiesUrl}${API.Async}${policyId}`,
+                headers: { authorization },
+                failOnStatusCode: false,
             });
         });
     });
