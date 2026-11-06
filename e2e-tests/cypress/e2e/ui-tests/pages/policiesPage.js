@@ -67,8 +67,9 @@ const L = {
     jsonContainer: '.textarea-code',
     treeContainer: '.tree-container',
     componentsContainer: '.components-container:not(:hidden)',
+    componentBtn: '.component-btn',
     // the transparent drag chip lies over the visible button and both carry the add handler
-    componentBtn: '.drag-btn',
+    componentAddChip: '.drag-btn',
     favoriteButton: '.component-btn-favorite',
     componentsBlock: `span.drag-component-name`,
     componentsSearch: 'input[placeholder="Search"]',
@@ -602,7 +603,7 @@ export class PoliciesPage {
         const blocksSearch = () => cy.get(L.componentsSearch, { timeout: TIMEOUTS.ui }).first();
         blocksSearch().clear();
         blocksSearch().type(name);
-        cy.contains(L.componentBtn, name, { timeout: TIMEOUTS.ui }).click();
+        cy.contains(L.componentAddChip, name, { timeout: TIMEOUTS.ui }).click();
         blocksSearch().clear();
     }
 
