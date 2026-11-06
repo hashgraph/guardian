@@ -161,8 +161,18 @@ describe('Schema template artifact column layout', () => {
         assert.deepEqual(headers, [
             'Key', 'Description', 'Type', 'Required Field', 'Visibility', 'Parameter',
             'Allow Multiple Answers', 'Updatable Field', 'Private Field',
-            'Default Value', 'Suggest Value', 'Test Value', 'IWA Property'
+            'Default Value', 'Suggest Value', 'Test Value', 'IWA Property',
+            'Repeatable Links', 'Advisory Text'
         ]);
+        assert.deepEqual(sheet.getCell('N6').style, sheet.getCell('M6').style);
+        assert.deepEqual(sheet.getCell('O6').style, sheet.getCell('M6').style);
+        for (let row = 7; row <= 46; row++) {
+            assert.deepEqual(sheet.getCell(row, 14).style, sheet.getCell(row, 13).style);
+            assert.deepEqual(sheet.getCell(row, 15).style, sheet.getCell(row, 13).style);
+            assert.equal(sheet.getCell(row, 14).value, null);
+            assert.equal(sheet.getCell(row, 15).value, null);
+        }
+        assert.ok(sheet.model.merges.includes('A1:O1'));
     });
 
     it('documents every field column in the README, in the same order', async () => {
@@ -179,6 +189,17 @@ describe('Schema template artifact column layout', () => {
             'Default Value', 'Suggest Value', 'Test Value', 'IWA Property',
             'Repeatable Links', 'Advisory Text'
         ]);
+    });
+
+    it('marks Repeatable Links and Advisory Text as optional in the README', async () => {
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.readFile(TEMPLATE);
+        const readme = workbook.getWorksheet('README');
+        for (const row of [34, 35]) {
+            const cell = readme.getCell(row, 3);
+            assert.equal(cell.value, 'Optional', `Required column, row ${row}`);
+            assert.deepEqual(cell.style, readme.getCell('C33').style, `Required column style, row ${row}`);
+        }
     });
 
     it('shows No in the Updatable and Private example cells, like Allow Multiple Answers', async () => {
