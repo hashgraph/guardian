@@ -20,7 +20,7 @@ export class XmlTokenizer {
     ) {}
 
     write(text: string): void {
-        if (!text || this.shouldStop()) return;
+        if (!text || this.shouldStop()) { return; }
         this.compact();
         this.buffer += text;
         this.parse(false);
@@ -61,7 +61,7 @@ export class XmlTokenizer {
                     this.emit({ type: 'text', value: this.buffer.slice(this.cursor, contentEnd) });
                 }
                 this.cursor = contentEnd;
-                if (end < 0) return;
+                if (end < 0) { return; }
                 this.cursor = end + delimiter.length;
                 this.section = null;
                 continue;
@@ -77,7 +77,7 @@ export class XmlTokenizer {
                 this.cursor = index;
                 continue;
             }
-            if (!final && this.isPartialMarkup()) return;
+            if (!final && this.isPartialMarkup()) { return; }
             if (this.buffer.startsWith('<!--', this.cursor)) {
                 this.cursor += 4;
                 this.section = 'comment';
@@ -90,30 +90,30 @@ export class XmlTokenizer {
             }
             if (this.buffer.startsWith('<?', this.cursor)) {
                 const end = this.buffer.indexOf('?>', this.cursor + 2);
-                if (end < 0) return;
+                if (end < 0) { return; }
                 this.cursor = end + 2;
                 continue;
             }
             if (this.buffer.slice(this.cursor, this.cursor + 9).toUpperCase() === '<!DOCTYPE') {
                 const end = this.findDoctypeEnd(this.cursor + 2);
-                if (end < 0) return;
+                if (end < 0) { return; }
                 this.cursor = end + 1;
                 continue;
             }
             if (this.buffer.startsWith('<!', this.cursor)) {
                 const end = this.findTagEnd(this.cursor + 2);
-                if (end < 0) return;
+                if (end < 0) { return; }
                 this.cursor = end + 1;
                 continue;
             }
-            const end = this.findTagEnd(this.cursor + 1);
-            if (end < 0) return;
-            const markup = this.buffer.slice(this.cursor + 1, end);
+            const tagEnd = this.findTagEnd(this.cursor + 1);
+            if (tagEnd < 0) { return; }
+            const markup = this.buffer.slice(this.cursor + 1, tagEnd);
             const raw = markup.trim();
-            if (this.strictMarkup && (/^[\t\r\n ]/.test(markup) || /\/[\t\r\n ]+$/.test(markup))) this.invalid = true;
-            this.cursor = end + 1;
-            if (!raw) { if (this.strictMarkup) this.invalid = true; continue; }
-            if (this.strictMarkup && !this.validTag(raw)) this.invalid = true;
+            if (this.strictMarkup && (/^[\t\r\n ]/.test(markup) || /\/[\t\r\n ]+$/.test(markup))) { this.invalid = true; }
+            this.cursor = tagEnd + 1;
+            if (!raw) { if (this.strictMarkup) { this.invalid = true; } continue; }
+            if (this.strictMarkup && !this.validTag(raw)) { this.invalid = true; }
             if (raw[0] === '/') {
                 this.emit({ type: 'end', name: raw.slice(1).trim().split(/\s/, 1)[0] });
                 continue;
@@ -122,7 +122,7 @@ export class XmlTokenizer {
             const body = selfClosing ? raw.slice(0, -1).trim() : raw;
             const name = body.split(/\s/, 1)[0];
             this.emit({ type: 'start', name, selfClosing });
-            if (selfClosing) this.emit({ type: 'end', name });
+            if (selfClosing) { this.emit({ type: 'end', name }); }
         }
     }
 
@@ -131,23 +131,23 @@ export class XmlTokenizer {
         const selfClosing = raw.endsWith('/');
         const body = closing ? raw.slice(1) : selfClosing ? raw.slice(0, -1) : raw;
         const name = body.match(XML_NAME)?.[0];
-        if (!name) return false;
+        if (!name) { return false; }
         let rest = body.slice(name.length);
-        if (closing) return !selfClosing && !rest.trim();
+        if (closing) { return !selfClosing && !rest.trim(); }
         const attributes = new Set<string>();
         while (rest.trim()) {
-            if (!/^[\t\n\r ]/.test(rest)) return false;
+            if (!/^[\t\n\r ]/.test(rest)) { return false; }
             rest = rest.trimStart();
             const attribute = rest.match(XML_NAME)?.[0];
-            if (!attribute || attributes.has(attribute)) return false;
+            if (!attribute || attributes.has(attribute)) { return false; }
             attributes.add(attribute);
             rest = rest.slice(attribute.length).trimStart();
-            if (!rest.startsWith('=')) return false;
+            if (!rest.startsWith('=')) { return false; }
             rest = rest.slice(1).trimStart();
             const quote = rest[0];
-            if (quote !== '"' && quote !== "'") return false;
+            if (quote !== '"' && quote !== '\'') { return false; }
             const end = rest.indexOf(quote, 1);
-            if (end < 0 || rest.slice(1, end).includes('<')) return false;
+            if (end < 0 || rest.slice(1, end).includes('<')) { return false; }
             rest = rest.slice(end + 1);
         }
         return true;
@@ -165,8 +165,8 @@ export class XmlTokenizer {
         for (let index = start; index < this.buffer.length; index += 1) {
             const character = this.buffer[index];
             if (quote) {
-                if (character === quote) quote = '';
-            } else if (character === '"' || character === "'") {
+                if (character === quote) { quote = ''; }
+            } else if (character === '"' || character === '\'') {
                 quote = character;
             } else if (character === '>') {
                 return index;
@@ -181,13 +181,13 @@ export class XmlTokenizer {
         for (let index = start; index < this.buffer.length; index += 1) {
             const character = this.buffer[index];
             if (quote) {
-                if (character === quote) quote = '';
+                if (character === quote) { quote = ''; }
                 continue;
             }
-            if (character === '"' || character === "'") quote = character;
-            else if (character === '[') subsetDepth += 1;
-            else if (character === ']') subsetDepth = Math.max(0, subsetDepth - 1);
-            else if (character === '>' && subsetDepth === 0) return index;
+            if (character === '"' || character === '\'') { quote = character; }
+            else if (character === '[') { subsetDepth += 1; }
+            else if (character === ']') { subsetDepth = Math.max(0, subsetDepth - 1); }
+            else if (character === '>' && subsetDepth === 0) { return index; }
         }
         return -1;
     }
@@ -219,20 +219,20 @@ export class XmlTokenizer {
                 value = value.slice(0, ampersand);
             }
         }
-        if (!value) return;
+        if (!value) { return; }
         const decoded = value.replace(
             /&(amp|lt|gt|quot|apos|#\d+|#x[0-9a-fA-F]+);/g,
             (_match, entity: string) => this.decodeEntity(entity)
         );
-        if (decoded) this.emit({ type: 'text', value: decoded });
+        if (decoded) { this.emit({ type: 'text', value: decoded }); }
     }
 
     private decodeEntity(entity: string): string {
-        if (entity === 'amp') return '&';
-        if (entity === 'lt') return '<';
-        if (entity === 'gt') return '>';
-        if (entity === 'quot') return '"';
-        if (entity === 'apos') return "'";
+        if (entity === 'amp') { return '&'; }
+        if (entity === 'lt') { return '<'; }
+        if (entity === 'gt') { return '>'; }
+        if (entity === 'quot') { return '"'; }
+        if (entity === 'apos') { return '\''; }
         const code = entity[1] === 'x'
             ? Number.parseInt(entity.slice(2), 16)
             : Number.parseInt(entity.slice(1), 10);

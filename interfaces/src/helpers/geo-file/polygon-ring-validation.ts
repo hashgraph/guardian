@@ -46,14 +46,14 @@ function comparePositions(first: Position, second: Position): number {
 }
 
 function compareSegments(first: Segment, second: Segment): number {
-    if (first.index === second.index) return 0;
+    if (first.index === second.index) { return 0; }
     if (first.start[0] === second.start[0]) {
         const difference = first.start[1] - second.start[1];
-        if (difference) return difference;
-        const orientation = cross(first.start, first.end, second.end);
-        return orientation > 0 ? -1 : orientation < 0 ? 1 : first.index - second.index;
+        if (difference) { return difference; }
+        const endOrientation = cross(first.start, first.end, second.end);
+        return endOrientation > 0 ? -1 : endOrientation < 0 ? 1 : first.index - second.index;
     }
-    if (first.start[0] > second.start[0]) return -compareSegments(second, first);
+    if (first.start[0] > second.start[0]) { return -compareSegments(second, first); }
     const orientation = cross(first.start, first.end, second.start) ||
         cross(first.start, first.end, second.end);
     return orientation > 0 ? -1 : orientation < 0 ? 1 : first.index - second.index;
@@ -68,14 +68,14 @@ class SweepStatus {
     }
 
     private update(node: SweepNode): void {
-        node.height = 1 + Math.max(this.height(node.left), this.height(node.right));
+        node.height = Math.max(this.height(node.left), this.height(node.right)) + 1;
     }
 
     private replace(node: SweepNode, replacement: SweepNode | null): void {
-        if (!node.parent) this.root = replacement;
-        else if (node.parent.left === node) node.parent.left = replacement;
-        else node.parent.right = replacement;
-        if (replacement) replacement.parent = node.parent;
+        if (!node.parent) { this.root = replacement; }
+        else if (node.parent.left === node) { node.parent.left = replacement; }
+        else { node.parent.right = replacement; }
+        if (replacement) { replacement.parent = node.parent; }
     }
 
     private rotate(node: SweepNode, left: boolean): SweepNode {
@@ -90,7 +90,7 @@ class SweepStatus {
             node.left = middle;
         }
         node.parent = next;
-        if (middle) middle.parent = node;
+        if (middle) { middle.parent = node; }
         this.update(node);
         this.update(next);
         return next;
@@ -102,11 +102,11 @@ class SweepStatus {
             const difference = this.height(node.left) - this.height(node.right);
             if (difference > 1) {
                 const child = node.left!;
-                if (this.height(child.left) < this.height(child.right)) this.rotate(child, true);
+                if (this.height(child.left) < this.height(child.right)) { this.rotate(child, true); }
                 node = this.rotate(node, false);
             } else if (difference < -1) {
                 const child = node.right!;
-                if (this.height(child.right) < this.height(child.left)) this.rotate(child, false);
+                if (this.height(child.right) < this.height(child.left)) { this.rotate(child, false); }
                 node = this.rotate(node, true);
             }
             node = node.parent;
@@ -116,7 +116,7 @@ class SweepStatus {
     public neighbor(node: SweepNode, next: boolean): SweepNode | null {
         let branch = next ? node.right : node.left;
         if (branch) {
-            while (next ? branch.left : branch.right) branch = (next ? branch.left : branch.right)!;
+            while (next ? branch.left : branch.right) { branch = (next ? branch.left : branch.right)!; }
             return branch;
         }
         let parent = node.parent;
@@ -137,9 +137,9 @@ class SweepStatus {
             current = order < 0 ? current.left : current.right;
         }
         const node: SweepNode = { segment, height: 1, parent, left: null, right: null };
-        if (!parent) this.root = node;
-        else if (order < 0) parent.left = node;
-        else parent.right = node;
+        if (!parent) { this.root = node; }
+        else if (order < 0) { parent.left = node; }
+        else { parent.right = node; }
         this.nodes[segment.index] = node;
         this.balance(parent);
         return node;
@@ -185,7 +185,7 @@ function findCrossing(rings: Position[][]): [Segment, Segment] | null {
         Number(a.start) - Number(b.start) || compareSegments(a.segment, b.segment));
     const status = new SweepStatus();
     const crosses = (first: SweepNode | null, second: SweepNode | null): [Segment, Segment] | null => {
-        if (!first || !second) return null;
+        if (!first || !second) { return null; }
         return first.segment.index !== second.segment.previous &&
             first.segment.index !== second.segment.next &&
             intersects(first.segment, second.segment) ? [first.segment, second.segment] : null;
@@ -195,11 +195,11 @@ function findCrossing(rings: Position[][]): [Segment, Segment] | null {
         const previous = status.neighbor(node, false);
         const next = status.neighbor(node, true);
         const found = crosses(previous, node) || crosses(node, next);
-        if (found) return found;
+        if (found) { return found; }
         if (!event.start) {
             status.remove(node);
             const after = crosses(previous, next);
-            if (after) return after;
+            if (after) { return after; }
         }
     }
     return null;
@@ -215,9 +215,9 @@ function normalizeRing(ring: readonly Position[]): number[][] {
         let longitude = coordinate[0];
         const previous = points[points.length - 1];
         if (previous) {
-            while (longitude - previous[0] > 180) longitude -= 360;
-            while (longitude - previous[0] < -180) longitude += 360;
-            if (longitude === previous[0] && coordinate[1] === previous[1]) continue;
+            while (longitude - previous[0] > 180) { longitude -= 360; }
+            while (longitude - previous[0] < -180) { longitude += 360; }
+            if (longitude === previous[0] && coordinate[1] === previous[1]) { continue; }
         }
         points.push([longitude, coordinate[1]]);
     }
@@ -230,19 +230,20 @@ function normalizeRing(ring: readonly Position[]): number[][] {
 
 function alignRing(points: number[][], reference: number): number[][] {
     let shift = 0;
-    while (points[0][0] + shift - reference > 180) shift -= 360;
-    while (points[0][0] + shift - reference < -180) shift += 360;
+    while (points[0][0] + shift - reference > 180) { shift -= 360; }
+    while (points[0][0] + shift - reference < -180) { shift += 360; }
     return shift ? points.map(([longitude, latitude]) => [longitude + shift, latitude]) : points;
 }
 
 function contains(ring: Position[], point: Position): boolean {
     let inside = false;
-    for (let index = 0, previous = ring.length - 1; index < ring.length; previous = index++) {
+    let previous = ring.length - 1;
+    for (let index = 0; index < ring.length; previous = index++) {
         const a = ring[previous];
         const b = ring[index];
         if ((a[1] > point[1]) !== (b[1] > point[1])) {
             const side = cross(a, b, point);
-            if (b[1] > a[1] ? side > 0 : side < 0) inside = !inside;
+            if (b[1] > a[1] ? side > 0 : side < 0) { inside = !inside; }
         }
     }
     return inside;
@@ -250,9 +251,9 @@ function contains(ring: Position[], point: Position): boolean {
 
 export function polygonRingError(ring: readonly Position[]): string | null {
     const points = normalizeRing(ring);
-    if (points.length < 3) return 'must contain at least 3 distinct points';
+    if (points.length < 3) { return 'must contain at least 3 distinct points'; }
     const positions = new Set(points.map(point => point[0] + '|' + point[1]));
-    if (positions.size !== points.length) return 'must not repeat a point except to close the ring';
+    if (positions.size !== points.length) { return 'must not repeat a point except to close the ring'; }
 
     for (let index = 0; index < points.length; index++) {
         const a = points[(index + points.length - 1) % points.length];
@@ -263,7 +264,7 @@ export function polygonRingError(ring: readonly Position[]): string | null {
             return 'must not contain overlapping edges';
         }
     }
-    if (hasCrossing(points)) return 'must not cross or touch itself';
+    if (hasCrossing(points)) { return 'must not cross or touch itself'; }
     const origin = points[0];
     const area = points.reduce((sum, point, index) => {
         const next = points[(index + 1) % points.length];
@@ -274,7 +275,7 @@ export function polygonRingError(ring: readonly Position[]): string | null {
 }
 
 export function polygonHolesError(rings: readonly (readonly Position[])[]): string | null {
-    if (rings.length < 2) return null;
+    if (rings.length < 2) { return null; }
     const shell = normalizeRing(rings[0]);
     const normalized = rings.map((ring, index) => index ? alignRing(normalizeRing(ring), shell[0][0]) : shell);
     const owners = new Map<string, number>();
@@ -282,7 +283,7 @@ export function polygonHolesError(rings: readonly (readonly Position[])[]): stri
         for (const point of normalized[ring]) {
             const key = point[0] + '|' + point[1];
             const owner = owners.get(key);
-            if (owner !== undefined && owner !== ring) return `ring #${ring} must not cross or touch ring #${owner}`;
+            if (owner !== undefined && owner !== ring) { return `ring #${ring} must not cross or touch ring #${owner}`; }
             owners.set(key, ring);
         }
     }
@@ -292,7 +293,7 @@ export function polygonHolesError(rings: readonly (readonly Position[])[]): stri
         return `ring #${second} must not cross or touch ring #${first}`;
     }
     for (let hole = 1; hole < normalized.length; hole++) {
-        if (!contains(normalized[0], normalized[hole][0])) return `ring #${hole} must lie inside ring #0`;
+        if (!contains(normalized[0], normalized[hole][0])) { return `ring #${hole} must lie inside ring #0`; }
     }
     for (let hole = 1; hole < normalized.length; hole++) {
         for (let other = 1; other < normalized.length; other++) {
@@ -305,44 +306,44 @@ export function polygonHolesError(rings: readonly (readonly Position[])[]): stri
 }
 
 export function polygonValueError(value: unknown): string | null {
-    if (!value || typeof value !== 'object') return null;
+    if (!value || typeof value !== 'object') { return null; }
     const type = Reflect.get(value, 'type');
-    if (type === 'Feature') return polygonValueError(Reflect.get(value, 'geometry'));
+    if (type === 'Feature') { return polygonValueError(Reflect.get(value, 'geometry')); }
     if (type === 'FeatureCollection' || type === 'GeometryCollection') {
         const items = Reflect.get(value, type === 'FeatureCollection' ? 'features' : 'geometries');
-        if (!Array.isArray(items)) return null;
+        if (!Array.isArray(items)) { return null; }
         const selected = type === 'FeatureCollection' ? items.filter(item => item?.geometry && item.geometry.type !== 'GeometryCollection') : items;
         for (let index = 0; index < selected.length; index += 1) {
             const error = polygonValueError(selected[index]);
-            if (error) return type === 'FeatureCollection' ? `Feature #${index}: ${error}` : error;
+            if (error) { return type === 'FeatureCollection' ? `Feature #${index}: ${error}` : error; }
         }
         return null;
     }
     const coordinates = Reflect.get(value, 'coordinates');
-    if (!Array.isArray(coordinates)) return null;
+    if (!Array.isArray(coordinates)) { return null; }
     const isPosition = (position: unknown): position is number[] => Array.isArray(position) &&
-        position.length >= 2 && position.every(number => typeof number === 'number' && Number.isFinite(number)) &&
+        position.length >= 2 && position.every(coordinate => typeof coordinate === 'number' && Number.isFinite(coordinate)) &&
         Math.abs(position[0]) <= 180 && Math.abs(position[1]) <= 90;
     const isRing = (ring: unknown): ring is number[][] => Array.isArray(ring) && ring.every(isPosition);
     const check = (rings: unknown[]): string | null => {
         for (let index = 0; index < rings.length; index += 1) {
             const ring = rings[index];
-            if (!isRing(ring)) continue;
+            if (!isRing(ring)) { continue; }
             const error = polygonRingError(ring);
-            if (error) return `Polygon: ring #${index} ${error}`;
+            if (error) { return `Polygon: ring #${index} ${error}`; }
         }
         if (rings.length > 1 && rings.every(isRing)) {
             const error = polygonHolesError(rings);
-            if (error) return `Polygon: ${error}`;
+            if (error) { return `Polygon: ${error}`; }
         }
         return null;
     };
-    if (type === 'Polygon') return check(coordinates);
+    if (type === 'Polygon') { return check(coordinates); }
     if (type === 'MultiPolygon') {
         for (let index = 0; index < coordinates.length; index += 1) {
-            if (!Array.isArray(coordinates[index])) continue;
+            if (!Array.isArray(coordinates[index])) { continue; }
             const error = check(coordinates[index]);
-            if (error) return `MultiPolygon: polygon #${index}: ${error.replace(/^Polygon: /, '')}`;
+            if (error) { return `MultiPolygon: polygon #${index}: ${error.replace(/^Polygon: /, '')}`; }
         }
     }
     return null;

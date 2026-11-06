@@ -3,7 +3,7 @@ import { XmlTokenizer } from './xml-tokenizer.js';
 export class NetworkLinkFinder {
     private count = 0;
     private readonly tokenizer = new XmlTokenizer(token => {
-        if (token.type === 'start' && token.name === 'NetworkLink') this.count += 1;
+        if (token.type === 'start' && token.name === 'NetworkLink') { this.count += 1; }
     });
 
     public write(text: string): void {

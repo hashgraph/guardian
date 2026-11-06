@@ -80,22 +80,22 @@ const gridFileAccess: GridFileAccess = {
 
 class ContentInspection {
     public format: 'geojson' | 'kml' | null = null;
-    private json = new GeoJsonValidator();
-    private xml = new KmlWellFormedChecker();
-    private links = new NetworkLinkFinder();
-    private jsonCounter = new GeoJsonFeatureCounter(this.json);
-    private kmlCounter = new KmlFeatureCounter();
+    private readonly json = new GeoJsonValidator();
+    private readonly xml = new KmlWellFormedChecker();
+    private readonly links = new NetworkLinkFinder();
+    private readonly jsonCounter = new GeoJsonFeatureCounter(this.json);
+    private readonly kmlCounter = new KmlFeatureCounter();
     public write(text: string): void {
         if (!this.format) {
             const first = text.trimStart()[0];
-            if (!first) return;
+            if (!first) { return; }
             this.format = first === '<' ? 'kml' : 'geojson';
         }
         if (this.format === 'geojson') { this.jsonCounter.write(text); }
         else { this.xml.write(text); this.links.write(text); this.kmlCounter.write(text); }
     }
     public finish(): { valid: boolean; reason?: string; links: number; counts: GeoFileCounts } {
-        if (this.format === 'geojson') return { ...this.json.finish(), links: 0, counts: this.jsonCounter.finish() };
+        if (this.format === 'geojson') { return { ...this.json.finish(), links: 0, counts: this.jsonCounter.finish() }; }
         return { valid: this.xml.finish(), links: this.links.finish(), counts: this.kmlCounter.finish() };
     }
 }
@@ -115,7 +115,7 @@ export class GeospatialFileValidator {
         const values: { value: object; path: string; unchanged: boolean }[] = [];
         const seen = new Set<object>();
         const walk = (value: unknown, old: unknown, path: string): void => {
-            if (!value || typeof value !== 'object' || seen.has(value)) return;
+            if (!value || typeof value !== 'object' || seen.has(value)) { return; }
             seen.add(value);
             if (!Array.isArray(value) && this.isGeoJsonValue(value)) {
                 let unchanged = false;
@@ -137,16 +137,16 @@ export class GeospatialFileValidator {
             logs.push(...await this.validateLink(located, userId, policyId, !unchanged));
         }
         for (const located of values) {
-            if (located.unchanged) continue;
+            if (located.unchanged) { continue; }
             const check = validateGeoJsonValue(located.value);
             if (!check.valid) {
                 const reason = check.reason?.replace(/\$/g, () => located.path);
                 await this.failValue(located.path, `The geospatial value at ${located.path} is not valid GeoJSON (RFC 7946): ${reason}`, userId);
             }
             const polygonError = polygonValueError(located.value);
-            if (polygonError) await this.failValue(located.path, `The geospatial value at ${located.path} has an invalid polygon: ${polygonError}`, userId);
+            if (polygonError) { await this.failValue(located.path, `The geospatial value at ${located.path} has an invalid polygon: ${polygonError}`, userId); }
         }
-        for (const log of logs) await this.safeLog(log.level, log.message, userId);
+        for (const log of logs) { await this.safeLog(log.level, log.message, userId); }
     }
 
     private async validateLink(located: LocatedLink, userId: string | null, policyId: string, checkContent: boolean): Promise<{ message: string; level: 'info' | 'debug' | 'warn' }[]> {
@@ -228,7 +228,7 @@ export class GeospatialFileValidator {
         if (!gzip && !zip && inspection) {
             const decoder = new TextDecoder();
             try {
-                for await (const chunk of this.files.openStream(fileId)) inspection.write(decoder.decode(chunk, { stream: true }));
+                for await (const chunk of this.files.openStream(fileId)) { inspection.write(decoder.decode(chunk, { stream: true })); }
                 inspection.write(decoder.decode());
             } catch {
                 await this.fail(link, path, `The geospatial file ${this.fileName(link)} could not be read.`, userId, length);
@@ -250,9 +250,9 @@ export class GeospatialFileValidator {
             const sizes = zip ? `${measured} bytes KML (${length} bytes archive)`
                 : `${measured} bytes${gzip ? ` (${length} bytes compressed)` : ''}`;
             logs.push({ level: 'debug', message: `Geospatial file "${this.fileName(link)}" (${format}) in policy ${policyId} checked: ${result.counts.features} ${result.counts.features === 1 ? 'feature' : 'features'}, ${result.counts.vertices} ${result.counts.vertices === 1 ? 'vertex' : 'vertices'}, ${sizes}` });
-            if (result.links) logs.push({ level: 'warn', message: `Geospatial file "${this.fileName(link)}" (${format}) in policy ${policyId} contains ${result.links} NetworkLink ${result.links === 1 ? 'element' : 'elements'}; linked content is not imported` });
+            if (result.links) { logs.push({ level: 'warn', message: `Geospatial file "${this.fileName(link)}" (${format}) in policy ${policyId} contains ${result.links} NetworkLink ${result.links === 1 ? 'element' : 'elements'}; linked content is not imported` }); }
         }
-        if (link.noPreview === true) logs.push({ level: 'info', message: `Geospatial file "${this.fileName(link)}" (${link.format?.toUpperCase()}) in field ${path} was accepted without preview: ${zip ? length : measured} bytes, limit ${this.maximumBytes} bytes` });
+        if (link.noPreview === true) { logs.push({ level: 'info', message: `Geospatial file "${this.fileName(link)}" (${link.format?.toUpperCase()}) in field ${path} was accepted without preview: ${zip ? length : measured} bytes, limit ${this.maximumBytes} bytes` }); }
         return logs;
     }
 
@@ -323,15 +323,15 @@ export class GeospatialFileValidator {
             const reader = new KmzReader();
             const file = new Blob([new Uint8Array(buffer)]);
             const result = await reader.inspect(file);
-            if (result.previewSizeBytes > this.maximumBytes) await this.limitFailure(link, path, result.previewSizeBytes, userId);
+            if (result.previewSizeBytes > this.maximumBytes) { await this.limitFailure(link, path, result.previewSizeBytes, userId); }
             await reader.readCoordinate(file, result.entry, {
                 coordinate: null, settled: false,
-                write(text) { inspection?.write(text); }, finish() {}
+                write(text) { inspection?.write(text); }, finish: () => undefined
             }, this.maximumBytes);
             return result.previewSizeBytes;
         } catch (error) {
-            if (error instanceof GeospatialValidationError) throw error;
-            if (error instanceof KmzSizeError) await this.limitFailure(link, path, error.size, userId);
+            if (error instanceof GeospatialValidationError) { throw error; }
+            if (error instanceof KmzSizeError) { await this.limitFailure(link, path, error.size, userId); }
             if (error instanceof KmzRootEntryError) {
                 await this.fail(link, path, `The KMZ file ${this.fileName(link)} does not contain a root KML file.`, userId, buffer.length);
             }

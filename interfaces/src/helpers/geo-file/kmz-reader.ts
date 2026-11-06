@@ -83,7 +83,7 @@ export class KmzReader {
     }
 
     private async readEndRecord(file: Blob): Promise<EndRecord> {
-        if (file.size < EOCD_LENGTH) throw new Error('The KMZ central directory is missing.');
+        if (file.size < EOCD_LENGTH) { throw new Error('The KMZ central directory is missing.'); }
         const length = Math.min(file.size, MAX_COMMENT_LENGTH + EOCD_LENGTH);
         const start = file.size - length;
         const bytes = new Uint8Array(await file.slice(start).arrayBuffer());
@@ -96,7 +96,7 @@ export class KmzReader {
                 break;
             }
         }
-        if (offset < 0) throw new Error('The KMZ central directory is missing.');
+        if (offset < 0) { throw new Error('The KMZ central directory is missing.'); }
         const disk = view.getUint16(offset + 4, true);
         const directoryDisk = view.getUint16(offset + 6, true);
         const diskEntries = view.getUint16(offset + 8, true);
@@ -118,26 +118,26 @@ export class KmzReader {
 
     private safeInteger(view: DataView, offset: number): number {
         const value = view.getBigUint64(offset, true);
-        if (value > BigInt(Number.MAX_SAFE_INTEGER)) throw new Error('The KMZ central directory is invalid.');
+        if (value > BigInt(Number.MAX_SAFE_INTEGER)) { throw new Error('The KMZ central directory is invalid.'); }
         return Number(value);
     }
 
     private async readZip64EndRecord(file: Blob, classicOffset: number): Promise<EndRecord> {
         const invalid = () => new Error('The KMZ central directory is invalid.');
-        if (classicOffset < 20) throw invalid();
+        if (classicOffset < 20) { throw invalid(); }
         const locator = new DataView(await file.slice(classicOffset - 20, classicOffset).arrayBuffer());
         if (locator.byteLength !== 20 || locator.getUint32(0, true) !== 0x07064b50 ||
-            locator.getUint32(4, true) !== 0 || locator.getUint32(16, true) !== 1) throw invalid();
+            locator.getUint32(4, true) !== 0 || locator.getUint32(16, true) !== 1) { throw invalid(); }
         const absoluteOffset = this.safeInteger(locator, 8);
-        if (absoluteOffset + 56 > classicOffset - 20) throw invalid();
+        if (absoluteOffset + 56 > classicOffset - 20) { throw invalid(); }
         const record = new DataView(await file.slice(absoluteOffset, absoluteOffset + 56).arrayBuffer());
         if (record.byteLength !== 56 || record.getUint32(0, true) !== 0x06064b50 ||
             record.getUint32(16, true) !== 0 || record.getUint32(20, true) !== 0 ||
-            this.safeInteger(record, 24) !== this.safeInteger(record, 32)) throw invalid();
+            this.safeInteger(record, 24) !== this.safeInteger(record, 32)) { throw invalid(); }
         const entries = this.safeInteger(record, 32);
         const directorySize = this.safeInteger(record, 40);
         const directoryOffset = this.safeInteger(record, 48);
-        if (directoryOffset + directorySize > absoluteOffset) throw invalid();
+        if (directoryOffset + directorySize > absoluteOffset) { throw invalid(); }
         return { entries, directorySize, directoryOffset, absoluteOffset };
     }
 
@@ -164,10 +164,10 @@ export class KmzReader {
             const disk = view.getUint16(offset + 34, true);
             let localHeaderOffset = view.getUint32(offset + 42, true);
             const next = offset + 46 + nameLength + extraLength + commentLength;
-            if (next > bytes.length) throw new Error('The KMZ central directory is invalid.');
-            if (flags & 1) throw new Error('Encrypted KMZ entries are not supported.');
-            if (method !== 0 && method !== 8) throw new Error('The KMZ compression method is not supported.');
-            if (disk !== 0 && disk !== ZIP64_16) throw new Error('Multi-disk KMZ files are not supported.');
+            if (next > bytes.length) { throw new Error('The KMZ central directory is invalid.'); }
+            if (flags % 2 === 1) { throw new Error('Encrypted KMZ entries are not supported.'); }
+            if (method !== 0 && method !== 8) { throw new Error('The KMZ compression method is not supported.'); }
+            if (disk !== 0 && disk !== ZIP64_16) { throw new Error('Multi-disk KMZ files are not supported.'); }
             if (disk === ZIP64_16 || [compressedSize, uncompressedSize, localHeaderOffset].includes(ZIP64_32)) {
                 let cursor = offset + 46 + nameLength;
                 const limit = cursor + extraLength;
@@ -176,7 +176,7 @@ export class KmzReader {
                     const id = view.getUint16(cursor, true);
                     const size = view.getUint16(cursor + 2, true);
                     cursor += 4;
-                    if (cursor + size > limit) throw new Error('The KMZ central directory is invalid.');
+                    if (cursor + size > limit) { throw new Error('The KMZ central directory is invalid.'); }
                     if (id === 1) {
                         const read = () => {
                             if (cursor + 8 > limit || cursor + 8 > offset + 46 + nameLength + extraLength || size < 8) {
@@ -186,22 +186,22 @@ export class KmzReader {
                             cursor += 8;
                             return value;
                         };
-                        const end = cursor + size;
-                        if (uncompressedSize === ZIP64_32) uncompressedSize = read();
-                        if (compressedSize === ZIP64_32) compressedSize = read();
-                        if (localHeaderOffset === ZIP64_32) localHeaderOffset = read();
+                        const extraEnd = cursor + size;
+                        if (uncompressedSize === ZIP64_32) { uncompressedSize = read(); }
+                        if (compressedSize === ZIP64_32) { compressedSize = read(); }
+                        if (localHeaderOffset === ZIP64_32) { localHeaderOffset = read(); }
                         if (disk === ZIP64_16) {
-                            if (cursor + 4 > end) throw new Error('The KMZ central directory is invalid.');
-                            if (view.getUint32(cursor, true) !== 0) throw new Error('Multi-disk KMZ files are not supported.');
+                            if (cursor + 4 > extraEnd) { throw new Error('The KMZ central directory is invalid.'); }
+                            if (view.getUint32(cursor, true) !== 0) { throw new Error('Multi-disk KMZ files are not supported.'); }
                             cursor += 4;
                         }
-                        if (cursor > end) throw new Error('The KMZ central directory is invalid.');
+                        if (cursor > extraEnd) { throw new Error('The KMZ central directory is invalid.'); }
                         found = true;
                         break;
                     }
                     cursor += size;
                 }
-                if (!found) throw new Error('The KMZ central directory is invalid.');
+                if (!found) { throw new Error('The KMZ central directory is invalid.'); }
             }
             const name = decoder.decode(bytes.subarray(offset + 46, offset + 46 + nameLength));
             entries.push({
@@ -230,14 +230,14 @@ export class KmzReader {
             entry.localHeaderOffset,
             entry.localHeaderOffset + 30
         ).arrayBuffer());
-        if (fixed.byteLength !== 30) throw new Error('The KMZ local header is truncated.');
+        if (fixed.byteLength !== 30) { throw new Error('The KMZ local header is truncated.'); }
         const view = new DataView(fixed.buffer, fixed.byteOffset, fixed.byteLength);
-        if (view.getUint32(0, true) !== LOCAL_SIGNATURE) throw new Error('The KMZ local header is invalid.');
+        if (view.getUint32(0, true) !== LOCAL_SIGNATURE) { throw new Error('The KMZ local header is invalid.'); }
         const flags = view.getUint16(6, true);
         const method = view.getUint16(8, true);
         const nameLength = view.getUint16(26, true);
         const extraLength = view.getUint16(28, true);
-        if ((flags & 1) || method !== entry.compressionMethod) {
+        if (flags % 2 === 1 || method !== entry.compressionMethod) {
             throw new Error('The KMZ local header does not match its directory entry.');
         }
         const dataStart = entry.localHeaderOffset + 30 + nameLength + extraLength;
@@ -246,18 +246,18 @@ export class KmzReader {
             throw new Error('The KMZ entry range is invalid.');
         }
         let stream = file.slice(dataStart, dataEnd).stream() as ReadableStream<Uint8Array>;
-        if (entry.compressionMethod === 8) stream = this.inflate(stream);
+        if (entry.compressionMethod === 8) { stream = this.inflate(stream); }
         const reader = stream.getReader();
         let outputSize = 0;
         try {
             while (true) {
                 const result = await reader.read();
                 if (result.done) {
-                    if (outputSize !== entry.uncompressedSize) throw new Error('The uncompressed KML size is invalid.');
+                    if (outputSize !== entry.uncompressedSize) { throw new Error('The uncompressed KML size is invalid.'); }
                     return false;
                 }
                 outputSize += result.value.byteLength;
-                if (outputSize > maximumBytes) throw new KmzSizeError(outputSize);
+                if (outputSize > maximumBytes) { throw new KmzSizeError(outputSize); }
                 if (outputSize > entry.uncompressedSize) {
                     throw new Error('The uncompressed KML size is invalid.');
                 }
@@ -273,7 +273,7 @@ export class KmzReader {
 
     private inflate(stream: ReadableStream<Uint8Array>): ReadableStream<Uint8Array> {
         const Constructor = globalThis.DecompressionStream;
-        if (!Constructor) throw new KmzBrowserSupportError();
+        if (!Constructor) { throw new KmzBrowserSupportError(); }
         try {
             const decompressor = new Constructor('deflate-raw');
             const input = stream.getReader();
@@ -282,7 +282,7 @@ export class KmzReader {
                 try {
                     while (true) {
                         const result = await input.read();
-                        if (result.done) break;
+                        if (result.done) { break; }
                         const chunk = new Uint8Array(result.value.byteLength);
                         chunk.set(result.value);
                         await output.write(chunk);
