@@ -1,35 +1,42 @@
-import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
-import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
-import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
+import { importPolicyFile } from '../../../support/cdmTools';
+import { deleteDryRunPolicy, runPolicyTest, uploadPolicyTest } from '../../../support/CustomHelpers/policyTests';
+
+const POLICY_ARCHIVE = '../Methodology Library/International Renewable Energy Certificate (iREC)/Policies/iRec Policy 2 (1707125414.999819805).policy';
+// Registrant, device and issue request created and approved, then the mint. Recorded on testnet on
+// `iRecDRF.policy`, which has the same blocks and schemas as iRec Policy 2.
+const RECORD_FIXTURE = 'iRecFullFlow.record';
 
 context('Policy autotest', { tags: ['policyAT', 'policy-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
+    let policyId;
+
+    after(() => {
+        if (policyId) {
+            Authorization.getAccessToken(SRUsername).then((authorization) => deleteDryRunPolicy(authorization, policyId));
+        }
+    });
 
     it('Import policy iRec_2', () => {
-        return Authorization.getAccessToken(SRUsername).then((authorization) => {
-            return cy.readFile('../Methodology Library/International Renewable Energy Certificate (iREC)/Policies/iRec Policy 2 (1707125414.999819805).policy', 'binary')
-                .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
-                .then((file) => {
-                    return cy.request({
-                        method: METHOD.POST,
-                        url: API.ApiServer + API.PolicisImportFile,
-                        body: file,
-                        headers: {
-                            'content-type': 'binary/octet-stream',
-                            authorization,
-                        },
-                        timeout: TIMEOUTS.longOperation,
-                    }).then((response) => {
-                        // `cy.request` returns the body as an ArrayBuffer for binary
-                        // requests, so decode it back to JSON before asserting.
-                        const imported = JSON.parse(new TextDecoder('utf-8').decode(response.body));
+        return Authorization.getAccessToken(SRUsername)
+            .then((authorization) => importPolicyFile(POLICY_ARCHIVE, POLICY_ARCHIVE.split('/').pop(), 'iRec_2', authorization))
+            .then((policy) => {
+                policyId = policy.id;
+            });
+    });
 
-                        expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                        expect(imported).to.be.an('array');
-                        expect(imported[0].name).to.match(/^iRec_2(_\d+)?$/);
-                    });
-                });
-        });
+    it('Replay the recorded flow and get the same documents', () => {
+        return Authorization.getAccessToken(SRUsername).then((authorization) =>
+            uploadPolicyTest(authorization, policyId, RECORD_FIXTURE)
+                .then((testId) => runPolicyTest(authorization, policyId, testId))
+                .then(({ test, details }) => {
+                    expect(test.error, 'replay error').to.eq(null);
+                    // A record with no actions also scores 100, so check that the replay produced documents.
+                    expect(details.left.documents, 'recorded documents').to.be.greaterThan(0);
+                    expect(details.right, 'replayed documents and tokens').to.deep.eq(details.left);
+                    expect(test.result.total, 'match between recorded and replayed documents').to.eq(100);
+                    expect(test.status).to.eq('Success');
+                })
+        );
     });
 });
