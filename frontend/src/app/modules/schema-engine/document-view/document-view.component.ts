@@ -31,6 +31,8 @@ export class DocumentViewComponent implements OnInit {
     @Input('getByUser') getByUser: boolean = false;
     @Input('document') document: any;
     @Input('formulas') formulas: FormulasTree | null;
+    /** 'form' when the tree comes from a request form and holds no values of this document. */
+    @Input() formulasOrigin: 'form' | 'document' = 'document';
     @Input('hide-fields') hideFields!: { [x: string]: boolean };
     @Input('type') type!: 'VC' | 'VP';
     @Input('schema') schema!: any;
@@ -169,11 +171,15 @@ export class DocumentViewComponent implements OnInit {
             return;
         }
         for (const subject of this.subjects) {
-            this.formulasBySubject.set(subject, this.formulas.getFields(this.schemaId, {
+            const fields = this.formulas.getFields(this.schemaId, {
                 data: subject,
                 anyEntry: true,
                 equalsFn: equalsLoosely
-            }));
+            });
+            for (const link of Object.values<any>(fields)) {
+                link.origin = this.formulasOrigin;
+            }
+            this.formulasBySubject.set(subject, fields);
         }
     }
 

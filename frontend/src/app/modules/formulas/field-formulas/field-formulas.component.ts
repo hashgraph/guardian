@@ -20,7 +20,7 @@ export class FieldFormulasComponent {
     @Input() fullPath!: string;
     @Input() entries?: Record<string, number> | null;
     /** A field of a submitted document: used instead of `model` in the read-only view. */
-    @Input() source?: { tree: any; schema: string; path: string; context?: any } | null;
+    @Input() source?: { tree: any; schema: string; path: string; context?: any; origin?: 'form' | 'document' } | null;
 
     private expanded = new Set<string>();
 
@@ -51,7 +51,7 @@ export class FieldFormulasComponent {
         event.stopPropagation();
         let data: any;
         if (this.source) {
-            data = { ...this.source, origin: 'document' };
+            data = { origin: 'document', ...this.source };
         } else {
             const field = this.model?.fields[this.fullPath];
             if (!field) {
