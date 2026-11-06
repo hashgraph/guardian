@@ -390,8 +390,12 @@ export class SchemaHelper {
             tableColumns,
             conditionRequired,
             conditionUserOrdered,
+            advisoryText,
         } = SchemaHelper.parseFieldComment(field.comment);
         field.suggest = suggest;
+        if (typeof advisoryText === 'string' && advisoryText.trim()) {
+            field.advisoryText = advisoryText.trim();
+        }
         if (field.isRef) {
             const { type } = SchemaHelper.parseRef(field.type);
             field.context = {
@@ -1692,6 +1696,9 @@ export class SchemaHelper {
             'https://www.schema.org/text';
         if (![null, undefined].includes(field.isPrivate)) {
             comment.isPrivate = field.isPrivate;
+        }
+        if (field.advisoryText?.trim()) {
+            comment.advisoryText = field.advisoryText.trim();
         }
         if (field.unit) {
             comment.unit = field.unit;

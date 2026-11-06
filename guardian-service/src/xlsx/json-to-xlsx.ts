@@ -449,6 +449,10 @@ export class JsonToXlsx {
             .getCell(table.getCol(Dictionary.PRIVATE), row)
             .setValue(booleanToXlsx(!!field.isPrivate));
 
+        worksheet
+            .getCell(table.getCol(Dictionary.ADVISORY_TEXT), row)
+            .setValue(stringToXlsx(field.advisoryText?.trim()));
+
         const iwaPropertyCell = worksheet
             .getCell(table.getCol(Dictionary.IWA_PROPERTY), row)
             .setValue(stringToXlsx(field.property));

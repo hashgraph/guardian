@@ -797,6 +797,13 @@ export class XlsxToJson {
 
             XlsxToJson.readFieldFlags(worksheet, table, field, fieldType, row, xlsxResult, entity, nested);
 
+            if (table.hasCol(Dictionary.ADVISORY_TEXT)) {
+                const advisoryText = worksheet.getCell(table.getCol(Dictionary.ADVISORY_TEXT), row).getValue<string>();
+                if (typeof advisoryText === 'string' && advisoryText.trim()) {
+                    field.advisoryText = advisoryText.trim();
+                }
+            }
+
             if (!typeError && !XlsxToJson.isAutoCalculate(type, field)) {
                 let parseType = (val: any) => val;
                 if (fieldType) {

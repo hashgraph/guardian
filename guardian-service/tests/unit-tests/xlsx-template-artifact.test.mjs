@@ -170,13 +170,14 @@ describe('Schema template artifact column layout', () => {
         await workbook.xlsx.readFile(TEMPLATE);
         const readme = workbook.getWorksheet('README');
         const names = [];
-        for (let row = 21; row <= 33; row++) {
+        for (let row = 21; row <= 35; row++) {
             names.push(String(readme.getCell(row, 1).value));
         }
         assert.deepEqual(names, [
             'Key', 'Description', 'Type', 'Required Field', 'Visibility', 'Parameter',
             'Allow Multiple Answers', 'Updatable Field', 'Private Field',
-            'Default Value', 'Suggest Value', 'Test Value', 'IWA Property'
+            'Default Value', 'Suggest Value', 'Test Value', 'IWA Property',
+            'Repeatable Links', 'Advisory Text'
         ]);
     });
 

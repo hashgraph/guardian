@@ -91,10 +91,11 @@ async function read(workbook) {
 }
 
 describe('Repeatable links in the Excel schema sheet', () => {
-    it('adds Repeatable Links as the last field column', () => {
+    it('keeps Repeatable Links immediately before Advisory Text', () => {
         const columns = Array.from(table.fieldHeaders).map(header => header.column);
         assert.equal(KEY, 1);
-        assert.equal(LINKS, Math.max(...columns));
+        assert.equal(LINKS + 1, Math.max(...columns));
+        assert.equal(table.getCol(Dictionary.ADVISORY_TEXT), LINKS + 1);
         assert.equal(table.getCol(Dictionary.IWA_PROPERTY), LINKS - 1);
     });
 
