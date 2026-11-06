@@ -1,9 +1,9 @@
-# DR-test: the profile restore cannot be exercised end to end on the instance that created the registry
+# dr-test: the profile restore cannot be exercised end to end on the instance that created the registry
 
-**Status:** open — environment limitation; `cypress/e2e/DR-test/recovery.cy.js` covers the path up to the refusal.
+**Status:** open — environment limitation; `cypress/e2e/dr-test/recovery.cy.js` covers the path up to the refusal.
 **Component:** `guardian-service` — `RestoreDataFromHedera.restoreRootAuthority`
 **Severity:** low — by design, but it leaves the successful restore untested
-**Found by:** `cypress/e2e/DR-test/recovery.cy.js`
+**Found by:** `cypress/e2e/dr-test/recovery.cy.js`
 
 ## Summary
 
