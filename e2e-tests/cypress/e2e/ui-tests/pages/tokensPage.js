@@ -254,6 +254,8 @@ export class TokensPage {
     editToken(name, editname, editSymbol) {
         this._manageRow(name).find(L.manage.editIcon).closest(L.manage.iconButton).click();
         cy.get(L.manage.dialog, { timeout: TIMEOUTS.ui }).should('be.visible');
+        // The dialog fills the form from the token after it opens and would overwrite what is typed before that.
+        cy.get(L.manage.tokenNameInput, { timeout: TIMEOUTS.ui }).should('have.value', name);
         this._setInput(L.manage.tokenNameInput, editname);
         this._setInput(L.manage.tokenSymbolInput, editSymbol);
         cy.get(L.manage.dialog).contains('button', 'Save').click();
