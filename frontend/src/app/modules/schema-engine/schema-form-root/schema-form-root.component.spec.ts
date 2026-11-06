@@ -124,6 +124,31 @@ describe('SchemaFormRootComponent — required fields', () => {
         expect(root.group.get('amount')?.value).toBe(5);
     }));
 
+    const groupDocument: any = {
+        ...calcDocument,
+        properties: {
+            amount: numberField('amount'),
+            group: { $ref: '#group', title: 'group', description: 'group' },
+        },
+        required: [],
+        $defs: {
+            '#group': { $id: '#group', type: SchemaDataTypes.object, properties: { inner: numberField('inner') }, required: ['inner'] },
+        },
+    };
+
+    it('counts a Preview field of a sub-schema that was not added and updates the count in place', fakeAsync(() => {
+        const root = createRootWith(groupDocument);
+        setRequired(root, ['amount', 'group.inner']);
+        expect(root.model?.controls?.find(field => field.name === 'group')?.model).toBeFalsy();
+        expect(root.completion?.total).toBe(2);
+        expect(root.completion?.answered).toBe(0);
+        expect(root.completion?.sections.map(section => section.total)).toEqual([2]);
+        setRequired(root, ['amount']);
+        expect(root.completion?.total).toBe(1);
+        setRequired(root, null);
+        expect(root.completion?.total).toBe(0);
+    }));
+
     it('updates Preview requirements without replacing fields, values or open sections', fakeAsync(() => {
         const root = createRootWith(defaultDocument);
         setRequired(root, ['amount']);

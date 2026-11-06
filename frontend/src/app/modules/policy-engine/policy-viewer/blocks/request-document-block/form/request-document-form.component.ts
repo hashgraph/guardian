@@ -238,12 +238,16 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     /** Sets the fields the calculations read and the form notice that counts them. */
     private setPreviewRequiredFields(value: string[] | null): void {
         this.previewRequiredFields = value;
-        if (!value) {
+        this.updatePreviewRequiredText();
+    }
+
+    /** The notice shows the same required count as the form's progress. */
+    private updatePreviewRequiredText(): void {
+        if (!this.previewRequiredFields || !this.completion) {
             this.previewRequiredText = 'Only the fields the calculations read are required.';
             return;
         }
-        // Schema paths only: a 422 also lists indexed row paths for the same fields
-        const count = value.filter((path) => !path.split('.').some(isIndexSegment)).length;
+        const count = this.completion.total;
         this.previewRequiredText = count === 1
             ? 'Only the 1 field the calculation reads is required.'
             : `Only the ${count} fields the calculations read are required.`;
@@ -774,6 +778,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
 
     public onCompletionChange(completion: IFormCompletion): void {
         this.completion = completion;
+        this.updatePreviewRequiredText();
         this.changeDetectorRef.markForCheck();
     }
 

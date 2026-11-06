@@ -8,7 +8,7 @@ import { FormulasTree } from 'src/app/modules/formulas/models/formula-tree';
 import { FormFormulas, IFormulaLinkScope } from 'src/app/modules/formulas/models/form-formulas';
 import { getErrorMessage } from '../schema-form/schema-form-errors';
 import { IFormTarget, isIndexSegment, isRefLeaf, walkFields } from '../schema-form/schema-form-walk';
-import { IFormCompletion, ISectionCompletion, computeCompletion, isAnswered } from '../schema-form/schema-form-completion';
+import { IFormCompletion, ISectionCompletion, computeCompletion, isAnswered, requiredWithoutControl } from '../schema-form/schema-form-completion';
 import { SchemaFormPreferencesService } from '../../../services/schema-form-preferences.service';
 import { IFormSection, buildSections, promotedRootName } from './schema-form-sections';
 import { IRailCard } from '../schema-form-rail/schema-form-rail.component';
@@ -244,6 +244,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             && !changes.readonly && !changes.conditions && !changes.presetDocument
             && this.model.updatePreviewRequiredFields(this.requiredFields)) {
             this.updatePreviewMissingFieldIds();
+            this.recompute();
             this.loading = this.previewBuildFrame !== null;
             this.schedulePreviewFocus();
             return;
@@ -735,7 +736,9 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         }
         this.updateNestedCards();
         this.promotedName = sections.length ? promotedRootName(model) : null;
-        const completion = computeCompletion(model.controls, sections);
+        const withoutControl = requiredWithoutControl(model.controls, this.requiredFields)
+            .map(path => this.sectionIndexOf(path));
+        const completion = computeCompletion(model.controls, sections, withoutControl);
         if (!sameCompletion(this.completion, completion)) {
             this.completion = completion;
             this.overviewCards = this.buildOverviewCards();

@@ -274,15 +274,19 @@ describe('request document preview wiring', () => {
         expect(component.screen).toBe('results');
     });
 
-    it('counts a field once in the notice although a 422 adds its indexed paths', () => {
+    it('shows the same required count in the notice as the form progress', () => {
         const { component } = form([], blockParent());
         component.setPreviewRequiredFields(null);
         expect(component.previewRequiredText).toBe('Only the fields the calculations read are required.');
-        component.setPreviewRequiredFields(['rows.rate']);
-        expect(component.previewRequiredText).toBe('Only the 1 field the calculation reads is required.');
         component.setPreviewRequiredFields(['amount', 'rows.rate', 'rows.1.rate', 'rows.2.rate']);
-        expect(component.previewRequiredText).toBe('Only the 2 fields the calculations read are required.');
+        expect(component.previewRequiredText).toBe('Only the fields the calculations read are required.');
+        component.onCompletionChange({ answered: 0, total: 6, sections: [] });
+        expect(component.previewRequiredText).toBe('Only the 6 fields the calculations read are required.');
+        component.onCompletionChange({ answered: 0, total: 1, sections: [] });
+        expect(component.previewRequiredText).toBe('Only the 1 field the calculation reads is required.');
         expect(component.previewRequiredFields).toEqual(['amount', 'rows.rate', 'rows.1.rate', 'rows.2.rate']);
+        component.setPreviewRequiredFields(null);
+        expect(component.previewRequiredText).toBe('Only the fields the calculations read are required.');
     });
 
     it('goes back to a clean form when the toggle is switched off on the missing values screen', async () => {
