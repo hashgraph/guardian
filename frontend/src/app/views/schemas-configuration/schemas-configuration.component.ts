@@ -722,7 +722,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public readonly fieldTypes: FieldTypeUI[] = FIELD_TYPES_UI;
 
     private static readonly NON_UPDATABLE_TYPES = new Set(['helptext', 'prefix', 'postfix', 'sub-schema']);
-    private static readonly NON_ARRAY_TYPES = new Set(['boolean', 'helptext']);
+    private static readonly NON_ARRAY_TYPES = new Set(['helptext']);
     private static readonly NON_AUTOCALC_TYPES = new Set([
         'enum', 'table', 'helptext', 'prefix', 'postfix', 'sub-schema', 'continent', 'country', 'state',
         'image', 'file', 'hederaAccount'

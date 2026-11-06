@@ -124,14 +124,14 @@
                           @for (detail of change.details; track detail) {
                             <div class="diff-detail-row">
                               <div class="diff-detail-label">{{ detail.label }}</div>
-                              <div class="diff-detail-value before" [title]="detail.before || '-'">{{ detail.before || '-' }}</div>
+                              <div class="diff-detail-value before" [pTooltip]="detail.before || '-'" tooltipPosition="top" [showDelay]="300">@if (detail.label === 'Type') {<span class="fb fb-type">{{ detail.before || '-' }}</span>} @else if (getFlagBadge(detail.label, detail.before); as flag) {<span class="fb" [ngClass]="flag.css">{{ flag.text }}</span>} @else {{{ detail.before || '-' }}}</div>
                               <div class="diff-arrow">&rarr;</div>
-                              <div class="diff-detail-value after" [title]="detail.after || '-'">{{ detail.after || '-' }}</div>
+                              <div class="diff-detail-value after" [pTooltip]="detail.after || '-'" tooltipPosition="top" [showDelay]="300">@if (detail.label === 'Type') {<span class="fb fb-type">{{ detail.after || '-' }}</span>} @else if (getFlagBadge(detail.label, detail.after); as flag) {<span class="fb" [ngClass]="flag.css">{{ flag.text }}</span>} @else {{{ detail.after || '-' }}}</div>
                             </div>
                           }
                         </div>
                       } @else {
-                        <div class="diff-message">{{ change.message }}</div>
+                        <div class="diff-message" [pTooltip]="change.message" tooltipPosition="top" [showDelay]="300">{{ change.message }}</div>
                       }
                     </div>
                   }
@@ -139,49 +139,36 @@
                 @if (group.fieldChanges.length) {
                   <div class="diff-section-title">Fields</div>
                   @for (change of group.fieldChanges; track change) {
-                    <div class="diff-row">
+                    <div class="diff-row" [class.diff-row-field]="!!(change.afterField || change.beforeField)">
                       <div class="diff-row-main">
                         <span class="diff-badge diff-badge-{{ getChangeColor(change.type) }}">
                           {{ getChangeLabel(change.type) }}
                         </span>
-                        <div class="diff-row-title">
-                          <div class="diff-row-name">{{ getChangeTitle(change) }}</div>
-                          <div class="diff-row-scope">{{ getChangeScope(change.type) }}</div>
-                        </div>
+                        @if (change.afterField || change.beforeField) {
+                          <ng-container *ngTemplateOutlet="fieldIdentity; context: { $implicit: change.afterField || change.beforeField, title: getChangeTitle(change) }"></ng-container>
+                          <div class="fi-badges">
+                            <ng-container *ngTemplateOutlet="fieldBadges; context: { $implicit: change.afterField || change.beforeField }"></ng-container>
+                          </div>
+                        } @else {
+                          <div class="diff-row-title">
+                            <div class="diff-row-name">{{ getChangeTitle(change) }}</div>
+                            <div class="diff-row-scope">{{ getChangeScope(change.type) }}</div>
+                          </div>
+                        }
                       </div>
                       @if (hasDetails(change)) {
                         <div class="diff-details">
                           @for (detail of change.details; track detail) {
                             <div class="diff-detail-row">
                               <div class="diff-detail-label">{{ detail.label }}</div>
-                              <div class="diff-detail-value before" [title]="detail.before || '-'">{{ detail.before || '-' }}</div>
+                              <div class="diff-detail-value before" [pTooltip]="detail.before || '-'" tooltipPosition="top" [showDelay]="300">@if (detail.label === 'Type') {<span class="fb fb-type">{{ detail.before || '-' }}</span>} @else if (getFlagBadge(detail.label, detail.before); as flag) {<span class="fb" [ngClass]="flag.css">{{ flag.text }}</span>} @else {{{ detail.before || '-' }}}</div>
                               <div class="diff-arrow">&rarr;</div>
-                              <div class="diff-detail-value after" [title]="detail.after || '-'">{{ detail.after || '-' }}</div>
+                              <div class="diff-detail-value after" [pTooltip]="detail.after || '-'" tooltipPosition="top" [showDelay]="300">@if (detail.label === 'Type') {<span class="fb fb-type">{{ detail.after || '-' }}</span>} @else if (getFlagBadge(detail.label, detail.after); as flag) {<span class="fb" [ngClass]="flag.css">{{ flag.text }}</span>} @else {{{ detail.after || '-' }}}</div>
                             </div>
                           }
                         </div>
-                      } @else if (isAddChange(change.type)) {
-                        <div class="diff-single diff-single-add">
-                          <div class="diff-value-label">Added</div>
-                          <div class="diff-value-text" [title]="change.after || change.message">{{ change.after || change.message }}</div>
-                        </div>
-                      } @else if (isRemoveChange(change.type)) {
-                        <div class="diff-single diff-single-remove">
-                          <div class="diff-value-label">Removed</div>
-                          <div class="diff-value-text" [title]="change.before || change.message">{{ change.before || change.message }}</div>
-                        </div>
-                      } @else {
-                        <div class="diff-values">
-                          <div class="diff-value diff-value-before">
-                            <div class="diff-value-label">Before</div>
-                            <div class="diff-value-text" [title]="change.before || '-'">{{ change.before || '-' }}</div>
-                          </div>
-                          <div class="diff-arrow">&rarr;</div>
-                          <div class="diff-value diff-value-after">
-                            <div class="diff-value-label">After</div>
-                            <div class="diff-value-text" [title]="change.after || '-'">{{ change.after || '-' }}</div>
-                          </div>
-                        </div>
+                      } @else if (!change.afterField && !change.beforeField) {
+                        <div class="diff-message" [pTooltip]="change.message" tooltipPosition="top" [showDelay]="300">{{ change.message }}</div>
                       }
                     </div>
                   }
@@ -204,32 +191,32 @@
                           @for (detail of change.details; track detail) {
                             <div class="diff-detail-row">
                               <div class="diff-detail-label">{{ detail.label }}</div>
-                              <div class="diff-detail-value before" [title]="detail.before || '-'">{{ detail.before || '-' }}</div>
+                              <div class="diff-detail-value before" [pTooltip]="detail.before || '-'" tooltipPosition="top" [showDelay]="300">@if (detail.label === 'Type') {<span class="fb fb-type">{{ detail.before || '-' }}</span>} @else if (getFlagBadge(detail.label, detail.before); as flag) {<span class="fb" [ngClass]="flag.css">{{ flag.text }}</span>} @else {{{ detail.before || '-' }}}</div>
                               <div class="diff-arrow">&rarr;</div>
-                              <div class="diff-detail-value after" [title]="detail.after || '-'">{{ detail.after || '-' }}</div>
+                              <div class="diff-detail-value after" [pTooltip]="detail.after || '-'" tooltipPosition="top" [showDelay]="300">@if (detail.label === 'Type') {<span class="fb fb-type">{{ detail.after || '-' }}</span>} @else if (getFlagBadge(detail.label, detail.after); as flag) {<span class="fb" [ngClass]="flag.css">{{ flag.text }}</span>} @else {{{ detail.after || '-' }}}</div>
                             </div>
                           }
                         </div>
                       } @else if (isAddChange(change.type)) {
                         <div class="diff-single diff-single-add">
                           <div class="diff-value-label">Added</div>
-                          <div class="diff-value-text" [title]="change.after || change.message">{{ change.after || change.message }}</div>
+                          <div class="diff-value-text" [pTooltip]="change.after || change.message" tooltipPosition="top" [showDelay]="300">{{ change.after || change.message }}</div>
                         </div>
                       } @else if (isRemoveChange(change.type)) {
                         <div class="diff-single diff-single-remove">
                           <div class="diff-value-label">Removed</div>
-                          <div class="diff-value-text" [title]="change.before || change.message">{{ change.before || change.message }}</div>
+                          <div class="diff-value-text" [pTooltip]="change.before || change.message" tooltipPosition="top" [showDelay]="300">{{ change.before || change.message }}</div>
                         </div>
                       } @else {
                         <div class="diff-values">
                           <div class="diff-value diff-value-before">
                             <div class="diff-value-label">Before</div>
-                            <div class="diff-value-text" [title]="change.before || '-'">{{ change.before || '-' }}</div>
+                            <div class="diff-value-text" [pTooltip]="change.before || '-'" tooltipPosition="top" [showDelay]="300">{{ change.before || '-' }}</div>
                           </div>
                           <div class="diff-arrow">&rarr;</div>
                           <div class="diff-value diff-value-after">
                             <div class="diff-value-label">After</div>
-                            <div class="diff-value-text" [title]="change.after || '-'">{{ change.after || '-' }}</div>
+                            <div class="diff-value-text" [pTooltip]="change.after || '-'" tooltipPosition="top" [showDelay]="300">{{ change.after || '-' }}</div>
                           </div>
                         </div>
                       }
@@ -254,32 +241,32 @@
                           @for (detail of change.details; track detail) {
                             <div class="diff-detail-row">
                               <div class="diff-detail-label">{{ detail.label }}</div>
-                              <div class="diff-detail-value before" [title]="detail.before || '-'">{{ detail.before || '-' }}</div>
+                              <div class="diff-detail-value before" [pTooltip]="detail.before || '-'" tooltipPosition="top" [showDelay]="300">@if (detail.label === 'Type') {<span class="fb fb-type">{{ detail.before || '-' }}</span>} @else if (getFlagBadge(detail.label, detail.before); as flag) {<span class="fb" [ngClass]="flag.css">{{ flag.text }}</span>} @else {{{ detail.before || '-' }}}</div>
                               <div class="diff-arrow">&rarr;</div>
-                              <div class="diff-detail-value after" [title]="detail.after || '-'">{{ detail.after || '-' }}</div>
+                              <div class="diff-detail-value after" [pTooltip]="detail.after || '-'" tooltipPosition="top" [showDelay]="300">@if (detail.label === 'Type') {<span class="fb fb-type">{{ detail.after || '-' }}</span>} @else if (getFlagBadge(detail.label, detail.after); as flag) {<span class="fb" [ngClass]="flag.css">{{ flag.text }}</span>} @else {{{ detail.after || '-' }}}</div>
                             </div>
                           }
                         </div>
                       } @else if (isAddChange(change.type)) {
                         <div class="diff-single diff-single-add">
                           <div class="diff-value-label">Added</div>
-                          <div class="diff-value-text" [title]="change.after || change.message">{{ change.after || change.message }}</div>
+                          <div class="diff-value-text" [pTooltip]="change.after || change.message" tooltipPosition="top" [showDelay]="300">{{ change.after || change.message }}</div>
                         </div>
                       } @else if (isRemoveChange(change.type)) {
                         <div class="diff-single diff-single-remove">
                           <div class="diff-value-label">Removed</div>
-                          <div class="diff-value-text" [title]="change.before || change.message">{{ change.before || change.message }}</div>
+                          <div class="diff-value-text" [pTooltip]="change.before || change.message" tooltipPosition="top" [showDelay]="300">{{ change.before || change.message }}</div>
                         </div>
                       } @else {
                         <div class="diff-values">
                           <div class="diff-value diff-value-before">
                             <div class="diff-value-label">Before</div>
-                            <div class="diff-value-text" [title]="change.before || '-'">{{ change.before || '-' }}</div>
+                            <div class="diff-value-text" [pTooltip]="change.before || '-'" tooltipPosition="top" [showDelay]="300">{{ change.before || '-' }}</div>
                           </div>
                           <div class="diff-arrow">&rarr;</div>
                           <div class="diff-value diff-value-after">
                             <div class="diff-value-label">After</div>
-                            <div class="diff-value-text" [title]="change.after || '-'">{{ change.after || '-' }}</div>
+                            <div class="diff-value-text" [pTooltip]="change.after || '-'" tooltipPosition="top" [showDelay]="300">{{ change.after || '-' }}</div>
                           </div>
                         </div>
                       }
@@ -292,46 +279,114 @@
         }
 
         @if (visibleConflictsCount) {
-          <div class="preview-section conflict-section">
-            <div class="preview-section-title">Resolve conflicts</div>
-            @for (conflict of visibleConflicts; track conflict) {
-              <div class="conflict-item">
-                <div class="conflict-header">
-                  <div class="conflict-message">{{ conflict.message }}</div>
-                </div>
-                <div class="resolution-actions">
-                  @for (action of conflict.allowedActions; track action) {
+          <div class="resolve" id="schema-template-resolve">
+            <div class="resolve-head">
+              <div class="resolve-title">Resolve conflicts</div>
+              <span class="resolve-progress" [class.resolve-progress-done]="resolvedConflictsCount === visibleConflictsCount">
+                {{ resolvedConflictsCount }} of {{ visibleConflictsCount }} resolved
+              </span>
+            </div>
+            @for (group of conflictGroups; track group.schemaName) {
+              <div class="resolve-card">
+                <div class="resolve-card-head">
+                  <svg-icon src="/assets/images/icons/file.svg" svgClass="diff-group-icon"></svg-icon>
+                  <span class="resolve-card-name">{{ group.schemaName }}</span>
+                  <span class="resolve-count">{{ group.conflicts.length }}</span>
+                  <div class="resolve-bulk">
                     <button
                       type="button"
-                      class="resolution-button"
-                      [class.selected]="resolutions[conflict.id] === action"
-                      (click)="setResolution(conflict, action)">
-                      @switch (action) {
-                        @case (resolutionAction.KEEP_AS_CUSTOM_SCHEMA) {
-                          Keep as custom
+                      class="resolve-bulk-btn"
+                      [disabled]="!canResolveAll(group, 'keep')"
+                      pTooltip="Keep the policy's version for every conflict in this schema"
+                      tooltipPosition="top"
+                      [showDelay]="300"
+                      (click)="resolveAll(group, 'keep')">Keep all</button>
+                    <button
+                      type="button"
+                      class="resolve-bulk-btn"
+                      [disabled]="!canResolveAll(group, 'reset')"
+                      pTooltip="Take the template's version for every conflict in this schema"
+                      tooltipPosition="top"
+                      [showDelay]="300"
+                      (click)="resolveAll(group, 'reset')">Reset all</button>
+                  </div>
+                </div>
+                @for (conflict of group.conflicts; track conflict.id) {
+                  <div class="resolve-row" [class.resolve-row-pending]="!resolutions[conflict.id]">
+                    <div class="resolve-row-main">
+                      <div class="resolve-row-title">
+                        <span class="resolve-name" [pTooltip]="getConflictTitle(conflict)" tooltipPosition="top" [showDelay]="300">{{ getConflictTitle(conflict) }}</span>
+                        @if (conflict.templateField?.key && conflict.templateField?.key !== getConflictTitle(conflict)) {
+                          <span class="fi-key">{{ conflict.templateField?.key }}</span>
                         }
-                        @case (resolutionAction.KEEP_AS_CUSTOM_CONDITION) {
-                          Keep as custom
-                        }
-                        @case (resolutionAction.KEEP_AS_CUSTOM_LINK) {
-                          Keep as custom
-                        }
-                        @case (resolutionAction.REMOVE_FROM_POLICY) {
-                          Remove
-                        }
+                        <span class="resolve-pill" [class.resolve-pill-edited]="isEditedConflict(conflict)">{{ getConflictKind(conflict) }}</span>
+                      </div>
+                      @if (!conflict.details?.length) {
+                        <div class="resolve-note" [pTooltip]="conflict.message" tooltipPosition="top" [showDelay]="300">{{ conflict.message }}</div>
                       }
-                    </button>
-                  }
-                  @if (conflict.blockedBy?.length) {
-                    <button
-                      type="button"
-                      class="resolution-button resolution-button-blocked"
-                      disabled
-                      title="Still used by {{ conflict.blockedBy?.join(', ') }}">
-                      Remove
-                    </button>
-                  }
-                </div>
+                    </div>
+                    <div class="resolve-actions" role="group">
+                      @for (action of conflict.allowedActions; track action) {
+                        <button
+                          type="button"
+                          class="resolve-btn"
+                          [class.selected]="resolutions[conflict.id] === action"
+                          [attr.aria-pressed]="resolutions[conflict.id] === action"
+                          (click)="setResolution(conflict, action)">
+                          {{ getActionLabel(action) }}
+                        </button>
+                      }
+                      @if (conflict.blockedBy?.length) {
+                        <button
+                          type="button"
+                          class="resolve-btn"
+                          disabled
+                          [pTooltip]="'Still used by ' + conflict.blockedBy?.join(', ')"
+                          tooltipPosition="top">Remove</button>
+                      }
+                    </div>
+                    @if (conflict.details?.length) {
+                      <div class="resolve-compare" [class.resolve-compare-two]="conflict.type === 'FIELD_REMOVED_IN_POLICY'">
+                        <div class="resolve-compare-row resolve-compare-head">
+                          @if (conflict.type !== 'FIELD_REMOVED_IN_POLICY') {
+                            <div></div>
+                          }
+                          <div>In the policy</div>
+                          <div>In the template</div>
+                        </div>
+                        @for (detail of conflict.details; track detail) {
+                          <div class="resolve-compare-row">
+                            @if (conflict.type !== 'FIELD_REMOVED_IN_POLICY') {
+                              <div class="resolve-compare-label">{{ detail.label }}</div>
+                            }
+                            <div class="resolve-compare-value" [pTooltip]="conflict.type === 'FIELD_REMOVED_IN_POLICY' ? '-' : (detail.before || '-')" tooltipPosition="top" [showDelay]="300">
+                              @if (detail.label === 'Type') {
+                                <span class="fb fb-type">{{ detail.before || '-' }}</span>
+                              } @else if (getFlagBadge(detail.label, detail.before); as flag) {
+                                <span class="fb" [ngClass]="flag.css">{{ flag.text }}</span>
+                              } @else if (conflict.type === 'FIELD_REMOVED_IN_POLICY') {
+                                -
+                              } @else {
+                                {{ detail.before || '-' }}
+                              }
+                            </div>
+                            <div class="resolve-compare-value" [pTooltip]="detail.after || '-'" tooltipPosition="top" [showDelay]="300">
+                              @if (detail.label === 'Type') {
+                                <span class="fb fb-type">{{ detail.after || '-' }}</span>
+                              } @else if (getFlagBadge(detail.label, detail.after); as flag) {
+                                <span class="fb" [ngClass]="flag.css">{{ flag.text }}</span>
+                              } @else if (detail.label === 'Field' && conflict.templateField) {
+                                <ng-container *ngTemplateOutlet="fieldBadges; context: { $implicit: conflict.templateField }"></ng-container>
+                              } @else {
+                                {{ detail.after || '-' }}
+                              }
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
               </div>
             }
           </div>
@@ -347,6 +402,12 @@
 
 <div class="dialog-footer">
   <div class="action-buttons">
+    @if (mode === 'update' && unresolvedConflictsCount) {
+      <button type="button" class="footer-hint" (click)="scrollToConflicts()">
+        <i class="pi pi-exclamation-circle"></i>
+        {{ unresolvedConflictsCount }} {{ unresolvedConflictsCount === 1 ? 'conflict' : 'conflicts' }} left to resolve
+      </button>
+    }
     <button (click)="onClose()" class="guardian-button guardian-button-secondary">Cancel</button>
     <button
       (click)="applyTemplate()"
@@ -354,3 +415,46 @@
       class="guardian-button guardian-button-primary">{{ submitText }}</button>
   </div>
 </div>
+
+<ng-template #fieldBadges let-brief>
+  <span class="field-badges">
+    <span class="fb fb-type">{{ brief.type }}</span>
+    @if (brief.required) {
+      <span class="fb fb-req">Required</span>
+    } @else {
+      <span class="fb fb-opt">Optional</span>
+    }
+    @if (brief.isArray) {
+      <span class="fb fb-arr">Array</span>
+    }
+    @if (brief.hidden) {
+      <span class="fb fb-hidden">Hidden</span>
+    }
+    @if (brief.autocalculate) {
+      <span class="fb fb-auto">Auto Calculate</span>
+    }
+  </span>
+</ng-template>
+
+<!-- The field key (monospace) and its badges, as on a field row in the schema editor. -->
+<ng-template #fieldMeta let-brief>
+  <div class="fi-meta">
+    @if (brief.key && brief.key !== brief.title) {
+      <span class="fi-key" [pTooltip]="brief.key" tooltipPosition="top" [showDelay]="300">{{ brief.key }}</span>
+    }
+    <ng-container *ngTemplateOutlet="fieldBadges; context: { $implicit: brief }"></ng-container>
+  </div>
+</ng-template>
+
+<!-- A field the way the schema editor draws it: type icon, name, and the key under it. -->
+<ng-template #fieldIdentity let-brief let-fallback="title">
+  <div class="fi">
+    <div class="fi-icon"><i class="pi {{ getTypeIcon(brief.type) }}"></i></div>
+    <div class="fi-info">
+      <span class="fi-title" [pTooltip]="brief.title || fallback" tooltipPosition="top" [showDelay]="300">{{ brief.title || fallback }}</span>
+      @if (brief.key && brief.key !== (brief.title || fallback)) {
+        <span class="fi-key" [pTooltip]="brief.key" tooltipPosition="top" [showDelay]="300">{{ brief.key }}</span>
+      }
+    </div>
+  </div>
+</ng-template>

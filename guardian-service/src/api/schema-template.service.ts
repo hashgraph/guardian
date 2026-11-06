@@ -28,6 +28,7 @@ import {
     ISchemaTemplateConfig,
     ISchemaTemplateSchemaConfig,
     ISchemaTemplateDetachBlockedSchema,
+    ISchemaTemplateFieldBrief,
     ISchemaTemplateDetachPreview,
     ISchemaTemplateSnapshot,
     ISchemaTemplateSnapshotField,
@@ -48,7 +49,8 @@ import {
     SchemaCategory,
     SchemaHelper,
     SchemaStatus,
-    TopicType
+    TopicType,
+    FieldTypesDictionary,
 } from '@guardian/interfaces';
 import { ApiResponse } from './helpers/api-response.js';
 import { withPolicyTemplateLock } from '../helpers/policy-template-lock.js';
@@ -1467,17 +1469,32 @@ function formatSchemaSummary(schema: ISchemaTemplateSnapshotSchema | undefined):
     return parts.join(' | ');
 }
 
+function fieldBrief(field: any): ISchemaTemplateFieldBrief | undefined {
+    if (!field) {
+        return undefined;
+    }
+    return {
+        key: field.name || '',
+        title: field.description || field.title || field.name || '',
+        type: field.type || field.refTemplateSchemaId ? FieldTypesDictionary.getLabel(field) : 'String',
+        required: !!field.required,
+        isArray: !!field.isArray,
+        hidden: !!field.hidden,
+        autocalculate: !!field.autocalculate
+    };
+}
+
 function formatFieldSummary(field: any): string {
     if (!field) {
         return 'Not present';
     }
-    const parts = [
-        field.name ? `Key: ${field.name}` : '',
-        field.type ? `Type: ${field.type}` : '',
-        field.required ? 'Required' : 'Optional',
-        field.isArray ? 'Array' : ''
-    ].filter(Boolean);
-    return parts.join(' | ');
+    return [
+        field.type ? FieldTypesDictionary.getLabel(field) : '',
+        field.required ? 'required' : '',
+        field.isArray ? 'array' : '',
+        field.hidden ? 'hidden' : '',
+        field.autocalculate ? 'auto calculate' : ''
+    ].filter(Boolean).join(', ');
 }
 
 function getFieldDisplayName(field: any): string {
@@ -1519,6 +1536,12 @@ function fieldDetailsSource(field: any): any {
         semanticId: comment['@id'],
         term: comment.term,
         customType: comment.customType || normalized.customType,
+        // `type` alone is ambiguous (null is Help Text, string may be Date/Email/Enum), so the
+        // diff shows what the schema editor shows.
+        typeLabel: FieldTypesDictionary.getLabel({
+            ...normalized,
+            customType: comment.customType || normalized.customType
+        }),
         availableOptions: formatDiffJson(comment.availableOptions || normalized.availableOptions),
         orderPosition: comment.orderPosition ?? normalized.order
     };
@@ -1856,7 +1879,7 @@ function hasDetails(details: ISchemaTemplateUpdateChange['details']): boolean {
 export function buildFieldChangeDetails(previous: any, next: any): ISchemaTemplateUpdateChange['details'] {
     return buildDetails(fieldDetailsSource(previous), fieldDetailsSource(next), [
         { key: 'fieldName', label: 'Field Name' },
-        { key: 'type', label: 'Type' },
+        { key: 'typeLabel', label: 'Type' },
         { key: 'refTemplateSchemaId', label: 'Sub-schema' },
         { key: 'semanticId', label: 'Semantic ID' },
         { key: 'term', label: 'Term' },
@@ -2059,6 +2082,143 @@ async function loadSchemaTemplateUpdateContext(
     };
 }
 
+/**
+ * Every object that can own a field's property: the document root and each condition's
+ * then/else branch. A field inside a condition is declared in a branch, not at the root.
+ */
+function fieldContainers(document: any): any[] {
+    const result: any[] = [];
+    if (!document || typeof document !== 'object') {
+        return result;
+    }
+    result.push(document);
+    for (const entry of Array.isArray(document.allOf) ? document.allOf : []) {
+        for (const key of ['then', 'else']) {
+            if (entry?.[key] && typeof entry[key] === 'object') {
+                result.push(entry[key]);
+            }
+        }
+    }
+    return result;
+}
+
+/** A real field declaration: not a `false` forbid marker and not a cross-schema target wrapper. */
+function isFieldProperty(property: any): boolean {
+    return !!property && typeof property === 'object' && !isCrossTargetWrapper(property);
+}
+
+function hasFieldProperty(document: any, name: string): boolean {
+    return fieldContainers(document).some((container) => isFieldProperty(container.properties?.[name]));
+}
+
+/**
+ * True when something else in the next template version is built on this field, so a policy
+ * that deleted it cannot be allowed to stay without it: a condition triggers off it, or a
+ * repeatable link names it.
+ */
+function isFieldStructurallyReferenced(nextSchema: ISchemaTemplateSnapshotSchema, templateFieldId: string, fieldName: string): boolean {
+    for (const condition of nextSchema.conditions || []) {
+        const predicates = SchemaHelper.getConditionTriggerPredicates((condition as any)?.ifCondition);
+        if (predicates.some((predicate: any) => String(predicate?.field?.templateFieldId || '') === templateFieldId)) {
+            return true;
+        }
+    }
+    return (nextSchema.arrayDependencies || []).some((dependency) => arrayDependencyRootFieldNames(dependency).includes(fieldName));
+}
+
+/**
+ * Conflicts on unlocked template fields the policy has diverged on. Applying clones the
+ * template's document over the policy's, so such an edit is reverted and such a deletion is
+ * undone unless the user chooses otherwise. A locked field is never a conflict - the template
+ * is meant to win there, and the ordinary field diff already reports it.
+ *
+ * Fields inside a condition's then/else are covered like any other. Reference fields are
+ * skipped for edits only: their iris differ between template and policy copy, so a comparison
+ * would always report a change.
+ */
+export function buildFieldPolicyConflicts(input: {
+    templateSchemaId: string;
+    previousSchema: ISchemaTemplateSnapshotSchema;
+    nextSchema: ISchemaTemplateSnapshotSchema;
+    policySnapshot: ISchemaTemplateSnapshotSchema;
+    nextSchemaConfig: any;
+    policyDocument: any;
+    templateDocument: any;
+}): ISchemaTemplateUpdateConflict[] {
+    const { templateSchemaId, previousSchema, nextSchema, policySnapshot, nextSchemaConfig } = input;
+    const conflicts: ISchemaTemplateUpdateConflict[] = [];
+    const previousFields = fieldsByTemplateId(previousSchema.fields);
+    const policyFields = fieldsByTemplateId(policySnapshot.fields);
+    const both = [
+        SchemaTemplateUpdateResolutionAction.KEEP_CUSTOM_CHANGES,
+        SchemaTemplateUpdateResolutionAction.RESET_TO_TEMPLATE
+    ];
+
+    for (const [templateFieldId, nextField] of fieldsByTemplateId(nextSchema.fields).entries()) {
+        const previousField = previousFields.get(templateFieldId);
+        if (!previousField || isFieldLockedByConfig(nextSchemaConfig, templateFieldId)) {
+            continue;
+        }
+        if (!hasFieldProperty(input.templateDocument, nextField.name)) {
+            continue;
+        }
+        const label = getFieldDisplayName(nextField);
+        const policyField = policyFields.get(templateFieldId);
+
+        if (!policyField) {
+            if (previousField.name && !hasFieldProperty(input.policyDocument, previousField.name)) {
+                const referenced = isFieldStructurallyReferenced(nextSchema, templateFieldId, nextField.name);
+                conflicts.push(createConflict(
+                    SchemaTemplateUpdateConflictType.FIELD_REMOVED_IN_POLICY,
+                    `Field "${label}" was deleted from the policy.` +
+                    (referenced ? ' The template depends on it, so it must be reset.' : ''),
+                    {
+                        templateSchemaId,
+                        templateFieldId,
+                        schemaName: nextSchema.name,
+                        fieldName: label,
+                        details: [{ label: 'Field', before: 'Deleted in policy', after: formatFieldSummary(nextField) }],
+                        templateField: fieldBrief(nextField),
+                        allowedActions: referenced ? [SchemaTemplateUpdateResolutionAction.RESET_TO_TEMPLATE] : both
+                    }
+                ));
+            }
+            continue;
+        }
+
+        if (
+            policyField.isRef || previousField.isRef || nextField.isRef ||
+            policyField.refTemplateSchemaId || previousField.refTemplateSchemaId || nextField.refTemplateSchemaId ||
+            !hasFieldProperty(input.policyDocument, policyField.name)
+        ) {
+            continue;
+        }
+        const notOrder = (detail: { label: string }) => detail.label !== 'Order';
+        const editedByPolicy = buildFieldChangeDetails(previousField, policyField).filter(notOrder);
+        if (!editedByPolicy.length) {
+            continue;
+        }
+        const effect = buildFieldChangeDetails(policyField, nextField).filter(notOrder);
+        if (!effect.length) {
+            continue;
+        }
+        conflicts.push(createConflict(
+            SchemaTemplateUpdateConflictType.FIELD_MODIFIED_IN_POLICY,
+            `Field "${label}" was changed in the policy.`,
+            {
+                templateSchemaId,
+                templateFieldId,
+                schemaName: nextSchema.name,
+                fieldName: label,
+                details: effect,
+                templateField: fieldBrief(nextField),
+                allowedActions: both
+            }
+        ));
+    }
+    return conflicts;
+}
+
 export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<ReturnType<typeof loadSchemaTemplateUpdateContext>>): ISchemaTemplateUpdatePreview {
     const changes: ISchemaTemplateUpdateChange[] = [];
     const conflicts: ISchemaTemplateUpdateConflict[] = [];
@@ -2195,7 +2355,8 @@ export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<Ret
                         schemaName: nextSchema.name,
                         fieldName: getFieldDisplayName(field),
                         before: 'Not present',
-                        after: formatFieldSummary(field)
+                        after: formatFieldSummary(field),
+                        afterField: fieldBrief(field)
                     }
                 ));
             } else {
@@ -2225,6 +2386,8 @@ export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<Ret
                             fieldName: getFieldDisplayName(field),
                             before: formatFieldSummary(previousField),
                             after: formatFieldSummary(field),
+                            beforeField: fieldBrief(previousField),
+                            afterField: fieldBrief(field),
                             details: fieldDetails
                         }
                     ));
@@ -2242,11 +2405,23 @@ export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<Ret
                         schemaName: nextSchema.name,
                         fieldName: getFieldDisplayName(field),
                         before: formatFieldSummary(field),
+                        beforeField: fieldBrief(field),
                         after: 'Removed'
                     }
                 ));
             }
         }
+
+        const templateSchema = (context.templateSchemas || []).find((item) => item.templateSchemaId === templateSchemaId);
+        conflicts.push(...buildFieldPolicyConflicts({
+            templateSchemaId,
+            previousSchema,
+            nextSchema,
+            policySnapshot,
+            nextSchemaConfig,
+            policyDocument: policySchema.document,
+            templateDocument: templateSchema?.document
+        }));
 
         for (const field of policyCustomFields) {
             if (nextSchemaConfig.customFieldsLocked || conditionFieldNamesToRemove.has(field.name)) {
@@ -2258,6 +2433,7 @@ export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<Ret
                         schemaName: nextSchema.name,
                         fieldName: getFieldDisplayName(field),
                         before: formatFieldSummary(field),
+                        beforeField: fieldBrief(field),
                         after: 'Removed'
                     }
                 ));
@@ -2270,7 +2446,9 @@ export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<Ret
                         schemaName: nextSchema.name,
                         fieldName: getFieldDisplayName(field),
                         before: formatFieldSummary(field),
-                        after: formatFieldSummary(field)
+                        after: formatFieldSummary(field),
+                        beforeField: fieldBrief(field),
+                        afterField: fieldBrief(field)
                     }
                 ));
             }
@@ -2696,6 +2874,82 @@ function applySchemaDocumentSettings(document: any, name: string, description: s
     document.description = description;
 }
 
+function removeFieldEverywhere(document: any, name: string): void {
+    for (const container of fieldContainers(document)) {
+        if (container.properties) {
+            delete container.properties[name];
+        }
+        if (Array.isArray(container.required)) {
+            container.required = container.required.filter((item: string) => item !== name);
+        }
+    }
+}
+
+/**
+ * Re-imposes the policy's own state on fields where the user chose "keep my changes". Runs
+ * after the document has been replaced by the template's, so it only has to undo the part of
+ * the replacement the user declined: put the edited property back, or leave the deleted one out.
+ * A field is replaced wherever the fresh document declares it (root or a condition branch), so
+ * no condition matching is needed: the template already placed it correctly.
+ */
+export function applyFieldPolicyResolutions(
+    targetDocument: any,
+    previousDocument: any,
+    previousFields: any[],
+    sourceFields: any[],
+    templateSchemaId: string,
+    conflicts: ISchemaTemplateUpdateConflict[],
+    resolutions: Map<string, SchemaTemplateUpdateResolutionAction>
+): void {
+    for (const conflict of conflicts) {
+        const isModified = conflict.type === SchemaTemplateUpdateConflictType.FIELD_MODIFIED_IN_POLICY;
+        const isRemoved = conflict.type === SchemaTemplateUpdateConflictType.FIELD_REMOVED_IN_POLICY;
+        if (
+            (!isModified && !isRemoved) ||
+            conflict.templateSchemaId !== templateSchemaId ||
+            resolutions.get(conflict.id) !== SchemaTemplateUpdateResolutionAction.KEEP_CUSTOM_CHANGES
+        ) {
+            continue;
+        }
+        const nextField = (sourceFields || []).find((field) => String(field?.templateFieldId || '') === conflict.templateFieldId);
+        if (!nextField?.name) {
+            continue;
+        }
+        if (isRemoved) {
+            removeFieldEverywhere(targetDocument, nextField.name);
+            continue;
+        }
+        const policyField = (previousFields || []).find((field) => String(field?.templateFieldId || '') === conflict.templateFieldId);
+        const policyName: string | undefined = policyField?.name;
+        const source = policyName
+            ? fieldContainers(previousDocument).find((container) => isFieldProperty(container.properties?.[policyName]))
+            : undefined;
+        if (!source || !policyName) {
+            continue;
+        }
+        const property = source.properties[policyName];
+        const wasRequired = Array.isArray(source.required) && source.required.includes(policyName);
+        const owners = fieldContainers(targetDocument).filter((container) => isFieldProperty(container.properties?.[nextField.name]));
+        for (const owner of owners) {
+            if (policyName !== nextField.name) {
+                delete owner.properties[nextField.name];
+                if (Array.isArray(owner.required)) {
+                    owner.required = owner.required.filter((item: string) => item !== nextField.name);
+                }
+            }
+            owner.properties[policyName] = cloneJson(property);
+            const required: string[] = (Array.isArray(owner.required) ? owner.required : [])
+                .filter((item: string) => item !== policyName);
+            if (wasRequired) {
+                required.push(policyName);
+            }
+            if (required.length || Array.isArray(owner.required)) {
+                owner.required = required;
+            }
+        }
+    }
+}
+
 export function preparePolicySchemaUpdate(
     target: Schema,
     source: Schema,
@@ -2813,6 +3067,15 @@ export function preparePolicySchemaUpdate(
 
     const survivingCustom = custom.filter((field) => !dropFieldNames.has(field.name));
     mergeCustomFieldsIntoDocument(target.document, previousDocument, survivingCustom);
+    applyFieldPolicyResolutions(
+        target.document,
+        previousDocument,
+        previousParsed.fields || [],
+        sourceParsed.fields || [],
+        source.templateSchemaId,
+        conditionConflicts,
+        conditionResolutions
+    );
 
     for (const placement of placements) {
         if (dropFieldNames.has(placement.field.name) || carryOverConditionIndices.has(placement.conditionIndex)) {

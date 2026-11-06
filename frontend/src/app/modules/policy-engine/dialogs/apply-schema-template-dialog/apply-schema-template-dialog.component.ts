@@ -3,6 +3,7 @@ import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { ModuleStatus } from '@guardian/interfaces';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
+import { FIELD_TYPES_UI } from 'src/app/modules/schema-engine/field-type-ui';
 import {
     SchemaTemplateGridItem,
     SchemaTemplatesService,
@@ -18,6 +19,11 @@ interface SchemaTemplateDiffGroup {
     conditionChanges: SchemaTemplateUpdatePreview['changes'];
     linkChanges: SchemaTemplateUpdatePreview['changes'];
     changesCount: number;
+}
+
+interface SchemaTemplateConflictGroup {
+    schemaName: string;
+    conflicts: SchemaTemplateUpdateConflict[];
 }
 
 @Component({
@@ -39,6 +45,7 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
     public visibleChangesCount: number = 0;
     public visibleConflicts: SchemaTemplateUpdateConflict[] = [];
     public visibleConflictsCount: number = 0;
+    public conflictGroups: SchemaTemplateConflictGroup[] = [];
     public diffGroups: SchemaTemplateDiffGroup[] = [];
 
     private _updatePreview: SchemaTemplateUpdatePreview | null = null;
@@ -231,8 +238,43 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
         return this.mode === 'update' ? 'Update' : 'Apply';
     }
 
+    /**
+     * A change a conflict already describes is not listed twice: the conflict row carries the
+     * policy and template values, so the same item shows in one section only.
+     */
+    private _isCoveredByConflict(
+        change: SchemaTemplateUpdatePreview['changes'][number],
+        conflicts: SchemaTemplateUpdateConflict[]
+    ): boolean {
+        return conflicts.some((conflict) => {
+            if (conflict.schemaName !== change.schemaName) {
+                return false;
+            }
+            switch (conflict.type) {
+                case 'FIELD_MODIFIED_IN_POLICY':
+                case 'FIELD_REMOVED_IN_POLICY':
+                    return change.type === 'FIELD_UPDATE'
+                        && !!conflict.templateFieldId
+                        && change.templateFieldId === conflict.templateFieldId;
+                case 'SCHEMA_REMOVED_WITH_POLICY_USAGE':
+                    return change.type === 'SCHEMA_REMOVE';
+                case 'CONDITION_REMOVED_WITH_POLICY_USAGE':
+                    return change.type === 'CONDITION_REMOVE' && change.fieldName === conflict.fieldName;
+                case 'REPEATABLE_LINK_REMOVED_WITH_POLICY_USAGE':
+                    return change.type === 'REPEATABLE_LINK_REMOVE' && change.fieldName === conflict.fieldName;
+                default:
+                    return false;
+            }
+        });
+    }
+
     private _recomputeDerivedState(): void {
-        const changes = this._updatePreview?.changes || [];
+        // A conflict left with a single option is still worth showing - it is how the
+        // user finds out a schema will be kept rather than removed, and why.
+        this.visibleConflicts = (this._updatePreview?.conflicts || [])
+            .filter((conflict) => (conflict.allowedActions || []).length > 0);
+        const changes = (this._updatePreview?.changes || [])
+            .filter((change) => !this._isCoveredByConflict(change, this.visibleConflicts));
         const schemasWithFieldChanges = new Set(
             changes
                 .filter((change) => !this.isSchemaChange(change.type))
@@ -248,10 +290,6 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
             return this.hasDetails(change);
         });
         this.visibleChangesCount = this.visibleChanges.length;
-        // A conflict left with a single option is still worth showing - it is how the
-        // user finds out a schema will be kept rather than removed, and why.
-        this.visibleConflicts = (this._updatePreview?.conflicts || [])
-            .filter((conflict) => (conflict.allowedActions || []).length > 0);
         for (const conflict of this.visibleConflicts) {
             if (conflict.allowedActions.length === 1 && !this.resolutions[conflict.id]) {
                 this.resolutions[conflict.id] = conflict.allowedActions[0];
@@ -260,19 +298,24 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
         this.visibleConflictsCount = this.visibleConflicts.length;
 
         const groups = new Map<string, SchemaTemplateDiffGroup>();
-        for (const change of this.visibleChanges) {
-            const key = change.schemaName || 'Template';
-            if (!groups.has(key)) {
-                groups.set(key, {
+        const groupFor = (schemaName?: string): SchemaTemplateDiffGroup => {
+            const key = schemaName || 'Template';
+            let group = groups.get(key);
+            if (!group) {
+                group = {
                     schemaName: key,
                     schemaChanges: [],
                     fieldChanges: [],
                     conditionChanges: [],
                     linkChanges: [],
                     changesCount: 0
-                });
+                };
+                groups.set(key, group);
             }
-            const group = groups.get(key)!;
+            return group;
+        };
+        for (const change of this.visibleChanges) {
+            const group = groupFor(change.schemaName);
             if (this.isSchemaChange(change.type)) {
                 group.schemaChanges.push(change);
             } else if (this.isConditionChange(change.type)) {
@@ -284,7 +327,93 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
             }
             group.changesCount += 1;
         }
-        this.diffGroups = Array.from(groups.values());
+        // Conflicts are their own list, by schema, so the user resolves them in one place.
+        const byConflictSchema = new Map<string, SchemaTemplateConflictGroup>();
+        for (const conflict of this.visibleConflicts) {
+            const key = conflict.schemaName || 'Template';
+            if (!byConflictSchema.has(key)) {
+                byConflictSchema.set(key, { schemaName: key, conflicts: [] });
+            }
+            byConflictSchema.get(key)!.conflicts.push(conflict);
+        }
+        this.conflictGroups = Array.from(byConflictSchema.values())
+            .sort((a, b) => a.schemaName.localeCompare(b.schemaName));
+        this.diffGroups = Array.from(groups.values())
+            .sort((a, b) => a.schemaName.localeCompare(b.schemaName));
+    }
+
+    public get resolvedConflictsCount(): number {
+        return this.visibleConflicts.filter((conflict) => !!this.resolutions[conflict.id]).length;
+    }
+
+    private bulkAction(conflict: SchemaTemplateUpdateConflict, mode: 'keep' | 'reset'): SchemaTemplateUpdateResolutionAction | undefined {
+        const keep = [
+            SchemaTemplateUpdateResolutionAction.KEEP_CUSTOM_CHANGES,
+            SchemaTemplateUpdateResolutionAction.KEEP_AS_CUSTOM_SCHEMA,
+            SchemaTemplateUpdateResolutionAction.KEEP_AS_CUSTOM_CONDITION,
+            SchemaTemplateUpdateResolutionAction.KEEP_AS_CUSTOM_LINK
+        ];
+        const reset = [
+            SchemaTemplateUpdateResolutionAction.RESET_TO_TEMPLATE,
+            SchemaTemplateUpdateResolutionAction.REMOVE_FROM_POLICY
+        ];
+        const wanted = mode === 'keep' ? keep : reset;
+        return (conflict.allowedActions || []).find((action) => wanted.includes(action));
+    }
+
+    /** True when at least one conflict of the schema offers this side. */
+    public canResolveAll(group: SchemaTemplateConflictGroup, mode: 'keep' | 'reset'): boolean {
+        return group.conflicts.some((conflict) => !!this.bulkAction(conflict, mode));
+    }
+
+    /** Keeps the policy's side, or resets to the template's, for every conflict of one schema. */
+    public resolveAll(group: SchemaTemplateConflictGroup, mode: 'keep' | 'reset'): void {
+        for (const conflict of group.conflicts) {
+            const action = this.bulkAction(conflict, mode);
+            if (action) {
+                this.resolutions[conflict.id] = action;
+            }
+        }
+    }
+
+    public get unresolvedConflictsCount(): number {
+        return this.visibleConflicts.length - this.resolvedConflictsCount;
+    }
+
+    public scrollToConflicts(): void {
+        document.getElementById('schema-template-resolve')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    public getConflictKind(conflict: SchemaTemplateUpdateConflict): string {
+        switch (conflict.type) {
+            case 'FIELD_MODIFIED_IN_POLICY':
+                return 'Changed in policy';
+            case 'FIELD_REMOVED_IN_POLICY':
+                return 'Deleted in policy';
+            default:
+                return 'Removed from template';
+        }
+    }
+
+    public isEditedConflict(conflict: SchemaTemplateUpdateConflict): boolean {
+        return conflict.type === 'FIELD_MODIFIED_IN_POLICY';
+    }
+
+    public getConflictTitle(conflict: SchemaTemplateUpdateConflict): string {
+        return conflict.fieldName || conflict.schemaName || 'Template';
+    }
+
+    public getActionLabel(action: SchemaTemplateUpdateResolutionAction): string {
+        switch (action) {
+            case SchemaTemplateUpdateResolutionAction.KEEP_CUSTOM_CHANGES:
+                return 'Keep policy changes';
+            case SchemaTemplateUpdateResolutionAction.RESET_TO_TEMPLATE:
+                return 'Reset to template';
+            case SchemaTemplateUpdateResolutionAction.REMOVE_FROM_POLICY:
+                return 'Remove';
+            default:
+                return 'Keep as custom';
+        }
     }
 
     public isSchemaChange(type: string): boolean {
@@ -360,6 +489,36 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
         return change.fieldName
             ? change.fieldName
             : change.schemaName || 'Template';
+    }
+
+    /**
+     * The editor's badge for a Yes/No field attribute in a diff row, so Required reads
+     * Required / Optional and Array reads Array / Not array. Anything else is plain text.
+     */
+    public getFlagBadge(label: string, value?: string): { text: string; css: string } | null {
+        if (value !== 'Yes' && value !== 'No') {
+            return null;
+        }
+        const on = value === 'Yes';
+        switch (label) {
+            case 'Required':
+                return on ? { text: 'Required', css: 'fb-req' } : { text: 'Optional', css: 'fb-opt' };
+            case 'Array':
+                return on ? { text: 'Array', css: 'fb-arr' } : { text: 'Not array', css: 'fb-opt' };
+            case 'Hidden':
+                return on ? { text: 'Hidden', css: 'fb-hidden' } : { text: 'Visible', css: 'fb-opt' };
+            case 'Autocalculate':
+                return on ? { text: 'Auto Calculate', css: 'fb-auto' } : { text: 'Not calculated', css: 'fb-opt' };
+            case 'Read only':
+                return on ? { text: 'Read only', css: 'fb-hidden' } : { text: 'Editable', css: 'fb-opt' };
+            default:
+                return null;
+        }
+    }
+
+    /** The icon the schema editor shows for a field's type name. */
+    public getTypeIcon(typeLabel?: string): string {
+        return FIELD_TYPES_UI.find((type) => type.label === typeLabel)?.icon || 'pi-pencil';
     }
 
     public getChangeScope(type: string): string {

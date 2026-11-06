@@ -81,14 +81,35 @@ export enum SchemaTemplateUpdateChangeType {
 export enum SchemaTemplateUpdateConflictType {
     SCHEMA_REMOVED_WITH_POLICY_USAGE = 'SCHEMA_REMOVED_WITH_POLICY_USAGE',
     CONDITION_REMOVED_WITH_POLICY_USAGE = 'CONDITION_REMOVED_WITH_POLICY_USAGE',
-    REPEATABLE_LINK_REMOVED_WITH_POLICY_USAGE = 'REPEATABLE_LINK_REMOVED_WITH_POLICY_USAGE'
+    REPEATABLE_LINK_REMOVED_WITH_POLICY_USAGE = 'REPEATABLE_LINK_REMOVED_WITH_POLICY_USAGE',
+    /** An unlocked template field was edited in the policy; the update would overwrite the edit. */
+    FIELD_MODIFIED_IN_POLICY = 'FIELD_MODIFIED_IN_POLICY',
+    /** An unlocked template field was deleted from the policy; the update would bring it back. */
+    FIELD_REMOVED_IN_POLICY = 'FIELD_REMOVED_IN_POLICY'
 }
 
 export enum SchemaTemplateUpdateResolutionAction {
     KEEP_AS_CUSTOM_SCHEMA = 'KEEP_AS_CUSTOM_SCHEMA',
     REMOVE_FROM_POLICY = 'REMOVE_FROM_POLICY',
     KEEP_AS_CUSTOM_CONDITION = 'KEEP_AS_CUSTOM_CONDITION',
-    KEEP_AS_CUSTOM_LINK = 'KEEP_AS_CUSTOM_LINK'
+    KEEP_AS_CUSTOM_LINK = 'KEEP_AS_CUSTOM_LINK',
+    /** Keep the policy's own edit or deletion of an unlocked template field. */
+    KEEP_CUSTOM_CHANGES = 'KEEP_CUSTOM_CHANGES',
+    /** Take the template's version of the field, discarding the policy's edit or deletion. */
+    RESET_TO_TEMPLATE = 'RESET_TO_TEMPLATE'
+}
+
+/** What the editor shows on a field row: its type name and the flags it badges. */
+export interface ISchemaTemplateFieldBrief {
+    /** The field's key (its name in the document). */
+    key: string;
+    /** What the editor shows as the field's name: description, else title, else key. */
+    title: string;
+    type: string;
+    required: boolean;
+    isArray: boolean;
+    hidden: boolean;
+    autocalculate: boolean;
 }
 
 export interface ISchemaTemplateUpdateChange {
@@ -99,6 +120,9 @@ export interface ISchemaTemplateUpdateChange {
     fieldName?: string;
     before?: string;
     after?: string;
+    /** The same field as `before` / `after`, structured so the UI can draw badges. */
+    beforeField?: ISchemaTemplateFieldBrief;
+    afterField?: ISchemaTemplateFieldBrief;
     details?: {
         label: string;
         before?: string;
@@ -116,6 +140,14 @@ export interface ISchemaTemplateUpdateConflict {
     fieldName?: string;
     message: string;
     allowedActions: SchemaTemplateUpdateResolutionAction[];
+    /** What differs, for field conflicts: `before` is the policy's value, `after` the template's. */
+    details?: {
+        label: string;
+        before?: string;
+        after?: string;
+    }[];
+    /** For a field conflict: the template's version of the field. */
+    templateField?: ISchemaTemplateFieldBrief;
     /** Schemas that still reference this one, so removing it is not on offer. */
     blockedBy?: string[];
 }
