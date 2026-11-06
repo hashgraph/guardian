@@ -886,11 +886,27 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         if (this.loading || this.isPreviewBusy) {
             return;
         }
-        if (!this.dataForm.valid) {
+        if (!(await this.isValidForPreview())) {
             this.showResults();
             return;
         }
         await this.runPreview(false);
+    }
+
+    /** In Preview an invalid form first asks again which fields its current values need. */
+    private async isValidForPreview(): Promise<boolean> {
+        if (this.dataForm.valid) {
+            return true;
+        }
+        if (!this.previewMode) {
+            return false;
+        }
+        await this.runPreview(true, true);
+        if (!this.previewMode) {
+            return false;
+        }
+        this.changeDetectorRef.detectChanges();
+        return this.dataForm.valid;
     }
 
     public showForm(): void {
@@ -921,7 +937,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
             await this.onSubmit(true);
             return;
         }
-        if (!this.dataForm.valid) {
+        if (!(await this.isValidForPreview())) {
             this.showResults();
             return;
         }
@@ -984,7 +1000,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         await this.runPreview(true);
     }
 
-    private async runPreview(previewFields: boolean): Promise<void> {
+    private async runPreview(previewFields: boolean, listMissing: boolean = false): Promise<void> {
         const request = ++this.previewRequest;
         const preset = this.presetDocument;
         const current = () => request === this.previewRequest && preset === this.presetDocument;
@@ -1005,7 +1021,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
                 return;
             }
             this.setPreviewRequiredFields(this.calculationPreview.updateRequiredFields(this.previewRequiredFields, result));
-            this.previewMissingFields = [];
+            this.previewMissingFields = listMissing ? [...result.missingFields] : [];
             if (previewFields) {
                 this.previewDiscoveryWarning = this.calculationPreview.needsDiscoveryWarning(result);
             } else {

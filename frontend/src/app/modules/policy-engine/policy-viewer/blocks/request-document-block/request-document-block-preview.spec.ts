@@ -264,13 +264,46 @@ describe('request document preview wiring', () => {
         expect(component.previewItems).toEqual([]);
     });
 
-    it('shows the validation results instead of a preview when the form is invalid on Preview again', async () => {
-        const { component, calls } = form([Promise.resolve(response(['amount']))], blockParent());
+    it('asks for the fields again and shows the validation results when the form stays invalid on Preview again', async () => {
+        const { component, calls } = form([Promise.resolve(response(['amount'])), Promise.resolve(response(['amount', 'fuel'], ['fuel']))], blockParent());
         component.previewMode = true;
         await component.onStep();
         component.dataForm = { valid: false, getRawValue: () => ({}) };
         await component.previewAgain();
-        expect(calls.length).toBe(1);
+        expect(calls.map((call) => call.previewFields)).toEqual([false, true]);
+        expect(component.previewRequiredFields).toEqual(['amount', 'fuel']);
+        expect(component.previewMissingFields).toEqual(['fuel']);
+        expect(component.screen).toBe('results');
+    });
+
+    it('runs the preview when the fields asked again make an invalid form valid', async () => {
+        const { component, calls } = form([Promise.resolve(response(['amount'])), Promise.resolve(response(['amount']))], blockParent());
+        component.previewMode = true;
+        component.previewRequiredFields = ['amount', 'rate'];
+        component.dataForm = { get valid() { return !component.previewRequiredFields.includes('rate'); }, getRawValue: () => ({ amount: 5 }) };
+        await component.onStep();
+        expect(calls.map((call) => call.previewFields)).toEqual([true, false]);
+        expect(component.previewRequiredFields).toEqual(['amount']);
+        expect(component.screen).toBe('presults');
+    });
+
+    it('keeps the requirements and shows the validation results when asking for the fields again fails', async () => {
+        spyOn(console, 'error');
+        const { component, calls } = form([Promise.reject(new HttpErrorResponse({ status: 500 }))], blockParent());
+        component.previewMode = true;
+        component.previewRequiredFields = ['amount', 'rate'];
+        component.dataForm = { valid: false, getRawValue: () => ({}) };
+        await component.onStep();
+        expect(calls.map((call) => call.previewFields)).toEqual([true]);
+        expect(component.previewRequiredFields).toEqual(['amount', 'rate']);
+        expect(component.screen).toBe('results');
+    });
+
+    it('does not ask for the fields on an invalid form outside Preview', async () => {
+        const { component, calls } = form([], blockParent());
+        component.dataForm = { valid: false, getRawValue: () => ({}) };
+        await component.onStep();
+        expect(calls).toEqual([]);
         expect(component.screen).toBe('results');
     });
 
