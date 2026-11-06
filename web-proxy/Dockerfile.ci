@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 # Stage 0: # Define the versions of the base images used
-ARG NODE_VERSION=24.22.1-alpine
-ARG NGINX_VERSION=1.30.4-alpine
+ARG NODE_VERSION=24.22.2-alpine
+ARG NGINX_VERSION=1.30.6-alpine
 
 FROM --platform=$BUILDPLATFORM node:${NODE_VERSION} AS base
 WORKDIR /usr/local/app
