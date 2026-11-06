@@ -59,6 +59,20 @@ describe('SchemaFormComponent Preview table validation', () => {
         return { fixture, first, second };
     };
 
+    it('requests a refresh when opening a section only in preview mode', () => {
+        const { fixture } = render();
+        const component = fixture.componentInstance;
+        const emit = spyOn(component.previewInteraction, 'emit');
+        const field = component.formModel.controls![0];
+        component.toggleOpen(field, false);
+        expect(emit).not.toHaveBeenCalled();
+        component.toggleOpen(field, true);
+        expect(emit).toHaveBeenCalledTimes(1);
+        component.previewValidation = false;
+        component.toggleOpen(field, true);
+        expect(emit).toHaveBeenCalledTimes(1);
+    });
+
     it('renders a required Preview section before its optional sub-form is added', () => {
         const { fixture } = render();
         const schema = new Schema({ iri: '#optional', document: {

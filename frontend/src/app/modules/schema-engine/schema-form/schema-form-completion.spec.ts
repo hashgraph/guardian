@@ -1,7 +1,7 @@
 import { UntypedFormGroup } from '@angular/forms';
 import { Schema, SchemaDataTypes } from '@guardian/interfaces';
 import { FieldForm, IFieldControl } from '../schema-form-model/field-form';
-import { computeCompletion, countRequired } from './schema-form-completion';
+import { computeCompletion, countRequired, requiredWithoutControl } from './schema-form-completion';
 import { CommonModule } from '@angular/common';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
@@ -167,6 +167,81 @@ describe('computeCompletion', () => {
         expect(result.total).toBe(2);
         expect(result.sections.map(item => [item.title, item.answered, item.total])).toEqual([['Main', 1, 1], ['Group', 0, 1]]);
         expect(result.sections.map(item => item.hasErrors)).toEqual([false, true]);
+        form.destroy();
+    });
+
+    it('adds fields without a control as unanswered, to their section or to the whole form', () => {
+        const form = build({ name: 'a', group: {} });
+        const [name, group] = form.controls!;
+        const sections = [
+            { id: 's0', title: 'Main', controls: [name] },
+            { id: 's1', title: 'Group', controls: [group] },
+        ];
+        const result = computeCompletion(form.controls, sections, [1, 1]);
+        expect(result.sections.map(item => [item.title, item.answered, item.total])).toEqual([['Main', 1, 1], ['Group', 0, 3]]);
+        expect(result.total).toBe(4);
+        expect(computeCompletion(form.controls, [], [-1, -1])).toEqual({ answered: 1, total: 4, sections: [] });
+        form.destroy();
+    });
+});
+
+describe('requiredWithoutControl', () => {
+    const text = (title: string) => ({ type: SchemaDataTypes.string, title, description: title });
+    const document: any = {
+        $id: '#rw&1.0.0',
+        $comment: JSON.stringify({ '@id': 'ctx:#rw&1.0.0', term: 'rw&1.0.0' }),
+        type: SchemaDataTypes.object,
+        properties: {
+            name: text('Name'),
+            extra: { $ref: '#group', title: 'Extra', description: 'Extra' },
+        },
+        required: ['name'],
+        $defs: {
+            '#group': { $id: '#group', type: SchemaDataTypes.object, properties: { inner: text('Inner'), other: text('Other') } },
+        },
+    };
+    const build = (preset: any, requiredFields: string[]): FieldForm => {
+        const form = new FieldForm(new UntypedFormGroup({}));
+        form.setData({ schema: new Schema({ iri: '#rw&1.0.0', document }), preset, requiredFields });
+        form.build();
+        return form;
+    };
+
+    it('lists required fields inside a sub-schema that was not added, once each', () => {
+        const form = build({}, ['name', 'extra.inner', 'extra.other']);
+        expect(requiredWithoutControl(form.controls, ['name', 'extra.inner', 'extra.other', 'extra.inner', 'extra.list.0.v'])).toEqual(['extra.inner', 'extra.other']);
+        form.destroy();
+    });
+
+    it('lists a sub-schema that was not added when the path names the sub-schema itself', () => {
+        const form = build({}, ['name']);
+        expect(requiredWithoutControl(form.controls, ['extra'])).toEqual(['extra']);
+        form.destroy();
+        const added = build({ extra: {} }, ['name']);
+        expect(requiredWithoutControl(added.controls, ['extra'])).toEqual([]);
+        added.destroy();
+    });
+
+    it('counts a field of a sub-schema that was not added inside an existing row, not a cell of a missing row', () => {
+        const rowDocument: any = {
+            ...document,
+            properties: { ...document.properties, rows: { type: SchemaDataTypes.array, title: 'Rows', description: 'Rows', items: { $ref: '#row' } } },
+            $defs: {
+                ...document.$defs,
+                '#row': { $id: '#row', type: SchemaDataTypes.object, properties: { extra: { $ref: '#group', title: 'Extra', description: 'Extra' } } },
+            },
+        };
+        const form = new FieldForm(new UntypedFormGroup({}));
+        form.setData({ schema: new Schema({ iri: '#rw&1.0.0', document: rowDocument }), preset: { rows: [{}] }, requiredFields: ['name'] });
+        form.build();
+        expect(requiredWithoutControl(form.controls, ['rows.0.extra.inner', 'rows.1.extra.inner'])).toEqual(['rows.0.extra.inner']);
+        form.destroy();
+    });
+
+    it('leaves out fields that have a control, row paths and paths with no existing parent', () => {
+        const form = build({ extra: {} }, ['name', 'extra.inner']);
+        expect(requiredWithoutControl(form.controls, ['name', 'extra.inner', 'rows.0.v', 'missing.inner'])).toEqual([]);
+        expect(requiredWithoutControl(form.controls, null)).toEqual([]);
         form.destroy();
     });
 });

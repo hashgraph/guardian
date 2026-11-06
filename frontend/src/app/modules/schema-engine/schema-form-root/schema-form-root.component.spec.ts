@@ -124,6 +124,31 @@ describe('SchemaFormRootComponent — required fields', () => {
         expect(root.group.get('amount')?.value).toBe(5);
     }));
 
+    const groupDocument: any = {
+        ...calcDocument,
+        properties: {
+            amount: numberField('amount'),
+            group: { $ref: '#group', title: 'group', description: 'group' },
+        },
+        required: [],
+        $defs: {
+            '#group': { $id: '#group', type: SchemaDataTypes.object, properties: { inner: numberField('inner') }, required: ['inner'] },
+        },
+    };
+
+    it('counts a Preview field of a sub-schema that was not added and updates the count in place', fakeAsync(() => {
+        const root = createRootWith(groupDocument);
+        setRequired(root, ['amount', 'group.inner']);
+        expect(root.model?.controls?.find(field => field.name === 'group')?.model).toBeFalsy();
+        expect(root.completion?.total).toBe(2);
+        expect(root.completion?.answered).toBe(0);
+        expect(root.completion?.sections.map(section => section.total)).toEqual([2]);
+        setRequired(root, ['amount']);
+        expect(root.completion?.total).toBe(1);
+        setRequired(root, null);
+        expect(root.completion?.total).toBe(0);
+    }));
+
     it('updates Preview requirements without replacing fields, values or open sections', fakeAsync(() => {
         const root = createRootWith(defaultDocument);
         setRequired(root, ['amount']);
@@ -787,6 +812,23 @@ describe('SchemaFormRootComponent — required fields', () => {
 
         const issuePaths = (root: SchemaFormRootComponent) => root.getIssues().map(issue => issue.path);
 
+        it('opens every existing row with a missing field without adding rows or requesting discovery', fakeAsync(() => {
+            const root = createAreaRoot(['rows.0.PBt', 'rows.1.PBt']);
+            const rows = root.model!.controls![0];
+            rows.open = false;
+            rows.list![0].open = false;
+            rows.list![1].open = false;
+            rows.list![2].open = false;
+            const interaction = spyOn(root.previewInteraction, 'emit');
+            root.expandPreviewIssues(['rows.0.PBt', 'rows.1.PBt', 'rows.3.PBt']);
+            expect(rows.open).toBeTrue();
+            expect(rows.list![0].open).toBeTrue();
+            expect(rows.list![1].open).toBeTrue();
+            expect(rows.list![2].open).toBeFalse();
+            expect(rows.list!.length).toBe(3);
+            expect(interaction).not.toHaveBeenCalled();
+        }));
+
         it('moves the issue to the new row number when an earlier row is deleted', fakeAsync(() => {
             const root = createAreaRoot(['rows.1.PBt']);
             expect(issuePaths(root)).toEqual(['rows.1.PBt', 'rows.2.PBt']);
@@ -977,6 +1019,19 @@ describe('SchemaFormRootComponent — sections', () => {
         root.focusField('name');
         flush(100);
         expect(root.activeIndex).toBe(0);
+    }));
+
+    it('ignores text selection events when navigating sections', fakeAsync(() => {
+        const root = create();
+        const openSection = spyOn(root, 'openSection');
+        const openOverview = spyOn(root, 'openOverview');
+        Reflect.apply(root.onRailSelect, root, [new Event('select', { bubbles: true })]);
+        expect(openSection).not.toHaveBeenCalled();
+        expect(openOverview).not.toHaveBeenCalled();
+        root.onRailSelect(1);
+        expect(openSection).toHaveBeenCalledOnceWith(1);
+        root.onRailSelect('overview');
+        expect(openOverview).toHaveBeenCalled();
     }));
 
     it('moves to the first missing answer from the current section and wraps', fakeAsync(() => {

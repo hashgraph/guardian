@@ -101,6 +101,7 @@ export class SchemaFormComponent implements OnInit, DoCheck {
     @Input() previewMissingFieldIds: string[] = [];
     @Input() previewValidation: boolean = false;
     @Input() previewBusy: boolean = false;
+    @Input() progressPending: boolean = false;
 
     @Output() change = new EventEmitter<Schema | null>();
     @Output() destroy = new EventEmitter<void>();
@@ -110,6 +111,7 @@ export class SchemaFormComponent implements OnInit, DoCheck {
     @Output() updatableBtnEvent = new EventEmitter();
     @Output() buttons = new EventEmitter<any>();
     @Output() previewLoadingChange = new EventEmitter<boolean>();
+    @Output() previewInteraction = new EventEmitter<void>();
 
     public minutesAgo$ = getMinutesAgoStream(() => this.lastSavedAt);
 
@@ -389,12 +391,14 @@ export class SchemaFormComponent implements OnInit, DoCheck {
 
     public addGroup(item: IFieldControl<any>) {
         this.formModel?.addGroup(item);
+        if (this.previewValidation) this.previewInteraction.emit();
         this.change.emit();
         this.changeDetectorRef.detectChanges();
     }
 
     public addItem(item: IFieldControl<UntypedFormArray>) {
         this.formModel?.addItem(item);
+        if (this.previewValidation) this.previewInteraction.emit();
         if (this.previewValidation) this.prepareOpenPreviewSections();
         setTimeout(() => {
             this.formModel?.updateValueAndValidity();
@@ -407,6 +411,7 @@ export class SchemaFormComponent implements OnInit, DoCheck {
             event.stopPropagation();
         }
         this.formModel?.removeGroup(item);
+        if (this.previewValidation) this.previewInteraction.emit();
         this.formModel?.updateValueAndValidity();
         this.changeDetectorRef.detectChanges();
         this.change.emit();
@@ -445,6 +450,7 @@ export class SchemaFormComponent implements OnInit, DoCheck {
 
     private applyRemoveItem(item: IFieldControl<any>, listItem: IFieldIndexControl<any>): void {
         this.formModel?.removeItem(item, listItem);
+        if (this.previewValidation) this.previewInteraction.emit();
         this.formModel?.updateValueAndValidity();
         this.changeDetectorRef.detectChanges();
         this.change.emit();
@@ -812,6 +818,7 @@ export class SchemaFormComponent implements OnInit, DoCheck {
     public toggleOpen(item: IFieldControl<any> | IFieldIndexControl<any>, open: boolean): void {
         item.open = open;
         this.preparePreviewSection(item);
+        if (open && this.previewValidation) this.previewInteraction.emit();
     }
 
     public isRulesStatus(item: IFieldControl<any>) {
@@ -1101,6 +1108,7 @@ export class SchemaFormComponent implements OnInit, DoCheck {
                     }
                     control.markAsTouched();
                     listItem.fileUploading = false;
+                    if (this.previewValidation) this.previewInteraction.emit();
                 }, (error) => {
                     listItem.fileUploading = false;
                 });

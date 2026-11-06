@@ -8,7 +8,7 @@ import { FormulasTree } from 'src/app/modules/formulas/models/formula-tree';
 import { FormFormulas, IFormulaLinkScope } from 'src/app/modules/formulas/models/form-formulas';
 import { getErrorMessage } from '../schema-form/schema-form-errors';
 import { IFormTarget, isIndexSegment, isRefLeaf, walkFields } from '../schema-form/schema-form-walk';
-import { IFormCompletion, ISectionCompletion, computeCompletion, isAnswered } from '../schema-form/schema-form-completion';
+import { IFormCompletion, ISectionCompletion, computeCompletion, isAnswered, requiredWithoutControl } from '../schema-form/schema-form-completion';
 import { SchemaFormPreferencesService } from '../../../services/schema-form-preferences.service';
 import { IFormSection, buildSections, promotedRootName } from './schema-form-sections';
 import { IRailCard } from '../schema-form-rail/schema-form-rail.component';
@@ -108,12 +108,14 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     @Input() requiredFields: string[] | null = null;
     @Input() previewMissingFields: string[] = [];
     @Input() previewActionsDisabled: boolean = false;
+    @Input() previewRequirementsStale: boolean = false;
     @Input() formulaLinkScope: IFormulaLinkScope | null = null;
     private previewFocusTimer: ReturnType<typeof setTimeout> | null = null;
     private previewBuildFrame: number | null = null;
     private previewHeightLocked: boolean = false;
     public previewLoadingCount: number = 0;
     @Output() previewBusyChange = new EventEmitter<boolean>(true);
+    @Output() previewInteraction = new EventEmitter<void>();
 
     public get isPreviewBusy(): boolean {
         return this.requiredFields !== null && (this.loading || this.previewLoadingCount > 0);
@@ -244,6 +246,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             && !changes.readonly && !changes.conditions && !changes.presetDocument
             && this.model.updatePreviewRequiredFields(this.requiredFields)) {
             this.updatePreviewMissingFieldIds();
+            this.recompute();
             this.loading = this.previewBuildFrame !== null;
             this.schedulePreviewFocus();
             return;
@@ -501,6 +504,28 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         }, 0);
     }
 
+    public expandPreviewIssues(paths: string[]): void {
+        for (const path of paths) {
+            const parts = path.split('.');
+            let controls = this.model?.controls || [];
+            for (let index = 0; index < parts.length; index++) {
+                const field = controls.find(item => item.name === parts[index]);
+                if (!field) break;
+                field.open = true;
+                if (field.isArray && isIndexSegment(parts[index + 1] || '')) {
+                    const row = field.list?.[Number(parts[++index])];
+                    if (!row) break;
+                    row.open = true;
+                    controls = row.model?.controls || [];
+                } else {
+                    controls = field.model?.controls || [];
+                }
+            }
+        }
+        this.childForm?.prepareOpenPreviewSections?.();
+        this.changeDetectorRef.markForCheck();
+    }
+
     public focusField(path: string): void {
         const parts = path.split('.');
         let controls = this.model?.controls || [];
@@ -735,7 +760,9 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         }
         this.updateNestedCards();
         this.promotedName = sections.length ? promotedRootName(model) : null;
-        const completion = computeCompletion(model.controls, sections);
+        const withoutControl = requiredWithoutControl(model.controls, this.requiredFields)
+            .map(path => this.sectionIndexOf(path));
+        const completion = computeCompletion(model.controls, sections, withoutControl);
         if (!sameCompletion(this.completion, completion)) {
             this.completion = completion;
             this.overviewCards = this.buildOverviewCards();
@@ -814,6 +841,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             this.activeIndex = index;
         });
         this.childForm?.prepareOpenPreviewSections?.();
+        if (this.requiredFields !== null) this.previewInteraction.emit();
         this.scrollToTop();
     }
 
@@ -844,7 +872,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     public onRailSelect(target: number | 'overview'): void {
         if (target === 'overview') {
             this.openOverview();
-        } else {
+        } else if (typeof target === 'number' && Number.isInteger(target)) {
             this.openSection(target);
         }
     }

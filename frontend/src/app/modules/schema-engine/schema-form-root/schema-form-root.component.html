@@ -3,6 +3,7 @@
     <app-schema-form-nav
       [sections]="hasSections ? sections : []"
       [completion]="completion"
+      [progressPending]="previewRequirementsStale"
       [screen]="screen"
       [activeIndex]="activeIndex"
       [cards]="activeCards"
@@ -15,7 +16,9 @@
       >
       <ng-container ngProjectAs="[navTop]"><ng-content select="[sfNotice]"></ng-content></ng-container>
       @if (hasSections) {
-        @if (screen === 'overview') {
+        @if (screen === 'overview' && previewRequirementsStale) {
+          <div>Required fields will be checked before Preview.</div>
+        } @else if (screen === 'overview') {
           <app-schema-form-overview [cards]="overviewCards" [locked]="isPreviewLocked" (open)="openSection($event)">
             <div overviewHead>
               @if (promotedName) {
@@ -62,7 +65,7 @@
         } @else {
             <div class="sf-section-head">
               <h2 class="sf-section-title">{{ activeSection?.title }}</h2>
-              @if (completion?.sections?.[activeIndex]; as stats) {
+              @if (!previewRequirementsStale && completion?.sections?.[activeIndex]; as stats) {
                 <span
                   class="sf-chip"
                   [class.sf-chip-ok]="stats.total > 0 && stats.answered >= stats.total"
@@ -92,6 +95,7 @@
           [previewMissingFieldIds]="previewMissingFieldIds"
           [previewValidation]="requiredFields !== null"
           [previewBusy]="isPreviewLocked"
+          [progressPending]="previewRequirementsStale"
           [formulas]="formulaModel"
           [private-fields]="hide"
           [readonly-fields]="readonly"
@@ -122,6 +126,7 @@
           (saveBtnEvent)="onSaveBtnEvent($event)"
           (updatableBtnEvent)="onUpdatableBtnEvent()"
           (previewLoadingChange)="onPreviewLoadingChange($event)"
+          (previewInteraction)="previewInteraction.emit()"
           >
         </app-schema-form>
       }

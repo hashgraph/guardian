@@ -1,5 +1,5 @@
 import { fakeAsync, tick } from '@angular/core/testing';
-import { FormControl, FormGroup } from '@angular/forms';
+import { FormArray, FormControl, FormGroup } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { RequestDocumentBlockComponent } from './request-document-block.component';
 import { RequestDocumentFormComponent } from './form/request-document-form.component';
@@ -89,6 +89,174 @@ describe('request document preview wiring', () => {
     };
 
     const settle = () => new Promise((resolve) => setTimeout(resolve));
+
+    const observedForm = (results: Promise<unknown>[]) => {
+        const state = form(results, blockParent());
+        const group = new FormGroup({ mode: new FormControl('ccb'), title: new FormControl('old'), other: new FormControl('x') });
+        state.component.formRoot.model = { controls: [
+            { name: 'mode', enum: ['ccb', 'vcs'], control: group.get('mode') },
+            { name: 'title', type: 'string', control: group.get('title') },
+            { name: 'other', type: 'string', control: group.get('other') }
+        ] };
+        state.component.initForm(group, false);
+        state.component.previewMode = true;
+        state.component.setPreviewRequiredFields(['mode', 'title']);
+        return { ...state, group };
+    };
+
+    it('refreshes requirements when a read choice changes', fakeAsync(() => {
+        const { component, group, calls } = observedForm([Promise.resolve(response(['mode', 'vcs']))]);
+        group.get('mode')!.setValue('vcs');
+        expect(component.previewRequirementsStale).toBeTrue();
+        tick();
+        expect(calls.length).toBe(1);
+        expect(component.previewRequiredFields).toEqual(['mode', 'vcs']);
+        expect(component.previewRequirementsStale).toBeFalse();
+        component.destroy$.next();
+    }));
+
+    it('does not repeat a pending choice discovery on unrelated edits', fakeAsync(() => {
+        let resolveFirst!: (value: unknown) => void;
+        const pending = new Promise(resolve => { resolveFirst = resolve; });
+        const { component, group, calls } = observedForm([pending]);
+        group.get('mode')!.setValue('vcs');
+        tick();
+        tick();
+        group.get('other')!.setValue('changed');
+        tick();
+        expect(calls.length).toBe(1);
+        resolveFirst(response(['mode', 'title']));
+        tick();
+        expect(calls.length).toBe(1);
+        expect(component.previewRequirementsStale).toBeFalse();
+        component.destroy$.next();
+    }));
+
+    it('does not refresh automatically for text or unread fields', fakeAsync(() => {
+        const { component, group, calls } = observedForm([Promise.resolve(response(['mode', 'title']))]);
+        group.get('other')!.setValue('y');
+        tick();
+        expect(calls.length).toBe(0);
+        group.get('title')!.setValue('n');
+        group.get('title')!.setValue('new');
+        tick();
+        expect(calls.length).toBe(0);
+        expect(component.previewRequirementsStale).toBeTrue();
+        expect(component.previewProgressPending).toBeFalsy();
+        tick();
+        expect(calls.length).toBe(0);
+        component.destroy$.next();
+    }));
+
+    it('refreshes for a choice that was not read after a text edit', fakeAsync(() => {
+        const { component, group, calls } = observedForm([Promise.resolve(response(['mode', 'title']))]);
+        component.formRoot.model.controls[2].enum = ['x', 'y'];
+        component.setPreviewRequiredFields(['mode', 'title']);
+        group.get('title')!.setValue('new');
+        group.get('other')!.setValue('y');
+        tick();
+        expect(calls.length).toBe(1);
+        component.destroy$.next();
+    }));
+
+    it('refreshes after opening a section only in preview mode', fakeAsync(() => {
+        const { component, calls } = observedForm([Promise.resolve(response(['mode', 'title']))]);
+        component.onPreviewInteraction();
+        tick();
+        expect(calls.length).toBe(1);
+        component.previewMode = false;
+        component.onPreviewInteraction();
+        tick();
+        expect(calls.length).toBe(1);
+        component.destroy$.next();
+    }));
+
+    it('refreshes for an unread date selection', fakeAsync(() => {
+        const { component, group, calls } = observedForm([Promise.resolve(response(['mode', 'title']))]);
+        component.formRoot.model.controls[2].format = 'date';
+        component.setPreviewRequiredFields(['mode', 'title']);
+        group.get('other')!.setValue('2026-11-07');
+        tick();
+        expect(calls.length).toBe(1);
+        component.destroy$.next();
+    }));
+
+    it('does not invalidate an in-flight refresh when a section opens with the same values', fakeAsync(() => {
+        let resolveFirst!: (value: unknown) => void;
+        const pending = new Promise(resolve => { resolveFirst = resolve; });
+        const { component, calls } = observedForm([pending]);
+        component.onPreviewInteraction();
+        tick();
+        component.onPreviewInteraction();
+        resolveFirst(response(['mode', 'title']));
+        tick();
+        expect(calls.length).toBe(1);
+        expect(component.previewRequirementsStale).toBeFalse();
+        component.destroy$.next();
+    }));
+
+    it('ignores a discovery response when a read value changes while it is pending', fakeAsync(() => {
+        let resolveFirst!: (value: unknown) => void;
+        const pending = new Promise(resolve => { resolveFirst = resolve; });
+        const { component, group, calls } = observedForm([pending, Promise.resolve(response(['mode', 'new']))]);
+        group.get('mode')!.setValue('vcs');
+        tick();
+        group.get('mode')!.setValue('ccb');
+        tick();
+        expect(calls.length).toBe(1);
+        resolveFirst(response(['old']));
+        tick();
+        expect(calls.length).toBe(2);
+        expect(component.previewRequiredFields).toEqual(['mode', 'new']);
+        component.destroy$.next();
+    }));
+
+    it('discards an in-flight answer after typing and refreshes on explicit retry', fakeAsync(() => {
+        let resolveFirst!: (value: unknown) => void;
+        const pending = new Promise(resolve => { resolveFirst = resolve; });
+        const { component, group, calls } = observedForm([pending, Promise.resolve(response(['mode', 'title', 'new']))]);
+        group.get('mode')!.setValue('vcs');
+        tick();
+        group.get('title')!.setValue('new title');
+        resolveFirst(response(['old']));
+        tick();
+        expect(calls.length).toBe(1);
+        expect(component.previewRequirementsStale).toBeTrue();
+        expect(component.previewRequiredFields).toEqual(['mode', 'title']);
+        void component.refreshStalePreview();
+        tick();
+        expect(calls.length).toBe(2);
+        expect(component.previewRequiredFields).toEqual(['mode', 'new', 'title']);
+        component.destroy$.next();
+    }));
+
+    it('refreshes when a previously read row appears', fakeAsync(() => {
+        const { component, calls } = observedForm([Promise.resolve(response(['rows.0.name']))]);
+        const rows = new FormArray([new FormGroup({ name: new FormControl('') })]);
+        rows.removeAt(0);
+        const group = new FormGroup({ rows });
+        component.initForm(group, false);
+        component.setPreviewRequiredFields(['rows.0.name']);
+        rows.push(new FormGroup({ name: new FormControl('') }));
+        tick();
+        expect(calls.length).toBe(1);
+        expect(component.previewRequirementsStale).toBeFalse();
+        component.destroy$.next();
+    }));
+
+    it('keeps requirements stale after a failed refresh and sends no request in ordinary mode', fakeAsync(() => {
+        spyOn(console, 'error');
+        const { component, group, calls } = observedForm([Promise.reject(new Error('offline'))]);
+        group.get('mode')!.setValue('vcs');
+        tick();
+        expect(component.previewRequirementsStale).toBeTrue();
+        expect(component.previewRequiredFields).toEqual(['mode', 'title']);
+        component.previewMode = false;
+        group.get('mode')!.setValue('ccb');
+        tick();
+        expect(calls.length).toBe(1);
+        component.destroy$.next();
+    }));
 
     it('forwards already selected metadata from the form', async () => {
         const { component } = form([], blockParent());
@@ -221,6 +389,73 @@ describe('request document preview wiring', () => {
         expect(component.formRoot.revealErrors).toHaveBeenCalledWith(false);
     });
 
+    it('asks for every field of the branch when Preview answers 422 and lists them all', async () => {
+        spyOn(console, 'error');
+        const error = new HttpErrorResponse({ status: 422, error: { data: { preview: true, fields: ['period'], missingFields: ['period'] } } });
+        const { component, calls } = form([Promise.reject(error), Promise.resolve(response(['title', 'period', 'burning'], ['period', 'burning', 'rows.0.cell']))], blockParent());
+        component.previewMode = true;
+        component.previewRequiredFields = ['title'];
+        await component.onStep();
+        expect(calls.map((call) => call.previewFields)).toEqual([false, true]);
+        expect(component.previewRequiredFields).toEqual(['burning', 'period', 'rows.0.cell', 'title']);
+        expect(component.previewMissingFields).toEqual(['period', 'burning', 'rows.0.cell']);
+        expect(component.issues.map((issue: any) => issue.path)).toEqual(['period', 'burning']);
+        expect(component.screen).toBe('results');
+        expect(component.loading).toBeFalse();
+    });
+
+    it('keeps what only the 422 names, such as a section that was not added, next to the fields found again', async () => {
+        spyOn(console, 'error');
+        const error = new HttpErrorResponse({ status: 422, error: { data: { preview: true, fields: ['monitoring'], missingFields: ['monitoring'] } } });
+        const { component } = form([Promise.reject(error), Promise.resolve(response(['title'], ['monitoring.rows.0.cell']))], blockParent());
+        component.previewMode = true;
+        component.previewRequiredFields = ['title'];
+        await component.onStep();
+        expect(component.previewRequiredFields).toEqual(['monitoring', 'monitoring.rows.0.cell', 'title']);
+        expect(component.previewMissingFields).toEqual(['monitoring', 'monitoring.rows.0.cell']);
+        expect(component.issues.map((issue: any) => issue.path)).toEqual(['monitoring']);
+        expect(component.screen).toBe('results');
+    });
+
+    it('lists a table that the 422 names while it has no rows', async () => {
+        spyOn(console, 'error');
+        const error = new HttpErrorResponse({ status: 422, error: { data: { preview: true, fields: ['rows'], missingFields: ['rows'] } } });
+        const { component } = form([Promise.reject(error), Promise.resolve(response(['rows'], ['rows.0.cell']))], blockParent());
+        component.formRoot.model = { controls: [{ name: 'rows', title: 'Rows', isArray: true, list: [], control: { disabled: false, invalid: false } }] };
+        component.previewMode = true;
+        await component.onStep();
+        expect(component.issues.map((issue: any) => [issue.path, issue.message])).toEqual([['rows', 'Add an entry']]);
+        expect(component.screen).toBe('results');
+    });
+
+    it('lists an empty table inside an existing row instead of the cells of its missing rows', async () => {
+        spyOn(console, 'error');
+        const error = new HttpErrorResponse({ status: 422, error: { data: { preview: true, fields: ['rows.0.values'], missingFields: ['rows.0.values'] } } });
+        const { component } = form([Promise.reject(error), Promise.resolve(response(['rows.0.values.0.v'], ['rows.0.values.0.v', 'rows.0.extra.v']))], blockParent());
+        const values = { name: 'values', title: 'Values', isArray: true, list: [], control: { disabled: false, invalid: false } };
+        const extra = { name: 'extra', title: 'Extra', isRef: true, control: null };
+        const row = { control: { disabled: false, invalid: false }, model: { controls: [values, extra] } };
+        component.formRoot.model = { controls: [{ name: 'rows', title: 'Rows', isArray: true, isRef: true, list: [row], control: { disabled: false, invalid: false } }] };
+        component.previewMode = true;
+        await component.onStep();
+        expect(component.issues.map((issue: any) => [issue.path, issue.message])).toEqual([
+            ['rows.0.values', 'Add an entry'],
+            ['rows.0.extra.v', 'Enter a value'],
+        ]);
+    });
+
+    it('keeps the list of the 422 when asking for every field fails', async () => {
+        spyOn(console, 'error');
+        const error = new HttpErrorResponse({ status: 422, error: { data: { preview: true, fields: ['period'], missingFields: ['period'] } } });
+        const { component, calls } = form([Promise.reject(error), Promise.reject(new HttpErrorResponse({ status: 500 }))], blockParent());
+        component.previewMode = true;
+        await component.onStep();
+        expect(calls.map((call) => call.previewFields)).toEqual([false, true]);
+        expect(component.previewRequiredFields).toEqual(['period']);
+        expect(component.previewMissingFields).toEqual(['period']);
+        expect(component.screen).toBe('results');
+    });
+
     it('keeps the form open when the field discovery answers 422', async () => {
         spyOn(console, 'error');
         const error = new HttpErrorResponse({ status: 422, error: { data: { preview: true, fields: ['amount'], missingFields: ['amount'] } } });
@@ -264,25 +499,97 @@ describe('request document preview wiring', () => {
         expect(component.previewItems).toEqual([]);
     });
 
-    it('shows the validation results instead of a preview when the form is invalid on Preview again', async () => {
-        const { component, calls } = form([Promise.resolve(response(['amount']))], blockParent());
+    it('uses one fresh discovery and expands missing paths when stale Preview remains invalid', async () => {
+        const { component, calls } = form([Promise.resolve(response(['title', 'section.amount'], ['section.amount']))], blockParent());
+        component.previewMode = true;
+        component.previewRequirementsStale = true;
+        component.previewRequiredFields = ['title'];
+        component.dataForm = { valid: false, getRawValue: () => ({ title: 'changed' }) };
+        component.formRoot.expandPreviewIssues = jasmine.createSpy('expandPreviewIssues');
+        component.computeRuleIssues = () => [{ path: 'section.rule', label: 'Rule', message: 'Rule failed' }];
+        await component.onStep();
+        expect(calls.map((call) => call.previewFields)).toEqual([true]);
+        expect(component.previewMissingFields).toEqual(['section.amount']);
+        expect(component.formRoot.expandPreviewIssues).toHaveBeenCalledOnceWith(['section.amount', 'section.rule']);
+        expect(component.screen).toBe('results');
+    });
+
+    it('uses one discovery for an invalid stale form on Preview again', async () => {
+        const { component, calls } = form([Promise.resolve(response(['title', 'rate'], ['rate']))], blockParent());
+        component.previewMode = true;
+        component.previewRequirementsStale = true;
+        component.dataForm = { valid: false, getRawValue: () => ({ title: 'changed' }) };
+        await component.previewAgain();
+        expect(calls.map((call) => call.previewFields)).toEqual([true]);
+        expect(component.previewMissingFields).toEqual(['rate']);
+        expect(component.screen).toBe('results');
+    });
+
+    it('does not expand preview paths during ordinary validation', async () => {
+        const { component, calls } = form([], blockParent());
+        component.dataForm = { valid: false, getRawValue: () => ({}) };
+        component.formRoot.expandPreviewIssues = jasmine.createSpy('expandPreviewIssues');
+        await component.onStep();
+        expect(calls).toEqual([]);
+        expect(component.formRoot.expandPreviewIssues).not.toHaveBeenCalled();
+    });
+
+    it('asks for the fields again and shows the validation results when the form stays invalid on Preview again', async () => {
+        const { component, calls } = form([Promise.resolve(response(['amount'])), Promise.resolve(response(['amount', 'fuel'], ['fuel']))], blockParent());
         component.previewMode = true;
         await component.onStep();
         component.dataForm = { valid: false, getRawValue: () => ({}) };
         await component.previewAgain();
-        expect(calls.length).toBe(1);
+        expect(calls.map((call) => call.previewFields)).toEqual([false, true]);
+        expect(component.previewRequiredFields).toEqual(['amount', 'fuel']);
+        expect(component.previewMissingFields).toEqual(['fuel']);
         expect(component.screen).toBe('results');
     });
 
-    it('counts a field once in the notice although a 422 adds its indexed paths', () => {
+    it('runs the preview when the fields asked again make an invalid form valid', async () => {
+        const { component, calls } = form([Promise.resolve(response(['amount'])), Promise.resolve(response(['amount']))], blockParent());
+        component.previewMode = true;
+        component.previewRequiredFields = ['amount', 'rate'];
+        component.dataForm = { get valid() { return !component.previewRequiredFields.includes('rate'); }, getRawValue: () => ({ amount: 5 }) };
+        await component.onStep();
+        expect(calls.map((call) => call.previewFields)).toEqual([true, false]);
+        expect(component.previewRequiredFields).toEqual(['amount']);
+        expect(component.screen).toBe('presults');
+    });
+
+    it('keeps the requirements and shows the validation results when asking for the fields again fails', async () => {
+        spyOn(console, 'error');
+        const { component, calls } = form([Promise.reject(new HttpErrorResponse({ status: 500 }))], blockParent());
+        component.previewMode = true;
+        component.previewRequiredFields = ['amount', 'rate'];
+        component.dataForm = { valid: false, getRawValue: () => ({}) };
+        await component.onStep();
+        expect(calls.map((call) => call.previewFields)).toEqual([true]);
+        expect(component.previewRequiredFields).toEqual(['amount', 'rate']);
+        expect(component.screen).toBe('results');
+    });
+
+    it('does not ask for the fields on an invalid form outside Preview', async () => {
+        const { component, calls } = form([], blockParent());
+        component.dataForm = { valid: false, getRawValue: () => ({}) };
+        await component.onStep();
+        expect(calls).toEqual([]);
+        expect(component.screen).toBe('results');
+    });
+
+    it('shows the same required count in the notice as the form progress', () => {
         const { component } = form([], blockParent());
         component.setPreviewRequiredFields(null);
         expect(component.previewRequiredText).toBe('Only the fields the calculations read are required.');
-        component.setPreviewRequiredFields(['rows.rate']);
-        expect(component.previewRequiredText).toBe('Only the 1 field the calculation reads is required.');
         component.setPreviewRequiredFields(['amount', 'rows.rate', 'rows.1.rate', 'rows.2.rate']);
-        expect(component.previewRequiredText).toBe('Only the 2 fields the calculations read are required.');
+        expect(component.previewRequiredText).toBe('Only the fields the calculations read are required.');
+        component.onCompletionChange({ answered: 0, total: 6, sections: [] });
+        expect(component.previewRequiredText).toBe('Only the 6 fields the calculations read are required.');
+        component.onCompletionChange({ answered: 0, total: 1, sections: [] });
+        expect(component.previewRequiredText).toBe('Only the 1 field the calculation reads is required.');
         expect(component.previewRequiredFields).toEqual(['amount', 'rows.rate', 'rows.1.rate', 'rows.2.rate']);
+        component.setPreviewRequiredFields(null);
+        expect(component.previewRequiredText).toBe('Only the fields the calculations read are required.');
     });
 
     it('goes back to a clean form when the toggle is switched off on the missing values screen', async () => {
