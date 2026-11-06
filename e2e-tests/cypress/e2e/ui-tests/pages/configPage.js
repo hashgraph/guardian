@@ -11,7 +11,7 @@ import { TIMEOUTS, POLL_INTERVAL } from '../../../support/CustomHelpers/timeouts
 // right now; never fail when no toast is present.
 export function dismissStickyToasts() {
 	cy.window().then((win) => {
-		win.document.querySelectorAll('button.p-toast-message-close').forEach((b) => b.click());
+		win.document.querySelectorAll('button.p-toast-close-button').forEach((b) => b.click());
 	});
 }
 
@@ -51,7 +51,7 @@ export class ConfigPage {
 	// a genuinely missing or disabled button still fails loudly.
 	clickLabeledButton(label) {
 		cy.window().then((win) => {
-			win.document.querySelectorAll('button.p-toast-message-close').forEach((b) => b.click());
+			win.document.querySelectorAll('button.p-toast-close-button').forEach((b) => b.click());
 			const btn = Array.from(win.document.querySelectorAll('button'))
 				.find((b) => (b.textContent || '').trim() === label);
 			if (!btn) {

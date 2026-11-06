@@ -2,6 +2,7 @@ import URL from '../../../support/GuardianUrls';
 import CommonElements from '../../../support/defaultUIElements';
 import { waitForTaskRoundtrip } from '../../../support/importFlow';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
+import { dismissStickyToasts } from './configPage';
 
 const HomePageLocators = {
 	usernameInput: '[formcontrolname="username"]',
@@ -195,7 +196,7 @@ export class HomePage {
 		this._wizardStepNext();
 		// Generate the Hedera account and key; the async task's result fills
 		// the inputs when it completes.
-		cy.get('button[label="Generate"]').click();
+		cy.contains('button', /^\s*Generate\s*$/, { timeout: TIMEOUTS.ui }).click();
 		cy.get('#operatorId', { timeout: TIMEOUTS.backend }).should('not.be.empty');
 		cy.get('#operatorKey', { timeout: TIMEOUTS.backend }).should('not.be.empty');
 		this._wizardStepNext();
@@ -210,7 +211,9 @@ export class HomePage {
 	}
 
 	// The wizard footer's last step is labelled "Confirm" instead of "Next".
+	// The "account already exists" toast of an earlier sign-up attempt is sticky and sits on the button.
 	_wizardStepNext() {
+		dismissStickyToasts();
 		cy.contains('div.user-profile-finish-buttons button', /^\s*(Next|Confirm)\s*$/, { timeout: TIMEOUTS.backend })
 			.should('not.be.disabled')
 			.click();
