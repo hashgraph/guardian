@@ -47,16 +47,19 @@ const UserPoliciesPageLocators = {
     IPFSErrorLabel: ' Invalid IPFS CID/URL ',
     addLocButton: 'button.add-btn',
     addGeoButton: 'Add Geometry',
-    geoJSONTypeDropdown: "p-dropdown[id='typeDropdown']",
-    geoJSONTypeDropdownList: "p-dropdown[id='typeDropdown'] li",
+    geoJSONTypeDropdown: "p-select[id='typeDropdown']",
+    geoJSONTypeDropdownList: 'li[role="option"]',
     geoJSONErrorLabel: 'A GeoJSON object is required',
     switchButtonGeoJSONInput: 'switch-button',
+    // the form's draft menu has a file input of its own
+    geoJSONFileInput: 'app-geojson-type app-file-drag-n-drop input[type="file"]',
     includeAllButton: 'Include all',
     clearButton: 'Clear',
     locationPanel: 'div.location-control',
-    largeFileLabelHeader: 'This file is too large to view.',
-    largeFileLabelHeaderJSON: 'File was imported successfully, but it’s too large to view.',
-    largeFileLabel: 'largeGeoJSON.kml (32 MB) exceeds in-browser preview limits.',
+    largeFileDialogHeader: 'File too large to preview',
+    largeFileAccept: 'Upload without preview',
+    previewUnavailable: 'app-geojson-type .geo-preview-unavailable',
+    previewFileName: 'app-geojson-type .geo-preview-file',
 
     policiesList: '/api/v1/policies?pageIndex=0&pageSize=10',
     passInput: '[formcontrolname="password"]',
@@ -114,14 +117,21 @@ function typeInField(label, value) {
 // Fills the form section by section: opens the overview's Start (or Continue) when the
 // form opens on it, runs fill(), then follows the footer's Next until it disappears.
 // Works with the rail (wide windows) and with the section bar (Cypress default 1000px).
-function fillFormSections(fill) {
+function openOverviewSection() {
     const form = UserPoliciesPageLocators.requestForm;
+    // The form draws its overview or its fields a moment after the block itself appears.
+    cy.get(`${form} .sf-overview-actions, ${form} .form-field`, { timeout: TIMEOUTS.backend });
     cy.get('body').then(($body) => {
         const $start = $body.find(`${form} .sf-overview-actions button:contains('Start'), ${form} .sf-overview-actions button:contains('Continue')`);
         if ($start.length) {
             cy.wrap($start.first()).click();
         }
     });
+}
+
+function fillFormSections(fill) {
+    const form = UserPoliciesPageLocators.requestForm;
+    openOverviewSection();
     fill();
     const next = () => {
         cy.get('body').then(($body) => {
@@ -242,6 +252,7 @@ export class UserPoliciesPage {
         cy.get(UserPoliciesPageLocators.role('Registrant')).click();
         cy.get(UserPoliciesPageLocators.nextButton).click();
         Checks.waitForElement(UserPoliciesPageLocators.requestDocumentBlock);
+        openOverviewSection();
     }
 
     typeBadIPFS(IPFS) {
@@ -260,24 +271,25 @@ export class UserPoliciesPage {
     }
 
     validateGeoJSONFileImport(fileName) {
+        openOverviewSection();
         cy.get(UserPoliciesPageLocators.addLocButton).click();
         cy.get(UserPoliciesPageLocators.switchButtonGeoJSONInput).click();
-        cy.get(CommonElements.fileInput).selectFile('cypress/fixtures/' + fileName, { force: true });
+        cy.get(UserPoliciesPageLocators.geoJSONFileInput).selectFile('cypress/fixtures/' + fileName, { force: true });
         cy.contains(UserPoliciesPageLocators.includeAllButton).click();
         cy.get(UserPoliciesPageLocators.locationPanel).should('have.length', 2);
         cy.contains(UserPoliciesPageLocators.geoJSONErrorLabel).should('not.exist');
         cy.contains(UserPoliciesPageLocators.clearButton).click();
     }
 
+    // A file above the preview limit is imported without a map preview, after the user agrees to that.
     validateGeoJSONLargeFileImport(fileName) {
         cy.get(UserPoliciesPageLocators.switchButtonGeoJSONInput).click();
-        cy.get(CommonElements.fileInput).selectFile('cypress/fixtures/' + fileName, { force: true });
-        cy.contains(UserPoliciesPageLocators.includeAllButton).click();
-        cy.contains(UserPoliciesPageLocators.largeFileLabelHeader).should('exist');
-        cy.contains(UserPoliciesPageLocators.largeFileLabel).should('exist');
-        cy.get(UserPoliciesPageLocators.switchButtonGeoJSONInput).click();
-        cy.contains(UserPoliciesPageLocators.largeFileLabelHeaderJSON).should('exist');
-        cy.contains(UserPoliciesPageLocators.largeFileLabel).should('exist');
+        cy.get(UserPoliciesPageLocators.geoJSONFileInput).selectFile('cypress/fixtures/' + fileName, { force: true });
+        cy.contains(UserPoliciesPageLocators.largeFileDialogHeader, { timeout: TIMEOUTS.backend }).should('exist');
+        cy.contains('button', UserPoliciesPageLocators.largeFileAccept).click();
+        cy.get(UserPoliciesPageLocators.previewUnavailable, { timeout: TIMEOUTS.backend })
+            .should('contain.text', 'this file is too large to show on the map');
+        cy.get(UserPoliciesPageLocators.previewFileName).should('contain.text', fileName);
     }
 
     openPolicy(name) {
