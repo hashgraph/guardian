@@ -19,13 +19,33 @@ export enum SchemaTemplateUpdateResolutionAction {
     KEEP_AS_CUSTOM_SCHEMA = 'KEEP_AS_CUSTOM_SCHEMA',
     REMOVE_FROM_POLICY = 'REMOVE_FROM_POLICY',
     KEEP_AS_CUSTOM_CONDITION = 'KEEP_AS_CUSTOM_CONDITION',
-    KEEP_AS_CUSTOM_LINK = 'KEEP_AS_CUSTOM_LINK'
+    KEEP_AS_CUSTOM_LINK = 'KEEP_AS_CUSTOM_LINK',
+    KEEP_CUSTOM_CHANGES = 'KEEP_CUSTOM_CHANGES',
+    RESET_TO_TEMPLATE = 'RESET_TO_TEMPLATE'
+}
+
+export interface SchemaTemplateFieldBrief {
+    key: string;
+    title: string;
+    type: string;
+    required: boolean;
+    isArray: boolean;
+    hidden: boolean;
+    autocalculate: boolean;
 }
 
 export interface SchemaTemplateUpdateConflict {
     id: string;
+    type?: string;
+    templateFieldId?: string;
+    schemaName?: string;
+    fieldName?: string;
     message: string;
     allowedActions: SchemaTemplateUpdateResolutionAction[];
+    /** For field conflicts: `before` is the policy's value, `after` the template's. */
+    details?: Array<{ label: string; before?: string; after?: string }>;
+    /** For a field conflict: the template's version of the field. */
+    templateField?: SchemaTemplateFieldBrief;
     /** Schemas that still reference this one, so removing it is not on offer. */
     blockedBy?: string[];
 }
@@ -37,10 +57,13 @@ export interface SchemaTemplateUpdatePreview {
     templateVersion?: string;
     changes: Array<{
         type: string;
+        templateFieldId?: string;
         schemaName?: string;
         fieldName?: string;
         before?: string;
         after?: string;
+        beforeField?: SchemaTemplateFieldBrief;
+        afterField?: SchemaTemplateFieldBrief;
         details?: Array<{
             label: string;
             before?: string;
