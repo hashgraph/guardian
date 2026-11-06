@@ -11,7 +11,7 @@ const UserPoliciesPageLocators = {
     requestDocumentBlock: 'request-document-block',
     requestForm: 'request-document-form',
     submitButton: "button:contains('Validate & Create')",
-    divTitle: 'div.title',
+    divTitle: 'div.pv-state__title',
     waitingForApprovalTitle: "span[title='Waiting for approval']",
     signedStatus: 'div.status-SIGNED',
     deviceTab: 'Devices',
@@ -96,6 +96,20 @@ function inForm(selector) {
     return cy.get(UserPoliciesPageLocators.requestForm).then(($form) => $form.find(selector));
 }
 
+// Types `value` into the input of the field labelled `label`, when the open section has it.
+function typeInField(label, value) {
+    inForm('.form-field').then(($fields) => {
+        const $input = $fields
+            .filter((_, field) => field.querySelector('.sf-label-text')?.textContent.trim() === label)
+            .find('input.p-datepicker-input, textarea')
+            .first();
+        if ($input.length) {
+            cy.wrap($input).type(value, { force: true });
+            cy.wrap($input).blur({ force: true });
+        }
+    });
+}
+
 // Fills the form section by section: opens the overview's Start (or Continue) when the
 // form opens on it, runs fill(), then follows the footer's Next until it disappears.
 // Works with the rail (wide windows) and with the section bar (Cypress default 1000px).
@@ -132,10 +146,21 @@ export class UserPoliciesPage {
         cy.get(CommonElements.navBar).contains(CommonElements.userPoliciesTab).click();
     }
 
-    // After a successful submit the form stays open on its Submitted screen
+    // After a successful submit the form either stays open on its Submitted screen or, when the
+    // submission moves the policy on at once (a registration waiting for approval), is replaced by the
+    // next block and never shows it. Both mean the document was accepted.
     closeSubmitted() {
-        Checks.waitForElement(`${UserPoliciesPageLocators.requestForm} .form-submitted-banner`);
-        cy.get(`${UserPoliciesPageLocators.requestForm} button.form-back`).click();
+        const banner = `${UserPoliciesPageLocators.requestForm} .form-submitted-banner`;
+        cy.get('body', { timeout: TIMEOUTS.backend }).should(($body) => {
+            const submitted = $body.find(banner).length > 0;
+            const formReplaced = $body.find(UserPoliciesPageLocators.requestForm).length === 0;
+            expect(submitted || formReplaced, 'the Submitted screen or the next block').to.eq(true);
+        });
+        cy.get('body').then(($body) => {
+            if ($body.find(banner).length > 0) {
+                cy.get(`${UserPoliciesPageLocators.requestForm} button.form-back`).click();
+            }
+        });
     }
 
     registerInPolicy(role = 'Registrant') {
@@ -272,9 +297,12 @@ export class UserPoliciesPage {
         Checks.waitForLoading();
         cy.contains(UserPoliciesPageLocators.deviceTab).click();
         cy.contains(UserPoliciesPageLocators.createIssueRequestButton).click();
-        cy.get(`${UserPoliciesPageLocators.requestForm} date-time-control input`).eq(0).type('2025-01-03', { force: true })
-        cy.get(`${UserPoliciesPageLocators.requestForm} date-time-control input`).eq(1).type('2025-01-05', { force: true })
-        cy.get(`${UserPoliciesPageLocators.requestForm} [placeholder="123"]`).type(ammount)
+        // The production period and the amount live in the "Other details" section of the form.
+        fillFormSections(() => {
+            typeInField('Production Period Start Date', '2025-01-03');
+            typeInField('Production Period End Date', '2025-01-05');
+            typeInField('Total kWh Produced in this period', ammount);
+        });
         cy.get(UserPoliciesPageLocators.requestForm).find(UserPoliciesPageLocators.createButton).click();
         this.closeSubmitted();
         cy.get(CommonElements.Loading).should('not.exist');

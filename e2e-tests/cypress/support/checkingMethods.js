@@ -224,8 +224,8 @@ export const waitForBalanceIncrease = (balance, username, timeout = TIMEOUTS.lon
         throw new Error(`Expected balance "${balance}" is not a number`);
     }
     const parse = (text) => parseFloat(String(text || '').replace(/[^0-9.]/g, ''));
-    const check = (deadline) => cy.get('body', { log: false }).then((body) => {
-        const row = Array.from(body.querySelectorAll('tr.guardian-grid-row')).find((r) => {
+    const check = (deadline) => cy.get('body', { log: false }).then(($body) => {
+        const row = Array.from($body[0].querySelectorAll('tr.guardian-grid-row')).find((r) => {
             const cells = Array.from(r.querySelectorAll('span.text-truncate'));
             return cells.length > 0 && cells[0].textContent.trim() === username;
         });

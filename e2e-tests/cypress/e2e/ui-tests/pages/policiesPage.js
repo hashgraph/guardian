@@ -56,7 +56,6 @@ const L = {
     statusMinted: "span[title='Minted']",
     // SR approvals: iREC policies report the status as 'Approved', CDM as 'APPROVED';
     // the union keeps the wait working across both families
-    statusApprovedUnion: "span[title='Approved'], span[title='APPROVED']",
 
     // Editor (policy-configuration)
     editorViews: 'div.view-segment',
@@ -387,6 +386,8 @@ export class PoliciesPage {
      * 'validationLabel' for 'Validated', 'Report' for 'Verified'.
      */
     approve(waitFor = 'approvedStatus') {
+        // The wizard probe for the button runs once: let the page finish loading its documents first.
+        Checks.waitForLoading();
         this.clickButtonInWizardSteps(L.approveButton);
         if (waitFor === 'validationLabel' || waitFor === 'validatedStatus') {
             Checks.waitForElement(L.statusValidated);
@@ -395,7 +396,8 @@ export class PoliciesPage {
         } else if (waitFor === 'minted') {
             Checks.waitForElement(L.statusMinted);
         } else {
-            Checks.waitForElement(L.statusApprovedUnion);
+            // An approved document has no status badge any more: its Approve button gives way to Revoke.
+            cy.get(L.approveButton, { timeout: TIMEOUTS.backend }).should('not.exist');
         }
     }
 

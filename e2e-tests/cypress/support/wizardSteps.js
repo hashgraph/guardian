@@ -1,4 +1,4 @@
-import { TIMEOUTS } from './CustomHelpers/timeouts';
+import { TIMEOUTS, POLL_INTERVAL } from './CustomHelpers/timeouts';
 // Navigation helpers for the policy UI (the policy-viewer wizard).
 //
 // A policy renders as `div.policy-content` containing a progress tracker
@@ -26,7 +26,13 @@ const isVisible = (el) => {
     return style.display !== 'none' && style.visibility !== 'hidden';
 };
 
+// How long a freshly opened tab gets to render its controls before the next tab is tried.
+const TAB_SETTLE = 2000;
+
 const WIZARD_ZONE = 'div.policy-content, div.guardian-dialog';
+
+// `${zone} p-tab` would only prefix the last member of a selector group.
+const withinZone = (zone, selector) => zone.split(',').map((part) => `${part.trim()} ${selector}`).join(', ');
 
 export const clickButtonInWizardSteps = (selector, options = {}) => {
     const { zone = WIZARD_ZONE, walkTabs = true } = options;
@@ -38,8 +44,17 @@ export const clickButtonInWizardSteps = (selector, options = {}) => {
             ($zone) => $zone.find(selector).toArray().find(isVisible) || null
         );
 
+    // The blocks of a policy render one after another, so the control may not be there yet when the
+    // page is ready: give the first probe a bounded time before concluding it is on another tab or step.
+    const findVisibleWithin = (deadline) => findVisible().then((el) => {
+        if (el || Date.now() >= deadline) {
+            return el;
+        }
+        return cy.wait(POLL_INTERVAL, { log: false }).then(() => findVisibleWithin(deadline));
+    });
+
     const attemptTabs = (index, onExhausted) => {
-        cy.get(`${zone} p-tab`, { includeHidden: true, log: false }).then(($tabs) => {
+        cy.get(withinZone(zone, 'p-tab'), { includeHidden: true, log: false }).then(($tabs) => {
             const tabs = $tabs.toArray().filter(isVisible);
             if (index >= tabs.length) {
                 return onExhausted();
@@ -47,7 +62,7 @@ export const clickButtonInWizardSteps = (selector, options = {}) => {
             exploredTabs.push((tabs[index].textContent || '').trim());
             cy.wrap(tabs[index], { log: false }).click({ log: false });
             cy.wrap(tabs[index], { log: false }).should('have.attr', 'aria-selected', 'true');
-            return findVisible().then((el) => {
+            return findVisibleWithin(Date.now() + TAB_SETTLE).then((el) => {
                 if (el) {
                     return cy.wrap(el, { log: false }).click({ log: false });
                 }
@@ -57,8 +72,9 @@ export const clickButtonInWizardSteps = (selector, options = {}) => {
     };
 
     const attemptSteps = (index) => {
-        cy.get(`${zone} div.step-item`, { includeHidden: true, log: false }).then(($steps) => {
-            const steps = $steps.toArray().filter(isVisible);
+        // A policy without a progress tracker has no steps: read the DOM instead of waiting for them.
+        cy.get('body', { log: false }).then(($body) => {
+            const steps = $body.find(withinZone(zone, 'div.step-item')).toArray().filter(isVisible);
             if (index >= steps.length) {
                 throw new Error(
                     `No visible "${selector}" control in the wizard. ` +
@@ -86,7 +102,7 @@ export const clickButtonInWizardSteps = (selector, options = {}) => {
         });
     };
 
-    return findVisible().then((el) => {
+    return cy.then(() => findVisibleWithin(Date.now() + TIMEOUTS.ui)).then((el) => {
         if (el) {
             return cy.wrap(el, { log: false }).click({ log: false });
         }

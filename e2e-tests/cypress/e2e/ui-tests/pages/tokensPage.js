@@ -157,7 +157,7 @@ export class TokensPage {
     // (the switch stays disabled while the account is not associated).
     grantKYC(policyName, username) {
         this.openTokensTab();
-        this._tokenRow(policyName).find(L.tokenUsersIcon, { timeout: TIMEOUTS.ui }).click();
+        this._tokenRow(policyName).find(L.tokenUsersIcon, { timeout: TIMEOUTS.ui }).closest(L.manage.iconButton).click();
         waitForPageReady(L.grid, 3);
         this._userRow(username)
             .find(L.kycButton, { timeout: TIMEOUTS.backend })
@@ -174,7 +174,7 @@ export class TokensPage {
     // Waits until `username`'s balance on the run's token reaches `balance`.
     verifyBalance(policyName, username, balance = ' 1 ') {
         this.openTokensTab();
-        this._tokenRow(policyName).find(L.tokenUsersIcon, { timeout: TIMEOUTS.ui }).click();
+        this._tokenRow(policyName).find(L.tokenUsersIcon, { timeout: TIMEOUTS.ui }).closest(L.manage.iconButton).click();
         waitForPageReady(L.grid, 3);
         // the balance cell renders only for an associated account; a missing cell
         // means the association state has not landed, so fail with a clear wait
