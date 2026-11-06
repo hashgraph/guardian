@@ -195,7 +195,7 @@ function answerMissingFields(state = { label: undefined, repeats: 0, answered: 0
     });
 }
 
-function openOverviewSection() {
+export function openOverviewSection() {
     const form = UserPoliciesPageLocators.requestForm;
     const start = `${form} .sf-overview-actions button:contains('Start'), ${form} .sf-overview-actions button:contains('Continue')`;
     // The form draws its overview or its fields a moment after the block itself appears.
