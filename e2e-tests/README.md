@@ -253,7 +253,7 @@ UI_GATEWAY_ORIGIN=http://host.docker.internal:3002/ \
 - **Dialogs drop keystrokes while they re-render** (tag create, contract import, token edit): `type()` into such a field can lose characters, so set the value in one step with `cy.get(sel).invoke('val', value).trigger('input')` and assert it with `should('have.value', value)`.
 - **Row action icons have `pointer-events: none`**: click their wrapper (`div.guardian-icon-button`, `.select-menu-item`), not the icon.
 - **The request form is a sectioned wizard** (`userPoliciesPage.js`): it opens on an overview, so start with `openOverviewSection()` (Start, or Continue when answers are pending), then find fields by their label (`.sf-label-text`). `answerMissingFields()` follows the footer's "Jump to next missing" link. A required repeating entry counts as one answer, so the link lands on its card without focusing a field; the helper then opens the entries (Edit) and their cards and fills what is invalid inside. A date picker stays open over the fields below it until Escape closes it.
-- **Lists filter client-side on the loaded page**, and modules and tokens list newest first. **Cached GETs go stale** after a change they do not invalidate; a request with another `pageSize` bypasses the cache.
+- **Lists filter client-side on the loaded page**, and modules and tokens list newest first.
 
 Product bugs surfaced while making the suites idempotent are documented in [`pending-issues/`](pending-issues/), one file per issue.
 
@@ -905,20 +905,12 @@ Start the app with the `proxy.hostdocker.js` logger (see [Preparing the app for 
 
 `npm start` runs each service from `dist/`, so a stale build silently runs the previous code. Rebuild with `npx tsc -p .` in `interfaces`, `common` and `hedera`, in this order, then in every service, and restart the services (`npm run guardian:services:down` and `up`). A stale `hedera` package is easy to miss: `policy-service` then fails with `createUnsignedCredential` missing on `VcHelper`, which lives in `hedera`, not `common`.
 
-##### UI registration waits for "Confirm" (`00_account_registration`)
-
-An active `USER` system schema adds a VC step to the user registration wizard. `api-tests/011_schemas/putActiveSystemSchema` leaves one active, and the API refuses to deactivate or delete an active schema. Set `active: false` on it in `guardian_db.schema` (`{ system: true, active: true, entity: 'USER' }`), or run the UI `00` specs before `011_schemas`.
-
-##### Workers stop receiving tasks
-
-A queued task whose `dryRun` is a boolean crash-loops `queue-service`. Delete it from `queue_db.task_entity` (`{ dryRun: { $type: 'bool' } }`). From a dev container MongoDB is at `mongodb://host.docker.internal:27017` (`guardian_db`, `queue_db`, `logger_db`, `auth_db`).
-
 ##### Cypress behaviours that look like bugs
 
 - `.should('be.visible', { timeout })` ignores the timeout, because assertion options are not command options: put the timeout on the `cy.get` or `cy.contains`.
 - A `cy.request` that sends a binary body (a Blob) yields the response body as an `ArrayBuffer` from another realm, even for a JSON response, so `instanceof ArrayBuffer` is false. Check `byteLength` instead, as `decodeBody` in `support/cdmTools.js` does.
 - A `Cypress.on('fail')` handler can fire more than once (retries), so it must be idempotent, and `cy.writeFile` throws inside it.
-- List endpoints return a capped page (`/tools/` the first 100), and the base routes ignore `page`: pass `pageIndex` and `pageSize`.
+- List endpoints are paginated with `pageIndex` and `pageSize`; there is no `page` parameter.
 
 ##### Docker Connection Issues
 
