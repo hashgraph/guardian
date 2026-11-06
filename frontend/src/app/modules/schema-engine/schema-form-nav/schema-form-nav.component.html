@@ -11,7 +11,7 @@
         [mode]="mode"
         [title]="title"
         [overviewLabel]="overviewLabel"
-        (select)="onSelect($event)"
+        (sectionSelect)="onSelect($event)"
         (selectCard)="onSelectCard($event)"
         (hide)="toggleRail()"
         >
@@ -64,7 +64,7 @@
         [title]="title"
         [overviewLabel]="overviewLabel"
         [inDrawer]="true"
-        (select)="onSelect($event)"
+        (sectionSelect)="onSelect($event)"
         (selectCard)="onSelectCard($event)"
         (hide)="setDrawer(false)"
         >

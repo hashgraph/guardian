@@ -23,7 +23,7 @@
         [attr.aria-current]="screen === 'overview' ? 'step' : null"
         tabindex="0"
         role="button"
-        (click)="select.emit('overview')"
+        (click)="sectionSelect.emit('overview')"
         (keydown.enter)="onKey($event, 'overview')"
         (keydown.space)="onKey($event, 'overview')"
         >
@@ -40,7 +40,7 @@
         pTooltip="{{ tooltip(i) }}"
         tooltipPosition="right"
         tooltipStyleClass="guardian-tooltip small-guardian-tooltip"
-        (click)="select.emit(i)"
+        (click)="sectionSelect.emit(i)"
         (keydown.enter)="onKey($event, i)"
         (keydown.space)="onKey($event, i)"
         >

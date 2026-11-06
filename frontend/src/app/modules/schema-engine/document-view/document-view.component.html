@@ -161,7 +161,7 @@
               [activeIndex]="activeIndex"
               [cards]="navHidden ? [] : railCards"
               [barLabel]="barLabel"
-              (select)="onNavSelect($event)"
+              (sectionSelect)="onNavSelect($event)"
               (selectCard)="onNavCard($event)"
               >
               @if (subjects.length > 1) {
@@ -269,7 +269,7 @@
               [sections]="vpSections"
               [activeIndex]="vpIndex"
               [cards]="vpCards"
-              (select)="onVpSelect($event)"
+              (sectionSelect)="onVpSelect($event)"
               (selectCard)="onVpCard($event)"
               >
               @if (vpIndex === 0) {

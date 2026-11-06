@@ -10,7 +10,7 @@
       [barLabel]="barLabel"
       [overviewLabel]="showOverview ? 'Overview' : null"
       [locked]="isPreviewLocked"
-      (select)="onRailSelect($event)"
+      (sectionSelect)="onRailSelect($event)"
       (selectCard)="onRailCard($event)"
       >
       <ng-container ngProjectAs="[navTop]"><ng-content select="[sfNotice]"></ng-content></ng-container>
