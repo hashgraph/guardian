@@ -44,6 +44,14 @@ export const clickButtonInWizardSteps = (selector, options = {}) => {
             ($zone) => $zone.find(selector).toArray().find(isVisible) || null
         );
 
+    // Re-queried at click time: the control is re-rendered when the policy refreshes its data, and a
+    // reference found earlier would be detached by then.
+    const clickFirstVisible = () =>
+        cy.get(withinZone(zone, selector), { includeHidden: true, log: false })
+            .filter((_, candidate) => isVisible(candidate))
+            .first()
+            .click({ log: false });
+
     // The blocks of a policy render one after another, so the control may not be there yet when the
     // page is ready: give the first probe a bounded time before concluding it is on another tab or step.
     const findVisibleWithin = (deadline) => findVisible().then((el) => {
@@ -64,7 +72,7 @@ export const clickButtonInWizardSteps = (selector, options = {}) => {
             cy.wrap(tabs[index], { log: false }).should('have.attr', 'aria-selected', 'true');
             return findVisibleWithin(Date.now() + TAB_SETTLE).then((el) => {
                 if (el) {
-                    return cy.wrap(el, { log: false }).click({ log: false });
+                    return clickFirstVisible();
                 }
                 return attemptTabs(index + 1, onExhausted);
             });
@@ -92,7 +100,7 @@ export const clickButtonInWizardSteps = (selector, options = {}) => {
             }
             return findVisible().then((el) => {
                 if (el) {
-                    return cy.wrap(el, { log: false }).click({ log: false });
+                    return clickFirstVisible();
                 }
                 if (!walkTabs) {
                     return attemptSteps(index + 1);
@@ -104,7 +112,7 @@ export const clickButtonInWizardSteps = (selector, options = {}) => {
 
     return cy.then(() => findVisibleWithin(Date.now() + TIMEOUTS.ui)).then((el) => {
         if (el) {
-            return cy.wrap(el, { log: false }).click({ log: false });
+            return clickFirstVisible();
         }
         if (!walkTabs) {
             return attemptSteps(0);
@@ -113,23 +121,31 @@ export const clickButtonInWizardSteps = (selector, options = {}) => {
     });
 };
 
-// Clicks the wizard tab whose title equals (or, as a fallback, contains) `text`.
-// Used to steer a flow to a specific tab (e.g. 'Approve VVB') before acting on it.
+// Opens the step of the policy navigation (the "Workflow" rail) whose label equals (or, as a fallback,
+// contains) `text`, ignoring case, and waits until it is the active one. Used to steer a flow to a
+// specific step (e.g. 'VVBs') before acting on it. A step opens only once the policy reports
+// it reachable (class `reach`), which can lag behind the action that unlocks it, so wait for that
+// first; a step that never becomes reachable fails with the labels that were visible.
 export const clickWizardTab = (text) => {
-    return cy
-        .get('div.policy-content p-tab', { includeHidden: true, timeout: TIMEOUTS.backend, log: false })
-        .then(($tabs) => {
-            const visible = $tabs.toArray().filter(isVisible);
-            const tab =
-                visible.find((el) => (el.textContent || '').trim() === text) ||
-                visible.find((el) => (el.textContent || '').includes(text));
-            if (!tab) {
-                throw new Error(
-                    `No visible wizard tab with text "${text}". ` +
-                    `Visible tabs: ${visible.map((el) => (el.textContent || '').trim()).join(' | ') || 'none'}`
-                );
-            }
-            cy.wrap(tab).click();
-            return cy.wrap(tab).should('have.attr', 'aria-selected', 'true');
-        });
+    const wanted = text.toLowerCase();
+    const labelOf = (el) => (el.querySelector('.step-label')?.textContent || '').trim().toLowerCase();
+    const findStep = ($steps) => {
+        const visible = $steps.toArray().filter(isVisible);
+        return {
+            step: visible.find((el) => labelOf(el) === wanted) || visible.find((el) => labelOf(el).includes(wanted)),
+            labels: visible.map(labelOf),
+        };
+    };
+    cy.get('div.step-item', { includeHidden: true, timeout: TIMEOUTS.backend, log: false }).should(($steps) => {
+        const { step, labels } = findStep($steps);
+        expect(step, `a visible policy step labelled "${text}" (visible: ${labels.join(' | ') || 'none'})`).to.exist;
+        expect(step.classList.contains('reach') || step.classList.contains('active'), `step "${text}" reachable or active`).to.eq(true);
+    });
+    return cy.get('div.step-item', { includeHidden: true, log: false }).then(($steps) => {
+        const { step } = findStep($steps);
+        if (!step.classList.contains('active')) {
+            cy.wrap(step).click();
+        }
+        return cy.wrap(step).should('have.class', 'active');
+    });
 };

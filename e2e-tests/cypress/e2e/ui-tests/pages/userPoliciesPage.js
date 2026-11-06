@@ -1,6 +1,7 @@
 import CommonElements from '../../../support/defaultUIElements';
 import * as Checks from '../../../support/checkingMethods';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
+import { clickWizardTab } from '../../../support/wizardSteps';
 
 const d = new Date(2022, 3, 3);
 
@@ -21,7 +22,8 @@ const UserPoliciesPageLocators = {
     createButton: 'button:contains("Create")',
     signButton: 'div.btn-SIGN',
     vvbName: 'div:contains("VVB Name")',
-    ppName: 'h1:contains("New PP")',
+    ppName: 'h2.form-heading-title:contains("New PP")',
+    textFieldInput: 'div.form-field-value input, div.form-field-value textarea',
     newVerraProjectButton: 'button:contains(" New Project ")',
     newProjectButton: 'button:contains(" New project ")',
     enterTextInput: '[placeholder="Please enter text here"]',
@@ -38,7 +40,6 @@ const UserPoliciesPageLocators = {
     verified: "span[title='Verified']",
     approveButton: 'button.btn-approve',
     createReportButton: "button:contains(' Add Report ')",
-    monitoringReports: "p:contains('Monitoring reports')",
     revokeButton: "button-block div:contains(' Revoke ')",
     waitingForValidation: "span[title = 'Waiting for Validation']",
     waitingForVerification: "span[title = 'Waiting for Verification']",
@@ -220,14 +221,14 @@ export class UserPoliciesPage {
         }
         if (role == 'VVB') {
             Checks.waitForElement(UserPoliciesPageLocators.vvbName);
-            cy.get('div.form-field-value').find(CommonElements.Input).type('VVBName');
+            cy.get(UserPoliciesPageLocators.textFieldInput).type('VVBName');
             cy.get(UserPoliciesPageLocators.submitButton).click();
             this.closeSubmitted();
             Checks.waitForElement(UserPoliciesPageLocators.divTitle);
         }
         if (role == 'Project Participant') {
             Checks.waitForElement(UserPoliciesPageLocators.ppName);
-            cy.get('div.form-field-value').find(CommonElements.Input).type('PPName');
+            cy.get(UserPoliciesPageLocators.textFieldInput).type('PPName');
             cy.get(UserPoliciesPageLocators.submitButton).click();
             this.closeSubmitted();
             Checks.waitForElement(UserPoliciesPageLocators.divTitle);
@@ -357,7 +358,7 @@ export class UserPoliciesPage {
     }
 
     createReport() {
-        cy.get("p:contains('Projects')").click();
+        clickWizardTab('Projects');
         cy.get(UserPoliciesPageLocators.createReportButton).click();
         fillFormSections(() => {
             inForm(UserPoliciesPageLocators.chooseOptionInput).then((els) => {
@@ -404,7 +405,7 @@ export class UserPoliciesPage {
         });
         cy.get(UserPoliciesPageLocators.createButton).click();
         cy.get('.preloader-image').should('not.exist');
-        cy.get(UserPoliciesPageLocators.monitoringReports).click();
+        clickWizardTab('Monitoring reports');
         Checks.waitForElement(UserPoliciesPageLocators.waitingForVerification);
     }
 
@@ -451,7 +452,7 @@ export class UserPoliciesPage {
         cy.get(UserPoliciesPageLocators.createButton).click();
         cy.get(CommonElements.Loading).should('not.exist');
         cy.get('.preloader-image').should('not.exist');
-        cy.get(UserPoliciesPageLocators.monitoringReports).click();
+        clickWizardTab('Monitoring reports');
         Checks.waitForElement(UserPoliciesPageLocators.waitingForValidation);
     }
 
@@ -464,13 +465,13 @@ export class UserPoliciesPage {
     verifyReport() {
         cy.get(CommonElements.Loading).should('not.exist');
         cy.get('.preloader-image').should('not.exist');
-        cy.get(UserPoliciesPageLocators.monitoringReports).click();
+        clickWizardTab('Monitoring reports');
         this.approve('Report');
     }
 
     createProject() {
         Checks.waitForLoading();
-        cy.get("p:contains('Projects')").click();
+        clickWizardTab('Projects');
         Checks.waitForLoading();
         cy.get(UserPoliciesPageLocators.newProjectButton).click();
         fillFormSections(() => {

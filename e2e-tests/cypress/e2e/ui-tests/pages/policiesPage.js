@@ -357,25 +357,25 @@ export class PoliciesPage {
         return clickButtonInWizardSteps(selector, options);
     }
 
-    // Opens a wizard tab by title (e.g. 'Approve VVB') and lets its body settle.
+    // Opens a step of the policy navigation by its label (e.g. 'VVBs') and lets its body settle.
     openWizardTab(text) {
         return clickWizardTab(text);
     }
 
     openPPTab() {
-        return this.openWizardTab('Approve PP');
+        return this.openWizardTab('Project Participants');
     }
 
     openVVBTab() {
-        return this.openWizardTab('Approve VVB');
+        return this.openWizardTab('VVBs');
     }
 
     openProjectPipelineTab() {
-        return this.openWizardTab('Project Pipeline');
+        return this.openWizardTab('Projects');
     }
 
     openReportsTab() {
-        return this.openWizardTab('Monitoring Reports');
+        return this.openWizardTab('Monitoring reports');
     }
 
     /**
