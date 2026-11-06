@@ -7,6 +7,9 @@ const d = new Date(2022, 3, 3);
 
 const UserPoliciesPageLocators = {
     roleSelect: '[data-role]',
+    groupTemplateSelect: '#groupDropdown',
+    groupLabelInput: '#groupLabelInput',
+    createGroupButton: 'Create group',
     role: (roleName) => `[data-role="${roleName}"]`,
     nextButton: "button:contains('Continue')",
     requestDocumentBlock: 'request-document-block',
@@ -177,10 +180,30 @@ export class UserPoliciesPage {
         });
     }
 
+    // A policy with groups asks for a group template (and a label when the group is private) instead
+    // of a role; the template of the 'Approver' role is the global group 'Approvers'.
+    _createGroup(role) {
+        const template = role === 'Approver' ? 'Approvers' : role;
+        cy.get(UserPoliciesPageLocators.groupTemplateSelect, { timeout: TIMEOUTS.ui }).click();
+        cy.contains(CommonElements.dropdownOption, new RegExp(`^\\s*${template}\\s*$`)).click();
+        cy.get('body').then(($body) => {
+            if ($body.find(UserPoliciesPageLocators.groupLabelInput).length) {
+                cy.get(UserPoliciesPageLocators.groupLabelInput).type(`${template}Group`);
+            }
+        });
+        cy.contains('button', UserPoliciesPageLocators.createGroupButton).click();
+    }
+
     registerInPolicy(role = 'Registrant') {
-        cy.get(UserPoliciesPageLocators.roleSelect).should('be.visible');
-        cy.get(UserPoliciesPageLocators.role(role)).click();
-        cy.get(UserPoliciesPageLocators.nextButton).click();
+        cy.get(`${UserPoliciesPageLocators.roleSelect}, ${UserPoliciesPageLocators.groupTemplateSelect}`, { timeout: TIMEOUTS.backend });
+        cy.get('body').then(($body) => {
+            if ($body.find(UserPoliciesPageLocators.groupTemplateSelect).length) {
+                this._createGroup(role);
+            } else {
+                cy.get(UserPoliciesPageLocators.role(role)).click();
+                cy.get(UserPoliciesPageLocators.nextButton).click();
+            }
+        });
         if (role == 'Registrant') {
             Checks.waitForElement(UserPoliciesPageLocators.requestDocumentBlock);
             cy.get(UserPoliciesPageLocators.submitButton).click();
