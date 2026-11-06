@@ -19,7 +19,7 @@ context('Get tokens for policy label', { tags: ['policy_labels', 'firstPool', 'a
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
                 response.body.forEach(element => {
-                    if (element.status == 'PUBLISHED') {
+                    if (element.status === 'PUBLISHED') {
                         policyLabel = element;
                     }
                 })

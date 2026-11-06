@@ -20,7 +20,7 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'api-all', 'all'
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 response.body.forEach(element => {
-                    if (element.name == 'iRecDRS') {
+                    if (element.name === 'iRecDRS') {
                         policyId = element.id
                     }
                 })

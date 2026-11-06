@@ -334,7 +334,7 @@ context.skip('Policies', { tags: ['remote_policy', 'secondPool', 'api-all', 'all
                                 }
                             }).then((response) => {
                                 response.body.forEach(element => {
-                                    if (element.username == MainSRUsername)
+                                    if (element.username === MainSRUsername)
                                         {SRDid = element.did;}
                                 })
                                 cy.request({

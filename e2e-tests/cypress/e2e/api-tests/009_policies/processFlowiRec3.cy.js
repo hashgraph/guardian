@@ -57,7 +57,7 @@ context('Contracts', { tags: ['policies', 'comments', 'firstPool', 'api-all', 'a
                 }).then((response) => {
                     expect(response.status).eql(STATUS_CODE.OK);
                     response.body.forEach(element => {
-                        if (element.policyIds.at(0) == policyId) {
+                        if (element.policyIds.at(0) === policyId) {
                             tokenId = element.tokenId
                         }
                     });

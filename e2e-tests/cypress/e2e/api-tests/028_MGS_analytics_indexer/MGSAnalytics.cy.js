@@ -25,7 +25,7 @@ context.skip('Analytics MGS. Comparing', { tags: ['mgs-comparing', 'api-all', 'a
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 response.body.tenants.forEach(element => {
-                    if (element.tenantName == MGSStoreUsername) {
+                    if (element.tenantName === MGSStoreUsername) {
                         tenantId = element.id
                     }
                 })

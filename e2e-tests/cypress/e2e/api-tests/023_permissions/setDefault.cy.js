@@ -19,7 +19,7 @@ context('Set role as default', { tags: ['permissions', 'firstPool', 'api-all', '
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
                 response.body.forEach(item => {
-                    if (item.name == roleName)
+                    if (item.name === roleName)
                         {roleId = item.id}
                 });
             });
@@ -48,7 +48,7 @@ context('Set role as default', { tags: ['permissions', 'firstPool', 'api-all', '
                 }).then((response) => {
                     expect(response.status).eql(STATUS_CODE.OK);
                     response.body.forEach(item => {
-                        if (item.name == roleName)
+                        if (item.name === roleName)
                             {expect(item.default).eql(true);}
                     });
                 });

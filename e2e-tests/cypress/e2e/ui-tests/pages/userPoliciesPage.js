@@ -305,7 +305,7 @@ export class UserPoliciesPage {
     openPoliciesTab() {
         cy.get(CommonElements.navBar).should('exist')
         cy.get('body').then(($body) => {
-            if ($body.find(`span:contains(${CommonElements.userPoliciesTab})`).length == 0)
+            if ($body.find(`span:contains(${CommonElements.userPoliciesTab})`).length === 0)
                 {cy.get(CommonElements.navBar).contains(CommonElements.mainPoliciesTab).click();}
         })
         cy.get(CommonElements.navBar).contains(CommonElements.userPoliciesTab).click();
@@ -352,13 +352,13 @@ export class UserPoliciesPage {
                 cy.get(UserPoliciesPageLocators.nextButton).click();
             }
         });
-        if (role == 'Registrant') {
+        if (role === 'Registrant') {
             Checks.waitForElement(UserPoliciesPageLocators.requestDocumentBlock);
             cy.get(UserPoliciesPageLocators.submitButton).click();
             this.closeSubmitted();
             Checks.waitForElement(UserPoliciesPageLocators.divTitle);
         }
-        if (role == 'Project_Proponent') {
+        if (role === 'Project_Proponent') {
             Checks.waitForElement(UserPoliciesPageLocators.requestDocumentBlock);
             cy.get(UserPoliciesPageLocators.newVerraProjectButton).click();
             fillFormSections(() => {
@@ -403,21 +403,21 @@ export class UserPoliciesPage {
             this.closeSubmitted();
             Checks.waitForElement(UserPoliciesPageLocators.waitingForAdded);
         }
-        if (role == 'VVB') {
+        if (role === 'VVB') {
             Checks.waitForElement(UserPoliciesPageLocators.vvbName);
             cy.get(UserPoliciesPageLocators.textFieldInput).type('VVBName');
             cy.get(UserPoliciesPageLocators.submitButton).click();
             this.closeSubmitted();
             Checks.waitForElement(UserPoliciesPageLocators.divTitle);
         }
-        if (role == 'Project Participant') {
+        if (role === 'Project Participant') {
             Checks.waitForElement(UserPoliciesPageLocators.ppName);
             cy.get(UserPoliciesPageLocators.textFieldInput).type('PPName');
             cy.get(UserPoliciesPageLocators.submitButton).click();
             this.closeSubmitted();
             Checks.waitForElement(UserPoliciesPageLocators.divTitle);
         }
-        if (role == 'Approvers')
+        if (role === 'Approvers')
             {Checks.waitForElement(UserPoliciesPageLocators.signButton);}
     }
 
@@ -498,15 +498,15 @@ export class UserPoliciesPage {
     }
 
     approve(waitFor = 'default') {
-        if (waitFor == 'default') {
+        if (waitFor === 'default') {
             cy.get(UserPoliciesPageLocators.signButton).click();
             Checks.waitForElement(UserPoliciesPageLocators.signedStatus);
         }
-        if (waitFor == 'validationLabel') {
+        if (waitFor === 'validationLabel') {
             cy.get(UserPoliciesPageLocators.approveButton).click();
             Checks.waitForElement(UserPoliciesPageLocators.validated);
         }
-        if (waitFor == 'Report') {
+        if (waitFor === 'Report') {
             cy.get(UserPoliciesPageLocators.approveButton).click();
             Checks.waitForElement(UserPoliciesPageLocators.verified);
         }
@@ -750,23 +750,6 @@ export class UserPoliciesPage {
 
     openTokensTab() {
         // cy.visit(URL.Root + URL.UserTokens);
-    }
-
-    createGroup(role) {
-        // cy.contains("Policies").click({force: true});
-        // cy.contains("List of Policies").click({force: true});
-        // cy.wait(1000)
-        // cy.get("td").first().parent().get("td").eq("6").contains("Open").click();
-        // cy.wait(1000)
-        // cy.get(RegistrantPageLocators.roleSelect).click().get("p-dropdownitem").contains(role).click();
-        // cy.get(RegistrantPageLocators.submitBtn).click({force: true});
-        // cy.intercept("/api/v1/profiles/" + role).as("waitForRegister" + role);
-        // cy.wait("@waitForRegister" + role, { timeout: TIMEOUTS.longOperation });
-        // cy.get(RegistrantPageLocators.applicationRegBtns).contains("Next").click();
-        // cy.get(RegistrantPageLocators.applicationRegBtns).contains("Next").click();
-        // cy.get(RegistrantPageLocators.applicationRegBtns).contains("Create").click();
-        // cy.wait(90000);
-        // cy.contains("Submitted for Approval").should("exist");
     }
 
     static waitForPolicyList() {

@@ -1,6 +1,5 @@
-import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
+import { METHOD } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
-import * as Authorization from '../../../support/authorization';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Profiles', { tags: ['profiles', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {

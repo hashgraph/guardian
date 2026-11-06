@@ -25,7 +25,7 @@ context('Profiles', { tags: ['profiles', 'thirdPool', 'api-all', 'all', 'all-no-
                 },
             }).then((response) => {
                 response.body.forEach(element => {
-                    if (element.username == SRUsername)
+                    if (element.username === SRUsername)
                         {did = element.did}
                 });
             });

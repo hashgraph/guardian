@@ -201,7 +201,7 @@ context.skip('Policies', { tags: ['remote_policy', 'secondPool', 'api-all', 'all
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 response.body.forEach(element => {
-                    if (element.messageId == remoteMessageId) {
+                    if (element.messageId === remoteMessageId) {
                         policyId = element.id;
                     }
                 })
@@ -215,7 +215,7 @@ context.skip('Policies', { tags: ['remote_policy', 'secondPool', 'api-all', 'all
                 }).then((response) => {
                     expect(response.status).to.eq(STATUS_CODE.OK);
                     response.body.forEach(element => {
-                        if (element.policyIds[0] == policyId) {
+                        if (element.policyIds[0] === policyId) {
                             tokenId = element.tokenId;
                         }
                     })
