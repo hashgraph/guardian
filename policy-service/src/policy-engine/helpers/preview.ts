@@ -1,7 +1,7 @@
 import { compileFunction, createContext, runInContext } from 'node:vm';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import * as mathjs from 'mathjs';
-import { LocationType, SchemaCondition, SchemaField, SchemaHelper, } from '@guardian/interfaces';
+import { LocationType, Schema, SchemaCondition, SchemaField, SchemaHelper, } from '@guardian/interfaces';
 import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
 import { Message } from '@guardian/hedera/message/message';
 import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/policy-event-type.js';
@@ -15,8 +15,9 @@ import { IPreviewWriteRecord, PREVIEW_SCRIPT_FILE, PreviewReadTracker } from './
 import { hasPreviewPresenceCheck, IPreviewCopyDiagnosis, IPreviewCopyTarget, isPreviewFieldFailure, isPreviewFiniteResult, startPreviewCopyDiagnosis } from './workers/preview-copy-diagnosis.js';
 import { findPreviewScriptFields } from './preview-script-fields.js';
 import { buildTableHelper } from './table-field-core.js';
-import { getPreviewIncomplete, getPreviewSavedDocuments } from './preview-database.js';
+import { getPreviewIncomplete, getPreviewSavedDocumentIds, getPreviewSavedDocuments } from './preview-database.js';
 import { BlockActionError } from '../errors/index.js';
+import { setPreviewSchemaMatches } from './preview-schema.js';
 
 export const PREVIEW_SKIPPED_INPUTS: ReadonlySet<string> = new Set<string>([
     PolicyInputEventType.TimerEvent,
@@ -1225,6 +1226,7 @@ export async function recoverPreviewCopiedFields(
 
 export interface IPreviewResponseDocument extends IPreviewDocument {
     final: boolean;
+    sameSchema?: boolean;
 }
 
 function getPreviewRecordId(record: unknown): string | null {
@@ -1235,20 +1237,34 @@ function getPreviewRecordId(record: unknown): string | null {
     return id === undefined || id === null ? null : String(id);
 }
 
-function buildPreviewResponseDocuments(actionStatus: RecordActionStep, documents: IPreviewDocument[], ended: boolean): IPreviewResponseDocument[] {
-    const finalIds = new Set(documents
-        .flatMap((item) => (Array.isArray(item.document) ? item.document : [item.document]).map(getPreviewRecordId))
-        .filter((id) => id !== null));
-    const saved = getPreviewSavedDocuments(actionStatus)
-        .filter((record) => !finalIds.has(getPreviewRecordId(record)))
-        .map((record) => ({ source: typeof record.tag === 'string' ? record.tag : null, target: null, blockType: null, document: record, final: false }));
-    return [...saved, ...documents.map((item) => ({ ...item, final: ended }))];
+function getPreviewCredentialId(record: unknown): unknown {
+    const document = record && typeof record === 'object' ? Reflect.get(record, 'document') : null;
+    return document && typeof document === 'object' ? Reflect.get(document, 'id') : null;
+}
+
+function buildPreviewResponseDocuments(actionStatus: RecordActionStep, documents: IPreviewDocument[], input: unknown): IPreviewResponseDocument[] {
+    const saved = getPreviewSavedDocuments(actionStatus);
+    const savedIds = getPreviewSavedDocumentIds(actionStatus);
+    const finalIds = actionStatus.previewBranches?.getFinalIds() ?? new Set<string>();
+    const inputId = getPreviewCredentialId(input);
+    const ends = documents.flatMap((item) => (Array.isArray(item.document) ? item.document : [item.document])
+        .map((document) => ({ ...item, document })));
+    const endIds = new Set(ends.map((item) => getPreviewRecordId(item.document)).filter((id) => id !== null));
+    const entries = [
+        ...saved.filter((record) => !endIds.has(getPreviewRecordId(record)))
+            .map((record) => ({ source: typeof record.tag === 'string' ? record.tag : null, target: null, blockType: null, document: record })),
+        ...ends
+    ];
+    return entries.map((item) => {
+        const id = getPreviewRecordId(item.document);
+        const isInput = inputId !== null && inputId !== undefined && getPreviewCredentialId(item.document) === inputId;
+        return { ...item, final: !isInput && id !== null && savedIds.has(id) && finalIds.has(id) };
+    });
 }
 
 export function buildPreviewResponse(actionStatus: RecordActionStep, input: unknown, history: boolean = false) {
     const { fields, missingFields } = resolvePreviewFields(actionStatus.getPreviewSource(), actionStatus.getPreviewReads());
     let documents = actionStatus.getPreviewDocuments();
-    const ended = documents.length > 0;
     if (!documents.length) {
         const recorded = new Map<string, IPreviewDocument>();
         for (const step of actionStatus.getResults()) {
@@ -1273,8 +1289,9 @@ export function buildPreviewResponse(actionStatus: RecordActionStep, input: unkn
     return {
         trackingId: actionStatus.id,
         preview: true,
+        sameSchema: false,
         input,
-        documents: buildPreviewResponseDocuments(actionStatus, documents, ended),
+        documents: buildPreviewResponseDocuments(actionStatus, documents, input),
         calculations: actionStatus.getPreviewCalculations(),
         fields,
         missingFields,
@@ -1340,5 +1357,10 @@ export async function runPreview(
     if (inputError) {
         return inputError;
     }
-    return new MessageResponse(buildPreviewResponse(actionStatus, response.body, history), response.code);
+    const result = buildPreviewResponse(actionStatus, response.body, history);
+    await setPreviewSchemaMatches(result, actionStatus.getPreviewSource()?.schema ?? null, async (id) => {
+        const schema = await PolicyUtils.loadSchemaByID(block, id);
+        return schema ? new Schema(schema) : null;
+    });
+    return new MessageResponse(result, response.code);
 }

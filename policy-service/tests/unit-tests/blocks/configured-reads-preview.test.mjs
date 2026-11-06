@@ -27,6 +27,7 @@ import {
 import { makeBlock, makeDb, makeUser, restoreHarness } from './_block-exec-harness.mjs';
 import { createPreviewDocument } from '../helpers/preview-document-fixture.mjs';
 import { installCredentialPreparation } from '../helpers/credential-preparation-stubs.mjs';
+import { useShortRecordCompletion } from '../helpers/record-completion-delay.mjs';
 
 const PATHS = ['amount', 'flag', 'rate', 'fuel', 'group', 'temp', 'rows', 'rows.value', 'sum', 'pi', 'm'];
 
@@ -54,6 +55,7 @@ function preview(input, run, extra = {}) {
 }
 
 describe('@unit Preview reads configured in blocks', function () {
+    useShortRecordCompletion();
     this.timeout(20000);
     const originals = [];
     const patch = (target, values) => {

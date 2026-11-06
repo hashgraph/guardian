@@ -2,6 +2,7 @@ import { assert } from 'chai';
 import esmock from 'esmock';
 import { MessageResponse } from '@guardian/common/models/message-response';
 import { PolicyEvents } from '@guardian/interfaces';
+import { useShortRecordCompletion } from '../helpers/record-completion-delay.mjs';
 
 const GENERATOR = '../../../dist/policy-engine/block-tree-generator.js';
 const COMPONENTS = '../../../dist/policy-engine/policy-components-utils.js';
@@ -36,6 +37,7 @@ async function createGenerator() {
 }
 
 describe('@unit BlockTreeGenerator – timeout for a remote policy', function () {
+    useShortRecordCompletion();
     this.timeout(60000);
 
     it('computes the deadline a little before the timeout', async () => {
@@ -72,6 +74,7 @@ describe('@unit BlockTreeGenerator – timeout for a remote policy', function ()
 });
 
 describe('@unit BlockTreeGenerator – preview step history', function () {
+    useShortRecordCompletion();
     this.timeout(60000);
 
     it('sends the preview steps only when the caller asks for the history, like an ordinary submit', async () => {

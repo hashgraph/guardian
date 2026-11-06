@@ -7,12 +7,14 @@ import { PolicyComponentsUtils } from '../../../dist/policy-engine/policy-compon
 import { DocumentValidatorBlock } from '../../../dist/policy-engine/blocks/document-validator-block.js';
 import { createPreviewDatabaseServer } from '../../../dist/policy-engine/helpers/preview-database.js';
 import { markPreviewStoredDocuments, runPreview, setPreviewComputed } from '../../../dist/policy-engine/helpers/preview.js';
+import { useShortRecordCompletion } from '../helpers/record-completion-delay.mjs';
 
 const user = makeUser();
 const item = (subject = {}) => ({ policyId: 'policy-1', schema: '#S', owner: user.did,
     document: PolicyUtils.createVcFromSubject(subject).toJsonTree() });
 
 describe('@unit Preview source validator attributes temporary and stored records', () => {
+    useShortRecordCompletion();
     const originalExternal = PolicyComponentsUtils.ExternalEventFn;
     const originalError = PolicyComponentsUtils.BlockErrorFn;
     before(() => {

@@ -7,6 +7,7 @@ import { RecordActionStep } from '../../../dist/policy-engine/record-action-step
 import { PolicyComponentsUtils } from '../../../dist/policy-engine/policy-components-utils.js';
 import { PolicyUtils } from '../../../dist/policy-engine/helpers/utils.js';
 import { Users } from '@guardian/common/helpers/users';
+import { useShortRecordCompletion } from './record-completion-delay.mjs';
 
 const user = { did: 'did:user', group: 'group-1', userId: 'u-1' };
 const ref = { policyId: 'policy-1', tag: 'form' };
@@ -23,6 +24,7 @@ const notCalled = async () => {
 };
 
 describe('@unit preview helpers', function () {
+    useShortRecordCompletion();
     this.timeout(5000);
 
     describe('output and effect input rules', () => {
@@ -144,7 +146,7 @@ describe('@unit preview helpers', function () {
             assert.equal(res.body.trackingId, seen.step.id);
             assert.deepEqual(res.body.input, { id: 'input-1' });
             assert.deepEqual(res.body.documents, [
-                { source: 'form', target: 'save', blockType: 'sendToGuardianBlock', document: { id: 'doc-1' }, final: true }
+                { source: 'form', target: 'save', blockType: 'sendToGuardianBlock', document: { id: 'doc-1' }, final: false }
             ]);
             assert.deepEqual(res.body.calculations, []);
             assert.deepEqual(res.body.fields, []);
@@ -367,7 +369,7 @@ describe('@unit preview helpers', function () {
             const document = vc('urn:uuid:final', 42);
             action.saveResult({ data: document });
             action.addPreviewDocument('math', { tag: 'wait', blockType: 'buttonBlock' }, { data: document });
-            assert.deepEqual(buildPreviewResponse(action, {}).documents, action.getPreviewDocuments().map((item) => ({ ...item, final: true })));
+            assert.deepEqual(buildPreviewResponse(action, {}).documents, action.getPreviewDocuments().map((item) => ({ ...item, final: false })));
             assert.equal(buildPreviewResponse(action, {}).documents.length, 1);
         });
 

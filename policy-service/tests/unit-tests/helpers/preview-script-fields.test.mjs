@@ -6,6 +6,7 @@ import { runInNewContext } from 'node:vm';
 import { findPreviewScriptFields } from '../../../dist/policy-engine/helpers/preview-script-fields.js';
 import { PREVIEW_SCRIPT_FILE, PreviewReadTracker } from '../../../dist/policy-engine/helpers/workers/preview-read-tracker.js';
 import { trackPreviewFormulaScope } from '../../../dist/policy-engine/helpers/preview.js';
+import { useShortRecordCompletion } from './record-completion-delay.mjs';
 
 const paths = ['amount', 'bonus', 'rate', 'discount', 'diesel', 'factor', 'secret', 'total', 'calc', 'calc.total',
     'a', 'c', 'k', 'v', 'e', 'rows', 'rows.value', 'note', 'project', 'project.code', 'other', 'other.code'];
@@ -25,6 +26,7 @@ const run = (body, input, sources = [], known = paths) => {
 };
 
 describe('@unit findPreviewScriptFields', () => {
+    useShortRecordCompletion();
     for (const [name, body, input, expected] of [
         ['a consumed indexed assignment with {}', 'const key=["am","ount"].join("");const cache={};done({t:(cache[key]=doc[key])>0?5:7});', {}, ['amount']],
         ['a consumed indexed assignment with { amount: 0 }', 'const key=["am","ount"].join("");const cache={};done({t:(cache[key]=doc[key])>0?5:7});', { amount: 0 }, ['amount']],
@@ -182,6 +184,7 @@ describe('@unit findPreviewScriptFields', () => {
 
 
 describe('@unit mathjs hybrid field discovery', () => {
+    useShortRecordCompletion();
     const formulaPaths = ['flag', 'amount', 'owner', 'owner.name', 'buyer', 'buyer.name', 'key', 'rows', 'rows.name', 'other', 'other.name'];
     const data = { flag: true, amount: 5, owner: { name: 'Ivan' }, buyer: { name: 'Anna' }, key: 'name', rows: [{ name: 'a' }, { name: 'b' }] };
     const fields = (formula, scope = data) => {
@@ -250,6 +253,7 @@ describe('@unit mathjs hybrid field discovery', () => {
 });
 
 describe('@unit getField path bindings', () => {
+    useShortRecordCompletion();
     const formPaths = ['t', 't.rows', 't.rows.unit', 't.rows.deltat', 't.rows.BWPwoodyABputdt',
         't.unit', 'ccb', 'ccb.rows', 'ccb.rows.unit', 'ccb.rows.deltat', 'ccb.rows.BWPwoodyABputdt'];
     const fields = (source, known = formPaths) => findPreviewScriptFields(source, [], [[0, source.length]],

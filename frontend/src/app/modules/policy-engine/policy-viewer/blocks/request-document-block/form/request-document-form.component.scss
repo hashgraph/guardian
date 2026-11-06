@@ -1081,6 +1081,11 @@ form {
         align-items: start;
     }
 
+    .form-tl-expand {
+        align-items: center;
+        font-size: 20px;
+    }
+
     .form-timeline {
         display: grid;
         gap: 0;

@@ -353,4 +353,89 @@ describe('RequestDocumentFormComponent', () => {
             expect(component.screen).not.toBe('submitted');
         }));
     });
+    describe('preview results display', () => {
+        const item = (id: string) => ({ role: 'result', label: id, source: id, target: null,
+            blockType: null, document: { id }, final: true, sameSchema: true, title: id, sub: '' });
+
+        it('keeps the document list and final mark for a single result', () => {
+            const { fixture, component } = create({}, { previewMode: true, screen: 'presults',
+                previewItems: [item('output')], previewIndex: 0, previewVisited: new Set([0]),
+                previewTab: 'json', previewJson: '{"total":20}' });
+            const element: HTMLElement = fixture.nativeElement;
+            expect(element.querySelector('.form-timeline')).not.toBeNull();
+            expect(element.querySelector('.form-tl-expand')).toBeNull();
+            expect(element.querySelector('.form-pres-doc')).not.toBeNull();
+            expect(element.querySelector('.form-pres-doc')?.textContent).toContain('Final');
+            expect(element.querySelector('.form-pres-doc')?.textContent).toContain('20');
+            expect(element.textContent).not.toContain('Incomplete result');
+            fixture.destroy();
+        });
+
+        it('shows a list for several matching final documents', () => {
+            const { fixture } = create({}, { previewMode: true, screen: 'presults',
+                previewItems: [item('first'), item('second')], previewIndex: 0, previewTab: 'json' });
+            expect(fixture.nativeElement.querySelectorAll('.form-tl-item').length).toBe(2);
+            fixture.destroy();
+        });
+
+        it('expands intermediate documents in order and lets the user select one', () => {
+            const { fixture, component } = create({}, { previewMode: true, screen: 'presults',
+                previewItems: [
+                    { ...item('input'), role: 'input', final: false },
+                    { ...item('middle-a'), final: false },
+                    { ...item('middle-b'), final: false }, item('final')
+                ], previewIndex: 3, previewTab: 'json' });
+            const element: HTMLElement = fixture.nativeElement;
+            expect(element.querySelectorAll('.form-tl-item:not(.form-tl-more)').length).toBe(2);
+            const expand = element.querySelector<HTMLButtonElement>('.form-tl-expand')!;
+            expect(expand.getAttribute('aria-label')).toBe('Show intermediate documents');
+            expand.click();
+            fixture.detectChanges();
+            expect(element.querySelector('.form-tl-expand')).toBeNull();
+            const cards = element.querySelectorAll<HTMLButtonElement>('.form-tl-card');
+            expect(Array.from(cards).map((card) => card.querySelector('b')?.textContent)).toEqual(['input', 'middle-a', 'middle-b', 'final']);
+            cards[1].click();
+            fixture.detectChanges();
+            expect(component.previewSelected?.document).toEqual({ id: 'middle-a' });
+            expect(element.querySelector('.form-submitted-json')?.textContent).toContain('middle-a');
+            fixture.destroy();
+        });
+
+        it('keeps the last unfinished document visible without a Final mark', () => {
+            const { fixture } = create({}, { previewMode: true, screen: 'presults',
+                previewItems: [{ ...item('input'), role: 'input', final: false },
+                    { ...item('middle'), final: false }, { ...item('last'), final: false }],
+                previewIndex: 2, previewVisited: new Set([2]), previewTab: 'json', previewJson: '{"id":"last"}',
+                previewProblems: [{ blockType: 'customLogicBlock', message: 'stopped', errorData: null }] });
+            const element: HTMLElement = fixture.nativeElement;
+            expect(element.querySelector('h1')?.textContent).toBe('Preview results');
+            expect(element.querySelectorAll('.form-tl-item:not(.form-tl-more)').length).toBe(2);
+            expect(element.querySelector('.form-pres-doc')?.textContent).toContain('last');
+            expect(element.querySelector('.form-pres-doc')?.textContent).not.toContain('Final');
+            expect(element.querySelector('.form-notice-warn')).toBeNull();
+            expect(element.textContent).toContain('Incomplete result');
+            fixture.destroy();
+        });
+
+        it('keeps partial results visible until the incomplete result button is clicked', () => {
+            const { fixture } = create({}, { previewMode: true, screen: 'presults',
+                previewItems: [item('output')], previewIndex: 0, previewVisited: new Set([0]), previewTab: 'json',
+                previewProblems: [{ blockType: 'customLogicBlock', message: 'amount above 100', errorData: null }] });
+            const element: HTMLElement = fixture.nativeElement;
+            expect(element.querySelector('.form-pres-doc')).not.toBeNull();
+            expect(element.querySelector('.form-notice-warn')).toBeNull();
+            const button = Array.from(element.querySelectorAll('button')).find((candidate) => candidate.textContent?.trim() === 'Incomplete result');
+            expect(button).toBeDefined();
+            button!.click();
+            fixture.detectChanges();
+            expect(element.querySelector('h1')?.textContent).toBe('The preview is incomplete');
+            expect(element.querySelector('.form-pres-doc')).toBeNull();
+            expect(element.textContent).toContain('amount above 100');
+            expect(element.textContent).toContain('Back to the form');
+            expect(element.textContent).toContain('Preview again');
+            expect(element.textContent).not.toContain('Go to field');
+            fixture.destroy();
+        });
+    });
+
 });

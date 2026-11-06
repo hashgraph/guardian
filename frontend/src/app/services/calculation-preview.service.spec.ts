@@ -168,6 +168,7 @@ describe('CalculationPreviewService', () => {
 
     it('normalizes a partial response', () => {
         expect(normalizePreviewResult(null)).toEqual({
+            sameSchema: false,
             trackingId: '',
             input: null,
             documents: [],
@@ -274,13 +275,13 @@ describe('CalculationPreviewService', () => {
         expect(service.getTimeline(preview)).toEqual([]);
     });
 
-    it('returns an empty timeline for an incomplete result, input included', () => {
+    it('keeps the input and saved documents for an incomplete result', () => {
         const preview = normalizePreviewResult({
             input: { document: { id: 'vc-input' } },
             documents: [{ source: 'sum', target: 'save', blockType: 'sendToGuardianBlock', document: { document: { id: 'vc-1' } } }],
             incomplete: [{ blockType: 'customLogicBlock', reason: 'the operator $elemMatch' }],
         });
-        expect(service.getTimeline(preview)).toEqual([]);
+        expect(service.getTimeline(preview).map((item) => item.document)).toEqual([{ id: 'vc-input' }, { id: 'vc-1' }]);
     });
 
     it('reports an incomplete result as a problem with its block, once', () => {
@@ -338,6 +339,49 @@ describe('CalculationPreviewService', () => {
         const validation = service.getInputValidation(error)!;
         expect(validation.missingFields).toEqual(['rows.1.bonus','rows.3.rate']);
         expect(service.updateRequiredFields(['amount'], validation)).toEqual(['amount','rows.1.bonus','rows.3.rate']);
+    });
+
+    it('keeps input, intermediates and every branch regardless of schema match', () => {
+        const preview = normalizePreviewResult({ sameSchema: true, input: { document: { id: 'input' } }, documents: [
+            { source: 'input', final: false, document: { document: { id: 'saved-input' } } },
+            { source: 'matching', final: true, sameSchema: true, document: { document: { id: 'matching' } } },
+            { source: 'other', final: true, sameSchema: false, document: { document: { id: 'other' } } },
+        ] });
+        const items = service.getTimeline(preview);
+        expect(items.map((item) => item.document)).toEqual([{ id: 'input' }, { id: 'saved-input' }, { id: 'matching' }, { id: 'other' }]);
+        expect(items[2].final).toBeTrue();
+        expect(items[2].sameSchema).toBeTrue();
+        expect(items[3].sameSchema).toBeFalse();
+        expect(preview.documents.length).toBe(3);
+    });
+
+    it('keeps every matching final document from several branches', () => {
+        const preview = normalizePreviewResult({ sameSchema: true, documents: ['a', 'b'].map((id) => ({
+            source: id, final: true, sameSchema: true, document: { document: { id } }
+        })) });
+        expect(service.getTimeline(preview).map((item) => item.document)).toEqual([{ id: 'a' }, { id: 'b' }]);
+    });
+
+    it('preserves final flags while unwrapping batches for separate-schema results', () => {
+        const preview = normalizePreviewResult({ input: { document: { id: 'input' } }, documents: [{
+            source: 'batch', final: true, sameSchema: false, document: [{ document: { id: 'a' } }, { document: { id: 'b' } }]
+        }] });
+        const items = service.getTimeline(preview);
+        expect(items.length).toBe(3);
+        expect(items.slice(1).map((item) => item.final)).toEqual([true, true]);
+        expect(items.slice(1).map((item) => item.sameSchema)).toEqual([false, false]);
+    });
+
+    it('keeps an unsaved branch-end result without promoting it to final', () => {
+        const unsaved = { credentialSubject: [{ type: 'Output', total: 6 }] };
+        const preview = normalizePreviewResult({ input: { document: { id: 'input' } }, documents: [
+            { source: 'save', final: false, document: { id: 'stored-record', document: { id: 'saved' } } },
+            { source: 'math', final: false, document: { document: unsaved } },
+        ] });
+        const items = service.getTimeline(preview);
+        expect(items.map((item) => item.document)).toEqual([{ id: 'input' }, { id: 'saved' }, unsaved]);
+        expect(items[2].source).toBe('math');
+        expect(items[2].final).toBeFalse();
     });
 
 });

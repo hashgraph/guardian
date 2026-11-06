@@ -17,6 +17,7 @@ import { CreateTokenBlock } from '../../../dist/policy-engine/blocks/create-toke
 import { PolicyComponentsUtils } from '../../../dist/policy-engine/policy-components-utils.js';
 import { PreviewScope } from '../../../dist/policy-engine/helpers/preview.js';
 import { RecordActionStep } from '../../../dist/policy-engine/record-action-step.js';
+import { useShortRecordCompletion } from '../helpers/record-completion-delay.mjs';
 
 const aggregateDb = createInMemoryDatabaseHelper();
 const { DatabaseServer: AggregateDatabaseServer } = await esmock('@guardian/common/database-modules/database-server', {
@@ -27,6 +28,7 @@ const previewStep = () => new RecordActionStep(() => undefined, 0, true, true, u
 const user = { id: 'u1', userId: 'uid1', did: 'did:u1' };
 
 describe('@unit block memory state in a preview', () => {
+    useShortRecordCompletion();
     const origGetRef = PolicyComponentsUtils.GetBlockRef;
     const origExternal = PolicyComponentsUtils.ExternalEventFn;
 
@@ -178,6 +180,7 @@ describe('@unit block memory state in a preview', () => {
 });
 
 describe('@unit block-owned waiting', () => {
+    useShortRecordCompletion();
     const originalOwner = PolicyUtils.getDocumentOwner;
     const originalRelayer = PolicyUtils.getDocumentRelayerAccount;
     const originalRef = PolicyComponentsUtils.GetBlockRef;

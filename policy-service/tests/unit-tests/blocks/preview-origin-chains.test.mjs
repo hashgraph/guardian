@@ -12,6 +12,8 @@ import { PolicyComponentsUtils } from '../../../dist/policy-engine/policy-compon
 import { RecordActionStep } from '../../../dist/policy-engine/record-action-step.js';
 import { createPreviewDatabaseServer } from '../../../dist/policy-engine/helpers/preview-database.js';
 import { runPreview } from '../../../dist/policy-engine/helpers/preview.js';
+import { useShortRecordCompletion } from '../helpers/record-completion-delay.mjs';
+import { itInFullWorkerRun } from '../helpers/full-worker-run.mjs';
 
 const user = makeUser();
 const CHILD = { type: 'object', properties: { amount: { type: 'number' }, total: { type: 'number' } } };
@@ -130,6 +132,7 @@ async function repeatedExtraction(subject, step) {
 }
 
 describe('@unit Preview origins through Aggregate and repeated extraction', function () {
+    useShortRecordCompletion();
     this.timeout(30000);
     const originals = [];
     const patch = (target, values) => {
@@ -154,7 +157,7 @@ describe('@unit Preview origins through Aggregate and repeated extraction', func
         assert.deepEqual(await aggregateMath({}, '#S', new RecordActionStep(() => {})), totals);
     });
 
-    it('Aggregate to Math requires the missing current value for a link without a schema', async () => {
+    itInFullWorkerRun('Aggregate to Math requires the missing current value for a link without a schema', async () => {
         const response = await preview({}, '#S', ['amount', 'total'], (step) => aggregateMath({}, '', step));
         assert.equal(response.code, 422);
         assert.deepEqual(response.data.missingFields, ['amount']);
@@ -194,14 +197,14 @@ describe('@unit Preview origins through Aggregate and repeated extraction', func
         assert.deepEqual(await aggregateSwitch({ amount: 0 }, 'amount[2]>=0', new RecordActionStep(() => {})), branches);
     });
 
-    it('Get to Set to Get keeps the original missing row path for its calculation', async () => {
+    itInFullWorkerRun('Get to Set to Get keeps the original missing row path for its calculation', async () => {
         const input = { sections: [{ amount: 5 }, {}] };
         const response = await preview(input, '#Parent', ['sections', 'sections.amount', 'sections.total'], (step) => repeatedExtraction(input, step));
         assert.equal(response.code, 422);
         assert.deepEqual(response.data.missingFields, ['sections.1.amount']);
     });
 
-    it('Get to Set to Get calculates filled rows including zero exactly as ordinary processing', async () => {
+    itInFullWorkerRun('Get to Set to Get calculates filled rows including zero exactly as ordinary processing', async () => {
         const input = { sections: [{ amount: 5 }, { amount: 0 }] };
         let result;
         const response = await preview(input, '#Parent', ['sections', 'sections.amount', 'sections.total'], async (step) => { result = await repeatedExtraction(input, step); });

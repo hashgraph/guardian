@@ -5,11 +5,13 @@ import { PolicyUtils } from '../../../dist/policy-engine/helpers/utils.js';
 import { PolicyComponentsUtils } from '../../../dist/policy-engine/policy-components-utils.js';
 import { SwitchBlock } from '../../../dist/policy-engine/blocks/switch-block.js';
 import { runPreview, markPreviewStoredDocuments } from '../../../dist/policy-engine/helpers/preview.js';
+import { useShortRecordCompletion } from '../helpers/record-completion-delay.mjs';
 
 const user = makeUser();
 const document = subject => ({ schema: '#S', document: PolicyUtils.createVcFromSubject(subject).toJsonTree() });
 
 describe('Switch executed document origins', function () {
+    useShortRecordCompletion();
     after(() => restoreHarness());
     for (const formula of ['true ? amount[1]>0 : amount[2]>0', 'false ? amount[2]>0 : amount[1]>0', 'i=1;amount[i]>0']) {
         it(`does not require inactive form input: ${formula}`, async function () {

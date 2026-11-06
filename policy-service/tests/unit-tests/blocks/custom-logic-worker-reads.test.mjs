@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { Worker } from 'node:worker_threads';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { itInFullWorkerRun } from '../helpers/full-worker-run.mjs';
 
 const filename = fileURLToPath(import.meta.url);
 const WORKER = path.join(
@@ -34,7 +35,7 @@ describe('@unit customLogic worker read tracking', function () {
         ['Date receiver', 'doc.date = new Date(0); done({ total: doc.date.getTime() });', 0],
         ['Map receiver', 'doc.lookup = new Map([["rate", 3]]); done({ total: doc.lookup.get("rate") * doc.amount });', 6]
     ]) {
-        it(`preserves ordinary calculation after assigning a new ${name}`, async () => {
+        itInFullWorkerRun(`preserves ordinary calculation after assigning a new ${name}`, async () => {
             const script = 'const doc = documents[0].document.credentialSubject[0]; ' + calculation;
             const ordinary = await runWorker(script, formDocuments(), false);
             const preview = await runWorker(script, formDocuments(), true);
@@ -48,7 +49,7 @@ describe('@unit customLogic worker read tracking', function () {
     }
 
     for (const [rows, total] of [[[{}], 7], [[{ amount: 3 }], 5]]) {
-        it(`keeps input cell reads through an assigned array Proxy for rows ${JSON.stringify(rows)}`, async () => {
+        itInFullWorkerRun(`keeps input cell reads through an assigned array Proxy for rows ${JSON.stringify(rows)}`, async () => {
             const script = 'const doc = documents[0].document.credentialSubject[0]; doc.rows = new Proxy([doc.rows[0]], {}); done({ total: doc.rows[0].amount > 0 ? 5 : 7 });';
             const documents = () => [{ schema: '#S', document: { credentialSubject: [{ rows }] } }];
             const ordinary = await runWorker(script, documents(), false);
@@ -76,7 +77,7 @@ describe('@unit customLogic worker read tracking', function () {
         assert.deepEqual(done.sources, [0]);
     });
 
-    it('reports which input document the script returned', async () => {
+    itInFullWorkerRun('reports which input document the script returned', async () => {
         const messages = await runWorker(
             'documents[0].document.credentialSubject[0].temp = 3; done([documents[1], documents[0]]);',
             [...formDocuments(), ...formDocuments()],
@@ -87,7 +88,7 @@ describe('@unit customLogic worker read tracking', function () {
         assert.deepEqual(done.sources, [1, 0]);
     });
 
-    it('does not report a field the script reads back after writing it', async () => {
+    itInFullWorkerRun('does not report a field the script reads back after writing it', async () => {
         const messages = await runWorker(
             'const doc = documents[0].document.credentialSubject[0]; doc.temp = doc.amount + 1; doc.total = doc.temp * 2; done(doc);',
             formDocuments(),
@@ -98,7 +99,7 @@ describe('@unit customLogic worker read tracking', function () {
         assert.deepEqual(done.reads, [{ schema: '#S', path: 'amount', fullPath: 'amount' }]);
     });
 
-    it('reports reads of a document without a schema against the schema given for it', async () => {
+    itInFullWorkerRun('reports reads of a document without a schema against the schema given for it', async () => {
         const messages = await runWorker(
             'const doc = documents[0].document.credentialSubject[0]; done({ total: doc.rate * 2 });',
             [{ document: { credentialSubject: [{ amount: 2 }] } }],
@@ -109,7 +110,7 @@ describe('@unit customLogic worker read tracking', function () {
         assert.deepEqual(done.reads, [{ schema: '#S', path: 'rate', fullPath: 'rate' }]);
     });
 
-    it('sends where each field was read and which code did not run', async () => {
+    itInFullWorkerRun('sends where each field was read and which code did not run', async () => {
         const script = 'const doc = documents[0].document.credentialSubject[0];\nlet total = doc.amount;\nif (total > 100) { total = doc.rate; }\ndone({ total });';
         const messages = await runWorker(script, formDocuments(), true);
         const done = messages.find((message) => message?.type === 'done');
@@ -117,7 +118,7 @@ describe('@unit customLogic worker read tracking', function () {
         assert.deepEqual(done.unexecuted.map(([start, end]) => script.slice(start, end)), ['{ total = doc.rate; }']);
     });
 
-    it('reports the reads made before the script failed', async () => {
+    itInFullWorkerRun('reports the reads made before the script failed', async () => {
         const messages = await runWorker(
             'const doc = documents[0].document.credentialSubject[0]; doc.rate.toFixed(2);',
             formDocuments(),
@@ -129,7 +130,7 @@ describe('@unit customLogic worker read tracking', function () {
         assert.ok(Array.isArray(error.unexecuted));
     });
 
-    it('does not count a check with in as a read, also when the check fails the script', async () => {
+    itInFullWorkerRun('does not count a check with in as a read, also when the check fails the script', async () => {
         const script = "const doc = documents[0].document.credentialSubject[0]; if (!('rate' in doc)) throw new Error('rate is required'); done({ final: 7 });";
         const missing = await runWorker(script, formDocuments(), true);
         const error = missing.find((message) => message?.type === 'error');
@@ -142,7 +143,7 @@ describe('@unit customLogic worker read tracking', function () {
         assert.deepEqual(done.reads, []);
     });
 
-    it('sends no reads when tracking is off', async () => {
+    itInFullWorkerRun('sends no reads when tracking is off', async () => {
         const messages = await runWorker('done({ ok: 1 });', [{ document: {} }], false);
         const done = messages.find((message) => message?.type === 'done');
         assert.deepEqual(done.result, { ok: 1 });
