@@ -13,7 +13,7 @@ const login = (username) => {
     modulesPage.openModulesTab();
 };
 
-context('Workflow Module Creation', { tags: ['ui'] }, () => {
+context('Workflow Module Creation', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     // Unique per run: the modules of earlier runs stay in the list.

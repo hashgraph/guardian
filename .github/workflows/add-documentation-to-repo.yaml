@@ -1,6 +1,5 @@
 name: Generate API Documentation
 on:
-  workflow_dispatch:
   push:
     branches-ignore:
       - 'dependabot/**'
@@ -9,6 +8,7 @@ on:
       - '.github/**'
       - 'docs/**'
       - '**/*.md'
+  workflow_dispatch:
 
 jobs:
   runService:

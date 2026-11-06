@@ -4,7 +4,7 @@ import * as Authorization from '../../../support/authorization';
 import * as Checks from '../../../support/checkingMethods';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-mgs'] }, () => {
+context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     let policyId; let sv1; let sv3; let sv4; let sv5; let adminDid; let registrantDid;
 
@@ -20,7 +20,7 @@ context('Savepoints Flow', { tags: ['savepoints', 'secondPool', 'all', 'all-no-m
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 response.body.forEach(element => {
-                    if (element.name == 'iRecDRS') {
+                    if (element.name === 'iRecDRS') {
                         policyId = element.id
                     }
                 })

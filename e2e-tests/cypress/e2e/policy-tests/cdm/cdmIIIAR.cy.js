@@ -15,7 +15,7 @@ const TOOL_REFS = {
 // Dependencies before dependents (see cdmTools.js).
 const TOOL_IMPORT_ORDER = ['Tool 33', 'Tool 19', 'Tool 21', 'Tool 07'];
 
-context('Policy autotest', { tags: ['policyAT'] }, () => {
+context('Policy autotest', { tags: ['policyAT', 'policy-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     it('Import policy CDM AMS-III.AR Policy', () => {

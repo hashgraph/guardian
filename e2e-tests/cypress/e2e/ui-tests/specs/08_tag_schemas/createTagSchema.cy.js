@@ -12,7 +12,7 @@ const login = (username, schemasTab) => {
     schemaPage.openSchemasTab(schemasTab);
 };
 
-context('Tag Schema Creation', { tags: ['ui'] }, () => {
+context('Tag Schema Creation', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const schemaName = 'UITagSchema' + randomInt(1000000000);

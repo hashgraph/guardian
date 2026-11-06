@@ -12,7 +12,7 @@ const login = (username) => {
     tokensPage.openTokensTab();
 };
 
-context('Token Deletion', { tags: ['ui'] }, () => {
+context('Token Deletion', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const tokenName = 'UITokenName' + randomInt(1000000000);

@@ -8,7 +8,7 @@ const artifactsPage = new ArtifactsPage();
 import { PoliciesPage } from '../../pages/policiesPage';
 const policiesPage = new PoliciesPage();
 
-context('Artifacts', { tags: ['ui'] }, () => {
+context('Artifacts', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     // A per-run policy keeps the artifacts table isolated, so re-runs are clean

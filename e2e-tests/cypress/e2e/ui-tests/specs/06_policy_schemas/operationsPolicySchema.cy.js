@@ -15,7 +15,7 @@ const login = (username) => {
 };
 
 // Published schemas cannot be deleted, so the ones this spec publishes stay in the list.
-context('Policy Schema Operations', { tags: ['ui'] }, () => {
+context('Policy Schema Operations', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const runId = randomInt(1000000000);

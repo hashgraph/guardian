@@ -4,7 +4,7 @@ import * as Authorization from '../../../support/authorization';
 import * as Checks from '../../../support/checkingMethods';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('Get policy test result', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, () => {
+context('Get policy test result', { tags: ['policies', 'secondPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 	const SRUsername = Cypress.env('SRUser');
 	let policyId; let testId;
 

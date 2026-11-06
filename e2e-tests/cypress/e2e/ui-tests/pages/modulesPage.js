@@ -232,7 +232,7 @@ export class ModulesPage {
     }
 
     editModuleProperty(property, name) {
-        if (property == 'Description')
+        if (property === 'Description')
             {cy.contains('td.cellName', new RegExp('^' + property + '$', 'g')).parent().find(CommonElements.textarea).clear();
             cy.contains('td.cellName', new RegExp('^' + property + '$', 'g')).parent().find(CommonElements.textarea).type(name);}
         else
@@ -249,7 +249,7 @@ export class ModulesPage {
     }
 
     verifyModuleProperty(name, property, value) {
-        if (property == 'Description')
+        if (property === 'Description')
             {cy.contains('td', name).siblings('.cell-description').should('have.text', value + ' ');}
     }
 

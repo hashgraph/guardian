@@ -5,7 +5,7 @@ const contractsPage = new ContractsPage();
 import { HomePage } from '../../pages/homePage';
 const homePage = new HomePage();
 
-context('Workflow Contract UI Verify', { tags: ['ui'] }, () => {
+context('Workflow Contract UI Verify', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const runId = randomInt(1000000000);

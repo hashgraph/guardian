@@ -1,7 +1,7 @@
 // Disabled flow (see the commented context below). Restore the HomePage/PoliciesPage
 // imports above the context with it.
 //TBD:
-// context("Edit Policy. Udo/Redo flow", { tags: ['ui'] }, () => {
+// context("Edit Policy. Udo/Redo flow", { tags: ['ui', 'ui-all', 'all'] }, () => {
 
 //     const SRUsername = Cypress.env('SRUser');
 //     const name = Math.floor(Math.random() * 999) + "testName";

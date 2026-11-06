@@ -4,7 +4,7 @@ const homepage = new HomePage();
 import { SettingsPage } from '../../pages/settings';
 const settings = new SettingsPage();
 
-context('Check settings page', { tags: ['ui'] }, () => {
+context('Check settings page', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
 

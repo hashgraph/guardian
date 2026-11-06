@@ -3,9 +3,8 @@ import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('Export Policy Themes', { tags: ['themes', 'secondPool', 'all', 'all-no-mgs'] }, () => {
+context('Export Policy Themes', { tags: ['themes', 'secondPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-    const themeName = 'ThemeAPI';
 
     let themeId;
 

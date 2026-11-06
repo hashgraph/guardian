@@ -6,7 +6,7 @@ const policiesPage = new PoliciesPage();
 
 import { randomInt } from '../../../../support/random';
 
-context('Import Policy', { tags: ['ui'] }, () => {
+context('Import Policy', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     // each test imports its own copy of a fixed-name artifact and renames it,

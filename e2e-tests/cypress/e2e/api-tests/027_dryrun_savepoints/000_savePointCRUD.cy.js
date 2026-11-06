@@ -3,9 +3,9 @@ import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('Savepoints CRUD', { tags: ['savepoints', 'secondPool', 'all', 'all-no-mgs'] }, () => {
+context('Savepoints CRUD', { tags: ['savepoints', 'secondPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-    let policyId; let sv1; let sv2; let sv3; let sv4; let sv5; let sv6;
+    let policyId; let sv1; let sv2; let sv3; let sv4; let sv5;
 
     before('Get policy id', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {

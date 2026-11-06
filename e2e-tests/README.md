@@ -57,6 +57,8 @@ npx eslint cypress
 
 The findings that are still open, with the fix for each rule, are listed in [`pending-issues/eslint-findings-in-the-cypress-suites.md`](pending-issues/eslint-findings-in-the-cypress-suites.md).
 
+To check that a change adds no finding, compare with the findings of the last commit. Extract it with `git archive HEAD e2e-tests/cypress/e2e e2e-tests/cypress/support e2e-tests/eslint.config.mjs e2e-tests/package.json | tar -x -C <dir>`, symlink `node_modules` into it and run `npx eslint cypress` there. ESLint pads its columns to the longest message of each file, so squeeze repeated spaces before diffing the two outputs.
+
 ## Guardian E2E via Docker
 
 ### Prerequisites
@@ -248,6 +250,10 @@ UI_GATEWAY_ORIGIN=http://host.docker.internal:3002/ \
 - **Import-preview tool checks** (`importFlow.js` → `settleToolRowChecks()` / `replaceInaccessibleTools()`): a preview row settles to valid/invalid when its per-row check request answers, but that request has no client-side timeout — one check the gateway never answers pins its row at `load`, which keeps the Import button disabled forever. The helper waits with a deadline, re-issues the checks for rows still loading (the row's change handler re-runs them), and after the last attempt fails the test with the stuck `messageIds`. Rows pointing at tool messages this gateway cannot resolve are re-pointed at the same-named workspace tool through the row's search picker — and the picker only lists *published* tools, which is why `toolsPage.js` → `ensureToolPublished()` imports the Methodology Library tools and publishes them on demand first (published ones are left alone, drafts are published, missing ones imported).
 - **Background-window visibility** (`homePage.js` → `logOut()`): `getClientRects()` and `getBoundingClientRect()` can report zero for genuinely rendered elements in the backgrounded electron window, so branch signals must be DOM presence, not layout metrics. The new header renders the sign-out icon and the hover flyout in mutually exclusive `@if` states (and the flyout only shows on a real `:hover` a test cannot produce), so `logOut()` branches on which of the two is in the DOM and expands a collapsed menu first rather than trying to hover it.
 - **Wizard navigation without position assumptions** (`wizardSteps.js`): a policy opens on whichever step the viewer last visited for that user, and step bodies may contain nested tab containers. `clickButtonInWizardSteps` probes the visible step body for the control, then walks the visible tabs, then the step items — throwing a listing of everything it explored when the control is nowhere — and `clickWizardTab` steers a flow to a named tab.
+- **Dialogs drop keystrokes while they re-render** (tag create, contract import, token edit): `type()` into such a field can lose characters, so set the value in one step with `cy.get(sel).invoke('val', value).trigger('input')` and assert it with `should('have.value', value)`.
+- **Row action icons have `pointer-events: none`**: click their wrapper (`div.guardian-icon-button`, `.select-menu-item`), not the icon.
+- **The request form is a sectioned wizard** (`userPoliciesPage.js`): it opens on an overview, so start with `openOverviewSection()` (Start, or Continue when answers are pending), then find fields by their label (`.sf-label-text`). `answerMissingFields()` follows the footer's "Jump to next missing" link. A required repeating entry counts as one answer, so the link lands on its card without focusing a field; the helper then opens the entries (Edit) and their cards and fills what is invalid inside. A date picker stays open over the fields below it until Escape closes it.
+- **Lists filter client-side on the loaded page**, and modules and tokens list newest first.
 
 Product bugs surfaced while making the suites idempotent are documented in [`pending-issues/`](pending-issues/), one file per issue.
 
@@ -328,7 +334,12 @@ npx cypress run --browser chrome --env "grepTags=preparing policies,grepFilterSp
 
 **General Tags:**
 
-- `all` - all API tests for Guardian platform
+- `all` - every test: API, policy, UI and disaster recovery. It needs the frontend, so the CI starts it whenever the tags select a UI test
+- `api-all` - all API tests
+- `policy-all` - all policy tests (CDM and iREC; `policyAT` selects the same specs)
+- `ui-all` - all UI tests
+- `dr-all` - the disaster-recovery test
+- `all-no-mgs` - every test except the ones that need MGS
 - `preparing` - special test used for generating accounts for tests (should be run before feature-specific tests)
 - `smoke` - all tests for the most important and frequently used functionality
 - `ui` - all UI tests
@@ -620,7 +631,7 @@ These directories are mounted as volumes from the Docker container to your local
 
 ### Running against a local Hiero network
 
-The suite defaults to Hedera testnet, and nothing below is needed for that. A local network is worth the setup when you want to run the whole suite without spending testnet HBAR, without waiting on real consensus and mirror-node indexing, or on a ledger that starts empty every time. It is what the `E2E Tests` workflow (`.github/workflows/e2e-tests.yml`) does on every run, using `hiero-ledger/hiero-solo-action`.
+The suite defaults to Hedera testnet, and nothing below is needed for that. A local network is worth the setup when you want to run the whole suite without spending testnet HBAR, without waiting on real consensus and mirror-node indexing, or on a ledger that starts empty every time. It is what the E2E Tests and UI Tests workflows (through the reusable `.github/workflows/e2e-run.yml`) do on every run, using `hiero-ledger/hiero-solo-action`.
 
 #### The `hederaNet` parameter
 
@@ -725,33 +736,44 @@ The services run in containers there, so `LOCALNODE_ADDRESS` and the `OVERRIDE_*
 
 ### CI/CD Integration
 
-#### GitHub Actions Workflow
+#### GitHub Actions Workflows
 
-The repository includes automated test execution via GitHub Actions (`.github/workflows/e2e-tests.yml`).
+Three workflows run the suites, all on the same stack definition:
+
+| Workflow | File | Runs |
+|---|---|---|
+| **E2E Run** | `.github/workflows/e2e-run.yml` | Reusable (`workflow_call`), never triggered on its own. Starts a local Hiero network with Solo, the infrastructure and the Guardian services, optionally the frontend, runs Cypress, and publishes reports. |
+| **E2E Tests** | `.github/workflows/e2e-tests.yml` | The API and policy suites: `smoke` on every push, `api-all policy-all` nightly. |
+| **UI Tests** | `.github/workflows/ui-manual.yml` | The UI suite plus the disaster-recovery spec (`ui-all dr-all`), nightly and on demand. |
+
+Both callers pass `suite`, `grep_tags`, and optionally `spec`, `with_frontend`, `solo_version` and `timeout_minutes` to `e2e-run.yml`. Anything about how the stack is started changes in `e2e-run.yml` only.
 
 ##### Manual Workflow Run
 
-1. Go to **Actions** → **E2E Tests**
+1. Go to **Actions** → **E2E Tests** or **UI Tests**
 2. Click **Run workflow**
 3. Enter parameters:
-   - **Tags**: e.g., `all`, `smoke`, `preparing policies`, etc.
+   - **Tags**: e.g., `all`, `smoke`, `preparing policies`, `api-all`, `policy-all` for E2E Tests; `ui-all dr-all` (the default) for UI Tests. `all` works in either and runs every test
+   - **Spec** (UI Tests only): a spec glob such as `cypress/e2e/ui-tests/specs/02_policies/*.cy.js`. The account seeding specs always run first, because every other spec needs the users and artefacts they create
    - **Solo version**: optional, the Solo release that deploys the local Hiero network
 
 ##### Available Input Parameters
 
-- `tags` (default: `smoke`) - Test tags to run. For multiple tags, use spaces (e.g. `policies schemas`) or commas (e.g. `policies,schemas`). In Docker/CI runs, `preparing` is automatically prepended for feature-scoped runs (not for `all`).
-- `solo_version` (default: empty, which uses `SOLO_VERSION` in the workflow) - Solo release passed to `hiero-ledger/hiero-solo-action`.
+- `tags` (E2E Tests default: `smoke`; UI Tests default: `ui-all dr-all`) - Test tags to run. For multiple tags, use spaces (e.g. `policies schemas`) or commas (e.g. `policies,schemas`). In CI, `preparing` is automatically prepended for feature-scoped runs (not for `all`, and not when `ui` is among the tags).
+- `spec` (UI Tests only, default: empty) - Narrows the run to a spec glob.
+- `solo_version` (default: empty, which uses `SOLO_VERSION` in `e2e-run.yml`) - Solo release passed to `hiero-ledger/hiero-solo-action`.
 
-Scheduled runs (nightly, 03:00 UTC) run `all` tags and pushes run `smoke`.
+Scheduled runs happen nightly at 03:00 UTC: E2E Tests runs `api-all policy-all`, UI Tests runs `ui-all dr-all`. Pushes to E2E Tests run `smoke`.
 
 ##### Workflow Features
 
 - Starts a local Hiero network with Solo, and uploads the contract bytecode to it
 - Builds Guardian services
 - Starts MongoDB, NATS, Valkey and Kubo as service containers, and the Guardian services natively
+- For UI runs, installs the frontend and serves it with `ng serve` on `127.0.0.1:4200`, proxied to the gateway (`frontend/proxy.hostdocker.js`), the same way as the local recipe in "Preparing the app for UI tests"
 - Runs Cypress natively on the runner against that stack
-- Publishes test results
-- Uploads HTML and JSON reports as artifacts, plus the Guardian and Solo logs when a run fails
+- Publishes test results (one check per suite: `Test results · api`, `· policy`, `· ui`)
+- Uploads HTML and JSON reports as artifacts, plus the Guardian (frontend included) and Solo logs when a run fails
 - Deletes the Solo kind cluster at the end of the run
 
 ##### Test Report Artifacts
@@ -759,7 +781,7 @@ Scheduled runs (nightly, 03:00 UTC) run `all` tags and pushes run `smoke`.
 After workflow completion:
 
 1. Open the run in **Actions** → **Summary**.
-2. In the **Artifacts** section, download **cypress-reports** (contains the full report tree, including `html/` and `html/.jsons`).
+2. In the **Artifacts** section, download **`cypress-reports-<suite>-...`** (contains the full report tree, including `html/` and `html/.jsons`).
 3. Unzip and open `html/index.html` in a browser to view the interactive Cypress report (test details, screenshots, etc.).
 4. **Published results** – JUnit results are also published to the workflow summary.
 
@@ -878,6 +900,17 @@ Start the app with the `proxy.hostdocker.js` logger (see [Preparing the app for 
 - `(auth)` / `(NO-AUTH)` is the presence of the `Authorization` header, so a tokenless call stands out.
 - A request that is logged as sent but **never gets a `<- <status>` line** was accepted by the gateway and is hanging — the typical cause is the gateway auth guard waiting forever on a NATS reply from the auth service (see `pending-issues/gateway-auth-guard-hangs-*.md`). In the UI this shows as a page stuck on a spinner; a page reload is the workaround the UI tests apply.
 - `WS-UPGRADE` lines without a follow-up indicate the WebSocket was accepted but never used by the app.
+
+##### The services run old code after a pull
+
+`npm start` runs each service from `dist/`, so a stale build silently runs the previous code. Rebuild with `npx tsc -p .` in `interfaces`, `common` and `hedera`, in this order, then in every service, and restart the services (`npm run guardian:services:down` and `up`). A stale `hedera` package is easy to miss: `policy-service` then fails with `createUnsignedCredential` missing on `VcHelper`, which lives in `hedera`, not `common`.
+
+##### Cypress behaviours that look like bugs
+
+- `.should('be.visible', { timeout })` ignores the timeout, because assertion options are not command options: put the timeout on the `cy.get` or `cy.contains`.
+- A `cy.request` that sends a binary body (a Blob) yields the response body as an `ArrayBuffer` from another realm, even for a JSON response, so `instanceof ArrayBuffer` is false. Check `byteLength` instead, as `decodeBody` in `support/cdmTools.js` does.
+- A `Cypress.on('fail')` handler can fire more than once (retries), so it must be idempotent, and `cy.writeFile` throws inside it.
+- List endpoints are paginated with `pageIndex` and `pageSize`; there is no `page` parameter.
 
 ##### Docker Connection Issues
 

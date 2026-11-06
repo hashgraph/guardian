@@ -5,7 +5,7 @@ import * as Authorization from '../../../support/authorization';
 import { importPolicyFromMessage, seededMessageId } from '../../../support/CustomHelpers/ipfsSeeding';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('IPFS', { tags: ['ipfs', 'secondPool', 'all', 'all-no-mgs'] }, () => {
+context('IPFS', { tags: ['ipfs', 'secondPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     let cid; let policyId;

@@ -13,7 +13,7 @@ const login = (username) => {
     schemaPage.openSchemasTab('system');
 };
 
-context('System Schema Creation', { tags: ['ui'] }, () => {
+context('System Schema Creation', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     // Unique per run: the schemas of earlier runs stay in the list.

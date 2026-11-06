@@ -20,7 +20,7 @@ import { randomInt } from '../../../../support/random';
 
 const CDM_FILE = '../Methodology Library/Clean Development Mechanism (CDM)/CDM ACM0001/ACM0001.policy';
 
-context('Workflow CDM ACM 0001 Policy', { tags: ['ui'] }, () => {
+context('Workflow CDM ACM 0001 Policy', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const userUsername = Cypress.env('User');

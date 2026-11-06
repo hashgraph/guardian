@@ -4,7 +4,7 @@ import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('Profiles', { tags: ['profiles', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
+context('Profiles', { tags: ['profiles', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     let did;
     let credentials;
@@ -25,7 +25,7 @@ context('Profiles', { tags: ['profiles', 'thirdPool', 'all', 'all-no-mgs'] }, ()
                 },
             }).then((response) => {
                 response.body.forEach(element => {
-                    if (element.username == SRUsername)
+                    if (element.username === SRUsername)
                         {did = element.did}
                 });
             });

@@ -1,6 +1,6 @@
 import CommonElements from '../../../support/defaultUIElements';
 import * as Checks from '../../../support/checkingMethods';
-import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
+import { TIMEOUTS, POLL_INTERVAL } from '../../../support/CustomHelpers/timeouts';
 import { clickWizardTab } from '../../../support/wizardSteps';
 
 const d = new Date(2022, 3, 3);
@@ -142,15 +142,99 @@ function answerExpandableSections() {
     });
 }
 
+// Answers one form input with a value its field accepts: a date, a number, an email, coordinates or text,
+// a radio option, or the first option of a dropdown.
+function answerField($field) {
+    const placeholder = $field.attr('placeholder');
+    if ($field.is('.p-datepicker-input')) {
+        cy.wrap($field).type('2025-01-03', { force: true });
+        cy.wrap($field).blur({ force: true });
+    } else if ($field.is('textarea, input[type="text"]')) {
+        const answer = placeholder === '123' ? '1'
+            : placeholder === 'example@email.com' ? 'asd@dsa.dsa'
+            : $field.is('#coordinatesInput') ? '[1.23,4.56]'
+            : 'Test text';
+        cy.wrap($field).type(answer, { force: true });
+        cy.wrap($field).blur({ force: true });
+    } else if ($field.is('[role="radio"], .p-radiobutton-input')) {
+        cy.wrap($field).click({ force: true });
+    } else {
+        cy.wrap($field).click({ force: true });
+        cy.get(CommonElements.dropdownOption).first().click();
+    }
+}
+
+// Adds a Point geometry to a GeoJSON editor (`getEditor` yields the app-geojson-type element).
+export function addGeoJsonPoint(getEditor) {
+    getEditor().contains('button', 'Add Geometry', { timeout: TIMEOUTS.ui }).click();
+    getEditor().find('p-select#typeDropdown').first().click();
+    cy.contains(CommonElements.dropdownOption, /^Point$/).click();
+    getEditor().find('#coordinatesInput').first().type('[1.23,4.56]', { force: true });
+    getEditor().find('.validation-errors').should('not.exist');
+}
+
+// The link focuses its target once it has scrolled to it, which takes up to about a second. Yields the
+// focused form input, or null when nothing in the form got the focus.
+const JUMP_FOCUS_READS = 10;
+
+function focusedFormInput(reads = 0) {
+    const form = UserPoliciesPageLocators.requestForm;
+    return cy.document({ log: false }).then((doc) => {
+        const $active = Cypress.$(doc.activeElement);
+        if ($active.closest(form).length && !$active.is('.form-progress-link')) {
+            return $active;
+        }
+        if (reads + 1 >= JUMP_FOCUS_READS) {
+            return null;
+        }
+        // The link moves the focus only after its scroll.
+        cy.wait(POLL_INTERVAL, { log: false });
+        return focusedFormInput(reads + 1);
+    });
+}
+
+// A required repeating entry counts as one answer, so the link lands on its card and focuses nothing
+// while the entry has empty fields. Opens the closed entries (Edit) and the closed cards inside open ones,
+// adds a geometry to their empty GeoJSON editors and answers their invalid inputs. Yields how many things
+// it handled.
+function answerIncompleteEntries() {
+    const form = UserPoliciesPageLocators.requestForm;
+    return cy.get(form).then(($form) => {
+        const $closedEntries = $form.find([
+            '.sf-record:not(.sf-record-open) > .sf-record-head button.sf-link',
+            '.sf-record-open .sf-card:not(.sf-card-open) > .sf-card-head button.sf-card-toggle',
+        ].join(', '));
+        $closedEntries.each((_, toggle) => toggle.click());
+        return cy.get(form).then(($openForm) => {
+            // A GeoJSON entry has no input to answer until a geometry is added.
+            const $emptyGeoEditors = $openForm.find('.sf-record-open app-geojson-type')
+                .filter((_, editor) => !editor.querySelector('#coordinatesInput'));
+            $emptyGeoEditors.each((_, editor) => addGeoJsonPoint(() => cy.wrap(editor)));
+            const $invalid = $openForm.find('.sf-record-open').find([
+                'textarea.ng-invalid',
+                'input.ng-invalid:not([type="radio"])',
+                'p-datepicker.ng-invalid input.p-datepicker-input',
+                'p-select.ng-invalid',
+            ].join(', '));
+            $invalid.each((_, field) => answerField(Cypress.$(field)));
+            chooseChoiceGroups();
+            return cy.wrap($closedEntries.length + $emptyGeoEditors.length + $invalid.length, { log: false });
+        });
+    });
+}
+
 // Follows the form's "Jump to next missing" link, which puts the focus on the next required field
 // that is empty, and answers what it lands on until the link is gone. Answering a choice can bring
 // new required fields into the form a moment later, so the link must stay gone for a few reads.
-// Fails with the label of a field that stays empty after it was answered, or when the form keeps
-// asking for more than 150 answers.
+// When the link focuses nothing, or lands again on the field it just answered, the missing answer is
+// inside a repeating entry: answerIncompleteEntries fills those. The link can outlive the last answer for
+// a moment, so finding nothing to do fails only after a few tries in a row. Also fails when the form
+// keeps asking for more than 150 answers.
 const MISSING_LINK_GONE_READS = 6;
 const MAX_ANSWERS = 150;
+const MAX_MISSES = 3;
 
-function answerMissingFields(state = { label: undefined, repeats: 0, answered: 0, goneReads: 0 }) {
+function answerMissingFields(state = { label: undefined, answered: 0, goneReads: 0, misses: 0 }) {
     const form = UserPoliciesPageLocators.requestForm;
     cy.get('body').then(($body) => {
         const jump = $body.find(`${form} .form-progress-link`);
@@ -167,35 +251,27 @@ function answerMissingFields(state = { label: undefined, repeats: 0, answered: 0
             throw new Error(`The form still has required fields left after answering ${MAX_ANSWERS} of them`);
         }
         jump[0].click();
-        cy.focused({ timeout: TIMEOUTS.ui }).then(($field) => {
-            const label = $field.closest('.form-field').find('.sf-label-text').first().text().trim();
-            const repeats = label === state.label ? state.repeats + 1 : 0;
-            if (repeats >= 2) {
-                throw new Error(`The required field "${label}" stays empty after it was answered`);
+        focusedFormInput().then(($field) => {
+            const label = $field ? $field.closest('.form-field').find('.sf-label-text').first().text().trim() : undefined;
+            if (!$field || label === state.label) {
+                answerIncompleteEntries().then((handled) => {
+                    const misses = handled ? 0 : state.misses + 1;
+                    if (misses >= MAX_MISSES) {
+                        throw new Error($field
+                            ? `The required field "${label}" stays empty after it was answered`
+                            : '"Jump to next missing" focused nothing and no repeating entry is left to fill');
+                    }
+                    answerMissingFields({ label: undefined, answered: state.answered + 1, goneReads: 0, misses });
+                });
+                return;
             }
-            const placeholder = $field.attr('placeholder');
-            if ($field.is('.p-datepicker-input')) {
-                cy.focused().type('2025-01-03', { force: true });
-                cy.focused().blur({ force: true });
-            } else if ($field.is('textarea, input[type="text"]')) {
-                const answer = placeholder === '123' ? '1'
-                    : placeholder === 'example@email.com' ? 'asd@dsa.dsa'
-                    : $field.is('#coordinatesInput') ? '[1.23,4.56]'
-                    : 'Test text';
-                cy.focused().type(answer, { force: true });
-                cy.focused().blur({ force: true });
-            } else if ($field.is('[role="radio"], .p-radiobutton-input')) {
-                cy.focused().click({ force: true });
-            } else {
-                cy.focused().click({ force: true });
-                cy.get(CommonElements.dropdownOption).first().click();
-            }
-            answerMissingFields({ label, repeats, answered: state.answered + 1, goneReads: 0 });
+            answerField($field);
+            answerMissingFields({ label, answered: state.answered + 1, goneReads: 0, misses: 0 });
         });
     });
 }
 
-function openOverviewSection() {
+export function openOverviewSection() {
     const form = UserPoliciesPageLocators.requestForm;
     const start = `${form} .sf-overview-actions button:contains('Start'), ${form} .sf-overview-actions button:contains('Continue')`;
     // The form draws its overview or its fields a moment after the block itself appears.
@@ -229,7 +305,7 @@ export class UserPoliciesPage {
     openPoliciesTab() {
         cy.get(CommonElements.navBar).should('exist')
         cy.get('body').then(($body) => {
-            if ($body.find(`span:contains(${CommonElements.userPoliciesTab})`).length == 0)
+            if ($body.find(`span:contains(${CommonElements.userPoliciesTab})`).length === 0)
                 {cy.get(CommonElements.navBar).contains(CommonElements.mainPoliciesTab).click();}
         })
         cy.get(CommonElements.navBar).contains(CommonElements.userPoliciesTab).click();
@@ -276,13 +352,13 @@ export class UserPoliciesPage {
                 cy.get(UserPoliciesPageLocators.nextButton).click();
             }
         });
-        if (role == 'Registrant') {
+        if (role === 'Registrant') {
             Checks.waitForElement(UserPoliciesPageLocators.requestDocumentBlock);
             cy.get(UserPoliciesPageLocators.submitButton).click();
             this.closeSubmitted();
             Checks.waitForElement(UserPoliciesPageLocators.divTitle);
         }
-        if (role == 'Project_Proponent') {
+        if (role === 'Project_Proponent') {
             Checks.waitForElement(UserPoliciesPageLocators.requestDocumentBlock);
             cy.get(UserPoliciesPageLocators.newVerraProjectButton).click();
             fillFormSections(() => {
@@ -327,21 +403,21 @@ export class UserPoliciesPage {
             this.closeSubmitted();
             Checks.waitForElement(UserPoliciesPageLocators.waitingForAdded);
         }
-        if (role == 'VVB') {
+        if (role === 'VVB') {
             Checks.waitForElement(UserPoliciesPageLocators.vvbName);
             cy.get(UserPoliciesPageLocators.textFieldInput).type('VVBName');
             cy.get(UserPoliciesPageLocators.submitButton).click();
             this.closeSubmitted();
             Checks.waitForElement(UserPoliciesPageLocators.divTitle);
         }
-        if (role == 'Project Participant') {
+        if (role === 'Project Participant') {
             Checks.waitForElement(UserPoliciesPageLocators.ppName);
             cy.get(UserPoliciesPageLocators.textFieldInput).type('PPName');
             cy.get(UserPoliciesPageLocators.submitButton).click();
             this.closeSubmitted();
             Checks.waitForElement(UserPoliciesPageLocators.divTitle);
         }
-        if (role == 'Approvers')
+        if (role === 'Approvers')
             {Checks.waitForElement(UserPoliciesPageLocators.signButton);}
     }
 
@@ -422,15 +498,15 @@ export class UserPoliciesPage {
     }
 
     approve(waitFor = 'default') {
-        if (waitFor == 'default') {
+        if (waitFor === 'default') {
             cy.get(UserPoliciesPageLocators.signButton).click();
             Checks.waitForElement(UserPoliciesPageLocators.signedStatus);
         }
-        if (waitFor == 'validationLabel') {
+        if (waitFor === 'validationLabel') {
             cy.get(UserPoliciesPageLocators.approveButton).click();
             Checks.waitForElement(UserPoliciesPageLocators.validated);
         }
-        if (waitFor == 'Report') {
+        if (waitFor === 'Report') {
             cy.get(UserPoliciesPageLocators.approveButton).click();
             Checks.waitForElement(UserPoliciesPageLocators.verified);
         }
@@ -513,7 +589,9 @@ export class UserPoliciesPage {
                 );
             });
         });
-        cy.get(UserPoliciesPageLocators.createButton).click();
+        answerMissingFields();
+        cy.get(UserPoliciesPageLocators.requestForm).find(UserPoliciesPageLocators.submitButton).click();
+        this.closeSubmitted();
         cy.get('.preloader-image').should('not.exist');
         clickWizardTab('Monitoring reports');
         Checks.waitForElement(UserPoliciesPageLocators.waitingForVerification);
@@ -567,8 +645,9 @@ export class UserPoliciesPage {
     }
 
     assignReport() {
-        cy.get('p-dropdown[placeholder="Select"]').click();
-        cy.get(CommonElements.dropdownOption).click();
+        // The dropdown block of the report row lists the VVBs the report can be assigned to.
+        cy.get('.content-dropdown p-select', { timeout: TIMEOUTS.backend }).first().click();
+        cy.get(CommonElements.dropdownOption).first().click();
         Checks.waitForElement(UserPoliciesPageLocators.waitingForVerification);
     }
 
@@ -671,23 +750,6 @@ export class UserPoliciesPage {
 
     openTokensTab() {
         // cy.visit(URL.Root + URL.UserTokens);
-    }
-
-    createGroup(role) {
-        // cy.contains("Policies").click({force: true});
-        // cy.contains("List of Policies").click({force: true});
-        // cy.wait(1000)
-        // cy.get("td").first().parent().get("td").eq("6").contains("Open").click();
-        // cy.wait(1000)
-        // cy.get(RegistrantPageLocators.roleSelect).click().get("p-dropdownitem").contains(role).click();
-        // cy.get(RegistrantPageLocators.submitBtn).click({force: true});
-        // cy.intercept("/api/v1/profiles/" + role).as("waitForRegister" + role);
-        // cy.wait("@waitForRegister" + role, { timeout: TIMEOUTS.longOperation });
-        // cy.get(RegistrantPageLocators.applicationRegBtns).contains("Next").click();
-        // cy.get(RegistrantPageLocators.applicationRegBtns).contains("Next").click();
-        // cy.get(RegistrantPageLocators.applicationRegBtns).contains("Create").click();
-        // cy.wait(90000);
-        // cy.contains("Submitted for Approval").should("exist");
     }
 
     static waitForPolicyList() {

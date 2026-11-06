@@ -1,7 +1,7 @@
 import { HomePage } from '../../pages/homePage';
 const homePage = new HomePage();
 
-context('Workflow Verra Policy', { tags: ['ui'] }, () => {
+context('Workflow Verra Policy', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     beforeEach(() => {
         cy.viewport(1920, 1080);

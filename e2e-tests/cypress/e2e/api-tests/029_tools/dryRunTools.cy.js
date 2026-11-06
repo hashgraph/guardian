@@ -4,7 +4,7 @@ import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('Tools', { tags: ['tools', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
+context('Tools', { tags: ['tools', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     let toolId; let policy; let policyId;
     const toolBlockConfigUUID = randomInt(99999).toString();

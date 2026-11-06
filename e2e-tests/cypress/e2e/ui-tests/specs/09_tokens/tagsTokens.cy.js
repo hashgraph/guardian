@@ -12,7 +12,7 @@ const login = (username) => {
     tokensPage.openTokensTab();
 };
 
-context('Token Tags', { tags: ['ui'] }, () => {
+context('Token Tags', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const tagName = 'UITokenTag';

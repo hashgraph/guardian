@@ -5,7 +5,7 @@ const homePage = new HomePage();
 import { PoliciesPage } from '../../pages/policiesPage';
 const policiesPage = new PoliciesPage();
 
-context('Edit Policy. Search flow', { tags: ['ui'] }, () => {
+context('Edit Policy. Search flow', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     // A 1000-space name collides with policies left behind by earlier runs (the app

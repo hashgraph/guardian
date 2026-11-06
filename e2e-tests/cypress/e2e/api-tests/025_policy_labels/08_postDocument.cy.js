@@ -3,7 +3,7 @@ import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('Get tokens for policy label', { tags: ['policy_labels', 'firstPool', 'all', 'all-no-mgs'] }, () => {
+context('Get tokens for policy label', { tags: ['policy_labels', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const UserUsername = Cypress.env('User');
 
     let policyLabel; let tokenLabel;
@@ -19,7 +19,7 @@ context('Get tokens for policy label', { tags: ['policy_labels', 'firstPool', 'a
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
                 response.body.forEach(element => {
-                    if (element.status == 'PUBLISHED') {
+                    if (element.status === 'PUBLISHED') {
                         policyLabel = element;
                     }
                 })

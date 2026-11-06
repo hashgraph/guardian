@@ -5,7 +5,7 @@ import * as Authorization from '../../../support/authorization';
 import * as IpfsSeeding from '../../../support/CustomHelpers/ipfsSeeding';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('Contracts', { tags: ['policies', 'comments', 'firstPool', 'all', 'all-no-mgs'] }, () => {
+context('Contracts', { tags: ['policies', 'comments', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
 
@@ -57,7 +57,7 @@ context('Contracts', { tags: ['policies', 'comments', 'firstPool', 'all', 'all-n
                 }).then((response) => {
                     expect(response.status).eql(STATUS_CODE.OK);
                     response.body.forEach(element => {
-                        if (element.policyIds.at(0) == policyId) {
+                        if (element.policyIds.at(0) === policyId) {
                             tokenId = element.tokenId
                         }
                     });

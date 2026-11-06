@@ -104,11 +104,11 @@ export class SchemasPage {
         cy.get(SchemasPageLocators.nameInput).should('be.visible').click();
         cy.get(SchemasPageLocators.nameInput).type(name);
 
-        if (entitytype == 'DEFAULT') {
+        if (entitytype === 'DEFAULT') {
             cy.get(SchemasPageLocators.entityList).click();
             cy.get(SchemasPageLocators.policySchemaentityDefaultinput).click();
         }
-        if (entitytype == 'EVC') {
+        if (entitytype === 'EVC') {
             cy.get(SchemasPageLocators.entityList).click();
             cy.get(SchemasPageLocators.policySchemaentityEVCinput).click();
 
@@ -131,11 +131,11 @@ export class SchemasPage {
         let editName = name + ' updated';
         cy.get(SchemasPageLocators.nameInput).type(editName);
 
-        if (entitytype == 'DEFAULT') {
+        if (entitytype === 'DEFAULT') {
             cy.get(SchemasPageLocators.entityList).click();
             cy.get(SchemasPageLocators.policySchemaentityDefaultinput).click();
         }
-        if (entitytype == 'EVC') {
+        if (entitytype === 'EVC') {
             cy.get(SchemasPageLocators.entityList).click();
             cy.get(SchemasPageLocators.policySchemaentityEVCinput).click();
 

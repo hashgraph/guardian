@@ -1,22 +1,23 @@
+import { randomInt } from '../../../../support/random';
 import { PoliciesPage } from '../../pages/policiesPage';
 const policiesPage = new PoliciesPage();
 
 import { HomePage } from '../../pages/homePage';
 const homePage = new HomePage();
 
-context('Error Validation on schema fields', { tags: ['ui'] }, () => {
+context('Error Validation on schema fields', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
-    const name = 'policyForValidation';
+    const name = randomInt(1000000000) + 'policyForValidation';
 
     before(() => {
         cy.viewport(1920, 1080);
         homePage.visit();
         homePage.login(SRUsername);
         policiesPage.openPoliciesTab();
-        policiesPage.importPolicyFromIPFS('1739792278.532981000');  //policyForValidation
-        policiesPage.backToPoliciesList();
-        policiesPage.checkStatus(name, 'Draft');
+        // From file: the testnet message it was published as does not exist on other networks.
+        policiesPage.importPolicyFromFile('policyForValidation.policy');
+        policiesPage.renameImportedPolicy(name);
         policiesPage.startDryRun(name);
         policiesPage.checkStatus(name, 'In Dry Run');
     });
@@ -27,5 +28,14 @@ context('Error Validation on schema fields', { tags: ['ui'] }, () => {
         policiesPage.validateTypesRequired();
         policiesPage.validateTypesMultiplie();
         policiesPage.validateTypesMultiplieRequired();
+    });
+
+    after(() => {
+        // visit() boots the app with a clean storage, which logs the user out.
+        homePage.visit();
+        homePage.login(SRUsername);
+        policiesPage.openPoliciesTab();
+        policiesPage.stopDryRun(name);
+        policiesPage.deletePolicy(name);
     });
 });

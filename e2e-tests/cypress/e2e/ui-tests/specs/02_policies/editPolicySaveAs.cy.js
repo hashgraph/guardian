@@ -1,7 +1,7 @@
 // Disabled: the save-as modal flow does not work in the new app (see the commented
 // context below). Restore the HomePage/PoliciesPage imports above the context with it.
 //TBD: doesn't work
-// context("Edit Policy. Save As flow", { tags: ['ui'] }, () => {
+// context("Edit Policy. Save As flow", { tags: ['ui', 'ui-all', 'all'] }, () => {
 
 //     const SRUsername = Cypress.env('SRUser');
 //     const name = Math.floor(Math.random() * 999) + "testName";

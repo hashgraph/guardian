@@ -97,7 +97,7 @@ export class HomePage {
 
 	selectAccoutTypeToCreate(accType){
 		cy.contains(HomePageLocators.createLink).click();
-		if (accType == 'SR')
+		if (accType === 'SR')
 			{cy.contains(HomePageLocators.SRtype).click();}
 		cy.get(HomePageLocators.continueButton).click();
 		// The account-type dialog is removed from the DOM only after its close transition.

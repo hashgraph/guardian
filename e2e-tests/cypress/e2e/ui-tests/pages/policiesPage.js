@@ -4,6 +4,7 @@ import CommonElements from '../../../support/defaultUIElements';
 import { waitForPageReady } from '../../../support/pageReadiness';
 import { dropFile, waitForTaskRoundtrip, replaceInaccessibleTools } from '../../../support/importFlow';
 import { clickButtonInWizardSteps, clickWizardTab } from '../../../support/wizardSteps';
+import { addGeoJsonPoint, openOverviewSection } from './userPoliciesPage';
 import { TIMEOUTS, POLL_INTERVAL } from '../../../support/CustomHelpers/timeouts';
 
 // The current app renders the policy engine on a PrimeNG 21 base. Static template
@@ -67,8 +68,9 @@ const L = {
     jsonContainer: '.textarea-code',
     treeContainer: '.tree-container',
     componentsContainer: '.components-container:not(:hidden)',
+    componentBtn: '.component-btn',
     // the transparent drag chip lies over the visible button and both carry the add handler
-    componentBtn: '.drag-btn',
+    componentAddChip: '.drag-btn',
     favoriteButton: '.component-btn-favorite',
     componentsBlock: `span.drag-component-name`,
     componentsSearch: 'input[placeholder="Search"]',
@@ -93,13 +95,12 @@ const L = {
     roleSelect: 'div.roles-form p-select',
     roleOption: 'li[role="option"]',
     wizardNext: "button:contains('Continue')",
-    wizardSubmit: "button:contains('Validate & Create')",
     dialogCreateButton: 'div.action-buttons button.guardian-button-primary',
     requestFormDialog: 'div.guardian-dialog',
     dialogTitle: 'div.header-text',
 
     // Schema-form fields (wizard application forms)
-    formField: 'div.form-field-input',
+    requestForm: 'request-document-form',
     formFieldContainer: 'div.guardian-input-container',
     dateInput: 'input.p-datepicker-input',
     ipfsInput: 'div.ipfs-url textarea',
@@ -447,8 +448,10 @@ export class PoliciesPage {
                 cy.wrap($cell.find('button.p-button-outlined').first()).click();
             }
         });
-        cy.get('tags-create-dialog input.p-field-input[formcontrolname="name"]', { timeout: TIMEOUTS.ui }).clear();
-        cy.get('tags-create-dialog input.p-field-input[formcontrolname="name"]').type(name);
+        // The dialog opened over the explorer dropped the last keystroke ("tag2" saved as "tag"): set it in one step.
+        const nameInput = 'tags-create-dialog input.p-field-input[formcontrolname="name"]';
+        cy.get(nameInput, { timeout: TIMEOUTS.ui }).invoke('val', name).trigger('input');
+        cy.get(nameInput).should('have.value', name);
         // pButton binds [label], which leaves no attribute in the DOM: find the button by its text.
         cy.contains('tags-create-dialog button', 'Create').click();
         cy.get('tags-create-dialog', { timeout: TIMEOUTS.ui }).should('not.exist');
@@ -602,7 +605,7 @@ export class PoliciesPage {
         const blocksSearch = () => cy.get(L.componentsSearch, { timeout: TIMEOUTS.ui }).first();
         blocksSearch().clear();
         blocksSearch().type(name);
-        cy.contains(L.componentBtn, name, { timeout: TIMEOUTS.ui }).click();
+        cy.contains(L.componentAddChip, name, { timeout: TIMEOUTS.ui }).click();
         blocksSearch().clear();
     }
 
@@ -740,160 +743,110 @@ export class PoliciesPage {
         Checks.waitForLoading();
     }
 
-    // The wizard request form renders every string field as a textarea in div.form-field-input
-    _wizardField(index) {
-        return cy.get(L.formField).find('textarea, input').eq(index);
+    // ---- Request form validation (dry-run virtual users) ----
+
+    _openRoleRequestForm(user, role) {
+        this.createDryRunUser();
+        this.openDryRunUser(user);
+        this.registerAs(role);
+        openOverviewSection();
+    }
+
+    // The field labelled `label` in the open form section; an array field holds one input per entry.
+    _requestField(label) {
+        return cy.contains(`${L.requestForm} .sf-label-text`, new RegExp(`^${label}$`), { timeout: TIMEOUTS.ui })
+            .closest('.form-field-array, .form-field');
+    }
+
+    _requestFieldInput(label) {
+        return this._requestField(label).find('textarea, input.p-datepicker-input').first();
+    }
+
+    _addFieldEntry(label) {
+        this._requestField(label).contains('button', 'Add Field').click();
+    }
+
+    _expectRequiredFieldEmpty(label) {
+        this._requestFieldInput(label).should('have.class', 'ng-invalid');
+    }
+
+    // The form marks a refused value with ng-invalid and an inline error, and clears both for an accepted one.
+    _expectFieldValidation(label, refusedValue, acceptedValue) {
+        const input = () => this._requestFieldInput(label);
+        input().type(refusedValue, { force: true });
+        input().blur({ force: true });
+        input().should('have.class', 'ng-invalid');
+        this._requestField(label).find('.sf-error').should('exist');
+        input().clear({ force: true });
+        input().type(acceptedValue, { force: true });
+        input().blur({ force: true });
+        input().should('have.class', 'ng-valid');
+        this._requestField(label).find('.sf-error').should('not.exist');
+    }
+
+    // The calendar stays open after typing and covers the fields below it until Escape closes it.
+    _fillDate(label) {
+        this._requestFieldInput(label).type('2025-01-03{esc}', { force: true });
+        cy.get('td.p-datepicker-day-cell').should('not.exist');
+    }
+
+    // An optional GeoJSON field starts without an entry; a geometry needs a type and its coordinates.
+    _fillGeoJsonPoint() {
+        cy.get(L.requestForm).then(($form) => {
+            if (!$form.find('app-geojson-type button:contains("Add Geometry")').length) {
+                cy.contains(`${L.requestForm} button`, 'Add geojson').click();
+            }
+        });
+        addGeoJsonPoint(() => cy.get(`${L.requestForm} app-geojson-type`).first());
+    }
+
+    // Nothing left to fix: no inline error and no required field left to jump to.
+    _expectRequestFormComplete() {
+        cy.get(`${L.requestForm} .sf-error`).should('not.exist');
+        cy.get(`${L.requestForm} .form-progress-link`).should('not.exist');
     }
 
     validateTypesDefault() {
-        this.createDryRunUser();
-        this.openDryRunUser();
-        this.registerAs('RoleD');
-        //number
-        this._wizardField(0).should('have.class', 'ng-valid');
-        this._wizardField(0).type('dsadsa');
-        this._wizardField(0).should('have.class', 'ng-invalid');
-        cy.get(L.wizardSubmit).should('be.disabled');
-        this._wizardField(0).clear({ force: true }).type('213', { force: true });
-        this._wizardField(0).should('have.class', 'ng-valid');
-        //email
-        this._wizardField(1).should('have.class', 'ng-valid');
-        this._wizardField(1).type('dsadsa');
-        this._wizardField(1).should('have.class', 'ng-invalid');
-        cy.get(L.wizardSubmit).should('be.disabled');
-        this._wizardField(1).clear({ force: true }).type('dsadsa@dsadsa.dsadsa', { force: true });
-        this._wizardField(1).should('have.class', 'ng-valid');
-        //image(IPFS)
-        this._wizardField(2).should('have.class', 'ng-valid');
-        this._wizardField(2).type('dsadsa');
-        this._wizardField(2).should('have.class', 'ng-invalid');
-        cy.get(L.wizardSubmit).should('be.disabled');
-        this._wizardField(2).clear({ force: true }).type('ipfs://dsadsa', { force: true });
-        this._wizardField(2).should('have.class', 'ng-valid');
-        //date
-        this._wizardField(3).type('fsdfds', { force: true });
-        this._wizardField(2).click();
-        this._wizardField(3).type('2025-01-03', { force: true });
-        //geojson
-        cy.get('button.guardian-button-secondary').eq(1).click();
-        cy.get('textarea').first().type('[1.321,2.321]', { force: true });
-        cy.get('textarea').first().should('have.class', 'ng-valid');
-
-        cy.get(L.wizardSubmit).should('be.enabled');
+        this._openRoleRequestForm('1', 'RoleD');
+        this._expectFieldValidation('number', 'dsadsa', '213');
+        this._expectFieldValidation('email', 'dsadsa', 'dsadsa@dsadsa.dsadsa');
+        this._expectFieldValidation('image', 'dsadsa', 'ipfs://dsadsa');
+        this._fillDate('date');
+        this._fillGeoJsonPoint();
+        this._expectRequestFormComplete();
     }
 
     validateTypesRequired() {
-        this.createDryRunUser();
-        this.openDryRunUser('2');
-        this.registerAs('RoleR');
-        //number
-        this._wizardField(0).should('have.class', 'ng-invalid');
-        this._wizardField(0).type('dsadsa');
-        this._wizardField(0).should('have.class', 'ng-invalid');
-        cy.get(L.wizardSubmit).should('be.disabled');
-        this._wizardField(0).clear({ force: true }).type('213', { force: true });
-        this._wizardField(0).should('have.class', 'ng-valid');
-        //date
-        this._wizardField(1).type('fsdfds', { force: true });
-        this._wizardField(0).click();
-        this._wizardField(1).type('2025-01-03', { force: true });
-        //email
-        this._wizardField(2).should('have.class', 'ng-invalid');
-        this._wizardField(2).type('dsadsa');
-        this._wizardField(2).should('have.class', 'ng-invalid');
-        cy.get(L.wizardSubmit).should('be.disabled');
-        this._wizardField(2).clear({ force: true }).type('dsadsa@dsadsa.dsadsa', { force: true });
-        this._wizardField(2).should('have.class', 'ng-valid');
-        //image(IPFS)
-        this._wizardField(3).should('have.class', 'ng-invalid');
-        this._wizardField(3).type('dsadsa');
-        this._wizardField(3).should('have.class', 'ng-invalid');
-        cy.get(L.wizardSubmit).should('be.disabled');
-        this._wizardField(3).clear({ force: true }).type('ipfs://dsadsa', { force: true });
-        this._wizardField(3).should('have.class', 'ng-valid');
-        //geojson
-        cy.get('textarea').first().type('[1.321,2.321]', { force: true });
-        cy.get('textarea').first().should('have.class', 'ng-valid');
-
-        cy.get(L.wizardSubmit).should('be.enabled');
+        this._openRoleRequestForm('2', 'RoleR');
+        ['numb', 'email', 'image'].forEach((label) => this._expectRequiredFieldEmpty(label));
+        this._expectFieldValidation('numb', 'dsadsa', '213');
+        this._fillDate('date');
+        this._expectFieldValidation('email', 'dsadsa', 'dsadsa@dsadsa.dsadsa');
+        this._expectFieldValidation('image', 'dsadsa', 'ipfs://dsadsa');
+        this._fillGeoJsonPoint();
+        this._expectRequestFormComplete();
     }
 
     validateTypesMultiplie() {
-        this.createDryRunUser();
-        this.openDryRunUser('3');
-        this.registerAs('RoleMD');
-        //number
-        cy.get('button.guardian-button-secondary').eq(1).click();
-        this._wizardField(0).should('have.class', 'ng-valid');
-        this._wizardField(0).type('dsadsa');
-        this._wizardField(0).should('have.class', 'ng-invalid');
-        cy.get(L.wizardSubmit).should('be.disabled');
-        this._wizardField(0).clear({ force: true }).type('213', { force: true });
-        this._wizardField(0).should('have.class', 'ng-valid');
-        //email
-        cy.get('button.guardian-button-secondary').eq(2).click();
-        this._wizardField(1).should('have.class', 'ng-valid');
-        this._wizardField(1).type('dsadsa');
-        this._wizardField(1).should('have.class', 'ng-invalid');
-        cy.get(L.wizardSubmit).should('be.disabled');
-        this._wizardField(1).clear({ force: true }).type('dsadsa@dsadsa.dsadsa', { force: true });
-        this._wizardField(1).should('have.class', 'ng-valid');
-        //image(IPFS)
-        cy.get('button.guardian-button-secondary').eq(3).click();
-        this._wizardField(2).should('have.class', 'ng-valid');
-        this._wizardField(2).type('dsadsa');
-        this._wizardField(2).should('have.class', 'ng-invalid');
-        cy.get(L.wizardSubmit).should('be.disabled');
-        this._wizardField(2).clear({ force: true }).type('ipfs://dsadsa', { force: true });
-        this._wizardField(2).should('have.class', 'ng-valid');
-        //date
-        cy.get('button.guardian-button-secondary').eq(4).click();
-        this._wizardField(3).type('fsdfds', { force: true });
-        this._wizardField(2).click();
-        this._wizardField(3).type('2025-01-03', { force: true });
-        //geojson
-        cy.get('button.guardian-button-secondary').eq(5).click();
-        cy.get('textarea').first().type('[1.321,2.321]', { force: true });
-        cy.get('textarea').first().should('have.class', 'ng-valid');
-
-        cy.get(L.wizardSubmit).should('be.enabled');
+        this._openRoleRequestForm('3', 'RoleMD');
+        ['number', 'email', 'image', 'date'].forEach((label) => this._addFieldEntry(label));
+        this._expectFieldValidation('number', 'dsadsa', '213');
+        this._expectFieldValidation('email', 'dsadsa', 'dsadsa@dsadsa.dsadsa');
+        this._expectFieldValidation('image', 'dsadsa', 'ipfs://dsadsa');
+        this._fillDate('date');
+        this._fillGeoJsonPoint();
+        this._expectRequestFormComplete();
     }
 
     validateTypesMultiplieRequired() {
-        this.createDryRunUser();
-        this.openDryRunUser('4');
-        this.registerAs('RoleMR');
-        //number
-        this._wizardField(0).should('have.class', 'ng-invalid');
-        this._wizardField(0).type('dsadsa');
-        this._wizardField(0).should('have.class', 'ng-invalid');
-        cy.get(L.wizardSubmit).should('be.disabled');
-        this._wizardField(0).clear({ force: true }).type('213', { force: true });
-        this._wizardField(0).should('have.class', 'ng-valid');
-        //email
-        this._wizardField(1).should('have.class', 'ng-invalid');
-        this._wizardField(1).type('dsadsa');
-        this._wizardField(1).should('have.class', 'ng-invalid');
-        cy.get(L.wizardSubmit).should('be.disabled');
-        this._wizardField(1).clear({ force: true }).type('dsadsa@dsadsa.dsadsa', { force: true });
-        this._wizardField(1).should('have.class', 'ng-valid');
-        //date
-        this._wizardField(2).type('fsdfds', { force: true });
-        this._wizardField(1).click();
-        this._wizardField(2).type('2025-01-03', { force: true });
-        this._wizardField(1).click();
-        //image(IPFS)
-        this._wizardField(3).should('have.class', 'ng-invalid');
-        this._wizardField(3).type('dsadsa', { force: true });
-        this._wizardField(3).should('have.class', 'ng-invalid');
-        cy.get(L.wizardSubmit).should('be.disabled');
-        this._wizardField(3).clear({ force: true }).type('ipfs://dsadsa', { force: true });
-        this._wizardField(3).should('have.class', 'ng-valid');
-        //geojson
-        cy.get('textarea').first().type('[1.321,2.321]', { force: true });
-        cy.get('textarea').first().should('have.class', 'ng-valid');
-
-        cy.get(L.wizardSubmit).should('be.enabled');
+        this._openRoleRequestForm('4', 'RoleMR');
+        ['number', 'email', 'image'].forEach((label) => this._expectRequiredFieldEmpty(label));
+        this._expectFieldValidation('number', 'dsadsa', '213');
+        this._expectFieldValidation('email', 'dsadsa', 'dsadsa@dsadsa.dsadsa');
+        this._fillDate('date');
+        this._expectFieldValidation('image', 'dsadsa', 'ipfs://dsadsa');
+        this._fillGeoJsonPoint();
+        this._expectRequestFormComplete();
     }
 
     // ---- No-op stubs (kept so legacy callers resolve) ----

@@ -5,7 +5,7 @@ const contractsPage = new ContractsPage();
 import { HomePage } from '../../pages/homePage';
 const homePage = new HomePage();
 
-context('Workflow Contract Import', { tags: ['ui'] }, () => {
+context('Workflow Contract Import', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const SR2Username = Cypress.env('SR2User');

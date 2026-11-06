@@ -17,7 +17,7 @@ import { randomInt } from '../../../../support/random';
 
 const IREC3_FILE = '../Methodology Library/International Renewable Energy Certificate (iREC)/Policies/IRec Policy 3 (1707126011.005978889).policy';
 
-context('Workflow iREC 3 Policy', { tags: ['ui'] }, () => {
+context('Workflow iREC 3 Policy', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const userUsername = Cypress.env('User');

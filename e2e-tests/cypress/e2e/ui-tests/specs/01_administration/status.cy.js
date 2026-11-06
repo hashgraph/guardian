@@ -4,7 +4,7 @@ const homepage = new HomePage();
 import {StatusPage} from '../../pages/status';
 const status = new StatusPage();
 
-context('Verify status of services', { tags: ['ui'] }, () => {
+context('Verify status of services', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
 

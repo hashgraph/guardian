@@ -6,7 +6,7 @@ import { TIMEOUTS } from '../../support/CustomHelpers/timeouts';
 const homepage = new HomePage();
 const configpage = new ConfigPage();
 
-describe('Disaster Recovery Testing', { tags: '@recovery' }, () => {
+describe('Disaster Recovery Testing', { tags: ['@recovery', 'dr-all', 'all'] }, () => {
     // A 1e9 space keeps re-runs from colliding with accounts left by earlier runs.
     const originalName = 'TestDRSR' + randomInt(1000000000);
     const recoveredName = 'TestDRRestored' + randomInt(1000000000);

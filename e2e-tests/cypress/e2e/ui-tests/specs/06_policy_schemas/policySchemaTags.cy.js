@@ -13,7 +13,7 @@ const login = (username) => {
     schemaPage.openSchemasSubtab('Policy');
 };
 
-context('Policy Schema Tags', { tags: ['ui'] }, () => {
+context('Policy Schema Tags', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const schemaName = 'UIPolicySchemaTags' + randomInt(1000000000);
