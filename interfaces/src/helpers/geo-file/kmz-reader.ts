@@ -34,6 +34,14 @@ export class KmzSizeError extends Error {
     constructor(public readonly size: number) { super('The uncompressed KML size is invalid.'); }
 }
 
+export class KmzRootEntryError extends Error {
+    constructor() { super('The KMZ file does not contain a root KML file.'); }
+}
+
+export class KmzBrowserSupportError extends Error {
+    constructor() { super(BROWSER_ERROR); }
+}
+
 export class KmzReader {
     public async inspect(file: Blob): Promise<KmzInspection> {
         const end = await this.readEndRecord(file);
@@ -41,7 +49,7 @@ export class KmzReader {
         const entry = entries.find(item => item.name === 'doc.kml') ||
             entries.find(item => !item.name.includes('/') && item.name.toLowerCase().endsWith('.kml'));
         if (!entry) {
-            throw new Error('The KMZ file does not contain a root KML file.');
+            throw new KmzRootEntryError();
         }
         return { entry, previewSizeBytes: entry.uncompressedSize };
     }
@@ -265,7 +273,7 @@ export class KmzReader {
 
     private inflate(stream: ReadableStream<Uint8Array>): ReadableStream<Uint8Array> {
         const Constructor = globalThis.DecompressionStream;
-        if (!Constructor) throw new Error(BROWSER_ERROR);
+        if (!Constructor) throw new KmzBrowserSupportError();
         try {
             const decompressor = new Constructor('deflate-raw');
             const input = stream.getReader();
@@ -289,7 +297,7 @@ export class KmzReader {
             })();
             return decompressor.readable;
         } catch {
-            throw new Error(BROWSER_ERROR);
+            throw new KmzBrowserSupportError();
         }
     }
 }

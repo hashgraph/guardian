@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { KmlCoordinateScanner } from '../dist/helpers/geo-file/kml-coordinate-scanner.js';
-import { KmzReader } from '../dist/helpers/geo-file/kmz-reader.js';
+import { KmzBrowserSupportError, KmzReader, KmzRootEntryError } from '../dist/helpers/geo-file/kmz-reader.js';
 function uint16(value) {
     return [value & 255, (value >>> 8) & 255];
 }
@@ -104,7 +104,7 @@ describe('KmzReader', () => {
         await assert.rejects(reader.readText(archive, inspection.entry, 1000), { message: 'The uncompressed KML size is invalid.' });
     });
     it('rejects a missing root KML', async () => {
-        await assert.rejects(reader.inspect(zip([{ name: 'folder/doc.kml', text: point }])), { message: 'The KMZ file does not contain a root KML file.' });
+        await assert.rejects(reader.inspect(zip([{ name: 'folder/doc.kml', text: point }])), error => error instanceof KmzRootEntryError && error.message === 'The KMZ file does not contain a root KML file.');
     });
     it('rejects ZIP64 sentinels without a locator', async () => {
         await assert.rejects(reader.inspect(zip([{ name: 'doc.kml', text: point }], true)), { message: 'The KMZ central directory is invalid.' });
@@ -126,7 +126,7 @@ describe('KmzReader', () => {
             constructor() { throw new Error('unsupported'); }
         };
         try {
-            await assert.rejects(reader.readText(archive, inspection.entry, 1000), { message: 'This browser cannot open KMZ files.' });
+            await assert.rejects(reader.readText(archive, inspection.entry, 1000), error => error instanceof KmzBrowserSupportError && error.message === 'This browser cannot open KMZ files.');
         }
         finally {
             globalThis.DecompressionStream = saved;
@@ -138,7 +138,7 @@ describe('KmzReader', () => {
         const saved = globalThis.DecompressionStream;
         globalThis.DecompressionStream = undefined;
         try {
-            await assert.rejects(reader.readText(archive, inspection.entry, 1000), { message: 'This browser cannot open KMZ files.' });
+            await assert.rejects(reader.readText(archive, inspection.entry, 1000), error => error instanceof KmzBrowserSupportError && error.message === 'This browser cannot open KMZ files.');
         }
         finally {
             globalThis.DecompressionStream = saved;

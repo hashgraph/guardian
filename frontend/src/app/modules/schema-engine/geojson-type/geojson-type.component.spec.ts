@@ -11,7 +11,7 @@ import { GeoJsonService } from 'src/app/services/geo-json.service';
 import { SwitchButton } from '../../common/switch-button/switch-button.component';
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { gzipBlob } from '../geo-file/geo-file-compression';
-import { KmlCoordinateScanner } from '@guardian/interfaces';
+import { KmlCoordinateScanner, KmzBrowserSupportError, KmzRootEntryError } from '@guardian/interfaces';
 import { GeoForm, ORIGINAL_FILE_ERRORS_KEY } from '../schema-form-model/geo-form';
 import { GeojsonTypeComponent } from './geojson-type.component';
 
@@ -1300,9 +1300,7 @@ describe('GeojsonTypeComponent original file link', () => {
             compressedSize: 3, uncompressedSize: 3, localHeaderOffset: 0
         };
         spyOn((component as any).kmzReader, 'inspect').and.resolveTo({ entry, previewSizeBytes: 3 });
-        spyOn((component as any).kmzReader, 'readText').and.rejectWith(
-            new Error('This browser cannot open KMZ files.')
-        );
+        spyOn((component as any).kmzReader, 'readText').and.rejectWith(new KmzBrowserSupportError());
         await component.importFromFile(new File(['zip'], 'site.kmz'));
         expect(value).toBe(oldValue);
         expect(component.importError).toBe('This browser cannot open KMZ files.');
@@ -1370,7 +1368,7 @@ describe('GeojsonTypeComponent original file link', () => {
             'The KMZ compression method is not supported.'
         ]) {
             it(`shows the archive inspection reason: ${reason}`, async () => {
-                spyOn(component['kmzReader'], 'inspect').and.rejectWith(new Error(reason));
+                spyOn(component['kmzReader'], 'inspect').and.rejectWith(reason === 'The KMZ file does not contain a root KML file.' ? new KmzRootEntryError() : new Error(reason));
                 answers.push('Go Back');
                 await component.importFromFile(new File(['bad'], 'invalid.kmz'));
                 expect(dialog.open.calls.count()).toBe(1);
@@ -1391,8 +1389,9 @@ describe('GeojsonTypeComponent original file link', () => {
                 spyOn(component['kmzReader'], 'inspect').and.resolveTo({
                     entry: { name: 'doc.kml', flags: 0, compressionMethod: 0, compressedSize: 3, uncompressedSize: 20, localHeaderOffset: 0 }, previewSizeBytes: 20
                 });
-                if (large) spyOn(component['kmzReader'], 'readCoordinate').and.rejectWith(new Error(reason));
-                else spyOn(component['kmzReader'], 'readText').and.rejectWith(new Error(reason));
+                const error = reason === 'This browser cannot open KMZ files.' ? new KmzBrowserSupportError() : new Error(reason);
+                if (large) spyOn(component['kmzReader'], 'readCoordinate').and.rejectWith(error);
+                else spyOn(component['kmzReader'], 'readText').and.rejectWith(error);
                 answers.push(...(large ? ['Upload without preview', 'Go Back'] : ['Go Back']));
                 await component.importFromFile(new File(['zip'], 'invalid.kmz'));
                 if (reason === 'This browser cannot open KMZ files.') {

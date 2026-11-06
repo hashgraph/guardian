@@ -26,7 +26,7 @@ import { classifyGeoFile, PreviewableGeoFileFormat } from '../geo-file/geo-file-
 import { gunzipIfCompressed } from '../geo-file/geo-file-compression';
 import { GeoCoordinate, GeoJsonValidator, KmlWellFormedChecker, NetworkLinkFinder } from '@guardian/interfaces';
 import { GeoJsonCoordinateScanner } from '@guardian/interfaces';
-import { KmzEntry, KmzReader } from '@guardian/interfaces';
+import { KmzBrowserSupportError, KmzEntry, KmzReader } from '@guardian/interfaces';
 import { KmlCoordinateScanner } from '@guardian/interfaces';
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { FeatureCollection } from 'geojson';
@@ -1551,7 +1551,7 @@ export class GeojsonTypeComponent implements OnChanges {
                 this.getShapeFromFile();
             }
         } catch (error) {
-            if (importing || error instanceof Error && error.message === 'This browser cannot open KMZ files.') this.importError = error instanceof Error ? error.message : String(error);
+            if (importing || error instanceof KmzBrowserSupportError) this.importError = error instanceof Error ? error.message : String(error);
             else await this.rejectInvalidFile(error instanceof Error ? error.message : String(error));
         } finally {
             this.loading = false;
@@ -1673,7 +1673,7 @@ export class GeojsonTypeComponent implements OnChanges {
             }
             await this.importCheckedFile(file, 'kml', limits, false, inspection);
         } catch (error) {
-            if (error instanceof Error && error.message === 'This browser cannot open KMZ files.') this.importError = error.message;
+            if (error instanceof KmzBrowserSupportError) this.importError = error.message;
             else await this.rejectInvalidFile(error instanceof Error ? error.message : String(error));
             this.loading = false;
             this.cdkRef.detectChanges();

@@ -2,7 +2,7 @@ import { DataBaseHelper } from '@guardian/common/helpers/db-helper';
 import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import { getGeospatialLimits } from '@guardian/common/helpers/geospatial-limits';
 import { PinoLogger } from '@guardian/common/helpers/pino-logger';
-import { GeoJsonValidator, KmlWellFormedChecker, KmzReader, KmzSizeError, NetworkLinkFinder, polygonValueError, validateGeoJsonValue } from '@guardian/interfaces';
+import { GeoJsonValidator, KmlWellFormedChecker, KmzReader, KmzRootEntryError, KmzSizeError, NetworkLinkFinder, polygonValueError, validateGeoJsonValue } from '@guardian/interfaces';
 import { GeoJsonFeatureCounter, KmlFeatureCounter, GeoFileCounts } from './geo-file-counter.js';
 import { Readable } from 'node:stream';
 import { createGunzip } from 'node:zlib';
@@ -332,7 +332,7 @@ export class GeospatialFileValidator {
         } catch (error) {
             if (error instanceof GeospatialValidationError) throw error;
             if (error instanceof KmzSizeError) await this.limitFailure(link, path, error.size, userId);
-            if (error instanceof Error && error.message === 'The KMZ file does not contain a root KML file.') {
+            if (error instanceof KmzRootEntryError) {
                 await this.fail(link, path, `The KMZ file ${this.fileName(link)} does not contain a root KML file.`, userId, buffer.length);
             }
             await this.fail(link, path, `The KMZ file ${this.fileName(link)} could not be read.`, userId, buffer.length);
