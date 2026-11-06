@@ -1,6 +1,6 @@
 # The gateway's auth guard hangs an HTTP request forever when the auth service never replies, freezing the UI
 
-**Status:** gateway side fixed (`Users.getUserByToken` waits at most 30 s and `sendMessageWithTimeout` clears its timer); the frontend `timeout` hardening and the other `Users` lookups are still open — infra robustness bug; seen once (transient), but the failure mode is a permanent UI freeze with no error and no way out
+**Status:** gateway side fixed (`Users.getUserByToken` waits at most 30 s and `sendMessageWithTimeout` clears its timer); the frontend side is fixed too (`ProfileService.pushSetProfile` / `restoreProfile` end with a toast after 30 s, so the spinner is released); the other `Users` lookups behind guards and handlers still have no deadline and are still open — infra robustness bug; seen once (transient), but the failure mode is a permanent UI freeze with no error and no way out
 **Component:** `common/src/mq/nats-service.ts` (`sendMessage`) + `api-gateway/src/auth/auth-guard.ts` + `api-gateway/src/helpers/users.ts` (`Users.getUserByToken`); the frozen UI is `frontend/src/app/views/user-profile/user-profile.component.ts` (`createDID`)
 **Severity:** medium — one transient hit in ~40 wizard runs, but the consequence is a full-screen spinner that never resolves; the affected user can only reload
 **Found by:** `e2e-tests/cypress/e2e/ui-tests/specs/00_account_registration/` run of 31 Oct 2026: after the USER wizard's `Confirm` click, the app fired `PUT /api/v1/profiles/push/:user` and the page froze on a spinner. The attached `[proxy]` request logger (`frontend/proxy.hostdocker.js`) shows the request went out and no `<-` status line ever came back. An identical `PUT /profiles/push` repro via `curl` 30 minutes later answered `202 in 24ms`, so the miss was transient, not an outage.
@@ -25,7 +25,7 @@ So a single dropped reply from the auth service turns one HTTP request into a re
 
 - Use `sendMessageWithTimeout` (a few seconds) for the token/user lookups behind `AuthGuard` at minimum; the guard already maps *any* throw to `401 Unauthorized`, so a timeout maps cleanly to the one behaviour the frontend's auth interceptor is already built to handle (refresh + retry).
 - Better: bound the wait centrally — a `Promise.race` in `canActivate`, or a Nest interceptor/HTTP deadline — so no guard or handler can hold a request open indefinitely.
-- Frontend hardening (independent and cheap): add `{ timeout: 30_000 }` to the wizard's `pushSetProfile` (and `restoreProfile`) calls so a hung push at least ends in an error toast and a released spinner instead of a silent freeze.
+- Frontend hardening: done (30 s timeout and a toast on `pushSetProfile` and `restoreProfile`).
 
 Note: this is a **different** bug from `registration-wizard-stalls-when-the-task-result-is-lost.md` (there the 202 *was* delivered and the task result was lost client-side). Here the 202 is never sent at all — the request dies inside the auth guard.
 

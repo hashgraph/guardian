@@ -1,6 +1,6 @@
 # Registration wizard stalls forever when the task result is lost
 
-**Status:** open — product bug; the UI tests now work around it (see `pages/configPage.js generateHederaAccount`: up to 9 Generate tickets with a 15 s pace between them, a 15 s absent-or-disabled verdict, and a page reload + step redo after every loss; applied to both wizards)
+**Status:** open — product bug; `onAsyncCompleted()` no longer throws on a task body without a result (it shows a toast and releases the spinner), the other causes below remain. The push-failure item below is overstated: an HTTP error on the push is already toasted by the error interceptor, only a push that gets no answer at all is silent; the UI tests now work around it (see `pages/configPage.js generateHederaAccount`: up to 9 Generate tickets with a 15 s pace between them, a 15 s absent-or-disabled verdict, and a page reload + step redo after every loss; applied to both wizards)
 **Component:** `frontend` — `modules/common/async-progress/async-progress.component.ts`, `views/root-profile/root-profile.component.ts`; `api-gateway` — `helpers/task-manager.ts`, `api/service/websockets.ts`
 **Severity:** medium-high — onboarding dead-ends with no in-app recovery; only a page reload works, and every retry funds a new orphaned Hedera account
 **Found by:** `e2e-tests/cypress/e2e/ui-tests/specs/00_account_registration/createAccount_Generate.cy.js` — runs of 31 Oct 2026 (14:22, 15:5x, 17:56; the 17:56 run, account `TestSRUI675890527`, supplied the most complete evidence below)
@@ -26,7 +26,7 @@ In the 17:56 run the wizard went through variant 1, re-armed, was clicked again 
 ## Suggested fixes (for the product side)
 
 - Surface a push failure: toast in `randomKey()`'s error callback instead of a silent reset.
-- Guard `onAsyncCompleted()`: when `task.result` is absent, reset `loading` (and ideally retry the `get()` once) instead of throwing.
+- Guard `onAsyncCompleted()`: done (toast and `loading` reset); retrying the `get()` once is still open.
 - Give `inputTaskId` mode a polling fallback: if the one-shot `get()` finds no result, retry `taskService.get(taskId)` on an interval until it settles (`GET /tasks/:taskId` exists and returns the result once `callbackPending` clears).
 - Make `taskStatusSubject` replay the last state per task on subscribe so a late subscriber cannot miss the final delivery.
 - In `async-progress.ngOnChanges`, key on the actual property name (`inputTaskId`) and re-sync `this.taskId = this.inputTaskId` before the `setTask` gating.

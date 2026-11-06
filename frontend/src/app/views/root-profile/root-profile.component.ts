@@ -36,7 +36,7 @@ const FEEDBACK_MAILTO_TEMPLATE =
     '&body=This%20is%20%5Bfeedback%20/%20support%20request%20/%20feature%20request%5D%0A%0A--%0A%0A' +
     'Add%20a%20summary%20here.%0A%0A%0AVersion:%20%5B{VERSION}%5D%0AOrigin:%20%5B{ORIGIN}%5D%0A---%0A';
 
-enum OperationMode {
+export enum OperationMode {
     None,
     Generate,
     GetAllUserTopics,
@@ -516,6 +516,12 @@ export class RootProfileComponent implements OnInit, OnDestroy {
             this.operationMode = OperationMode.None;
             this.taskService.get(taskId).subscribe(
                 (task) => {
+                    if (!task?.result) {
+                        // The result can be hidden while the gateway still runs the task callback.
+                        this.toastService.error('The operation finished but its result did not arrive. Try again.', 'Result missing');
+                        this.loading = false;
+                        return;
+                    }
                     switch (operationMode) {
                         case OperationMode.Generate: {
                             const { id, key } = task.result;
