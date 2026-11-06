@@ -40,7 +40,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
     });
 
     after(() => {
-        if (!policyId) return;
+        if (!policyId) {return;}
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.DELETE,

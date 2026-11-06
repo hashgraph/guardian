@@ -4,7 +4,7 @@
 **Component:** `e2e-tests/cypress/e2e`, `e2e-tests/cypress/support`
 **Severity:** low
 
-Measured with `npx eslint cypress` from `e2e-tests`: 69 findings on 5 Nov 2026. The generated folders (`cypress/reports`, `cypress/test_results`, `cypress/screenshots`, `cypress/downloads`) are excluded in `eslint.config.mjs`.
+Measured with `npx eslint cypress` from `e2e-tests`: 67 findings on 6 Nov 2026 (the two `curly` findings are fixed in the working tree). The generated folders (`cypress/reports`, `cypress/test_results`, `cypress/screenshots`, `cypress/downloads`) are excluded in `eslint.config.mjs`.
 
 | Rule | Count | Where | Fix |
 |---|---|---|---|
@@ -13,7 +13,6 @@ Measured with `npx eslint cypress` from `e2e-tests`: 69 findings on 5 Nov 2026. 
 | `no-useless-escape` | 8 | `putUpdateSchema.cy.js`, `schemaManage.cy.js` (4 each) | Drop the backslash before `"` inside single-quoted strings. |
 | `no-dupe-keys` | 4 | `putUpdateSchema.cy.js`, `schemaManage.cy.js` (2 each, key `entity`) | Remove the duplicate; the later one wins today, so keep that value. |
 | `cypress/no-assigning-return-values` | 2 | `policySchemaPage.js` | A Cypress command returns a chainable, not a value: use `.then()` or an alias (`.as()` and `cy.get('@name')`). |
-| `curly` | 2 | `putPoliciesId.cy.js`, `putPolicy.cy.js` | Add braces to the `if`. |
 | `max-len` | 2 | `putActiveSystemSchema.cy.js`, `putUpdateSystemSchema.cy.js` (700-character lines) | Build the schema document as an object and `JSON.stringify` it (as `support/CustomHelpers/systemSchemas.js` does) or move it to a fixture. |
 | `no-dupe-class-members` | 1 | `userPoliciesPage.js` (`createGroup`) | Remove the dead first definition; the later one wins today. |
 
