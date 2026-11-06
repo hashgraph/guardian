@@ -1293,6 +1293,8 @@ export class FieldForm {
             ...field,
             hide: false,
             autocalculate: !!comment?.autocalculate,
+            advisoryText: SchemaHelper.supportsAdvisoryText(field) && !comment?.autocalculate
+                ? field.advisoryText?.trim() || undefined : undefined,
             id: GenerateUUIDv4(),
             field,
             path: field.path || '',

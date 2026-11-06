@@ -112,6 +112,125 @@ describe('SchemasConfigurationComponent', () => {
         return component;
     }
 
+    describe('field advisory text', () => {
+        it('starts off, opens for typing, and deletes text when turned off', () => {
+            const component = createComponent();
+            component.markDirty = jasmine.createSpy('markDirty');
+            const field = makeField();
+            component.selectedField = field;
+            expect(component.advisoryTextEnabled).toBeFalse();
+            component.toggleAdvisoryText(true);
+            expect(component.advisoryTextEnabled).toBeTrue();
+            expect(field.advisoryText).toBeUndefined();
+            field.advisoryText = 'Guidance';
+            component.toggleAdvisoryText(false);
+            expect(component.advisoryTextEnabled).toBeFalse();
+            expect(Object.hasOwn(field, 'advisoryText')).toBeFalse();
+            expect(component.markDirty).toHaveBeenCalledTimes(2);
+        });
+
+        it('restores the toggle from stored text when selecting another field', () => {
+            const component = createComponent();
+            component.selectedField = makeField({ advisoryText: 'Guidance' });
+            expect(component.advisoryTextEnabled).toBeTrue();
+            component.selectedField = makeField({ advisoryText: '   ' });
+            expect(component.advisoryTextEnabled).toBeFalse();
+            component.selectedField = null;
+            expect(component.advisoryTextEnabled).toBeFalse();
+        });
+
+        it('offers guidance for input types and geographic references', () => {
+            const component = createComponent();
+            for (const type of FIELD_TYPES_UI.filter(type => !['helptext', 'sub-schema', 'autocalculate'].includes(type.key))) {
+                component.selectedField = makeField({
+                    type: type.schemaType || 'string', isRef: !!type.isRef, customType: type.customType || '',
+                });
+                expect(component.selectedFieldSupportsAdvisoryText).withContext(type.key).toBeTrue();
+            }
+        });
+
+        it('hides guidance on excluded fields and ignores attempts to enable it', () => {
+            const component = createComponent();
+            component.markDirty = jasmine.createSpy('markDirty');
+            for (const extra of [{ type: 'null' }, { readOnly: true }, { autocalculate: true },
+                { isRef: true, customType: 'subSchema' }, { name: 'policyId' }, { name: 'ref' }, { name: 'guardianVersion' }]) {
+                component.selectedField = makeField(extra);
+                expect(component.selectedFieldSupportsAdvisoryText).toBeFalse();
+                component.toggleAdvisoryText(true);
+                expect(component.advisoryTextEnabled).toBeFalse();
+            }
+            expect(component.markDirty).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('advisory text when field support changes', () => {
+        for (const key of ['helptext', 'sub-schema']) {
+            it(`clears guidance when switching to ${key} and never restores it on String`, () => {
+                const component = createComponent();
+                component.markDirty = jasmine.createSpy('markDirty');
+                component.fieldTypes = FIELD_TYPES_UI;
+                const field = makeField({ advisoryText: 'Use Project Hub' });
+                component.selectedField = field;
+                component.changeFieldType(FIELD_TYPES_UI.find(type => type.key === key)!);
+                expect(Object.hasOwn(field, 'advisoryText')).toBeFalse();
+                expect(component.advisoryTextEnabled).toBeFalse();
+                expect(component.selectedFieldSupportsAdvisoryText).toBeFalse();
+                component.changeFieldType(FIELD_TYPES_UI.find(type => type.key === 'string')!);
+                expect(field.advisoryText).toBeUndefined();
+                expect(component.advisoryTextEnabled).toBeFalse();
+            });
+        }
+
+        it('clears guidance when choosing a referenced sub-schema', () => {
+            const component = createComponent();
+            component.markDirty = jasmine.createSpy('markDirty');
+            const field = makeField({ advisoryText: 'Use Project Hub' });
+            component.selectedField = field;
+            component.changeSubSchemaRef(makeSchema({ id: 'child', fields: [makeField()] }));
+            expect(Object.hasOwn(field, 'advisoryText')).toBeFalse();
+            expect(component.advisoryTextEnabled).toBeFalse();
+            expect(component.selectedFieldSupportsAdvisoryText).toBeFalse();
+            expect(component.markDirty).toHaveBeenCalled();
+        });
+
+        it('clears guidance on Auto-Calculate and keeps it absent when returning to Required', () => {
+            const component = createComponent();
+            component.markDirty = jasmine.createSpy('markDirty');
+            const field = makeField({ type: 'number', advisoryText: 'Use Project Hub' });
+            component.selectedField = field;
+            component.setFieldRequiredMode('autocalculate');
+            expect(Object.hasOwn(field, 'advisoryText')).toBeFalse();
+            expect(component.advisoryTextEnabled).toBeFalse();
+            expect(component.selectedFieldSupportsAdvisoryText).toBeFalse();
+            component.setFieldRequiredMode('required');
+            expect(field.advisoryText).toBeUndefined();
+            expect(component.advisoryTextEnabled).toBeFalse();
+        });
+
+        it('keeps guidance when changing between supported types and visibility modes', () => {
+            const component = createComponent();
+            component.markDirty = jasmine.createSpy('markDirty');
+            const field = makeField({ advisoryText: 'Use Project Hub' });
+            component.selectedField = field;
+            component.changeFieldType(FIELD_TYPES_UI.find(type => type.key === 'number')!);
+            component.setFieldRequiredMode('hidden');
+            expect(field.advisoryText).toBe('Use Project Hub');
+            expect(component.advisoryTextEnabled).toBeTrue();
+        });
+
+        for (const customType of ['geo', 'sentinel']) {
+            it(`omits ${customType} guidance from all value-editor presets without changing the original`, () => {
+                const component = createComponent();
+                const field = makeField({ type: '#spatial', isRef: true, customType, advisoryText: 'Use Project Hub' });
+                component.selectedField = field;
+                expect(component.refPresetFormFields.map((preset: SchemaField) => preset.name)).toEqual(['default', 'suggest', 'example']);
+                expect(component.refPresetFormFields.every((preset: SchemaField) => preset.advisoryText === undefined)).toBeTrue();
+                expect(field.advisoryText).toBe('Use Project Hub');
+                expect(component.advisoryTextEnabled).toBeTrue();
+            });
+        }
+    });
+
     describe('removing a condition', () => {
         it('keeps the branch fields in the schema as ordinary fields', () => {
             const a: any = { name: 'a', conditionUserOrdered: true };

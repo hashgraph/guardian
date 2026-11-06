@@ -8,6 +8,7 @@
       [cards]="activeCards"
       [errorsRevealed]="errorsRevealed"
       [barLabel]="barLabel"
+      [overviewLabel]="showOverview ? 'Overview' : null"
       [locked]="isPreviewLocked"
       (select)="onRailSelect($event)"
       (selectCard)="onRailCard($event)"

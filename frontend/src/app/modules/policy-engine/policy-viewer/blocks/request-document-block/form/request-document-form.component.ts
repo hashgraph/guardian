@@ -949,6 +949,13 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         }
     }
 
+    public togglePreviewMode(): void {
+        if (this.loading || this.isPreviewBusy) {
+            return;
+        }
+        void this.onPreviewModeChange(!this.previewMode);
+    }
+
     public async onPreviewModeChange(enabled: boolean): Promise<void> {
         this.previewPreferenceLoaded = true;
         this.calculationPreview.saveMode(this.parent?.user?.id, this.policyId, this.id, enabled);

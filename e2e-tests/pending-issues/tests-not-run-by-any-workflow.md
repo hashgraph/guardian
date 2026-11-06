@@ -15,6 +15,10 @@ Nothing below has been run as part of this finding: the current pass/fail state 
 
 ## Not run by any workflow
 
+### `cypress/e2e/irec.cy.js` (tag `@e2e`)
+
+No workflow selects the `@e2e` tag, and the spec cannot even load: it imports `../../support/api/api-const`, which resolves to `e2e-tests/support/api/api-const`, a path that does not exist (the file is `cypress/support/api/api-const.js`). It is a 416-line API flow of the iREC policy that the `policy-tests/irec` specs now cover. Decide whether to delete it or to fix the import and give it the policy suite tags (`policyAT`, `policy-all`, `all`, `all-no-mgs`); either is a separate change.
+
 ### Frontend unit tests (`frontend/**/*.spec.ts`, 107 files)
 
 `main.yml` builds the frontend but never runs `ng test`. `frontend/karma.conf.js` uses `browsers: ['Chrome']` and `singleRun: false`, so CI needs a headless Chrome launcher (`ChromeHeadless`, optionally with `--no-sandbox`) and `ng test --watch=false`.

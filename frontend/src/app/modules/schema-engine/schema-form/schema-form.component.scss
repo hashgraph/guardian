@@ -434,6 +434,12 @@ form {
         padding-right: 8px;
     }
 
+    // Starts under the chevron, at the toggle's left padding
+    > .sf-meta {
+        margin: 0;
+        padding: 0 14px 12px;
+    }
+
     .sf-card-toggle {
         flex: 1;
         min-width: 0;
@@ -772,4 +778,27 @@ app-geojson-type ::ng-deep {
 
 .sf-meta {
     @include form-grid.sf-meta;
+}
+
+.sf-advisory {
+    color: var(--color-grey-6);
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    margin-bottom: 8px;
+
+    :host-context(.guardian-theme-dark) & {
+        color: var(--color-grey-4);
+    }
+}
+
+.sf-card .sf-card-head.sf-card-head-advisory {
+    flex-wrap: wrap;
+
+    > .sf-advisory {
+        order: 1;
+        flex-basis: 100%;
+        margin: 0 8px 12px 14px;
+    }
 }

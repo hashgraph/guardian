@@ -15,3 +15,5 @@ export * from './schema-json.js';
 export * from './policy-editable-field.js';
 export * from './geo-data/index.js';
 export * from './table-field-core.js';
+
+export * from './geo-file/index.js';

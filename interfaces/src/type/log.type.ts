@@ -2,6 +2,7 @@
  * Log type
  */
 export enum LogType {
+    DEBUG = 'DEBUG',
     WARN = 'WARN',
     INFO = 'INFO',
     ERROR = 'ERROR'

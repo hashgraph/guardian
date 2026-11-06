@@ -28,6 +28,7 @@ export interface SchemaField {
      * Description
      */
     description: string;
+    advisoryText?: string;
     /**
      * Is required
      */

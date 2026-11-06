@@ -2431,7 +2431,9 @@ $sc-accent: var(--guardian-schema-accent, var(--color-primary, #4169E2));
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    padding: 24px 16px;
+    // The rail is flush to the top and left, the form gives its own column the padding
+    --sf-content-pad: 24px 32px 40px;
+    padding: 0;
 
     ::ng-deep app-schema-form-root {
         display: block;
@@ -2655,7 +2657,7 @@ $sc-accent: var(--guardian-schema-accent, var(--color-primary, #4169E2));
     resize: vertical;
     min-height: 100px;
     line-height: 1.5;
-    white-space: pre;
+    white-space: pre-wrap;
 }
 
 .sc-rp-color {

@@ -36,7 +36,9 @@
                     <span class="sf-chip sf-chip-default">Default</span>
                   }
                 </div>
-                <!-- slot for field help text (7193) -->
+                @if (item.advisoryText) {
+                  <div class="sf-advisory">{{ item.advisoryText }}</div>
+                }
                 @if (showMetadata) {
                   <ng-container *ngTemplateOutlet="sfMeta; context: { $implicit: item }"></ng-container>
                 }
@@ -395,6 +397,9 @@
                       <span class="sf-chip">Optional</span>
                     }
                   </div>
+                  @if (item.advisoryText) {
+                    <div class="sf-advisory">{{ item.advisoryText }}</div>
+                  }
                   @if (showMetadata) {
                     <ng-container *ngTemplateOutlet="sfMeta; context: { $implicit: item }"></ng-container>
                   }
@@ -719,7 +724,10 @@
                           [class.sf-card-error]="err"
                           [class.sf-card-open]="item.open"
                           >
-                          <div class="sf-card-head">
+                          <div class="sf-card-head" [class.sf-card-head-advisory]="!!item.advisoryText">
+                            @if (item.advisoryText) {
+                              <div class="sf-advisory">{{ item.advisoryText }}</div>
+                            }
                             <button
                               type="button"
                               class="sf-card-toggle"
@@ -870,7 +878,10 @@
                           [class.sf-card-error]="err"
                           [class.sf-card-open]="item.open"
                           >
-                          <div class="sf-card-head">
+                          <div class="sf-card-head" [class.sf-card-head-advisory]="!!item.advisoryText">
+                            @if (item.advisoryText) {
+                              <div class="sf-advisory">{{ item.advisoryText }}</div>
+                            }
                             <button
                               type="button"
                               class="sf-card-toggle"

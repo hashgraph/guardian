@@ -2,12 +2,13 @@ import { UntypedFormControl, ValidationErrors } from '@angular/forms';
 import { from, map, Observable, of } from 'rxjs';
 import { ajvSchemaValidator } from 'src/app/validators/ajv-schema.validator';
 import ajv from 'ajv';
-import { GeoJsonSchema, GeoJsonType } from '@guardian/interfaces';
-import { polygonHolesError, polygonRingError } from './polygon-ring-validation';
+import { GeoJsonSchema, GeoJsonType, validateGeoJsonValue } from '@guardian/interfaces';
+import { polygonHolesError, polygonRingError } from '@guardian/interfaces';
 
 export const MISSING_ORIGINAL_FILE_ERROR =
     'The original file is not available in this browser. Import it again.';
 export const ORIGINAL_FILE_ERRORS_KEY = 'file';
+export const GEOJSON_STANDARD_ERRORS_KEY = 'standard';
 export const GEOJSON_REQUIRED_ERROR = 'A GeoJSON object is required';
 
 export class GeoForm {
@@ -40,6 +41,10 @@ export class GeoForm {
                 ajvSchemaValidator(new ajv().compile(GeoJsonSchema)),
                 (data) => {
                     const errors = this.validatePayload(data.value) || {};
+                    if (!Object.keys(errors).length && data.value && Object.keys(data.value).length) {
+                        const check = validateGeoJsonValue(data.value);
+                        if (!check.valid) errors[GEOJSON_STANDARD_ERRORS_KEY] = [`The value is not valid GeoJSON (RFC 7946). ${check.reason || 'Invalid GeoJSON.'}`];
+                    }
 
                     if (Object.keys(errors).length) {
                         return {
