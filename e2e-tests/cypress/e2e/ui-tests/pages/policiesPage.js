@@ -67,7 +67,8 @@ const L = {
     jsonContainer: '.textarea-code',
     treeContainer: '.tree-container',
     componentsContainer: '.components-container:not(:hidden)',
-    componentBtn: '.component-btn',
+    // the transparent drag chip lies over the visible button and both carry the add handler
+    componentBtn: '.drag-btn',
     favoriteButton: '.component-btn-favorite',
     componentsBlock: `span.drag-component-name`,
     componentsSearch: 'input[placeholder="Search"]',
@@ -531,8 +532,8 @@ export class PoliciesPage {
      */
     editPolicyProperty(property, name) {
         if (property === 'Tag') {
-            cy.get('.right-bottom-toolbar').find('td.cellName', new RegExp('^' + property + '$')).parent().find('input.prop-input').clear();
-            cy.get('.right-bottom-toolbar').find('td.cellName', new RegExp('^' + property + '$')).parent().find('input.prop-input').type(name);
+            cy.get('.right-bottom-toolbar').contains('td.cellName', new RegExp('^' + property + '$')).parent().find('input.prop-input').clear();
+            cy.get('.right-bottom-toolbar').contains('td.cellName', new RegExp('^' + property + '$')).parent().find('input.prop-input').type(name);
             return;
         }
         this._ensureSettingsDrawer();
@@ -580,7 +581,9 @@ export class PoliciesPage {
         cy.contains('td.cellName', new RegExp('^Name$', 'g')).parent().find(CommonElements.Input).should('have.attr', 'readonly', 'readonly');
         cy.contains('td.cellName', new RegExp('^Policy Tag$', 'g')).parent().find(CommonElements.Input).should('have.attr', 'readonly', 'readonly');
         cy.contains('td.cellName', new RegExp('^Topic Description$', 'g')).parent().find(CommonElements.Input).should('have.attr', 'readonly', 'readonly');
-        cy.contains('td.cellName', new RegExp('^Description$', 'g')).parent().find(CommonElements.textarea).should('have.attr', 'readonly', 'readonly');
+        // A read-only policy shows its description as text, not as a textarea.
+        cy.contains('td.cellName', new RegExp('^Description$', 'g')).parent().find('.prop-description-readonly').should('exist');
+        cy.contains('td.cellName', new RegExp('^Description$', 'g')).parent().find(CommonElements.textarea).should('not.exist');
     }
 
     // Settings drawer (opened from the policy identity popover)
@@ -595,12 +598,12 @@ export class PoliciesPage {
     }
 
     addNewBlock(name) {
-        // The drag chip is an opacity-0 overlay, so filter the palette and click the
-        // visible component button, which carries the onAdd handler.
-        cy.get(L.componentsSearch, { timeout: TIMEOUTS.ui }).clear();
-        cy.get(L.componentsSearch).type(name);
+        // The Blocks, Modules and Tools tabs each have a search input; the Blocks one comes first.
+        const blocksSearch = () => cy.get(L.componentsSearch, { timeout: TIMEOUTS.ui }).first();
+        blocksSearch().clear();
+        blocksSearch().type(name);
         cy.contains(L.componentBtn, name, { timeout: TIMEOUTS.ui }).click();
-        cy.get(L.componentsSearch).clear();
+        blocksSearch().clear();
     }
 
     checkBlockExists(name) {
