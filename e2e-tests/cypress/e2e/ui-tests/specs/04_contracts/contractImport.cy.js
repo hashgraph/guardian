@@ -41,11 +41,9 @@ context('Workflow Contract Import', { tags: ['ui'] }, () => {
 
     it('Import contracts', () => {
         contractsPage.openContractTypeTab('wipe');
-        contractsPage.importContract(wipeContractId);
-        contractsPage.fillContract(wipeContract);
+        contractsPage.importContract(wipeContractId, wipeContract);
         contractsPage.openContractTypeTab('retire');
-        contractsPage.importContract(retireContractId);
-        contractsPage.fillContract(retireContract);
+        contractsPage.importContract(retireContractId, retireContract);
     });
 
     after(() => {
