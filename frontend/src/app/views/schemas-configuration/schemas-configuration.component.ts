@@ -2617,9 +2617,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             return;
         }
         this.refPresetFormFields = [
-            { ...f, name: 'default', description: 'Default Value', required: false, hidden: false, default: null, suggest: null, examples: undefined },
-            { ...f, name: 'suggest', description: 'Suggested Value', required: false, hidden: false, default: null, suggest: null, examples: undefined },
-            { ...f, name: 'example', description: 'Test Value',      required: false, hidden: false, default: null, suggest: null, examples: undefined },
+            { ...f, name: 'default', description: 'Default Value', required: false, hidden: false, default: null, suggest: null, examples: undefined, advisoryText: undefined },
+            { ...f, name: 'suggest', description: 'Suggested Value', required: false, hidden: false, default: null, suggest: null, examples: undefined, advisoryText: undefined },
+            { ...f, name: 'example', description: 'Test Value',      required: false, hidden: false, default: null, suggest: null, examples: undefined, advisoryText: undefined },
         ] as SchemaField[];
         this.refPresetValues = {
             default: f.default ?? null,
@@ -2745,6 +2745,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         f.hidden        = mode === 'hidden';
         f.autocalculate = mode === 'autocalculate';
         if (mode !== 'autocalculate') { f.expression = ''; } else { f.isArray = false; }
+        if (mode === 'autocalculate') {
+            delete f.advisoryText;
+            this.advisoryTextEnabled = false;
+        }
         this.markDirty();
     }
 
@@ -3275,6 +3279,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             sub.default = null;
             sub.suggest = null;
             sub.examples = undefined;
+            delete sub.advisoryText;
+            this.advisoryTextEnabled = false;
             this._rebuildRefPreset();
             this.markDirty();
             return;
@@ -3297,6 +3303,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             f.expression = '';
         }
         if (ft.key === 'helptext') {
+            delete f.advisoryText;
+            this.advisoryTextEnabled = false;
             f.required = false;
             f.hidden = false;
         }
@@ -3314,6 +3322,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         f.isRef = true;
         f.type = schema.iri || '';
         f.customType = 'subSchema';
+        delete f.advisoryText;
+        this.advisoryTextEnabled = false;
         f.format = '';
         f.pattern = '';
         f.unitSystem = '';
