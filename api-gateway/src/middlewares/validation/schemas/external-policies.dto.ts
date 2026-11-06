@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsNumber, IsObject, IsOptional, IsString } from 'class-validator';
-import { ExternalPolicyStatus, PolicyActionStatus, PolicyActionType } from '@guardian/interfaces';
+import { ExternalPolicyStatus, PolicyActionStatus, PolicyActionType, RemoteJoinStatus, RemoteParticipantStatus } from '@guardian/interfaces';
 import { Examples } from '../examples.js';
 
 export class ExternalPolicyDTO {
@@ -102,6 +102,100 @@ export class ExternalPolicyDTO {
     @IsOptional()
     @IsString()
     username?: string;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'Status of the join request sent to the Main instance',
+        enum: RemoteJoinStatus,
+        required: false,
+        example: RemoteJoinStatus.SENT
+    })
+    @IsOptional()
+    @IsString()
+    joinStatus?: RemoteJoinStatus;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'Why the join request could not be sent',
+        required: false
+    })
+    @IsOptional()
+    @IsString()
+    joinError?: string;
+}
+
+export class RemoteParticipantDTO {
+    @ApiProperty({
+        type: 'string',
+        description: 'Participant ID',
+        example: Examples.DB_ID
+    })
+    @IsOptional()
+    @IsString()
+    id?: string;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'Policy ID',
+        example: Examples.DB_ID
+    })
+    @IsOptional()
+    @IsString()
+    policyId?: string;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'Policy message ID',
+        example: Examples.MESSAGE_ID
+    })
+    @IsOptional()
+    @IsString()
+    policyMessageId?: string;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'User DID',
+        example: Examples.DID
+    })
+    @IsOptional()
+    @IsString()
+    did?: string;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'User Hedera account, the payer of the join request',
+        example: Examples.ACCOUNT_ID
+    })
+    @IsOptional()
+    @IsString()
+    hederaAccountId?: string;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'Join request message ID',
+        example: Examples.MESSAGE_ID
+    })
+    @IsOptional()
+    @IsString()
+    joinMessageId?: string;
+
+    @ApiProperty({
+        type: 'string',
+        description: 'Issue time of the join proof',
+        example: '2026-01-01T00:00:00.000Z'
+    })
+    @IsOptional()
+    @IsString()
+    issued?: string;
+
+    @ApiProperty({
+        type: 'string',
+        enum: RemoteParticipantStatus,
+        example: RemoteParticipantStatus.PENDING
+    })
+    @IsOptional()
+    @IsString()
+    status?: RemoteParticipantStatus;
 }
 
 export class PolicyRequestDTO {

@@ -1,0 +1,30 @@
+.context {
+    padding: 14px 0 20px 0;
+    display: flex;
+    flex-direction: column;
+    font-family: Inter, serif;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    user-select: none;
+
+    &>div {
+        margin-left: 15px;
+    }
+}
+
+.guardian-input-container {
+    width: 100%;
+    margin-bottom: 24px;
+}
+
+.invite-link {
+    word-break: break-all;
+}
+
+.qr-container {
+    display: flex;
+    justify-content: center;
+}

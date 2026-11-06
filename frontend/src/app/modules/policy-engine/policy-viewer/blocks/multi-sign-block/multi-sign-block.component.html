@@ -8,7 +8,7 @@
         <div (click)="onClickMenu($event)">
           @for (doc of documents; track doc) {
             <div class="documents">
-              <div class="doc-did" [title]="doc.did">{{ doc.username }}</div>
+              <div class="doc-did" [title]="doc.did">{{ doc.username || doc.did }}</div>
               <div class="doc-status status-{{doc.status}}">{{ doc.status }}</div>
             </div>
           }
@@ -85,7 +85,7 @@
           <div style="max-height: 150px;overflow: auto">
             @for (doc of documents; track doc) {
               <div class="documents">
-                <div class="doc-did" [title]="doc.did">{{ doc.username }}</div>
+                <div class="doc-did" [title]="doc.did">{{ doc.username || doc.did }}</div>
                 <div class="doc-status status-{{doc.status}}">{{ doc.status }}</div>
               </div>
             }

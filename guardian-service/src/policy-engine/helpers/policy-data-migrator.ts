@@ -1789,7 +1789,7 @@ export class PolicyDataMigrator {
 
             await DatabaseServer.createVirtualUser(
                 this._policyId,
-                user.username,
+                user.username || user.did,
                 user.did,
                 user.hederaAccountId,
                 null,

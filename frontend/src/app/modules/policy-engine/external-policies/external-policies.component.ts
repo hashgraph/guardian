@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ExternalPolicyStatus, UserPermissions, UserRole } from '@guardian/interfaces';
+import { ExternalPolicyStatus, RemoteJoinStatus, RemotePolicyInvite, UserPermissions, UserRole } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
 import { SearchExternalPolicyDialog } from '../dialogs/search-external-policy-dialog/search-external-policy-dialog.component';
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { ToastService } from 'src/app/services/toast.service';
 import { GridDialogComponent } from '../../common/grid-dialog/grid-dialog.component';
 
 interface IColumn {
@@ -40,13 +41,15 @@ export class ExternalPolicyComponent implements OnInit {
     private _defaultColumns: IColumn[];
 
     private subscription = new Subscription();
+    private pendingInvite: string | null = null;
 
     constructor(
         private profileService: ProfileService,
         private externalPoliciesService: ExternalPoliciesService,
         private dialogService: DialogService,
         private router: Router,
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        private toastService: ToastService
     ) {
         this._defaultColumns = [{
             id: 'name',
@@ -99,6 +102,9 @@ export class ExternalPolicyComponent implements OnInit {
         this.pageIndex = 0;
         this.pageSize = 10;
         this.pageCount = 0;
+        this.pendingInvite = RemotePolicyInvite.decode(
+            this.route.snapshot.queryParams[RemotePolicyInvite.QUERY_PARAM]
+        );
         this.subscription.add(
             this.route.queryParams.subscribe((queryParams) => {
                 this.loadProfile();
@@ -120,6 +126,8 @@ export class ExternalPolicyComponent implements OnInit {
             this.user = new UserPermissions(profile);
             this.owner = this.user.did;
 
+            this.openPendingInvite();
+
             if (this.user.POLICIES_EXTERNAL_POLICY_UPDATE) {
                 this.columns = [...this._defaultColumns, {
                     id: 'options',
@@ -129,7 +137,13 @@ export class ExternalPolicyComponent implements OnInit {
                     tooltip: false
                 }];
             } else {
-                this.columns = [...this._defaultColumns];
+                this.columns = [...this._defaultColumns, {
+                    id: 'participation',
+                    title: 'Participation',
+                    type: 'text',
+                    size: '230',
+                    tooltip: false
+                }];
             }
 
             if (this.isConfirmed) {
@@ -166,6 +180,7 @@ export class ExternalPolicyComponent implements OnInit {
                             item.userCount++;
                         }
                         user.typeName = user.type === 'IMPORT' ? 'Imported' : 'Disconnected';
+                        user.participation = this.getJoinStatusName(user);
                     }
                 }
                 setTimeout(() => {
@@ -201,14 +216,33 @@ export class ExternalPolicyComponent implements OnInit {
         this.router.navigate(['/policy-labels', item.id]);
     }
 
-    public onImport() {
+    private openPendingInvite() {
+        if (!this.pendingInvite) {
+            return;
+        }
+        const messageId = this.pendingInvite;
+        this.pendingInvite = null;
+        this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { [RemotePolicyInvite.QUERY_PARAM]: null },
+            queryParamsHandling: 'merge',
+            replaceUrl: true
+        });
+        if (this.user.POLICIES_EXTERNAL_POLICY_CREATE) {
+            this.onImport(messageId);
+        }
+    }
+
+    public onImport(messageId?: string) {
         const dialogRef = this.dialogService.open(SearchExternalPolicyDialog, {
             showHeader: false,
             width: '720px',
             styleClass: 'guardian-dialog',
+            data: { messageId },
         })!;
         dialogRef.onClose.subscribe(async (result: any | null) => {
             if (result) {
+                this.toastService.success('Import requested');
                 this.loadData();
             }
         });
@@ -285,10 +319,58 @@ export class ExternalPolicyComponent implements OnInit {
         }
     }
 
+    public getJoinStatusName(entry: any): string {
+        if (!entry) {
+            return '';
+        }
+        switch (entry.status) {
+            case ExternalPolicyStatus.NEW:
+                return 'Awaiting home approval';
+            case ExternalPolicyStatus.REJECTED:
+                return 'Rejected by the home instance';
+            case ExternalPolicyStatus.APPROVED:
+                switch (entry.joinStatus) {
+                    case RemoteJoinStatus.SENT:
+                        return 'Awaiting Main approval';
+                    case RemoteJoinStatus.ACCEPTED:
+                        return 'Ready';
+                    case RemoteJoinStatus.REJECTED:
+                        return 'Rejected by the Main instance';
+                    case RemoteJoinStatus.FAILED:
+                        return 'Join request failed';
+                    default:
+                        return 'Approved';
+                }
+            default:
+                return '';
+        }
+    }
+
+    public getJoinStatusClass(entry: any): string {
+        switch (this.getJoinStatusName(entry)) {
+            case 'Ready':
+            case 'Approved':
+                return 'APPROVED-status';
+            case 'Rejected by the home instance':
+            case 'Rejected by the Main instance':
+            case 'Join request failed':
+                return 'REJECTED-status';
+            default:
+                return 'NEW-status';
+        }
+    }
+
+    public getJoinStatusTooltip(entry: any): string {
+        if (entry?.joinStatus === RemoteJoinStatus.FAILED && entry.status === ExternalPolicyStatus.APPROVED) {
+            return `${entry.joinError || ''} Import the policy again to retry.`.trim();
+        }
+        return '';
+    }
+
     public onUsers(row: any) {
         const dialogRef = this.dialogService.open(GridDialogComponent, {
             showHeader: false,
-            width: '640px',
+            width: '760px',
             styleClass: 'guardian-dialog',
             data: {
                 header: 'Users',
@@ -304,6 +386,21 @@ export class ExternalPolicyComponent implements OnInit {
                     field: 'typeName',
                     colClass: (column: any, row: any) =>{
                         return row.type === 'IMPORT' ? 'label-approved' : 'label-rejected';
+                    }
+                }, {
+                    id: 'participation',
+                    title: 'Participation',
+                    width: '230',
+                    field: 'participation',
+                    colClass: (column: any, entry: any) => {
+                        switch (this.getJoinStatusClass(entry)) {
+                            case 'APPROVED-status':
+                                return 'label-approved';
+                            case 'REJECTED-status':
+                                return 'label-rejected';
+                            default:
+                                return '';
+                        }
                     }
                 }],
                 height: 52,

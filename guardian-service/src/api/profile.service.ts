@@ -23,6 +23,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { PrivateKey } from '@hiero-ledger/sdk';
 import { ICredentials, IFireblocksConfig, IOnboardingPayload, setupUserProfile, validateCommonDid } from './helpers/profile-helper.js';
 import { validateHederaAccountKey } from './helpers/hedera-key-validator.js';
+import { getUserDidTopicId } from './helpers/remote-policy-join-helper.js';
 
 @Controller()
 export class ProfileController {
@@ -671,12 +672,7 @@ export function profileAPI(logger: PinoLogger) {
                 if (!didRow || didRow.status !== DidDocumentStatus.CREATE) {
                     return new MessageError('DID document is not published.');
                 }
-                let topicId = didRow.topicId;
-                if (!topicId) {
-                    const topic = await db.getTopic({ type: TopicType.UserTopic, owner: user.did })
-                        || await db.getTopic({ type: TopicType.UserTopic, owner: user.parent });
-                    topicId = topic?.topicId;
-                }
+                const topicId = await getUserDidTopicId(user);
                 const vcDocument = await db.getVcDocument({
                     owner: user.did,
                     type: { $in: [SchemaEntity.USER, SchemaEntity.STANDARD_REGISTRY] }

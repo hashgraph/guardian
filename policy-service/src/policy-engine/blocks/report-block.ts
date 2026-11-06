@@ -78,7 +78,8 @@ export class ReportBlock {
             const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
             const curUser = await PolicyUtils.getUser(ref, did, userId);
             if (curUser) {
-                map[did] = curUser.username;
+                // a remote user has no username
+                map[did] = curUser.username || did;
                 return map[did];
             } else {
                 return did;

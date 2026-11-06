@@ -1,0 +1,107 @@
+<div class="dialog-header">
+  <div class="header-container">
+    <div class="header-text">Remote participants</div>
+    @if (policy) {
+      <div class="header-item">{{policy.name}}</div>
+    }
+  </div>
+  <div class="header-icon" (click)="onClose()">
+    <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+  </div>
+</div>
+<div class="dialog-body">
+  <div class="context">
+    @if (loading) {
+      <div class="guardian-loading">
+        <div class="guardian-loading-image"></div>
+      </div>
+    }
+
+    @if (error) {
+      <div class="error-message">{{error}}</div>
+    }
+
+    @if (page && page.length > 0) {
+      <div class="guardian-grid-container">
+        <p-table
+          class="guardian-grid-table"
+          [value]="page"
+          [scrollable]="true"
+          >
+          <ng-template pTemplate="header">
+            <tr class="guardian-grid-header">
+              <th class="header-cell-text col-auto">DID</th>
+              <th class="header-cell-text col-200">Hedera account</th>
+              <th class="header-cell-text col-180">Requested</th>
+              <th class="header-cell-text col-135">Status</th>
+              <th class="header-cell-text col-200">Options</th>
+            </tr>
+          </ng-template>
+          <ng-template let-row pTemplate="body">
+            <tr class="guardian-grid-row">
+              <td
+                class="row-cell-text col-auto"
+                [pTooltip]="row.did"
+                tooltipPosition="top"
+                [showDelay]="1000">
+                <span class="text-truncate">{{row.did}}</span>
+              </td>
+              <td class="row-cell-text col-200">
+                <span class="text-truncate">{{row.hederaAccountId}}</span>
+              </td>
+              <td class="row-cell-text col-180">
+                <span class="text-truncate">{{row.issued | date:'short'}}</span>
+              </td>
+              <td class="row-cell-text col-135">
+                <div class="participant-status {{row.status}}-status">{{ getStatusName(row) }}</div>
+              </td>
+              <td class="row-cell-text col-200">
+                <div class="option-btns">
+                  @if (canApprove(row)) {
+                    <button
+                      class="guardian-button approve-btn"
+                      (click)="onApprove(row)">Approve</button>
+                  }
+                  @if (canReject(row)) {
+                    <button
+                      class="guardian-button reject-btn"
+                      (click)="onReject(row)">Reject</button>
+                  }
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+        <div class="guardian-grid-paginator">
+          <app-paginator
+            class="guardian-grid-paginator"
+            [pageIndex]="pageIndex"
+            [pageSize]="pageSize"
+            [length]="count"
+            (page)="onPage($event)"
+          ></app-paginator>
+        </div>
+      </div>
+    } @else {
+      <div class="empty-grid">
+        <div class="empty-grid-icon">
+          <svg-icon
+            class="svg-icon-32"
+            src="/assets/images/icons/32/list.svg"
+            svgClass="icon-color-disabled">
+          </svg-icon>
+        </div>
+        <div class="empty-grid-text">No remote users have asked to join this policy yet</div>
+      </div>
+    }
+  </div>
+</div>
+<div class="dialog-footer">
+  <div class="action-buttons">
+    <div class="dialog-button">
+      <button
+        (click)="onClose()"
+      class="guardian-button guardian-button-secondary">Close</button>
+    </div>
+  </div>
+</div>

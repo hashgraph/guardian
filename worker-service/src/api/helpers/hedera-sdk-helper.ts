@@ -2403,6 +2403,36 @@ export class HederaSDKHelper {
     }
 
     /**
+     * Get topic (Rest API)
+     *
+     * @param {string} topicId - Topic Id
+     *
+     * @returns {{topicId: string, submitKey: string | null}} - Topic info, the submit key is null for an open topic
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get topic request timeout exceeded')
+    public static async topicInfo(topicId: string): Promise<{
+        topicId: string;
+        submitKey: string | null;
+    }> {
+        try {
+            TopicId.fromString(topicId);
+        } catch (error) {
+            throw new Error(`Invalid topic '${topicId}'`);
+        }
+        const res = await axios.get(
+            `${Environment.HEDERA_TOPIC_API}/${topicId}`,
+            { responseType: 'json' }
+        );
+        if (!res?.data) {
+            throw new Error(`Invalid topic '${topicId}'`);
+        }
+        return {
+            topicId: res.data.topic_id,
+            submitKey: res.data.submit_key?.key || null,
+        };
+    }
+
+    /**
      * Get account (Rest API)
      *
      * @param {string} accountId - Account Id

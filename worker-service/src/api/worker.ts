@@ -1049,6 +1049,14 @@ export class Worker extends NatsService {
                     break;
                 }
 
+                case WorkerTaskType.GET_TOPIC_INFO_REST: {
+                    const { topicId } = task.data;
+                    result.data = await HederaSDKHelper
+                        .setNetwork(networkOptions)
+                        .topicInfo(topicId);
+                    break;
+                }
+
                 case WorkerTaskType.CHECK_ACCOUNT: {
                     const { hederaAccountId } = task.data;
                     result.data = !HederaSDKHelper.checkAccount(hederaAccountId);

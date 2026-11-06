@@ -77,7 +77,7 @@ export class TrustChainComponent implements OnInit {
                 const {chain, userMap} = documents;
                 this.userMap = {};
                 userMap.forEach((user: any) => {
-                    this.userMap[user.did] = user.username;
+                    this.userMap[user.did] = user.username || user.did;
                 });
 
                 this.chain = this.mapData(chain).filter(d => d.type === 'VC').reverse();

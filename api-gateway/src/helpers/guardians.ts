@@ -62,6 +62,7 @@ import {
     ProfileDTO,
     PolicyKeyDTO,
     RemoteUserExportDTO,
+    RemoteParticipantDTO,
     ToolVersionDTO,
     OnboardingDTO
 } from '#middlewares';
@@ -4386,6 +4387,49 @@ export class Guardians extends NatsService {
         owner: IOwner
     ): Promise<boolean> {
         return await this.sendMessage(MessageAPI.APPROVE_EXTERNAL_POLICY, { messageId, owner });
+    }
+
+    /**
+     * Get remote participants of a policy
+     *
+     * @param policyId
+     * @param pageIndex
+     * @param pageSize
+     * @param owner
+     *
+     * @returns participants and count
+     */
+    public async getRemoteParticipants(
+        policyId: string,
+        pageIndex: any,
+        pageSize: any,
+        owner: IOwner
+    ): Promise<ResponseAndCount<RemoteParticipantDTO>> {
+        return await this.sendMessage(MessageAPI.GET_REMOTE_PARTICIPANTS, { policyId, pageIndex, pageSize, owner });
+    }
+
+    /**
+     * Approve a remote participant
+     *
+     * @param participantId
+     * @param owner
+     *
+     * @returns participant
+     */
+    public async approveRemoteParticipant(participantId: string, owner: IOwner): Promise<RemoteParticipantDTO> {
+        return await this.sendMessage(MessageAPI.APPROVE_REMOTE_PARTICIPANT, { participantId, owner });
+    }
+
+    /**
+     * Reject a remote participant
+     *
+     * @param participantId
+     * @param owner
+     *
+     * @returns participant
+     */
+    public async rejectRemoteParticipant(participantId: string, owner: IOwner): Promise<RemoteParticipantDTO> {
+        return await this.sendMessage(MessageAPI.REJECT_REMOTE_PARTICIPANT, { participantId, owner });
     }
 
     /**

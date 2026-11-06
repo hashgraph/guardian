@@ -400,7 +400,10 @@ export class RelayerAccountsService extends NatsService {
                                 parent: user.did
                             }, {
                                 did: user.did
-                            }]
+                            }],
+                            // remote users created from a join request have no username, and the
+                            // KYC and freeze actions of this list address users by username
+                            username: { $type: 'string' }
                         }
                     }, {
                         $lookup: {
