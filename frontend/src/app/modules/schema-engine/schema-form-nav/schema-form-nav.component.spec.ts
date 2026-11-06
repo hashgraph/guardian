@@ -49,7 +49,7 @@ describe('SchemaFormNavComponent', () => {
     it('opens the drawer from the bar and closes it after a selection', () => {
         create();
         const selected: any[] = [];
-        fixture.componentInstance.select.subscribe(value => selected.push(value));
+        fixture.componentInstance.sectionSelect.subscribe(value => selected.push(value));
         el('.sf-section-bar')!.click();
         fixture.detectChanges();
         expect(el('.sf-drawer')).not.toBeNull();

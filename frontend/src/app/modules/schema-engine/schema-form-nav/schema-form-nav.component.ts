@@ -45,7 +45,7 @@ export class SchemaFormNavComponent implements OnDestroy {
     /** The host is busy (Preview): the rail and the bar don't react. */
     @Input() locked = false;
 
-    @Output() select = new EventEmitter<number | 'overview'>();
+    @Output() sectionSelect = new EventEmitter<number | 'overview'>();
     @Output() selectCard = new EventEmitter<IRailCard>();
 
     public drawerOpen = false;
@@ -85,7 +85,7 @@ export class SchemaFormNavComponent implements OnDestroy {
     }
 
     public onSelect(target: number | 'overview'): void {
-        this.select.emit(target);
+        this.sectionSelect.emit(target);
         this.closeDrawer();
     }
 

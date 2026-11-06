@@ -27,7 +27,7 @@ describe('SchemaFormViewComponent', () => {
         };
         cdr = { detectChanges: jasmine.createSpy('detectChanges'), markForCheck: jasmine.createSpy('markForCheck') };
         preferences = { showFieldMetadata$: new BehaviorSubject<boolean>(false) };
-        component = new SchemaFormViewComponent(ipfs as any, dialogService as any, cdr as any, preferences as any);
+        component = new SchemaFormViewComponent(ipfs as any, cdr as any, preferences as any);
         component.hide = {};
         component.values = {};
     });
@@ -232,7 +232,6 @@ describe('SchemaFormViewComponent', () => {
             imports: [CommonModule],
             providers: [
                 { provide: IPFSService, useValue: ipfs },
-                { provide: DialogService, useValue: dialogService },
                 { provide: SchemaFormPreferencesService, useValue: preferences },
             ],
             schemas: [NO_ERRORS_SCHEMA],
@@ -470,12 +469,14 @@ describe('SchemaFormViewComponent', () => {
     });
 
     describe('field actions', () => {
-        it('opens the formula dialog from the formula button', () => {
-            const formulas = { amount: { tree: { get: () => [1, 2] }, schema: 's', path: 'amount' } };
-            const fixture = render([field('amount', { type: 'number' })], { amount: 3 }, { formulas });
-            (fixture.nativeElement.querySelector('.sf-ro-fx') as HTMLElement).click();
-            expect(dialogService.open).toHaveBeenCalledTimes(1);
-            expect(dialogService.open.calls.mostRecent().args[1].data.origin).toBe('document');
+        it('shows the formulas of a field inline', () => {
+            const item = { uuid: 'f1', type: 'text', name: 'Total', value: 'a + b', relationshipItems: [] };
+            const link = { tree: { get: () => [item] }, schema: 's', path: 'amount' };
+            const fixture = render([field('amount', { type: 'number' })], { amount: 3 }, { formulas: { amount: link } });
+            const card = fixture.nativeElement.querySelector('app-field-formulas.sf-ro-formulas') as any;
+            expect(card).not.toBeNull();
+            expect(card.items).toEqual([item]);
+            expect(card.source).toBe(link);
         });
 
         it('keeps the payload of the discussion output', () => {
@@ -587,7 +588,6 @@ describe('SchemaFormViewComponent', () => {
                 imports: [CommonModule],
                 providers: [
                     { provide: IPFSService, useValue: ipfs },
-                    { provide: DialogService, useValue: dialogService },
                     { provide: SchemaFormPreferencesService, useValue: preferences },
                 ],
                 schemas: [NO_ERRORS_SCHEMA],
@@ -664,7 +664,6 @@ describe('SchemaFormViewComponent', () => {
                 imports: [CommonModule],
                 providers: [
                     { provide: IPFSService, useValue: ipfs },
-                    { provide: DialogService, useValue: dialogService },
                     { provide: SchemaFormPreferencesService, useValue: preferences },
                 ],
                 schemas: [NO_ERRORS_SCHEMA],
@@ -732,7 +731,6 @@ describe('SchemaFormViewComponent', () => {
                 imports: [CommonModule],
                 providers: [
                     { provide: IPFSService, useValue: ipfs },
-                    { provide: DialogService, useValue: dialogService },
                     { provide: SchemaFormPreferencesService, useValue: preferences },
                 ],
                 schemas: [NO_ERRORS_SCHEMA],

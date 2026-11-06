@@ -19,6 +19,8 @@ export class FieldFormulasComponent {
     @Input() model!: FormFormulas;
     @Input() fullPath!: string;
     @Input() entries?: Record<string, number> | null;
+    /** A field of a submitted document: used instead of `model` in the read-only view. */
+    @Input() source?: { tree: any; schema: string; path: string; context?: any; origin?: 'form' | 'document' } | null;
 
     private expanded = new Set<string>();
 
@@ -47,22 +49,27 @@ export class FieldFormulasComponent {
 
     public openDetails(event: Event, item?: FormulaItem): void {
         event.stopPropagation();
-        const field = this.model?.fields[this.fullPath];
-        if (!field) {
-            return;
+        let data: any;
+        if (this.source) {
+            data = { origin: 'document', ...this.source };
+        } else {
+            const field = this.model?.fields[this.fullPath];
+            if (!field) {
+                return;
+            }
+            data = {
+                tree: field.tree,
+                schema: field.schema,
+                path: field.path,
+                context: this.model.context(this.entries),
+                origin: 'form'
+            };
         }
         this.dialogService.open(FormulasViewDialog, {
             showHeader: false,
             width: '90%',
             styleClass: 'guardian-dialog',
-            data: {
-                tree: field.tree,
-                schema: field.schema,
-                path: field.path,
-                context: this.model.context(this.entries),
-                itemId: item?.uuid,
-                origin: 'form'
-            },
+            data: { ...data, itemId: item?.uuid },
         });
     }
 }

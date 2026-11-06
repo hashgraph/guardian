@@ -54,7 +54,7 @@ export class SchemaFormRailComponent {
     /** The rail is shown in the drawer: "Hide menu" reads "Close". */
     @Input() inDrawer = false;
 
-    @Output() select = new EventEmitter<number | 'overview'>();
+    @Output() sectionSelect = new EventEmitter<number | 'overview'>();
     @Output() selectCard = new EventEmitter<IRailCard>();
     @Output() hide = new EventEmitter<void>();
 
@@ -116,7 +116,7 @@ export class SchemaFormRailComponent {
 
     public onKey(event: Event, target: number | 'overview'): void {
         event.preventDefault();
-        this.select.emit(target);
+        this.sectionSelect.emit(target);
     }
 
     public cardTitle(card: IRailCard): string {

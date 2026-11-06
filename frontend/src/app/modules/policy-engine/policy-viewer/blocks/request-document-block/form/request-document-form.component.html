@@ -326,6 +326,7 @@
               [blockId]="id"
               [rules]="rulesResults"
               [formulas]="formulas"
+        formulasOrigin="form"
               [isFormForRequestBlock]="true"
               [requiredFields]="previewRequiredFields"
               [previewMissingFields]="previewMissingFields"
@@ -591,6 +592,7 @@
       <app-document-view
         [preview]="preview"
         [document]="document"
+        [formulas]="formulas"
         [type]="'VC'"
         [policyId]="policyId"
         [dryRun]="dryRun"

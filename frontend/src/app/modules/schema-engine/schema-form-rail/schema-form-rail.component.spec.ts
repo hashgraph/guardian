@@ -67,7 +67,7 @@ describe('SchemaFormRailComponent', () => {
     it('marks the active row and selects with Enter and click', () => {
         create({ screen: 'section', activeIndex: 1 });
         const selected: (number | 'overview')[] = [];
-        fixture.componentInstance.select.subscribe(value => selected.push(value));
+        fixture.componentInstance.sectionSelect.subscribe(value => selected.push(value));
         const rows = items();
         expect(rows[2].getAttribute('aria-current')).toBe('step');
         expect(rows[1].getAttribute('aria-current')).toBeNull();

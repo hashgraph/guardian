@@ -31,6 +31,8 @@
 
     .sf-ring-fill {
         fill: var(--guardian-success-color);
+        // The done ring sets a stroke on the svg; without this the fill inherits it and is clipped
+        stroke: none;
     }
 
     .sf-ring-check {
