@@ -180,6 +180,9 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         if (wasRendering && !this.previewRendering && this.screen === 'results') {
             // The form finished rebuilding with the new requirements
             this.refreshIssues();
+            if (this.previewMode) {
+                this.formRoot?.expandPreviewIssues?.([...this.issues, ...this.ruleIssues].map(issue => issue.path));
+            }
         }
         this.changeDetectorRef.markForCheck();
     }
@@ -598,7 +601,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
             this.previewRefreshTimer = null;
         }
         this.capturePreviewValues();
-        await this.runPreview(true);
+        await this.runPreview(true, true);
         return this.previewMode && !this.previewRequirementsStale;
     }
 
@@ -1006,6 +1009,9 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     private showResults(): void {
         this.formRoot?.revealErrors(false);
         this.refreshIssues();
+        if (this.previewMode) {
+            this.formRoot?.expandPreviewIssues?.([...this.issues, ...this.ruleIssues].map(issue => issue.path));
+        }
         this.screen = 'results';
     }
 
@@ -1026,10 +1032,11 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         if (this.loading || this.isPreviewBusy) {
             return;
         }
+        const refreshed = this.previewMode && this.previewRequirementsStale;
         if (!(await this.refreshStalePreview())) {
             return;
         }
-        if (!(await this.isValidForPreview())) {
+        if (!(await this.isValidForPreview(refreshed))) {
             this.showResults();
             return;
         }
@@ -1037,14 +1044,16 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     }
 
     /** In Preview an invalid form first asks again which fields its current values need. */
-    private async isValidForPreview(): Promise<boolean> {
+    private async isValidForPreview(refreshed: boolean = false): Promise<boolean> {
         if (this.dataForm.valid) {
             return true;
         }
         if (!this.previewMode) {
             return false;
         }
-        await this.runPreview(true, true);
+        if (!refreshed) {
+            await this.runPreview(true, true);
+        }
         if (!this.previewMode) {
             return false;
         }
@@ -1080,10 +1089,11 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
             await this.onSubmit(true);
             return;
         }
+        const refreshed = this.previewMode && this.previewRequirementsStale;
         if (!(await this.refreshStalePreview())) {
             return;
         }
-        if (!(await this.isValidForPreview())) {
+        if (!(await this.isValidForPreview(refreshed))) {
             this.showResults();
             return;
         }

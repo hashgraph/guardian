@@ -812,6 +812,23 @@ describe('SchemaFormRootComponent — required fields', () => {
 
         const issuePaths = (root: SchemaFormRootComponent) => root.getIssues().map(issue => issue.path);
 
+        it('opens every existing row with a missing field without adding rows or requesting discovery', fakeAsync(() => {
+            const root = createAreaRoot(['rows.0.PBt', 'rows.1.PBt']);
+            const rows = root.model!.controls![0];
+            rows.open = false;
+            rows.list![0].open = false;
+            rows.list![1].open = false;
+            rows.list![2].open = false;
+            const interaction = spyOn(root.previewInteraction, 'emit');
+            root.expandPreviewIssues(['rows.0.PBt', 'rows.1.PBt', 'rows.3.PBt']);
+            expect(rows.open).toBeTrue();
+            expect(rows.list![0].open).toBeTrue();
+            expect(rows.list![1].open).toBeTrue();
+            expect(rows.list![2].open).toBeFalse();
+            expect(rows.list!.length).toBe(3);
+            expect(interaction).not.toHaveBeenCalled();
+        }));
+
         it('moves the issue to the new row number when an earlier row is deleted', fakeAsync(() => {
             const root = createAreaRoot(['rows.1.PBt']);
             expect(issuePaths(root)).toEqual(['rows.1.PBt', 'rows.2.PBt']);

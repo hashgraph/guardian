@@ -499,6 +499,41 @@ describe('request document preview wiring', () => {
         expect(component.previewItems).toEqual([]);
     });
 
+    it('uses one fresh discovery and expands missing paths when stale Preview remains invalid', async () => {
+        const { component, calls } = form([Promise.resolve(response(['title', 'section.amount'], ['section.amount']))], blockParent());
+        component.previewMode = true;
+        component.previewRequirementsStale = true;
+        component.previewRequiredFields = ['title'];
+        component.dataForm = { valid: false, getRawValue: () => ({ title: 'changed' }) };
+        component.formRoot.expandPreviewIssues = jasmine.createSpy('expandPreviewIssues');
+        component.computeRuleIssues = () => [{ path: 'section.rule', label: 'Rule', message: 'Rule failed' }];
+        await component.onStep();
+        expect(calls.map((call) => call.previewFields)).toEqual([true]);
+        expect(component.previewMissingFields).toEqual(['section.amount']);
+        expect(component.formRoot.expandPreviewIssues).toHaveBeenCalledOnceWith(['section.amount', 'section.rule']);
+        expect(component.screen).toBe('results');
+    });
+
+    it('uses one discovery for an invalid stale form on Preview again', async () => {
+        const { component, calls } = form([Promise.resolve(response(['title', 'rate'], ['rate']))], blockParent());
+        component.previewMode = true;
+        component.previewRequirementsStale = true;
+        component.dataForm = { valid: false, getRawValue: () => ({ title: 'changed' }) };
+        await component.previewAgain();
+        expect(calls.map((call) => call.previewFields)).toEqual([true]);
+        expect(component.previewMissingFields).toEqual(['rate']);
+        expect(component.screen).toBe('results');
+    });
+
+    it('does not expand preview paths during ordinary validation', async () => {
+        const { component, calls } = form([], blockParent());
+        component.dataForm = { valid: false, getRawValue: () => ({}) };
+        component.formRoot.expandPreviewIssues = jasmine.createSpy('expandPreviewIssues');
+        await component.onStep();
+        expect(calls).toEqual([]);
+        expect(component.formRoot.expandPreviewIssues).not.toHaveBeenCalled();
+    });
+
     it('asks for the fields again and shows the validation results when the form stays invalid on Preview again', async () => {
         const { component, calls } = form([Promise.resolve(response(['amount'])), Promise.resolve(response(['amount', 'fuel'], ['fuel']))], blockParent());
         component.previewMode = true;

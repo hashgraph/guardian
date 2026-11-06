@@ -504,6 +504,28 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
         }, 0);
     }
 
+    public expandPreviewIssues(paths: string[]): void {
+        for (const path of paths) {
+            const parts = path.split('.');
+            let controls = this.model?.controls || [];
+            for (let index = 0; index < parts.length; index++) {
+                const field = controls.find(item => item.name === parts[index]);
+                if (!field) break;
+                field.open = true;
+                if (field.isArray && isIndexSegment(parts[index + 1] || '')) {
+                    const row = field.list?.[Number(parts[++index])];
+                    if (!row) break;
+                    row.open = true;
+                    controls = row.model?.controls || [];
+                } else {
+                    controls = field.model?.controls || [];
+                }
+            }
+        }
+        this.childForm?.prepareOpenPreviewSections?.();
+        this.changeDetectorRef.markForCheck();
+    }
+
     public focusField(path: string): void {
         const parts = path.split('.');
         let controls = this.model?.controls || [];
