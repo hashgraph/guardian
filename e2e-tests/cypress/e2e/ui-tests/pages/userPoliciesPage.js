@@ -100,16 +100,19 @@ function inForm(selector) {
     return cy.get(UserPoliciesPageLocators.requestForm).then(($form) => $form.find(selector));
 }
 
-// Types `value` into the input of the field labelled `label`, when the open section has it.
+// Types `value` into the input of the field labelled `label`, when the open section has it. The input
+// is looked up again for each command: the form re-renders while it validates what was typed.
 function typeInField(label, value) {
-    inForm('.form-field').then(($fields) => {
-        const $input = $fields
-            .filter((_, field) => field.querySelector('.sf-label-text')?.textContent.trim() === label)
-            .find('input.p-datepicker-input, textarea')
-            .first();
-        if ($input.length) {
-            cy.wrap($input).type(value, { force: true });
-            cy.wrap($input).blur({ force: true });
+    const fieldInput = () => cy.get(`${UserPoliciesPageLocators.requestForm} .form-field`)
+        .filter((_, field) => field.querySelector('.sf-label-text')?.textContent.trim() === label)
+        .find('input.p-datepicker-input, textarea')
+        .first();
+    cy.get('body').then(($body) => {
+        const present = $body.find(`${UserPoliciesPageLocators.requestForm} .form-field`)
+            .filter((_, field) => field.querySelector('.sf-label-text')?.textContent.trim() === label).length > 0;
+        if (present) {
+            fieldInput().type(value, { force: true });
+            fieldInput().blur({ force: true });
         }
     });
 }
@@ -119,13 +122,13 @@ function typeInField(label, value) {
 // Works with the rail (wide windows) and with the section bar (Cypress default 1000px).
 function openOverviewSection() {
     const form = UserPoliciesPageLocators.requestForm;
+    const start = `${form} .sf-overview-actions button:contains('Start'), ${form} .sf-overview-actions button:contains('Continue')`;
     // The form draws its overview or its fields a moment after the block itself appears.
     cy.get(`${form} .sf-overview-actions, ${form} .form-field`, { timeout: TIMEOUTS.backend });
     cy.get('body').then(($body) => {
-        const $start = $body.find(`${form} .sf-overview-actions button:contains('Start'), ${form} .sf-overview-actions button:contains('Continue')`);
-        if ($start.length) {
-            cy.wrap($start.first()).click();
-        }
+        // Clicked in the same tick it is found: the overview gives way to the first section by itself
+        // while the form settles, and a button looked up earlier would be gone by the time Cypress clicks it.
+        $body.find(start).first().each((_, button) => button.click());
     });
 }
 

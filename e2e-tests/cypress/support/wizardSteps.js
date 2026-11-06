@@ -1,4 +1,5 @@
 import { TIMEOUTS, POLL_INTERVAL } from './CustomHelpers/timeouts';
+import { waitForLoading } from './checkingMethods';
 // Navigation helpers for the policy UI (the policy-viewer wizard).
 //
 // A policy renders as `div.policy-content` containing a progress tracker
@@ -27,7 +28,7 @@ const isVisible = (el) => {
 };
 
 // How long a freshly opened tab gets to render its controls before the next tab is tried.
-const TAB_SETTLE = 2000;
+const TAB_SETTLE = 3000;
 
 const WIZARD_ZONE = 'div.policy-content, div.guardian-dialog';
 
@@ -70,6 +71,7 @@ export const clickButtonInWizardSteps = (selector, options = {}) => {
             exploredTabs.push((tabs[index].textContent || '').trim());
             cy.wrap(tabs[index], { log: false }).click({ log: false });
             cy.wrap(tabs[index], { log: false }).should('have.attr', 'aria-selected', 'true');
+            waitForLoading();
             return findVisibleWithin(Date.now() + TAB_SETTLE).then((el) => {
                 if (el) {
                     return clickFirstVisible();
