@@ -1,5 +1,5 @@
 import { fakeAsync, tick } from '@angular/core/testing';
-import { FormControl, FormGroup } from '@angular/forms';
+import { FormArray, FormControl, FormGroup } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { RequestDocumentBlockComponent } from './request-document-block.component';
 import { RequestDocumentFormComponent } from './form/request-document-form.component';
@@ -89,6 +89,174 @@ describe('request document preview wiring', () => {
     };
 
     const settle = () => new Promise((resolve) => setTimeout(resolve));
+
+    const observedForm = (results: Promise<unknown>[]) => {
+        const state = form(results, blockParent());
+        const group = new FormGroup({ mode: new FormControl('ccb'), title: new FormControl('old'), other: new FormControl('x') });
+        state.component.formRoot.model = { controls: [
+            { name: 'mode', enum: ['ccb', 'vcs'], control: group.get('mode') },
+            { name: 'title', type: 'string', control: group.get('title') },
+            { name: 'other', type: 'string', control: group.get('other') }
+        ] };
+        state.component.initForm(group, false);
+        state.component.previewMode = true;
+        state.component.setPreviewRequiredFields(['mode', 'title']);
+        return { ...state, group };
+    };
+
+    it('refreshes requirements when a read choice changes', fakeAsync(() => {
+        const { component, group, calls } = observedForm([Promise.resolve(response(['mode', 'vcs']))]);
+        group.get('mode')!.setValue('vcs');
+        expect(component.previewRequirementsStale).toBeTrue();
+        tick();
+        expect(calls.length).toBe(1);
+        expect(component.previewRequiredFields).toEqual(['mode', 'vcs']);
+        expect(component.previewRequirementsStale).toBeFalse();
+        component.destroy$.next();
+    }));
+
+    it('does not repeat a pending choice discovery on unrelated edits', fakeAsync(() => {
+        let resolveFirst!: (value: unknown) => void;
+        const pending = new Promise(resolve => { resolveFirst = resolve; });
+        const { component, group, calls } = observedForm([pending]);
+        group.get('mode')!.setValue('vcs');
+        tick();
+        tick();
+        group.get('other')!.setValue('changed');
+        tick();
+        expect(calls.length).toBe(1);
+        resolveFirst(response(['mode', 'title']));
+        tick();
+        expect(calls.length).toBe(1);
+        expect(component.previewRequirementsStale).toBeFalse();
+        component.destroy$.next();
+    }));
+
+    it('does not refresh automatically for text or unread fields', fakeAsync(() => {
+        const { component, group, calls } = observedForm([Promise.resolve(response(['mode', 'title']))]);
+        group.get('other')!.setValue('y');
+        tick();
+        expect(calls.length).toBe(0);
+        group.get('title')!.setValue('n');
+        group.get('title')!.setValue('new');
+        tick();
+        expect(calls.length).toBe(0);
+        expect(component.previewRequirementsStale).toBeTrue();
+        expect(component.previewProgressPending).toBeFalsy();
+        tick();
+        expect(calls.length).toBe(0);
+        component.destroy$.next();
+    }));
+
+    it('refreshes for a choice that was not read after a text edit', fakeAsync(() => {
+        const { component, group, calls } = observedForm([Promise.resolve(response(['mode', 'title']))]);
+        component.formRoot.model.controls[2].enum = ['x', 'y'];
+        component.setPreviewRequiredFields(['mode', 'title']);
+        group.get('title')!.setValue('new');
+        group.get('other')!.setValue('y');
+        tick();
+        expect(calls.length).toBe(1);
+        component.destroy$.next();
+    }));
+
+    it('refreshes after opening a section only in preview mode', fakeAsync(() => {
+        const { component, calls } = observedForm([Promise.resolve(response(['mode', 'title']))]);
+        component.onPreviewInteraction();
+        tick();
+        expect(calls.length).toBe(1);
+        component.previewMode = false;
+        component.onPreviewInteraction();
+        tick();
+        expect(calls.length).toBe(1);
+        component.destroy$.next();
+    }));
+
+    it('refreshes for an unread date selection', fakeAsync(() => {
+        const { component, group, calls } = observedForm([Promise.resolve(response(['mode', 'title']))]);
+        component.formRoot.model.controls[2].format = 'date';
+        component.setPreviewRequiredFields(['mode', 'title']);
+        group.get('other')!.setValue('2026-11-07');
+        tick();
+        expect(calls.length).toBe(1);
+        component.destroy$.next();
+    }));
+
+    it('does not invalidate an in-flight refresh when a section opens with the same values', fakeAsync(() => {
+        let resolveFirst!: (value: unknown) => void;
+        const pending = new Promise(resolve => { resolveFirst = resolve; });
+        const { component, calls } = observedForm([pending]);
+        component.onPreviewInteraction();
+        tick();
+        component.onPreviewInteraction();
+        resolveFirst(response(['mode', 'title']));
+        tick();
+        expect(calls.length).toBe(1);
+        expect(component.previewRequirementsStale).toBeFalse();
+        component.destroy$.next();
+    }));
+
+    it('ignores a discovery response when a read value changes while it is pending', fakeAsync(() => {
+        let resolveFirst!: (value: unknown) => void;
+        const pending = new Promise(resolve => { resolveFirst = resolve; });
+        const { component, group, calls } = observedForm([pending, Promise.resolve(response(['mode', 'new']))]);
+        group.get('mode')!.setValue('vcs');
+        tick();
+        group.get('mode')!.setValue('ccb');
+        tick();
+        expect(calls.length).toBe(1);
+        resolveFirst(response(['old']));
+        tick();
+        expect(calls.length).toBe(2);
+        expect(component.previewRequiredFields).toEqual(['mode', 'new']);
+        component.destroy$.next();
+    }));
+
+    it('discards an in-flight answer after typing and refreshes on explicit retry', fakeAsync(() => {
+        let resolveFirst!: (value: unknown) => void;
+        const pending = new Promise(resolve => { resolveFirst = resolve; });
+        const { component, group, calls } = observedForm([pending, Promise.resolve(response(['mode', 'title', 'new']))]);
+        group.get('mode')!.setValue('vcs');
+        tick();
+        group.get('title')!.setValue('new title');
+        resolveFirst(response(['old']));
+        tick();
+        expect(calls.length).toBe(1);
+        expect(component.previewRequirementsStale).toBeTrue();
+        expect(component.previewRequiredFields).toEqual(['mode', 'title']);
+        void component.refreshStalePreview();
+        tick();
+        expect(calls.length).toBe(2);
+        expect(component.previewRequiredFields).toEqual(['mode', 'new', 'title']);
+        component.destroy$.next();
+    }));
+
+    it('refreshes when a previously read row appears', fakeAsync(() => {
+        const { component, calls } = observedForm([Promise.resolve(response(['rows.0.name']))]);
+        const rows = new FormArray([new FormGroup({ name: new FormControl('') })]);
+        rows.removeAt(0);
+        const group = new FormGroup({ rows });
+        component.initForm(group, false);
+        component.setPreviewRequiredFields(['rows.0.name']);
+        rows.push(new FormGroup({ name: new FormControl('') }));
+        tick();
+        expect(calls.length).toBe(1);
+        expect(component.previewRequirementsStale).toBeFalse();
+        component.destroy$.next();
+    }));
+
+    it('keeps requirements stale after a failed refresh and sends no request in ordinary mode', fakeAsync(() => {
+        spyOn(console, 'error');
+        const { component, group, calls } = observedForm([Promise.reject(new Error('offline'))]);
+        group.get('mode')!.setValue('vcs');
+        tick();
+        expect(component.previewRequirementsStale).toBeTrue();
+        expect(component.previewRequiredFields).toEqual(['mode', 'title']);
+        component.previewMode = false;
+        group.get('mode')!.setValue('ccb');
+        tick();
+        expect(calls.length).toBe(1);
+        component.destroy$.next();
+    }));
 
     it('forwards already selected metadata from the form', async () => {
         const { component } = form([], blockParent());

@@ -108,12 +108,14 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     @Input() requiredFields: string[] | null = null;
     @Input() previewMissingFields: string[] = [];
     @Input() previewActionsDisabled: boolean = false;
+    @Input() previewRequirementsStale: boolean = false;
     @Input() formulaLinkScope: IFormulaLinkScope | null = null;
     private previewFocusTimer: ReturnType<typeof setTimeout> | null = null;
     private previewBuildFrame: number | null = null;
     private previewHeightLocked: boolean = false;
     public previewLoadingCount: number = 0;
     @Output() previewBusyChange = new EventEmitter<boolean>(true);
+    @Output() previewInteraction = new EventEmitter<void>();
 
     public get isPreviewBusy(): boolean {
         return this.requiredFields !== null && (this.loading || this.previewLoadingCount > 0);
@@ -817,6 +819,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             this.activeIndex = index;
         });
         this.childForm?.prepareOpenPreviewSections?.();
+        if (this.requiredFields !== null) this.previewInteraction.emit();
         this.scrollToTop();
     }
 
@@ -847,7 +850,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     public onRailSelect(target: number | 'overview'): void {
         if (target === 'overview') {
             this.openOverview();
-        } else {
+        } else if (typeof target === 'number' && Number.isInteger(target)) {
             this.openSection(target);
         }
     }

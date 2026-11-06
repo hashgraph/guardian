@@ -46,6 +46,7 @@ export class SchemaFormRailComponent {
     /** The label of the first row; null hides it (a presentation has no Overview of its own). */
     @Input() overviewLabel: string | null = 'Overview';
     @Input() completion: IFormCompletion | null = null;
+    @Input() progressPending = false;
     @Input() screen: 'overview' | 'section' = 'overview';
     @Input() activeIndex = 0;
     /** Sub-schema cards inside the active section. */

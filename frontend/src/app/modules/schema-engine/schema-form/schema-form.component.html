@@ -718,7 +718,7 @@
                       }
                       @if (ifSubSchema(item)) {
                         @let err = showError(item);
-                        @let st = item.control ? requiredLeft(item) : null;
+                        @let st = item.control && !progressPending ? requiredLeft(item) : null;
                         <div
                           class="sf-card form-field-group sub-schema sub-schema-{{ item.customType }}"
                           [class.sf-card-error]="err"
@@ -745,7 +745,7 @@
                                 <span class="sf-chip" [class.sf-chip-err]="errorsRevealed">{{ st.left }} required left</span>
                               } @else if (st && st.total > 0) {
                                 <span class="sf-chip sf-chip-ok">Complete</span>
-                              } @else if (!item.required) {
+                              } @else if (!progressPending && !item.required) {
                                 <span class="sf-chip">Optional</span>
                               }
                             </button>
@@ -828,7 +828,9 @@
                                           [previewMissingFieldIds]="previewMissingFieldIds"
                                           [previewValidation]="previewValidation"
                                           [previewBusy]="previewBusy"
+                                          [progressPending]="progressPending"
                                           (previewLoadingChange)="previewValidation && previewLoadingChange.emit($event)"
+                                          (previewInteraction)="previewInteraction.emit()"
                                           [formulaEntries]="formulaEntries"
                                           [private-fields]="hide"
                                           [rules]="rules"
@@ -1006,7 +1008,9 @@
                                               [previewMissingFieldIds]="previewMissingFieldIds"
                                               [previewValidation]="previewValidation"
                                               [previewBusy]="previewBusy"
+                                              [progressPending]="progressPending"
                                               (previewLoadingChange)="previewValidation && previewLoadingChange.emit($event)"
+                                              (previewInteraction)="previewInteraction.emit()"
                                               [formulaEntries]="getEntryFormulaScope(item, listItem)"
                                               [dryRun]="dryRun"
                                               [policyId]="policyId"

@@ -1004,6 +1004,19 @@ describe('SchemaFormRootComponent — sections', () => {
         expect(root.activeIndex).toBe(0);
     }));
 
+    it('ignores text selection events when navigating sections', fakeAsync(() => {
+        const root = create();
+        const openSection = spyOn(root, 'openSection');
+        const openOverview = spyOn(root, 'openOverview');
+        Reflect.apply(root.onRailSelect, root, [new Event('select', { bubbles: true })]);
+        expect(openSection).not.toHaveBeenCalled();
+        expect(openOverview).not.toHaveBeenCalled();
+        root.onRailSelect(1);
+        expect(openSection).toHaveBeenCalledOnceWith(1);
+        root.onRailSelect('overview');
+        expect(openOverview).toHaveBeenCalled();
+    }));
+
     it('moves to the first missing answer from the current section and wraps', fakeAsync(() => {
         const root = create({ a: { one: '1' }, b: { two: '2' } });
         expect(root.completion).toEqual(jasmine.objectContaining({ answered: 2, total: 3 }));

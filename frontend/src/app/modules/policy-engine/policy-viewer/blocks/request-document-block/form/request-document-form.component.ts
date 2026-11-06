@@ -186,6 +186,13 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     public previewRequiredFields: string[] | null = null;
     public previewRequiredText = 'Only the fields the calculations read are required.';
     private previewRequest: number = 0;
+    private previewRefreshPending = false;
+    private previewRunning = false;
+    private previewRunningValue: string | undefined;
+    public previewRequirementsStale = false;
+    private previewValues = new Map<string, { value: string | undefined; exists: boolean }>();
+    private previewValueSubscription?: Subscription;
+    private previewRefreshTimer: ReturnType<typeof setTimeout> | null = null;
     public previewMissingFields: string[] = [];
     private previewPreferenceLoaded: boolean = false;
 
@@ -238,6 +245,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     /** Sets the fields the calculations read and the form notice that counts them. */
     private setPreviewRequiredFields(value: string[] | null): void {
         this.previewRequiredFields = value;
+        this.capturePreviewValues();
         this.updatePreviewRequiredText();
     }
 
@@ -468,6 +476,8 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         if (this.submitTimer !== null) clearTimeout(this.submitTimer);
         if (this.previewBusyTimer !== null) clearTimeout(this.previewBusyTimer);
+        if (this.previewRefreshTimer !== null) clearTimeout(this.previewRefreshTimer);
+        this.previewValueSubscription?.unsubscribe();
         if (this.previewMode) this.previewRequest++;
         this.destroy$.next(true);
         this.destroy$.unsubscribe();
@@ -484,6 +494,9 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
 
     public initForm($event: any, restorePreview: boolean = true) {
         this.dataForm = $event;
+        this.previewValueSubscription?.unsubscribe();
+        this.capturePreviewValues();
+        this.previewValueSubscription = this.dataForm.valueChanges.subscribe(() => this.onPreviewValuesChanged());
         this.dataForm.valueChanges
             .pipe(takeUntil(this.destroy$))
             .pipe(audit(ev => interval(1000)))
@@ -499,8 +512,104 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         }
     }
 
+    public get previewProgressPending(): boolean {
+        return this.previewRequirementsStale && (this.previewRunning || this.previewRefreshPending);
+    }
+
+    private isPreviewNonTextField(target: IFormTarget): boolean {
+        const field = target.field;
+        return !target.row && !!target.control && (
+            !!field.enum || !!field.remoteLink || (!field.isArray && (field.type === 'boolean'
+                || field.format === 'date' || field.format === 'time' || field.format === 'date-time'
+                || field.customType === 'table'
+                || field.customType === 'geo' || field.customType === 'sentinel'))
+        );
+    }
+
+    private capturePreviewValues(): void {
+        const choices = walkFields(this.formRoot?.model?.controls)
+            .filter(target => this.isPreviewNonTextField(target))
+            .map(target => target.path);
+        this.previewValues = new Map([...new Set([...(this.previewRequiredFields || []), ...choices])].map(path => [
+            path, { value: JSON.stringify(this.dataForm?.get?.(path)?.value), exists: !!this.dataForm?.get?.(path) }
+        ]));
+    }
+
+    private onPreviewValuesChanged(): void {
+        if (!this.previewMode || !this.previewValues?.size || !this.dataForm?.get) {
+            return;
+        }
+        const changed = [...this.previewValues].filter(([path, previous]) => {
+            const control = this.dataForm.get(path);
+            return !!control !== previous.exists || JSON.stringify(control?.value) !== previous.value;
+        }).map(([path]) => path);
+        if (!changed.length) {
+            return;
+        }
+        const structureChanged = changed.some(path => !!this.dataForm.get(path) !== this.previewValues.get(path)?.exists);
+        this.capturePreviewValues();
+        this.previewRequirementsStale = true;
+        this.previewRequest++;
+        this.loading = false;
+        const targets = walkFields(this.formRoot?.model?.controls);
+        if (structureChanged
+            || targets.some(target => changed.includes(target.path) && this.isPreviewNonTextField(target))) {
+            this.schedulePreviewRefresh();
+        }
+        this.changeDetectorRef.markForCheck();
+    }
+
+    public onPreviewInteraction(): void {
+        if (!this.previewMode || (this.previewRunning
+            && this.previewRunningValue === JSON.stringify(this.dataForm.getRawValue()))) {
+            return;
+        }
+        this.previewRequirementsStale = true;
+        this.previewRequest++;
+        this.loading = false;
+        this.schedulePreviewRefresh();
+        this.changeDetectorRef.markForCheck();
+    }
+
+    private schedulePreviewRefresh(): void {
+        if (this.previewRunning && this.previewRunningValue === JSON.stringify(this.dataForm.getRawValue())) {
+            return;
+        }
+        this.previewRefreshPending = true;
+        if (this.previewRefreshTimer != null) {
+            clearTimeout(this.previewRefreshTimer);
+        }
+        this.previewRefreshTimer = setTimeout(() => {
+            this.previewRefreshTimer = null;
+            if (this.previewMode && this.previewRequirementsStale && !this.previewRunning) {
+                this.previewRefreshPending = false;
+                this.capturePreviewValues();
+                void this.runPreview(true);
+            }
+        }, 0);
+    }
+
+    private async refreshStalePreview(): Promise<boolean> {
+        if (!this.previewMode || !this.previewRequirementsStale) {
+            return true;
+        }
+        if (this.previewRefreshTimer != null) {
+            clearTimeout(this.previewRefreshTimer);
+            this.previewRefreshTimer = null;
+        }
+        this.capturePreviewValues();
+        await this.runPreview(true);
+        return this.previewMode && !this.previewRequirementsStale;
+    }
+
     public onPresetApplied(): void {
         if (this.previewMode) {
+            if (this.previewRefreshTimer != null) {
+                clearTimeout(this.previewRefreshTimer);
+                this.previewRefreshTimer = null;
+            }
+            this.previewRequirementsStale = true;
+            this.capturePreviewValues();
             void this.runPreview(true);
         }
     }
@@ -917,6 +1026,9 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         if (this.loading || this.isPreviewBusy) {
             return;
         }
+        if (!(await this.refreshStalePreview())) {
+            return;
+        }
         if (!(await this.isValidForPreview())) {
             this.showResults();
             return;
@@ -968,6 +1080,9 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
             await this.onSubmit(true);
             return;
         }
+        if (!(await this.refreshStalePreview())) {
+            return;
+        }
         if (!(await this.isValidForPreview())) {
             this.showResults();
             return;
@@ -1014,6 +1129,11 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         this.previewMode = enabled;
         if (!enabled) this.previewRendering = false;
         if (!enabled) {
+            if (this.previewRefreshTimer != null) {
+                clearTimeout(this.previewRefreshTimer);
+                this.previewRefreshTimer = null;
+            }
+            this.previewRequirementsStale = false;
             this.previewRequest++;
             this.loading = false;
             this.setPreviewRequiredFields(null);
@@ -1032,6 +1152,8 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     }
 
     private async runPreview(previewFields: boolean, listMissing: boolean = false): Promise<void> {
+        this.previewRunning = true;
+        this.previewRunningValue = JSON.stringify(this.dataForm.getRawValue());
         const request = ++this.previewRequest;
         const preset = this.presetDocument;
         const current = () => request === this.previewRequest && preset === this.presetDocument;
@@ -1052,6 +1174,9 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
                 return;
             }
             this.setPreviewRequiredFields(this.calculationPreview.updateRequiredFields(this.previewRequiredFields, result));
+            if (previewFields) {
+                this.previewRequirementsStale = false;
+            }
             this.previewMissingFields = listMissing ? [...result.missingFields] : [];
             if (previewFields) {
                 this.previewDiscoveryWarning = this.calculationPreview.needsDiscoveryWarning(result);
@@ -1089,8 +1214,12 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
             }
             console.error(error);
         } finally {
+            this.previewRunning = false;
             if (current()) {
                 this.loading = false;
+            }
+            if (this.previewMode && this.previewRequirementsStale && this.previewRefreshPending) {
+                this.schedulePreviewRefresh();
             }
         }
     }

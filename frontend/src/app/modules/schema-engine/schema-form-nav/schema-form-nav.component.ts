@@ -44,6 +44,7 @@ export class SchemaFormNavComponent implements OnDestroy {
     @Input() barLabel = '';
     /** The host is busy (Preview): the rail and the bar don't react. */
     @Input() locked = false;
+    @Input() progressPending = false;
 
     @Output() select = new EventEmitter<number | 'overview'>();
     @Output() selectCard = new EventEmitter<IRailCard>();
