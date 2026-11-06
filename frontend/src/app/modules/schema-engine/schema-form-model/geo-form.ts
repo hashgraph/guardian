@@ -43,7 +43,7 @@ export class GeoForm {
                     const errors = this.validatePayload(data.value) || {};
                     if (!Object.keys(errors).length && data.value && Object.keys(data.value).length) {
                         const check = validateGeoJsonValue(data.value);
-                        if (!check.valid) errors[GEOJSON_STANDARD_ERRORS_KEY] = [`Unsupported file format. This file couldn't be read. Please upload a valid GeoJSON (RFC 7946) or KML file. ${check.reason || 'Invalid GeoJSON.'}`];
+                        if (!check.valid) errors[GEOJSON_STANDARD_ERRORS_KEY] = [`The value is not valid GeoJSON (RFC 7946). ${check.reason || 'Invalid GeoJSON.'}`];
                     }
 
                     if (Object.keys(errors).length) {

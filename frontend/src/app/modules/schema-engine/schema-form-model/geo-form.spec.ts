@@ -160,7 +160,7 @@ describe('GeoForm shared GeoJSON checks', () => {
             [{ type: 'Feature', geometry: { type: 'Point', coordinates: [1, 2] } }, 'Properties must be an object or null at $.properties.'],
             [{ type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [1, 2] }, coordinates: [] }, 'Member "coordinates" is not allowed on Feature at $.']
         ]) expect(validate(value).errors?.geoJsonFieldErrors.standard).toEqual([
-            `Unsupported file format. This file couldn't be read. Please upload a valid GeoJSON (RFC 7946) or KML file. ${reason}`
+            `The value is not valid GeoJSON (RFC 7946). ${reason}`
         ]);
     });
     it('uses the same selected-polygon wording as the API helper', () => {
