@@ -4,7 +4,7 @@ const policiesPage = new PoliciesPage();
 import { HomePage } from '../../pages/homePage';
 const homePage = new HomePage();
 
-context('Error Validation on schema fields', { tags: ['ui'] }, () => {
+context('Error Validation on schema fields', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const name = 'policyForValidation';

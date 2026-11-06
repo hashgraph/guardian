@@ -5,7 +5,7 @@ import * as Authorization from '../../../support/authorization';
 import { randomInt } from '../../../support/random';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('Artifacts', { tags: ['artifacts', 'secondPool', 'all', 'all-no-mgs'] }, () => {
+context('Artifacts', { tags: ['artifacts', 'secondPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
 

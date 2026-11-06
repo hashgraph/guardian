@@ -6,7 +6,7 @@ import * as Authorization from '../../../support/authorization';
 import * as Checks from '../../../support/checkingMethods';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('IPFS', { tags: ['ipfs', 'secondPool', 'all', 'all-no-mgs'] }, () => {
+context('IPFS', { tags: ['ipfs', 'secondPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const ipfsFileUrl = `${API.ApiServer}${API.IPFSFile}`;

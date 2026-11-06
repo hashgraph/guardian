@@ -6,7 +6,7 @@ const homepage = new HomePage();
 import { ConfigPage } from '../../pages/configPage';
 const configpage = new ConfigPage();
 
-context('Create User Accounts', { tags: ['ui'] }, () => {
+context('Create User Accounts', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRName = 'TestSRUI' + randomInt(1000000000);
     const userName = 'TestUserUI' + randomInt(1000000000);

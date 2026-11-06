@@ -3,7 +3,7 @@ import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('Tags', { tags: ['tags', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
+context('Tags', { tags: ['tags', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     let schemaId;
 

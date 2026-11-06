@@ -13,7 +13,7 @@ const login = (username) => {
     schemaPage.openSchemasTab('system');
 };
 
-context('System Schema Operations', { tags: ['ui'] }, () => {
+context('System Schema Operations', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const runId = randomInt(1000000000);

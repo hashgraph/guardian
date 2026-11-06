@@ -2,7 +2,7 @@ import { randomInt } from '../../../../support/random';
 import { HomePage } from '../../pages/homePage';
 const homepage = new HomePage();
 
-context('Create User Accounts_Non Happy Scenarios', { tags: ['ui'] }, () => {
+context('Create User Accounts_Non Happy Scenarios', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const userUsername = Cypress.env('User');

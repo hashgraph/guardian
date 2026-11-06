@@ -1,8 +1,8 @@
 name: Publish Images
 on:
-  workflow_dispatch:
   release:
     types: [published]
+  workflow_dispatch:
 
 permissions:
   contents: read

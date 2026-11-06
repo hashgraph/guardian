@@ -2,7 +2,7 @@ import { STATUS_CODE } from '../../../support/api/api-const';
 import * as Authorization from '../../../support/authorization';
 import * as Contracts from '../../../support/api/contracts';
 
-context('Contracts', { tags: ['contracts', 'firstPool', 'all', 'all-no-mgs'] }, () => {
+context('Contracts', { tags: ['contracts', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const contractNameW = 'FirstAPIContractW';
     let contractUuidW;

@@ -4,7 +4,7 @@ import * as Authorization from '../../../support/authorization';
 import { seededMessageId } from '../../../support/CustomHelpers/ipfsSeeding';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('Get progresses', { tags: ['notifications', 'firstPool', 'all', 'all-no-mgs'] }, () => {
+context('Get progresses', { tags: ['notifications', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     before('Import policy for check progresses', () => {

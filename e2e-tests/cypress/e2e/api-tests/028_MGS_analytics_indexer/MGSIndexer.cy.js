@@ -3,7 +3,7 @@ import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
 // Skipped until the shared remote Guardian environment and its credentials are available: see pending-issues/folders-blocked-by-environment.md
-context.skip('Indexer MGS. Comparing', { tags: ['mgs-comparing', 'all'] }, () => {
+context.skip('Indexer MGS. Comparing', { tags: ['mgs-comparing', 'api-all', 'all'] }, () => {
 
     const MGSIndexerAPIToken = Cypress.env('MGSIndexerAPIToken');
     const MGSAdminUsername = Cypress.env('MGSAdmin');

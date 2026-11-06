@@ -12,7 +12,7 @@ const login = (username) => {
     modulesPage.openModulesTab();
 };
 
-context('Workflow Module Tags', { tags: ['ui'] }, () => {
+context('Workflow Module Tags', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const moduleName = 'UIModule' + randomInt(1000000000);

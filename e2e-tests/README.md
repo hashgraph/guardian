@@ -328,7 +328,12 @@ npx cypress run --browser chrome --env "grepTags=preparing policies,grepFilterSp
 
 **General Tags:**
 
-- `all` - all API tests for Guardian platform
+- `all` - every test: API, policy, UI and disaster recovery. It needs the frontend, so the CI starts it whenever the tags select a UI test
+- `api-all` - all API tests
+- `policy-all` - all policy tests (CDM and iREC; `policyAT` selects the same specs)
+- `ui-all` - all UI tests
+- `dr-all` - the disaster-recovery test
+- `all-no-mgs` - every test except the ones that need MGS
 - `preparing` - special test used for generating accounts for tests (should be run before feature-specific tests)
 - `smoke` - all tests for the most important and frequently used functionality
 - `ui` - all UI tests
@@ -620,7 +625,7 @@ These directories are mounted as volumes from the Docker container to your local
 
 ### Running against a local Hiero network
 
-The suite defaults to Hedera testnet, and nothing below is needed for that. A local network is worth the setup when you want to run the whole suite without spending testnet HBAR, without waiting on real consensus and mirror-node indexing, or on a ledger that starts empty every time. It is what the `E2E Tests` workflow (`.github/workflows/e2e-tests.yml`) does on every run, using `hiero-ledger/hiero-solo-action`.
+The suite defaults to Hedera testnet, and nothing below is needed for that. A local network is worth the setup when you want to run the whole suite without spending testnet HBAR, without waiting on real consensus and mirror-node indexing, or on a ledger that starts empty every time. It is what the E2E Tests and UI Tests workflows (through the reusable `.github/workflows/e2e-run.yml`) do on every run, using `hiero-ledger/hiero-solo-action`.
 
 #### The `hederaNet` parameter
 
@@ -725,33 +730,44 @@ The services run in containers there, so `LOCALNODE_ADDRESS` and the `OVERRIDE_*
 
 ### CI/CD Integration
 
-#### GitHub Actions Workflow
+#### GitHub Actions Workflows
 
-The repository includes automated test execution via GitHub Actions (`.github/workflows/e2e-tests.yml`).
+Three workflows run the suites, all on the same stack definition:
+
+| Workflow | File | Runs |
+|---|---|---|
+| **E2E Run** | `.github/workflows/e2e-run.yml` | Reusable (`workflow_call`), never triggered on its own. Starts a local Hiero network with Solo, the infrastructure and the Guardian services, optionally the frontend, runs Cypress, and publishes reports. |
+| **E2E Tests** | `.github/workflows/e2e-tests.yml` | The API and policy suites: `smoke` on every push, `api-all policy-all` nightly. |
+| **UI Tests** | `.github/workflows/ui-manual.yml` | The UI suite plus the disaster-recovery spec (`ui-all dr-all`), nightly and on demand. |
+
+Both callers pass `suite`, `grep_tags`, and optionally `spec`, `with_frontend`, `solo_version` and `timeout_minutes` to `e2e-run.yml`. Anything about how the stack is started changes in `e2e-run.yml` only.
 
 ##### Manual Workflow Run
 
-1. Go to **Actions** → **E2E Tests**
+1. Go to **Actions** → **E2E Tests** or **UI Tests**
 2. Click **Run workflow**
 3. Enter parameters:
-   - **Tags**: e.g., `all`, `smoke`, `preparing policies`, etc.
+   - **Tags**: e.g., `all`, `smoke`, `preparing policies`, `api-all`, `policy-all` for E2E Tests; `ui-all dr-all` (the default) for UI Tests. `all` works in either and runs every test
+   - **Spec** (UI Tests only): a spec glob such as `cypress/e2e/ui-tests/specs/02_policies/*.cy.js`. The account seeding specs always run first, because every other spec needs the users and artefacts they create
    - **Solo version**: optional, the Solo release that deploys the local Hiero network
 
 ##### Available Input Parameters
 
-- `tags` (default: `smoke`) - Test tags to run. For multiple tags, use spaces (e.g. `policies schemas`) or commas (e.g. `policies,schemas`). In Docker/CI runs, `preparing` is automatically prepended for feature-scoped runs (not for `all`).
-- `solo_version` (default: empty, which uses `SOLO_VERSION` in the workflow) - Solo release passed to `hiero-ledger/hiero-solo-action`.
+- `tags` (E2E Tests default: `smoke`; UI Tests default: `ui-all dr-all`) - Test tags to run. For multiple tags, use spaces (e.g. `policies schemas`) or commas (e.g. `policies,schemas`). In CI, `preparing` is automatically prepended for feature-scoped runs (not for `all`, and not when `ui` is among the tags).
+- `spec` (UI Tests only, default: empty) - Narrows the run to a spec glob.
+- `solo_version` (default: empty, which uses `SOLO_VERSION` in `e2e-run.yml`) - Solo release passed to `hiero-ledger/hiero-solo-action`.
 
-Scheduled runs (nightly, 03:00 UTC) run `all` tags and pushes run `smoke`.
+Scheduled runs happen nightly at 03:00 UTC: E2E Tests runs `api-all policy-all`, UI Tests runs `ui-all dr-all`. Pushes to E2E Tests run `smoke`.
 
 ##### Workflow Features
 
 - Starts a local Hiero network with Solo, and uploads the contract bytecode to it
 - Builds Guardian services
 - Starts MongoDB, NATS, Valkey and Kubo as service containers, and the Guardian services natively
+- For UI runs, installs the frontend and serves it with `ng serve` on `127.0.0.1:4200`, proxied to the gateway (`frontend/proxy.hostdocker.js`), the same way as the local recipe in "Preparing the app for UI tests"
 - Runs Cypress natively on the runner against that stack
-- Publishes test results
-- Uploads HTML and JSON reports as artifacts, plus the Guardian and Solo logs when a run fails
+- Publishes test results (one check per suite: `Test results · api`, `· policy`, `· ui`)
+- Uploads HTML and JSON reports as artifacts, plus the Guardian (frontend included) and Solo logs when a run fails
 - Deletes the Solo kind cluster at the end of the run
 
 ##### Test Report Artifacts
@@ -759,7 +775,7 @@ Scheduled runs (nightly, 03:00 UTC) run `all` tags and pushes run `smoke`.
 After workflow completion:
 
 1. Open the run in **Actions** → **Summary**.
-2. In the **Artifacts** section, download **cypress-reports** (contains the full report tree, including `html/` and `html/.jsons`).
+2. In the **Artifacts** section, download **`cypress-reports-<suite>-...`** (contains the full report tree, including `html/` and `html/.jsons`).
 3. Unzip and open `html/index.html` in a browser to view the interactive Cypress report (test details, screenshots, etc.).
 4. **Published results** – JUnit results are also published to the workflow summary.
 

@@ -18,7 +18,7 @@ import { randomInt } from '../../../../support/random';
 const IREC7_FILE = '../Methodology Library/International Renewable Energy Certificate (iREC)/Policies/IRec Policy 7 (Split documents) (1707130249.448431277).policy';
 
 // Skipped: the split block mints only the first chunk, see pending-issues/split-block-aborts-on-the-second-chunk-cycle-detected.md
-context.skip('Workflow iREC 7 Policy', { tags: ['ui'] }, () => {
+context.skip('Workflow iREC 7 Policy', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const userUsername = Cypress.env('User');

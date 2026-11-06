@@ -3,7 +3,7 @@ import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('Prepare accounts for future tests', { tags: ['preparing', 'smoke', 'all', 'all-no-mgs', 'ui'] }, () => {
+context('Prepare accounts for future tests', { tags: ['preparing', 'smoke', 'api-all', 'all', 'all-no-mgs', 'ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const SR2Username = Cypress.env('SR2User');

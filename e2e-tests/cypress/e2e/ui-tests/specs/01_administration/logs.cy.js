@@ -4,7 +4,7 @@ const homepage = new HomePage();
 import { LogsPage } from '../../pages/logs';
 const logs = new LogsPage();
 
-context('Check logs page', { tags: ['ui'] }, () => {
+context('Check logs page', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
 

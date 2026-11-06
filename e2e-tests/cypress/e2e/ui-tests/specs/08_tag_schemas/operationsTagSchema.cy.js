@@ -13,7 +13,7 @@ const login = (username, schemasTab) => {
 };
 
 // A published schema cannot be deleted, so the one this spec publishes stays in the list.
-context('Tag Schema Operations', { tags: ['ui'] }, () => {
+context('Tag Schema Operations', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const runId = randomInt(1000000000);

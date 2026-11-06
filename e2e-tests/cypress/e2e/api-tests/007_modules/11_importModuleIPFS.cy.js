@@ -5,7 +5,7 @@ import * as Authorization from '../../../support/authorization';
 import { seededMessageId } from '../../../support/CustomHelpers/ipfsSeeding';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('Modules', { tags: ['modules', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
+context('Modules', { tags: ['modules', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');

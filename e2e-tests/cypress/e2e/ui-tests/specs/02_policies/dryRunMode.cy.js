@@ -5,7 +5,7 @@ const homepage = new HomePage();
 import { PoliciesPage } from '../../pages/policiesPage';
 const policiesPage = new PoliciesPage();
 
-context('Dry run Policy', { tags: ['ui'] }, () => {
+context('Dry run Policy', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     // A 1000-space name collides with policies left behind by earlier runs (the app

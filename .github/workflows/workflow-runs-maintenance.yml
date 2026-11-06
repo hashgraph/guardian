@@ -2,9 +2,9 @@
 # Actions history and artifact storage manageable.
 name: Workflow Runs Maintenance
 on:
-  workflow_dispatch:
   schedule:
     - cron: "0 */6 * * *"  # Runs every 6 hours, at the top of the hour (UTC).
+  workflow_dispatch:
 
 concurrency:
   group: run-cleanup

@@ -13,7 +13,7 @@ const login = (username) => {
 };
 
 // A published module cannot be deleted, so each run leaves the one it published in the list.
-context('Verify Modules UI', { tags: ['@ui'] }, () => {
+context('Verify Modules UI', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const runId = randomInt(1000000000);

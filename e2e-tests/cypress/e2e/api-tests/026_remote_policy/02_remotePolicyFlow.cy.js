@@ -5,7 +5,7 @@ import * as Checks from '../../../support/checkingMethods';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 // Exclude "all" tag, if needs to stop using MGS in CI tests run
 // Skipped until the shared remote Guardian environment and its credentials are available: see pending-issues/folders-blocked-by-environment.md
-context.skip('Policies', { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
+context.skip('Policies', { tags: ['remote_policy', 'secondPool', 'api-all', 'all'] }, () => {
 
     const MainSRUsername = Cypress.env('MainSRUser');
     const DepUserUsername = Cypress.env('DepUser');

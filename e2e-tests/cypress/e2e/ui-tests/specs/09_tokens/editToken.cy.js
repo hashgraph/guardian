@@ -12,7 +12,7 @@ const login = (username) => {
     tokensPage.openTokensTab();
 };
 
-context('Token Edition', { tags: ['ui'] }, () => {
+context('Token Edition', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const tokenName = 'UITokenName' + randomInt(1000000000);

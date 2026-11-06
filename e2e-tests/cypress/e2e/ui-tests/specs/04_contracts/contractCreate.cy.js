@@ -5,7 +5,7 @@ const contractsPage = new ContractsPage();
 import { HomePage } from '../../pages/homePage';
 const homePage = new HomePage();
 
-context('Workflow Contract Creation', { tags: ['ui'] }, () => {
+context('Workflow Contract Creation', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     // Unique per run: the contracts of earlier runs stay in the list.

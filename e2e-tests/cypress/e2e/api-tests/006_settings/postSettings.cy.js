@@ -18,7 +18,7 @@ const realOperatorId = Cypress.env('operatorId');
 const realOperatorKey = Cypress.env('operatorKey');
 const operatorConfigured = Boolean(realOperatorId && realOperatorKey);
 
-context('Settings', { tags: ['settings', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
+context('Settings', { tags: ['settings', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     before(function () {

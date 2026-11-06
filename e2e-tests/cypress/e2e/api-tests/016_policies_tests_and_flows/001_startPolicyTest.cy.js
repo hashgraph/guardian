@@ -3,7 +3,7 @@ import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('Start policy test', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, () => {
+context('Start policy test', { tags: ['policies', 'secondPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 	const SRUsername = Cypress.env('SRUser');
 	let policyId; let testId;
 

@@ -11,7 +11,7 @@ import { randomInt } from '../../../../support/random';
 
 const IREC3_FILE = '../Methodology Library/International Renewable Energy Certificate (iREC)/Policies/IRec Policy 3 (1707126011.005978889).policy';
 
-context('Dry run Policy', { tags: ['ui'] }, () => {
+context('Dry run Policy', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const runName = randomInt(1000000000) + 'testName';

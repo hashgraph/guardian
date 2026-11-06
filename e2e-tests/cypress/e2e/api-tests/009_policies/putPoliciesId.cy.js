@@ -4,7 +4,7 @@ import * as Authorization from '../../../support/authorization';
 import { randomInt } from '../../../support/random';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, () => {
+context('Policies', { tags: ['policies', 'secondPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     // policyTag is unique in the DB: reusing a hardcoded one fails as soon as a run updates a policy
     // other than the one a previous run tagged

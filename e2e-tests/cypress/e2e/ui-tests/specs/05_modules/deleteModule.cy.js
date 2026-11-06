@@ -12,7 +12,7 @@ const login = (username) => {
     modulesPage.openModulesTab();
 };
 
-context('Workflow Module Deletion', { tags: ['ui'] }, () => {
+context('Workflow Module Deletion', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const moduleNameFileImported = 'ComparedModuleFile';

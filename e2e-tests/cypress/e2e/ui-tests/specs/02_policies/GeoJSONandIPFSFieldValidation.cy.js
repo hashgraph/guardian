@@ -12,7 +12,7 @@ const userPoliciesPage = new UserPoliciesPage();
 
 import { randomInt } from '../../../../support/random';
 
-context('Workflow iREC 3 Policy', { tags: ['ui'] }, () => {
+context('Workflow iREC 3 Policy', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const userUsername = Cypress.env('User');

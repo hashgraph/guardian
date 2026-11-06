@@ -5,6 +5,8 @@ on:
       - '.github/**'
       - 'docs/**'
       - '**/*.md'
+  schedule:
+    - cron: '0 3 * * *' # Run at 03:00 UTC every day (nightly)
   workflow_dispatch:
 
 permissions:

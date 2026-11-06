@@ -3,7 +3,7 @@ import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import { seededMessageId } from '../../../support/CustomHelpers/ipfsSeeding';
 
-context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, () => {
+context('Policies', { tags: ['policies', 'secondPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     let policyMessageId;
 
