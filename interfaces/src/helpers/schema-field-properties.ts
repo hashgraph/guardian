@@ -21,6 +21,7 @@ export const SCHEMA_FIELD_PROPERTIES: Record<keyof SchemaField, ISchemaFieldProp
     name: { xlsx: 'Key', editor: 'Key' },
     title: { xlsx: null, editor: 'Title', exempt: 'XLSX derives the title from the Description column path' },
     description: { xlsx: 'Description', editor: 'Description' },
+    advisoryText: { xlsx: 'Advisory Text', editor: 'Advisory text' },
     required: { xlsx: 'Required Field', editor: 'Required / Visibility' },
     hidden: { xlsx: 'Visibility', editor: 'Required / Visibility' },
     autocalculate: { xlsx: 'Visibility', editor: 'Required / Visibility' },
