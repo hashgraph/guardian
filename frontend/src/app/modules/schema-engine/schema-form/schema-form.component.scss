@@ -775,12 +775,16 @@ app-geojson-type ::ng-deep {
 }
 
 .sf-advisory {
-    color: var(--color-grey-5);
+    color: var(--color-grey-6);
     font-size: 12px;
     line-height: 1.5;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
     margin-bottom: 8px;
+
+    :host-context(.guardian-theme-dark) & {
+        color: var(--color-grey-4);
+    }
 }
 
 .sf-card .sf-card-head.sf-card-head-advisory {
