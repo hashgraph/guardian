@@ -454,6 +454,49 @@ describe('SchemasConfigurationComponent', () => {
             expect(component.hasUnsavedChanges).toBeTrue();
         });
 
+        it('keeps removing the last array dependency of a drilled sub-schema detectable after hydration', () => {
+            const ev = { stopPropagation: () => {} };
+            const sub: any = makeSchema({ id: 'sub', iri: '#sub' });
+            sub.fields = undefined;
+            sub.document = undefined;
+            const refField = makeField({
+                name: 'ref', type: '#sub', isRef: true, fields: [makeField({ name: 'a' })],
+            });
+            const root: any = makeSchema({ id: 'root', iri: '#root', fields: [refField] });
+            const component = createComponent({ schemas: [root, sub], selectedSchema: root });
+            stubDrillPlumbing(component);
+            component.arrayDependencyDataVersion = 0;
+            component.getCategory = () => 'policy';
+            const link = { field: ['a'], on: ['b'], kind: 'array' };
+            component.schemaService.getSchemaWithSubSchemas = () => of({
+                schema: {
+                    id: 'sub', _id: 'sub', uuid: 'u-sub', status: 'DRAFT', topicId: 'topic-1', name: 'Sub',
+                    document: {
+                        $id: '#u-sub', title: 'Sub', description: '', type: 'object',
+                        $comment: JSON.stringify({ arrayDependencies: [link] }),
+                        properties: {
+                            a: {
+                                title: 'a', description: 'd', readOnly: false, type: 'string',
+                                $comment: '{"term":"a","@id":"https://www.schema.org/text","orderPosition":0}'
+                            }
+                        },
+                        required: [], additionalProperties: false, $defs: {}
+                    }
+                },
+                subSchemas: [],
+            });
+
+            // the clone baselines at drill-in, then the fetch brings the array dependency
+            component.enterSubSchema(refField, ev);
+            expect(sub.arrayDependencies.length).toBe(1);
+            expect(component.hasUnsavedChanges).toBeFalse();
+
+            sub.arrayDependencies = [];
+            component.markDirty();
+
+            expect(component.hasUnsavedChanges).toBeTrue();
+        });
+
         it('drops the sub-schema key when the search does not return it', () => {
             const root: any = makeSchema({ id: 'root', iri: '#root', fields: [makeField()] });
             const sub: any = makeSchema({ id: 'sub', iri: '#sub', fields: [makeField({ name: 'f_sub' })] });

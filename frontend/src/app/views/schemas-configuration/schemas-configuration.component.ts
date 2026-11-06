@@ -3845,9 +3845,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return { ...raw, document: { ...doc, $defs: defs } };
     }
 
-    private rebaselineLazyLoadedSchema(schema: Schema): void {
+    private rebaselineLazyLoadedSchema(schema: Schema, replaceExisting: boolean = false): void {
         const id = schema.id || (schema as any)._id;
-        if (id && !this.dirtySchemaIds.has(id) && !this.savedSignatures.has(id)) {
+        if (id && !this.dirtySchemaIds.has(id) && (replaceExisting || !this.savedSignatures.has(id))) {
             this.snapshotSchema(schema, id);
         }
     }
@@ -3886,7 +3886,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     if (selectedField && selectedField.type === subSchema.iri) {
                         selectedField.fields = subSchema.fields;
                     }
-                    this.rebaselineLazyLoadedSchema(subSchema);
+                    this.rebaselineLazyLoadedSchema(subSchema, true);
                     const entry = this.drillStack.find(e => e.schemaIri === subSchema.iri);
                     if (entry) { entry.fields = subSchema.fields; }
                     if (this.previewSchemaRef === subSchema) { this.rebuildPreview(); }
