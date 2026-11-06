@@ -4,7 +4,7 @@ import CommonElements from '../../../support/defaultUIElements';
 import { waitForPageReady } from '../../../support/pageReadiness';
 import { dropFile, waitForTaskRoundtrip, replaceInaccessibleTools } from '../../../support/importFlow';
 import { clickButtonInWizardSteps, clickWizardTab } from '../../../support/wizardSteps';
-import { openOverviewSection } from './userPoliciesPage';
+import { addGeoJsonPoint, openOverviewSection } from './userPoliciesPage';
 import { TIMEOUTS, POLL_INTERVAL } from '../../../support/CustomHelpers/timeouts';
 
 // The current app renders the policy engine on a PrimeNG 21 base. Static template
@@ -797,11 +797,7 @@ export class PoliciesPage {
                 cy.contains(`${L.requestForm} button`, 'Add geojson').click();
             }
         });
-        cy.contains(`${L.requestForm} app-geojson-type button`, 'Add Geometry', { timeout: TIMEOUTS.ui }).click();
-        cy.get(`${L.requestForm} p-select#typeDropdown`).first().click();
-        cy.contains('li[role="option"]', /^Point$/).click();
-        cy.get(`${L.requestForm} #coordinatesInput`).first().type('[1.321,2.321]', { force: true });
-        cy.get(`${L.requestForm} app-geojson-type .validation-errors`).should('not.exist');
+        addGeoJsonPoint(() => cy.get(`${L.requestForm} app-geojson-type`).first());
     }
 
     // Nothing left to fix: no inline error and no required field left to jump to.
