@@ -448,8 +448,10 @@ export class PoliciesPage {
                 cy.wrap($cell.find('button.p-button-outlined').first()).click();
             }
         });
-        cy.get('tags-create-dialog input.p-field-input[formcontrolname="name"]', { timeout: TIMEOUTS.ui }).clear();
-        cy.get('tags-create-dialog input.p-field-input[formcontrolname="name"]').type(name);
+        // The dialog opened over the explorer dropped the last keystroke ("tag2" saved as "tag"): set it in one step.
+        const nameInput = 'tags-create-dialog input.p-field-input[formcontrolname="name"]';
+        cy.get(nameInput, { timeout: TIMEOUTS.ui }).invoke('val', name).trigger('input');
+        cy.get(nameInput).should('have.value', name);
         // pButton binds [label], which leaves no attribute in the DOM: find the button by its text.
         cy.contains('tags-create-dialog button', 'Create').click();
         cy.get('tags-create-dialog', { timeout: TIMEOUTS.ui }).should('not.exist');
