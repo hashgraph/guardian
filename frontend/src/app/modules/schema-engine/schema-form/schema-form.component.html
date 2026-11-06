@@ -397,6 +397,9 @@
                       <span class="sf-chip">Optional</span>
                     }
                   </div>
+                  @if (item.advisoryText) {
+                    <div class="sf-advisory">{{ item.advisoryText }}</div>
+                  }
                   @if (showMetadata) {
                     <ng-container *ngTemplateOutlet="sfMeta; context: { $implicit: item }"></ng-container>
                   }
@@ -448,9 +451,6 @@
                         [attr.data-field-id]="listItem.id"
                         [formGroup]="item.control"
                         >
-                        @if (item.advisoryText) {
-                          <div class="sf-advisory">{{ item.advisoryText }}</div>
-                        }
                         <div class="form-field-array-item">
                           <div
                             class="form-field-value"

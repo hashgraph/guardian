@@ -67,22 +67,21 @@ describe('Schema form advisory text', () => {
         expect(hints(fixture.nativeElement).length).toBe(0);
     });
 
-    it('shows guidance for every simple array input, including a newly added value', () => {
+    it('shows simple array guidance once under the label, also before any value is added', () => {
         const { fixture, model } = setup([field({ isArray: true })]);
+        const element: HTMLElement = fixture.nativeElement;
+        expect(element.querySelectorAll('.form-field-array-item-container').length).toBe(0);
+        expect(hints(element).length).toBe(1);
+        expect(hints(element)[0].textContent).toBe('First line\n<b>plain text</b>');
+        expect(hints(element)[0].previousElementSibling?.classList.contains('sf-label')).toBeTrue();
         const item = model.controls![0];
         model.addItem(item);
         model.addItem(item);
         fixture.componentRef.changeDetectorRef.markForCheck();
         fixture.detectChanges();
-        const element: HTMLElement = fixture.nativeElement;
-        const rows = element.querySelectorAll('.form-field-array-item-container');
-        expect(rows.length).toBe(2);
-        expect(hints(element).length).toBe(rows.length);
-        rows.forEach(row => expect(row.querySelectorAll('.sf-advisory').length).toBe(1));
-        model.addItem(item);
-        fixture.componentRef.changeDetectorRef.markForCheck();
-        fixture.detectChanges();
-        expect(hints(element).length).toBe(rows.length + 1);
+        expect(element.querySelectorAll('.form-field-array-item-container').length).toBe(2);
+        expect(hints(element).length).toBe(1);
+        expect(element.querySelector('.form-field-array-item-container .sf-advisory')).toBeNull();
     });
 
     for (const customType of ['geo', 'sentinel']) {
