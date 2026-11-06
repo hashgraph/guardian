@@ -2655,7 +2655,7 @@ $sc-accent: var(--guardian-schema-accent, var(--color-primary, #4169E2));
     resize: vertical;
     min-height: 100px;
     line-height: 1.5;
-    white-space: pre;
+    white-space: pre-wrap;
 }
 
 .sc-rp-color {
