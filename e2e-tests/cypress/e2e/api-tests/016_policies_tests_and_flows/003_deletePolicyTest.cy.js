@@ -1,6 +1,7 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Delete policy test', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
@@ -15,7 +16,7 @@ context('Delete policy test', { tags: ['policies', 'secondPool', 'all', 'all-no-
                 headers: {
                     authorization,
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 //The same copy the import spec works on: iterating and keeping the last match

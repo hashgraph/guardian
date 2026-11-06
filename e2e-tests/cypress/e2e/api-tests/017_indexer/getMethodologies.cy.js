@@ -1,7 +1,8 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 
-context('Indexer. Get methodologies', { tags: ['indexer', 'firstPool'] }, () => {
+// Skipped until an environment with the Indexer service is available: see pending-issues/folders-blocked-by-environment.md
+context.skip('Indexer. Get methodologies', { tags: ['indexer', 'firstPool'] }, () => {
 
     it('Get list of Policies', () => {
         cy.request({

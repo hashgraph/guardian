@@ -1,6 +1,7 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Create a lot of discussion comments', { tags: ['comments', 'firstPool', 'all', 'all-no-mgs'] }, () => {
 
@@ -19,7 +20,7 @@ context('Create a lot of discussion comments', { tags: ['comments', 'firstPool',
             },
             headers: { authorization },
             failOnStatusCode,
-            timeout: 60000
+            timeout: TIMEOUTS.backend
         });
     };
 
@@ -33,7 +34,7 @@ context('Create a lot of discussion comments', { tags: ['comments', 'firstPool',
             },
             headers: { authorization },
             failOnStatusCode,
-            timeout: 60000
+            timeout: TIMEOUTS.backend
         });
     };
 
@@ -69,7 +70,7 @@ context('Create a lot of discussion comments', { tags: ['comments', 'firstPool',
                 headers: {
                     authorization,
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 //The iRec 3 flow imports its policy from a fixture, and the import suffixes the

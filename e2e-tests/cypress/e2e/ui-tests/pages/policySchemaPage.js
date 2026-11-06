@@ -1,6 +1,6 @@
 import ASSERT from '../../../support/CustomHelpers/assertions';
-import TIMEOUTS from '../../../support/CustomHelpers/timeouts';
 import URL from '../../../support/GuardianUrls';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 const SchemasPageLocators = {
 
@@ -64,21 +64,21 @@ export class SchemasPage {
         cy.intercept(SchemasPageLocators.schemaListReq).as(
             'waitForSchemaList'
         );
-        cy.wait('@waitForSchemaList', { timeout: 200000 })
+        cy.wait('@waitForSchemaList', { timeout: TIMEOUTS.backend })
     }
 
     static waitForSchemaStatusToComplete() {
         cy.intercept(SchemasPageLocators.searchSchemaReq).as(
             'waitForSchemaToBepublished'
         );
-        cy.wait('@waitForSchemaToBepublished', { timeout: 200000 })
+        cy.wait('@waitForSchemaToBepublished', { timeout: TIMEOUTS.longOperation })
     }
 
     static waitForSchemaCompareReq() {
         cy.intercept(SchemasPageLocators.compareReq).as(
             'waitForSchemaToBepublished'
         );
-        cy.wait('@waitForSchemaToBepublished', { timeout: 200000 })
+        cy.wait('@waitForSchemaToBepublished', { timeout: TIMEOUTS.longOperation })
     }
 
     clickPolicySchema(){
@@ -101,10 +101,8 @@ export class SchemasPage {
 
     createPolicySchema(name, entitytype, policyname) {
         cy.contains(SchemasPageLocators.newBtn).click();
-        const inputName = cy.get(SchemasPageLocators.nameInput);
-        cy.wait(1000);
-        inputName.click();
-        inputName.type(name);
+        cy.get(SchemasPageLocators.nameInput).should('be.visible').click();
+        cy.get(SchemasPageLocators.nameInput).type(name);
 
         if (entitytype == 'DEFAULT') {
             cy.get(SchemasPageLocators.entityList).click();
@@ -128,12 +126,10 @@ export class SchemasPage {
 
     editPolicySchema(name, entitytype) {
         cy.contains(SchemasPageLocators.schemaName, name).siblings(SchemasPageLocators.policySchemaeditBtn).click();
-        const inputNameEdit = cy.get(SchemasPageLocators.nameInput);
-        cy.wait(1000);
-        inputNameEdit.click();
-        inputNameEdit.clear();
+        cy.get(SchemasPageLocators.nameInput).should('be.visible').click();
+        cy.get(SchemasPageLocators.nameInput).clear();
         let editName = name + ' updated';
-        inputNameEdit.type(editName);
+        cy.get(SchemasPageLocators.nameInput).type(editName);
 
         if (entitytype == 'DEFAULT') {
             cy.get(SchemasPageLocators.entityList).click();
@@ -199,7 +195,7 @@ export class SchemasPage {
             'waitForSchemaImport'
         );
         cy.get(SchemasPageLocators.submitBtn).click();
-        cy.wait('@waitForSchemaImport', { timeout: 100000 })
+        cy.wait('@waitForSchemaImport', { timeout: TIMEOUTS.longOperation })
         cy.readFile('test.env.json').then((env) => {
                      const pname = env.policyname;
                     cy.contains('.field-name','Policy').parent().children().find(SchemasPageLocators.schemaSelectPolicyList).click();
@@ -214,7 +210,6 @@ export class SchemasPage {
     {
         cy.contains(SchemasPageLocators.schemaName, name).siblings(SchemasPageLocators.schemaExportBtn).click();
         cy.contains(SchemasPageLocators.schemaSaveToFileBtn).click();
-        cy.wait(2000);
         cy.verifyDownload('.schema', { contains: true });
 
     }

@@ -1,6 +1,7 @@
 import URL from '../../../support/GuardianUrls';
 import { waitForPageReady } from '../../../support/pageReadiness';
 import { dropFile, waitForTaskRoundtrip, replaceInaccessibleTools } from '../../../support/importFlow';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 // The current app renders the tools list on the PrimeNG 21 base: a plain
 // table (guardian-grid-table/row), the search box reuses the
@@ -42,22 +43,22 @@ export class ToolsPage {
     }
 
     _search(name) {
-        cy.get(L.searchInput, { timeout: 15000 }).clear();
+        cy.get(L.searchInput, { timeout: TIMEOUTS.ui }).clear();
         cy.get(L.searchInput).type(name);
-        cy.get(L.applyFilters, { timeout: 15000 }).click();
+        cy.get(L.applyFilters, { timeout: TIMEOUTS.ui }).click();
         // applyFilters re-queries the list (and the URL). The grid keeps the
         // stale rows underneath the preloader until the reload lands, so an
         // existence check fired right after the click would read the old
         // unfiltered page; wait for the reload cycle instead.
-        cy.get(L.loadingOverlay, { timeout: 15000 }).should('be.visible');
-        cy.get(L.loadingOverlay, { timeout: 15000 }).should('not.exist');
+        cy.get(L.loadingOverlay, { timeout: TIMEOUTS.ui }).should('be.visible');
+        cy.get(L.loadingOverlay, { timeout: TIMEOUTS.ui }).should('not.exist');
     }
 
     /**
      * The row whose name cell is exactly `name`.
      */
     _row(name) {
-        return cy.get(L.row, { timeout: 20000 }).filter((_, el) => {
+        return cy.get(L.row, { timeout: TIMEOUTS.ui }).filter((_, el) => {
             const cell = el.querySelector(L.nameCell);
             return cell && cell.textContent.trim() === name;
         });
@@ -121,7 +122,7 @@ export class ToolsPage {
             this._publish(name);
         });
         this.openToolsTab(name);
-        this._row(name).find(L.statusIndicator, { timeout: 15000 })
+        this._row(name).find(L.statusIndicator, { timeout: TIMEOUTS.ui })
             .first().invoke('text').should('contain', 'Published');
     }
 
@@ -132,14 +133,14 @@ export class ToolsPage {
      * re-lands with openToolsTab.
      */
     _publish(name, version = '1.0.0') {
-        this._row(name).find(L.statusSelect, { timeout: 15000 }).click();
-        cy.get('body').find('div.dropdown-item-title', { timeout: 15000 })
+        this._row(name).find(L.statusSelect, { timeout: TIMEOUTS.ui }).click();
+        cy.get('body').find('div.dropdown-item-title', { timeout: TIMEOUTS.ui })
             .contains('Publish')
             .click();
-        cy.get(L.versionInput, { timeout: 15000 }).should('be.visible');
+        cy.get(L.versionInput, { timeout: TIMEOUTS.ui }).should('be.visible');
         cy.get(L.versionInput).clear();
         cy.get(L.versionInput).type(version);
-        cy.get(L.publishButton, { timeout: 15000 })
+        cy.get(L.publishButton, { timeout: TIMEOUTS.ui })
             .should('not.be.disabled')
             .click();
         waitForTaskRoundtrip();
@@ -152,14 +153,14 @@ export class ToolsPage {
      * The import task redirects to the tool configuration page on completion.
      */
     importToolFromFile(name, source) {
-        cy.get(L.importButton, { timeout: 15000 }).click();
-        cy.get(L.dialog, { timeout: 15000 }).should('be.visible');
+        cy.get(L.importButton, { timeout: TIMEOUTS.ui }).click();
+        cy.get(L.dialog, { timeout: TIMEOUTS.ui }).should('be.visible');
         dropFile(source);
         // replaceInaccessibleTools waits for the preview dialog itself (the
         // import dialog would otherwise satisfy any footer-based gate).
         replaceInaccessibleTools();
         cy.get(L.dialog).find('div.dialog-footer button:contains("Import")')
-            .should('not.be.disabled', { timeout: 30000 })
+            .should('not.be.disabled', { timeout: TIMEOUTS.backend })
             .click();
         waitForTaskRoundtrip();
     }

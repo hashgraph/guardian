@@ -1,6 +1,8 @@
 import URL from '../../../support/GuardianUrls';
 import * as Checks from '../../../support/checkingMethods';
 import { waitForPageReady } from '../../../support/pageReadiness';
+import { addTag, deleteTag } from '../../../support/tagsExplorer';
+import { TIMEOUTS, POLL_INTERVAL } from '../../../support/CustomHelpers/timeouts';
 
 // The token lists (/tokens, /tokens-user) and the per-token user views share one
 // grid markup: rows are tr.guardian-grid-row and the first cell is a
@@ -28,29 +30,21 @@ const L = {
     refreshIcon: 'div.guardian-icon-button svg-icon[src*="refresh-2"]',
 
     // The 09 tokens suite drives the token-management grid with these locators.
-    legacy: {
-        associatedBtn: 'div.associated-btn',
-        createTokenBtn: 'button[label="Create token"]',
-        createFinalBtn: 'button[ng-reflect-label="Create"]',
-        publishedBtn: '[ng-reflect-on="Published"]',
-        adminKey: 'div.key-name:contains(" Admin Key ")',
-        wipeKey: 'div.key-name:contains(" Wipe Key ")',
-        freezeKey: 'div.key-name:contains(" Freeze Key ")',
-        kycKey: 'div.key-name:contains(" KYC Key ")',
-        tokenTypeChoose: 'p-dropdown[formcontrolname="tokenType"]',
-        tokenDeleteBtn: 'button[ng-reflect-label="Delete"]',
-        tokenEditBtn: '[ng-reflect-src="/assets/images/icons/edit.svg"]',
-        tokenEditBtnDisabled: '[ng-reflect-svg-class="disabled-color"]',
-        adminKeyIsntSet: 'Admin Key is not set',
-        tokenNameInput: '[formcontrolname="tokenName"]',
-        tokenSymbolInput: '[formcontrolname="tokenSymbol"]',
-        saveTokenBtn: 'Save',
-        createTagButton: ' Create a Tag ',
-        tagNameInput: '[ng-reflect-name="name"]',
-        tagDescInput: '[ng-reflect-name="description"]',
-        closeWindowButton: "[ng-reflect-label='Close']",
-        deleteTagIcon: "svg-icon[svgclass='accent-color-red']",
-        createButton: "[ng-reflect-label='Create']",
+    manage: {
+        createTokenButton: 'p-button',
+        dialog: 'div.custom-token-dialog',
+        deleteDialog: 'div.guardian-dialog',
+        tokenNameInput: 'input#tokenName',
+        tokenSymbolInput: 'input#tokenSymbol',
+        statusSwitch: 'switch-button input[type="checkbox"]',
+        keyRow: '.key-value',
+        tokenType: 'p-select[formcontrolname="tokenType"]',
+        optionItem: 'li[role="option"]',
+        iconButton: 'div.guardian-icon-button',
+        editIcon: 'svg-icon[src*="edit.svg"]',
+        deleteIcon: 'svg-icon[src*="delete.svg"]',
+        deleteConfirm: 'button.guardian-button-delete',
+        textCell: 'span.text-truncate',
     },
 };
 
@@ -72,11 +66,11 @@ export class TokensPage {
      * name, and the list is newest-first, so the current run's token leads page 1.
      */
     _tokenRow(policyName) {
-        return cy.contains(L.gridRow, policyName, { timeout: 60000 });
+        return cy.contains(L.gridRow, policyName, { timeout: TIMEOUTS.backend });
     }
 
     // The user row of the open per-token user view, matched on the first cell.
-    _userRow(username, timeout = 60000) {
+    _userRow(username, timeout = TIMEOUTS.backend) {
         return cy.get(L.gridRow, { timeout }).filter((_, el) => {
             const cell = el.querySelector('span.text-truncate');
             return cell && cell.textContent.trim() === username;
@@ -91,30 +85,27 @@ export class TokensPage {
      * pass: a stored row scope (alias or get) detaches when the view
      * re-renders and would fail the subject check.
      */
-    _waitForLabelFlip(rowQuery, buttonSelector, expected, retries = 30) {
-        const check = (left) => {
+    _waitForLabelFlip(rowQuery, buttonSelector, expected, timeout = TIMEOUTS.backend) {
+        const check = (deadline) => {
             rowQuery().first()
-                .find(buttonSelector, { timeout: 20000 })
+                .find(buttonSelector, { timeout: TIMEOUTS.ui })
                 .first()
                 .invoke('text')
                 .then((text) => {
                     if (Cypress.$.trim(text).includes(expected)) {
                         return;
                     }
-                    expect(left, `task did not land after ${30 - left} refreshes`)
-                        .to.be.greaterThan(0);
-                    // Pacing: let the backend task finish before re-querying, so each
-                    // refresh has a real chance of landing the new state.
-                    // eslint-disable-next-line cypress/no-unnecessary-waiting
-                    cy.wait(5000);
+                    expect(Date.now(), `"${expected}" did not show up within ${timeout} ms (last label: "${Cypress.$.trim(text)}")`)
+                        .to.be.lessThan(deadline);
+                    cy.wait(POLL_INTERVAL, { log: false });
                     rowQuery().first()
-                        .find(L.refreshIcon, { timeout: 20000 })
+                        .find(L.refreshIcon, { timeout: TIMEOUTS.ui })
                         .first()
                         .click({ force: true });
-                    check(left - 1);
+                    check(deadline);
                 });
         };
-        check(retries);
+        cy.then(() => check(Date.now() + timeout));
     }
 
     /**
@@ -124,7 +115,7 @@ export class TokensPage {
      */
     storeTokenId(policyName) {
         this._tokenRow(policyName)
-            .find('hedera-explorer', { timeout: 15000 })
+            .find('hedera-explorer', { timeout: TIMEOUTS.ui })
             .first()
             .invoke('text')
             .then((tokenId) => {
@@ -149,9 +140,9 @@ export class TokensPage {
             cy.visit(`${URL.Root}${URL.TokensUser}?tokenId=${btoa(tokenId)}`);
         });
         waitForPageReady(L.grid, 3);
-        cy.get(L.gridRow, { timeout: 30000 }).first().as('accountRow');
+        cy.get(L.gridRow, { timeout: TIMEOUTS.backend }).first().as('accountRow');
         cy.get('@accountRow')
-            .find(L.associateButton, { timeout: 30000 })
+            .find(L.associateButton, { timeout: TIMEOUTS.backend })
             .then(($button) => {
                 const label = Cypress.$.trim($button.first().text());
                 if (label === 'Associate') {
@@ -159,17 +150,17 @@ export class TokensPage {
                 }
                 cy.log('Account is already associated');
             });
-        this._waitForLabelFlip(() => cy.get(L.gridRow, { timeout: 20000 }), L.associateButton, 'Dissociate');
+        this._waitForLabelFlip(() => cy.get(L.gridRow, { timeout: TIMEOUTS.ui }), L.associateButton, 'Dissociate');
     }
 
     // Grants KYC to `username` in the run's token. Runs after associatePolicyToken
     // (the switch stays disabled while the account is not associated).
     grantKYC(policyName, username) {
         this.openTokensTab();
-        this._tokenRow(policyName).find(L.tokenUsersIcon, { timeout: 15000 }).click();
+        this._tokenRow(policyName).find(L.tokenUsersIcon, { timeout: TIMEOUTS.ui }).closest(L.manage.iconButton).click();
         waitForPageReady(L.grid, 3);
         this._userRow(username)
-            .find(L.kycButton, { timeout: 30000 })
+            .find(L.kycButton, { timeout: TIMEOUTS.backend })
             .then(($button) => {
                 const label = Cypress.$.trim($button.first().text());
                 if (label === 'Grant KYC') {
@@ -183,91 +174,105 @@ export class TokensPage {
     // Waits until `username`'s balance on the run's token reaches `balance`.
     verifyBalance(policyName, username, balance = ' 1 ') {
         this.openTokensTab();
-        this._tokenRow(policyName).find(L.tokenUsersIcon, { timeout: 15000 }).click();
+        this._tokenRow(policyName).find(L.tokenUsersIcon, { timeout: TIMEOUTS.ui }).closest(L.manage.iconButton).click();
         waitForPageReady(L.grid, 3);
         // the balance cell renders only for an associated account; a missing cell
         // means the association state has not landed, so fail with a clear wait
         this._userRow(username)
-            .find(L.balance, { timeout: 120000 })
+            .find(L.balance, { timeout: TIMEOUTS.backend })
             .should('exist');
         Checks.waitForBalanceIncrease(balance, username);
     }
 
     // ---- 09 tokens suite (token-management grid) ----
 
+    // The token row with a cell reading exactly `name` (names are unique per run, newest tokens first).
+    _manageRow(name) {
+        return cy.get(L.gridRow, { timeout: TIMEOUTS.backend }).filter((_, row) =>
+            Array.from(row.querySelectorAll(L.manage.textCell)).some((cell) => cell.textContent.trim() === name));
+    }
+
+    // The dialog re-renders while it is typed into and drops the remaining keystrokes, so the whole
+    // value is set at once and the form is told through the input event.
+    _setInput(selector, value) {
+        cy.get(selector).invoke('val', value).trigger('input');
+        cy.get(selector).should('have.value', value);
+    }
+
+    // A switch-button is a checkbox behind a label; its change event is what the form listens to.
+    _toggleKey(keyName) {
+        cy.get(L.manage.dialog).contains(L.manage.keyRow, keyName).find(L.manage.statusSwitch).click({ force: true });
+    }
+
     createToken(name, published = false, nft = false, adminKey = true, wipeKey = true, freeze = false, KYC = false) {
-        cy.get(L.legacy.createTokenBtn).click();
-        cy.get(L.legacy.tokenNameInput).click();
-        cy.get(L.legacy.tokenNameInput).clear();
-        cy.get(L.legacy.tokenNameInput).type(name);
-        if (published)
-            {cy.get(L.legacy.publishedBtn).click();}
+        cy.contains('p-button', 'Create token').click();
+        cy.get(L.manage.dialog, { timeout: TIMEOUTS.ui }).should('be.visible');
+        this._setInput(L.manage.tokenNameInput, name);
+        if (published) {
+            cy.get(L.manage.dialog).find(L.manage.statusSwitch).first().click({ force: true });
+        }
         if (nft) {
-            cy.get(L.legacy.tokenTypeChoose).click();
-            cy.contains('Non-Fungible').click();
+            cy.get(L.manage.dialog).find(L.manage.tokenType).click();
+            cy.contains(L.manage.optionItem, 'Non-Fungible').click();
         }
         if (!adminKey) {
-            cy.get(L.legacy.adminKey).parent().find('switch-button').click();
+            this._toggleKey('Admin Key');
         }
         if (!wipeKey) {
-            cy.get(L.legacy.wipeKey).parent().find('switch-button').click();
+            this._toggleKey('Wipe Key');
         }
         if (freeze) {
-            cy.get(L.legacy.freezeKey).parent().find('switch-button').click();
+            this._toggleKey('Freeze Key');
         }
         if (KYC) {
-            cy.get(L.legacy.kycKey).parent().find('switch-button').click();
+            this._toggleKey('KYC Key');
         }
-        cy.get(L.legacy.createFinalBtn).click();
+        cy.get(L.manage.dialog).contains('button', 'Create').click();
         Checks.waitForTaskComplete();
         Checks.waitForLoading();
-        cy.contains(name).should('exist');
+        this._manageRow(name).should('exist');
     }
 
     deleteToken(name) {
-        cy.contains(new RegExp('^' + name + '$', 'g')).parent().find('[ng-reflect-src="/assets/images/icons/delete.sv"]').click();
-        cy.get(L.legacy.tokenDeleteBtn).click();
+        // The icons ignore pointer events; the click is handled by the button around them.
+        this._manageRow(name).find(L.manage.deleteIcon).closest(L.manage.iconButton).click();
+        cy.get(L.manage.deleteDialog, { timeout: TIMEOUTS.ui }).find(L.manage.deleteConfirm).click();
         Checks.waitForTaskComplete();
-        cy.contains(new RegExp('^' + name + '$', 'g')).should('not.exist');
+        Checks.waitForLoading();
+        cy.get('body').should(($body) => {
+            const rows = $body.find(L.gridRow).filter((_, row) =>
+                Array.from(row.querySelectorAll(L.manage.textCell)).some((cell) => cell.textContent.trim() === name));
+            expect(rows.length).to.eq(0);
+        });
     }
 
+    // Without an admin key a token can be neither deleted nor edited: the row's action is disabled.
     deleteTokenDisabled(name) {
-        cy.contains(new RegExp('^' + name + '$', 'g')).parent().find('[ng-reflect-src="/assets/images/icons/delete.sv"]').click();
-        cy.get(L.legacy.tokenDeleteBtn).click();
-        Checks.waitForTaskComplete();
-        cy.contains(L.legacy.adminKeyIsntSet).should('exist');
-        cy.contains(new RegExp('^' + name + '$', 'g')).should('exist');
+        this._manageRow(name).find(L.manage.deleteIcon).closest(L.manage.iconButton).should('have.attr', 'disabled');
     }
 
     editToken(name, editname, editSymbol) {
-        cy.contains(name).parent().find(L.legacy.tokenEditBtn).click();
-        cy.get(L.legacy.tokenNameInput).click();
-        cy.get(L.legacy.tokenNameInput).clear();
-        cy.get(L.legacy.tokenNameInput).type(editname);
-        cy.get(L.legacy.tokenSymbolInput).click();
-        cy.get(L.legacy.tokenSymbolInput).clear();
-        cy.get(L.legacy.tokenSymbolInput).type(editSymbol);
-        cy.contains(L.legacy.saveTokenBtn).click();
-        cy.contains(editname).should('exist');
-        cy.contains(name).parent().contains(editSymbol).should('exist');
+        this._manageRow(name).find(L.manage.editIcon).closest(L.manage.iconButton).click();
+        cy.get(L.manage.dialog, { timeout: TIMEOUTS.ui }).should('be.visible');
+        // The dialog fills the form from the token after it opens and would overwrite what is typed before that.
+        cy.get(L.manage.tokenNameInput, { timeout: TIMEOUTS.ui }).should('have.value', name);
+        this._setInput(L.manage.tokenNameInput, editname);
+        this._setInput(L.manage.tokenSymbolInput, editSymbol);
+        cy.get(L.manage.dialog).contains('button', 'Save').click();
+        Checks.waitForTaskComplete();
+        Checks.waitForLoading();
+        this._manageRow(editname).should('contain.text', editSymbol);
     }
 
     editTokenDisabled(name) {
-        cy.contains(name).parent().find(L.legacy.tokenEditBtnDisabled).should('exist');
+        this._manageRow(name).find(L.manage.editIcon).closest(L.manage.iconButton).should('have.attr', 'disabled');
     }
 
     addTag(name, tagName) {
-        cy.contains(name).siblings().contains(L.legacy.createTagButton).click();
-        cy.get(L.legacy.tagNameInput).type(tagName);
-        cy.get(L.legacy.tagDescInput).type(tagName);
-        cy.get(L.legacy.createButton).click();
-        cy.contains(tagName).should('exist');
+        addTag(() => this._manageRow(name), tagName);
     }
 
     deleteTag(name, tagName) {
-        cy.contains(name).siblings().contains(tagName).click();
-        cy.get(L.legacy.deleteTagIcon).click();
-        cy.get(L.legacy.closeWindowButton).click();
-        cy.contains(tagName).should('not.exist');
+        deleteTag(() => this._manageRow(name), tagName);
     }
 }

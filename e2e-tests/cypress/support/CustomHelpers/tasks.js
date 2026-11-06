@@ -1,8 +1,7 @@
 import { METHOD, STATUS_CODE } from '../api/api-const';
 import API from '../ApiUrls';
-
-const POLL_INTERVAL = 2000;
-const DEFAULT_ATTEMPTS = 60;
+import { pollUntil } from '../checkingMethods';
+import { TIMEOUTS } from './timeouts';
 
 /**
  * Waits for an asynchronous Guardian task to finish.
@@ -13,27 +12,23 @@ const DEFAULT_ATTEMPTS = 60;
  *
  * Yields the finished task state, and fails the test if the task reports an error or never completes.
  */
-export const waitForTask = (authorization, taskId, attempts = DEFAULT_ATTEMPTS) => {
+export const waitForTask = (authorization, taskId) => {
     expect(taskId, 'taskId of the asynchronous operation').to.be.a('string');
-    const poll = (attemptsLeft) => cy.request({
-        method: METHOD.GET,
-        url: API.ApiServer + API.Tasks + taskId,
-        headers: { authorization },
-    }).then((response) => {
-        expect(response.status).to.eq(STATUS_CODE.OK);
-        const task = response.body;
-        if (task?.error) {
-            throw new Error(`Task ${taskId} (${task.action}) failed: ${JSON.stringify(task.error)}`);
-        }
-        if (task?.result !== undefined) {
-            return cy.wrap(task, { log: false });
-        }
-        if (attemptsLeft <= 0) {
-            throw new Error(`Task ${taskId} (${task?.action}) did not complete in time`);
-        }
-        // eslint-disable-next-line cypress/no-unnecessary-waiting -- back off between task status polls
-        cy.wait(POLL_INTERVAL);
-        return poll(attemptsLeft - 1);
+    return pollUntil({
+        request: {
+            method: METHOD.GET,
+            url: API.ApiServer + API.Tasks + taskId,
+            headers: { authorization },
+        },
+        predicate: (response) => {
+            expect(response.status).to.eq(STATUS_CODE.OK);
+            const task = response.body;
+            if (task?.error) {
+                throw new Error(`Task ${taskId} (${task.action}) failed: ${JSON.stringify(task.error)}`);
+            }
+            return task?.result !== undefined && task;
+        },
+        description: `task ${taskId} to complete`,
+        timeout: TIMEOUTS.longOperation,
     });
-    return poll(attempts);
 };

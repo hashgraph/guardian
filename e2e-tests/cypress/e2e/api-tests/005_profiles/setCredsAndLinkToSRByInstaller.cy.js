@@ -1,6 +1,7 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Profiles', { tags: ['profiles', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
     const Installer = Cypress.env('Installer');
@@ -27,7 +28,7 @@ context('Profiles', { tags: ['profiles', 'thirdPool', 'all', 'all-no-mgs'] }, ()
                         method: METHOD.GET,
                         url: API.ApiServer + API.RandomKey,
                         headers: { authorization },
-                        timeout: 600000
+                        timeout: TIMEOUTS.backend
                     }).then((response) => {
                         expect(response.status).to.eq(STATUS_CODE.OK)
                         expect(response.body).to.have.property('id')
@@ -43,7 +44,7 @@ context('Profiles', { tags: ['profiles', 'thirdPool', 'all', 'all-no-mgs'] }, ()
                                 parent: SRDid
                             },
                             headers: { authorization },
-                            timeout: 180000
+                            timeout: TIMEOUTS.longOperation
                         }).then((response) => {
                             expect(response.status).to.eq(STATUS_CODE.NO_CONTENT)
                         })

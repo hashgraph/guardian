@@ -2,6 +2,8 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { importPolicyFromMessage, seededMessageId } from '../../../support/CustomHelpers/ipfsSeeding';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('IPFS', { tags: ['ipfs', 'secondPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
@@ -13,13 +15,6 @@ context('IPFS', { tags: ['ipfs', 'secondPool', 'all', 'all-no-mgs'] }, () => {
     const dryRunUrl = (policyId) => `${ipfsFileUrl}${API.DryRun}${policyId}`;
     const dryRunGetUrl = (cid) => `${ipfsFileUrl}${cid}/${API.DryRun}`;
 
-    const getPoliciesWithAuth = (authorization) =>
-        cy.request({
-            method: METHOD.GET,
-            url: policiesUrl,
-            headers: { authorization },
-        });
-
     const putPolicyStateWithAuth = (authorization, policyId, statePath) =>
         cy.request({
             method: METHOD.PUT,
@@ -27,7 +22,7 @@ context('IPFS', { tags: ['ipfs', 'secondPool', 'all', 'all-no-mgs'] }, () => {
             headers: { authorization },
         });
 
-    const postIpfsDryRunWithAuth = (authorization, policyId, body, timeout = 200000) =>
+    const postIpfsDryRunWithAuth = (authorization, policyId, body, timeout = TIMEOUTS.backend) =>
         cy.request({
             method: METHOD.POST,
             url: dryRunUrl(policyId),
@@ -62,13 +57,16 @@ context('IPFS', { tags: ['ipfs', 'secondPool', 'all', 'all-no-mgs'] }, () => {
             failOnStatusCode: false,
         });
 
+    // The policy list is shared with every other spec, so its first entry can already be published
+    // (dry-run then answers 500 "Policy published"): import a fresh draft of our own instead.
     before('Import and dry-run policy', () => {
-        Authorization.getAccessToken(SRUsername).then((authorization) => {
-            getPoliciesWithAuth(authorization).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.OK);
-                policyId = response.body.at(0).id;
-                putPolicyStateWithAuth(authorization, policyId, API.DryRun).then((res) => {
-                    expect(res.status).to.eq(STATUS_CODE.OK);
+        seededMessageId('irec_policy').then((messageId) => {
+            importPolicyFromMessage(SRUsername, messageId).then((imported) => {
+                policyId = imported.at(0).id;
+                Authorization.getAccessToken(SRUsername).then((authorization) => {
+                    putPolicyStateWithAuth(authorization, policyId, API.DryRun).then((res) => {
+                        expect(res.status).to.eq(STATUS_CODE.OK);
+                    });
                 });
             });
         });

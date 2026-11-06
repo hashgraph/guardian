@@ -3,6 +3,7 @@ import API from '../../../support/ApiUrls';
 import * as Checks from '../../../support/checkingMethods';
 import * as Authorization from '../../../support/authorization';
 import * as IpfsSeeding from '../../../support/CustomHelpers/ipfsSeeding';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Contracts', { tags: ['policies', 'comments', 'firstPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
@@ -40,7 +41,7 @@ context('Contracts', { tags: ['policies', 'comments', 'firstPool', 'all', 'all-n
                     headers: {
                         authorization
                     },
-                    timeout: 600000,
+                    timeout: TIMEOUTS.longOperation,
                     failOnStatusCode: false,
                 }).then((response) => {
                     if (response.status === STATUS_CODE.ERROR && response.body.message !== 'Policy already published')
@@ -149,7 +150,7 @@ context('Contracts', { tags: ['policies', 'comments', 'firstPool', 'all', 'all-n
                 }
             })
 
-            cy.wait(10000)
+            Checks.waitForBlockAvailable(API.ApiServer + API.Policies + policyId + '/' + API.CreateApplication, authorization)
 
             //Create app and wait while it in progress
             cy.request({
@@ -389,8 +390,8 @@ context('Contracts', { tags: ['policies', 'comments', 'firstPool', 'all', 'all-n
                 }
             }
 
-            Checks.whileBalanceVerifying('10', requestForBalance, 91, tokenId)
-            Checks.whileBalanceVerifying('10', requestForBalance, 91, tokenId)
+            Checks.whileBalanceVerifying('10', requestForBalance, tokenId)
+            Checks.whileBalanceVerifying('10', requestForBalance, tokenId)
         })
     })
 })

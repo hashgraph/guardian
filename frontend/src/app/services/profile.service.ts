@@ -1,9 +1,15 @@
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { IUser } from '@guardian/interfaces';
-import { Observable, of } from 'rxjs';
+import { Observable, of, throwError, TimeoutError } from 'rxjs';
+import { catchError, timeout } from 'rxjs/operators';
 import { API_BASE_URL } from './api';
 import { AuthService } from './auth.service';
+import { ToastService } from './toast.service';
+
+// The gateway can hold a profile push forever when a reply of the auth service is lost, and the
+// registration screens wait on it behind a full-screen spinner.
+export const PROFILE_PUSH_TIMEOUT_MS = 30000;
 
 /**
  * Services for working from user profile.
@@ -14,6 +20,7 @@ export class ProfileService {
     constructor(
         private http: HttpClient,
         private auth: AuthService,
+        private toastService: ToastService,
     ) {
     }
 
@@ -52,11 +59,25 @@ export class ProfileService {
     }
 
     public pushSetProfile(profile: IUser): Observable<{ taskId: string, expectation: number }> {
-        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${encodeURIComponent(this.auth.getUsername())}`, profile);
+        return this.failOnSilence(this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${encodeURIComponent(this.auth.getUsername())}`, profile));
     }
 
     public restoreProfile(profile: IUser): Observable<{ taskId: string, expectation: number }> {
-        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/restore/${encodeURIComponent(this.auth.getUsername())}`, profile);
+        return this.failOnSilence(this.http.put<{ taskId: string, expectation: number }>(`${this.url}/restore/${encodeURIComponent(this.auth.getUsername())}`, profile));
+    }
+
+    // A request that never answers produces no HTTP error, so the error interceptor shows nothing:
+    // end it with an error and tell the user.
+    private failOnSilence<T>(request: Observable<T>): Observable<T> {
+        return request.pipe(
+            timeout(PROFILE_PUSH_TIMEOUT_MS),
+            catchError((error) => {
+                if (error instanceof TimeoutError) {
+                    this.toastService.error('The server did not answer in time. Try again.', 'Request timed out');
+                }
+                return throwError(() => error);
+            })
+        );
     }
 
     public getAllUserTopics(profile: IUser): Observable<{ taskId: string, expectation: number }> {

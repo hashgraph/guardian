@@ -2,6 +2,7 @@ import { randomInt } from '../../../support/random';
 import { STATUS_CODE, METHOD } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Tags', { tags: ['tags', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
@@ -86,7 +87,7 @@ context('Tags', { tags: ['tags', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
                     'fields': [],
                     'category': 'TAG'
                 },
-                timeout: 200000
+                timeout: TIMEOUTS.backend
             }).then((response) => {
                 schemaId = response.body.id;
                 schemaCreator = response.body.owner;
@@ -176,7 +177,7 @@ context('Tags', { tags: ['tags', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
                 headers: {
                     authorization,
                 },
-                timeout: 200000
+                timeout: TIMEOUTS.backend
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
             });

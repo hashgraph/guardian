@@ -2,8 +2,10 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import * as Checks from '../../../support/checkingMethods';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 // Exclude "all" tag, if needs to stop using MGS in CI tests run
-context('Policies', { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
+// Skipped until the shared remote Guardian environment and its credentials are available: see pending-issues/folders-blocked-by-environment.md
+context.skip('Policies', { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
 
     const MainSRUsername = Cypress.env('MainSRUser');
     const DepUserUsername = Cypress.env('DepUser');
@@ -47,7 +49,7 @@ context('Policies', { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                 headers: {
                     authorization,
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 response.body.forEach(element => {

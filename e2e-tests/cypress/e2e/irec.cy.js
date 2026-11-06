@@ -1,6 +1,7 @@
 import { randomInt } from '../support/random';
 import { METHOD, STATUS_CODE } from '../../support/api/api-const';
 import API from '../support/ApiUrls';
+import { TIMEOUTS } from '../support/CustomHelpers/timeouts';
 
 context('IREC e2e test', { tags: '@e2e' }, () => {
     let accessToken;
@@ -70,7 +71,7 @@ context('IREC e2e test', { tags: '@e2e' }, () => {
                                     '@context': [],
                                 },
                             },
-                            timeout: 200000,
+                            timeout: TIMEOUTS.backend,
                         }).then((resp) => {
                             expect(resp.status).eql(STATUS_CODE.OK);
 
@@ -113,7 +114,7 @@ context('IREC e2e test', { tags: '@e2e' }, () => {
             headers: {
                 authorization: accessToken,
             },
-            timeout: 180000,
+            timeout: TIMEOUTS.longOperation,
         }).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.SUCCESS);
 
@@ -125,7 +126,7 @@ context('IREC e2e test', { tags: '@e2e' }, () => {
                 url: API.ApiServer + 'policies/' + firstPolicyId + '/publish',
                 body: { policyVersion: '1.2.5' },
                 headers: { authorization: accessToken },
-                timeout: 600000,
+                timeout: TIMEOUTS.longOperation,
             }).should((response) => {
                 let secondPolicyId = response.body.policies[0].id;
                 let policyStatus = response.body.policies[0].status;
@@ -178,7 +179,7 @@ context('IREC e2e test', { tags: '@e2e' }, () => {
                                 hederaAccountKey: userHederaAccountKey,
                                 parent: rootUserDid
                             },
-                            timeout: 200000,
+                            timeout: TIMEOUTS.longOperation,
                         }).then((resp) => {
                             expect(resp.status).eql(STATUS_CODE.OK);
 

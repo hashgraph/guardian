@@ -1,6 +1,7 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, () => {
 	const SRUsername = Cypress.env('SRUser');
@@ -32,7 +33,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
 				headers: {
 					authorization,
 				},
-				timeout: 180000
+				timeout: TIMEOUTS.backend
 			}).then((response) => {
 				expect(response.status).to.eq(STATUS_CODE.OK);
 			});

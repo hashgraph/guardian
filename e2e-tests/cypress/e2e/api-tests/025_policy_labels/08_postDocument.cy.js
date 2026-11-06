@@ -1,6 +1,7 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Get tokens for policy label', { tags: ['policy_labels', 'firstPool', 'all', 'all-no-mgs'] }, () => {
     const UserUsername = Cypress.env('User');
@@ -60,7 +61,7 @@ context('Get tokens for policy label', { tags: ['policy_labels', 'firstPool', 'a
                 headers: {
                     authorization,
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.SUCCESS);
                 expect(response.body).to.have.property('createDate');

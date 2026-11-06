@@ -79,7 +79,8 @@ export class ExternalPoliciesApi {
         @Query('pageSize') pageSize?: number,
     ): Promise<ExternalPolicyDTO[]> {
         try {
-            const owner = new EntityOwner(user);
+            // A user mid-registration has no DID yet: they own no external policies, which is an empty page, not a 422.
+            const owner = user?.did ? new EntityOwner(user) : null;
             const guardians = new Guardians();
             if (owner) {
                 const { items, count } = await guardians.groupExternalPolicyRequests({

@@ -47,8 +47,6 @@ export class LogsPage {
 
     clickOnApplyButton() {
         cy.get(LogsPageLocators.apllyBtn).click();
-        // eslint-disable-next-line cypress/no-unnecessary-waiting -- brief settle for the table refetch after Apply; the following assertions retry on their own, this only keeps the first poll tight
-        cy.wait(500);
     }
 
     verifyIfMessageColumnContains(message) {

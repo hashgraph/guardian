@@ -2,6 +2,7 @@ import { randomInt } from '../../../support/random';
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Tools', { tags: ['tools', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
@@ -41,7 +42,7 @@ context('Tools', { tags: ['tools', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
                             'content-type': 'binary/octet-stream',
                             authorization,
                         },
-                        timeout: 18000000,
+                        timeout: TIMEOUTS.longOperation,
                     }).then((response) => {
                         expect(response.status).to.eq(STATUS_CODE.SUCCESS);
                         policyId = JSON.parse(new TextDecoder().decode(response.body)).at(0).id;
@@ -191,7 +192,7 @@ context('Tools', { tags: ['tools', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
                                 headers: {
                                     authorization,
                                 },
-                                timeout: 300000,
+                                timeout: TIMEOUTS.longOperation,
                             }).then((response) => {
                                 expect(response.status).to.eq(STATUS_CODE.OK);
                             });

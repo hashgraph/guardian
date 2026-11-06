@@ -1,6 +1,7 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Import policy test', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
@@ -23,7 +24,7 @@ context('Import policy test', { tags: ['policies', 'secondPool', 'all', 'all-no-
                     body: formdata,
                     headers: reqHeaders,
                     failOnStatusCode: false,
-                    timeout: 180000,
+                    timeout: TIMEOUTS.backend,
                 });
             });
 
@@ -36,7 +37,7 @@ context('Import policy test', { tags: ['policies', 'secondPool', 'all', 'all-no-
                     method: METHOD.GET,
                     url: API.ApiServer + API.Policies,
                     headers: { authorization },
-                    timeout: 180000
+                    timeout: TIMEOUTS.backend
                 }).then((response) => {
                     const policy = response.body.find(p => p.name === 'iRecDRF');
                     expect(policy, 'the imported iRecDRF policy').to.not.be.undefined;
@@ -49,7 +50,7 @@ context('Import policy test', { tags: ['policies', 'secondPool', 'all', 'all-no-
                             method: METHOD.PUT,
                             url: `${API.ApiServer}${API.Policies}${policyId}/${API.DryRun}`,
                             headers: { authorization },
-                            timeout: 180000,
+                            timeout: TIMEOUTS.longOperation,
                         }).then((response) => {
                             expect(response.status).to.eq(STATUS_CODE.OK);
                         });
@@ -68,7 +69,7 @@ context('Import policy test', { tags: ['policies', 'secondPool', 'all', 'all-no-
                 method: METHOD.GET,
                 url: API.ApiServer + API.Policies + policyId,
                 headers: { authorization },
-                timeout: 180000,
+                timeout: TIMEOUTS.backend,
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 (response.body.tests ?? []).forEach((test) => {
@@ -77,7 +78,7 @@ context('Import policy test', { tags: ['policies', 'secondPool', 'all', 'all-no-
                         url: API.ApiServer + API.Policies + policyId + '/' + API.Test + test.id,
                         headers: { authorization },
                         failOnStatusCode: false,
-                        timeout: 180000,
+                        timeout: TIMEOUTS.backend,
                     });
                 });
             });
@@ -119,7 +120,7 @@ context('Import policy test', { tags: ['policies', 'secondPool', 'all', 'all-no-
                 url: `${API.ApiServer}${API.Policies}${policyId}/${API.Test}`,
                 headers: { authorization },
                 failOnStatusCode: false,
-                timeout: 180000,
+                timeout: TIMEOUTS.backend,
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.BAD_REQUEST);
             });

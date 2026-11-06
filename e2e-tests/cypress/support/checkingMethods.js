@@ -1,24 +1,41 @@
 const optionKey = 'option';
 import { STATUS_CODE, METHOD } from '../support/api/api-const';
 import API from '../support/ApiUrls';
+import { TIMEOUTS, POLL_INTERVAL } from './CustomHelpers/timeouts';
 
-export const whileRequestProccessing = (request, dataToCompare, source, attempts = 0) => {
-    if (attempts < 100) {
-        attempts++
-        cy.wait(3000)
-        cy.request(request).then((response) => {
-            let start = response.body;
-            source.split('.').forEach(part => {
-                start = start?.[part]
-            })
-            if (start !== dataToCompare)
-                {whileRequestProccessing(request, dataToCompare, source, attempts)}
-        })
-    }
-    else {
-        throw new Error(`Failed after ${attempts}`)
-    }
-}
+/**
+ * Polls `request` until `predicate(response)` returns a truthy value, then yields that value.
+ *
+ * Reads before it waits, so a condition the backend has already reached costs nothing, and throws
+ * when `timeout` runs out quoting the last response. The budget starts when the poll actually runs,
+ * not when it is queued behind earlier commands.
+ */
+export const pollUntil = ({ request, predicate, description, timeout = TIMEOUTS.backend, interval = POLL_INTERVAL }) => cy.then(() => {
+    const deadline = Date.now() + timeout;
+    const attempt = () => cy.request({ failOnStatusCode: false, ...request }).then((response) => {
+        const match = predicate(response);
+        if (match) {
+            return cy.wrap(match, { log: false });
+        }
+        if (Date.now() >= deadline) {
+            throw new Error(
+                `Timed out after ${timeout} ms waiting for ${description} on ${request.url}. ` +
+                `Last response: ${response.status} ${JSON.stringify(response.body)?.slice(0, 1000)}`
+            );
+        }
+        return cy.wait(interval, { log: false }).then(attempt);
+    });
+    return attempt();
+});
+
+const readPath = (body, path) => path.split('.').reduce((value, part) => value?.[part], body);
+
+export const whileRequestProccessing = (request, dataToCompare, source) =>
+    pollUntil({
+        request,
+        predicate: (response) => readPath(response.body, source) === dataToCompare,
+        description: `${source} to be "${dataToCompare}"`,
+    });
 
 /**
  * Polls a grid block until one of its rows satisfies `predicate`, then yields that row.
@@ -26,208 +43,96 @@ export const whileRequestProccessing = (request, dataToCompare, source, attempts
  * finds the row belonging to the current run, so it also works against a policy whose
  * grids already hold documents from earlier runs.
  */
-export const waitForRow = (request, predicate, attempts = 0) => {
-    return cy.request(request).then((response) => {
-        const row = (response.body?.data ?? []).find(predicate);
-        if (row) {
-            return row;
-        }
-        if (attempts >= 100) {
-            throw new Error(`No matching row after ${attempts} attempts on ${request.url}`);
-        }
-        // The value has to be returned from inside the wait: a `.then()` callback that
-        // enqueues cy commands does not yield a synchronously returned value.
-        return cy.wait(3000).then(() => waitForRow(request, predicate, attempts + 1));
+export const waitForRow = (request, predicate) =>
+    pollUntil({
+        request,
+        predicate: (response) => (response.body?.data ?? []).find(predicate),
+        description: 'a matching row',
     });
-}
 
 /**
  * Polls a request until its body equals `expected`, then yields it.
  *
  * Contract permissions are granted on Hedera and mirrored back asynchronously, so a read issued
- * right after the grant still answers with the previous value. Polling adapts to how long the
- * mirroring actually takes, where a fixed wait is either too short or wasted time.
+ * right after the grant still answers with the previous value.
  */
-export const waitForResponseBody = (request, expected, maxAttempts = 40, interval = 5000) => {
-    const poll = (attemptsLeft) => cy.request(request).then((response) => {
+export const waitForResponseBody = (request, expected) =>
+    pollUntil({
+        request,
+        // wrapped, so that an expected falsy body still counts as a match
+        predicate: (response) => response.status === STATUS_CODE.OK && response.body === expected && { body: response.body },
+        description: `the body to be ${JSON.stringify(expected)}`,
+    }).then(({ body }) => body);
+
+export const whileRequestAppear = (authorization) => {
+    const newRequests = {
+        method: METHOD.GET,
+        url: API.ApiServer + API.ExternalPolicyRequests,
+        qs: {
+            status: 'NEW',
+            type: 'REQUEST'
+        },
+        headers: {
+            authorization,
+        },
+        timeout: TIMEOUTS.backend,
+    };
+    const externalRequestAction = (messageId, action) => cy.request({
+        method: METHOD.PUT,
+        url: API.ApiServer + API.ExternalPolicyRequests + messageId + '/' + action,
+        headers: {
+            authorization,
+        },
+        timeout: TIMEOUTS.backend,
+    }).then((response) => {
         expect(response.status).to.eq(STATUS_CODE.OK);
-        if (response.body === expected) {
-            return cy.wrap(response.body, { log: false });
-        }
-        if (attemptsLeft <= 0) {
-            throw new Error(`${request.url} still answers ${JSON.stringify(response.body)} instead of ${JSON.stringify(expected)}`);
-        }
-        // eslint-disable-next-line cypress/no-unnecessary-waiting -- back off between polls
-        return cy.wait(interval, { log: false }).then(() => poll(attemptsLeft - 1));
     });
-    return poll(maxAttempts);
-}
+    const firstRequest = (response) => response.status === STATUS_CODE.OK && response.body[0];
 
-export const whileWipeRequestCreating = (dataToCompare, request, attempts) => {
-    if (attempts < 100) {
-        attempts++
-        cy.wait(3000)
-        cy.request(request).then((response) => {
-            if (!response?.body?.at(0)?.contractId)
-                {whileWipeRequestCreating(dataToCompare, request, attempts)}
-            else {
-                let data = response.body.at(0).contractId
-                if (data !== dataToCompare)
-                    {whileWipeRequestCreating(dataToCompare, request, attempts)}
+    return pollUntil({ request: newRequests, predicate: firstRequest, description: 'a new external policy request' })
+        .then((request) => {
+            if (request.loaded === false) {
+                externalRequestAction(request.messageId, API.Reload);
             }
+            return pollUntil({
+                request: newRequests,
+                predicate: (response) => firstRequest(response)?.loaded !== false && firstRequest(response),
+                description: 'the external policy request to load',
+            });
         })
-    }
+        .then((request) => {
+            externalRequestAction(request.messageId, API.Approve);
+            cy.task('log', 'Request approved');
+        });
 }
 
-export const whileRequestAppear = (authorization, attempts = 0) => {
-    if (attempts < 150) {
-        attempts++
-        cy.wait(3000)
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.ExternalPolicyRequests,
-            qs: {
-                status: 'NEW',
-                type: 'REQUEST'
-            },
-            headers: {
-                authorization,
-            },
-            timeout: 180000,
-        }).then((response) => {
-            expect(response.status).to.eq(STATUS_CODE.OK);
-            if (response.body.length !== 0) {
-                if (response.body[0].loaded === false) {
-                    cy.request({
-                        method: METHOD.PUT,
-                        url: API.ApiServer + API.ExternalPolicyRequests + response.body[0].messageId + '/' + API.Reload,
-                        headers: {
-                            authorization,
-                        },
-                        timeout: 180000,
-                    }).then((response) => {
-                        expect(response.status).to.eq(STATUS_CODE.OK);
-                        whileRequestAppear(authorization, attempts)
-                    })
-                }
-                else {
-                    cy.request({
-                        method: METHOD.PUT,
-                        url: API.ApiServer + API.ExternalPolicyRequests + response.body[0].messageId + '/' + API.Approve,
-                        headers: {
-                            authorization,
-                        },
-                        timeout: 180000,
-                    }).then((response) => {
-                        expect(response.status).to.eq(STATUS_CODE.OK);
-                        cy.task('log', 'Request approved')
-                    })
-                }
-            }
-            else {whileRequestAppear(authorization, attempts)}
-        })
-    }
-    else {
-        throw new Error(`Failed after ${attempts}`)
-    }
-}
-
-export const whileIPFSProcessingFile = (request, attempts = 0) => {
-    if (attempts < 100) {
-        attempts++
-        cy.wait(10000)
-        cy.request(request).then((response) => {
-            if (response.status !== 200)
-                {whileIPFSProcessingFile(request, attempts)}
-        })
-    }
-    else {
-        throw new Error(`IPFS check failed after ${attempts}`)
-    }
-}
-
-export const whileRetireRequestCreating = (dataToCompare, authorization, attempts) => {
-    let request = {
-        method: METHOD.GET,
-        url: API.ApiServer + API.WipeRequests,
-        headers: {
-            authorization,
-        },
-        qs: {
-            contractId: dataToCompare
-        }
-    }
-    if (attempts < 100) {
-        attempts++
-        cy.wait(3000)
-        cy.request(request).then((response) => {
-            if (!response.body?.at(0)?.contractId)
-                {whileRetireRequestCreating(dataToCompare, authorization, attempts)}
-            else {
-                let data = response.body.at(0).contractId
-                if (data !== dataToCompare)
-                    {whileRetireRequestCreating(dataToCompare, authorization, attempts)}
-            }
-        })
-    }
-}
-
-export const whileRetireRRequestCreating = (dataToCompare, authorization, attempts) => {
-
-    let request = {
-        method: METHOD.GET,
-        url: API.ApiServer + API.RetireRequests,
-        headers: {
-            authorization,
-        },
-        qs: {
-            contractId: dataToCompare
-        }
-    }
-
-    if (attempts < 100) {
-        attempts++
-        cy.wait(3000)
-        cy.request(request).then((response) => {
-            if (!response.body?.at(0)?.contractId)
-                {whileRetireRRequestCreating(dataToCompare, authorization, attempts)}
-            else {
-                let data = response.body.at(0).contractId
-                if (data !== dataToCompare)
-                    {whileRetireRRequestCreating(dataToCompare, authorization, attempts)}
-            }
-        })
-    }
-}
+export const whileIPFSProcessingFile = (request) =>
+    pollUntil({
+        request,
+        predicate: (response) => response.status === STATUS_CODE.OK,
+        description: 'the IPFS file to be readable',
+    });
 
 /**
- * Polls a policy block until `read(response)` equals `expected`.
- *
- * Reads before it waits, so a step the policy has already finished costs nothing, and throws when
- * the budget runs out quoting what it last saw. The loops this replaced waited thirty seconds
- * before looking even once, and on exhaustion returned quietly - which turned a policy that never
- * advanced into a fifty-minute pause followed by an `undefined` several lines further down.
+ * Polls a policy block until `read(response)` equals `expected`, then yields the body.
  */
-const whileBlockReaches = (expected, request, read, description, timeout = 900000, interval = 5000) => {
-    const deadline = Date.now() + timeout;
-
-    const attempt = () => cy.request({ failOnStatusCode: false, ...request }).then((response) => {
-        const actual = read(response);
-        if (actual === expected) {
-            return cy.wrap(response.body, { log: false });
-        }
-        if (Date.now() >= deadline) {
-            throw new Error(
-                `Timed out after ${timeout} ms waiting for ${description} to reach "${expected}" ` +
-                `on ${request.url}. Last seen: ${JSON.stringify(actual)}`
-            );
-        }
-        // eslint-disable-next-line cypress/no-unnecessary-waiting -- back off between polls
-        return cy.wait(interval, { log: false }).then(attempt);
+const whileBlockReaches = (expected, request, read, description) =>
+    pollUntil({
+        request,
+        predicate: (response) => read(response) === expected && response.body,
+        description: `${description} to reach "${expected}"`,
     });
 
-    return attempt();
-}
+/**
+ * Waits until the current user can act on the policy block at `url` (a `.../tag/<tag>/blocks` url):
+ * the block answers 503 "Block Unavailable" until the policy has moved the user to it.
+ */
+export const waitForBlockAvailable = (url, authorization) =>
+    pollUntil({
+        request: { method: METHOD.GET, url, headers: { authorization } },
+        predicate: (response) => response.status === STATUS_CODE.OK,
+        description: `the block ${url} to become available`,
+    });
 
 const readGridRowStatus = (response) => response?.body?.data?.[0]?.[optionKey]?.status;
 
@@ -249,39 +154,25 @@ export const whileIssueRequestCreating = (dataToCompare, request) =>
 export const whileIssueRequestApproving = (dataToCompare, request) =>
     whileBlockReaches(dataToCompare, request, readGridRowStatus, 'the issue request grid');
 
-export const whileBalanceVerifying = (dataToCompare, request, attempts, tokenId) => {
-    if (attempts < 100) {
-        attempts++
-        let balance
-        cy.wait(30000)
-        cy.request(request).then((response) => {
-            if (!response?.body)
-                {whileBalanceVerifying(dataToCompare, request, attempts)}
-            else {
-                for (let i = 0; i < response.body.length; i++) {
-                    if (response.body[i].tokenId === tokenId)
-                        {balance = response.body[i].balance}
-                }
-                if (balance !== dataToCompare)
-                    {whileBalanceVerifying(dataToCompare, request, attempts)}
-            }
-        })
-    }
-}
+export const whileBalanceVerifying = (dataToCompare, request, tokenId) =>
+    pollUntil({
+        request,
+        predicate: (response) => (response.body ?? []).find((token) => token.tokenId === tokenId)?.balance === dataToCompare,
+        description: `the balance of ${tokenId} to be ${dataToCompare}`,
+    });
 
-export const whilePolicyTestExecuting = (request, attempts = 0) => {
-    if (attempts >= 100) {
-        throw new Error('The policy test did not finish after 100 attempts');
-    }
-    cy.wait(3000)
-    cy.request(request).then((response) => {
-        expect(response.status, 'policy test status request').to.eq(200)
-        const test = response.body.tests?.at(0)
-        expect(test, 'policy test in the policy response').to.exist
-        if (test.progress !== null || test.result === null)
-            {whilePolicyTestExecuting(request, attempts + 1)}
-    })
-}
+export const whilePolicyTestExecuting = (request) =>
+    pollUntil({
+        request,
+        predicate: (response) => {
+            expect(response.status, 'policy test status request').to.eq(200);
+            const test = response.body.tests?.at(0);
+            expect(test, 'policy test in the policy response').to.exist;
+            return test.progress === null && test.result !== null;
+        },
+        description: 'the policy test to finish',
+        timeout: TIMEOUTS.longOperation,
+    });
 
 export const getAccessToken = (username) => {
     return cy.fixture('credentials').then(({ goodPassword }) => {
@@ -307,35 +198,16 @@ export const getAccessToken = (username) => {
     })
 }
 
-export const waitForElement = (element, maxAttempts = 200, interval = 2000) => {
-    if (maxAttempts > 0) {
-        maxAttempts--;
-        cy.get('body').then((body) => {
-            cy.log(body.find(element));
-            if (body.find(element).length === 0) {
-                cy.log(`Waiting for ${element} to complete after ${interval / 1000} seconds...`);
-                cy.wait(interval, { log: false });
-                waitForElement(element, maxAttempts, interval);
-            }
-        })
-    }
-    else
-        {throw new Error(`${element} doesn't exist after a few attempts...`)}
+// A UI state that follows a policy step waits on the backend, Hedera transactions included.
+export const waitForElement = (element, timeout = TIMEOUTS.backend) => {
+    cy.get(element, { timeout }).should('exist');
 }
 
-export const waitForTaskComplete = (maxAttempts = 200, interval = 2000) => {
+// Publishing a policy, schema or token runs many Hedera transactions behind the task viewer.
+export const waitForTaskComplete = (timeout = TIMEOUTS.longOperation) => {
+    // eslint-disable-next-line cypress/no-unnecessary-waiting -- lets the task viewer open after the click that starts the task
     cy.wait(1000);
-    if (maxAttempts > 0) {
-        maxAttempts--;
-        cy.get('body').then((body) => {
-            cy.log(body.find('div.task-viewer'));
-            if (body.find('div.task-viewer').length !== 0) {
-                cy.log(`Waiting for operation to complete after ${interval / 1000} seconds...`);
-                cy.wait(interval - 1000);
-                waitForTaskComplete(maxAttempts, interval);
-            }
-        })
-    }
+    cy.get('div.task-viewer', { timeout }).should('not.exist');
 }
 
 /**
@@ -346,44 +218,35 @@ export const waitForTaskComplete = (maxAttempts = 200, interval = 2000) => {
  * (e.g. `' 85 '`); it is parsed to a number and compared, so a row still loading or not yet
  * associated reads as "not reached" and is retried.
  */
-export const waitForBalanceIncrease = (balance, username, maxAttempts = 200, interval = 10000) => {
+export const waitForBalanceIncrease = (balance, username, timeout = TIMEOUTS.longOperation) => {
     const expected = parseFloat(String(balance).replace(/[^0-9.]/g, ''));
     if (Number.isNaN(expected)) {
         throw new Error(`Expected balance "${balance}" is not a number`);
     }
-    if (maxAttempts <= 0) {
-        throw new Error(`Balance for ${username} never reached ${expected}`);
-    }
-    maxAttempts--;
-    cy.get('body', { log: false }).then((body) => {
-        const parse = (text) => parseFloat(String(text || '').replace(/[^0-9.]/g, ''));
-        const row = Array.from(body.querySelectorAll('tr.guardian-grid-row')).find((r) => {
+    const parse = (text) => parseFloat(String(text || '').replace(/[^0-9.]/g, ''));
+    const check = (deadline) => cy.get('body', { log: false }).then(($body) => {
+        const row = Array.from($body[0].querySelectorAll('tr.guardian-grid-row')).find((r) => {
             const cells = Array.from(r.querySelectorAll('span.text-truncate'));
             return cells.length > 0 && cells[0].textContent.trim() === username;
         });
         const balanceCell = row ? row.querySelector('div.user-balance') : null;
         const current = balanceCell ? parse(balanceCell.textContent) : NaN;
-        if (Number.isNaN(current) || current < expected) {
-            cy.log(`Balance for ${username}: ${Number.isNaN(current) ? 'not loaded yet' : current} (< ${expected}); refreshing`);
-            const refresh = row ? row.querySelector('div.guardian-icon-button svg-icon[src*="refresh-2"]') : null;
-            if (refresh) {
-                refresh.click();
-            }
-            cy.wait(interval, { log: false });
-            waitForBalanceIncrease(balance, username, maxAttempts, interval);
+        if (!Number.isNaN(current) && current >= expected) {
+            return;
         }
-    })
+        if (Date.now() >= deadline) {
+            throw new Error(`Balance for ${username} never reached ${expected} in ${timeout} ms (last seen: ${current})`);
+        }
+        cy.log(`Balance for ${username}: ${Number.isNaN(current) ? 'not loaded yet' : current} (< ${expected}); refreshing`);
+        const refresh = row ? row.querySelector('div.guardian-icon-button svg-icon[src*="refresh-2"]') : null;
+        if (refresh) {
+            refresh.click();
+        }
+        cy.wait(POLL_INTERVAL, { log: false }).then(() => check(deadline));
+    });
+    return cy.then(() => check(Date.now() + timeout));
 }
 
-export const waitForLoading = (maxAttempts = 200, interval = 2000) => {
-    if (maxAttempts > 0) {
-        maxAttempts--;
-        cy.get('body').then((body) => {
-            if (body.find('div.loading').length !== 0) {
-                cy.log(`Waiting for operation to complete after ${interval / 1000} seconds...`);
-                cy.wait(interval);
-                waitForLoading(maxAttempts, interval);
-            }
-        })
-    }
+export const waitForLoading = (timeout = TIMEOUTS.backend) => {
+    cy.get('div.loading', { timeout }).should('not.exist');
 }

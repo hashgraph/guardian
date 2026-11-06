@@ -1,6 +1,7 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Get discussions', { tags: ['comments', 'firstPool', 'all', 'all-no-mgs'] }, () => {
 
@@ -29,7 +30,7 @@ context('Get discussions', { tags: ['comments', 'firstPool', 'all', 'all-no-mgs'
                 headers: {
                     authorization,
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 //The iRec 3 flow imports its policy from a fixture, and the import suffixes the

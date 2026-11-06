@@ -1,7 +1,9 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import * as Checks from '../../../support/checkingMethods';
 import { seededMessageId } from '../../../support/CustomHelpers/ipfsSeeding';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
@@ -18,7 +20,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
                     headers: {
                         authorization,
                     },
-                    timeout: 600000,
+                    timeout: TIMEOUTS.longOperation,
                 }).then((response) => {
                     expect(response.status).to.eq(STATUS_CODE.SUCCESS);
                     policyId = response.body.at(0).id;
@@ -29,7 +31,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
                         headers: {
                             authorization,
                         },
-                        timeout: 180000,
+                        timeout: TIMEOUTS.longOperation,
                     }).then((response) => {
                         expect(response.status).to.eq(STATUS_CODE.OK);
                     });
@@ -46,7 +48,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
                 headers: {
                     authorization
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
             })
@@ -62,7 +64,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
                 headers: {
                     authorization
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.SUCCESS);
                 //Save DIDs
@@ -78,10 +80,10 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
                     body: {
                         did: registrantDid
                     },
-                    timeout: 180000
+                    timeout: TIMEOUTS.backend
                 }).then(() => {
                     //Block wait
-                    cy.wait(5000);
+                    Checks.waitForBlockAvailable(API.ApiServer + API.Policies + policyId + '/' + API.ChooseRegistrantRole, authorization);
                     //Choose registrant role
                     cy.request({
                         method: METHOD.POST,
@@ -93,10 +95,10 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
                             group: 'Registrant',
                             label: 'q'
                         },
-                        timeout: 180000
+                        timeout: TIMEOUTS.backend
                     }).then(() => {
                         //Block wait
-                        cy.wait(5000);
+                        Checks.waitForBlockAvailable(API.ApiServer + API.Policies + policyId + '/' + API.CreateApplication, authorization);
                         //Create application
                         cy.request({
                             method: METHOD.POST,
@@ -112,7 +114,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
                                 },
                                 ref: null
                             },
-                            timeout: 180000
+                            timeout: TIMEOUTS.backend
                         })
                     })
                 })
@@ -129,7 +131,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
                 headers: {
                     authorization
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then((response) => {
                 approverDid = response.body.at(2).did;
                 //Login by Approver
@@ -142,10 +144,10 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
                     body: {
                         did: approverDid
                     },
-                    timeout: 180000
+                    timeout: TIMEOUTS.backend
                 }).then(() => {
                     //Block wait
-                    cy.wait(5000);
+                    Checks.waitForBlockAvailable(API.ApiServer + API.Policies + policyId + '/' + API.ChooseRegistrantRole, authorization);
                     //Choose approver role
                     cy.request({
                         method: METHOD.POST,
@@ -157,19 +159,23 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
                             group: 'Approvers',
                             label: ''
                         },
-                        timeout: 180000
+                        timeout: TIMEOUTS.backend
                     }).then(() => {
                         //Get document id for approve
-                        cy.request({
-                            method: METHOD.GET,
-                            url: API.ApiServer + API.Policies + policyId + '/' + API.GetApplications,
-                            headers: {
-                                authorization
+                        Checks.pollUntil({
+                            request: {
+                                method: METHOD.GET,
+                                url: API.ApiServer + API.Policies + policyId + '/' + API.GetApplications,
+                                headers: {
+                                    authorization
+                                },
+                                timeout: TIMEOUTS.backend
                             },
-                            timeout: 180000
+                            predicate: (response) => response.body?.data?.at(0) && response,
+                            description: 'the application in the registrants grid'
                         }).then((response) => {
                             //Block wait
-                            cy.wait(5000);
+                            Checks.waitForBlockAvailable(API.ApiServer + API.Policies + policyId + '/' + API.ApproveApplication, authorization);
                             applicationDocumentId = response.body.data.at(0).id
                             //Approve application
                             cy.request({
@@ -184,7 +190,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
                                     },
                                     status: 'SIGNED'
                                 },
-                                timeout: 180000
+                                timeout: TIMEOUTS.backend
                             })
                         })
                     })
@@ -205,10 +211,10 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
                 body: {
                     did: registrantDid
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then(() => {
                 //Block wait
-                cy.wait(5000);
+                Checks.waitForBlockAvailable(API.ApiServer + API.Policies + policyId + '/' + API.CreateDevice, authorization);
                 //Create device
                 cy.request({
                     method: METHOD.POST,
@@ -267,7 +273,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
                             }
                         }
                     },
-                    timeout: 180000
+                    timeout: TIMEOUTS.backend
                 })
             })
         })
@@ -285,22 +291,24 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
                 body: {
                     did: approverDid
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then(() => {
-                //Block wait
-                cy.wait(5000);
                 //Get device document id
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.Policies + policyId + '/' + API.GetDevices,
-                    headers: {
-                        authorization
+                Checks.pollUntil({
+                    request: {
+                        method: METHOD.GET,
+                        url: API.ApiServer + API.Policies + policyId + '/' + API.GetDevices,
+                        headers: {
+                            authorization
+                        },
+                        timeout: TIMEOUTS.backend
                     },
-                    timeout: 180000
+                    predicate: (response) => response.body?.data?.at(0) && response,
+                    description: 'the device in the devices grid'
                 }).then((response) => {
                     deviceDocumentId = response.body.data.at(0).id
                     //Block wait
-                    cy.wait(5000);
+                    Checks.waitForBlockAvailable(API.ApiServer + API.Policies + policyId + '/' + API.ApproveDevice, authorization);
                     //Approve device
                     cy.request({
                         method: METHOD.POST,
@@ -314,7 +322,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
                             },
                             status: 'SIGNED'
                         },
-                        timeout: 180000
+                        timeout: TIMEOUTS.backend
                     })
                 })
             })
@@ -333,10 +341,10 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
                 body: {
                     did: registrantDid
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then(() => {
                 //Block wait
-                cy.wait(5000);
+                Checks.waitForBlockAvailable(API.ApiServer + API.Policies + policyId + '/' + API.CreateIssue, authorization);
                 //Create issue request
                 cy.request({
                     method: METHOD.POST,
@@ -394,7 +402,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
                             field18: 'example'
                         }
                     },
-                    timeout: 180000
+                    timeout: TIMEOUTS.backend
                 })
             })
         })
@@ -412,22 +420,24 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
                 body: {
                     did: approverDid
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then(() => {
-                //Block wait
-                cy.wait(5000);
                 //Get issue document id
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.Policies + policyId + '/' + API.GetIssues,
-                    headers: {
-                        authorization
+                Checks.pollUntil({
+                    request: {
+                        method: METHOD.GET,
+                        url: API.ApiServer + API.Policies + policyId + '/' + API.GetIssues,
+                        headers: {
+                            authorization
+                        },
+                        timeout: TIMEOUTS.backend
                     },
-                    timeout: 180000
+                    predicate: (response) => response.body?.data?.at(0) && response,
+                    description: 'the issue request in the issue requests grid'
                 }).then((response) => {
                     issueDocumentId = response.body.data.at(0).id
                     //Block wait
-                    cy.wait(5000);
+                    Checks.waitForBlockAvailable(API.ApiServer + API.Policies + policyId + '/' + API.ApproveIssueRequestsBtn, authorization);
                     //Approve issue
                     cy.request({
                         method: METHOD.POST,
@@ -441,7 +451,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
                             },
                             status: 'SIGNED'
                         },
-                        timeout: 180000
+                        timeout: TIMEOUTS.backend
                     })
                 })
             })
@@ -460,18 +470,20 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
                 body: {
                     did: adminDid
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then(() => {
-                //Block wait
-                cy.wait(5000);
                 //Get token amount
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.Policies + policyId + '/' + API.GetTokenAmountTag + API.Blocks,
-                    headers: {
-                        authorization
+                Checks.pollUntil({
+                    request: {
+                        method: METHOD.GET,
+                        url: API.ApiServer + API.Policies + policyId + '/' + API.GetTokenAmountTag + API.Blocks,
+                        headers: {
+                            authorization
+                        },
+                        timeout: TIMEOUTS.backend
                     },
-                    timeout: 180000
+                    predicate: (response) => response.body?.data?.at(0)?.amount === 1 && response,
+                    description: 'the minted amount in the VP grid'
                 }).then((response) => {
                     expect(response.body.data.at(0).amount).to.eq(1)
                 })
@@ -487,7 +499,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
                 headers: {
                     authorization
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             })
         })
         Authorization.getAccessToken(SRUsername).then((authorization) => {
@@ -498,7 +510,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, (
                 headers: {
                     authorization
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 expect(response.body).to.not.be.oneOf([null, '']);

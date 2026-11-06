@@ -2,6 +2,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import * as IpfsSeeding from '../../../support/CustomHelpers/ipfsSeeding';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Schemas', { tags: ['schema', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
@@ -42,7 +43,7 @@ context('Schemas', { tags: ['schema', 'thirdPool', 'all', 'all-no-mgs'] }, () =>
                     body: {
                         messageId: schemaMessageId,
                     },
-                    timeout: 600000
+                    timeout: TIMEOUTS.longOperation
                 }).then((response) => {
                     expect(response.status).eql(STATUS_CODE.SUCCESS);
                     expect(response.body).to.not.be.oneOf([null, '']);

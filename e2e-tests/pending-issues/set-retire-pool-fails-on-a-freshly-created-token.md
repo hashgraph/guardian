@@ -40,6 +40,8 @@ is accepted. That is safe — a second `requestWiper` for a token that already h
 outstanding reverts inside the retire contract's own `try/catch` — but it costs a contract call's
 worth of gas per attempt, so the retry interval is deliberately long.
 
+Re-checked on 6 Nov 2026: the handler still calls the contract before `setPool`; `013_contracts/006_setPools.cy.js` passes (5/5) thanks to the retry in `Contracts.setRetirePool`.
+
 ## Proposed fix
 
 Either wait for the token to be resolvable before touching the contract, or persist the pool from

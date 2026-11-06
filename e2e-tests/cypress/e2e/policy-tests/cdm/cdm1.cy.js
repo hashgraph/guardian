@@ -3,6 +3,7 @@ import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import * as Checks from '../../../support/checkingMethods';
 import { prepareTools, importPolicyArchive, parseImportResponse } from '../../../support/cdmTools';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 const CDM_ARCHIVE = '../Methodology Library/Clean Development Mechanism (CDM)/CDM ACM0001/ACM0001.policy';
 
@@ -52,7 +53,7 @@ context('Policy autotest', { tags: ['policyAT'] }, () => {
                         url: `${API.ApiServer}${API.Policies}${policyId}/${API.Test}`,
                         body: formdata,
                         headers: { authorization },
-                        timeout: 180000,
+                        timeout: TIMEOUTS.backend,
                     });
                 })
                 .then((response) => {
@@ -75,7 +76,7 @@ context('Policy autotest', { tags: ['policyAT'] }, () => {
                 method: METHOD.GET,
                 url: API.ApiServer + API.Policies + policyId,
                 headers: { authorization },
-                timeout: 180000,
+                timeout: TIMEOUTS.backend,
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 expect(response.body.id).to.eq(policyId);
@@ -87,7 +88,7 @@ context('Policy autotest', { tags: ['policyAT'] }, () => {
                         method: METHOD.PUT,
                         url: `${API.ApiServer}${API.Policies}${policyId}/${API.DryRun}`,
                         headers: { authorization },
-                        timeout: 180000,
+                        timeout: TIMEOUTS.longOperation,
                     }).then((dryRun) => {
                         expect(dryRun.status).to.eq(STATUS_CODE.OK);
                     });
@@ -98,7 +99,7 @@ context('Policy autotest', { tags: ['policyAT'] }, () => {
                 method: METHOD.POST,
                 url: API.ApiServer + API.Policies + policyId + '/' + API.Test + testId + '/' + API.Start,
                 headers: { authorization },
-                timeout: 180000,
+                timeout: TIMEOUTS.backend,
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
             });

@@ -1,6 +1,8 @@
 import URL from '../../../support/GuardianUrls';
 import CommonElements from '../../../support/defaultUIElements';
 import { waitForTaskRoundtrip } from '../../../support/importFlow';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
+import { dismissStickyToasts } from './configPage';
 
 const HomePageLocators = {
 	usernameInput: '[formcontrolname="username"]',
@@ -43,19 +45,19 @@ export class HomePage {
 		// which on a loaded container can exceed the default 10s command timeout
 		// (observed 25s); steps that race a mid-bootstrap app land on a blank page.
 		// The app shell flips opacity off the global loader once startup is done.
-		cy.get('app-root div.app', { timeout: 60000 }).should('have.css', 'opacity', '1');
+		cy.get('app-root div.app', { timeout: TIMEOUTS.backend }).should('have.css', 'opacity', '1');
 	}
 
 	login(username, password) {
 		cy.fixture('credentials').then(({ goodPassword }) => {
-			cy.get(HomePageLocators.usernameLoginInput, { timeout: 60000 }).type(username);
+			cy.get(HomePageLocators.usernameLoginInput, { timeout: TIMEOUTS.backend }).type(username);
 			cy.get(HomePageLocators.passInput).type(password ?? goodPassword);
 			cy.get(HomePageLocators.loginButton).click();
 		});
 		// Wait until the app has finished redirecting to the authenticated workspace,
 		// otherwise a cy.visit() issued right after would reload the app while it is
 		// still on the login route and the auth guard would kick back to /login.
-		cy.location('pathname', { timeout: 60000 }).should('not.eq', '/login');
+		cy.location('pathname', { timeout: TIMEOUTS.backend }).should('not.eq', '/login');
 	}
 
 	logOut() {
@@ -70,22 +72,25 @@ export class HomePage {
 		// expand a collapsed menu first rather than trying to hover it.
 		cy.window().its('document').then((doc) => {
 			if (doc.querySelector('app-new-header i.logout-icon')) {
-				return cy.get('app-new-header i.logout-icon', { timeout: 15000 }).first().click();
+				return cy.get('app-new-header i.logout-icon', { timeout: TIMEOUTS.ui }).first().click();
 			}
-			cy.get('app-new-header div.collapse-toggle', { timeout: 15000 }).click();
-			return cy.get('app-new-header i.logout-icon', { timeout: 15000 }).first().click();
+			cy.get('app-new-header div.collapse-toggle', { timeout: TIMEOUTS.ui }).click();
+			return cy.get('app-new-header i.logout-icon', { timeout: TIMEOUTS.ui }).first().click();
 		});
 		// Give the auth teardown time to finish before the next login reuses the page
-		cy.location('pathname', { timeout: 60000 }).should('include', '/login');
+		cy.location('pathname', { timeout: TIMEOUTS.backend }).should('include', '/login');
 	}
 
 	createAccount(accType, username, password) {
 		cy.fixture('credentials').then(({ goodPassword }) => {
 			const pwd = password ?? goodPassword;
 			this.selectAccoutTypeToCreate(accType);
-			cy.get(CommonElements.dialogWindow).find(HomePageLocators.usernameInput).click().type(username);
-			cy.get(CommonElements.dialogWindow).find(HomePageLocators.passInput).click().type(pwd);
-			cy.get(CommonElements.dialogWindow).find(HomePageLocators.confirmPassInput).click().type(pwd);
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.usernameInput).click();
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.usernameInput).type(username);
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.passInput).click();
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.passInput).type(pwd);
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.confirmPassInput).click();
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.confirmPassInput).type(pwd);
 			cy.get(CommonElements.dialogWindow).find(HomePageLocators.requestAccessButton).click();
 		});
 	}
@@ -182,7 +187,7 @@ export class HomePage {
 	_runUserOnboarding(srUsername) {
 		// Every registered SR in the workspace renders as a card, so identify
 		// the suite's SR by its Username row rather than by position.
-		cy.get('li.standard-registry__card', { timeout: 60000 })
+		cy.get('li.standard-registry__card', { timeout: TIMEOUTS.backend })
 			.filter((_, el) => Array.from(el.querySelectorAll('li.standard-registry__detail')).some((d) =>
 				(d.querySelector('label') || {}).textContent?.trim() === 'Username'
 				&& (d.querySelector('span') || {}).textContent?.trim() === srUsername))
@@ -191,9 +196,9 @@ export class HomePage {
 		this._wizardStepNext();
 		// Generate the Hedera account and key; the async task's result fills
 		// the inputs when it completes.
-		cy.get('button[label="Generate"]').click();
-		cy.get('#operatorId', { timeout: 120000 }).should('not.be.empty');
-		cy.get('#operatorKey', { timeout: 120000 }).should('not.be.empty');
+		cy.contains('button', /^\s*Generate\s*$/, { timeout: TIMEOUTS.ui }).click();
+		cy.get('#operatorId', { timeout: TIMEOUTS.backend }).should('not.be.empty');
+		cy.get('#operatorKey', { timeout: TIMEOUTS.backend }).should('not.be.empty');
 		this._wizardStepNext();
 		// The default radio generates a new DID document and needs no input.
 		// If a workspace system schema for the USER entity ever appears, an
@@ -206,8 +211,10 @@ export class HomePage {
 	}
 
 	// The wizard footer's last step is labelled "Confirm" instead of "Next".
+	// The "account already exists" toast of an earlier sign-up attempt is sticky and sits on the button.
 	_wizardStepNext() {
-		cy.get('div.user-profile-finish-buttons button[label="Next"], div.user-profile-finish-buttons button[label="Confirm"]', { timeout: 60000 })
+		dismissStickyToasts();
+		cy.contains('div.user-profile-finish-buttons button', /^\s*(Next|Confirm)\s*$/, { timeout: TIMEOUTS.backend })
 			.should('not.be.disabled')
 			.click();
 	}
@@ -228,7 +235,7 @@ export class HomePage {
 	 * view) simply delay the decision. A view that never settles rejects on the
 	 * deadline with the last phase so a stuck load is diagnosable instead of hanging.
 	 */
-	_settledUserProfilePhase(stableMs = 1500, deadlineMs = 90000) {
+	_settledUserProfilePhase(stableMs = 1500, deadlineMs = TIMEOUTS.backend) {
 		const readPhase = (doc) => {
 			if (doc.querySelector('.user-profile .loading')) {
 				return 'loading';
@@ -289,16 +296,20 @@ export class HomePage {
 
 	checkCreateDisabledUserNameEmpty() {
 		cy.fixture('credentials').then(({ goodPassword }) => {
-			cy.get(CommonElements.dialogWindow).find(HomePageLocators.passInput).click().type(goodPassword);
-			cy.get(CommonElements.dialogWindow).find(HomePageLocators.confirmPassInput).click().type(goodPassword);
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.passInput).click();
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.passInput).type(goodPassword);
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.confirmPassInput).click();
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.confirmPassInput).type(goodPassword);
 			cy.get(CommonElements.dialogWindow).find(HomePageLocators.requestAccessButton).should('be.disabled');
 		});
 	}
 
 	checkCreateDisabledPasswordEmpty(username) {
 		cy.fixture('credentials').then(({ goodPassword }) => {
-			cy.get(CommonElements.dialogWindow).find(HomePageLocators.usernameInput).click().type(username);
-			cy.get(CommonElements.dialogWindow).find(HomePageLocators.confirmPassInput).click().type(goodPassword);
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.usernameInput).click();
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.usernameInput).type(username);
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.confirmPassInput).click();
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.confirmPassInput).type(goodPassword);
 			cy.get(CommonElements.dialogWindow).contains(HomePageLocators.passwordDifError).should('exist');
 			cy.get(CommonElements.dialogWindow).find(HomePageLocators.requestAccessButton).should('be.disabled');
 		});
@@ -306,17 +317,22 @@ export class HomePage {
 
 	checkCreateDisabledConfirmPasswordEmpty(username) {
 		cy.fixture('credentials').then(({ goodPassword }) => {
-			cy.get(CommonElements.dialogWindow).find(HomePageLocators.passInput).click().type(goodPassword);
-			cy.get(CommonElements.dialogWindow).find(HomePageLocators.usernameInput).click().type(username);
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.passInput).click();
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.passInput).type(goodPassword);
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.usernameInput).click();
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.usernameInput).type(username);
 			cy.get(CommonElements.dialogWindow).find(HomePageLocators.requestAccessButton).should('be.disabled');
 		});
 	}
 
 	checkCreateDisabledPasswordMismatch(username) {
 		cy.fixture('credentials').then(({ goodPassword, altPassword }) => {
-			cy.get(CommonElements.dialogWindow).find(HomePageLocators.usernameInput).click().type(username);
-			cy.get(CommonElements.dialogWindow).find(HomePageLocators.passInput).click().type(goodPassword);
-			cy.get(CommonElements.dialogWindow).find(HomePageLocators.confirmPassInput).click().type(altPassword);
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.usernameInput).click();
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.usernameInput).type(username);
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.passInput).click();
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.passInput).type(goodPassword);
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.confirmPassInput).click();
+			cy.get(CommonElements.dialogWindow).find(HomePageLocators.confirmPassInput).type(altPassword);
 			cy.get(CommonElements.dialogWindow).contains(HomePageLocators.passwordDifError).should('exist');
 			cy.get(CommonElements.dialogWindow).find(HomePageLocators.requestAccessButton).should('be.disabled');
 		});
@@ -358,7 +374,7 @@ export class HomePage {
 		// 		})
 		// 		cy.contains('Submit').click()
 		// 		cy.intercept('/api/v1/profiles/Installer').as('waitForRegisterInstaller')
-		// 		cy.wait('@waitForRegisterInstaller', { timeout: 180000 }).then(() => {
+		// 		cy.wait('@waitForRegisterInstaller', { timeout: TIMEOUTS.longOperation }).then(() => {
 		// 			cy.contains('Policies').click({ force: true })
 		// 		})
 		// 	}
@@ -377,7 +393,7 @@ export class HomePage {
 		// 		})
 		// 		cy.contains('Submit').click()
 		// 		cy.intercept('/api/v1/profiles/Installer').as('waitForRegisterRegistrant')
-		// 		cy.wait('@waitForRegisterRegistrant', { timeout: 8000 })
+		// 		cy.wait('@waitForRegisterRegistrant', { timeout: TIMEOUTS.ui })
 		// 	}
 		// })
 	}
@@ -394,7 +410,7 @@ export class HomePage {
 		// 		})
 		// 		cy.contains('Submit').click()
 		// 		cy.intercept('/api/v1/profiles/Installer').as('waitForVVB')
-		// 		cy.wait('@waitForVVB', { timeout: 8000 })
+		// 		cy.wait('@waitForVVB', { timeout: TIMEOUTS.ui })
 		// 	}
 		// })
 	}

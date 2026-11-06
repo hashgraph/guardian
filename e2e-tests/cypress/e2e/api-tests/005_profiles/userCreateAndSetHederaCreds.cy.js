@@ -2,6 +2,7 @@ import { randomInt } from '../../../support/random';
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Profiles', { tags: ['profiles', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
@@ -60,7 +61,7 @@ context('Profiles', { tags: ['profiles', 'thirdPool', 'all', 'all-no-mgs'] }, ()
                             hederaAccountKey: hederaAccount.key,
                             parent: did
                         },
-                        timeout: 200000
+                        timeout: TIMEOUTS.longOperation
                     })
                 })
             })
@@ -117,7 +118,7 @@ context('Profiles', { tags: ['profiles', 'thirdPool', 'all', 'all-no-mgs'] }, ()
                                 '@context': []
                             }
                         },
-                        timeout: 200000
+                        timeout: TIMEOUTS.backend
                     })
                         .then((response) => {
                             expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED)

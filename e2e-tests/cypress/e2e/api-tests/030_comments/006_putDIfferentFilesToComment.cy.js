@@ -1,6 +1,7 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Put files as a comment', { tags: ['comments', 'firstPool', 'all', 'all-no-mgs'] }, () => {
 
@@ -18,7 +19,7 @@ context('Put files as a comment', { tags: ['comments', 'firstPool', 'all', 'all-
                 'content-type': 'binary/octet-stream',
                 authorization,
             },
-            timeout: 200000,
+            timeout: TIMEOUTS.backend,
         });
     };
 
@@ -38,7 +39,7 @@ context('Put files as a comment', { tags: ['comments', 'firstPool', 'all', 'all-
             headers: {
                 authorization,
             },
-            timeout: 200000,
+            timeout: TIMEOUTS.backend,
         });
     };
 
@@ -49,7 +50,7 @@ context('Put files as a comment', { tags: ['comments', 'firstPool', 'all', 'all-
             body,
             headers: { authorization },
             failOnStatusCode,
-            timeout: 60000
+            timeout: TIMEOUTS.backend
         });
     };
 
@@ -63,7 +64,7 @@ context('Put files as a comment', { tags: ['comments', 'firstPool', 'all', 'all-
             },
             headers: { authorization },
             failOnStatusCode,
-            timeout: 60000
+            timeout: TIMEOUTS.backend
         });
     };
 
@@ -75,7 +76,7 @@ context('Put files as a comment', { tags: ['comments', 'firstPool', 'all', 'all-
                 headers: {
                     authorization,
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 //The iRec 3 flow imports its policy from a fixture, and the import suffixes the

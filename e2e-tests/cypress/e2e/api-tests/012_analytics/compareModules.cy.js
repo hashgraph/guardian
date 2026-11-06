@@ -4,6 +4,7 @@ import { randomInt } from '../../../support/random';
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Analytics', { tags: ['analytics', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
 
@@ -70,7 +71,7 @@ context('Analytics', { tags: ['analytics', 'thirdPool', 'all', 'all-no-mgs'] }, 
             url: `${URLS.modules}${uuid}/${API.ExportFile}`,
             encoding: null,
             headers: { authorization },
-            timeout: 180000,
+            timeout: TIMEOUTS.backend,
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.OK);
             return Cypress.Blob.binaryStringToBlob(Cypress.Blob.arrayBufferToBinaryString(response.body));
@@ -85,7 +86,7 @@ context('Analytics', { tags: ['analytics', 'thirdPool', 'all', 'all-no-mgs'] }, 
                 'content-type': 'binary/octet-stream',
                 authorization,
             },
-            timeout: 180000,
+            timeout: TIMEOUTS.longOperation,
         });
 
     const postCompareWithAuth = (authorization, body) =>

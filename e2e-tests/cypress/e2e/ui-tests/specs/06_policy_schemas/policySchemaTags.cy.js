@@ -1,28 +1,43 @@
+import { randomInt } from '../../../../support/random';
 import { SchemaPage } from '../../pages/schemaPage';
 const schemaPage = new SchemaPage();
 
 import { HomePage } from '../../pages/homePage';
 const homePage = new HomePage();
 
+const login = (username) => {
+    cy.viewport(1920, 1080);
+    homePage.visit();
+    homePage.login(username);
+    schemaPage.openSchemasTab();
+    schemaPage.openSchemasSubtab('Policy');
+};
+
 context('Policy Schema Tags', { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
-    const schemaNameImportedIPFS = 'Applicant Details';
+    const schemaName = 'UIPolicySchemaTags' + randomInt(1000000000);
     const tagName = 'tagTestName';
 
+    before(() => {
+        login(SRUsername);
+        schemaPage.createSchema(schemaName);
+    });
+
     beforeEach(() => {
-        cy.viewport(1920, 1080);
-        homePage.visit();
-        homePage.login(SRUsername);
-        schemaPage.openSchemasTab();
-        schemaPage.openSchemasSubtab('Policy');
-    })
+        login(SRUsername);
+    });
 
     it('create tag for policy schema', () => {
-        schemaPage.addTag(schemaNameImportedIPFS, tagName);
+        schemaPage.addTag(schemaName, tagName);
     });
 
     it('delete tag', () => {
-        schemaPage.deleteTag(schemaNameImportedIPFS, tagName);
+        schemaPage.deleteTag(schemaName, tagName);
+    });
+
+    after(() => {
+        login(SRUsername);
+        schemaPage.deleteSchema(schemaName);
     });
 });

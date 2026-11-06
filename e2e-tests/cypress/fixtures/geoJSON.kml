@@ -3,15 +3,23 @@
   <Document>
     <Placemark>
       <name>Lisbon</name>
-      <Point>
-        <coordinates>-9.142685,38.736946,0</coordinates>
-      </Point>
+      <Polygon>
+        <outerBoundaryIs>
+          <LinearRing>
+            <coordinates>-9.15,38.73,0 -9.13,38.73,0 -9.13,38.75,0 -9.15,38.75,0 -9.15,38.73,0</coordinates>
+          </LinearRing>
+        </outerBoundaryIs>
+      </Polygon>
     </Placemark>
     <Placemark>
       <name>Tokyo</name>
-      <Point>
-        <coordinates>139.6917,35.6895,0</coordinates>
-      </Point>
+      <Polygon>
+        <outerBoundaryIs>
+          <LinearRing>
+            <coordinates>139.68,35.68,0 139.70,35.68,0 139.70,35.70,0 139.68,35.70,0 139.68,35.68,0</coordinates>
+          </LinearRing>
+        </outerBoundaryIs>
+      </Polygon>
     </Placemark>
   </Document>
 </kml>
