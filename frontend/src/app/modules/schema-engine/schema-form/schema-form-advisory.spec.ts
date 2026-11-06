@@ -99,6 +99,24 @@ describe('Schema form advisory text', () => {
         }
     }
 
+    for (const customType of ['geo', 'sentinel']) {
+        it(`shows ${customType} array guidance once in the open card header, not in every record`, () => {
+            const { fixture, model, view } = setup([field({ isRef: true, isArray: true, customType, type: '#spatial', fields: [], conditions: [] })]);
+            const item = model.controls![0];
+            model.addItem(item);
+            model.addItem(item);
+            model.addItem(item);
+            view.toggleOpen(item, true);
+            fixture.componentRef.changeDetectorRef.markForCheck();
+            fixture.detectChanges();
+            const element: HTMLElement = fixture.nativeElement;
+            expect(element.querySelectorAll('.sf-record').length).toBe(3);
+            expect(hints(element).length).toBe(1);
+            expect(element.querySelector('.sf-card-head .sf-advisory')?.textContent).toBe('First line\n<b>plain text</b>');
+            expect(element.querySelector('.sf-record .sf-advisory')).toBeNull();
+        });
+    }
+
     it('never shows guidance on an ordinary sub-schema card', () => {
         const { fixture } = setup([field({ isRef: true, customType: 'subSchema', type: '#child', fields: [], conditions: [] })]);
         expect(fixture.nativeElement.querySelector('.sf-card-head')).not.toBeNull();

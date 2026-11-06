@@ -939,9 +939,6 @@
                                   [attr.data-field-id]="listItem.id"
                                   [attr.required]="item.required"
                                   >
-                                  @if (item.advisoryText) {
-                                    <div class="sf-advisory">{{ item.advisoryText }}</div>
-                                  }
                                   <div class="sf-record-head">
                                     <span class="sf-record-ix">{{ listItem.index2 }}</span>
                                     @let rt = recordText(item, listItem);
