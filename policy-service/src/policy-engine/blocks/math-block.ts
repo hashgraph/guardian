@@ -242,7 +242,7 @@ export class MathBlock {
         relationships: IPolicyDocument[] = []
     ): Promise<any> {
         const options = await ref.getOptions(user);
-        const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema);
+        const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema || options.inputSchema);
         const schema = new Schema(outputSchema);
 
         // Artifacts
@@ -614,7 +614,7 @@ export class MathBlock {
 
         const options = await ref.getOptions(user);
 
-        const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema);
+        const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema || options.inputSchema);
 
         const vcSubject: any = {
             ...SchemaHelper.getContext(outputSchema),
