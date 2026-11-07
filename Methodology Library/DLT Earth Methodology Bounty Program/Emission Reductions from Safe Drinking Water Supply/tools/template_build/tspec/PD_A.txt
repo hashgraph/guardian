@@ -1,0 +1,73 @@
+Cover | KV | Project details | Project name ; Project ID ; Crediting period start ; Crediting period end ; Document completion date ; Document version ; Request type ; VCS Standard version used for validation ; Methodology ID and version ; Project proponent name and contact ; Prepared by
+Cover | COLS | Document history | Document file name ; Description
+1.2 | COLS | Audit history | Audit type ; Date of opening meeting ; Program ; Validation/ verification body name ; Monitoring period start ; Monitoring period end ; Number of years
+1.3 | KV | Sectoral scope and project classification | Sectoral scope ; Project category ; Project activity type
+1.4 | KV | Deadlines for participation | Pipeline listing deadline ; Pipeline listing request date ; Date of listing as under validation ; Registration request deadline
+1.4 | KV | Eligibility of projects registered with other GHG programs | Initial crediting period start date ; Date of registration request in the other GHG program ; Date of project inactivity in the other GHG program
+1.4 | KV | Capacity limit: project area within one kilometer | Justification
+1.4 | KV | Capacity limit: same project proponent | Justification
+1.4 | KV | Capacity limit: same project activity | Justification
+1.4 | KV | Capacity limit: start date within two years | Justification
+1.4 | KV | Capacity limit: combined capacity | Justification
+1.5 | KV | Project proponent | Organization name ; Contact person ; Title ; Address ; Telephone ; Email
+1.6 | REP | Other entities involved in the project | Organization name ; Role in the project ; Contact person ; Title ; Address ; Telephone ; Email ; Description of involvement
+1.8 | KV | Project start date and initial crediting period start date | Project start date ; Initial crediting period start date
+1.9 | KV | Project crediting period | Crediting period length ; Start date of this crediting period ; End date of this crediting period ; Crediting period number ; Maximum total project crediting period duration
+1.10 | COLS | Estimated net reductions and removals by vintage | Vintage period start ; Vintage period end ; Estimated net reductions and removals (tCO2e)
+1.10 | KV | Crediting period totals | Total estimated net reductions and removals in this crediting period ; Total number of years in this crediting period ; Average annual net reductions and removals in this crediting period
+1.11 | COLS | Project activity instances | Project activity instance ; Explanation
+1.11 | COLS | Grouped project eligibility areas | Eligibility area ID ; Summary of characteristics
+1.11 | REP | Eligibility criteria per eligibility area | Eligibility area ID ; Uniquely identifiable ; Baseline scenario ; Additionality ; Technology or measure ; Methodology applicability conditions
+1.12 | KV | Conditions prior to project initiation (GCS and E&I) | Conditions prior to project initiation ; List of facilities, systems, and equipment
+1.12 | KV | Conditions prior to project initiation (AFOLU) | Ecosystem type ; Current and historical land use ; Current and historical environmental conditions of the project area
+1.13 | REP | Technology, system, or equipment | Technology, system, or equipment ; Age and average lifetime ; Technical specifications ; Type and level of service provided
+1.13 | COLS | Implementation schedule | Date ; Milestone or action ; Description
+1.14 | KV | Project location | Country ; Region/state/province ; District (if applicable) ; Community/ municipality/city
+1.15 | COLS | Laws and other regulatory frameworks | Name of law or regulatory framework ; Explanation of compliance
+1.16 | COLS | Reductions and removals claimed under another GHG program | Vintage period start ; Vintage period end ; Volume ; Serial number(s) ; Other relevant identification information
+1.16 | KV | No double issuance: program administrator | Name and contact information of program administrator ; Details of participation ; Evidence of no double counting
+1.16 | KV | Registration with other GHG programs | Name of other GHG program ; Project ID ; Date of project inactivity ; Evidence that the project is considered inactive in the other GHG program
+1.16 | KV | Projects rejected by other GHG programs | Name of other GHG program ; Date of rejection ; Reason for rejection ; Any other relevant information
+1.17 | KV | Emissions trading programs or binding emission limits | Name and contact information of program or limit administrator ; Details of participation ; Project activities included ; Reductions and removals included ; Vintage period(s) ; Evidence of no double counting
+1.17 | KV | Other forms of environmental credit | Name and contact information of credit system administrator ; Details of participation ; Vintage period(s) ; Project activity scope ; Other information ; Evidence of no double counting
+1.17 | KV | Supply chain (Scope 3): emissions footprint | Justification
+1.17 | KV | Supply chain (Scope 3): buyer or seller | Justification
+1.18 | REP | Sustainable development contribution | SD contribution number ; SDG target ; SD contribution indicator type and name ; Indicator metadata ; Planned activities and expected contributions ; Relevant national SDG objectives
+2.1 | KV | Stakeholder identification | Stakeholder identification ; Legal or customary tenure/access rights ; Stakeholder diversity and changes over time ; Expected changes in well-being ; Location of stakeholders ; Location of resources
+2.1 | KV | Stakeholder consultation and ongoing communication | Date of stakeholder consultation ; Stakeholder engagement process before implementation of project activities ; Consultation outcome before implementation of project activities ; Ongoing communication ; Stakeholder input received before implementation of project activities
+2.1 | KV | Free, prior, and informed consent | Obtaining consent ; Outcome of FPIC process
+2.1 | KV | Grievance redress procedure | Development process ; Grievance redress procedure
+2.1 | COLS | Public comments | Comment received ; Actions taken
+2.2 | COLS | Risks to stakeholders and the environment | Risk category ; Risks identified ; Mitigation or preventive measure(s) taken
+2.3.1 | COLS | Labor and work risks | Risk category ; Risks identified ; Mitigation or preventive measure(s) taken
+2.3.2 | COLS | Human rights risks | Risks identified ; Mitigation or preventive measure(s) taken
+2.3.3 | COLS | Indigenous Peoples and cultural heritage risks | Risks identified ; Mitigation(s) or preventive measure taken
+2.3.4 | COLS | Property rights risks | Risks identified ; Mitigation or preventive measure(s) taken
+2.3.5 | KV | Benefit sharing | Process used to design the benefit-sharing agreement ; Summary of the benefit-sharing agreement ; Approval and dissemination of benefit-sharing agreement
+2.4 | COLS | Ecosystem health risks | Risk category ; Risks identified ; Mitigation or preventive measure(s) taken
+2.4 | KV | Rare, threatened, and endangered species | Species and habitat ; Areas needed for habitat connectivity
+2.4 | COLS | Rare, threatened, and endangered species risks | Risk category ; Risks identified ; Mitigation or preventive measure(s) taken
+2.4 | COLS | Introduction of species | Species introduced ; Classification ; Justification for use ; Adverse effects and mitigation
+2.4 | COLS | Existing invasive species | Existing invasive species ; Mitigation measures to prevent the spread or continued existence of invasive species
+2.4 | COLS | Invasive species risks | Risks identified ; Mitigation or preventive measure(s) taken
+2.4 | COLS | Ecosystem conversion risks | Risks identified ; Mitigation or preventive measure(s) taken
+3.1 | COLS | Methodology details | Type ; Methodology, module, or tool ID number ; Version ; Name
+3.2 | KV | Eligibility of methodology | Methodology eligibility ; Geographic eligibility ; Capacity limit eligibility
+3.2 | COLS | Applicability of methodology | Methodology, module, or tool ID ; Applicability condition ; Justification of conformance
+3.3 | COLS | Carbon pools (AFOLU) | Carbon pool ; Included? ; Explanation
+3.3 | COLS | GHG sources and sinks | Source/Sink ; Type ; Gas ; Included? ; Explanation
+3.3 | KV | De minimis thresholds | De minimis threshold ; Threshold applicability
+3.3 | COLS | De minimis comparison period | Period type ; Date from ; Date to ; Reductions and removals generated
+3.3 | REP | De minimis quantification per GHG source or carbon pool | GHG source/ carbon pool ; Quantification ; Result
+3.3 | KV | De minimis justification | De minimis justification
+3.4 | KV | Baseline reassessment | Steps taken to reassess validity of baseline scenario ; Validity of the baseline scenario
+3.5 | COLS | Laws reviewed for regulatory surplus | Name of law or regulatory framework ; Explanation of how it applies to the project
+3.5 | KV | Additionality methods | Method applied
+3.6 | REP | Methodology deviation | Reference number ; Title of deviation ; Methodology, module, or tool details ; Description of deviation ; Justification for the deviation ; Conformance to VCS Program rules
+4.4.1 | COLS | Non-permanence risk rating | Non-permanence risk rating(s) (%) ; Applicability
+4.4.1.1 | COLS | Buffer pool allocation (reductions and removals separated) | Country ; Methodology ; Net baseline carbon stock change (tCO2e) ; Net project carbon stock change (tCO2e) ; Risk rating (%) ; Buffer pool allocation (reductions) ; Buffer pool allocation (removals) ; Total buffer pool allocation
+4.4.1.1 | COLS | Buffer pool allocation (combined) | Country ; Methodology ; Net carbon stock change (tCO2e) ; Risk rating (%) ; Total buffer pool allocation
+4.4.2 | KV | Long-term average | Long-term average (LTA) (tCO2e) ; Has the LTA been updated based on monitored data, where relevant? ; Include the expected total GHG benefit to date (tCO2e) ; Is the number of GHG credits issued below the LTA?
+4.5 | COLS | Estimated reductions and removals (no non-permanence assessment) | Vintage period start ; Vintage period end ; Estimated baseline emissions (tCO2e) ; Estimated project emissions (tCO2e) ; Estimated leakage emissions (tCO2e) ; Estimated net reductions (tCO2e) ; Estimated net removals (tCO2e) ; Total estimated net reductions and removals (tCO2e)
+4.5 | COLS | Estimated reductions and removals minus buffer (non-permanence assessment required) | Vintage period start ; Vintage period end ; Estimated baseline emissions (tCO2e) ; Estimated project emissions (tCO2e) ; Estimated leakage emissions (tCO2e) ; Total buffer pool allocation (tCO2e) ; Estimated net reductions minus buffer pool allocation (tCO2e) ; Estimated net removals minus buffer pool allocation (tCO2e) ; Total estimated net reductions and removals minus buffer pool allocation (tCO2e)
+Appendix 1 | COLS | Sensitive information | Section number ; Information to be excluded ; Description and explanation

@@ -1,0 +1,105 @@
+Cover | KV | Report details | Report ID ; Project name ; Project ID ; Crediting period start ; Crediting period end ; Document completion date ; Document version ; VCS Standard version used for validation ; Methodology ID and version ; Client name and contact ; Validation/verification body name and contact ; Approved by ; Team lead ; Team member(s) and technical reviewer(s)
+Cover | COLS | Document history | File name ; Description
+Cover | KV | Audit summary | Summary
+2.1 | COLS | Schedule | Milestone ; Date
+2.2 | COLS | Document review details | Review start date ; Review completion date ; Number of days worked ; Description of review ; Audit team member(s)
+2.2 | COLS | Documents reviewed | Ref number ; Title, author(s), version, date ; Electronic filename ; Date provided to VVB
+2.3 | KV | Interview process | Description of interview process: project proponent ; Description of interview process: stakeholder groups ; Description of interview process: other groups
+2.3 | COLS | Interviewees | Interviewee details ; Interview details ; Interview topics
+2.4 | KV | Site visit | Site visit start date ; Site visit end date ; Site visit format ; Methods and objectives ; Location(s) of site visit ; Team members
+2.5 | KV | Resolution of findings | Process for resolution of CARs, CLs, and FARs ; Total CARs raised ; Total CLs raised ; Total FARs raised ; Total CARs, CLs, and FARs raised
+2.5 | COLS | Findings list | Reference number ; Type ; Related VCS Program rules
+3.1 | SUB | Summary Description of Project | Assessment conclusion
+3.1 | SUB | Audit History | Justification and assessment conclusion
+3.1 | SUB | Sectoral Scope and Project Classification | Assessment conclusion
+3.1 | SUB | Project Crediting Period | Assessment conclusion
+3.1 | SUB | Project Scale | Assessment conclusion
+3.1 | SUB | Leakage Management | Assessment conclusion
+3.1 | SUB | Sensitive Information | Assessment conclusion
+3.1 | SUB | Further Information | Assessment conclusion
+3.1 | SUB | Deadlines for Participation | Assessment conclusion ; Assessment process
+3.1 | SUBCOLS | Deadlines for Participation | Evidence description and type ; Assessment process
+3.1 | SUB | AFOLU Project Eligibility | Assessment conclusion ; Assessment process
+3.1 | SUBCOLS | AFOLU Project Eligibility | Evidence description and type ; Assessment process
+3.1 | SUB | Eligibility of Projects Registered with Other GHG Programs | Assessment conclusion ; Assessment process
+3.1 | SUBCOLS | Eligibility of Projects Registered with Other GHG Programs | Evidence description and type ; Assessment process
+3.1 | SUB | Capacity Limit Eligibility | Assessment conclusion ; Assessment process
+3.1 | SUBCOLS | Capacity Limit Eligibility | Evidence description and type ; Assessment process
+3.1 | SUB | Right to Operate and Right to Reductions and Removals | Assessment conclusion ; Assessment process
+3.1 | SUBCOLS | Right to Operate and Right to Reductions and Removals | Evidence description and type ; Assessment process
+3.1 | SUB | Land or Resource Rights Analysis | Assessment conclusion ; Assessment process
+3.1 | SUBCOLS | Land or Resource Rights Analysis | Evidence description and type ; Assessment process
+3.1 | SUB | Project Start Date and Initial Crediting Period Start Date | Assessment conclusion ; Assessment process
+3.1 | SUBCOLS | Project Start Date and Initial Crediting Period Start Date | Evidence description and type ; Assessment process
+3.1 | SUB | Project Design | Assessment conclusion ; Assessment process
+3.1 | SUBCOLS | Project Design | Evidence description and type ; Assessment process
+3.1 | SUB | Conditions Prior to Project Initiation | Assessment conclusion ; Assessment process
+3.1 | SUBCOLS | Conditions Prior to Project Initiation | Evidence description and type ; Assessment process
+3.1 | SUB | Description of the Project Activity | Assessment conclusion ; Assessment process
+3.1 | SUBCOLS | Description of the Project Activity | Evidence description and type ; Assessment process
+3.1 | SUB | Project Location | Assessment conclusion ; Assessment process
+3.1 | SUBCOLS | Project Location | Evidence description and type ; Assessment process
+3.1 | SUB | Compliance with Laws and Other Regulatory Frameworks | Assessment conclusion ; Assessment process
+3.1 | SUBCOLS | Compliance with Laws and Other Regulatory Frameworks | Evidence description and type ; Assessment process
+3.1 | SUB | No Double Issuance | Assessment conclusion ; Assessment process
+3.1 | SUBCOLS | No Double Issuance | Evidence description and type ; Assessment process
+3.1 | SUB | Registration with Other GHG Programs | Assessment conclusion ; Assessment process
+3.1 | SUBCOLS | Registration with Other GHG Programs | Evidence description and type ; Assessment process
+3.1 | SUB | Projects Rejected by Other GHG Programs | Assessment conclusion ; Assessment process
+3.1 | SUBCOLS | Projects Rejected by Other GHG Programs | Evidence description and type ; Assessment process
+3.1 | SUB | No Double Claiming with Emissions Trading Programs or Binding Emission Limits | Assessment conclusion ; Assessment process
+3.1 | SUBCOLS | No Double Claiming with Emissions Trading Programs or Binding Emission Limits | Evidence description and type ; Assessment process
+3.1 | SUB | No Double Claiming with Other Forms of Environmental Credit | Assessment conclusion ; Assessment process
+3.1 | SUBCOLS | No Double Claiming with Other Forms of Environmental Credit | Evidence description and type ; Assessment process
+3.1 | SUB | Supply Chain (Scope 3) Emissions | Assessment conclusion ; Assessment process
+3.1 | SUBCOLS | Supply Chain (Scope 3) Emissions | Evidence description and type ; Assessment process
+3.1 | SUB | Sustainable Development Contributions | Assessment conclusion ; Assessment process
+3.1 | SUBCOLS | Sustainable Development Contributions | Evidence description and type ; Assessment process
+3.2 | SUB | Stakeholder Identification | Assessment conclusion ; Assessment process
+3.2 | SUBCOLS | Stakeholder Identification | Evidence description and type ; Assessment process
+3.2 | SUB | Stakeholder Consultation and Ongoing Communication | Assessment conclusion ; Assessment process
+3.2 | SUBCOLS | Stakeholder Consultation and Ongoing Communication | Evidence description and type ; Assessment process
+3.2 | SUB | Free, Prior, and Informed Consent and Benefit-Sharing (Customary Rights Holders and Indigenous Peoples) | Assessment conclusion ; Assessment process
+3.2 | SUBCOLS | Free, Prior, and Informed Consent and Benefit-Sharing (Customary Rights Holders and Indigenous Peoples) | Evidence description and type ; Assessment process
+3.2 | SUB | Benefit-Sharing Mechanism (Other Rights Holders) | Assessment conclusion ; Assessment process
+3.2 | SUBCOLS | Benefit-Sharing Mechanism (Other Rights Holders) | Evidence description and type ; Assessment process
+3.2 | SUB | Stakeholder Input Tracker | Assessment conclusion ; Assessment process
+3.2 | SUBCOLS | Stakeholder Input Tracker | Evidence description and type ; Assessment process
+3.2 | SUB | Grievance Redress Mechanism | Assessment conclusion ; Assessment process
+3.2 | SUBCOLS | Grievance Redress Mechanism | Evidence description and type ; Assessment process
+3.2 | SUB | Ecosystem Restoration | Assessment conclusion ; Assessment process
+3.2 | SUBCOLS | Ecosystem Restoration | Evidence description and type ; Assessment process
+3.2 | SUB | Management Expertise | Assessment conclusion ; Assessment process
+3.2 | SUBCOLS | Management Expertise | Evidence description and type ; Assessment process
+3.2 | SUB | Environmental, Social, and Governance Risk Assessment | Assessment conclusion ; Did the risk assessment occur before the project start date?
+3.2 | SUBCOLS | Environmental, Social, and Governance Risk Assessment | Evidence description and type ; Assessment process
+3.3 | COLS | Methodology details | Type ; Methodology, module, or tool ID number ; Version ; Name ; Assessment and conclusion
+3.3 | COLS | Applicability of methodology | Methodology ID ; Applicability condition ; Assessment process ; Assessment conclusion
+3.3 | COLS | Project boundary: carbon pools (AFOLU) | Carbon pool ; Included? ; Conclusion
+3.3 | COLS | Project boundary: GHG sources and sinks | Source/Sink ; Type ; Gas ; Included? ; Conclusion
+3.3 | SUB | Project Boundary | Assessment conclusion ; Assessment process
+3.3 | SUBCOLS | Project Boundary | Evidence description and type ; Assessment process
+3.3 | SUB | De Minimis GHG Sources and Carbon Pools | Assessment conclusion ; Assessment process
+3.3 | SUBCOLS | De Minimis GHG Sources and Carbon Pools | Evidence description and type ; Assessment process
+3.3 | SUB | Baseline Scenario | Assessment conclusion ; Assessment process
+3.3 | SUBCOLS | Baseline Scenario | Evidence description and type ; Assessment process
+3.3 | SUB | Baseline Reassessment | Assessment conclusion ; Assessment process
+3.3 | SUBCOLS | Baseline Reassessment | Evidence description and type ; Assessment process
+3.3 | SUB | Regulatory Surplus | Assessment conclusion ; Assessment process
+3.3 | SUBCOLS | Regulatory Surplus | Evidence description and type ; Assessment process
+3.3 | SUB | Additionality Methods | Assessment conclusion ; Assessment process
+3.3 | SUBCOLS | Additionality Methods | Evidence description and type ; Assessment process
+3.3 | SUB | Methodology Deviations | Assessment conclusion ; Assessment process
+3.3 | SUBCOLS | Methodology Deviations | Evidence description and type ; Assessment process
+3.4 | SUB | Quantification of Baseline, Project, and Leakage Emissions | Assessment conclusion ; Assessment process
+3.4 | SUBCOLS | Quantification of Baseline, Project, and Leakage Emissions | Evidence description and type ; Assessment process
+3.5 | REP | Data and parameters used | Data/Parameter ; Data unit ; Assessment process ; Assessment conclusion
+3.5 | SUB | Monitoring Plan | Assessment conclusion ; Assessment process
+3.5 | SUBCOLS | Monitoring Plan | Evidence description and type ; Assessment process
+4.1 | KV | Validation conclusion summary | Date of the opinion ; Project name ; GHG statement ; Objectives, scope, and criteria ; Non-permanence risk assessment version ; Data and information supporting the GHG statement
+4.2 | KV | Crediting period and validated total | Crediting period start ; Crediting period end ; Validated estimated GHG emission reductions and carbon dioxide removals for the project crediting period
+4.2 | COLS | Estimated reductions and removals (no non-permanence assessment) | Vintage period start ; Vintage period end ; Estimated baseline emissions (tCO2e) ; Estimated project emissions (tCO2e) ; Estimated leakage emissions (tCO2e) ; Estimated net reductions (tCO2e) ; Estimated net removals (tCO2e) ; Total estimated net reductions and removals (tCO2e)
+4.2 | COLS | Estimated reductions and removals minus buffer (non-permanence assessment required) | Vintage period start ; Vintage period end ; Estimated baseline emissions (tCO2e) ; Estimated project emissions (tCO2e) ; Estimated leakage emissions (tCO2e) ; Estimated buffer pool allocation (tCO2e) ; Estimated net reductions minus buffer pool allocation (tCO2e) ; Estimated net removals minus buffer pool allocation (tCO2e) ; Total estimated net reductions and removals minus buffer pool allocation (tCO2e)
+Appendix 1 | COLS | Sensitive information | Section number ; Information to be excluded ; Assessment process and conclusion
+Appendix 2 | REP | CAR, CL, or FAR | Finding ID ; Date raised ; Raised by ; Type of finding ; Document reference ; Summary of finding ; Assessment and conclusion
+Appendix 3 | REP | Team member competence | Name of team member or technical reviewer ; Role of team member or technical reviewer ; Summary of qualifications and technical competencies

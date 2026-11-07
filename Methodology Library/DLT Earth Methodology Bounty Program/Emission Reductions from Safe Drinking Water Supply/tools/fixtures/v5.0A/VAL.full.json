@@ -1,0 +1,835 @@
+{
+ "reportId": "VAL-2026-001",
+ "validationDate": "2026-12-15",
+ "projectRef": "PD-KSW-2027-001",
+ "templateVersion": "v5.0A",
+ "projectName": "Kilimanjaro Safe Water Project",
+ "creditingPeriodStart": "2026-10-01",
+ "creditingPeriodEnd": "2031-09-30",
+ "documentCompletionDate": "2026-12-15",
+ "documentVersion": "v1.0",
+ "vcsStandardVersion": "VCS Standard v5.0",
+ "methodologyIdVersion": "VMR0015 v1.0 (Revision to AMS-III.AV v09.0) with CDM TOOL03, VT0010, TOOL33, VT0008 and the CDM Standard and Guideline for Sampling and Surveys",
+ "clientNameContact": "Rural Access Water Ltd., Amara Ndosi, contact@ruralaccesswater.example",
+ "vvbId": "VVB-EWV-001",
+ "vvbName": "Earthwise Verification Services Ltd. (sample VVB), audits@earthwise-vvb.example",
+ "approvedBy": "Samuel Kariuki (Technical Director)",
+ "teamLead": "Grace Mushi (lead auditor)",
+ "teamMembers": "Grace Mushi (lead auditor); Daniel Okello (technical expert, water quality and sampling); Priya Raman (independent technical reviewer)",
+ "summary": "Validation of the Kilimanjaro Safe Water Project against VCS Standard v5.0 and VMR0015 v1.0 at reasonable assurance and 5% materiality. Document review, a three-day site visit to all four zones and interviews. 1 CAR and 2 CLs were raised and closed; no FARs. The project is validated with an estimated 1,666.62 tCO2e per year.",
+ "s1_introduction": {
+  "objective": "To assess whether the project meets the VCS Program rules and correctly applies VMR0015.",
+  "scopeAndCriteria": "VCS Standard v5.0, VCS Program Guide v5.0, VMR0015 v1.0, AMS-III.AV v09.0 and the tools it cites; scope: the PD dated 30-October-2026 and its annexes.",
+  "reasonablenessOfAssumptions": "Reasonable assurance, 5% materiality; each assumption (X_boil, BL_fuel, n_wb, fNRB) was checked against survey data or the methodology default.",
+  "summaryDescriptionOfProject": "Kilimanjaro Safe Water Project: free distribution and maintenance of 3,000 gravity-fed ceramic-membrane household filters with a solar-assisted UV stage to 3,000 households (about 12,000 people) in four zones (Kibosho, Uru, Old Moshi and Mbokomu wards of Moshi Rural District, Kilimanjaro Region, Tanzania). The filters replace boiling of drinking water on three-stone woody-biomass fires. Emission reductions are quantified with VMR0015 v1.0 / AMS-III.AV v09.0."
+ },
+ "s2_validationProcess": {
+  "methodAndCriteria": {
+   "methodAndCriteria": "Document review, interviews and a site visit, assessed against the VCS Standard and VMR0015."
+  },
+  "documentReview": {
+   "reviewSummary": {
+    "reviewStartDate": "2026-11-16",
+    "reviewCompletionDate": "2026-12-04",
+    "daysWorked": 14,
+    "descriptionOfReview": "Review of the PD, the baseline survey data set, the filter specification, the distribution plan, the user agreements and the policy calculation.",
+    "auditTeamMembers": "Grace Mushi (lead auditor); Daniel Okello (technical expert, water quality and sampling); Priya Raman (independent technical reviewer)"
+   },
+   "documentReviewDetails": [
+    {
+     "reviewStartDate": "2026-11-01",
+     "reviewCompletionDate": "2026-11-30",
+     "descriptionOfReview": "Desk review of the project description, the calculation records and the supporting evidence.",
+     "auditTeamMemberS": "Grace Mushi (team lead), Daniel Okello (technical expert)"
+    }
+   ]
+  },
+  "interviews": {
+   "processProjectProponent": "Face-to-face interviews with the managing director, the operations manager and two zone technicians during the site visit.",
+   "processStakeholderGroups": "24 households selected at random from the baseline survey list (6 per zone), plus the four ward executive officers."
+  },
+  "siteVisits": {
+   "siteVisitStart": "2026-11-23",
+   "siteVisitEnd": "2026-11-25",
+   "visitIncludedFacilities": true,
+   "methodsAndObjectives": "Confirm the baseline practice, the filter specification, the meter installation and the maintenance arrangements.",
+   "locationsVisited": "Kibosho, Uru, Old Moshi and Mbokomu wards of Moshi Rural District, Kilimanjaro Region, Tanzania; the Moshi warehouse and the four service points.",
+   "teamMembers": "Grace Mushi (lead auditor); Daniel Okello (technical expert)",
+   "siteVisitFormat": "On site: the four zones, the Moshi warehouse and the four service points"
+  },
+  "carResolution": {
+   "resolutionProcess": "Each finding was logged, answered by the proponent with evidence, and closed by the lead auditor after review.",
+   "totalCARs": 1,
+   "totalCLs": 2,
+   "totalFARs": 0,
+   "totalAll": 3
+  }
+ },
+ "s3_validationFindings": {
+  "projectDetails": {
+   "summaryDescriptionOfProject": {
+    "assessmentConclusion": "The PD describes the technology, the four zones and the baseline practice accurately.",
+    "assessmentProcess": "Compared the PD description with the distribution plan, the filter specification sheet and the zone maps; confirmed on site in all four wards."
+   },
+   "auditHistory": {
+    "assessmentConclusion": "This is the first validation; there is no audit history.",
+    "assessmentProcess": "Checked the Verra registry and the proponent declaration for earlier validations or verifications.",
+    "justificationAndAssessmentConclusion": "The audit history conforms to VCS Standard v5.0 and VMR0015 v1.0; no open findings."
+   },
+   "sectoralScopeAndClassification": {
+    "assessmentConclusion": "Sectoral scope 3 (Energy demand), single (not grouped) project, small-scale Type III; correctly classified.",
+    "assessmentProcess": "Checked the project type against the VCS sectoral scopes and VMR0015 applicability."
+   },
+   "projectEligibility": {
+    "deadlinesForParticipation": {
+     "assessmentConclusion": "The project was listed within the deadline; it is eligible to participate.",
+     "assessmentProcess": "Compared the project start date (01-October-2026) with the date the project was listed for validation and the VCS v5.0 participation deadlines."
+    },
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Project description section on afolu project eligibility and supporting records (document review)",
+      "assessmentProcess": "Not applicable: the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply. Confirmed by document review."
+     }
+    ]
+   },
+   "projectStartDate": {
+    "assessmentConclusion": "The start date of 01-October-2026 is supported by the first distribution records.",
+    "assessmentProcess": "Checked the signed distribution records of the first zone against the PD start date.",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Project description section on project start date and initial crediting period start date and supporting records (document review)",
+      "assessmentProcess": "Document review of the project description section on project start date and initial crediting period start date, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+     }
+    ]
+   },
+   "projectCreditingPeriod": {
+    "assessmentConclusion": "A five-year renewable crediting period from 01-October-2026 to 30-September-2031 conforms.",
+    "assessmentProcess": "Checked the crediting period against VCS Standard v5.0 for energy and industry projects."
+   },
+   "projectScale": {
+    "assessmentConclusion": "Estimated annual reductions of 1,666.62 tCO2e are below 300,000 tCO2e: project scale.",
+    "assessmentProcess": "Compared the ex-ante annual estimate with the VCS project scale thresholds."
+   },
+   "projectDesign": {
+    "assessmentConclusion": "Single-location, multi-zone design; each zone is a project section and the policy sums the sections.",
+    "assessmentProcess": "Reviewed the PD design, the zone plan and the maintenance network.",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Project description section on project design and supporting records (document review)",
+      "assessmentProcess": "Document review of the project description section on project design, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+     }
+    ]
+   },
+   "conditionsPriorToProjectInitiation": {
+    "assessmentConclusion": "Before the project, 85% of households boiled drinking water on three-stone woody-biomass fires; consistent with the PD.",
+    "assessmentProcess": "Reviewed the baseline survey (BLS-2026-01, 384 households) and interviewed 24 households.",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Project description section on conditions prior to project initiation and supporting records (document review)",
+      "assessmentProcess": "Document review of the project description section on conditions prior to project initiation, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+     }
+    ]
+   },
+   "descriptionOfProjectActivity": {
+    "assessmentConclusion": "The filters and the UV stages match the PD; the maintenance plan is adequate.",
+    "assessmentProcess": "Inspected 40 filters, the warehouse stock and the service points; checked the specification against the PD.",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Project description section on description of the project activity and supporting records (document review)",
+      "assessmentProcess": "Document review of the project description section on description of the project activity, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+     }
+    ]
+   },
+   "projectLocation": {
+    "assessmentConclusion": "The project is located in Kibosho, Uru, Old Moshi and Mbokomu wards of Moshi Rural District, Kilimanjaro Region, Tanzania, as stated.",
+    "assessmentProcess": "Checked the GPS coordinates and ward boundaries of the four zones.",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Project description section on project location and supporting records (document review)",
+      "assessmentProcess": "Document review of the project description section on project location, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+     }
+    ]
+   },
+   "complianceWithLaws": {
+    "assessmentConclusion": "The project complies with applicable laws; no permit is required for household filters.",
+    "assessmentProcess": "Reviewed the Water Supply and Sanitation Act 2019, the TBS drinking-water standard TZS 789 and the district permits.",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Project description section on compliance with laws and other regulatory frameworks and supporting records (document review)",
+      "assessmentProcess": "Document review of the project description section on compliance with laws and other regulatory frameworks, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+     }
+    ]
+   },
+   "doubleCounting": {
+    "noDoubleIssuance": {
+     "assessmentConclusion": "The project is not registered under any other GHG programme; no double issuance risk.",
+     "assessmentProcess": "Searched other GHG programme registries and obtained a signed declaration from the proponent."
+    }
+   },
+   "doubleClaiming": {
+    "noDoubleClaimingWithEmissionsTradingProgramsOrBindingEmissionLimits": {
+     "assessmentConclusion": "No emissions trading programme or binding emission limit covers the emission sources; no double claiming.",
+     "assessmentProcess": "Checked whether household fuel use in Tanzania falls under an emissions trading programme or binding limit."
+    },
+    "noDoubleClaimingWithOtherFormsOfEnvironmentalCredit": {
+     "assessmentConclusion": "No other environmental credit has been sought or received.",
+     "assessmentProcess": "Reviewed funding agreements and the proponent declaration."
+    },
+    "supplyChainScope3Emissions": {
+     "assessmentConclusion": "No buyer claims the reductions as scope 3 reductions; conforms.",
+     "assessmentProcess": "Reviewed the offtake agreements and the proponent declaration on scope 3 claims."
+    },
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Project description section on no double claiming with other forms of environmental credit and supporting records (document review)",
+      "assessmentProcess": "Not applicable: the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme. Confirmed by document review."
+     }
+    ]
+   },
+   "sustainableDevelopmentContributions": {
+    "assessmentConclusion": "Contributions to SDG 6.1, 3.9 and 7.1 are described and plausible.",
+    "assessmentProcess": "Reviewed the SDG table against the project activities.",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Project description section on sustainable development contributions and supporting records (document review)",
+      "assessmentProcess": "Document review of the project description section on sustainable development contributions, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+     }
+    ]
+   },
+   "additionalInformation": {
+    "leakageManagement": {
+     "assessmentConclusion": "Leakage is addressed through Adj_LE = 0.95 fixed at validation; LE_y = 0 as the methodology requires."
+    },
+    "sensitiveInformation": {
+     "assessmentConclusion": "No information was withheld; conforms."
+    },
+    "furtherInformation": {
+     "assessmentConclusion": "No further information affects the validation."
+    }
+   },
+   "leakageManagement": {
+    "assessmentConclusion": "The leakage management conforms to VCS Standard v5.0 and VMR0015 v1.0; no open findings."
+   },
+   "sensitiveInformation": {
+    "assessmentConclusion": "Not applicable: no information is excluded from the public version of this document. Confirmed by document review."
+   },
+   "furtherInformation": {
+    "assessmentConclusion": "The further information conforms to VCS Standard v5.0 and VMR0015 v1.0; no open findings."
+   },
+   "deadlinesForParticipation": {
+    "assessmentConclusion": "The deadlines for participation conforms to VCS Standard v5.0 and VMR0015 v1.0; no open findings.",
+    "assessmentProcess": "Document review of the project description section on deadlines for participation, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0.",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Project description section on deadlines for participation and supporting records (document review)",
+      "assessmentProcess": "Document review of the project description section on deadlines for participation, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+     }
+    ]
+   },
+   "eligibilityOfProjectsRegisteredWithOther": {
+    "assessmentConclusion": "Not applicable: the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme. Confirmed by document review.",
+    "assessmentProcess": "Not applicable: the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme. Confirmed by document review.",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Project description section on eligibility of projects registered with other ghg programs and supporting records (document review)",
+      "assessmentProcess": "Not applicable: the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme. Confirmed by document review."
+     }
+    ]
+   },
+   "capacityLimitEligibility": {
+    "assessmentConclusion": "Not applicable: no capacity limit applies to this project activity under VMR0015. Confirmed by document review.",
+    "assessmentProcess": "Not applicable: no capacity limit applies to this project activity under VMR0015. Confirmed by document review.",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Project description section on capacity limit eligibility and supporting records (document review)",
+      "assessmentProcess": "Not applicable: no capacity limit applies to this project activity under VMR0015. Confirmed by document review."
+     }
+    ]
+   },
+   "ownership": {
+    "assessmentConclusion": "The ownership conforms to VCS Standard v5.0 and VMR0015 v1.0; no open findings.",
+    "assessmentProcess": "Document review of the project description section on ownership, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0.",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Project description section on ownership and supporting records (document review)",
+      "assessmentProcess": "Document review of the project description section on ownership, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+     }
+    ]
+   },
+   "noDoubleIssuance": {
+    "assessmentConclusion": "Not applicable: the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme. Confirmed by document review.",
+    "assessmentProcess": "Not applicable: the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme. Confirmed by document review.",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Project description section on no double issuance and supporting records (document review)",
+      "assessmentProcess": "Not applicable: the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme. Confirmed by document review."
+     }
+    ]
+   },
+   "registrationWithOtherGHGPrograms": {
+    "assessmentConclusion": "Not applicable: the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme. Confirmed by document review.",
+    "assessmentProcess": "Not applicable: the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme. Confirmed by document review.",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Project description section on registration with other ghg programs and supporting records (document review)",
+      "assessmentProcess": "Not applicable: the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme. Confirmed by document review."
+     }
+    ]
+   },
+   "noDoubleClaimingWithEmissionsTradingProg": {
+    "assessmentConclusion": "Not applicable: the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme. Confirmed by document review.",
+    "assessmentProcess": "Not applicable: the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme. Confirmed by document review.",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Project description section on no double claiming with emissions trading programs or binding emission limits and supporting records (document review)",
+      "assessmentProcess": "Not applicable: the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme. Confirmed by document review."
+     }
+    ]
+   },
+   "supplyChainScope3Emissions": {
+    "assessmentConclusion": "The project reduces household woodfuel use for boiling water; it does not change the emissions footprint of a product or service that a company buys or sells, so no Scope 3 double claiming arises.",
+    "assessmentProcess": "The project reduces household woodfuel use for boiling water; it does not change the emissions footprint of a product or service that a company buys or sells, so no Scope 3 double claiming arises.",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "The project reduces household woodfuel use for boiling water; it does not change the emissions footprint of a product or service that a company buys or sells, so no Scope 3 double claiming arises.",
+      "assessmentProcess": "The project reduces household woodfuel use for boiling water; it does not change the emissions footprint of a product or service that a company buys or sells, so no Scope 3 double claiming arises."
+     }
+    ]
+   }
+  },
+  "applicationOfMethodology": {
+   "methodologyDetails": {
+    "assessmentConclusion": "VMR0015 v1.0 and the cited tool versions are current and correctly referenced.",
+    "assessmentProcess": "Checked the methodology title, version and tool versions against the Verra and UNFCCC websites."
+   },
+   "applicabilityAndEligibility": {
+    "eligibilityOfMethodology": {
+     "assessmentConclusion": "The methodology is eligible."
+    },
+    "applicabilityOfMethodology": {}
+   },
+   "projectBoundary": {
+    "assessmentConclusion": "Boundary includes the filters, the service points and grid electricity; CO2, CH4 and N2O correctly selected.",
+    "assessmentProcess": "Compared the boundary and GHG sources with VMR0015 and AMS-III.AV.",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Project description section on project boundary and supporting records (document review)",
+      "assessmentProcess": "Document review of the project description section on project boundary, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+     }
+    ]
+   },
+   "baselineScenario": {
+    "assessmentConclusion": "Boiling on three-stone woody-biomass fires is the correct baseline scenario.",
+    "assessmentProcess": "Reviewed the baseline survey and the applicability conditions.",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Project description section on baseline scenario and supporting records (document review)",
+      "assessmentProcess": "Document review of the project description section on baseline scenario, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+     }
+    ]
+   },
+   "additionality": {
+    "regulatorySurplus": {
+     "assessmentConclusion": "No law requires the project activity; regulatory surplus is demonstrated.",
+     "assessmentProcess": "Reviewed national and district regulations on household water treatment."
+    },
+    "additionalityMethods": {
+     "assessmentConclusion": "Additionality is demonstrated with VT0008; the policy confirmed the tool choice against the VMR0015 s7 limits.",
+     "assessmentProcess": "Checked the VT0008 steps, the barrier evidence and the common-practice analysis (N_all = 2, N_diff = 1)."
+    }
+   },
+   "methodologyDeviations": {
+    "assessmentConclusion": "No deviations are applied.",
+    "assessmentProcess": "Checked the PD for methodology deviations.",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Project description section on methodology deviations and supporting records (document review)",
+      "assessmentProcess": "Not applicable: no methodology deviation or project description deviation is applied. Confirmed by document review."
+     }
+    ]
+   },
+   "methodologyDetails2": [
+    {
+     "type2": "Methodology",
+     "methodologyModuleOrToolIDNumber": "VMR0015",
+     "version": "1.0",
+     "name": "Revision to AMS-III.AV: Low Greenhouse Gas Emitting Safe Drinking Water Production Systems",
+     "assessmentAndConclusion": "Applicable version applied correctly."
+    },
+    {
+     "type2": "Methodology",
+     "methodologyModuleOrToolIDNumber": "AMS-III.AV",
+     "version": "09.0",
+     "name": "Low greenhouse gas emitting safe drinking water production systems",
+     "assessmentAndConclusion": "Applicable version applied correctly."
+    },
+    {
+     "type2": "Tool",
+     "methodologyModuleOrToolIDNumber": "VT0010",
+     "version": "1.1",
+     "name": "Emissions from Electricity Consumption and Generation",
+     "assessmentAndConclusion": "Applicable version applied correctly."
+    },
+    {
+     "type2": "Tool",
+     "methodologyModuleOrToolIDNumber": "VT0008",
+     "version": "1.0",
+     "name": "Additionality Assessment",
+     "assessmentAndConclusion": "Applicable version applied correctly."
+    },
+    {
+     "type2": "Tool",
+     "methodologyModuleOrToolIDNumber": "CDM TOOL03",
+     "version": "03.0",
+     "name": "Tool to calculate project or leakage CO2 emissions from fossil fuel combustion",
+     "assessmentAndConclusion": "Applicable version applied correctly."
+    },
+    {
+     "type2": "Tool",
+     "methodologyModuleOrToolIDNumber": "CDM TOOL33",
+     "version": "03.0",
+     "name": "Default values for common parameters",
+     "assessmentAndConclusion": "Applicable version applied correctly."
+    },
+    {
+     "type2": "Standard",
+     "methodologyModuleOrToolIDNumber": "CDM Sampling and surveys",
+     "version": "09.0",
+     "name": "Standard: Sampling and surveys for CDM project activities and programmes of activities",
+     "assessmentAndConclusion": "Applicable version applied correctly."
+    }
+   ],
+   "applicabilityOfMethodology": [
+    {
+     "methodologyID": "AMS-III.AV v09.0 / VMR0015 v1.0",
+     "applicabilityCondition": "Para 2: water kiosks using solar disinfection",
+     "assessmentProcess": "Reviewed the evidence named in PD section 3.2.2.",
+     "assessmentConclusion": "Not applicable - no water kiosk uses solar disinfection."
+    },
+    {
+     "methodologyID": "AMS-III.AV v09.0 / VMR0015 v1.0",
+     "applicabilityCondition": "Para 3: soil filtration schemes",
+     "assessmentProcess": "Reviewed the evidence named in PD section 3.2.2.",
+     "assessmentConclusion": "Not applicable - no boreholes or wells."
+    },
+    {
+     "methodologyID": "AMS-III.AV v09.0 / VMR0015 v1.0",
+     "applicabilityCondition": "Para 4(a): no public SDW network before the project",
+     "assessmentProcess": "Reviewed the evidence named in PD section 3.2.2.",
+     "assessmentConclusion": "Met - district infrastructure register and the November 2026 network check."
+    },
+    {
+     "methodologyID": "AMS-III.AV v09.0 / VMR0015 v1.0",
+     "applicabilityCondition": "Para 4(b): technology meets the performance standard",
+     "assessmentProcess": "Reviewed the evidence named in PD section 3.2.2.",
+     "assessmentConclusion": "Met - accredited laboratory challenge-water testing to TZS 789 (Annex 5)."
+    },
+    {
+     "methodologyID": "AMS-III.AV v09.0 / VMR0015 v1.0",
+     "applicabilityCondition": "Para 4(c): replacement systems",
+     "assessmentProcess": "Reviewed the evidence named in PD section 3.2.2.",
+     "assessmentConclusion": "Not applicable - rated life 7 years exceeds the 5-year crediting period."
+    },
+    {
+     "methodologyID": "AMS-III.AV v09.0 / VMR0015 v1.0",
+     "applicabilityCondition": "Para 4(d): microbiologically safe water delivered",
+     "assessmentProcess": "Reviewed the evidence named in PD section 3.2.2.",
+     "assessmentConclusion": "Met - 40 installed filters tested below 1 cfu E. coli per 100 ml (Annex 7)."
+    },
+    {
+     "methodologyID": "AMS-III.AV v09.0 / VMR0015 v1.0",
+     "applicabilityCondition": "VMR0015 s4: REDD+ double-counting assessment",
+     "assessmentProcess": "Reviewed the evidence named in PD section 3.2.2.",
+     "assessmentConclusion": "Assessed and reported - no overlapping REDD+ project or programme."
+    }
+   ],
+   "projectBoundaryCarbonPoolsAFOLU": [
+    {
+     "carbonPool": "Not applicable - the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply.",
+     "included": "Not applicable - the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply.",
+     "conclusion": "Not applicable: the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply. Confirmed by document review."
+    }
+   ],
+   "projectBoundaryGHGSourcesAndSinks": [
+    {
+     "sourceSink": "Baseline: boiling water with woody biomass",
+     "type2": "Source",
+     "gas": "CO2",
+     "included": "Yes",
+     "conclusion": "Correctly included."
+    },
+    {
+     "sourceSink": "Baseline: boiling water with woody biomass",
+     "type2": "Source",
+     "gas": "CH4 and N2O",
+     "included": "Yes",
+     "conclusion": "Correctly included."
+    },
+    {
+     "sourceSink": "Project: electricity consumption of the devices",
+     "type2": "Source",
+     "gas": "CO2",
+     "included": "Yes",
+     "conclusion": "Correctly included."
+    },
+    {
+     "sourceSink": "Project: fossil fuel use",
+     "type2": "Source",
+     "gas": "CO2",
+     "included": "Yes",
+     "conclusion": "Correctly included."
+    },
+    {
+     "sourceSink": "Leakage: non-renewable biomass",
+     "type2": "Source",
+     "gas": "CO2",
+     "included": "Yes",
+     "conclusion": "Correctly included."
+    }
+   ],
+   "deMinimisGHGSourcesAndCarbonPools": {
+    "assessmentConclusion": "Not applicable: the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply. Confirmed by document review.",
+    "assessmentProcess": "Not applicable: the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply. Confirmed by document review.",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Project description section on de minimis ghg sources and carbon pools and supporting records (document review)",
+      "assessmentProcess": "Not applicable: the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply. Confirmed by document review."
+     }
+    ]
+   },
+   "baselineReassessment": {
+    "assessmentConclusion": "Not applicable: first crediting period; no baseline reassessment is due. Confirmed by document review.",
+    "assessmentProcess": "Not applicable: first crediting period; no baseline reassessment is due. Confirmed by document review.",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Project description section on baseline reassessment and supporting records (document review)",
+      "assessmentProcess": "Not applicable: first crediting period; no baseline reassessment is due. Confirmed by document review."
+     }
+    ]
+   },
+   "regulatorySurplus": {
+    "assessmentConclusion": "The regulatory surplus conforms to VCS Standard v5.0 and VMR0015 v1.0; no open findings.",
+    "assessmentProcess": "Document review of the project description section on regulatory surplus, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0.",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Project description section on regulatory surplus and supporting records (document review)",
+      "assessmentProcess": "Document review of the project description section on regulatory surplus, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+     }
+    ]
+   },
+   "additionalityMethods": {
+    "assessmentConclusion": "The additionality methods conforms to VCS Standard v5.0 and VMR0015 v1.0; no open findings.",
+    "assessmentProcess": "Document review of the project description section on additionality methods, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0.",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Project description section on additionality methods and supporting records (document review)",
+      "assessmentProcess": "Document review of the project description section on additionality methods, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+     }
+    ]
+   }
+  },
+  "quantification": {
+   "quantificationBaselineProjectLeakage": {
+    "assessmentConclusion": "The recalculation matches the policy result of 1,666.620262 tCO2e per year; the quantification is correct.",
+    "assessmentProcess": "Recalculated the ex-ante estimate independently from Appendix 2 and the methodology records (Eq.(1), Eq.(5), VT0010).",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Project description section on quantification of baseline, project, and leakage emissions and supporting records (document review)",
+      "assessmentProcess": "Document review of the project description section on quantification of baseline, project, and leakage emissions, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+     }
+    ]
+   },
+   "otherRelevantQuantification": {}
+  },
+  "monitoring": {
+   "monitoringPlan": {
+    "assessmentConclusion": "The monitoring plan meets VMR0015, AMS-III.AV tables 11-14 and the CDM sampling standard.",
+    "assessmentProcess": "Reviewed the monitoring plan, the meter specification and the sampling plan (90/10).",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Project description section on monitoring plan and supporting records (document review)",
+      "assessmentProcess": "Document review of the project description section on monitoring plan, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+     }
+    ]
+   }
+  }
+ },
+ "s3_1_5_v50A": {
+  "assessmentConclusion": "The proponent has demonstrated ownership of the project devices and the right to the emission reductions, as required by the VCS Standard v5.0 (v5.0A template).",
+  "assessmentProcess": "Reviewed the filter purchase invoices, the service-point leases, a sample of 40 signed household user agreements and the Moshi District Council memorandum of understanding; interviewed the proponent and 12 households."
+ },
+ "s3_2_v50A": {
+  "stakeholderIdentification": {
+   "evidenceGathered": [
+    {
+     "item": "Stakeholder Identification",
+     "assessmentConclusionAndAssessmentProcess": "Document review of the project description section on stakeholder identification, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0.",
+     "riskCategory": "Risks to local stakeholders and the environment (household water filters)"
+    }
+   ]
+  },
+  "stakeholderConsultationAndOngoingCommuni": {
+   "evidenceGathered": [
+    {
+     "item": "Stakeholder Consultation and Ongoing Communication",
+     "assessmentConclusionAndAssessmentProcess": "Document review of the project description section on stakeholder consultation and ongoing communication, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0.",
+     "riskCategory": "Risks to local stakeholders and the environment (household water filters)"
+    }
+   ]
+  },
+  "freePriorAndInformedConsent": {
+   "evidenceGathered": [
+    {
+     "item": "Free, Prior, and Informed Consent",
+     "assessmentConclusionAndAssessmentProcess": "Document review of the project description section on free, prior, and informed consent, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0.",
+     "riskCategory": "Risks to local stakeholders and the environment (household water filters)"
+    }
+   ]
+  },
+  "grievanceRedressProcedure": {
+   "evidenceGathered": [
+    {
+     "item": "Grievance Redress Procedure",
+     "assessmentConclusionAndAssessmentProcess": "Document review of the project description section on grievance redress procedure, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0.",
+     "riskCategory": "Risks to local stakeholders and the environment (household water filters)"
+    }
+   ]
+  },
+  "publicComments": {
+   "evidenceGathered": [
+    {
+     "commentReceived": "No public comments were received during the public comment period.",
+     "assessmentConclusionAndAssessmentProcess": "Document review of the project description section on public comments, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+    }
+   ]
+  },
+  "managementExperience": {
+   "assessmentConclusion": "The management experience conforms to VCS Standard v5.0 and VMR0015 v1.0; no open findings.",
+   "assessmentProcess": "Document review of the project description section on management experience, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0.",
+   "evidenceGathered": [
+    {
+     "evidenceDescriptionAndType": "Project description section on management experience and supporting records (document review)",
+     "assessmentProcess": "Document review of the project description section on management experience, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+    }
+   ]
+  },
+  "laborAndWork": {
+   "evidenceGathered": [
+    {
+     "riskCategory": "Risks to local stakeholders and the environment (household water filters)",
+     "assessmentConclusionAndAssessmentProcess": "Document review of the project description section on labor and work, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+    }
+   ]
+  },
+  "humanRights": {
+   "evidenceGathered": [
+    {
+     "humanRightsRisksAndMitigationMeasures": "No material risk identified; mitigation measures in the registered PD were implemented.",
+     "assessmentConclusionAndAssessmentProcess": "Document review of the project description section on human rights, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+    }
+   ]
+  },
+  "indigenousPeoplesAndCulturalHeritage": {
+   "evidenceGathered": [
+    {
+     "indigenousPeoplesAndCulturalHeritageRisk": "No material risk identified; mitigation measures in the registered PD were implemented.",
+     "assessmentConclusionAndAssessmentProcess": "Document review of the project description section on indigenous peoples and cultural heritage, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+    }
+   ]
+  },
+  "propertyRights": {
+   "evidenceGathered": [
+    {
+     "propertyRightsRisksAndMitigationMeasures": "No material risk identified; mitigation measures in the registered PD were implemented.",
+     "assessmentConclusionAndAssessmentProcess": "Document review of the project description section on property rights, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+    }
+   ]
+  },
+  "benefitSharing": {
+   "evidenceGathered": [
+    {
+     "item": "Benefit Sharing",
+     "assessmentConclusionAndAssessmentProcess": "Document review of the project description section on benefit sharing, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0.",
+     "riskCategory": "Risks to local stakeholders and the environment (household water filters)"
+    }
+   ]
+  },
+  "rareThreatenedAndEndangeredSpecies": {
+   "evidenceGathered": [
+    {
+     "item": "Rare, Threatened, and Endangered Species",
+     "assessmentConclusionAndAssessmentProcess": "Not applicable: household water filters are installed in existing homes; no land is converted, no species are introduced and no habitat is affected. Confirmed by document review.",
+     "riskCategory": "Risks to local stakeholders and the environment (household water filters)"
+    }
+   ]
+  },
+  "introductionOfSpecies": {
+   "evidenceGathered": [
+    {
+     "speciesIntroduced": "Not applicable - household water filters are installed in existing homes; no land is converted, no species are introduced and no habitat is affected.",
+     "assessmentConclusionAndAssessmentProcess": "Not applicable: household water filters are installed in existing homes; no land is converted, no species are introduced and no habitat is affected. Confirmed by document review."
+    }
+   ]
+  },
+  "existingInvasiveSpecies": {
+   "evidenceGathered": [
+    {
+     "existingInvasiveSpecies": "Not applicable - household water filters are installed in existing homes; no land is converted, no species are introduced and no habitat is affected.",
+     "assessmentConclusionAndAssessmentProcess": "Not applicable: household water filters are installed in existing homes; no land is converted, no species are introduced and no habitat is affected. Confirmed by document review.",
+     "invasiveSpeciesRisksAndMitigationMeasure": "No material risk identified; mitigation measures in the registered PD were implemented."
+    }
+   ]
+  },
+  "ecosystemConversion": {
+   "evidenceGathered": [
+    {
+     "ecosystemConversionRisksAndMitigationMea": "No material risk identified; mitigation measures in the registered PD were implemented.",
+     "assessmentConclusionAndAssessmentProcess": "Not applicable: household water filters are installed in existing homes; no land is converted, no species are introduced and no habitat is affected. Confirmed by document review."
+    }
+   ]
+  }
+ },
+ "s4_validationOpinion": {
+  "conclusionSummary": {
+   "dateOfOpinion": "2026-12-15",
+   "projectName": "Kilimanjaro Safe Water Project",
+   "ghgStatement": "The proponent states estimated reductions of 1,666.620262 tCO2e per year for 01-October-2026 to 30-September-2031; the statement is the responsibility of the proponent.",
+   "objectivesScopeCriteria": "Objective: assess conformance with VCS v5.0 and VMR0015 v1.0. Scope: the PD and its annexes. Criteria: VCS Standard v5.0, VMR0015 v1.0, AMS-III.AV v09.0 and its tools.",
+   "dataAndInformationSupportingStatement": "Projected (ex-ante) data based on the baseline survey and methodology defaults.",
+   "nonPermanenceRiskAssessmentVersion": "Not applicable - non-AFOLU project; no non-permanence risk assessment is required."
+  },
+  "conclusionOnEstimatedReductions": {
+   "conclusionText": "The ex-ante estimate of 1,666.62 tCO2e per year is reasonable and correctly calculated.",
+   "estimatedByVintage": [
+    {
+     "country": "United Republic of Tanzania",
+     "methodology": "VMR0015 v1.0",
+     "vintageStart": "2026-10-01",
+     "vintageEnd": "2026-12-31",
+     "estimatedBaselineEmissions": 420.413477,
+     "estimatedProjectEmissions": 0.33385,
+     "estimatedLeakageEmissions": 0,
+     "estimatedNetReductions": 420.079628,
+     "estimatedNetRemovals": 0,
+     "estimatedNetReductionsAndRemovals": 420.079628
+    },
+    {
+     "country": "United Republic of Tanzania",
+     "methodology": "VMR0015 v1.0",
+     "vintageStart": "2027-01-01",
+     "vintageEnd": "2027-12-31",
+     "estimatedBaselineEmissions": 1667.944774,
+     "estimatedProjectEmissions": 1.324512,
+     "estimatedLeakageEmissions": 0,
+     "estimatedNetReductions": 1666.620262,
+     "estimatedNetRemovals": 0,
+     "estimatedNetReductionsAndRemovals": 1666.620262
+    },
+    {
+     "country": "United Republic of Tanzania",
+     "methodology": "VMR0015 v1.0",
+     "vintageStart": "2028-01-01",
+     "vintageEnd": "2028-12-31",
+     "estimatedBaselineEmissions": 1667.944774,
+     "estimatedProjectEmissions": 1.324512,
+     "estimatedLeakageEmissions": 0,
+     "estimatedNetReductions": 1666.620262,
+     "estimatedNetRemovals": 0,
+     "estimatedNetReductionsAndRemovals": 1666.620262
+    },
+    {
+     "country": "United Republic of Tanzania",
+     "methodology": "VMR0015 v1.0",
+     "vintageStart": "2029-01-01",
+     "vintageEnd": "2029-12-31",
+     "estimatedBaselineEmissions": 1667.944774,
+     "estimatedProjectEmissions": 1.324512,
+     "estimatedLeakageEmissions": 0,
+     "estimatedNetReductions": 1666.620262,
+     "estimatedNetRemovals": 0,
+     "estimatedNetReductionsAndRemovals": 1666.620262
+    },
+    {
+     "country": "United Republic of Tanzania",
+     "methodology": "VMR0015 v1.0",
+     "vintageStart": "2030-01-01",
+     "vintageEnd": "2030-12-31",
+     "estimatedBaselineEmissions": 1667.944774,
+     "estimatedProjectEmissions": 1.324512,
+     "estimatedLeakageEmissions": 0,
+     "estimatedNetReductions": 1666.620262,
+     "estimatedNetRemovals": 0,
+     "estimatedNetReductionsAndRemovals": 1666.620262
+    },
+    {
+     "country": "United Republic of Tanzania",
+     "methodology": "VMR0015 v1.0",
+     "vintageStart": "2031-01-01",
+     "vintageEnd": "2031-09-30",
+     "estimatedBaselineEmissions": 1247.531297,
+     "estimatedProjectEmissions": 0.990662,
+     "estimatedLeakageEmissions": 0,
+     "estimatedNetReductions": 1246.540635,
+     "estimatedNetRemovals": 0,
+     "estimatedNetReductionsAndRemovals": 1246.540635
+    }
+   ],
+   "creditingPeriodStart": "2026-10-01",
+   "creditingPeriodEnd": "2031-09-30",
+   "validatedEstimatedGHGEmissionReductionsA": "8333.101312 tCO2e for the 5-year crediting period"
+  }
+ },
+ "validationOpinion": "Validated",
+ "appendix2CarsClsFars": [
+  {
+   "findingId": "CAR-01",
+   "dateRaised": "2026-11-26",
+   "raisedBy": "Grace Mushi",
+   "findingType": "CAR",
+   "documentReference": "PD section 5.1 / Appendix 2 A2.2.4",
+   "summaryOfFinding": "The PD cited a superseded fNRB source.",
+   "assessmentAndConclusion": "PD updated to fNRB option 3 (TOOL33 Table 3) with the value and the date of access recorded (0.62 in this sample is a test value, not the published figure). Evidence reviewed; closed 2026-12-02."
+  },
+  {
+   "findingId": "CL-01",
+   "dateRaised": "2026-11-26",
+   "raisedBy": "Daniel Okello",
+   "findingType": "CL",
+   "documentReference": "PD annex 4 (meters)",
+   "summaryOfFinding": "Calibration evidence for the inline meters was not in the annexes.",
+   "assessmentAndConclusion": "Batch calibration certificates added and checked; closed 2026-12-01."
+  },
+  {
+   "findingId": "CL-02",
+   "dateRaised": "2026-11-26",
+   "raisedBy": "Grace Mushi",
+   "findingType": "CL",
+   "documentReference": "PD section 5.3 (monitoring plan)",
+   "summaryOfFinding": "The method for the table 13 public-network check was unclear.",
+   "assessmentAndConclusion": "Monitoring plan now states the annual check with MUWSA and the ward office; closed 2026-12-01."
+  }
+ ],
+ "appendix3Competence": [
+  {
+   "name": "Grace Mushi",
+   "role": "Lead auditor",
+   "qualifications": "VCS lead auditor; 9 years of validation and verification in household energy and water projects; ISO 14064-3 trained"
+  },
+  {
+   "name": "Daniel Okello",
+   "role": "Technical expert",
+   "qualifications": "MSc water engineering; 7 years of water-quality laboratory and sampling work; technical expert for AMS-III.AV"
+  },
+  {
+   "name": "Priya Raman",
+   "role": "Technical reviewer",
+   "qualifications": "Independent technical reviewer; 10 years of CDM/VCS review experience in sectoral scope 3; not part of the audit team"
+  }
+ ],
+ "documentHistory": [
+  {
+   "fileName": "KSW-2027-001_Validation_Report_v1.0.pdf",
+   "description": "First version"
+  }
+ ]
+}

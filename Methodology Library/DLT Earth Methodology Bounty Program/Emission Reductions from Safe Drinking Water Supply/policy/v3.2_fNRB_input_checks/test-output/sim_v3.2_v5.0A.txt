@@ -1,0 +1,106 @@
+--- registration
+PASS  policy roles block offers Project Proponent and VVB
+PASS  PP creates its profile (PP Profile schema)
+PASS  second PP creates its profile
+PASS  VVB creates its profile (VVB Profile schema)
+PASS  second VVB creates its profile
+PASS  a PP cannot open the Standard Registry approval button  [blocked as expected: admin_pp_account_approve_button: PP_Kilimanjaro (Project Proponent) has no access]
+PASS  SR approves the PP profile
+PASS  SR approves the second PP profile
+PASS  SR approves the VVB profile
+PASS  SR rejects the second VVB profile
+--- project description and ex-ante calculation
+PASS  PP submits the project description; it is saved, switched by template version and the ex-ante ERR is calculated
+PASS  ex-ante ERR exists with annual ER 1,666.620262475 and no flags  (1666.620262475 | no flags)
+PASS  PD status "Waiting for Approval", ERR status "Calculated"
+PASS  the other PP does not see this PD in any of its PD grids
+PASS  PP cannot assign the PD to a VVB whose profile was rejected  [blocked as expected: pp_project_description_assign: VVB_Rejected is not in the dropdown (no Registry-approved profile)]
+PASS  the other PP cannot submit a project description with the same project ID (pp_project_id_unique), and nothing is saved  [blocked as expected: pp_project_id_unique: Project ID PD-KSW-2027-001 is already used by another project description in this policy (status Waiting for Approval); us]
+PASS  PP assigns the PD to the VVB
+PASS  the PP cannot start a monitoring report before registration (no Monitoring report button on a waiting PD)  [blocked as expected: pp_monitoring_report_form: VCS Project Description #6 is not a row of pp_project_description_registered_source for PP_Kilimanjaro, so the form i]
+PASS  the VVB cannot write a validation report before it approves the PD  [blocked as expected: vb_validation_report_form: VCS Project Description #6 is not a row of vb_pd_other_source for VVB_One, so the form is not offered]
+PASS  the rejected VVB cannot approve the PD (not assigned to it, so it is not in its list)  [blocked as expected: vb_pd_approve_button: VCS Project Description #6 is not a row of vb_pd_source for VVB_Rejected, so the button is not shown]
+PASS  VVB approves the PD
+PASS  the rejected VVB cannot write a validation report on a PD not assigned to it  [blocked as expected: vb_validation_report_form: VCS Project Description #6 is not a row of vb_pd_other_source for VVB_Rejected, so the form is not offered]
+PASS  even with the PD assigned to it, the rejected VVB is stopped by the validation-report precheck (no Registry-approved VVB profile)  [blocked as expected: vb_validation_precheck: no VVB Profile matches option.status equal "Registry approved"]
+PASS  a validation report whose VVB id is not the VVB's own approved profile is refused by the precheck inside the form, and nothing is saved  [blocked as expected: vb_validation_precheck: source VVB Profile: conditions vvbId equal vvbId not met]
+PASS  VVB writes the validation report from the approved PD (precheck: own Registry-approved profile)
+PASS  VVB assigns the validation report to the project proponent
+PASS  the PP now sees the validation report; the other PP does not
+PASS  SR cannot register the PD before the registry approves a validation report with the opinion Validated (admin_pp_pd_register_check)  [blocked as expected: admin_pp_pd_register_check: no Validation Report matches option.status equal "Registry approved", projectRef equal "PD-KSW-2027-001"]
+PASS  PD status unchanged ("Third-party verifier approved")
+PASS  SR approves the validation report
+PASS  SR registers the PD
+PASS  PD status "Registered"
+PASS  the VVB cannot approve the PD again once it is registered (only waiting PDs carry the buttons)  [blocked as expected: vb_pd_approve_button: VCS Project Description #6 is not a row of vb_pd_source for VVB_One, so the button is not shown]
+--- monitoring report 2027 and ex-post calculation
+PASS  PP creates the 2027 monitoring report from the registered PD (preset projectRef, templateVersion; overlap check; ex-post math)
+PASS  ex-post ERR: ER 1,556.947181413, ex-ante for the period 1,666.620262, difference -6.580568083 %, no flags  (1556.947181413 / 1666.620262475 / -6.580568083 / no flags)
+PASS  the MR carries the PD presets
+PASS  PP assigns the MR to the VVB
+PASS  VVB approves the MR
+PASS  SR approves the MR (registry overlap check passes for the first report)
+PASS  MR status "Registry approved"
+--- verification and issuance
+PASS  the VVB cannot verify the ex-post ERR before the PP assigns it  [blocked as expected: vb_verification_report_form: ERR(Ex Post) of VCS Monitoring Report #17 is not a row of vb_emission_reduction_removal_source for VVB_One, so the ]
+PASS  PP assigns the ex-post ERR to the VVB
+PASS  VVB writes the verification report from the ex-post ERR (presets ERcalculated, ERverified; precheck)
+PASS  the ERR is locked as "Verification submitted" and leaves the VVB list
+PASS  ERcalculated = ERverified = 1556.947181413 on the verification report  (1556.947181413 / 1556.947181413)
+PASS  VVB assigns the verification report to the project proponent
+PASS  PP cannot request VCUs before the registry approves the verification report  [blocked as expected: pp_vcu_request_form: VVB Verification Report #20 is not a row of pp_verification_report_approved_source for PP_Kilimanjaro, so the form is not o]
+PASS  SR approves the verification report
+PASS  PP requests VCU issuance from the approved verification report (precheck; verification -> "VCU requested")
+PASS  verification report status "VCU requested", request "Waiting for issuance"
+PASS  a VVB cannot press the Issue VCUs button  [blocked as expected: admin_err_issue_button: VVB_One (VVB) has no access]
+PASS  SR issues (verification report left "Registry approved" by a late approval save, as seen on MGS): validator checks the request, the verification report, the registered PD, the approved validation report, the approved MR and the locked ERR; then mint
+PASS  1,556 VCU minted to the project proponent (floor of min(ERverified, ERcalculated), 0 decimals)  (1556)
+PASS  request status "Issued"
+PASS  the same request cannot be issued twice (no longer a row of the waiting list)  [blocked as expected: admin_err_issue_button: VMR0015 VCU Issuance Request #22 is not a row of admin_vcu_request_source for SR, so the button is not shown]
+PASS  the same request cannot be issued twice (validator, if the button were pressed by API)  [blocked as expected: admin_err_issue_validator: Field "status": got "Issued", expected equal "Waiting for issuance"]
+PASS  still 1,556 VCU in total
+--- further monitoring periods
+PASS  a second report for the same 2027 period is rejected by the PP overlap check (nothing saved)  [blocked as expected: pp_mr_period_overlap: Monitoring period overlaps another report of this project that is approved or under review (VCS Standard v5.0 s3.4.5): MR-]
+PASS  the adjacent 2028 report is accepted and calculated
+PASS  2028 ERR calculated (366-day leap year period)  (366 days, ER 1556.947181413 | days in the monitoring period: 365 were typed but the period dates 2028-01-01 to 2028-12-31 give 366 days (both dates included); the policy used 366 days)
+PASS  a second report overlapping the 2028 report that is still under review is refused by the PP check (nothing saved)  [blocked as expected: pp_mr_period_overlap: Monitoring period overlaps another report of this project that is approved or under review (VCS Standard v5.0 s3.4.5): MR-]
+PASS  a report reusing the monitoring report ID MR-2028-001 for another period is refused (nothing saved)  [blocked as expected: pp_mr_period_overlap: Monitoring report ID MR-2028-001 is already used by another report of this project (status Waiting for Approval)]
+PASS  the VVB cannot approve the 2028 report before it is assigned to it  [blocked as expected: vb_mr_approve_button: VCS Monitoring Report #26 is not a row of vb_mr_source for VVB_One, so the button is not shown]
+PASS  PP assigns the 2028 report and the VVB approves it
+PASS  SR approves the 2028 report
+--- rejected verification and re-opening
+PASS  PP assigns the 2028 ERR, VVB verifies it
+PASS  SR rejects that verification report
+PASS  PP cannot request VCUs on a rejected verification report  [blocked as expected: pp_vcu_request_form: VVB Verification Report #33 is not a row of pp_verification_report_approved_source for PP_Kilimanjaro, so the form is not o]
+PASS  SR re-opens the locked 2028 ERR for a new verification (validator: rejected verification report exists)
+PASS  ERR back to "Calculated" and visible to the VVB again
+PASS  VVB verifies the re-opened 2028 ERR again, entering ERverified 1,600 (above the calculated 1,556.947181)
+PASS  SR approves it and the PP requests VCUs
+PASS  SR issues the 2028 VCUs
+PASS  mint uses min(ERverified, ERcalculated): +1,556, not 1,600 (total 3,112)  (3112)
+PASS  SR cannot re-open the 2027 ERR, whose verification was approved (no rejected verification report)  [blocked as expected: admin_err_reopen_validator: no VVB Verification Report matches option.status equal "Registry rejected", monitoringReportRef equal "MR-2027-001",]
+PASS  SR cannot re-open the issued 2028 ERR although its first verification report stays rejected (a later one was used for issuance)  [blocked as expected: admin_err_reopen_guard: Cannot re-open: verification report VER-2028-001b for monitoring report MR-2028-001 is VCU requested; re-open is only fo]
+PASS  the issued 2028 ERR stays "Verification submitted"
+PASS  a second issuance for MR-2028-001 is refused even if a forged waiting request reaches the validator  [blocked as expected: admin_err_issue_guard: VCUs were already issued for monitoring report MR-2028-001 of project PD-KSW-2027-001 (request urn:uuid:sim-00037); a mon]
+PASS  still 3,112 VCU in total after the refused second issuance
+PASS  a second VCU request on the 2028 verification report is not offered: the report left "Registry approved" when the first request was made, and the request precheck needs a "Registry approved" report
+PASS  if a second request were forced through (verification report status forged back to "Registry approved"), issuing it is refused by admin_err_issue_guard and no VCU is minted  [blocked as expected: admin_err_issue_guard: VCUs were already issued for monitoring report MR-2028-001 of project PD-KSW-2027-001 (request urn:uuid:sim-00037); a mon]
+PASS  a verification report on an ERR that is not "Calculated" is refused by the precheck and the ERR is not touched  [blocked as expected: vb_verification_precheck: no VMR0015 Emission Reductions (ERR) matches ghgType equal "Ex Post", mrId equal "MR-2027-001", projectId equal "PD-KS]
+--- an ERR whose monitoring report was never approved
+PASS  PP files the 2029 report; the VVB approves it and the registry rejects it
+PASS  the 2029 report is "Registry rejected"
+PASS  the VVB can still verify the ERR of the rejected 2029 report once assigned
+PASS  SR approves that verification report
+PASS  PP requests VCUs on it
+PASS  issuance is refused: the issue validator finds no Registry-approved monitoring report MR-2029-001  [blocked as expected: admin_err_issue_validator: no VCS Monitoring Report matches option.status equal "Registry approved", mrId equal "MR-2029-001", projectRef equal ]
+PASS  no VCU minted for it (still 3,112 in total)
+--- access between users
+PASS  the other PP cannot start a monitoring report on this PD  [blocked as expected: pp_monitoring_report_form: VCS Project Description #6 is not a row of pp_project_description_registered_source for PP_Other, so the form is not ]
+PASS  the other PP cannot request VCUs on this verification report  [blocked as expected: pp_vcu_request_form: VVB Verification Report #20 is not a row of pp_verification_report_approved_source for PP_Other, so the form is not offered]
+PASS  the other PP sees no ERR of this project
+PASS  the other PP sees none of the validation or verification reports
+PASS  the rejected VVB sees no PD, MR or ERR (nothing is assigned to it)
+
+Documents stored: 21 | schemas validated on every form submission and every calculation
+
+ALL PASSED
