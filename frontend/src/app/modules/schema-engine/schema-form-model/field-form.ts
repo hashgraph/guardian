@@ -49,6 +49,7 @@ export interface IFieldControl<T extends UntypedFormControl | UntypedFormGroup |
     fileUploading?: boolean;
     enumValues?: any;
     displayRequired?: boolean;
+    previewNamed?: boolean;
     readonly?: boolean;
     list?: IFieldIndexControl<any>[];
     open: boolean;
@@ -161,6 +162,11 @@ export class FieldForm {
      */
     public readonly controlsChanged$ = new Subject<void>();
 
+    /**
+     * Emits (on the root form) when a Preview server answer updated the required fields in place.
+     */
+    public readonly requirementsChanged$ = new Subject<void>();
+
     private readonly validateLikeDryRun?: boolean;
 
     constructor(form: UntypedFormGroup, lvl: number = 0, validateLikeDryRun = false) {
@@ -188,6 +194,7 @@ export class FieldForm {
         this.arrayDependencySources.clear();
         this.destroy$.unsubscribe();
         this.controlsChanged$.complete();
+        this.requirementsChanged$.complete();
     }
 
     private normalizeIfCondition(raw: any): IConditionExpr {
@@ -1287,6 +1294,16 @@ export class FieldForm {
         return false;
     }
 
+    private isPreviewNamed(field: SchemaField): boolean | undefined {
+        const requiredFields = this.rootForm.requiredFields;
+        if (!requiredFields) {
+            return undefined;
+        }
+        const parentPath = this.previewPath();
+        const path = parentPath ? `${parentPath}.${field.name}` : field.name;
+        return requiredFields.has(path) || requiredFields.has(field.path || field.name);
+    }
+
     private createFieldControl(field: SchemaField, preset?: any): IFieldControl<any> {
         const comment = this.getComment(field);
         const item: IFieldControl<any> = {
@@ -1307,6 +1324,9 @@ export class FieldForm {
         };
         item.visibility = !item.hide && !item.hidden && !item.autocalculate;
         item.required = this.isFieldRequired(field);
+        if (field.isArray) {
+            item.previewNamed = this.isPreviewNamed(field);
+        }
         item.preset = field.default;
         if (preset) {
             item.isPreset = !this.rootForm.keepDefaultLabels;
@@ -1604,7 +1624,22 @@ export class FieldForm {
         }
         this.rootForm.requiredFields = new Set(paths);
         this.rootForm.refreshPreviewRequirements();
+        this.rootForm.requirementsChanged$.next();
         return true;
+    }
+
+    public previewRequiredPaths(): string[] | null {
+        const requiredFields = this.rootForm.requiredFields;
+        if (!requiredFields) {
+            return null;
+        }
+        const prefix = this.previewPath();
+        if (!prefix) {
+            return [...requiredFields];
+        }
+        return [...requiredFields]
+            .filter(path => path.startsWith(`${prefix}.`))
+            .map(path => path.slice(prefix.length + 1));
     }
 
     private refreshPreviewRequirements(): void {
@@ -1632,6 +1667,7 @@ export class FieldForm {
                 }
             }
             if (item.isArray) {
+                item.previewNamed = this.isPreviewNamed(item.field);
                 item.control?.updateValueAndValidity({ emitEvent: false, onlySelf: true });
             }
         }

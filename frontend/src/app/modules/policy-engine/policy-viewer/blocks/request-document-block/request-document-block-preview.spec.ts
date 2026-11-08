@@ -67,6 +67,7 @@ describe('request document preview wiring', () => {
         component.loading = false;
         component.previewMode = false;
         component.previewRequiredFields = null;
+        component.previewMissingFields = [];
         component.previewRequest = 0;
         component.previewVisited = new Set<number>();
         component.previewLoadingByCard = new Map<number, number>();
@@ -246,7 +247,9 @@ describe('request document preview wiring', () => {
 
     it('keeps requirements stale after a failed refresh and sends no request in ordinary mode', fakeAsync(() => {
         spyOn(console, 'error');
-        const { component, group, calls } = observedForm([Promise.reject(new Error('offline'))]);
+        const offline = Promise.reject(new Error('offline'));
+        offline.catch(() => undefined);
+        const { component, group, calls } = observedForm([offline]);
         group.get('mode')!.setValue('vcs');
         tick();
         expect(component.previewRequirementsStale).toBeTrue();
@@ -377,7 +380,7 @@ describe('request document preview wiring', () => {
     it('opens the results screen with the missing values when Preview answers 422', async () => {
         spyOn(console, 'error');
         const error = new HttpErrorResponse({ status: 422, error: { data: { preview: true, fields: ['amount', 'rate'], missingFields: ['rate'] } } });
-        const { component } = form([Promise.reject(error)], blockParent());
+        const { component } = form([Promise.reject(error), Promise.resolve(response(['amount', 'rate'], ['rate']))], blockParent());
         component.formRoot.getIssues = () => [{ path: 'rate', label: 'rate', message: 'Enter a value' }];
         component.previewMode = true;
         await component.onStep();
@@ -595,7 +598,7 @@ describe('request document preview wiring', () => {
     it('goes back to a clean form when the toggle is switched off on the missing values screen', async () => {
         spyOn(console, 'error');
         const error = new HttpErrorResponse({ status: 422, error: { data: { preview: true, fields: ['rate'], missingFields: ['rate'] } } });
-        const { component } = form([Promise.reject(error)], blockParent());
+        const { component } = form([Promise.reject(error), Promise.resolve(response(['rate'], ['rate']))], blockParent());
         component.formRoot.getIssues = () => [{ path: 'rate', label: 'rate', message: 'Enter a value' }];
         component.previewMode = true;
         await component.onStep();
@@ -679,7 +682,7 @@ describe('request document preview wiring', () => {
 
         it('refreshes the issues once for a 422 that brings no new requirements', async () => {
             spyOn(console, 'error');
-            const { component } = form([Promise.reject(missing(['rate']))], blockParent());
+            const { component } = form([Promise.reject(missing(['rate'])), Promise.resolve(response(['rate'], ['rate']))], blockParent());
             const getIssues = spyOn(component.formRoot, 'getIssues').and.returnValue([]);
             const detect = spyOn(component.changeDetectorRef, 'detectChanges');
             component.previewMode = true;
@@ -692,7 +695,7 @@ describe('request document preview wiring', () => {
 
         it('lets the form take new requirements before listing what is missing', async () => {
             spyOn(console, 'error');
-            const { component } = form([Promise.reject(missing(['rate']))], blockParent());
+            const { component } = form([Promise.reject(missing(['rate'])), Promise.resolve(response(['rate'], ['rate']))], blockParent());
             const detect = spyOn(component.changeDetectorRef, 'detectChanges');
             component.previewMode = true;
             component.previewRequiredFields = ['amount'];
@@ -991,6 +994,7 @@ describe('request document preview wiring', () => {
             const { component, dialogs } = form([responsePromise], blockParent());
             if (!discovery) component.previewMode = true;
             const pending = discovery ? component.onPreviewModeChange(true) : component.onStep();
+            await settle();
             expect(component.loading).toBeTrue();
             expect(dialogs.length).toBe(0);
             answer(response(['amount']));
@@ -1019,7 +1023,7 @@ describe('request document preview wiring', () => {
         const failure = new HttpErrorResponse({ status: 422, error: { data: {
             preview: true, fields: ['amount', 'bonus'], missingFields: ['bonus']
         } } });
-        const state = form([Promise.reject(failure)], blockParent());
+        const state = form([Promise.reject(failure), Promise.resolve(response(['amount', 'bonus'], ['bonus']))], blockParent());
         const { component } = state;
         component.previewMode = true;
         component.previewRequiredFields = ['amount'];
@@ -1028,7 +1032,7 @@ describe('request document preview wiring', () => {
         expect(component.previewRequiredFields).toEqual(['amount', 'bonus']);
         expect(component.screen).toBe('results');
         expect(component.loading).toBeFalse();
-        expect(state.calls.length).toBe(1);
+        expect(state.calls.map((call) => call.previewFields)).toEqual([false, true]);
     });
 
     it(`keeps the server's indexed PEt error when requirements stay unchanged`, async () => {
@@ -1039,7 +1043,7 @@ describe('request document preview wiring', () => {
             message: 'Missing calculation inputs',
             data: { preview: true, fields: [field], missingFields: [path] }
         } });
-        const state = form([Promise.reject(failure)], blockParent());
+        const state = form([Promise.reject(failure), Promise.resolve(response([field], [path]))], blockParent());
         const { component } = state;
         const values = { vcs_project_description: { estimatedGHG: {
             exAnteCSVArea: [{ PBt: 0.1, LKt: 2, PEt: null, UNCt: 0.05 }]
@@ -1079,6 +1083,7 @@ describe('request document preview wiring', () => {
 
     it('keeps discovery requirements and normal validity gating, then takes the latest requirements', async () => {
         const results = [Promise.resolve(response(['amount', 'bonus'], ['bonus'])),
+            Promise.resolve(response(['amount', 'bonus'], ['bonus'])),
             Promise.resolve(response(['later']))];
         const state = form(results, blockParent());
         const { component, dialogs } = state;
@@ -1091,12 +1096,12 @@ describe('request document preview wiring', () => {
         await component.onStep();
         expect(component.screen).toBe('results');
         expect(component.formRoot.revealErrors).toHaveBeenCalledWith(false);
-        expect(state.calls.length).toBe(1);
+        expect(state.calls.length).toBe(2);
         expect(dialogs.length).toBe(0);
         component.dataForm.valid = true;
         expect(component.ifDisabledBtn({ id: 'submit' })).toBeFalse();
         await component.onStep();
-        expect(state.calls.map((call) => call.previewFields)).toEqual([true, false]);
+        expect(state.calls.map((call) => call.previewFields)).toEqual([true, true, false]);
         expect(component.previewRequiredFields).toEqual(['later']);
         expect(component.screen).toBe('presults');
     });
@@ -1197,7 +1202,7 @@ describe('request document preview wiring', () => {
         const error = new HttpErrorResponse({ status: 422, error: { data: {
             preview: true, fields: ['amount'], missingFields: ['rows.1.bonus','rows.3.rate']
         } } });
-        const { component, dialogs } = form([Promise.reject(error)], blockParent());
+        const { component, dialogs } = form([Promise.reject(error), Promise.resolve(response(['amount'], ['rows.1.bonus', 'rows.3.rate']))], blockParent());
         component.previewMode = true;
         component.previewRequiredFields = ['amount'];
         await component.runPreview(false);

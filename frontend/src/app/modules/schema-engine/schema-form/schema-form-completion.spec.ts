@@ -125,6 +125,69 @@ describe('countRequired – arrays of rows, excluded fields and Preview', () => 
         preview.destroy();
         filled.destroy();
     });
+
+    describe('an empty table in Preview', () => {
+        const optionalRows = { ...document, required: ['name'] };
+
+        it('is not counted when the server names only cells of its rows', () => {
+            const form = build({ name: 'a' }, undefined, ['name', 'rows.0.v'], optionalRows);
+            expect(countRequired(form.controls)).toEqual({ answered: 1, total: 1 });
+            form.destroy();
+        });
+
+        it('is counted when the server names the table itself', () => {
+            const form = build({ name: 'a' }, undefined, ['name', 'rows'], optionalRows);
+            expect(countRequired(form.controls)).toEqual({ answered: 1, total: 2 });
+            form.destroy();
+        });
+
+        it('is counted once the server names it in a later answer', () => {
+            const form = build({ name: 'a' }, undefined, ['name', 'rows.0.v'], optionalRows);
+            form.updatePreviewRequiredFields(['name', 'rows']);
+            expect(countRequired(form.controls)).toEqual({ answered: 1, total: 2 });
+            form.destroy();
+        });
+
+        it('is counted as before once it has a row', () => {
+            const form = build({ name: 'a', rows: [{}] }, undefined, ['name', 'rows.0.v'], optionalRows);
+            expect(countRequired(form.controls)).toEqual({ answered: 1, total: 2 });
+            form.destroy();
+        });
+
+        it('counts the required cells of a table that is optional in the schema one by one', () => {
+            const form = build({ name: 'a', rows: [{}, {}] }, undefined, ['name', 'rows.0.v', 'rows.1.v'], optionalRows);
+            expect(countRequired(form.controls)).toEqual({ answered: 1, total: 3 });
+            form.destroy();
+        });
+
+        it('keeps a table that is required in the schema as one unit', () => {
+            const form = build({ name: 'a', rows: [{}, {}] }, undefined, ['name', 'rows.0.v', 'rows.1.v']);
+            expect(countRequired(form.controls)).toEqual({ answered: 1, total: 2 });
+            form.destroy();
+        });
+
+        it('does not lower the count when a sub-section is added inside a row', () => {
+            const nested = structuredClone(optionalRows);
+            nested.$defs['#row'].properties.inner = { $ref: '#inner', title: 'Inner', description: 'Inner' };
+            nested.$defs['#inner'] = { $id: '#inner', type: SchemaDataTypes.object, properties: { x: text('X') }, required: ['x'] };
+            const required = ['name', 'rows.0.inner.x'];
+            const count = (form: FieldForm) => computeCompletion(form.controls, [], requiredWithoutControl(form.controls, required).map(() => -1));
+            const before = build({ name: 'a', rows: [{ v: '1' }] }, undefined, required, nested);
+            const after = build({ name: 'a', rows: [{ v: '1', inner: {} }] }, undefined, required, nested);
+            expect(count(before)).toEqual(jasmine.objectContaining({ answered: 1, total: 2 }));
+            expect(count(after)).toEqual(jasmine.objectContaining({ answered: 1, total: 2 }));
+            before.destroy();
+            after.destroy();
+        });
+
+        it('keeps the ordinary count of an empty required table', () => {
+            const form = build({ name: 'a' }, undefined, null);
+            const rows = form.controls!.find(item => item.name === 'rows')!;
+            form.removeItem(rows, rows.list![0]);
+            expect(countRequired(form.controls)).toEqual({ answered: 1, total: 2 });
+            form.destroy();
+        });
+    });
 });
 
 describe('computeCompletion', () => {
@@ -246,7 +309,7 @@ describe('requiredWithoutControl', () => {
     });
 });
 
-const createView = (model: FieldForm) => {
+const createView = (model: FieldForm, previewValidation = false) => {
     TestBed.configureTestingModule({
         declarations: [SchemaFormComponent, FormTextareaComponent],
         imports: [CommonModule, ReactiveFormsModule],
@@ -259,6 +322,7 @@ const createView = (model: FieldForm) => {
     const fixture = TestBed.createComponent(SchemaFormComponent);
     fixture.componentRef.setInput('form-model', model);
     fixture.componentRef.setInput('showButtons', false);
+    fixture.componentRef.setInput('previewValidation', previewValidation);
     fixture.detectChanges();
     return fixture;
 };
@@ -315,5 +379,54 @@ describe('SchemaFormComponent requiredLeft cache', () => {
         view.requiredLeft(group);
         fixture.destroy();
         expect(() => model.controlsChanged$.next()).not.toThrow();
+    });
+
+    describe('a field of a sub-section that was not added', () => {
+        const nested: any = {
+            ...document,
+            $defs: {
+                '#group': {
+                    $id: '#group', type: SchemaDataTypes.object,
+                    properties: { one: text('One'), two: text('Two'), inner: { $ref: '#inner', title: 'Inner', description: 'Inner' } },
+                    required: ['one', 'two'],
+                },
+                '#inner': { $id: '#inner', type: SchemaDataTypes.object, properties: { x: text('X') }, required: ['x'] },
+            },
+        };
+        const buildNested = (requiredFields: string[] | null) => {
+            const model = new FieldForm(new UntypedFormGroup({}));
+            model.setData({ schema: new Schema({ iri: '#rl&1.0.0', document: nested }), preset: { group: { one: 'a', two: 'b' } }, requiredFields });
+            model.build();
+            const view = createView(model, requiredFields !== null).componentInstance;
+            return { model, view, group: model.controls!.find((c) => c.name === 'group')! };
+        };
+
+        it('counts as left in Preview when the server names it', () => {
+            const { view, group } = buildNested(['group.one', 'group.two', 'group.inner.x']);
+            expect(view.requiredLeft(group)).toEqual(jasmine.objectContaining({ left: 1, total: 3 }));
+        });
+
+        it('is not counted in ordinary mode', () => {
+            const { view, group } = buildNested(null);
+            expect(view.requiredLeft(group)).toEqual(jasmine.objectContaining({ left: 0, total: 2 }));
+        });
+
+        it('updates the chip when a later server answer names it', () => {
+            const { model, view, group } = buildNested(['group.one', 'group.two']);
+            expect(view.requiredLeft(group)).toEqual(jasmine.objectContaining({ left: 0, total: 2 }));
+            model.updatePreviewRequiredFields(['group.one', 'group.two', 'group.inner.x']);
+            expect(view.requiredLeft(group)).toEqual(jasmine.objectContaining({ left: 1, total: 3 }));
+        });
+
+        it('signals the chips but not a full recount when a later server answer arrives', () => {
+            const { model } = buildNested(['group.one', 'group.two']);
+            const controls = jasmine.createSpy('controls');
+            const requirements = jasmine.createSpy('requirements');
+            model.controlsChanged$.subscribe(controls);
+            model.requirementsChanged$.subscribe(requirements);
+            model.updatePreviewRequiredFields(['group.one', 'group.two', 'group.inner.x']);
+            expect(requirements).toHaveBeenCalledTimes(1);
+            expect(controls).not.toHaveBeenCalled();
+        });
     });
 });

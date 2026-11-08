@@ -8,7 +8,7 @@ import {
     UnitSystem
 } from '@guardian/interfaces';
 import { DialogService } from 'primeng/dynamicdialog';
-import { Subject, Subscription, firstValueFrom, takeUntil } from 'rxjs';
+import { Subject, Subscription, firstValueFrom, merge, takeUntil } from 'rxjs';
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from '../../../services/api';
@@ -16,7 +16,7 @@ import { FormFormulas } from 'src/app/modules/formulas/models/form-formulas';
 import { FormulaItem } from 'src/app/modules/formulas/models/formula-tree';
 import { FieldForm, IFieldControl, IFieldIndexControl } from '../schema-form-model/field-form';
 import { getErrorMessage, showError } from './schema-form-errors';
-import { countRequired } from './schema-form-completion';
+import { countRequired, requiredWithoutControl } from './schema-form-completion';
 import { baseMetaTags, metaType } from './schema-form-metadata';
 import { recordSummary } from './schema-form-records';
 import { getMinutesAgoStream } from 'src/app/utils/autosave-utils';
@@ -756,7 +756,9 @@ export class SchemaFormComponent implements OnInit, DoCheck {
         if (cached && cached.control === control) {
             return cached;
         }
-        const { answered, total } = countRequired(item.model?.controls);
+        const { answered, total: own } = countRequired(item.model?.controls);
+        const paths = item.model?.previewRequiredPaths?.();
+        const total = own + (paths ? requiredWithoutControl(item.model.controls, paths).length : 0);
         const entry = { left: total - answered, total, control };
         this.requiredCache.set(item, entry);
         this.requiredSubs.get(item)?.unsubscribe();
@@ -784,7 +786,9 @@ export class SchemaFormComponent implements OnInit, DoCheck {
         this.controlsChangedSub?.unsubscribe();
         this.controlsChangedFor = root;
         this.clearRequiredCache();
-        this.controlsChangedSub = root?.controlsChanged$.subscribe(() => this.clearRequiredCache());
+        this.controlsChangedSub = root
+            ? merge(root.controlsChanged$, root.requirementsChanged$).subscribe(() => this.clearRequiredCache())
+            : undefined;
     }
 
     public recordText(item: IFieldControl<any>, listItem: IFieldIndexControl<any>): { title: string; sub: string } {
