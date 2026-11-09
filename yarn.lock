@@ -1582,7 +1582,7 @@ __metadata:
     esmock: "npm:^2.6.7"
     express: "npm:5.3.0"
     fast-json-stable-stringify: "npm:2.1.0"
-    js-base64: "npm:3.9.5"
+    js-base64: "npm:3.9.6"
     jsonwebtoken: "npm:^9.0.3"
     jszip: "npm:^3.10.1"
     lodash.get: "npm:^4.4.2"
@@ -9640,10 +9640,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-base64@npm:3.9.5":
-  version: 3.9.5
-  resolution: "js-base64@npm:3.9.5"
-  checksum: 10c0/3cfd1db27213bdc32eb7ae8cc70e8d91ed8d3486de2520846e8fe6fbc40a8932beb66549e3801d9502b9bd2d36d43a579787b47fe650807dc49a8f85c2cc3f25
+"js-base64@npm:3.9.6":
+  version: 3.9.6
+  resolution: "js-base64@npm:3.9.6"
+  checksum: 10c0/2e8966ab4cbe58c7cf4f7d0e89905bf6f6d8b2184db670960da4a3263c7f42e0021729008e943c0f2fdd3185ca92eec95359b28701795ace56a9313799c0f9bd
   languageName: node
   linkType: hard
 
