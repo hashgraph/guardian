@@ -3169,5 +3169,20 @@ describe('SchemasConfigurationComponent', () => {
             c.onDocMouseUp({});
             expect(names(fields)).toEqual(['b', 'c', 'a', 'd']);
         });
+
+        it('does not start text selection or a move when pressing a locked field', () => {
+            const fields = [makeField({ name: 'a' }), makeField({ name: 'b' })];
+            const c = drilledComponent(fields);
+            c.isTemplateFieldLocked = () => true;
+            const card = c._elRef.nativeElement.querySelector('.sc-drill-content .sc-field-card');
+            const event = new MouseEvent('mousedown', { cancelable: true });
+            Object.defineProperty(event, 'target', { value: card });
+            Object.defineProperty(event, 'currentTarget', { value: card });
+            c.onCardMouseDown(event, fields[0], c.drillCurrentFields);
+            expect(event.defaultPrevented).toBe(true);
+            expect(c.reorderField).toBeFalsy();
+            expect(c._mouseMoveListener).toBeFalsy();
+            expect(document.body.style.userSelect).toBe('');
+        });
     });
 });

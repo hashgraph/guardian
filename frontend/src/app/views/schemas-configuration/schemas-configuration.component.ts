@@ -4132,8 +4132,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public onCardMouseDown(event: MouseEvent, field: SchemaField, fields: SchemaField[]): void {
         if ((event.target as HTMLElement).closest('button')) { return; }
-        if (this.isTemplateFieldLocked(field)) { return; }
         event.preventDefault();
+        if (this.isTemplateFieldLocked(field)) { return; }
         if (this._mouseMoveListener) { this.clearReorder(); }
         const card = event.currentTarget as HTMLElement;
         const rect = card.getBoundingClientRect();

@@ -1828,7 +1828,11 @@
                             [class.sc-field-card--drag-bot]="!isTemplateConfigMode && sidebarDropIndex === i && sidebarDropPos === 'bot'"
                             (mousedown)="!isTemplateConfigMode ? onCardMouseDown($event, field, isDrilling ? drillCurrentFields : (selectedSchema?.fields ?? [])) : null"
                             (click)="selectField(field)">
-                            <span class="sc-drag-handle" [class.sc-drag-handle--disabled]="isTemplateConfigMode || isTemplateFieldLocked(field)"><i class="pi pi-bars"></i></span>
+                            <span class="sc-drag-handle"
+                                  [class.sc-drag-handle--disabled]="isTemplateConfigMode || isTemplateFieldLocked(field)"
+                                  pTooltip="This field cannot be moved"
+                                  tooltipPosition="top"
+                                  [tooltipDisabled]="!isTemplateConfigMode && !isTemplateFieldLocked(field)"><i class="pi pi-bars"></i></span>
                             <div class="sc-field-type-icon" [class.sc-field-type-icon--ref]="getFieldCurrentType(field) === 'sub-schema'">
                                 <i class="pi {{ getFieldIcon(field) }}"></i>
                             </div>

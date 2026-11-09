@@ -2158,7 +2158,7 @@ $sc-accent: var(--guardian-schema-accent, var(--color-primary, #4169E2));
     flex-shrink: 0;
 
     &.sc-drag-handle--disabled {
-        cursor: default;
+        cursor: not-allowed;
         opacity: 0.35;
     }
 }
