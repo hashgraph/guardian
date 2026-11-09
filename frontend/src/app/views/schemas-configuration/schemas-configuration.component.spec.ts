@@ -2844,6 +2844,19 @@ describe('SchemasConfigurationComponent', () => {
         });
     });
 
+    describe('preview layout', () => {
+        it('keeps the section rail for the schema itself', () => {
+            const component = createComponent();
+            expect(component.previewLayout).toBe('sections');
+        });
+
+        it('drops the section rail for a drilled-in sub-schema', () => {
+            const component = createComponent();
+            component.drillStack = [{ fieldName: 'child', schemaIri: '#child', fields: [] }];
+            expect(component.previewLayout).toBe('single');
+        });
+    });
+
     describe('field paths for the preview', () => {
         it('gives new and renamed fields the path the formula links use', () => {
             const added: any = makeField({ name: 'field_2' });
