@@ -139,8 +139,7 @@ paths:
           in: query
           description: Registry did
           schema:
-            example: >-
-              did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+            example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
             type: string
         - name: options.registrantTopicId
           required: false
@@ -403,8 +402,7 @@ paths:
           in: query
           description: Policy owner
           schema:
-            example: >-
-              did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+            example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
             type: string
         - name: analytics.tools
           required: false
@@ -545,8 +543,7 @@ paths:
           in: query
           description: Tool owner
           schema:
-            example: >-
-              did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+            example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
             type: string
         - name: topicId
           required: false
@@ -659,8 +656,7 @@ paths:
           in: query
           description: Module owner
           schema:
-            example: >-
-              did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+            example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
             type: string
         - name: topicId
           required: false
@@ -780,8 +776,7 @@ paths:
           in: query
           description: Schema owner
           schema:
-            example: >-
-              did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+            example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
             type: string
       responses:
         '200':
@@ -924,8 +919,7 @@ paths:
           in: query
           description: Schema owner
           schema:
-            example: >-
-              did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+            example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
             type: string
       responses:
         '200':
@@ -1141,8 +1135,7 @@ paths:
           in: query
           description: Issuer
           schema:
-            example: >-
-              did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+            example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
             type: string
         - name: options.role
           required: true
@@ -1281,8 +1274,7 @@ paths:
           in: query
           description: Statistic owner
           schema:
-            example: >-
-              did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+            example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
             type: string
         - name: options.policy
           required: false
@@ -1402,8 +1394,7 @@ paths:
           in: query
           description: Issuer
           schema:
-            example: >-
-              did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+            example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
             type: string
         - name: analytics.policyId
           required: false
@@ -1509,8 +1500,7 @@ paths:
           in: query
           description: Label owner
           schema:
-            example: >-
-              did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+            example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
             type: string
         - name: options.policy
           required: false
@@ -1658,8 +1648,7 @@ paths:
           in: query
           description: Issuer
           schema:
-            example: >-
-              did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+            example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
             type: string
         - name: analytics.policyId
           required: false
@@ -1758,8 +1747,7 @@ paths:
           in: query
           description: formula owner
           schema:
-            example: >-
-              did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+            example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
             type: string
       responses:
         '200':
@@ -1900,8 +1888,7 @@ paths:
           in: query
           description: DID
           schema:
-            example: >-
-              did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+            example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
             type: string
       responses:
         '200':
@@ -2042,8 +2029,7 @@ paths:
           in: query
           description: Issuer
           schema:
-            example: >-
-              did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+            example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
             type: string
         - name: analytics.policyId
           required: false
@@ -2198,8 +2184,7 @@ paths:
           in: query
           description: Issuer
           schema:
-            example: >-
-              did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+            example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
             type: string
         - name: analytics.policyId
           required: false
@@ -3338,8 +3323,7 @@ components:
         did:
           type: string
           description: DID
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+          example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
         registrantTopicId:
           type: string
           description: Registrant topic id
@@ -3561,8 +3545,7 @@ components:
         message:
           type: string
           description: Message
-          example: >-
-            eyJpZCI6ImVhYTYyOWZmLWM4NmItNDEyZS1iYzYwLWM4NDk2OTJkMDBiYiIsInN0YXR1cyI6IklTU1VFIiwidHlwZSI6IlN0YW5kYXJkIFJlZ2lzdHJ5IiwiYWN0aW9uIjoiSW5pdCIsImxhbmciOiJlbi1VUyIsImRpZCI6ImRpZDpoZWRlcmE6dGVzdG5ldDpBYkd6Q3hpRzRlZ0xibldCUERpaHdMUVIza0tLcnNGNmJnSDdUdmVGYjI3bl8wLjAuMjE3NiIsInRvcGljSWQiOiIwLjAuMjE3NiIsImF0dHJpYnV0ZXMiOnsiZ2VvZ3JhcGh5IjoidGVzdCIsImxhdyI6InRlc3R0ZXMiLCJ0YWdzIjoidGVzdCJ9fQ
+          example: eyJpZCI6ImVhYTYyOWZmLWM4NmItNDEyZS1iYzYwLWM4NDk2OTJkMDBiYiIsInN0YXR1cyI6IklTU1VFIiwidHlwZSI6IlN0YW5kYXJkIFJlZ2lzdHJ5IiwiYWN0aW9uIjoiSW5pdCIsImxhbmciOiJlbi1VUyIsImRpZCI6ImRpZDpoZWRlcmE6dGVzdG5ldDpBYkd6Q3hpRzRlZ0xibldCUERpaHdMUVIza0tLcnNGNmJnSDdUdmVGYjI3bl8wLjAuMjE3NiIsInRvcGljSWQiOiIwLjAuMjE3NiIsImF0dHJpYnV0ZXMiOnsiZ2VvZ3JhcGh5IjoidGVzdCIsImxhdyI6InRlc3R0ZXMiLCJ0YWdzIjoidGVzdCJ9fQ
         sequenceNumber:
           type: number
           description: Sequence number
@@ -3885,8 +3868,7 @@ components:
         did:
           type: string
           description: DID
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+          example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
       required:
         - did
     RegistryUserAnalyticsDTO:
@@ -4229,8 +4211,7 @@ components:
           items:
             type: string
           example:
-            - >-
-              "{"@context":"https://www.w3.org/ns/did/v1","id":"did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438","verificationMethod":[{"id":"did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438#did-root-key","type":"Ed25519VerificationKey2018","controller":"did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438","publicKeyBase58":"8WkE4uKLN7i9RnzeoUJfxSH9Jw8M1yTzKk6rtwVa6uGP"},{"id":"did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438#did-root-key-bbs","type":"Bls12381G2Key2020","controller":"did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438","publicKeyBase58":"237NDsUq7LAmSMzE6CEBFyuz9s2sscSz2M6cn4zUKPmJ5Q6rMh6SLRGC3EDdna7vSKwHMCGjhCiLKM6qYU7ZeYKRPNnRMcadoJbSQ44SGAAiyrpmhX8aaoTZpMdHmGFVXdqC"}],"authentication":["did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438#did-root-key"],"assertionMethod":["#did-root-key","#did-root-key-bbs"]}"
+            - '"{"@context":"https://www.w3.org/ns/did/v1","id":"did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438","verificationMethod":[{"id":"did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438#did-root-key","type":"Ed25519VerificationKey2018","controller":"did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438","publicKeyBase58":"8WkE4uKLN7i9RnzeoUJfxSH9Jw8M1yTzKk6rtwVa6uGP"},{"id":"did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438#did-root-key-bbs","type":"Bls12381G2Key2020","controller":"did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438","publicKeyBase58":"237NDsUq7LAmSMzE6CEBFyuz9s2sscSz2M6cn4zUKPmJ5Q6rMh6SLRGC3EDdna7vSKwHMCGjhCiLKM6qYU7ZeYKRPNnRMcadoJbSQ44SGAAiyrpmhX8aaoTZpMdHmGFVXdqC"}],"authentication":["did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438#did-root-key"],"assertionMethod":["#did-root-key","#did-root-key-bbs"]}"'
       required:
         - id
         - topicId
@@ -4324,8 +4305,7 @@ components:
         owner:
           type: string
           description: Owner
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+          example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
         policyTopicId:
           type: string
           description: Policy topic identifier
@@ -4365,8 +4345,7 @@ components:
         owner:
           type: string
           description: Owner
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+          example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
         tokens:
           description: Tokens
           example:
@@ -4675,8 +4654,7 @@ components:
         owner:
           type: string
           description: Owner
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+          example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
         hash:
           type: string
           description: Hash
@@ -4933,8 +4911,7 @@ components:
         owner:
           type: string
           description: Owner
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+          example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
         moduleTopicId:
           type: string
           description: Module topic identifier
@@ -5164,8 +5141,7 @@ components:
         owner:
           type: string
           description: Owner
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+          example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
         uuid:
           type: string
           description: UUID
@@ -5569,8 +5545,7 @@ components:
               \"@id\": \"#d0e99e70-3511-486668e-bf6f-10041e9a0cb7669080&1.0.0\",
               \"term\": \"d0e99e70-3511-486668e-bf6f-10041e9a0cb7669080&1.0.0\"
               }","title":"tagSchemaAPI339404","description":"tagSchemaAPI339404","type":"object","properties":{"@context":{"oneOf":[{"type":"string"},{"type":"array","items":{"type":"string"}}],"readOnly":true},"type":{"oneOf":[{"type":"string"},{"type":"array","items":{"type":"string"}}],"readOnly":true},"id":{"type":"string","readOnly":true}},"required":["@context","type"],"additionalProperties":false,"$defs":{}}
-            - >-
-              {"@context":{"@version":1.1,"@vocab":"https://w3id.org/traceability/#undefinedTerm","id":"@id","type":"@type","d0e99e70-3511-486668e-bf6f-10041e9a0cb7669080&1.0.0":{"@id":"#d0e99e70-3511-486668e-bf6f-10041e9a0cb7669080&1.0.0","@context":{}}}}
+            - '{"@context":{"@version":1.1,"@vocab":"https://w3id.org/traceability/#undefinedTerm","id":"@id","type":"@type","d0e99e70-3511-486668e-bf6f-10041e9a0cb7669080&1.0.0":{"@id":"#d0e99e70-3511-486668e-bf6f-10041e9a0cb7669080&1.0.0","@context":{}}}}'
       required:
         - id
         - topicId
@@ -5788,8 +5763,7 @@ components:
         issuer:
           type: string
           description: Issuer
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+          example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
         relationships:
           description: Relationships
           example:
@@ -6010,8 +5984,7 @@ components:
           items:
             type: string
           example:
-            - >-
-              "{"id":"urn:uuid:2c374b67-fda5-4023-97c2-c0782624573f","type":["VerifiablePresentation"],"@context":["https://www.w3.org/2018/credentials/v1"],"verifiableCredential":[{"id":"urn:uuid:ff0aecbd-d358-4e5b-b99b-7a87ba38a3b2","type":["VerifiableCredential"],"issuer":"did:hedera:testnet:C5YaWT128KGmtivag99VbSeKrzxP8P8H7FbL2KQ9VQEB_0.0.1533438","issuanceDate":"2024-02-06T05:40:37.795Z","@context":["https://www.w3.org/2018/credentials/v1","ipfs://bafkreib6arvz7hltf2yqoyb7iqlkrojur7lqqcsuuhvcfvyrtkncm6pqhi"],"credentialSubject":[{"finalMintAmount":5,"policyId":"65bc691d2ae9d0f1ef2db3bc","ref":"urn:uuid:11b1ad6f-8b4f-4d61-a63a-cc9e6532625f","@context":["ipfs://bafkreib6arvz7hltf2yqoyb7iqlkrojur7lqqcsuuhvcfvyrtkncm6pqhi"],"id":"urn:uuid:5d253a1d-456a-4fb1-8b45-257e1db2e668","type":"601a68c4-66c3-407c-bc88-1b5841e6d1da&1.0.0"}],"proof":{"type":"Ed25519Signature2018","created":"2024-02-06T05:40:37Z","verificationMethod":"did:hedera:testnet:C5YaWT128KGmtivag99VbSeKrzxP8P8H7FbL2KQ9VQEB_0.0.1533438#did-root-key","proofPurpose":"assertionMethod","jws":"eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..UvTeKVUVUxH1SFNNoyu_VXf4kFqDIFzFPJaaq5adiSHrBePLQMQv7dM_Fq23z7UGHSmXlodBen1Ujcdi-am5DQ"}},{"id":"urn:uuid:b76fbd72-48b7-45fb-b152-7ec13d11eafb","type":["VerifiableCredential"],"issuer":"did:hedera:testnet:C5YaWT128KGmtivag99VbSeKrzxP8P8H7FbL2KQ9VQEB_0.0.1533438","issuanceDate":"2024-02-06T05:40:45.066Z","@context":["https://www.w3.org/2018/credentials/v1","ipfs://bafkreigd6nhj5auxobzu4qzlakzcaizh6wux2gq43qft4rwpri7msn2geu"],"credentialSubject":[{"date":"2024-02-06T05:40:45.021Z","tokenId":"0.0.1621155","amount":"5","@context":["ipfs://bafkreigd6nhj5auxobzu4qzlakzcaizh6wux2gq43qft4rwpri7msn2geu"],"type":"MintToken"}],"proof":{"type":"Ed25519Signature2018","created":"2024-02-06T05:40:45Z","verificationMethod":"did:hedera:testnet:C5YaWT128KGmtivag99VbSeKrzxP8P8H7FbL2KQ9VQEB_0.0.1533438#did-root-key","proofPurpose":"assertionMethod","jws":"eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..5hWYO3NA0Q9zI0oS1lLOpofQI-DTQVM0sd4GUQV-UUSlBug3EgYYBm7247LCzlCRt9VpYsUh7SxIrsgHzsSRDA"}}],"proof":{"type":"Ed25519Signature2018","created":"2024-02-06T05:40:45Z","verificationMethod":"did:hedera:testnet:C5YaWT128KGmtivag99VbSeKrzxP8P8H7FbL2KQ9VQEB_0.0.1533438#did-root-key","proofPurpose":"authentication","challenge":"123","jws":"eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..Mu5BaQ34idnqG6d-aMqufQOXcuWHMkv6N9Z2zhBi9Yfd7jU9FFkwi-Xjyf-Kastr7vVWBNLwGxB-bPRf4UEHAg"}}"
+            - '"{"id":"urn:uuid:2c374b67-fda5-4023-97c2-c0782624573f","type":["VerifiablePresentation"],"@context":["https://www.w3.org/2018/credentials/v1"],"verifiableCredential":[{"id":"urn:uuid:ff0aecbd-d358-4e5b-b99b-7a87ba38a3b2","type":["VerifiableCredential"],"issuer":"did:hedera:testnet:C5YaWT128KGmtivag99VbSeKrzxP8P8H7FbL2KQ9VQEB_0.0.1533438","issuanceDate":"2024-02-06T05:40:37.795Z","@context":["https://www.w3.org/2018/credentials/v1","ipfs://bafkreib6arvz7hltf2yqoyb7iqlkrojur7lqqcsuuhvcfvyrtkncm6pqhi"],"credentialSubject":[{"finalMintAmount":5,"policyId":"65bc691d2ae9d0f1ef2db3bc","ref":"urn:uuid:11b1ad6f-8b4f-4d61-a63a-cc9e6532625f","@context":["ipfs://bafkreib6arvz7hltf2yqoyb7iqlkrojur7lqqcsuuhvcfvyrtkncm6pqhi"],"id":"urn:uuid:5d253a1d-456a-4fb1-8b45-257e1db2e668","type":"601a68c4-66c3-407c-bc88-1b5841e6d1da&1.0.0"}],"proof":{"type":"Ed25519Signature2018","created":"2024-02-06T05:40:37Z","verificationMethod":"did:hedera:testnet:C5YaWT128KGmtivag99VbSeKrzxP8P8H7FbL2KQ9VQEB_0.0.1533438#did-root-key","proofPurpose":"assertionMethod","jws":"eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..UvTeKVUVUxH1SFNNoyu_VXf4kFqDIFzFPJaaq5adiSHrBePLQMQv7dM_Fq23z7UGHSmXlodBen1Ujcdi-am5DQ"}},{"id":"urn:uuid:b76fbd72-48b7-45fb-b152-7ec13d11eafb","type":["VerifiableCredential"],"issuer":"did:hedera:testnet:C5YaWT128KGmtivag99VbSeKrzxP8P8H7FbL2KQ9VQEB_0.0.1533438","issuanceDate":"2024-02-06T05:40:45.066Z","@context":["https://www.w3.org/2018/credentials/v1","ipfs://bafkreigd6nhj5auxobzu4qzlakzcaizh6wux2gq43qft4rwpri7msn2geu"],"credentialSubject":[{"date":"2024-02-06T05:40:45.021Z","tokenId":"0.0.1621155","amount":"5","@context":["ipfs://bafkreigd6nhj5auxobzu4qzlakzcaizh6wux2gq43qft4rwpri7msn2geu"],"type":"MintToken"}],"proof":{"type":"Ed25519Signature2018","created":"2024-02-06T05:40:45Z","verificationMethod":"did:hedera:testnet:C5YaWT128KGmtivag99VbSeKrzxP8P8H7FbL2KQ9VQEB_0.0.1533438#did-root-key","proofPurpose":"assertionMethod","jws":"eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..5hWYO3NA0Q9zI0oS1lLOpofQI-DTQVM0sd4GUQV-UUSlBug3EgYYBm7247LCzlCRt9VpYsUh7SxIrsgHzsSRDA"}}],"proof":{"type":"Ed25519Signature2018","created":"2024-02-06T05:40:45Z","verificationMethod":"did:hedera:testnet:C5YaWT128KGmtivag99VbSeKrzxP8P8H7FbL2KQ9VQEB_0.0.1533438#did-root-key","proofPurpose":"authentication","challenge":"123","jws":"eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..Mu5BaQ34idnqG6d-aMqufQOXcuWHMkv6N9Z2zhBi9Yfd7jU9FFkwi-Xjyf-Kastr7vVWBNLwGxB-bPRf4UEHAg"}}"'
       required:
         - id
         - topicId
@@ -6064,8 +6037,7 @@ components:
         issuer:
           type: string
           description: Issuer
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+          example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
       required:
         - role
         - group
@@ -6306,8 +6278,7 @@ components:
         owner:
           type: string
           description: Owner
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+          example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
         policyTopicId:
           type: string
           description: Policy topic identifier
@@ -6542,8 +6513,7 @@ components:
         issuer:
           type: string
           description: Issuer
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+          example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
         relationships:
           description: Relationships
           example:
@@ -6777,8 +6747,7 @@ components:
         owner:
           type: string
           description: Owner
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+          example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
         policyTopicId:
           type: string
           description: Policy topic identifier
@@ -6803,8 +6772,7 @@ components:
         owner:
           type: string
           description: Owner
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+          example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
         config:
           type: object
           description: Label Config
@@ -7241,8 +7209,7 @@ components:
         owner:
           type: string
           description: Owner
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+          example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
         policyTopicId:
           type: string
           description: Policy topic identifier
@@ -7267,8 +7234,7 @@ components:
         owner:
           type: string
           description: Owner
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+          example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
         config:
           type: object
           description: Formula Config
@@ -7522,8 +7488,7 @@ components:
         did:
           type: string
           description: DID
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+          example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
       required:
         - relationships
         - did
@@ -7867,8 +7832,7 @@ components:
           items:
             type: string
           example:
-            - >-
-              "{"@context":"https://www.w3.org/ns/did/v1","id":"did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438","verificationMethod":[{"id":"did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438#did-root-key","type":"Ed25519VerificationKey2018","controller":"did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438","publicKeyBase58":"8WkE4uKLN7i9RnzeoUJfxSH9Jw8M1yTzKk6rtwVa6uGP"},{"id":"did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438#did-root-key-bbs","type":"Bls12381G2Key2020","controller":"did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438","publicKeyBase58":"237NDsUq7LAmSMzE6CEBFyuz9s2sscSz2M6cn4zUKPmJ5Q6rMh6SLRGC3EDdna7vSKwHMCGjhCiLKM6qYU7ZeYKRPNnRMcadoJbSQ44SGAAiyrpmhX8aaoTZpMdHmGFVXdqC"}],"authentication":["did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438#did-root-key"],"assertionMethod":["#did-root-key","#did-root-key-bbs"]}"
+            - '"{"@context":"https://www.w3.org/ns/did/v1","id":"did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438","verificationMethod":[{"id":"did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438#did-root-key","type":"Ed25519VerificationKey2018","controller":"did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438","publicKeyBase58":"8WkE4uKLN7i9RnzeoUJfxSH9Jw8M1yTzKk6rtwVa6uGP"},{"id":"did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438#did-root-key-bbs","type":"Bls12381G2Key2020","controller":"did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438","publicKeyBase58":"237NDsUq7LAmSMzE6CEBFyuz9s2sscSz2M6cn4zUKPmJ5Q6rMh6SLRGC3EDdna7vSKwHMCGjhCiLKM6qYU7ZeYKRPNnRMcadoJbSQ44SGAAiyrpmhX8aaoTZpMdHmGFVXdqC"}],"authentication":["did:hedera:testnet:C37cfiAMHeToXMiy1V5rAVJdhd182QJRGxwsWQpu2dN2_0.0.1533438#did-root-key"],"assertionMethod":["#did-root-key","#did-root-key-bbs"]}"'
       required:
         - id
         - topicId
@@ -8104,8 +8068,7 @@ components:
           items:
             type: string
           example:
-            - >-
-              "{"id":"urn:uuid:229f8416-db6b-4d68-90da-38a5355126f5","type":["VerifiableCredential"],"issuer":"did:hedera:testnet:4dKeEsD5qLq5DB5KhA6qyh61XMHtm94FdQFTJsDYRaSa_0.0.2195223","issuanceDate":"2024-02-02T10:06:53.300Z","@context":["https://www.w3.org/2018/credentials/v1","ipfs://bafkreiam7a2vox6q7yweh4xsebpp4vnonasxlzcdsaxt2cicviax4f7ruq"],"credentialSubject":[{"@context":["ipfs://bafkreiam7a2vox6q7yweh4xsebpp4vnonasxlzcdsaxt2cicviax4f7ruq"],"id":"did:hedera:testnet:4dKeEsD5qLq5DB5KhA6qyh61XMHtm94FdQFTJsDYRaSa_0.0.2195223","type":"StandardRegistry"}],"proof":{"type":"Ed25519Signature2018","created":"2024-02-02T10:06:53Z","verificationMethod":"did:hedera:testnet:4dKeEsD5qLq5DB5KhA6qyh61XMHtm94FdQFTJsDYRaSa_0.0.2195223#did-root-key","proofPurpose":"assertionMethod","jws":"eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..YElNPdCNkj8wzABUNgWYo3Yge0qrGA2KbxBWDKBzACJJe70ItIZsgbIQUHMnFbcKpXB1cSnHQ-H5WH_7uZ_3CQ"}}"
+            - '"{"id":"urn:uuid:229f8416-db6b-4d68-90da-38a5355126f5","type":["VerifiableCredential"],"issuer":"did:hedera:testnet:4dKeEsD5qLq5DB5KhA6qyh61XMHtm94FdQFTJsDYRaSa_0.0.2195223","issuanceDate":"2024-02-02T10:06:53.300Z","@context":["https://www.w3.org/2018/credentials/v1","ipfs://bafkreiam7a2vox6q7yweh4xsebpp4vnonasxlzcdsaxt2cicviax4f7ruq"],"credentialSubject":[{"@context":["ipfs://bafkreiam7a2vox6q7yweh4xsebpp4vnonasxlzcdsaxt2cicviax4f7ruq"],"id":"did:hedera:testnet:4dKeEsD5qLq5DB5KhA6qyh61XMHtm94FdQFTJsDYRaSa_0.0.2195223","type":"StandardRegistry"}],"proof":{"type":"Ed25519Signature2018","created":"2024-02-02T10:06:53Z","verificationMethod":"did:hedera:testnet:4dKeEsD5qLq5DB5KhA6qyh61XMHtm94FdQFTJsDYRaSa_0.0.2195223#did-root-key","proofPurpose":"assertionMethod","jws":"eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..YElNPdCNkj8wzABUNgWYo3Yge0qrGA2KbxBWDKBzACJJe70ItIZsgbIQUHMnFbcKpXB1cSnHQ-H5WH_7uZ_3CQ"}}"'
       required:
         - id
         - topicId
@@ -8328,8 +8291,7 @@ components:
         owner:
           type: string
           description: Owner
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+          example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
         messageType:
           type: string
           description: Message type
@@ -8683,8 +8645,7 @@ components:
         owner:
           type: string
           description: Owner
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+          example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
       required:
         - contractId
         - description
@@ -9025,8 +8986,7 @@ components:
         owner:
           type: string
           description: Owner
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+          example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
         blocks:
           $ref: '#/components/schemas/SearchPolicyBlocksDTO'
       required:
@@ -9075,8 +9035,7 @@ components:
         owner:
           type: string
           description: Owner
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+          example: did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
         textSearch:
           type: string
           description: Text search
