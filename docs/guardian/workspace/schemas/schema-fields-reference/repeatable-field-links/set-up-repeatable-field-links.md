@@ -21,7 +21,7 @@ Switch to the **Repeatable links** tab in the schema editor. The tab shows the e
 
 **2. Add a link**
 
-Fill in the link form and click **Add link**:
+Fill in the link form and click **Save link**:
 
 * **Source array** — the repeatable field that drives the group (for example, _Project Location_).
 * **Dependent array** — the repeatable field that should follow the source (for example, _Baseline Emissions_). It can live in a different schema of the same document.
@@ -33,7 +33,7 @@ Repeat to add more links. One source can drive several dependents, and a depende
 
 **3. Copy values between entries (optional)**
 
-Before clicking **Add link**, use **Add value** to map a field from the source entry to a field in the dependent entry. The value is copied automatically and shown as read-only. Add as many pairs as needed — they appear under **Copied values** in the link form.
+Before clicking **Save link**, use **Add value** to map a field from the source entry to a field in the dependent entry. The value is copied automatically and shown as read-only. Add as many pairs as needed — they appear under **Copied values** in the link form.
 
 
 **4. Save the schema**
