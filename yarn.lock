@@ -4680,7 +4680,7 @@ __metadata:
     esmock: "npm:^2.6.7"
     excel4node: "npm:^1.8.2"
     express: "npm:5.3.0"
-    express-fileupload: "npm:1.5.2"
+    express-fileupload: "npm:1.6.0"
     hpp: "npm:0.2.3"
     jszip: "npm:3.10.2"
     mocha: "npm:10.8.2"
@@ -7194,12 +7194,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"express-fileupload@npm:1.5.2":
-  version: 1.5.2
-  resolution: "express-fileupload@npm:1.5.2"
+"express-fileupload@npm:1.6.0":
+  version: 1.6.0
+  resolution: "express-fileupload@npm:1.6.0"
   dependencies:
     busboy: "npm:^1.6.0"
-  checksum: 10c0/faafc5e27f3bd3d53abbf41df1bca23be9456cd293f5c343f8f4aa04ace0f866bf104263128ea79cafb9ead8456eb9b1076bfe2f62d489c7e46c1bef64163cbb
+  checksum: 10c0/9d5d5c35f4933d0651535bc5a079f17f6bcac10f715a3e8744d406003e3ae4dbddb27f44f1df6d0cc189923d566198a2e297afc4d67b392bdb527ba490227eb7
   languageName: node
   linkType: hard
 
@@ -8627,7 +8627,7 @@ __metadata:
     cross-env: "npm:10.1.0"
     dotenv: "npm:^16.6.1"
     express: "npm:5.3.0"
-    express-fileupload: "npm:1.5.2"
+    express-fileupload: "npm:1.6.0"
     hpp: "npm:0.2.3"
     http-errors: "npm:2.0.1"
     jsonwebtoken: "npm:^9.0.3"
