@@ -1,7 +1,7 @@
 import { UntypedFormGroup } from '@angular/forms';
 import { Schema, SchemaDataTypes } from '@guardian/interfaces';
 import { FieldForm, IFieldControl } from '../schema-form-model/field-form';
-import { computeCompletion, countRequired } from './schema-form-completion';
+import { computeCompletion, countRequired, requiredWithoutControl } from './schema-form-completion';
 import { CommonModule } from '@angular/common';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
@@ -125,6 +125,69 @@ describe('countRequired – arrays of rows, excluded fields and Preview', () => 
         preview.destroy();
         filled.destroy();
     });
+
+    describe('an empty table in Preview', () => {
+        const optionalRows = { ...document, required: ['name'] };
+
+        it('is not counted when the server names only cells of its rows', () => {
+            const form = build({ name: 'a' }, undefined, ['name', 'rows.0.v'], optionalRows);
+            expect(countRequired(form.controls)).toEqual({ answered: 1, total: 1 });
+            form.destroy();
+        });
+
+        it('is counted when the server names the table itself', () => {
+            const form = build({ name: 'a' }, undefined, ['name', 'rows'], optionalRows);
+            expect(countRequired(form.controls)).toEqual({ answered: 1, total: 2 });
+            form.destroy();
+        });
+
+        it('is counted once the server names it in a later answer', () => {
+            const form = build({ name: 'a' }, undefined, ['name', 'rows.0.v'], optionalRows);
+            form.updatePreviewRequiredFields(['name', 'rows']);
+            expect(countRequired(form.controls)).toEqual({ answered: 1, total: 2 });
+            form.destroy();
+        });
+
+        it('is counted as before once it has a row', () => {
+            const form = build({ name: 'a', rows: [{}] }, undefined, ['name', 'rows.0.v'], optionalRows);
+            expect(countRequired(form.controls)).toEqual({ answered: 1, total: 2 });
+            form.destroy();
+        });
+
+        it('counts the required cells of a table that is optional in the schema one by one', () => {
+            const form = build({ name: 'a', rows: [{}, {}] }, undefined, ['name', 'rows.0.v', 'rows.1.v'], optionalRows);
+            expect(countRequired(form.controls)).toEqual({ answered: 1, total: 3 });
+            form.destroy();
+        });
+
+        it('keeps a table that is required in the schema as one unit', () => {
+            const form = build({ name: 'a', rows: [{}, {}] }, undefined, ['name', 'rows.0.v', 'rows.1.v']);
+            expect(countRequired(form.controls)).toEqual({ answered: 1, total: 2 });
+            form.destroy();
+        });
+
+        it('does not lower the count when a sub-section is added inside a row', () => {
+            const nested = structuredClone(optionalRows);
+            nested.$defs['#row'].properties.inner = { $ref: '#inner', title: 'Inner', description: 'Inner' };
+            nested.$defs['#inner'] = { $id: '#inner', type: SchemaDataTypes.object, properties: { x: text('X') }, required: ['x'] };
+            const required = ['name', 'rows.0.inner.x'];
+            const count = (form: FieldForm) => computeCompletion(form.controls, [], requiredWithoutControl(form.controls, required).map(() => -1));
+            const before = build({ name: 'a', rows: [{ v: '1' }] }, undefined, required, nested);
+            const after = build({ name: 'a', rows: [{ v: '1', inner: {} }] }, undefined, required, nested);
+            expect(count(before)).toEqual(jasmine.objectContaining({ answered: 1, total: 2 }));
+            expect(count(after)).toEqual(jasmine.objectContaining({ answered: 1, total: 2 }));
+            before.destroy();
+            after.destroy();
+        });
+
+        it('keeps the ordinary count of an empty required table', () => {
+            const form = build({ name: 'a' }, undefined, null);
+            const rows = form.controls!.find(item => item.name === 'rows')!;
+            form.removeItem(rows, rows.list![0]);
+            expect(countRequired(form.controls)).toEqual({ answered: 1, total: 2 });
+            form.destroy();
+        });
+    });
 });
 
 describe('computeCompletion', () => {
@@ -169,9 +232,84 @@ describe('computeCompletion', () => {
         expect(result.sections.map(item => item.hasErrors)).toEqual([false, true]);
         form.destroy();
     });
+
+    it('adds fields without a control as unanswered, to their section or to the whole form', () => {
+        const form = build({ name: 'a', group: {} });
+        const [name, group] = form.controls!;
+        const sections = [
+            { id: 's0', title: 'Main', controls: [name] },
+            { id: 's1', title: 'Group', controls: [group] },
+        ];
+        const result = computeCompletion(form.controls, sections, [1, 1]);
+        expect(result.sections.map(item => [item.title, item.answered, item.total])).toEqual([['Main', 1, 1], ['Group', 0, 3]]);
+        expect(result.total).toBe(4);
+        expect(computeCompletion(form.controls, [], [-1, -1])).toEqual({ answered: 1, total: 4, sections: [] });
+        form.destroy();
+    });
 });
 
-const createView = (model: FieldForm) => {
+describe('requiredWithoutControl', () => {
+    const text = (title: string) => ({ type: SchemaDataTypes.string, title, description: title });
+    const document: any = {
+        $id: '#rw&1.0.0',
+        $comment: JSON.stringify({ '@id': 'ctx:#rw&1.0.0', term: 'rw&1.0.0' }),
+        type: SchemaDataTypes.object,
+        properties: {
+            name: text('Name'),
+            extra: { $ref: '#group', title: 'Extra', description: 'Extra' },
+        },
+        required: ['name'],
+        $defs: {
+            '#group': { $id: '#group', type: SchemaDataTypes.object, properties: { inner: text('Inner'), other: text('Other') } },
+        },
+    };
+    const build = (preset: any, requiredFields: string[]): FieldForm => {
+        const form = new FieldForm(new UntypedFormGroup({}));
+        form.setData({ schema: new Schema({ iri: '#rw&1.0.0', document }), preset, requiredFields });
+        form.build();
+        return form;
+    };
+
+    it('lists required fields inside a sub-schema that was not added, once each', () => {
+        const form = build({}, ['name', 'extra.inner', 'extra.other']);
+        expect(requiredWithoutControl(form.controls, ['name', 'extra.inner', 'extra.other', 'extra.inner', 'extra.list.0.v'])).toEqual(['extra.inner', 'extra.other']);
+        form.destroy();
+    });
+
+    it('lists a sub-schema that was not added when the path names the sub-schema itself', () => {
+        const form = build({}, ['name']);
+        expect(requiredWithoutControl(form.controls, ['extra'])).toEqual(['extra']);
+        form.destroy();
+        const added = build({ extra: {} }, ['name']);
+        expect(requiredWithoutControl(added.controls, ['extra'])).toEqual([]);
+        added.destroy();
+    });
+
+    it('counts a field of a sub-schema that was not added inside an existing row, not a cell of a missing row', () => {
+        const rowDocument: any = {
+            ...document,
+            properties: { ...document.properties, rows: { type: SchemaDataTypes.array, title: 'Rows', description: 'Rows', items: { $ref: '#row' } } },
+            $defs: {
+                ...document.$defs,
+                '#row': { $id: '#row', type: SchemaDataTypes.object, properties: { extra: { $ref: '#group', title: 'Extra', description: 'Extra' } } },
+            },
+        };
+        const form = new FieldForm(new UntypedFormGroup({}));
+        form.setData({ schema: new Schema({ iri: '#rw&1.0.0', document: rowDocument }), preset: { rows: [{}] }, requiredFields: ['name'] });
+        form.build();
+        expect(requiredWithoutControl(form.controls, ['rows.0.extra.inner', 'rows.1.extra.inner'])).toEqual(['rows.0.extra.inner']);
+        form.destroy();
+    });
+
+    it('leaves out fields that have a control, row paths and paths with no existing parent', () => {
+        const form = build({ extra: {} }, ['name', 'extra.inner']);
+        expect(requiredWithoutControl(form.controls, ['name', 'extra.inner', 'rows.0.v', 'missing.inner'])).toEqual([]);
+        expect(requiredWithoutControl(form.controls, null)).toEqual([]);
+        form.destroy();
+    });
+});
+
+const createView = (model: FieldForm, previewValidation = false) => {
     TestBed.configureTestingModule({
         declarations: [SchemaFormComponent, FormTextareaComponent],
         imports: [CommonModule, ReactiveFormsModule],
@@ -184,6 +322,7 @@ const createView = (model: FieldForm) => {
     const fixture = TestBed.createComponent(SchemaFormComponent);
     fixture.componentRef.setInput('form-model', model);
     fixture.componentRef.setInput('showButtons', false);
+    fixture.componentRef.setInput('previewValidation', previewValidation);
     fixture.detectChanges();
     return fixture;
 };
@@ -240,5 +379,54 @@ describe('SchemaFormComponent requiredLeft cache', () => {
         view.requiredLeft(group);
         fixture.destroy();
         expect(() => model.controlsChanged$.next()).not.toThrow();
+    });
+
+    describe('a field of a sub-section that was not added', () => {
+        const nested: any = {
+            ...document,
+            $defs: {
+                '#group': {
+                    $id: '#group', type: SchemaDataTypes.object,
+                    properties: { one: text('One'), two: text('Two'), inner: { $ref: '#inner', title: 'Inner', description: 'Inner' } },
+                    required: ['one', 'two'],
+                },
+                '#inner': { $id: '#inner', type: SchemaDataTypes.object, properties: { x: text('X') }, required: ['x'] },
+            },
+        };
+        const buildNested = (requiredFields: string[] | null) => {
+            const model = new FieldForm(new UntypedFormGroup({}));
+            model.setData({ schema: new Schema({ iri: '#rl&1.0.0', document: nested }), preset: { group: { one: 'a', two: 'b' } }, requiredFields });
+            model.build();
+            const view = createView(model, requiredFields !== null).componentInstance;
+            return { model, view, group: model.controls!.find((c) => c.name === 'group')! };
+        };
+
+        it('counts as left in Preview when the server names it', () => {
+            const { view, group } = buildNested(['group.one', 'group.two', 'group.inner.x']);
+            expect(view.requiredLeft(group)).toEqual(jasmine.objectContaining({ left: 1, total: 3 }));
+        });
+
+        it('is not counted in ordinary mode', () => {
+            const { view, group } = buildNested(null);
+            expect(view.requiredLeft(group)).toEqual(jasmine.objectContaining({ left: 0, total: 2 }));
+        });
+
+        it('updates the chip when a later server answer names it', () => {
+            const { model, view, group } = buildNested(['group.one', 'group.two']);
+            expect(view.requiredLeft(group)).toEqual(jasmine.objectContaining({ left: 0, total: 2 }));
+            model.updatePreviewRequiredFields(['group.one', 'group.two', 'group.inner.x']);
+            expect(view.requiredLeft(group)).toEqual(jasmine.objectContaining({ left: 1, total: 3 }));
+        });
+
+        it('signals the chips but not a full recount when a later server answer arrives', () => {
+            const { model } = buildNested(['group.one', 'group.two']);
+            const controls = jasmine.createSpy('controls');
+            const requirements = jasmine.createSpy('requirements');
+            model.controlsChanged$.subscribe(controls);
+            model.requirementsChanged$.subscribe(requirements);
+            model.updatePreviewRequiredFields(['group.one', 'group.two', 'group.inner.x']);
+            expect(requirements).toHaveBeenCalledTimes(1);
+            expect(controls).not.toHaveBeenCalled();
+        });
     });
 });

@@ -38,6 +38,7 @@ export class SchemaFormOverviewComponent {
     @Input() footerLink: string | null = null;
     /** The host can't be used right now (Preview is busy). */
     @Input() locked = false;
+    @Input() progressPending = false;
 
     @Output() open = new EventEmitter<number>();
     @Output() footer = new EventEmitter<void>();

@@ -3,7 +3,7 @@
     <span class="sf-rail-title">{{ title }}</span>
     <button type="button" class="sf-rail-hide" (click)="hide.emit()">{{ inDrawer ? 'Close' : 'Hide menu' }}</button>
   </div>
-  @if (mode === 'edit') {
+  @if (mode === 'edit' && !progressPending) {
     <div class="sf-rail-sum">
       @if (total === 0) {
         No required fields
@@ -60,7 +60,9 @@
           @if (showErrorDot(i)) {
             <span class="sf-ri-err" title="Has errors"></span>
           }
-          <app-schema-form-ring size="sm" [state]="ringState(i)" [pct]="ringPct(i)"></app-schema-form-ring>
+          @if (!progressPending) {
+            <app-schema-form-ring size="sm" [state]="ringState(i)" [pct]="ringPct(i)"></app-schema-form-ring>
+          }
         }
       </div>
       @if (screen === 'section' && activeIndex === i && cards.length) {

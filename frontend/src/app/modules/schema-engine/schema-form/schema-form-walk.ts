@@ -60,16 +60,18 @@ function walk(
         const enabled = !!field.control && !field.control.disabled;
         const isUnit = !field.isRef || !!field.isArray || isRefLeaf(field.control);
         const hidden = ancestorHidden || !visible || !!field.control?.disabled;
+        const unnamedEmptyTable = !!field.isArray && !field.list?.length && field.previewNamed === false;
+        const previewCells = field.previewNamed === false && !field.field?.required;
         targets.push({
             path: fieldPath.join('.'),
             labels: fieldLabels,
             field,
             control: field.control,
-            requiredUnit: !insideRequiredArray && !hidden && !!field.required && isUnit,
+            requiredUnit: !insideRequiredArray && !hidden && !!field.required && isUnit && !unnamedEmptyTable && !previewCells,
             hidden
         });
         if (field.isArray) {
-            const inside = insideRequiredArray || (!!field.required && visible && enabled);
+            const inside = insideRequiredArray || (!!field.required && visible && enabled && !previewCells);
             (field.list || []).forEach((row, index) => {
                 const rowPath = [...fieldPath, String(index)];
                 const rowLabels = [...fieldLabels, `#${index + 1}`];

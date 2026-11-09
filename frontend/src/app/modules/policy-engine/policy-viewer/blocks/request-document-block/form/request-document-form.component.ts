@@ -180,12 +180,22 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         if (wasRendering && !this.previewRendering && this.screen === 'results') {
             // The form finished rebuilding with the new requirements
             this.refreshIssues();
+            if (this.previewMode) {
+                this.formRoot?.expandPreviewIssues?.([...this.issues, ...this.ruleIssues].map(issue => issue.path));
+            }
         }
         this.changeDetectorRef.markForCheck();
     }
     public previewRequiredFields: string[] | null = null;
     public previewRequiredText = 'Only the fields the calculations read are required.';
     private previewRequest: number = 0;
+    private previewRefreshPending = false;
+    private previewRunning = false;
+    private previewRunningValue: string | undefined;
+    public previewRequirementsStale = false;
+    private previewValues = new Map<string, { value: string | undefined; exists: boolean }>();
+    private previewValueSubscription?: Subscription;
+    private previewRefreshTimer: ReturnType<typeof setTimeout> | null = null;
     public previewMissingFields: string[] = [];
     private previewPreferenceLoaded: boolean = false;
 
@@ -238,12 +248,17 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     /** Sets the fields the calculations read and the form notice that counts them. */
     private setPreviewRequiredFields(value: string[] | null): void {
         this.previewRequiredFields = value;
-        if (!value) {
+        this.capturePreviewValues();
+        this.updatePreviewRequiredText();
+    }
+
+    /** The notice shows the same required count as the form's progress. */
+    private updatePreviewRequiredText(): void {
+        if (!this.previewRequiredFields || !this.completion) {
             this.previewRequiredText = 'Only the fields the calculations read are required.';
             return;
         }
-        // Schema paths only: a 422 also lists indexed row paths for the same fields
-        const count = value.filter((path) => !path.split('.').some(isIndexSegment)).length;
+        const count = this.completion.total;
         this.previewRequiredText = count === 1
             ? 'Only the 1 field the calculation reads is required.'
             : `Only the ${count} fields the calculations read are required.`;
@@ -464,6 +479,8 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         if (this.submitTimer !== null) clearTimeout(this.submitTimer);
         if (this.previewBusyTimer !== null) clearTimeout(this.previewBusyTimer);
+        if (this.previewRefreshTimer !== null) clearTimeout(this.previewRefreshTimer);
+        this.previewValueSubscription?.unsubscribe();
         if (this.previewMode) this.previewRequest++;
         this.destroy$.next(true);
         this.destroy$.unsubscribe();
@@ -480,6 +497,9 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
 
     public initForm($event: any, restorePreview: boolean = true) {
         this.dataForm = $event;
+        this.previewValueSubscription?.unsubscribe();
+        this.capturePreviewValues();
+        this.previewValueSubscription = this.dataForm.valueChanges.subscribe(() => this.onPreviewValuesChanged());
         this.dataForm.valueChanges
             .pipe(takeUntil(this.destroy$))
             .pipe(audit(ev => interval(1000)))
@@ -495,8 +515,110 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         }
     }
 
+    public get previewProgressPending(): boolean {
+        return this.previewRequirementsStale && (this.previewRunning || this.previewRefreshPending);
+    }
+
+    private isPreviewNonTextField(target: IFormTarget): boolean {
+        const field = target.field;
+        return !target.row && !!target.control && (
+            !!field.enum || !!field.remoteLink || (!field.isArray && (field.type === 'boolean'
+                || field.format === 'date' || field.format === 'time' || field.format === 'date-time'
+                || field.customType === 'table'
+                || field.customType === 'geo' || field.customType === 'sentinel'))
+        );
+    }
+
+    private capturePreviewValues(): void {
+        const choices = walkFields(this.formRoot?.model?.controls)
+            .filter(target => this.isPreviewNonTextField(target))
+            .map(target => target.path);
+        this.previewValues = new Map([...new Set([...(this.previewRequiredFields || []), ...choices])].map(path => [
+            path, { value: JSON.stringify(this.dataForm?.get?.(path)?.value), exists: !!this.dataForm?.get?.(path) }
+        ]));
+    }
+
+    private onPreviewValuesChanged(): void {
+        if (!this.previewMode || !this.previewValues?.size || !this.dataForm?.get) {
+            return;
+        }
+        const changed = [...this.previewValues].filter(([path, previous]) => {
+            const control = this.dataForm.get(path);
+            return !!control !== previous.exists || JSON.stringify(control?.value) !== previous.value;
+        }).map(([path]) => path);
+        if (!changed.length) {
+            return;
+        }
+        const structureChanged = changed.some(path => !!this.dataForm.get(path) !== this.previewValues.get(path)?.exists);
+        this.capturePreviewValues();
+        this.previewRequirementsStale = true;
+        this.previewRequest++;
+        this.loading = false;
+        const targets = walkFields(this.formRoot?.model?.controls);
+        if (structureChanged
+            || targets.some(target => changed.includes(target.path) && this.isPreviewNonTextField(target))) {
+            this.schedulePreviewRefresh();
+        }
+        this.changeDetectorRef.markForCheck();
+    }
+
+    public onPreviewInteraction(): void {
+        if (!this.previewMode || (this.previewRunning
+            && this.previewRunningValue === JSON.stringify(this.dataForm.getRawValue()))) {
+            return;
+        }
+        this.previewRequirementsStale = true;
+        this.previewRequest++;
+        this.loading = false;
+        this.schedulePreviewRefresh();
+        this.changeDetectorRef.markForCheck();
+    }
+
+    public onPreviewNavigation(): void {
+        if (this.previewRequirementsStale) {
+            this.onPreviewInteraction();
+        }
+    }
+
+    private schedulePreviewRefresh(): void {
+        if (this.previewRunning && this.previewRunningValue === JSON.stringify(this.dataForm.getRawValue())) {
+            return;
+        }
+        this.previewRefreshPending = true;
+        if (this.previewRefreshTimer != null) {
+            clearTimeout(this.previewRefreshTimer);
+        }
+        this.previewRefreshTimer = setTimeout(() => {
+            this.previewRefreshTimer = null;
+            if (this.previewMode && this.previewRequirementsStale && !this.previewRunning) {
+                this.previewRefreshPending = false;
+                this.capturePreviewValues();
+                void this.runPreview(true);
+            }
+        }, 0);
+    }
+
+    private async refreshStalePreview(): Promise<boolean> {
+        if (!this.previewMode || !this.previewRequirementsStale) {
+            return true;
+        }
+        if (this.previewRefreshTimer != null) {
+            clearTimeout(this.previewRefreshTimer);
+            this.previewRefreshTimer = null;
+        }
+        this.capturePreviewValues();
+        await this.runPreview(true, true);
+        return this.previewMode && !this.previewRequirementsStale;
+    }
+
     public onPresetApplied(): void {
         if (this.previewMode) {
+            if (this.previewRefreshTimer != null) {
+                clearTimeout(this.previewRefreshTimer);
+                this.previewRefreshTimer = null;
+            }
+            this.previewRequirementsStale = true;
+            this.capturePreviewValues();
             void this.runPreview(true);
         }
     }
@@ -774,6 +896,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
 
     public onCompletionChange(completion: IFormCompletion): void {
         this.completion = completion;
+        this.updatePreviewRequiredText();
         this.changeDetectorRef.markForCheck();
     }
 
@@ -834,14 +957,45 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
      * optional sub-schema that was not added. The form can't flag them, so the results list them.
      */
     private unlistedMissingFields(targets: IFormTarget[], listed: IFormIssue[]): IFormIssue[] {
-        const known = new Set([...targets.map((target) => target.path), ...listed.map((issue) => issue.path)]);
-        return this.previewMissingFields
-            .filter((path) => !known.has(path))
-            .map((path) => ({
-                path,
-                label: this.missingFieldLabel(path),
-                message: 'Enter a value'
-            }));
+        const byPath = new Map(targets.map((target) => [target.path, target]));
+        const listedPaths = new Set(listed.map((issue) => issue.path));
+        const isEmptyTable = (target: IFormTarget) => !target.row && !!target.field.isArray && !target.field.list?.length;
+        const result: IFormIssue[] = [];
+        const add = (path: string, message: string) => {
+            if (!listedPaths.has(path) && !result.some((issue) => issue.path === path)) {
+                result.push({ path, label: this.missingFieldLabel(path), message });
+            }
+        };
+        for (const path of this.previewMissingFields) {
+            const own = byPath.get(path);
+            if (own) {
+                if (!own.hidden && isEmptyTable(own)) {
+                    add(path, 'Add an entry');
+                } else if (!own.hidden && !own.control) {
+                    add(path, 'Enter a value');
+                }
+                continue;
+            }
+            const parts = path.split('.');
+            let length = parts.length - 1;
+            let parent = byPath.get(parts.slice(0, length).join('.'));
+            while (!parent && length > 1) {
+                length--;
+                parent = byPath.get(parts.slice(0, length).join('.'));
+            }
+            if (!parent) {
+                if (!parts.some(isIndexSegment)) {
+                    add(path, 'Enter a value');
+                }
+            } else if (!parent.hidden) {
+                if (!parts.slice(length).some(isIndexSegment)) {
+                    add(path, 'Enter a value');
+                } else if (isIndexSegment(parts[length]) && isEmptyTable(parent)) {
+                    add(parent.path, 'Add an entry');
+                }
+            }
+        }
+        return result;
     }
 
     /** A row index reads as `#n`; the schema path up to each other segment gives that field's name. */
@@ -861,6 +1015,9 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     private showResults(): void {
         this.formRoot?.revealErrors(false);
         this.refreshIssues();
+        if (this.previewMode) {
+            this.formRoot?.expandPreviewIssues?.([...this.issues, ...this.ruleIssues].map(issue => issue.path));
+        }
         this.screen = 'results';
     }
 
@@ -881,11 +1038,33 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         if (this.loading || this.isPreviewBusy) {
             return;
         }
-        if (!this.dataForm.valid) {
+        const refreshed = this.previewMode && this.previewRequirementsStale;
+        if (!(await this.refreshStalePreview())) {
+            return;
+        }
+        if (!(await this.isValidForPreview(refreshed))) {
             this.showResults();
             return;
         }
         await this.runPreview(false);
+    }
+
+    /** In Preview an invalid form first asks again which fields its current values need. */
+    private async isValidForPreview(refreshed: boolean = false): Promise<boolean> {
+        if (this.dataForm.valid) {
+            return true;
+        }
+        if (!this.previewMode) {
+            return false;
+        }
+        if (!refreshed) {
+            await this.runPreview(true, true);
+        }
+        if (!this.previewMode) {
+            return false;
+        }
+        this.changeDetectorRef.detectChanges();
+        return this.dataForm.valid;
     }
 
     public showForm(): void {
@@ -916,7 +1095,11 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
             await this.onSubmit(true);
             return;
         }
-        if (!this.dataForm.valid) {
+        const refreshed = this.previewMode && this.previewRequirementsStale;
+        if (!(await this.refreshStalePreview())) {
+            return;
+        }
+        if (!(await this.isValidForPreview(refreshed))) {
             this.showResults();
             return;
         }
@@ -962,6 +1145,11 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         this.previewMode = enabled;
         if (!enabled) this.previewRendering = false;
         if (!enabled) {
+            if (this.previewRefreshTimer != null) {
+                clearTimeout(this.previewRefreshTimer);
+                this.previewRefreshTimer = null;
+            }
+            this.previewRequirementsStale = false;
             this.previewRequest++;
             this.loading = false;
             this.setPreviewRequiredFields(null);
@@ -979,7 +1167,9 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         await this.runPreview(true);
     }
 
-    private async runPreview(previewFields: boolean): Promise<void> {
+    private async runPreview(previewFields: boolean, listMissing: boolean = false): Promise<void> {
+        this.previewRunning = true;
+        this.previewRunningValue = JSON.stringify(this.dataForm.getRawValue());
         const request = ++this.previewRequest;
         const preset = this.presetDocument;
         const current = () => request === this.previewRequest && preset === this.presetDocument;
@@ -1000,7 +1190,10 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
                 return;
             }
             this.setPreviewRequiredFields(this.calculationPreview.updateRequiredFields(this.previewRequiredFields, result));
-            this.previewMissingFields = [];
+            if (previewFields) {
+                this.previewRequirementsStale = false;
+            }
+            this.previewMissingFields = listMissing ? [...result.missingFields] : [];
             if (previewFields) {
                 this.previewDiscoveryWarning = this.calculationPreview.needsDiscoveryWarning(result);
             } else {
@@ -1014,9 +1207,16 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
                 this.setPreviewRequiredFields(required);
                 this.previewMissingFields = [...validation.missingFields];
                 if (!previewFields) {
+                    await this.runPreview(true, true);
+                    if (!this.previewMode || this.previewRequest !== request + 1) {
+                        return;
+                    }
+                    this.setPreviewRequiredFields([...new Set([...(this.previewRequiredFields ?? []), ...required])].sort());
+                    this.previewMissingFields = [...new Set([...validation.missingFields, ...this.previewMissingFields])];
+                    const after = this.previewRequiredFields ?? [];
                     // New requirements first reach the form, so the results list what is missing.
                     // The same requirements need no pass: the form already has them.
-                    const unchanged = !!before && before.length === required.length && before.every((path, i) => path === required[i]);
+                    const unchanged = !!before && before.length === after.length && before.every((path, i) => path === after[i]);
                     if (!unchanged) {
                         this.changeDetectorRef.detectChanges();
                     }
@@ -1030,8 +1230,12 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
             }
             console.error(error);
         } finally {
+            this.previewRunning = false;
             if (current()) {
                 this.loading = false;
+            }
+            if (this.previewMode && this.previewRequirementsStale && this.previewRefreshPending) {
+                this.schedulePreviewRefresh();
             }
         }
     }

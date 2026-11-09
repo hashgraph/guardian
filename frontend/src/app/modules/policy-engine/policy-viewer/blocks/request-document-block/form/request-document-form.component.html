@@ -331,6 +331,7 @@
               [requiredFields]="previewRequiredFields"
               [previewMissingFields]="previewMissingFields"
               [previewActionsDisabled]="isPreviewBusy"
+              [previewRequirementsStale]="previewProgressPending"
               [saveShown]="allowDraft"
               [overviewHint]="edit ? null : 'Complete each section, then validate and create the document. Your progress is autosaved in this browser.'"
               [comesFromDialog]="true"
@@ -341,6 +342,8 @@
               (form)="initForm($event)"
               (presetApplied)="onPresetApplied()"
               (previewBusyChange)="onPreviewRenderingChange($event)"
+              (previewInteraction)="onPreviewInteraction()"
+              (previewNavigation)="onPreviewNavigation()"
               (buttons)="onChangeButtons($event)"
               (completionChange)="onCompletionChange($event)"
               (cancelBtnEvent)="handleCancelBtnEvent($event, this)"
@@ -354,7 +357,7 @@
                   <div class="form-notice form-notice-preview">
                     <i class="pi pi-calculator" aria-hidden="true"></i>
                     <span class="form-notice-text">
-                      <b>Calculation preview is on.</b> Preview runs the policy's calculations on these values and shows the documents they produce. Nothing is created, sent to Hedera or minted. {{ previewRequiredText }}
+                      <b>Calculation preview is on.</b> Preview runs the policy's calculations on these values and shows the documents they produce. Nothing is created, sent to Hedera or minted. {{ previewProgressPending ? 'Required fields will be checked before Preview.' : previewRequiredText }}
                       @if (previewDiscoveryWarning) {
                         <br>Could not determine every field the calculation needs. Fill in the marked fields and run Preview again.
                       }
@@ -529,7 +532,7 @@
         </button>
       </div>
     }
-      @if (step === 'fill' && completion && completion.total > 0) {
+      @if (step === 'fill' && !previewProgressPending && completion && completion.total > 0) {
         <div class="form-progress">
           <span>{{ completion.answered }} of {{ completion.total }} required answered</span>
           @if (completion.answered < completion.total) {

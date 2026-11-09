@@ -8,7 +8,7 @@ import {
     UnitSystem
 } from '@guardian/interfaces';
 import { DialogService } from 'primeng/dynamicdialog';
-import { Subject, Subscription, firstValueFrom, takeUntil } from 'rxjs';
+import { Subject, Subscription, firstValueFrom, merge, takeUntil } from 'rxjs';
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from '../../../services/api';
@@ -16,7 +16,7 @@ import { FormFormulas } from 'src/app/modules/formulas/models/form-formulas';
 import { FormulaItem } from 'src/app/modules/formulas/models/formula-tree';
 import { FieldForm, IFieldControl, IFieldIndexControl } from '../schema-form-model/field-form';
 import { getErrorMessage, showError } from './schema-form-errors';
-import { countRequired } from './schema-form-completion';
+import { countRequired, requiredWithoutControl } from './schema-form-completion';
 import { baseMetaTags, metaType } from './schema-form-metadata';
 import { recordSummary } from './schema-form-records';
 import { getMinutesAgoStream } from 'src/app/utils/autosave-utils';
@@ -101,6 +101,7 @@ export class SchemaFormComponent implements OnInit, DoCheck {
     @Input() previewMissingFieldIds: string[] = [];
     @Input() previewValidation: boolean = false;
     @Input() previewBusy: boolean = false;
+    @Input() progressPending: boolean = false;
 
     @Output() change = new EventEmitter<Schema | null>();
     @Output() destroy = new EventEmitter<void>();
@@ -110,6 +111,8 @@ export class SchemaFormComponent implements OnInit, DoCheck {
     @Output() updatableBtnEvent = new EventEmitter();
     @Output() buttons = new EventEmitter<any>();
     @Output() previewLoadingChange = new EventEmitter<boolean>();
+    @Output() previewInteraction = new EventEmitter<void>();
+    @Output() previewNavigation = new EventEmitter<void>();
 
     public minutesAgo$ = getMinutesAgoStream(() => this.lastSavedAt);
 
@@ -389,12 +392,14 @@ export class SchemaFormComponent implements OnInit, DoCheck {
 
     public addGroup(item: IFieldControl<any>) {
         this.formModel?.addGroup(item);
+        if (this.previewValidation) this.previewInteraction.emit();
         this.change.emit();
         this.changeDetectorRef.detectChanges();
     }
 
     public addItem(item: IFieldControl<UntypedFormArray>) {
         this.formModel?.addItem(item);
+        if (this.previewValidation) this.previewInteraction.emit();
         if (this.previewValidation) this.prepareOpenPreviewSections();
         setTimeout(() => {
             this.formModel?.updateValueAndValidity();
@@ -407,6 +412,7 @@ export class SchemaFormComponent implements OnInit, DoCheck {
             event.stopPropagation();
         }
         this.formModel?.removeGroup(item);
+        if (this.previewValidation) this.previewInteraction.emit();
         this.formModel?.updateValueAndValidity();
         this.changeDetectorRef.detectChanges();
         this.change.emit();
@@ -445,6 +451,7 @@ export class SchemaFormComponent implements OnInit, DoCheck {
 
     private applyRemoveItem(item: IFieldControl<any>, listItem: IFieldIndexControl<any>): void {
         this.formModel?.removeItem(item, listItem);
+        if (this.previewValidation) this.previewInteraction.emit();
         this.formModel?.updateValueAndValidity();
         this.changeDetectorRef.detectChanges();
         this.change.emit();
@@ -750,7 +757,9 @@ export class SchemaFormComponent implements OnInit, DoCheck {
         if (cached && cached.control === control) {
             return cached;
         }
-        const { answered, total } = countRequired(item.model?.controls);
+        const { answered, total: own } = countRequired(item.model?.controls);
+        const paths = item.model?.previewRequiredPaths?.();
+        const total = own + (paths ? requiredWithoutControl(item.model.controls, paths).length : 0);
         const entry = { left: total - answered, total, control };
         this.requiredCache.set(item, entry);
         this.requiredSubs.get(item)?.unsubscribe();
@@ -778,7 +787,9 @@ export class SchemaFormComponent implements OnInit, DoCheck {
         this.controlsChangedSub?.unsubscribe();
         this.controlsChangedFor = root;
         this.clearRequiredCache();
-        this.controlsChangedSub = root?.controlsChanged$.subscribe(() => this.clearRequiredCache());
+        this.controlsChangedSub = root
+            ? merge(root.controlsChanged$, root.requirementsChanged$).subscribe(() => this.clearRequiredCache())
+            : undefined;
     }
 
     public recordText(item: IFieldControl<any>, listItem: IFieldIndexControl<any>): { title: string; sub: string } {
@@ -812,6 +823,7 @@ export class SchemaFormComponent implements OnInit, DoCheck {
     public toggleOpen(item: IFieldControl<any> | IFieldIndexControl<any>, open: boolean): void {
         item.open = open;
         this.preparePreviewSection(item);
+        if (open && this.previewValidation) this.previewNavigation.emit();
     }
 
     public isRulesStatus(item: IFieldControl<any>) {
@@ -1101,6 +1113,7 @@ export class SchemaFormComponent implements OnInit, DoCheck {
                     }
                     control.markAsTouched();
                     listItem.fileUploading = false;
+                    if (this.previewValidation) this.previewInteraction.emit();
                 }, (error) => {
                     listItem.fileUploading = false;
                 });

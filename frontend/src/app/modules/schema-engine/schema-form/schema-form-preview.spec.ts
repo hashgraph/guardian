@@ -59,6 +59,64 @@ describe('SchemaFormComponent Preview table validation', () => {
         return { fixture, first, second };
     };
 
+    it('reports opening a section as navigation only in preview mode', () => {
+        const { fixture } = render();
+        const component = fixture.componentInstance;
+        const navigation = spyOn(component.previewNavigation, 'emit');
+        const interaction = spyOn(component.previewInteraction, 'emit');
+        const field = component.formModel.controls![0];
+        component.toggleOpen(field, false);
+        expect(navigation).not.toHaveBeenCalled();
+        component.toggleOpen(field, true);
+        expect(navigation).toHaveBeenCalledTimes(1);
+        component.previewValidation = false;
+        component.toggleOpen(field, true);
+        expect(navigation).toHaveBeenCalledTimes(1);
+        expect(interaction).not.toHaveBeenCalled();
+    });
+
+    it('keeps the overview and hides only its counters while requirements are checked', fakeAsync(() => {
+        TestBed.configureTestingModule({
+            declarations: [SchemaFormRootComponent, SchemaFormComponent, FormTextareaComponent],
+            imports: [CommonModule, ReactiveFormsModule, AccordionModule, TableModule],
+            providers: [
+                UntypedFormBuilder,
+                { provide: IPFSService, useValue: {} },
+                { provide: DialogService, useValue: {} },
+            ],
+            schemas: [NO_ERRORS_SCHEMA],
+        });
+        const fixture = TestBed.createComponent(SchemaFormRootComponent);
+        fixture.componentRef.setInput('schema', new Schema({ iri: '#input', document: {
+            $id: '#input', type: SchemaDataTypes.object,
+            properties: { section: { $ref: '#section', title: 'Section', description: 'Section' } },
+            required: ['section'],
+            $defs: { '#section': { $id: '#section', type: SchemaDataTypes.object,
+                properties: { rate: { type: SchemaDataTypes.number, title: 'Rate', description: 'Rate' } },
+                required: ['rate'] } },
+        } }));
+        fixture.componentRef.setInput('requiredFields', ['section.rate']);
+        fixture.detectChanges();
+        tick(256);
+        fixture.detectChanges();
+        const host: HTMLElement = fixture.nativeElement;
+        const total = () => host.querySelector<HTMLElement>('.sf-overview-total')!;
+        const overview = () => host.querySelector('app-schema-form-overview');
+        expect(fixture.componentInstance.screen).toBe('overview');
+        expect(total().style.visibility).toBe('');
+        fixture.componentRef.setInput('previewRequirementsStale', true);
+        fixture.detectChanges();
+        expect(overview()).not.toBeNull();
+        expect(fixture.nativeElement.querySelector('.sf-overview-title')).not.toBeNull();
+        expect(total().style.visibility).toBe('hidden');
+        expect(fixture.nativeElement.textContent).not.toContain('Required fields will be checked before Preview.');
+        fixture.componentRef.setInput('previewRequirementsStale', false);
+        fixture.detectChanges();
+        expect(total().style.visibility).toBe('');
+        fixture.destroy();
+        tick(256);
+    }));
+
     it('renders a required Preview section before its optional sub-form is added', () => {
         const { fixture } = render();
         const schema = new Schema({ iri: '#optional', document: {

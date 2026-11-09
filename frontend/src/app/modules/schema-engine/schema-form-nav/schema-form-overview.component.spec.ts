@@ -72,6 +72,23 @@ describe('SchemaFormOverviewComponent', () => {
         expect(el('.sf-section-links button')!.textContent).toContain('Document details →');
     });
 
+    it('hides the counters of the cards but keeps the cards while progress is pending', () => {
+        const card: IOverviewCard = {
+            id: 'a', title: 'Alpha', meta: '1 of 2 required answered', pill: { text: 'In progress' },
+            ring: { pct: 50, done: false, optional: false }, action: 'Continue'
+        };
+        create({ cards: [card], progressPending: true });
+        expect(all('.sf-overview-card').length).toBe(1);
+        expect(el('.sf-overview-card-name')!.textContent).toContain('Alpha');
+        expect(el('.sf-overview-card-go')!.textContent).toBe('Continue →');
+        expect(el('.sf-overview-card-top')!.style.visibility).toBe('hidden');
+        expect(el('.sf-overview-card-meta')!.style.visibility).toBe('hidden');
+        fixture.componentRef.setInput('progressPending', false);
+        fixture.detectChanges();
+        expect(el('.sf-overview-card-top')!.style.visibility).toBe('');
+        expect(el('.sf-overview-card-meta')!.style.visibility).toBe('');
+    });
+
     it('is inert while locked', () => {
         create({ locked: true });
         expect(el('.sf-overview')!.hasAttribute('inert')).toBeTrue();
