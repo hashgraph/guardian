@@ -24,6 +24,7 @@ import { RichTextEditorComponent } from 'src/app/modules/schema-engine/rich-text
 import { markdownToHtml } from 'src/app/modules/schema-engine/rich-text-editor/markdown';
 import { SchemaTemplatesService } from 'src/app/services/schema-templates.service';
 import { ToastService } from 'src/app/services/toast.service';
+import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { updateOverflowTitle } from 'src/app/utils/overflow-title';
 import { FormulasService } from 'src/app/services/formulas.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -1555,6 +1556,60 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public switchSchema(schema: Schema): void {
+        const targetId = schema.id || (schema as any)._id;
+        const isSame = !!targetId && targetId === this.selectedSchemaId;
+        if (isSame || !this.hasUnsavedChanges || this.isTemplateReadonly || this.isTemplatePreviewMode) {
+            this.doSwitchSchema(schema);
+            return;
+        }
+        if (this.isSaving) { return; }
+        const canSave = this.allDirtySchemasValid && !this.isTemplateConfigMode;
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Unsaved changes',
+                text: canSave
+                    ? 'You have unsaved changes. Do you want to save them before opening another schema?'
+                    : 'Your changes have errors and can\'t be saved. Discard them and open another schema?',
+                buttons: [
+                    { name: 'Stay', class: 'secondary' },
+                    { name: 'Discard changes', class: 'delete' },
+                    ...(canSave ? [{ name: 'Save and open', class: 'primary' }] : []),
+                ],
+            },
+        })!;
+        dialogRef.onClose.pipe(takeUntil(this.destroy$)).subscribe((result: string) => {
+            if (result === 'Discard changes') {
+                this.discardUnsavedChanges();
+                this.doSwitchSchema(schema);
+            } else if (result === 'Save and open') {
+                this.saveAll(() => this.doSwitchSchema(schema));
+            }
+        });
+    }
+
+    /** Drops every unsaved edit and puts the sidebar list back to the server copies. */
+    private discardUnsavedChanges(): void {
+        for (const key of Array.from(this.dirtySchemaIds)) {
+            if (this.newSchemaKeys.has(key)) {
+                const uuid = key.slice(4);
+                this.schemas = this.schemas.filter(s => (s as any).uuid !== uuid);
+                this.newSchemaKeys.delete(key);
+            } else {
+                this.fieldFormulas?.discard(key);
+            }
+        }
+        this.fieldFormulas?.discard(this.selectedSchemaId);
+        this.dirtySchemaIds.clear();
+        this.pinnedSubSchemas.clear();
+        // edited instances are still in the list; reload so they show the saved state
+        this.schemasPage = 0;
+        this.loadSchemas(this.topic);
+    }
+
+    private doSwitchSchema(schema: Schema): void {
         const previousContext = this.currentContextSchema;
         const id = schema.id || (schema as any)._id;
         if (!id) {
@@ -2153,7 +2208,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
     }
 
-    public saveAll(): void {
+    public saveAll(onSaved?: () => void): void {
         if (this.isTemplatePreviewMode) {
             return;
         }
@@ -2187,7 +2242,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const hasFormulaChanges = !!this.fieldFormulas?.hasPending;
         if (!toSave.length && !toCreate.length) {
             if (hasFormulaChanges) {
-                this.saveFieldFormulas();
+                this.saveFieldFormulas(onSaved);
             }
             return;
         }
@@ -2316,7 +2371,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     // what was just saved becomes the new baseline
                     allSchemas.forEach(schema => this.snapshotSchema(schema));
                     if (hasFormulaChanges) {
-                        this.saveFieldFormulas();
+                        this.saveFieldFormulas(onSaved);
+                    } else {
+                        onSaved?.();
                     }
                 },
                 error: (error) => { this.isSaving = false; this.reportError('Save all', error); }
@@ -2327,12 +2384,12 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
      * Writes the formula assignments made in the field panel. Runs after the schemas are
      * saved, so the links use the saved schema iri. Failed changes stay pending for a retry.
      */
-    private saveFieldFormulas(): void {
+    private saveFieldFormulas(onSaved?: () => void): void {
         this.isSaving = true;
         this.fieldFormulas.save()
             .pipe(takeUntil(this.destroy$))
             .subscribe({
-                next: () => { this.isSaving = false; },
+                next: () => { this.isSaving = false; onSaved?.(); },
                 error: (error) => { this.isSaving = false; this.reportError('Save formula assignments', error); }
             });
     }
@@ -3956,7 +4013,17 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.selectedField = null;
         // Use Schema.fields from this.schemas so edits are tracked on the sub-schema entity.
         // Fall back to field.fields (parseFields clone) for built-in refs (GeoJSON, Sentinel).
-        const subSchema = this.schemas.find(s => s.iri === field.type);
+        let subSchema = this.schemas.find(s => s.iri === field.type);
+        if (!subSchema && field.type) {
+            const resolved = this._subSchemasByIri.get(field.type);
+            if (resolved && (resolved.id || (resolved as any)._id)) {
+                this.schemas = [...this.schemas, resolved];
+                // an empty parse is not a baseline; the fill-from-clone step below takes it
+                if (resolved.fields?.length) { this.rebaselineLazyLoadedSchema(resolved); }
+                subSchema = resolved;
+            }
+        }
+        if (subSchema) { this.pinSubSchema(subSchema); }
         // If the sidebar schema has no fields but the withDefs-parsed root resolved them via
         // $defs, initialise the sidebar schema's fields from the clone so that drillCurrentFields
         // and subSchema.fields remain the same reference and saveAll can find the edits.
@@ -3986,7 +4053,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (!this.canEnterSubSchema(field)) { return; }
         const subSchema = this.resolveRefSchema(field.type);
         if (subSchema) {
-            this.switchSchema(subSchema);
+            this.doSwitchSchema(subSchema);
         }
     }
 
@@ -5247,6 +5314,34 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.markDirty();
     }
 
+    // Drilled sub-schemas stay in the sidebar list across reloads (search, topic change) while
+    // they are open or dirty; otherwise the reload drops them and their edits are pruned.
+    private pinnedSubSchemas = new Map<string, Schema>();
+
+    private pinSubSchema(schema: Schema): void {
+        const id = schema.id || (schema as any)._id;
+        if (id) { this.pinnedSubSchemas.set(id, schema); }
+    }
+
+    private applyPinnedSubSchemas(): void {
+        const open = new Set(this.drillStack.map(e => e.schemaIri));
+        for (const [id, schema] of Array.from(this.pinnedSubSchemas)) {
+            if (!this.dirtySchemaIds.has(id) && !(schema.iri && open.has(schema.iri))) {
+                this.pinnedSubSchemas.delete(id);
+                continue;
+            }
+            this.upsertInSidebar(schema);
+        }
+    }
+
+    public openDrilledSchemaAsCurrent(): void {
+        const schema = this.drilledSchema;
+        if (!schema) { return; }
+        this.pinSubSchema(schema);
+        this.upsertInSidebar(schema);
+        this.switchSchema(schema);
+    }
+
     private upsertInSidebar(schema: Schema): void {
         const schemaId = schema.id || (schema as any)._id;
         const schemaUuid = (schema as any).uuid;
@@ -5379,6 +5474,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     });
                     this.loadAppliedSchemaTemplate();
                     if (this.selectedSchema) { this.upsertInSidebar(this.selectedSchema); }
+                    this.applyPinnedSubSchemas();
                     this.pruneDirtySchemaIds();
                 },
                 error: () => {

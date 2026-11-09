@@ -1894,6 +1894,26 @@ $sc-accent: var(--guardian-schema-accent, var(--color-primary, #4169E2));
     &--current { color: $sc-accent; font-weight: 600; cursor: default; &:hover { background: none; } }
 }
 
+.sc-drill-open-current {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: $sc-accent;
+    background: none;
+    border: 1px solid color-mix(in srgb, $sc-accent 35%, var(--guardian-border-color, #E1E7EF));
+    border-radius: 6px;
+    padding: 3px 10px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.12s;
+
+    i { font-size: 12px; }
+    &:hover { background: color-mix(in srgb, $sc-accent 10%, transparent); }
+}
+
 .sc-drill-sep {
     font-size: 10px;
     color: color-mix(in srgb, $sc-accent 40%, var(--guardian-border-color, #E1E7EF));

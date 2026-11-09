@@ -821,6 +821,14 @@
                                     {{ entry.fieldLabel }}
                                 </button>
                             }
+                            @if (drilledSchema?.id || $any(drilledSchema)?._id) {
+                                <button class="sc-drill-open-current"
+                                        title="Open this sub-schema as the root schema"
+                                        (click)="openDrilledSchemaAsCurrent()">
+                                    <i class="pi pi-external-link"></i>
+                                    Open as root
+                                </button>
+                            }
                         </div>
 
                         <!-- ── Drill sub-schema properties panel ── -->
