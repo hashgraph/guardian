@@ -10839,9 +10839,9 @@ __metadata:
   linkType: hard
 
 "module-alias@npm:^2.2.2":
-  version: 2.2.3
-  resolution: "module-alias@npm:2.2.3"
-  checksum: 10c0/47dc5b6d04f6e7df0ff330ca9b2a37c688a682ed661e9432b0b327e1e6c43eedad052151b8d50d6beea8b924828d2a92fa4625c18d651bf2d93d8f03aa0172fa
+  version: 2.3.5
+  resolution: "module-alias@npm:2.3.5"
+  checksum: 10c0/e691fb9d17fa472cfbb58460fd58bc73489c31941bdf7279a204c16e7a346cfd765e51c32a60db6e98beea165f6022e23acf857e2a3c3189d6a51dad4d1b1505
   languageName: node
   linkType: hard
 
