@@ -820,14 +820,14 @@
                                     (click)="!$last ? drillTo(i) : null">
                                     {{ entry.fieldLabel }}
                                 </button>
-                            }
-                            @if (drilledSchema?.id || $any(drilledSchema)?._id) {
-                                <button class="sc-drill-open-current"
-                                        title="Open this sub-schema as the root schema"
-                                        (click)="openDrilledSchemaAsCurrent()">
-                                    <i class="pi pi-external-link"></i>
-                                    Open as root
-                                </button>
+                                @if ($last && (drilledSchema?.id || $any(drilledSchema)?._id)) {
+                                    <button class="sc-drill-open-tab"
+                                            title="Open this sub-schema as the root schema in a new tab. The saved version is opened, so unsaved changes made here are not included."
+                                            aria-label="Open this sub-schema as the root schema in a new tab"
+                                            (click)="openDrilledSchemaInNewTab()">
+                                        <i class="pi pi-external-link"></i>
+                                    </button>
+                                }
                             }
                         </div>
 

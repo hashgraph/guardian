@@ -4,7 +4,7 @@ import { HttpResponse } from '@angular/common/http';
 import { EMPTY, Observable, Subject, Subscription, firstValueFrom, forkJoin, of } from 'rxjs';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { SchemaFormPreferencesService } from 'src/app/services/schema-form-preferences.service';
-import { catchError, debounceTime, distinctUntilChanged, map, shareReplay, switchMap, takeUntil } from 'rxjs/operators';
+import { catchError, debounceTime, distinctUntilChanged, map, shareReplay, switchMap, take, takeUntil } from 'rxjs/operators';
 import { DefaultFieldDictionary, DocumentGenerator, IFormulaLink, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ModuleStatus, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus, ISchemaArrayDependency, ISchemaArrayDependencyMapping, DEFAULT_IWA_VERSION, IwaVersion, resolveIwaVersion, IPropertySuggestionResult, IPropertySuggestionRequest } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
 import { TagsService } from 'src/app/services/tag.service';
@@ -1555,14 +1555,56 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return true;
     }
 
+    /** Set right before a navigation that follows a successful save, so it is not asked about again. */
+    private skipLeaveGuard = false;
+
+    private get needsLeaveConfirmation(): boolean {
+        return this.hasUnsavedChanges && !this.isTemplateReadonly && !this.isTemplatePreviewMode;
+    }
+
     public switchSchema(schema: Schema): void {
         const targetId = schema.id || (schema as any)._id;
         const isSame = !!targetId && targetId === this.selectedSchemaId;
-        if (isSame || !this.hasUnsavedChanges || this.isTemplateReadonly || this.isTemplatePreviewMode) {
+        if (isSame || !this.needsLeaveConfirmation) {
             this.doSwitchSchema(schema);
             return;
         }
         if (this.isSaving) { return; }
+        this.askUnsavedAction().subscribe((action) => {
+            if (action === 'discard') {
+                this.discardUnsavedChanges(true);
+                this.doSwitchSchema(schema);
+            } else if (action === 'save') {
+                this.saveAll(() => this.doSwitchSchema(schema));
+            }
+        });
+    }
+
+    /** Route guard hook: asks before the page is left with unsaved changes. */
+    public canLeave(): Observable<boolean> | boolean {
+        if (this.skipLeaveGuard || !this.needsLeaveConfirmation) { return true; }
+        if (this.isSaving) { return false; }
+        return this.askUnsavedAction().pipe(
+            switchMap((action) => {
+                if (action === 'discard') {
+                    this.discardUnsavedChanges(false);
+                    return of(true);
+                }
+                if (action === 'save') {
+                    return new Observable<boolean>((subscriber) => {
+                        this.saveAll(
+                            () => { subscriber.next(true); subscriber.complete(); },
+                            () => { subscriber.next(false); subscriber.complete(); }
+                        );
+                    });
+                }
+                return of(false);
+            })
+        );
+    }
+
+    /** Closing the dialog with the X counts as staying. */
+    private askUnsavedAction(): Observable<'save' | 'discard' | 'cancel'> {
         const canSave = this.allDirtySchemasValid && !this.isTemplateConfigMode;
         const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
             showHeader: false,
@@ -1574,24 +1616,20 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     ? 'You have unsaved changes. Do you want to save them before opening another schema?'
                     : 'Your changes have errors and can\'t be saved. Discard them and open another schema?',
                 buttons: [
-                    { name: 'Stay', class: 'secondary' },
-                    { name: 'Discard changes', class: 'delete' },
+                    { name: 'Discard and open', class: 'delete' },
                     ...(canSave ? [{ name: 'Save and open', class: 'primary' }] : []),
                 ],
             },
         })!;
-        dialogRef.onClose.pipe(takeUntil(this.destroy$)).subscribe((result: string) => {
-            if (result === 'Discard changes') {
-                this.discardUnsavedChanges();
-                this.doSwitchSchema(schema);
-            } else if (result === 'Save and open') {
-                this.saveAll(() => this.doSwitchSchema(schema));
-            }
-        });
+        return dialogRef.onClose.pipe(
+            take(1),
+            map((result: string): 'save' | 'discard' | 'cancel' =>
+                result === 'Save and open' ? 'save' : result === 'Discard and open' ? 'discard' : 'cancel')
+        );
     }
 
-    /** Drops every unsaved edit and puts the sidebar list back to the server copies. */
-    private discardUnsavedChanges(): void {
+    /** Drops every unsaved edit; reloads the sidebar list so edited copies show the saved state. */
+    private discardUnsavedChanges(reloadList: boolean): void {
         for (const key of Array.from(this.dirtySchemaIds)) {
             if (this.newSchemaKeys.has(key)) {
                 const uuid = key.slice(4);
@@ -1603,10 +1641,12 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
         this.fieldFormulas?.discard(this.selectedSchemaId);
         this.dirtySchemaIds.clear();
+        this.templateConfigDirty = false;
         this.pinnedSubSchemas.clear();
-        // edited instances are still in the list; reload so they show the saved state
-        this.schemasPage = 0;
-        this.loadSchemas(this.topic);
+        if (reloadList) {
+            this.schemasPage = 0;
+            this.loadSchemas(this.topic);
+        }
     }
 
     private doSwitchSchema(schema: Schema): void {
@@ -2208,7 +2248,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
     }
 
-    public saveAll(onSaved?: () => void): void {
+    public saveAll(onSaved?: () => void, onFailed?: () => void): void {
         if (this.isTemplatePreviewMode) {
             return;
         }
@@ -2219,7 +2259,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             this.saveTemplateConfig();
             return;
         }
-        if (!this.hasUnsavedChanges || this.isSaving || !this.allDirtySchemasValid) { return; }
+        if (!this.hasUnsavedChanges || this.isSaving || !this.allDirtySchemasValid) { onFailed?.(); return; }
         // Iterate dirtyIds and prefer selectedSchema over the sidebar copy to avoid
         // saving a stale object when loadSchemas() ran after the user started editing.
         const selId = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
@@ -2242,7 +2282,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const hasFormulaChanges = !!this.fieldFormulas?.hasPending;
         if (!toSave.length && !toCreate.length) {
             if (hasFormulaChanges) {
-                this.saveFieldFormulas(onSaved);
+                this.saveFieldFormulas(onSaved, onFailed);
+            } else {
+                onSaved?.();
             }
             return;
         }
@@ -2253,6 +2295,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 message: 'Formula assignments can\'t be saved together with a new schema version. ' +
                     'Remove the unsaved assignments, save the new version, then assign the formulas.'
             });
+            onFailed?.();
             return;
         }
         const changedSchemas = [...toCreate, ...toSave];
@@ -2265,12 +2308,14 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 this.reportError('Save all', {
                     message: `Relationships for schema "${missing.name}" have not loaded. Wait for loading to finish before saving.`
                 });
+                onFailed?.();
                 return;
             }
             if (this.arrayDependencyConflict(this.arrayDependencyTree(schema))) {
                 this.reportError('Save all', {
                     message: `Schema "${schema.name}" has different relationships for the same dependent array. Remove the conflicting relationship before saving.`
                 });
+                onFailed?.();
                 return;
             }
         }
@@ -2334,6 +2379,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     .subscribe({
                         next: result => {
                             this.isSaving = false;
+                            this.skipLeaveGuard = true;
                             const returnUrl = location.origin + this.configurationRoute +
                                 '?type=' + (this.type || '') +
                                 (this.topic ? '&topic=' + this.topic : '');
@@ -2341,13 +2387,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                                 queryParams: { last: btoa(returnUrl) },
                             });
                         },
-                        error: (error) => { this.isSaving = false; this.reportError('Save all', error); },
+                        error: (error) => { this.isSaving = false; this.reportError('Save all', error); onFailed?.(); },
                     });
             };
             if (createObs.length) {
                 forkJoin(createObs).pipe(takeUntil(this.destroy$)).subscribe({
                     next: triggerNewVersion,
-                    error: (error) => { this.isSaving = false; this.reportError('Save all', error); },
+                    error: (error) => { this.isSaving = false; this.reportError('Save all', error); onFailed?.(); },
                 });
             } else {
                 triggerNewVersion();
@@ -2371,12 +2417,12 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     // what was just saved becomes the new baseline
                     allSchemas.forEach(schema => this.snapshotSchema(schema));
                     if (hasFormulaChanges) {
-                        this.saveFieldFormulas(onSaved);
+                        this.saveFieldFormulas(onSaved, onFailed);
                     } else {
                         onSaved?.();
                     }
                 },
-                error: (error) => { this.isSaving = false; this.reportError('Save all', error); }
+                error: (error) => { this.isSaving = false; this.reportError('Save all', error); onFailed?.(); }
             });
     }
 
@@ -2384,13 +2430,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
      * Writes the formula assignments made in the field panel. Runs after the schemas are
      * saved, so the links use the saved schema iri. Failed changes stay pending for a retry.
      */
-    private saveFieldFormulas(onSaved?: () => void): void {
+    private saveFieldFormulas(onSaved?: () => void, onFailed?: () => void): void {
         this.isSaving = true;
         this.fieldFormulas.save()
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: () => { this.isSaving = false; onSaved?.(); },
-                error: (error) => { this.isSaving = false; this.reportError('Save formula assignments', error); }
+                error: (error) => { this.isSaving = false; this.reportError('Save formula assignments', error); onFailed?.(); }
             });
     }
 
@@ -5334,12 +5380,20 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
     }
 
-    public openDrilledSchemaAsCurrent(): void {
+    /** Opens the drilled sub-schema as the root schema of a new browser tab (saved state). */
+    public openDrilledSchemaInNewTab(): void {
         const schema = this.drilledSchema;
-        if (!schema) { return; }
-        this.pinSubSchema(schema);
-        this.upsertInSidebar(schema);
-        this.switchSchema(schema);
+        const id = schema?.id || (schema as any)?._id;
+        if (!id) { return; }
+        const tree = this.router.createUrlTree([this.configurationRoute], {
+            queryParams: {
+                schemaId: id,
+                type: this.type || undefined,
+                topic: this.topic || undefined,
+                templateId: this.templateId || undefined,
+            },
+        });
+        window.open(this.router.serializeUrl(tree), '_blank');
     }
 
     private upsertInSidebar(schema: Schema): void {
