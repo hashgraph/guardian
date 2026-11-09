@@ -526,6 +526,29 @@ describe('@unit preview database wrapper', () => {
         assert.deepEqual(buildPreviewResponse(step, input).documents.map((item) => item.final), [false]);
     });
 
+    it('marks the saved input final when the chain changed its values', async () => {
+        const step = previewStep();
+        const input = { document: { id: 'urn:uuid:input', credentialSubject: [{ amount: 2 }] } };
+        await inPreview(step, async () => {
+            await server.saveVC({ policyId, tag: 'calculation', document: { id: 'urn:uuid:calculation', credentialSubject: [{ total: 4 }] } });
+            const saved = await server.saveVC({ policyId, tag: 'input_with_ref', document: { id: 'urn:uuid:input', credentialSubject: [{ amount: 2, ref: { total: 4 } }] } });
+            step.addPreviewDocument('input_with_ref', null, { data: saved });
+        });
+        const response = buildPreviewResponse(step, input);
+        assert.deepEqual(response.documents.map(({ document, final }) => [document.tag, final]), [['calculation', false], ['input_with_ref', true]]);
+    });
+
+    it('keeps the saved input not final when only data outside its values changed', async () => {
+        const step = previewStep();
+        const input = { document: { id: 'urn:uuid:input', credentialSubject: [{ amount: 2, unit: 't' }] } };
+        await inPreview(step, async () => {
+            const saved = await server.saveVC({ policyId, tag: 'input', option: { status: 'Waiting for Approval' },
+                document: { id: 'urn:uuid:input', issuanceDate: '2026-11-09T00:00:00.000Z', credentialSubject: [{ unit: 't', amount: 2 }] } });
+            step.addPreviewDocument('input', null, { data: saved });
+        });
+        assert.deepEqual(buildPreviewResponse(step, input).documents.map((item) => item.final), [false]);
+    });
+
     it('returns per-output schema matches through the real Preview response path', async () => {
         const calls = [];
         const schema = (type) => ({ document: { type: 'object', properties: { total: { type } } } });

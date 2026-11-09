@@ -1,5 +1,6 @@
 import { compileFunction, createContext, runInContext } from 'node:vm';
 import { AsyncLocalStorage } from 'node:async_hooks';
+import { isDeepStrictEqual } from 'node:util';
 import * as mathjs from 'mathjs';
 import { LocationType, Schema, SchemaCondition, SchemaField, SchemaHelper, } from '@guardian/interfaces';
 import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
@@ -1242,11 +1243,18 @@ function getPreviewCredentialId(record: unknown): unknown {
     return document && typeof document === 'object' ? Reflect.get(document, 'id') : null;
 }
 
+function getPreviewCredentialValues(record: unknown): unknown {
+    const document = record && typeof record === 'object' ? Reflect.get(record, 'document') : null;
+    const subject = document && typeof document === 'object' ? Reflect.get(document, 'credentialSubject') : undefined;
+    return subject === undefined ? undefined : JSON.parse(JSON.stringify(subject));
+}
+
 function buildPreviewResponseDocuments(actionStatus: RecordActionStep, documents: IPreviewDocument[], input: unknown): IPreviewResponseDocument[] {
     const saved = getPreviewSavedDocuments(actionStatus);
     const savedIds = getPreviewSavedDocumentIds(actionStatus);
     const finalIds = actionStatus.previewBranches?.getFinalIds() ?? new Set<string>();
     const inputId = getPreviewCredentialId(input);
+    const inputValues = getPreviewCredentialValues(input);
     const ends = documents.flatMap((item) => (Array.isArray(item.document) ? item.document : [item.document])
         .map((document) => ({ ...item, document })));
     const endIds = new Set(ends.map((item) => getPreviewRecordId(item.document)).filter((id) => id !== null));
@@ -1257,8 +1265,9 @@ function buildPreviewResponseDocuments(actionStatus: RecordActionStep, documents
     ];
     return entries.map((item) => {
         const id = getPreviewRecordId(item.document);
-        const isInput = inputId !== null && inputId !== undefined && getPreviewCredentialId(item.document) === inputId;
-        return { ...item, final: !isInput && id !== null && savedIds.has(id) && finalIds.has(id) };
+        const unchangedInput = inputId !== null && inputId !== undefined && getPreviewCredentialId(item.document) === inputId
+            && isDeepStrictEqual(getPreviewCredentialValues(item.document), inputValues);
+        return { ...item, final: !unchangedInput && id !== null && savedIds.has(id) && finalIds.has(id) };
     });
 }
 
