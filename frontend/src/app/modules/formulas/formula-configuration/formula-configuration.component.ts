@@ -6,6 +6,7 @@ import { ProfileService } from 'src/app/services/profile.service';
 import { FormulasService } from 'src/app/services/formulas.service';
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { DialogService } from 'primeng/dynamicdialog';
+import { getDeleteDialogData } from '../models/formula-delete-dialog';
 import { Select } from 'primeng/select';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MathLiveComponent } from '../../common/mathlive/mathlive.component';
@@ -418,20 +419,10 @@ export class FormulaConfigurationComponent implements OnInit {
             showHeader: false,
             width: '640px',
             styleClass: 'guardian-dialog',
-            data: {
-                header: 'Delete item',
-                text: 'Are you sure want to delete item?',
-                buttons: [{
-                    name: 'Close',
-                    class: 'secondary'
-                }, {
-                    name: 'Delete',
-                    class: 'delete'
-                }]
-            },
+            data: getDeleteDialogData(item, this.config.getReferrers(item.uuid)),
         })!;
         dialogRef.onClose.subscribe((result: string) => {
-            if (result === 'Delete') {
+            if (result === 'Delete' || result === 'Delete and remove references') {
                 const index = this.config.indexOf(item);
                 this.config.delete(item);
                 if (this.selected?.uuid === item.uuid) {

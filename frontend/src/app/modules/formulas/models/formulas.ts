@@ -225,9 +225,31 @@ export class Formulas {
         return item ? this.items.findIndex((e) => e.uuid === item.uuid) : -1;
     }
 
+    /**
+     * Items whose relationships contain the uuid.
+     */
+    public getReferrers(uuid: string): IFormulaItem[] {
+        return this.items.filter((e) => e.uuid !== uuid && Array.isArray(e.relationships) && e.relationships.includes(uuid));
+    }
+
+    /**
+     * Deletes the item and removes it from the relationships of the other items.
+     */
     public delete(item: IFormulaItem): void {
         this.items = this.items.filter((e) => e.uuid !== item?.uuid);
+        this.dropRelationships(new Set(this.items.map((e) => e.uuid)));
         this.update();
+    }
+
+    /**
+     * Keeps only the relationships that match an existing item.
+     */
+    private dropRelationships(uuids: Set<string>): void {
+        for (const item of this.items) {
+            if (Array.isArray(item.relationships)) {
+                item.relationships = item.relationships.filter((uuid) => uuids.has(uuid));
+            }
+        }
     }
 
     public addFile(file: IFormulaFile): void {
@@ -404,6 +426,7 @@ export class Formulas {
         const items: IFormulaItem[] = config?.formulas || [];
         const files: IFormulaFile[] = config?.files || [];
         this.items = items.map((e) => this._fromItemJson(e));
+        this.dropRelationships(new Set(this.items.map((e) => e.uuid)));
         this.files = files.map((e) => this._fromFileJson(e));
         this.update();
     }

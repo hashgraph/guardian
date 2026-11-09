@@ -86,6 +86,7 @@ export class FormulaImportExport {
      */
     public static async generateZipFile(components: IFormulaComponents): Promise<JSZip> {
         const formulas = { ...components.formula };
+        formulas.config = FormulaImportExport.validateConfig(formulas.config);
         delete formulas.id;
         delete formulas._id;
         delete formulas.owner;
@@ -131,6 +132,16 @@ export class FormulaImportExport {
      * @param data config
      */
     public static validateConfig(data?: IFormulaConfig): IFormulaConfig {
+        const items = data?.formulas;
+        if (!Array.isArray(items)) {
+            return data;
+        }
+        const uuids = new Set<string>(items.map((item: any) => item?.uuid));
+        for (const item of items as any[]) {
+            if (Array.isArray(item?.relationships)) {
+                item.relationships = item.relationships.filter((uuid: string) => uuids.has(uuid));
+            }
+        }
         return data;
     }
 
