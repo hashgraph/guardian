@@ -112,6 +112,7 @@ export class SchemaFormComponent implements OnInit, DoCheck {
     @Output() buttons = new EventEmitter<any>();
     @Output() previewLoadingChange = new EventEmitter<boolean>();
     @Output() previewInteraction = new EventEmitter<void>();
+    @Output() previewNavigation = new EventEmitter<void>();
 
     public minutesAgo$ = getMinutesAgoStream(() => this.lastSavedAt);
 
@@ -822,7 +823,7 @@ export class SchemaFormComponent implements OnInit, DoCheck {
     public toggleOpen(item: IFieldControl<any> | IFieldIndexControl<any>, open: boolean): void {
         item.open = open;
         this.preparePreviewSection(item);
-        if (open && this.previewValidation) this.previewInteraction.emit();
+        if (open && this.previewValidation) this.previewNavigation.emit();
     }
 
     public isRulesStatus(item: IFieldControl<any>) {

@@ -1003,6 +1003,20 @@ describe('SchemaFormRootComponent — sections', () => {
         expect(root.completion!.sections.map(section => section.total)).toEqual([2, 1]);
     }));
 
+    it('reports opening a section as navigation only in preview mode', fakeAsync(() => {
+        const root = create();
+        const navigation = spyOn(root.previewNavigation, 'emit');
+        const interaction = spyOn(root.previewInteraction, 'emit');
+        root.openSection(1);
+        flush(100);
+        expect(navigation).not.toHaveBeenCalled();
+        root.requiredFields = ['name'];
+        root.openSection(0);
+        flush(100);
+        expect(navigation).toHaveBeenCalledTimes(1);
+        expect(interaction).not.toHaveBeenCalled();
+    }));
+
     it('is a single page with the single layout', fakeAsync(() => {
         const root = create(null, 'single');
         expect(root.hasSections).toBeFalse();

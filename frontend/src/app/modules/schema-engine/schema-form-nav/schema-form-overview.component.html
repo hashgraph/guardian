@@ -19,7 +19,7 @@
     @for (card of cards; track card.id; let i = $index) {
       <button type="button" class="sf-overview-card" (click)="open.emit(i)">
         @if (card.pill || card.ring || card.status) {
-          <span class="sf-overview-card-top">
+          <span class="sf-overview-card-top" [style.visibility]="progressPending ? 'hidden' : null">
             <span class="sf-overview-card-state">{{ card.pill?.text }}</span>
             @if (card.ring; as ring) {
               <app-schema-form-ring size="md" [state]="ring.optional ? 'optional' : ring.done ? 'done' : 'progress'" [pct]="ring.pct"></app-schema-form-ring>
@@ -34,7 +34,7 @@
           }{{ card.title }}
         </span>
         @if (card.meta) {
-          <span class="sf-overview-card-meta">{{ card.meta }}</span>
+          <span class="sf-overview-card-meta" [style.visibility]="progressPending ? 'hidden' : null">{{ card.meta }}</span>
         }
         @if (card.fill !== undefined) {
           <span class="sf-overview-card-fill"><i [style.width.%]="card.fill"></i></span>

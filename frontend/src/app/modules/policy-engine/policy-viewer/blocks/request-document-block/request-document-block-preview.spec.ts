@@ -160,13 +160,42 @@ describe('request document preview wiring', () => {
         component.destroy$.next();
     }));
 
-    it('refreshes after opening a section only in preview mode', fakeAsync(() => {
+    it('refreshes after adding or removing an entry only in preview mode', fakeAsync(() => {
         const { component, calls } = observedForm([Promise.resolve(response(['mode', 'title']))]);
         component.onPreviewInteraction();
         tick();
         expect(calls.length).toBe(1);
         component.previewMode = false;
         component.onPreviewInteraction();
+        tick();
+        expect(calls.length).toBe(1);
+        component.destroy$.next();
+    }));
+
+    it('does not refresh on navigation when requirements are up to date', fakeAsync(() => {
+        const { component, calls } = observedForm([Promise.resolve(response(['mode', 'title']))]);
+        component.onPreviewNavigation();
+        tick();
+        expect(calls.length).toBe(0);
+        expect(component.previewRequirementsStale).toBeFalsy();
+        component.destroy$.next();
+    }));
+
+    it('refreshes on navigation after a text edit, only in preview mode', fakeAsync(() => {
+        const { component, group, calls } = observedForm([Promise.resolve(response(['mode', 'title']))]);
+        group.get('title')!.setValue('new');
+        tick();
+        expect(calls.length).toBe(0);
+        component.onPreviewNavigation();
+        tick();
+        expect(calls.length).toBe(1);
+        expect(component.previewRequirementsStale).toBeFalse();
+        component.onPreviewNavigation();
+        tick();
+        expect(calls.length).toBe(1);
+        group.get('title')!.setValue('newer');
+        component.previewMode = false;
+        component.onPreviewNavigation();
         tick();
         expect(calls.length).toBe(1);
         component.destroy$.next();

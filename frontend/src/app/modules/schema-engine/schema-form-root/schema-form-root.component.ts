@@ -116,6 +116,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     public previewLoadingCount: number = 0;
     @Output() previewBusyChange = new EventEmitter<boolean>(true);
     @Output() previewInteraction = new EventEmitter<void>();
+    @Output() previewNavigation = new EventEmitter<void>();
 
     public get isPreviewBusy(): boolean {
         return this.requiredFields !== null && (this.loading || this.previewLoadingCount > 0);
@@ -841,7 +842,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
             this.activeIndex = index;
         });
         this.childForm?.prepareOpenPreviewSections?.();
-        if (this.requiredFields !== null) this.previewInteraction.emit();
+        if (this.requiredFields !== null) this.previewNavigation.emit();
         this.scrollToTop();
     }
 

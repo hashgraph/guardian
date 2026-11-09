@@ -574,6 +574,12 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         this.changeDetectorRef.markForCheck();
     }
 
+    public onPreviewNavigation(): void {
+        if (this.previewRequirementsStale) {
+            this.onPreviewInteraction();
+        }
+    }
+
     private schedulePreviewRefresh(): void {
         if (this.previewRunning && this.previewRunningValue === JSON.stringify(this.dataForm.getRawValue())) {
             return;

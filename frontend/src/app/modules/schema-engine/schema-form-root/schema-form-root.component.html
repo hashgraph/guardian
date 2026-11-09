@@ -16,10 +16,8 @@
       >
       <ng-container ngProjectAs="[navTop]"><ng-content select="[sfNotice]"></ng-content></ng-container>
       @if (hasSections) {
-        @if (screen === 'overview' && previewRequirementsStale) {
-          <div>Required fields will be checked before Preview.</div>
-        } @else if (screen === 'overview') {
-          <app-schema-form-overview [cards]="overviewCards" [locked]="isPreviewLocked" (open)="openSection($event)">
+        @if (screen === 'overview') {
+          <app-schema-form-overview [cards]="overviewCards" [locked]="isPreviewLocked" [progressPending]="previewRequirementsStale" (open)="openSection($event)">
             <div overviewHead>
               @if (promotedName) {
                 <div class="sf-notice">
@@ -51,7 +49,7 @@
                   </div>
                 </div>
                 @if (!overviewNothingRequired) {
-                  <div class="sf-overview-total">
+                  <div class="sf-overview-total" [style.visibility]="previewRequirementsStale ? 'hidden' : null">
                     <app-schema-form-ring size="lg" [state]="overviewComplete ? 'done' : 'progress'" [pct]="percent">{{ percent }}%</app-schema-form-ring>
                     <div>
                       <b class="sf-overview-count">{{ completion?.answered ?? 0 }} of {{ completion?.total ?? 0 }}</b>
@@ -127,6 +125,7 @@
           (updatableBtnEvent)="onUpdatableBtnEvent()"
           (previewLoadingChange)="onPreviewLoadingChange($event)"
           (previewInteraction)="previewInteraction.emit()"
+          (previewNavigation)="previewNavigation.emit()"
           >
         </app-schema-form>
       }
