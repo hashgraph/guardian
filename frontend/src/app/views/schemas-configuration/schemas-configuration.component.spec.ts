@@ -3227,4 +3227,103 @@ describe('SchemasConfigurationComponent', () => {
             expect(component.isTemplateMode).toBeFalse();
         });
     });
+
+    describe('schema row cycle check', () => {
+        function setup(): any {
+            const root = makeSchema({ id: 'root' });
+            const loop = makeSchema({ id: 'loop', fields: [makeField({ name: 'back', isRef: true, type: '#root' })] });
+            const free = makeSchema({ id: 'free' });
+            const component = createComponent({ schemas: [root, loop, free], selectedSchema: root });
+            return { component, root, loop, free };
+        }
+
+        it('walks each row once however often the row is checked', () => {
+            const { component, loop, free } = setup();
+            spyOn(component, 'isCircularDependency').and.callThrough();
+            for (let i = 0; i < 5; i++) {
+                component.canDragSchema(loop);
+                component.canDragSchema(free);
+                component.getSchemaRowTooltip(loop);
+                component.getSchemaRowTooltip(free);
+            }
+            expect(component.isCircularDependency).toHaveBeenCalledTimes(2);
+        });
+
+        it('gives the same answers as the uncached check', () => {
+            const { component, loop, free } = setup();
+            expect(component.isCircularDependency(loop)).toBeTrue();
+            expect(component.isCircularDependency(free)).toBeFalse();
+            expect(component.canDragSchema(loop)).toBeFalse();
+            expect(component.canDragSchema(free)).toBeTrue();
+            expect(component.getSchemaRowTooltip(loop)).toBe('Would create a circular dependency');
+            expect(component.getSchemaRowTooltip(free)).toBe('');
+        });
+
+        it('checks again after an edit', () => {
+            const { component, free } = setup();
+            expect(component.canDragSchema(free)).toBeTrue();
+            free.fields = [makeField({ name: 'back', isRef: true, type: '#root' })];
+            component.schemaEditVersion++;
+            expect(component.canDragSchema(free)).toBeFalse();
+        });
+
+        it('checks again when the schema list is replaced', () => {
+            const { component, root, free } = setup();
+            expect(component.canDragSchema(free)).toBeTrue();
+            const replaced = makeSchema({ id: 'free', fields: [makeField({ name: 'back', isRef: true, type: '#root' })] });
+            component.schemas = [root, replaced];
+            expect(component.canDragSchema(replaced)).toBeFalse();
+        });
+    });
+
+    describe('drilled schema lookup', () => {
+        function drillInto(component: any, iri: string): void {
+            component.drillStack = [{ fieldLabel: 'Sub', fieldName: 'sub', field: makeField(), fields: [], schemaIri: iri }];
+        }
+
+        it('scans the schema list once while the drill path and list stay the same', () => {
+            const root = makeSchema({ id: 'root' });
+            const sub = makeSchema({ id: 'sub' });
+            const component = createComponent({ schemas: [root, sub], selectedSchema: root });
+            drillInto(component, '#sub');
+            spyOn(component.schemas, 'find').and.callThrough();
+            for (let i = 0; i < 10; i++) {
+                expect(component.drilledSchema).toBe(sub);
+            }
+            expect(component.schemas.find).toHaveBeenCalledTimes(1);
+        });
+
+        it('follows a new drill path and a replaced schema list', () => {
+            const root = makeSchema({ id: 'root' });
+            const first = makeSchema({ id: 'first' });
+            const second = makeSchema({ id: 'second' });
+            const component = createComponent({ schemas: [root, first, second], selectedSchema: root });
+            drillInto(component, '#first');
+            expect(component.drilledSchema).toBe(first);
+            drillInto(component, '#second');
+            expect(component.drilledSchema).toBe(second);
+            const reloaded = makeSchema({ id: 'second' });
+            component.schemas = [root, first, reloaded];
+            expect(component.drilledSchema).toBe(reloaded);
+        });
+
+        it('reads sub-schemas outside the list from the sub-schema map every time', () => {
+            const root = makeSchema({ id: 'root' });
+            const component = createComponent({ schemas: [root], selectedSchema: root });
+            const loaded = makeSchema({ id: 'hidden' });
+            component._subSchemasByIri.set(loaded.iri, loaded);
+            drillInto(component, loaded.iri);
+            expect(component.drilledSchema).toBe(loaded);
+            const refreshed = makeSchema({ id: 'hidden' });
+            component._subSchemasByIri.set(refreshed.iri, refreshed);
+            expect(component.drilledSchema).toBe(refreshed);
+        });
+
+        it('is null outside a sub-schema', () => {
+            const root = makeSchema({ id: 'root' });
+            const component = createComponent({ schemas: [root], selectedSchema: root });
+            expect(component.drilledSchema).toBeNull();
+            expect(component.currentContextSchema).toBe(root);
+        });
+    });
 });
