@@ -169,6 +169,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public previewMounted = false;
     public previewKey = 0;
     public previewSchemaRef: Schema | null = null;
+
+    /** Only the schema itself gets the section rail; a drilled-in sub-schema is shown as one page. */
+    public get previewLayout(): 'sections' | 'single' {
+        return this.isDrilling ? 'single' : 'sections';
+    }
     private previewBuiltFor: { schema: Schema | null; version: number; path: string } = { schema: null, version: -1, path: '' };
     public richTextPresetTarget: 'default' | 'suggest' | 'test' | null = null;
     @ViewChild('richTextPresetEditor') public richTextPresetEditor?: RichTextEditorComponent;
