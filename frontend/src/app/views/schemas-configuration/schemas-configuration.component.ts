@@ -1605,7 +1605,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     /** Closing the dialog with the X counts as staying. */
     private askUnsavedAction(): Observable<'save' | 'discard' | 'cancel'> {
-        const canSave = this.allDirtySchemasValid && !this.isTemplateConfigMode;
+        const canSave = this.allDirtySchemasValid;
         const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
             showHeader: false,
             width: '640px',
@@ -1985,8 +1985,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.markTemplateDirty();
     }
 
-    public saveTemplateConfig(): void {
-        if (this.isTemplateReadonly || !this.schemaTemplate?.id || this.templateConfigSaving || !this.templateConfigDirty) {
+    public saveTemplateConfig(onSaved?: () => void, onFailed?: () => void): void {
+        if (!this.templateConfigDirty && !this.templateConfigSaving) {
+            onSaved?.();
+            return;
+        }
+        if (this.isTemplateReadonly || !this.schemaTemplate?.id || this.templateConfigSaving) {
+            onFailed?.();
             return;
         }
         this.templateConfigSaving = true;
@@ -2012,12 +2017,14 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     if (this.isTemplateConfigMode) {
                         this.isSaving = false;
                     }
+                    onSaved?.();
                 },
                 error: () => {
                     this.templateConfigSaving = false;
                     if (this.isTemplateConfigMode) {
                         this.isSaving = false;
                     }
+                    onFailed?.();
                 },
             });
     }
@@ -2249,14 +2256,12 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public saveAll(onSaved?: () => void, onFailed?: () => void): void {
-        if (this.isTemplatePreviewMode) {
-            return;
-        }
-        if (this.isTemplateReadonly) {
+        if (this.isTemplatePreviewMode || this.isTemplateReadonly) {
+            onFailed?.();
             return;
         }
         if (this.isTemplateConfigMode) {
-            this.saveTemplateConfig();
+            this.saveTemplateConfig(onSaved, onFailed);
             return;
         }
         if (!this.hasUnsavedChanges || this.isSaving || !this.allDirtySchemasValid) { onFailed?.(); return; }

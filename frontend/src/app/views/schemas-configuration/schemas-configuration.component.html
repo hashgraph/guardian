@@ -822,7 +822,10 @@
                                 </button>
                                 @if ($last && (drilledSchema?.id || $any(drilledSchema)?._id)) {
                                     <button class="sc-drill-open-tab"
-                                            title="Open this sub-schema as the root schema in a new tab. The saved version is opened, so unsaved changes made here are not included."
+                                            pTooltip="Open this sub-schema as the root schema in a new tab"
+                                            tooltipPosition="bottom"
+                                            [showDelay]="100"
+                                            [hideDelay]="0"
                                             aria-label="Open this sub-schema as the root schema in a new tab"
                                             (click)="openDrilledSchemaInNewTab()">
                                         <i class="pi pi-external-link"></i>
