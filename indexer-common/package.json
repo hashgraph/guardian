@@ -11,7 +11,7 @@
         "cross-blob": "^2.0.1",
         "dotenv": "16.6.1",
         "jszip": "3.10.2",
-        "mongodb": "6.21.0",
+        "mongodb": "6.22.0",
         "nats": "2.29.3",
         "reflect-metadata": "0.2.2",
         "rxjs": "7.8.2"
