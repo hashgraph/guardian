@@ -345,3 +345,46 @@ describe('Formulas multiple links', () => {
         expect(item.link).toBeNull();
     });
 });
+
+describe('Formulas references', () => {
+    function build(): Formulas {
+        const formulas = new Formulas();
+        formulas.fromData({
+            formulas: [
+                { uuid: 'a', type: FormulaItemType.Variable, name: 'A', value: '', description: '' },
+                { uuid: 'b', type: FormulaItemType.Variable, name: 'B', value: '', description: '' },
+                { uuid: 'm', type: FormulaItemType.Formula, name: 'Main', value: 'a+b', description: '', relationships: ['a', 'b'] },
+                { uuid: 't', type: FormulaItemType.Text, name: 'Note', value: '', description: '', relationships: ['a'] },
+            ],
+            files: []
+        } as IFormulaConfig);
+        return formulas;
+    }
+
+    it('getReferrers lists the items whose relationships contain the item', () => {
+        const formulas = build();
+        expect(formulas.getReferrers('a').map((e) => e.uuid)).toEqual(['m', 't']);
+        expect(formulas.getReferrers('b').map((e) => e.uuid)).toEqual(['m']);
+        expect(formulas.getReferrers('m')).toEqual([]);
+    });
+
+    it('delete removes the uuid from every relationships list', () => {
+        const formulas = build();
+        formulas.delete(formulas.getItem('a')!);
+        expect(formulas.getItem('m')!.relationships).toEqual(['b']);
+        expect(formulas.getItem('t')!.relationships).toEqual([]);
+        expect(formulas.getJson().formulas!.every((e) => !(e.relationships || []).includes('a'))).toBeTrue();
+    });
+
+    it('fromData drops relationships that match no item', () => {
+        const formulas = new Formulas();
+        formulas.fromData({
+            formulas: [
+                { uuid: 'a', type: FormulaItemType.Variable, name: 'A', value: '', description: '' },
+                { uuid: 'm', type: FormulaItemType.Formula, name: 'Main', value: '', description: '', relationships: ['a', 'gone'] },
+            ],
+            files: []
+        } as IFormulaConfig);
+        expect(formulas.getItem('m')!.relationships).toEqual(['a']);
+    });
+});
