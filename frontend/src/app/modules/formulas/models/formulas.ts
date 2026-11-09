@@ -237,7 +237,11 @@ export class Formulas {
      */
     public delete(item: IFormulaItem): void {
         this.items = this.items.filter((e) => e.uuid !== item?.uuid);
-        this.dropRelationships(new Set(this.items.map((e) => e.uuid)));
+        for (const e of this.items) {
+            if (Array.isArray(e.relationships)) {
+                e.relationships = e.relationships.filter((uuid) => uuid !== item?.uuid);
+            }
+        }
         this.update();
     }
 
@@ -426,6 +430,7 @@ export class Formulas {
         const items: IFormulaItem[] = config?.formulas || [];
         const files: IFormulaFile[] = config?.files || [];
         this.items = items.map((e) => this._fromItemJson(e));
+        // formulas saved before deleting an item cleaned up its relationships may still hold dangling uuids
         this.dropRelationships(new Set(this.items.map((e) => e.uuid)));
         this.files = files.map((e) => this._fromFileJson(e));
         this.update();

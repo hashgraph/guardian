@@ -127,7 +127,7 @@ export class FormulaImportExport {
     }
 
     /**
-     * Validate Config
+     * Validate Config: drops relationships that match no item. The config is changed in place.
      *
      * @param data config
      */

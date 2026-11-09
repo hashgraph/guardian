@@ -415,14 +415,15 @@ export class FormulaConfigurationComponent implements OnInit {
     }
 
     public deleteItem(item: any) {
+        const data = getDeleteDialogData(item, this.config.getReferrers(item.uuid));
         const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
             showHeader: false,
             width: '640px',
             styleClass: 'guardian-dialog',
-            data: getDeleteDialogData(item, this.config.getReferrers(item.uuid)),
+            data,
         })!;
         dialogRef.onClose.subscribe((result: string) => {
-            if (result && result !== 'Cancel') {
+            if (result === data.confirm) {
                 const index = this.config.indexOf(item);
                 this.config.delete(item);
                 if (this.selected?.uuid === item.uuid) {
