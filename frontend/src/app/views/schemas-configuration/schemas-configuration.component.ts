@@ -285,11 +285,23 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public get isTemplateConfigMode(): boolean {
-        return this.router.url.startsWith('/schema-template-configuration');
+        return this.templateRoute === 'configuration';
     }
 
     public get isTemplatePreviewMode(): boolean {
-        return this.router.url.startsWith('/schema-template-preview');
+        return this.templateRoute === 'preview';
+    }
+
+    private templateRouteValue?: 'configuration' | 'preview' | '';
+
+    private get templateRoute(): 'configuration' | 'preview' | '' {
+        if (this.templateRouteValue === undefined) {
+            const url = this.router.url;
+            this.templateRouteValue = url.startsWith('/schema-template-configuration')
+                ? 'configuration'
+                : url.startsWith('/schema-template-preview') ? 'preview' : '';
+        }
+        return this.templateRouteValue;
     }
 
     public get breadcrumbRootLabel(): string {

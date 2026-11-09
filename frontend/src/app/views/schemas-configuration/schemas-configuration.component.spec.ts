@@ -3185,4 +3185,46 @@ describe('SchemasConfigurationComponent', () => {
             expect(document.body.style.userSelect).toBe('');
         });
     });
+
+    describe('template route', () => {
+        function countingRouter(url: string): { router: any; reads: () => number } {
+            let count = 0;
+            const router: any = { navigate: () => Promise.resolve(true) };
+            Object.defineProperty(router, 'url', { get: () => { count++; return url; } });
+            return { router, reads: () => count };
+        }
+
+        it('reads the router url once however often the template mode is checked', () => {
+            const component = createComponent();
+            const counting = countingRouter('/schema-template-configuration?templateId=t1');
+            component.router = counting.router;
+            const answers: boolean[] = [];
+            for (let i = 0; i < 50; i++) {
+                answers.push(component.isTemplateConfigMode, component.isTemplatePreviewMode, component.isTemplateMode);
+            }
+            expect(counting.reads()).toBe(1);
+            expect(answers.length).toBe(150);
+        });
+
+        it('treats the template configuration route as configuration mode', () => {
+            const component = createComponent({ url: '/schema-template-configuration?templateId=t1' });
+            expect(component.isTemplateConfigMode).toBeTrue();
+            expect(component.isTemplatePreviewMode).toBeFalse();
+            expect(component.isTemplateMode).toBeTrue();
+        });
+
+        it('treats the template preview route as preview mode', () => {
+            const component = createComponent({ url: '/schema-template-preview?templateId=t1&schemaId=s1' });
+            expect(component.isTemplatePreviewMode).toBeTrue();
+            expect(component.isTemplateConfigMode).toBeFalse();
+            expect(component.isTemplateMode).toBeTrue();
+        });
+
+        it('treats the policy schema route as neither template mode', () => {
+            const component = createComponent({ url: '/schema-configuration?schemaId=s1&type=policy&topic=0.0.1' });
+            expect(component.isTemplateConfigMode).toBeFalse();
+            expect(component.isTemplatePreviewMode).toBeFalse();
+            expect(component.isTemplateMode).toBeFalse();
+        });
+    });
 });
