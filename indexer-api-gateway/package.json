@@ -33,7 +33,7 @@
         "prometheus-api-metrics": "4.0.0",
         "reflect-metadata": "0.2.2",
         "rxjs": "7.8.2",
-        "ws": "8.22.0",
+        "ws": "8.22.1",
         "yaml": "2.9.1",
         "yup": "1.7.1"
     },
