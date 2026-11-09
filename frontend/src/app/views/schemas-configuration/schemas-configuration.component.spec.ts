@@ -3083,4 +3083,106 @@ describe('SchemasConfigurationComponent', () => {
             }
         });
     });
+
+    describe('drop position while dragging fields', () => {
+        let host: HTMLElement | null = null;
+
+        function cardHtml(name: string, system = false): string {
+            const cls = system ? 'sc-field-card sc-field-card--system' : 'sc-field-card';
+            return `<div class="${cls}" style="height:40px;margin:0;padding:0">${name}</div>`;
+        }
+
+        function mount(html: string): HTMLElement {
+            host = document.createElement('div');
+            host.style.cssText = 'position:fixed;top:0;left:0;width:400px;margin:0;padding:0';
+            host.innerHTML = html;
+            document.body.appendChild(host);
+            return host;
+        }
+
+        afterEach(() => {
+            host?.remove();
+            host = null;
+        });
+
+        function drilledComponent(fields: any[]): any {
+            const c = createComponent();
+            c.drillStack = [{ schemaIri: '#sub', fields }];
+            const cards = fields.map((f: any) => cardHtml(f.name)).join('');
+            c._elRef = { nativeElement: mount(
+                `<div class="sc-editor" style="display:none"><div class="sc-editor-body">${cards}</div></div>` +
+                `<div class="sc-drill-content">${cards}</div>`
+            ) };
+            return c;
+        }
+
+        function topLevelComponent(fields: any[]): any {
+            const c = createComponent({ selectedSchema: makeSchema({ id: 's1', fields }) });
+            const cards = cardHtml('system', true) + fields.map((f: any) => cardHtml(f.name)).join('');
+            c._elRef = { nativeElement: mount(`<div class="sc-editor-body">${cards}</div>`) };
+            return c;
+        }
+
+        function names(fields: any[]): string[] {
+            return fields.map((f: any) => f.name);
+        }
+
+        it('shows the palette drop line between sub-schema fields', () => {
+            const c = drilledComponent([makeField({ name: 'a' }), makeField({ name: 'b' }), makeField({ name: 'c' })]);
+            c.updateSidebarDropIndicator(45);
+            expect(c.sidebarDropIndex).toBe(1);
+            expect(c.sidebarDropPos).toBe('top');
+        });
+
+        it('moves a sub-schema field to the slot it is dropped on, not to the end', () => {
+            const fields = [makeField({ name: 'a' }), makeField({ name: 'b' }), makeField({ name: 'c' }), makeField({ name: 'd' })];
+            const c = drilledComponent(fields);
+            c.isTemplateFieldLocked = () => false;
+            c.markDirty = () => {};
+            c.reorderField = fields[0];
+            c._dragFields = c.drillCurrentFields;
+            c.isDragActive = true;
+            c.updateDropIndicator(10, 100);
+            expect(c.reorderOverIndex).toBe(2);
+            expect(c.reorderAtEnd).toBe(false);
+            c.onDocMouseUp({});
+            expect(names(fields)).toEqual(['b', 'c', 'a', 'd']);
+        });
+
+        it('keeps the top-level palette drop line and skips system fields', () => {
+            const c = topLevelComponent([makeField({ name: 'a' }), makeField({ name: 'b' }), makeField({ name: 'c' })]);
+            c.updateSidebarDropIndicator(90);
+            expect(c.sidebarDropIndex).toBe(1);
+            expect(c.sidebarDropPos).toBe('top');
+        });
+
+        it('keeps top-level card reordering', () => {
+            const fields = [makeField({ name: 'a' }), makeField({ name: 'b' }), makeField({ name: 'c' }), makeField({ name: 'd' })];
+            const c = topLevelComponent(fields);
+            c.isTemplateFieldLocked = () => false;
+            c.markDirty = () => {};
+            c.reorderField = fields[0];
+            c._dragFields = c.selectedSchema.fields;
+            c.isDragActive = true;
+            c.updateDropIndicator(10, 130);
+            expect(c.reorderOverIndex).toBe(2);
+            c.onDocMouseUp({});
+            expect(names(fields)).toEqual(['b', 'c', 'a', 'd']);
+        });
+
+        it('does not start text selection or a move when pressing a locked field', () => {
+            const fields = [makeField({ name: 'a' }), makeField({ name: 'b' })];
+            const c = drilledComponent(fields);
+            c.isTemplateFieldLocked = () => true;
+            const card = c._elRef.nativeElement.querySelector('.sc-drill-content .sc-field-card');
+            const event = new MouseEvent('mousedown', { cancelable: true });
+            Object.defineProperty(event, 'target', { value: card });
+            Object.defineProperty(event, 'currentTarget', { value: card });
+            c.onCardMouseDown(event, fields[0], c.drillCurrentFields);
+            expect(event.defaultPrevented).toBe(true);
+            expect(c.reorderField).toBeFalsy();
+            expect(c._mouseMoveListener).toBeFalsy();
+            expect(document.body.style.userSelect).toBe('');
+        });
+    });
 });

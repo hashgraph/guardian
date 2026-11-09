@@ -4132,8 +4132,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public onCardMouseDown(event: MouseEvent, field: SchemaField, fields: SchemaField[]): void {
         if ((event.target as HTMLElement).closest('button')) { return; }
-        if (this.isTemplateFieldLocked(field)) { return; }
         event.preventDefault();
+        if (this.isTemplateFieldLocked(field)) { return; }
         if (this._mouseMoveListener) { this.clearReorder(); }
         const card = event.currentTarget as HTMLElement;
         const rect = card.getBoundingClientRect();
@@ -4196,11 +4196,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     private updateDropIndicator(clientX: number, clientY: number): void {
         if (!this._dragFields || !this.reorderField) { return; }
         const isDrill = this._dragFields === this.drillCurrentFields;
-        const cardSelector = isDrill
-            ? '.sc-drill-card'
-            : '.sc-field-card:not(.sc-field-card--system)';
         const root = this._elRef.nativeElement as HTMLElement;
-        const cards = Array.from(root.querySelectorAll<HTMLElement>(cardSelector));
+        const scope = isDrill ? root.querySelector<HTMLElement>('.sc-drill-content') : root;
+        const cards = Array.from(scope?.querySelectorAll<HTMLElement>('.sc-field-card:not(.sc-field-card--system)') ?? []);
         const srcIdx = this._dragFields.indexOf(this.reorderField);
 
         this.reorderOverIndex = -1;
@@ -4281,11 +4279,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     private updateSidebarDropIndicator(clientY: number): void {
         // Midpoint boundaries so gaps between cards map unambiguously to an insertion slot.
-        const cardSelector = this.isDrilling
-            ? '.sc-drill-card'
-            : '.sc-field-card:not(.sc-field-card--system)';
+        const root = this._elRef.nativeElement as HTMLElement;
+        const scope = this.isDrilling ? root.querySelector<HTMLElement>('.sc-drill-content') : root;
         const cards = Array.from(
-            (this._elRef.nativeElement as HTMLElement).querySelectorAll<HTMLElement>(cardSelector)
+            scope?.querySelectorAll<HTMLElement>('.sc-field-card:not(.sc-field-card--system)') ?? []
         );
         if (cards.length === 0) { this.sidebarDropIndex = -1; return; }
 
