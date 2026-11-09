@@ -141,6 +141,7 @@ table.vars {
     td.sym {
         grid-area: sym;
         font-size: 15px;
+        font-style: italic;
     }
 
     td.kind {
@@ -151,6 +152,7 @@ table.vars {
 
     td.desc {
         grid-area: desc;
+        margin-top: 4px;
         white-space: pre-line;
     }
 
