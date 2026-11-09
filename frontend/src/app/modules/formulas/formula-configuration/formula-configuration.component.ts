@@ -422,7 +422,7 @@ export class FormulaConfigurationComponent implements OnInit {
             data: getDeleteDialogData(item, this.config.getReferrers(item.uuid)),
         })!;
         dialogRef.onClose.subscribe((result: string) => {
-            if (result === 'Delete' || result === 'Delete and remove references') {
+            if (result && result !== 'Cancel') {
                 const index = this.config.indexOf(item);
                 this.config.delete(item);
                 if (this.selected?.uuid === item.uuid) {

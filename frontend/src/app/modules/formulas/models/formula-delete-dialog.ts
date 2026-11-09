@@ -1,4 +1,5 @@
 import { FormulaItemType, IFormulaItem } from '@guardian/interfaces';
+import { formulaTypeIcon } from './formula-meta';
 
 const TYPE_NAMES: { [type: string]: string } = {
     [FormulaItemType.Constant]: 'Constant',
@@ -13,19 +14,24 @@ const TYPE_NAMES: { [type: string]: string } = {
  */
 export function getDeleteDialogData(item: IFormulaItem, referrers: IFormulaItem[]) {
     const kind = (TYPE_NAMES[item.type] || 'Item').toLowerCase();
+    const header = `Delete ${kind}?`;
     if (!referrers.length) {
         return {
-            header: 'Delete item',
-            text: 'Are you sure want to delete item?',
-            buttons: [{ name: 'Close', class: 'secondary' }, { name: 'Delete', class: 'delete' }]
+            header,
+            text: item.name ? `"${item.name}" will be removed from this formula.` : `This ${kind} will be removed from this formula.`,
+            buttons: [{ name: 'Cancel', class: 'secondary' }, { name: `Delete ${kind}`, class: 'delete' }]
         };
     }
-    const name = item.name || 'N/A';
+    const many = referrers.length > 1;
     return {
-        header: `Delete ${kind}`,
-        text: `"${name}" is used in the Relationships of ${referrers.length === 1 ? 'this item' : `these ${referrers.length} items`}. ` +
-            `Deleting it will also remove it from ${referrers.length === 1 ? 'its' : 'their'} Relationships:`,
-        details: referrers.map((e) => `${e.name || 'N/A'} (${TYPE_NAMES[e.type] || 'Item'})`),
-        buttons: [{ name: 'Cancel', class: 'secondary' }, { name: 'Delete and remove references', class: 'delete' }]
+        header,
+        text: `${many ? 'Other items depend' : 'Another item depends'} on this ${kind}. ` +
+            `If you delete it, it will also be removed from ${many ? 'their' : 'its'} Relationships:`,
+        typedItems: referrers.map((e) => ({
+            name: e.name || 'N/A',
+            type: e.type,
+            icon: formulaTypeIcon(e.type)
+        })),
+        buttons: [{ name: 'Cancel', class: 'secondary' }, { name: 'Delete anyway', class: 'delete' }]
     };
 }
