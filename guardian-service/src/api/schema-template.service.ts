@@ -2202,9 +2202,14 @@ export function buildFieldPolicyConflicts(input: {
         if (!effect.length) {
             continue;
         }
+        // Keeping the policy's version of a renamed key would leave a template condition or
+        // repeatable link pointing at a key that no longer exists, so only a reset is safe.
+        const referenced = policyField.name !== nextField.name
+            && isFieldStructurallyReferenced(nextSchema, templateFieldId, nextField.name);
         conflicts.push(createConflict(
             SchemaTemplateUpdateConflictType.FIELD_MODIFIED_IN_POLICY,
-            `Field "${label}" was changed in the policy.`,
+            `Field "${label}" was changed in the policy.` +
+            (referenced ? ' Its key was renamed and the template depends on it, so it must be reset.' : ''),
             {
                 templateSchemaId,
                 templateFieldId,
@@ -2212,7 +2217,7 @@ export function buildFieldPolicyConflicts(input: {
                 fieldName: label,
                 details: effect,
                 templateField: fieldBrief(nextField),
-                allowedActions: both
+                allowedActions: referenced ? [SchemaTemplateUpdateResolutionAction.RESET_TO_TEMPLATE] : both
             }
         ));
     }
