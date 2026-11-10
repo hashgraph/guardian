@@ -77,6 +77,8 @@ describe('SchemasConfigurationComponent', () => {
         component.dirtySchemaIds = new Set<string>(state.dirtyIds || []);
         component.savedSignatures = new Map<string, string>();
         component.newSchemaKeys = new Set<string>(state.newKeys || []);
+        component.pinnedSubSchemas = new Map<string, any>();
+        component.skipLeaveGuard = false;
 
         component.router = { url: state.url || '/schema-configuration', navigate: () => Promise.resolve(true) };
         component.route = {};
@@ -3337,6 +3339,454 @@ describe('SchemasConfigurationComponent', () => {
             const component = createComponent({ schemas: [root], selectedSchema: root });
             expect(component.drilledSchema).toBeNull();
             expect(component.currentContextSchema).toBe(root);
+        });
+    });
+
+    describe('unsaved changes when switching schema or leaving the editor', () => {
+        const ev = { stopPropagation: () => {} };
+
+        /** which dialog button the user presses; the buttons are told apart by position, not by label */
+        type Answer = 'discard' | 'save' | undefined;
+
+        function unsavedComponent(answer: Answer, extra: any = {}) {
+            const root: any = makeSchema({ id: 'root', iri: '#root', fields: [makeField({ name: 'a' })] });
+            const other: any = makeSchema({ id: 'other', iri: '#other', fields: [makeField({ name: 'b' })] });
+            const component = createComponent({ schemas: [root, other], selectedSchema: root, dirtyIds: ['root'], ...extra });
+            stubDrillPlumbing(component);
+            component.setCanvasTab = () => {};
+            component.snapshotSchema(root);
+            component.dirtySchemaIds.add('root');
+            component.dialogOpened = 0;
+            component.dialogData = null;
+            component.dialogService = {
+                open: (_cmp: any, config: any) => {
+                    component.dialogOpened++;
+                    component.dialogData = config.data;
+                    const index = answer === 'discard' ? 0 : answer === 'save' ? 1 : -1;
+                    return { onClose: of(config.data.buttons[index]?.name) };
+                },
+            };
+            const navigations: any[] = [];
+            component.router.navigate = (_cmds: any, extras: any) => { navigations.push(extras?.queryParams); return Promise.resolve(true); };
+            return { component, root, other, navigations };
+        }
+
+        describe('switching to another schema', () => {
+            it('stays on the schema and keeps the edits when the dialog is cancelled', () => {
+                const { component, other, navigations } = unsavedComponent(undefined);
+
+                component.switchSchema(other);
+
+                expect(component.dialogOpened).toBe(1);
+                expect(navigations.length).toBe(0);
+                expect(component.hasUnsavedChanges).toBeTrue();
+                expect(component.selectedSchema.id).toBe('root');
+            });
+
+            it('drops the edits and opens the other schema on Discard', () => {
+                const { component, other, navigations } = unsavedComponent('discard');
+
+                component.switchSchema(other);
+
+                expect(navigations.length).toBe(1);
+                expect(navigations[0].schemaId).toBe('other');
+                expect(component.hasUnsavedChanges).toBeFalse();
+                expect(component.updated.length).toBe(0);
+            });
+
+            it('saves the edits first and then opens the other schema on Save', () => {
+                const { component, root, other, navigations } = unsavedComponent('save');
+
+                component.switchSchema(other);
+
+                expect(component.updated).toEqual([root]);
+                expect(navigations.length).toBe(1);
+                expect(navigations[0].schemaId).toBe('other');
+                expect(component.hasUnsavedChanges).toBeFalse();
+            });
+
+            it('does not open the other schema when the save fails', () => {
+                const { component, other, navigations } = unsavedComponent('save');
+                component.schemaService.update = () => throwError(() => new Error('save failed'));
+
+                component.switchSchema(other);
+
+                expect(navigations.length).toBe(0);
+                expect(component.hasUnsavedChanges).toBeTrue();
+                expect(component.toasts.length).toBe(1);
+            });
+
+            it('offers only Discard when the changes have errors', () => {
+                const { component, root, other } = unsavedComponent(undefined);
+                root.fields[0].title = '';
+
+                component.switchSchema(other);
+
+                expect(component.dialogData.buttons.map((b: any) => b.name)).toEqual(['Discard and open']);
+            });
+
+            it('words the dialog for opening another schema', () => {
+                const { component, other } = unsavedComponent(undefined);
+
+                component.switchSchema(other);
+
+                expect(component.dialogData.text).toContain('before opening another schema');
+                expect(component.dialogData.buttons.map((b: any) => b.name)).toEqual(['Discard and open', 'Save and open']);
+            });
+
+            it('offers only Discard for a published schema, which is saved as a new version', () => {
+                const { component, root, other, navigations } = unsavedComponent(undefined);
+                root.status = 'PUBLISHED';
+
+                component.switchSchema(other);
+
+                expect(component.dialogData.buttons.map((b: any) => b.name)).toEqual(['Discard and open']);
+                expect(component.dialogData.text).toContain('new version');
+                expect(navigations.length).toBe(0);
+            });
+
+            it('does not start a new-version save on behalf of a waiting caller', () => {
+                const { component, root } = unsavedComponent(undefined);
+                root.status = 'PUBLISHED';
+                component.schemaService.newVersion = jasmine.createSpy('newVersion');
+                const onSaved = jasmine.createSpy('onSaved');
+                const onFailed = jasmine.createSpy('onFailed');
+
+                component.saveAll(onSaved, onFailed);
+
+                expect(component.schemaService.newVersion).not.toHaveBeenCalled();
+                expect(component.updated.length).toBe(0);
+                expect(onSaved).not.toHaveBeenCalled();
+                expect(onFailed).toHaveBeenCalledTimes(1);
+                expect(component.isSaving).toBeFalse();
+                expect(component.hasUnsavedChanges).toBeTrue();
+            });
+
+            it('does not ask when nothing is unsaved', () => {
+                const { component, other, navigations } = unsavedComponent(undefined);
+                component.dirtySchemaIds.clear();
+
+                component.switchSchema(other);
+
+                expect(component.dialogOpened).toBe(0);
+                expect(navigations.length).toBe(1);
+            });
+
+            it('does not ask for a read-only template', () => {
+                const { component, other, navigations } = unsavedComponent(undefined, {
+                    type: 'template',
+                    schemaTemplate: { status: 'PUBLISHED' },
+                });
+
+                component.switchSchema(other);
+
+                expect(component.dialogOpened).toBe(0);
+                expect(navigations.length).toBe(1);
+            });
+
+            it('asks before opening a template sub-schema as the root schema', () => {
+                const refField = makeField({ name: 'ref', type: '#other', isRef: true, fields: [] });
+                const { component, root, navigations } = unsavedComponent(undefined, {
+                    type: 'template',
+                    schemaTemplate: { status: 'DRAFT' },
+                });
+                root.fields.push(refField);
+
+                component.enterTemplateSubSchema(refField, ev);
+
+                expect(component.dialogOpened).toBe(1);
+                expect(navigations.length).toBe(0);
+                expect(component.hasUnsavedChanges).toBeTrue();
+            });
+
+            it('opens the template sub-schema once the changes are discarded', () => {
+                const refField = makeField({ name: 'ref', type: '#other', isRef: true, fields: [] });
+                const { component, root, navigations } = unsavedComponent('discard', {
+                    type: 'template',
+                    schemaTemplate: { status: 'DRAFT' },
+                });
+                root.fields.push(refField);
+
+                component.enterTemplateSubSchema(refField, ev);
+
+                expect(navigations.length).toBe(1);
+                expect(navigations[0].schemaId).toBe('other');
+                expect(component.hasUnsavedChanges).toBeFalse();
+            });
+
+            describe('on the template settings screen, where a schema switch keeps the template edits', () => {
+                function configScreen() {
+                    const refField = makeField({ name: 'ref', type: '#other', isRef: true, fields: [] });
+                    const state = unsavedComponent(undefined, {
+                        url: '/schema-template-configuration',
+                        type: 'template',
+                        templateConfigDirty: true,
+                        schemaTemplate: { id: 'tpl-1', status: 'DRAFT', config: {} },
+                    });
+                    state.component.dirtySchemaIds.clear();
+                    state.root.fields.push(refField);
+                    return { ...state, refField };
+                }
+
+                it('does not ask when another schema is clicked', () => {
+                    const { component, other, navigations } = configScreen();
+
+                    component.switchSchema(other);
+
+                    expect(component.dialogOpened).toBe(0);
+                    expect(navigations.length).toBe(1);
+                    expect(component.templateConfigDirty).toBeTrue();
+                });
+
+                it('does not ask when a sub-schema is opened', () => {
+                    const { component, refField, navigations } = configScreen();
+
+                    component.enterTemplateSubSchema(refField, ev);
+
+                    expect(component.dialogOpened).toBe(0);
+                    expect(navigations.length).toBe(1);
+                    expect(component.templateConfigDirty).toBeTrue();
+                });
+            });
+
+            it('does not ask while drilling in and out of sub-schemas', () => {
+                const sub: any = makeSchema({ id: 'sub', iri: '#sub', fields: [makeField({ name: 's' })] });
+                const refField = makeField({ name: 'ref', type: '#sub', isRef: true, fields: sub.fields });
+                const { component, root } = unsavedComponent(undefined);
+                root.fields.push(refField);
+                component.schemas.push(sub);
+
+                component.enterSubSchema(refField, ev);
+                component.drillCurrentFields.push(makeField({ name: 'added' }));
+                component.markDirty();
+                component.drillBack();
+                component.enterSubSchema(refField, ev);
+                component.drillClose();
+
+                expect(component.dialogOpened).toBe(0);
+                expect(component.hasUnsavedChanges).toBeTrue();
+            });
+        });
+
+        describe('leaving the editor', () => {
+            function leave(component: any): boolean | undefined {
+                const result = component.canLeave();
+                if (typeof result === 'boolean') { return result; }
+                let value: boolean | undefined;
+                result.subscribe((v: boolean) => { value = v; });
+                return value;
+            }
+
+            it('lets the user go when nothing is unsaved', () => {
+                const { component } = unsavedComponent(undefined);
+                component.dirtySchemaIds.clear();
+
+                expect(leave(component)).toBeTrue();
+                expect(component.dialogOpened).toBe(0);
+            });
+
+            it('words the dialog for leaving the page, not for opening a schema', () => {
+                const { component } = unsavedComponent(undefined);
+
+                leave(component);
+
+                expect(component.dialogData.text).toContain('before leaving this page');
+                expect(component.dialogData.text).not.toContain('another schema');
+                expect(component.dialogData.buttons.map((b: any) => b.name)).toEqual(['Discard and leave', 'Save and leave']);
+            });
+
+            it('offers only Discard and leave when the changes have errors', () => {
+                const { component, root } = unsavedComponent(undefined);
+                root.fields[0].title = '';
+
+                leave(component);
+
+                expect(component.dialogData.text).toContain('Discard them and leave');
+                expect(component.dialogData.buttons.map((b: any) => b.name)).toEqual(['Discard and leave']);
+            });
+
+            it('offers only Discard and leave for a published schema', () => {
+                const { component, root } = unsavedComponent(undefined);
+                root.status = 'PUBLISHED';
+
+                expect(leave(component)).toBeFalse();
+
+                expect(component.dialogData.buttons.map((b: any) => b.name)).toEqual(['Discard and leave']);
+                expect(component.dialogData.text).toContain('new version');
+            });
+
+            it('blocks leaving when the dialog is cancelled', () => {
+                const { component } = unsavedComponent(undefined);
+
+                expect(leave(component)).toBeFalse();
+                expect(component.hasUnsavedChanges).toBeTrue();
+            });
+
+            it('allows leaving and drops the edits on Discard', () => {
+                const { component } = unsavedComponent('discard');
+
+                expect(leave(component)).toBeTrue();
+                expect(component.hasUnsavedChanges).toBeFalse();
+            });
+
+            it('allows leaving after a successful save', () => {
+                const { component, root } = unsavedComponent('save');
+
+                expect(leave(component)).toBeTrue();
+                expect(component.updated).toEqual([root]);
+            });
+
+            it('blocks leaving when the save fails', () => {
+                const { component } = unsavedComponent('save');
+                component.schemaService.update = () => throwError(() => new Error('save failed'));
+
+                expect(leave(component)).toBeFalse();
+                expect(component.hasUnsavedChanges).toBeTrue();
+                expect(component.toasts.length).toBe(1);
+            });
+
+            it('does not ask again for the navigation that follows a new-version save', () => {
+                const { component } = unsavedComponent(undefined);
+                component.skipLeaveGuard = true;
+
+                expect(leave(component)).toBeTrue();
+                expect(component.dialogOpened).toBe(0);
+            });
+
+            it('can save the template settings from the dialog', () => {
+                const { component } = unsavedComponent('save', {
+                    url: '/schema-template-configuration',
+                    templateConfigDirty: true,
+                    schemaTemplate: { id: 'tpl-1', name: 'T', description: '', status: 'DRAFT', config: {} },
+                });
+                component.dirtySchemaIds.clear();
+
+                expect(leave(component)).toBeTrue();
+                expect(component.templateSaves.length).toBe(1);
+                expect(component.templateConfigDirty).toBeFalse();
+            });
+
+            it('blocks leaving when the template settings fail to save', () => {
+                const { component } = unsavedComponent('save', {
+                    url: '/schema-template-configuration',
+                    templateConfigDirty: true,
+                    schemaTemplate: { id: 'tpl-1', name: 'T', description: '', status: 'DRAFT', config: {} },
+                });
+                component.dirtySchemaIds.clear();
+                component.schemaTemplatesService.update = () => throwError(() => new Error('save failed'));
+
+                expect(leave(component)).toBeFalse();
+                expect(component.templateConfigDirty).toBeTrue();
+            });
+        });
+    });
+
+    describe('drilling into a sub-schema that is not in the sidebar list', () => {
+        const ev = { stopPropagation: () => {} };
+
+        function setup() {
+            const sub: any = makeSchema({ id: 'sub', iri: '#sub', fields: [makeField({ name: 's' })] });
+            const refField = makeField({ name: 'ref', type: '#sub', isRef: true, fields: sub.fields });
+            const root: any = makeSchema({ id: 'root', iri: '#root', fields: [refField] });
+            // the paginated sidebar list does not contain the sub-schema
+            const component = createComponent({ schemas: [root], selectedSchema: root });
+            stubDrillPlumbing(component);
+            component._subSchemasByIri = new Map([['#sub', sub]]);
+            return { component, root, sub, refField };
+        }
+
+        it('is not unsaved right after drilling in', () => {
+            const { component, refField } = setup();
+
+            component.enterSubSchema(refField, ev);
+
+            expect(component.hasUnsavedChanges).toBeFalse();
+        });
+
+        it('detects a field added in the drilled sub-schema and saves it', () => {
+            const { component, sub, refField } = setup();
+
+            component.enterSubSchema(refField, ev);
+            component.drillCurrentFields.push(makeField({ name: 'added' }));
+            component.markDirty();
+
+            expect(component.hasUnsavedChanges).toBeTrue();
+            component.saveAll();
+            expect(component.updated).toEqual([sub]);
+            expect(component.updated[0].fields.map((f: any) => f.name)).toEqual(['s', 'added']);
+        });
+
+        it('goes back to saved when the added field is removed again', () => {
+            const { component, refField } = setup();
+
+            component.enterSubSchema(refField, ev);
+            const added = makeField({ name: 'added' });
+            component.drillCurrentFields.push(added);
+            component.markDirty();
+            component.drillCurrentFields.splice(component.drillCurrentFields.indexOf(added), 1);
+            component.markDirty();
+
+            expect(component.hasUnsavedChanges).toBeFalse();
+        });
+
+        it('keeps the edit when the sidebar list is reloaded while drilled in', () => {
+            const { component, sub, refField } = setup();
+            component.enterSubSchema(refField, ev);
+            component.drillCurrentFields.push(makeField({ name: 'added' }));
+            component.markDirty();
+
+            component.schemas = [];
+            component.loadSchemas('topic-1');
+
+            expect(component.schemas).toContain(sub);
+            expect(component.hasUnsavedChanges).toBeTrue();
+            component.saveAll();
+            expect(component.updated).toEqual([sub]);
+        });
+
+        it('lets the sub-schema leave the list once it is saved and closed', () => {
+            const { component, sub, refField } = setup();
+            component.enterSubSchema(refField, ev);
+            component.drillCurrentFields.push(makeField({ name: 'added' }));
+            component.markDirty();
+            component.saveAll();
+            component.drillClose();
+
+            component.schemas = [];
+            component.loadSchemas('topic-1');
+
+            expect(component.schemas).not.toContain(sub);
+        });
+    });
+
+    describe('opening the drilled sub-schema in a new tab', () => {
+        it('opens the sub-schema as the root schema of a new tab', () => {
+            const sub: any = makeSchema({ id: 'sub', iri: '#sub', fields: [makeField({ name: 's' })] });
+            const root: any = makeSchema({ id: 'root', iri: '#root' });
+            const component = createComponent({ schemas: [root, sub], selectedSchema: root });
+            component.drillStack = [{ fieldLabel: 'Sub', fields: sub.fields, schemaIri: '#sub' }];
+            let queryParams: any = null;
+            component.router.createUrlTree = (_cmds: any, extras: any) => { queryParams = extras.queryParams; return {}; };
+            component.router.serializeUrl = () => '/schema-configuration?schemaId=sub';
+            const open = spyOn(window, 'open');
+
+            component.openDrilledSchemaInNewTab();
+
+            expect(queryParams.schemaId).toBe('sub');
+            expect(queryParams.topic).toBe('topic-1');
+            expect(open).toHaveBeenCalledWith('/schema-configuration?schemaId=sub', '_blank');
+        });
+
+        it('does nothing for a sub-schema that has no id yet', () => {
+            const sub: any = makeSchema({ iri: '#sub' });
+            const root: any = makeSchema({ id: 'root', iri: '#root' });
+            const component = createComponent({ schemas: [root, sub], selectedSchema: root });
+            component.drillStack = [{ fieldLabel: 'Sub', fields: [], schemaIri: '#sub' }];
+            const open = spyOn(window, 'open');
+
+            component.openDrilledSchemaInNewTab();
+
+            expect(open).not.toHaveBeenCalled();
         });
     });
 });

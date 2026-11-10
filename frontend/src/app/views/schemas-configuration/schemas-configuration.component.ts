@@ -1562,15 +1562,24 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return this.hasUnsavedChanges && !this.isTemplateReadonly && !this.isTemplatePreviewMode;
     }
 
+    /**
+     * Switching schema only puts schema edits at risk. On the template settings screen the
+     * unsaved part is the template config, which stays in memory across a schema switch, so
+     * it is only asked about when the page is left.
+     */
+    private get needsSwitchConfirmation(): boolean {
+        return this.needsLeaveConfirmation && !this.isTemplateConfigMode;
+    }
+
     public switchSchema(schema: Schema): void {
         const targetId = schema.id || (schema as any)._id;
         const isSame = !!targetId && targetId === this.selectedSchemaId;
-        if (isSame || !this.needsLeaveConfirmation) {
+        if (isSame || !this.needsSwitchConfirmation) {
             this.doSwitchSchema(schema);
             return;
         }
         if (this.isSaving) { return; }
-        this.askUnsavedAction().subscribe((action) => {
+        this.askUnsavedAction('switch').subscribe((action) => {
             if (action === 'discard') {
                 this.discardUnsavedChanges(true);
                 this.doSwitchSchema(schema);
@@ -1584,7 +1593,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public canLeave(): Observable<boolean> | boolean {
         if (this.skipLeaveGuard || !this.needsLeaveConfirmation) { return true; }
         if (this.isSaving) { return false; }
-        return this.askUnsavedAction().pipe(
+        return this.askUnsavedAction('leave').pipe(
             switchMap((action) => {
                 if (action === 'discard') {
                     this.discardUnsavedChanges(false);
@@ -1603,9 +1612,37 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         );
     }
 
-    /** Closing the dialog with the X counts as staying. */
-    private askUnsavedAction(): Observable<'save' | 'discard' | 'cancel'> {
-        const canSave = this.allDirtySchemasValid;
+    /**
+     * Saving a published schema creates a new version in a background task and moves to the
+     * task page, so a save that something is waiting on cannot be used for it.
+     */
+    private get dirtySchemasNeedNewVersion(): boolean {
+        const selId = this.selectedSchemaId;
+        for (const dirtyId of this.dirtySchemaIds) {
+            if (this.newSchemaKeys.has(dirtyId)) { continue; }
+            const schema = selId && dirtyId === selId && this.selectedSchema
+                ? this.selectedSchema
+                : this.schemas.find(s => (s.id || (s as any)._id) === dirtyId);
+            if (schema?.status === SchemaStatus.PUBLISHED) { return true; }
+        }
+        return false;
+    }
+
+    /**
+     * Asks what to do with unsaved changes. The wording follows what the user is about to do,
+     * and the answer is read by button position, so a label can change without breaking it.
+     * Closing the dialog with the X counts as staying.
+     */
+    private askUnsavedAction(purpose: 'switch' | 'leave'): Observable<'save' | 'discard' | 'cancel'> {
+        const needsNewVersion = this.dirtySchemasNeedNewVersion;
+        const canSave = this.allDirtySchemasValid && !needsNewVersion;
+        const wording = purpose === 'switch'
+            ? { target: 'opening another schema', verb: 'open' }
+            : { target: 'leaving this page', verb: 'leave' };
+        const buttons: { name: string, class: string, action: 'save' | 'discard' }[] = [
+            { name: `Discard and ${wording.verb}`, class: 'delete', action: 'discard' },
+            ...(canSave ? [{ name: `Save and ${wording.verb}`, class: 'primary', action: 'save' as const }] : []),
+        ];
         const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
             showHeader: false,
             width: '640px',
@@ -1613,18 +1650,17 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             data: {
                 header: 'Unsaved changes',
                 text: canSave
-                    ? 'You have unsaved changes. Do you want to save them before opening another schema?'
-                    : 'Your changes have errors and can\'t be saved. Discard them and open another schema?',
-                buttons: [
-                    { name: 'Discard and open', class: 'delete' },
-                    ...(canSave ? [{ name: 'Save and open', class: 'primary' }] : []),
-                ],
+                    ? `You have unsaved changes. Do you want to save them before ${wording.target}?`
+                    : needsNewVersion && this.allDirtySchemasValid
+                        ? `Your changes are to a published schema and are saved as a new version, which can\'t be done from here. Discard them and ${wording.verb}?`
+                        : `Your changes have errors and can\'t be saved. Discard them and ${wording.verb}?`,
+                buttons,
             },
         })!;
         return dialogRef.onClose.pipe(
             take(1),
             map((result: string): 'save' | 'discard' | 'cancel' =>
-                result === 'Save and open' ? 'save' : result === 'Discard and open' ? 'discard' : 'cancel')
+                buttons[buttons.findIndex(b => b.name === result)]?.action ?? 'cancel')
         );
     }
 
@@ -2283,6 +2319,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 const s = this.schemas.find(s => (s.id || (s as any)._id) === dirtyId);
                 if (s) { toSave.push(s); }
             }
+        }
+        if (onSaved && toSave.some(s => s.status === SchemaStatus.PUBLISHED)) {
+            onFailed?.();
+            return;
         }
         const hasFormulaChanges = !!this.fieldFormulas?.hasPending;
         if (!toSave.length && !toCreate.length) {
@@ -4104,7 +4144,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (!this.canEnterSubSchema(field)) { return; }
         const subSchema = this.resolveRefSchema(field.type);
         if (subSchema) {
-            this.doSwitchSchema(subSchema);
+            this.switchSchema(subSchema);
         }
     }
 
