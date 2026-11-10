@@ -1,5 +1,6 @@
-import { GenerateID, GenerateUUIDv4, SchemaField, SchemaHelper } from '../index.js';
+import { GenerateID, GenerateUUIDv4, SchemaCondition, SchemaField, SchemaHelper } from '../index.js';
 import { Schema } from '../models/schema.js';
+import { getAllContinents, getAllCountries, getCountriesOfContinent, getStatesOfCountry } from './geo-data/index.js';
 
 interface GenerateOption {
     enableHiddenFields: boolean
@@ -216,15 +217,215 @@ export class DocumentGenerator {
     ): any {
         const { type } = SchemaHelper.parseRef(subSchema.type);
         const json: any = {};
-        for (const field of subSchema.fields) {
-            const value = DocumentGenerator.generateField(field, context, option, rowPresets);
-            if (value !== undefined) {
-                json[field.name] = value;
-            }
-        }
+        DocumentGenerator._fillFields(
+            json,
+            subSchema.fields || [],
+            subSchema.conditions,
+            context,
+            option,
+            rowPresets
+        );
         json.type = type;
         json['@context'] = context;
         return json;
+    }
+
+    /**
+     * Value of an example or default if it fits the field, otherwise undefined
+     * @param field field
+     * @param value candidate value
+     * @returns value
+     */
+    private static _fitValue(field: SchemaField, value: any): any {
+        if (!value) {
+            return undefined;
+        }
+        if (Array.isArray(value)) {
+            if (!field.isArray || !value.length) {
+                return undefined;
+            }
+            const items = value.map((item) => DocumentGenerator._fitValue({ ...field, isArray: false }, item));
+            return items.every((item) => item !== undefined) ? items : undefined;
+        }
+        if (Array.isArray(field.enum) && field.enum.length) {
+            if (field.enum.includes(value)) {
+                return value;
+            }
+            const lower = String(value).toLowerCase();
+            return field.enum.find((item: any) => String(item).toLowerCase() === lower);
+        }
+        switch (field.type) {
+            case 'number':
+                return (typeof value === 'number' && Number.isFinite(value)) ? value : undefined;
+            case 'integer':
+                return Number.isInteger(value) ? value : undefined;
+            case 'boolean':
+                return typeof value === 'boolean' ? value : undefined;
+            case 'string':
+                if (typeof value !== 'string') {
+                    return undefined;
+                }
+                switch (field.format) {
+                    case 'date':
+                        return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : undefined;
+                    case 'time':
+                        return /^\d{2}:\d{2}/.test(value) ? value : undefined;
+                    case 'date-time':
+                        return Number.isNaN(Date.parse(value)) ? undefined : value;
+                    default:
+                        return value;
+                }
+            default:
+                return undefined;
+        }
+    }
+
+    /**
+     * Is geo field
+     * @param field field
+     * @returns boolean
+     */
+    private static _isGeoField(field: SchemaField): boolean {
+        return !field.isRef && (
+            field.customType === 'continent' ||
+            field.customType === 'country' ||
+            field.customType === 'state'
+        );
+    }
+
+    /**
+     * Generate a consistent continent, country and state values
+     * @param field geo field
+     * @param fields sibling fields
+     * @param json already generated values
+     * @param rowPresets presets
+     * @param visited visited fields
+     * @returns value
+     */
+    private static _generateGeo(
+        field: SchemaField,
+        fields: SchemaField[],
+        json: any,
+        rowPresets?: Record<string, any>,
+        visited: Set<string> = new Set()
+    ): string | undefined {
+        if (rowPresets?.[field.name] !== undefined) {
+            return rowPresets[field.name];
+        }
+        const hasStates = (code: string) => getStatesOfCountry(code).length > 0;
+        const countries = (continent?: string): string[] => continent
+            ? getCountriesOfContinent(continent)
+            : getAllCountries().map((item) => item.value);
+        const first = (list: string[], withStates: boolean) =>
+            (withStates ? list.find(hasStates) : undefined) ?? list[0];
+        const hasStateChild = (name: string) => fields.some((item) =>
+            item.customType === 'state' && item.dependency?.kind === 'geo' && item.dependency.on === name
+        );
+
+        visited.add(field.name);
+        const parentName = field.dependency?.kind === 'geo' ? field.dependency.on : undefined;
+        const parent = (parentName && !visited.has(parentName))
+            ? fields.find((item) => item.name === parentName && DocumentGenerator._isGeoField(item))
+            : undefined;
+        const parentValue = parent
+            ? DocumentGenerator._generateGeo(parent, fields, json, rowPresets, visited)
+            : undefined;
+
+        if (field.customType === 'continent') {
+            return getAllContinents()[0]?.value;
+        }
+        if (field.customType === 'country') {
+            if (parent && !parentValue) {
+                return undefined;
+            }
+            const continent = parent?.customType === 'continent' ? parentValue : undefined;
+            return first(countries(continent), hasStateChild(field.name));
+        }
+        if (parent && !parentValue) {
+            return undefined;
+        }
+        let country: string | undefined;
+        if (parent?.customType === 'country') {
+            country = parentValue;
+        } else {
+            const continent = parent?.customType === 'continent' ? parentValue : undefined;
+            country = first(countries(continent), true);
+        }
+        return country ? getStatesOfCountry(country)[0]?.value : undefined;
+    }
+
+    /**
+     * Generate values of fields (including active conditional fields) into the object
+     * @param json object
+     * @param fields fields
+     * @param conditions conditions
+     * @param context context
+     * @param option option
+     * @param rowPresets presets
+     */
+    private static _fillFields(
+        json: any,
+        fields: SchemaField[],
+        conditions: SchemaCondition[] | undefined,
+        context: string[],
+        option: GenerateOption,
+        rowPresets?: Record<string, any>,
+    ): void {
+        const generate = (list: SchemaField[], isBranch: boolean) => {
+            for (const field of list) {
+                if (isBranch ? json[field.name] !== undefined : field.conditionUserOrdered) {
+                    continue;
+                }
+                let value: any;
+                if (DocumentGenerator._isGeoField(field)) {
+                    value = DocumentGenerator._generateGeo(field, list, json, rowPresets);
+                    if (value !== undefined && field.isArray && !Array.isArray(value)) {
+                        value = [value];
+                    }
+                } else {
+                    value = DocumentGenerator.generateField(field, context, option, rowPresets);
+                }
+                if (value !== undefined) {
+                    json[field.name] = value;
+                }
+            }
+        };
+
+        generate(fields, false);
+
+        if (!Array.isArray(conditions) || !conditions.length) {
+            return;
+        }
+        const revealMap = SchemaHelper.buildRevealMap(conditions);
+        const evaluate = (condition: SchemaCondition): boolean => {
+            const predicates = SchemaHelper.getConditionTriggerPredicates(condition.ifCondition);
+            const test = (predicate: any): boolean => {
+                if (predicate?.fieldPath?.length > 1 || !(predicate?.field?.name in json)) {
+                    return false;
+                }
+                return SchemaHelper.testPredicateValue(
+                    predicate.comparator,
+                    json[predicate.field.name],
+                    predicate.fieldValue
+                );
+            };
+            return SchemaHelper.isConditionDisjunctive(condition)
+                ? predicates.some(test)
+                : (predicates.length > 0 && predicates.every(test));
+        };
+        let changed = true;
+        while (changed) {
+            changed = false;
+            for (const condition of conditions) {
+                if (!SchemaHelper.isConditionReachable(condition, revealMap, evaluate)) {
+                    continue;
+                }
+                const branch = (evaluate(condition) ? condition.thenFields : condition.elseFields) || [];
+                const before = Object.keys(json).length;
+                generate(branch, true);
+                changed = changed || Object.keys(json).length > before;
+            }
+        }
     }
 
     /**
@@ -245,12 +446,21 @@ export class DocumentGenerator {
             return rowPresets[field.name];
         }
 
-        if (Array.isArray(field.examples) && field.examples[0]) {
-            return field.examples[0];
+        const example = DocumentGenerator._fitValue(
+            field,
+            Array.isArray(field.examples) ? field.examples[0] : undefined
+        );
+        if (example !== undefined) {
+            return example;
         }
 
-        if (field.default) {
-            return field.default;
+        const defaultValue = DocumentGenerator._fitValue(field, field.default);
+        if (defaultValue !== undefined) {
+            return defaultValue;
+        }
+
+        if (Array.isArray(field.enum) && field.enum.length) {
+            return field.enum[0];
         }
 
         switch (field.type) {
@@ -267,11 +477,7 @@ export class DocumentGenerator {
                     case 'state':
                         return undefined;
                     case 'enum':
-                        if (field.enum) {
-                            return field.enum[0];
-                        } else {
-                            return undefined;
-                        }
+                        return undefined;
                     case 'hederaAccount':
                         return '0.0.1';
                     case 'richText':
@@ -326,7 +532,11 @@ export class DocumentGenerator {
         option: GenerateOption,
         rowPresets?: Record<string, any>,
     ): any {
-        if (field.isRef && !field.examples?.[0]) {
+        if (field.isRef) {
+            const example = field.examples?.[0];
+            if (DocumentGenerator._isPlainObject(example)) {
+                return example;
+            }
             if (field.type === '#GeoJSON') {
                 return DocumentGenerator._generateGeoJSON(field, context, option, rowPresets?.[field.name]);
             } else if (field.type === '#SentinelHUB') {
@@ -379,12 +589,14 @@ export class DocumentGenerator {
         const context: string[] = [schema.iri];
         const json: any = {};
         json.id = GenerateUUIDv4();
-        for (const field of schema.fields) {
-            const value = DocumentGenerator.generateField(field, context, option, rowPresets);
-            if (value !== undefined) {
-                json[field.name] = value;
-            }
-        }
+        DocumentGenerator._fillFields(
+            json,
+            schema.fields,
+            schema.conditions,
+            context,
+            option,
+            rowPresets
+        );
         json.type = schema.type;
         json['@context'] = context;
         return json;
