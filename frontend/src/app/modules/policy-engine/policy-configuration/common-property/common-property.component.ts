@@ -4,6 +4,7 @@ import { PolicyBlock, RoleVariables, SchemaVariables, } from '../../structures';
 import { DialogService } from 'primeng/dynamicdialog';
 import { CodeEditorDialogComponent } from '../../dialogs/code-editor-dialog/code-editor-dialog.component';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { resetMathLinkSchemas } from './math-schema-reset';
 
 /**
  * common property
@@ -166,10 +167,34 @@ export class CommonPropertyComponent implements OnInit {
         if (this.property.confirmation && this.property.confirmation.condition == this.value) {
             this.openConfirmationDialog(this.property.confirmation);
         } else {
+            this.resetMathSchemas();
             this.lastValue = this.value;
             this.needUpdate = true;
             this.update.emit();
         }
+    }
+
+    /**
+     * Math block: reset per-field schemas of links when input/output schema is changed
+     */
+    private resetMathSchemas() {
+        if (
+            this.currentBlock?.blockType !== 'mathBlock' ||
+            !this.data?.expression ||
+            (this.property?.name !== 'inputSchema' && this.property?.name !== 'outputSchema')
+        ) {
+            return;
+        }
+        const isInput = this.property.name === 'inputSchema';
+        const previous = {
+            inputSchema: isInput ? this.lastValue : this.data.inputSchema,
+            outputSchema: isInput ? this.data.outputSchema : this.lastValue,
+        };
+        const next = {
+            inputSchema: this.data.inputSchema,
+            outputSchema: this.data.outputSchema,
+        };
+        resetMathLinkSchemas(this.data.expression, previous, next);
     }
 
     editCode($event: MouseEvent) {
