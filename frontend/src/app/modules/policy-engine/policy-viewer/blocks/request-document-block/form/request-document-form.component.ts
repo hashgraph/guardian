@@ -24,6 +24,7 @@ import { FormulasTree } from 'src/app/modules/formulas/models/formula-tree';
 import { IFormIssue, SchemaFormRootComponent } from 'src/app/modules/schema-engine/schema-form-root/schema-form-root.component';
 import { PolicyTestAutomationService } from '../../../policy-test-automation/policy-test-automation.service';
 import { CalculationPreviewService, ICalculationPreviewProblem, ICalculationPreviewResult, ICalculationPreviewTimelineItem } from 'src/app/services/calculation-preview.service';
+import { SchemaService } from 'src/app/services/schema.service';
 import { IFormTarget, isIndexSegment, walkFields } from 'src/app/modules/schema-engine/schema-form/schema-form-walk';
 import { IFormCompletion } from 'src/app/modules/schema-engine/schema-form/schema-form-completion';
 import { ToastService } from 'src/app/services/toast.service';
@@ -33,6 +34,7 @@ import { PolicyProgressService } from '../../../../services/policy-progress.serv
 export interface IPreviewItemView extends ICalculationPreviewTimelineItem {
     title: string;
     sub: string;
+    schemaType: string | null;
 }
 
 export type FormStep = 'fill' | 'evidence' | 'relayer';
@@ -148,6 +150,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     public previewViewLoading: number = 0;
     /** Loading viewers per card: a viewer that stays mounted while hidden still reports. */
     private previewLoadingByCard = new Map<number, number>();
+    private previewSchemaNames = new Map<string, string>();
 
     public get isPreviewBusy(): boolean {
         return this.previewMode && (this.loading || this.previewRendering || this.previewBusyHold);
@@ -280,6 +283,21 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
             || (!this.previewItems.some((entry) => entry.final === true) && index === this.previewItems.length - 1);
     }
 
+    public previewHiddenLabel(index: number): string {
+        let count = 0;
+        while (index + count < this.previewItems.length && !this.isPreviewItemVisible(index + count)) {
+            count++;
+        }
+        return `${count} intermediate ${count === 1 ? 'document' : 'documents'}`;
+    }
+
+    public previewRoleLabel(item: IPreviewItemView): string {
+        if (item.role === 'input') {
+            return 'Input document';
+        }
+        return item.final === true ? 'Final document' : 'Intermediate document';
+    }
+
     public showPreviewErrors(): void {
         if (this.previewProblems.length) {
             this.previewShowErrors = true;
@@ -301,13 +319,42 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     }
 
     private toPreviewItemView(item: ICalculationPreviewTimelineItem): IPreviewItemView {
+        const schemaType = item.role === 'result' ? this.calculationPreview.getSchemaType(item.document) : null;
         return {
             ...item,
-            title: item.role === 'input' ? (this.schema?.name || item.label) : item.label,
+            schemaType,
+            title: item.role === 'input'
+                ? (this.schema?.name || item.label)
+                : (schemaType && this.previewSchemaNames.get(schemaType)) || item.label,
             sub: item.role === 'input'
                 ? item.label
                 : [item.blockType, item.target || item.source].filter(Boolean).join(' · ')
         };
+    }
+
+    private loadPreviewSchemaNames(): void {
+        const items = this.previewItems;
+        const types = new Set(items
+            .map((item) => item.schemaType)
+            .filter((type): type is string => !!type && !this.previewSchemaNames.has(type)));
+        for (const type of types) {
+            this.schemaService.getSchemasByType(type).pipe(takeUntil(this.destroy$)).subscribe({
+                next: (schema) => {
+                    const name = schema?.name || '';
+                    this.previewSchemaNames.set(type, name);
+                    if (!name || this.previewItems !== items) {
+                        return;
+                    }
+                    for (const item of items) {
+                        if (item.schemaType === type) {
+                            item.title = name;
+                        }
+                    }
+                    this.changeDetectorRef.markForCheck();
+                },
+                error: () => undefined
+            });
+        }
     }
 
     public setDocView(kind: 'preview' | 'submitted', tab: 'doc' | 'json'): void {
@@ -443,6 +490,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         private policyTest: PolicyTestAutomationService,
         private formulasService: FormulasService,
         private calculationPreview: CalculationPreviewService,
+        private schemaService: SchemaService,
         public formPreferences: SchemaFormPreferencesService,
     ) {
         this.dataForm = this.fb.group({});
@@ -1259,6 +1307,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         this.resetPreviewResult();
         this.previewProblems = this.calculationPreview.getProblems(result);
         this.previewItems = this.calculationPreview.getTimeline(result).map((item) => this.toPreviewItemView(item));
+        this.loadPreviewSchemaNames();
         const finalIndex = this.previewItems.findIndex((item) => item.final === true);
         this.previewIndex = finalIndex < 0 ? Math.max(0, this.previewItems.length - 1) : finalIndex;
         this.previewVisited.add(this.previewIndex);

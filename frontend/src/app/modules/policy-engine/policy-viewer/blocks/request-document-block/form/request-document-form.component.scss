@@ -1086,8 +1086,32 @@ form {
     }
 
     .form-tl-expand {
+        display: flex;
         align-items: center;
-        font-size: 20px;
+        gap: 23px;
+        height: 28px;
+        padding: 0;
+        border: 0;
+        background: none;
+        color: var(--sf-text-3);
+        font-family: inherit;
+        font-size: 13px;
+        cursor: pointer;
+
+        .pi {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            place-items: center;
+            width: 24px;
+            height: 24px;
+            background: var(--guardian-background);
+            font-size: 14px;
+        }
+
+        &:hover {
+            color: var(--guardian-font-color);
+        }
     }
 
     .form-timeline {
@@ -1102,17 +1126,29 @@ form {
         position: relative;
         display: flex;
         gap: 10px;
-        align-items: stretch;
+        align-items: center;
         padding-bottom: 8px;
 
-        &:not(:last-child)::before {
+        &::before {
             content: '';
             position: absolute;
             left: 11px;
-            top: 24px;
-            bottom: -2px;
+            top: 0;
+            bottom: 0;
             width: 2px;
             background: var(--sf-border-strong);
+        }
+
+        &:first-child::before {
+            top: calc(50% - 4px);
+        }
+
+        &:last-child::before {
+            bottom: calc(50% + 4px);
+        }
+
+        &:only-child::before {
+            display: none;
         }
     }
 
@@ -1124,7 +1160,6 @@ form {
         flex-shrink: 0;
         width: 24px;
         height: 24px;
-        margin-top: 10px;
         border-radius: 50%;
         background: var(--guardian-primary-background);
         color: var(--color-primary);
@@ -1151,7 +1186,10 @@ form {
         min-width: 0;
         display: flex;
         flex-direction: column;
-        gap: 1px;
+        justify-content: center;
+        gap: 2px;
+        box-sizing: border-box;
+        height: 90px;
         padding: 10px 12px;
         border: 1px solid var(--guardian-border-color);
         border-radius: 10px;
@@ -1161,16 +1199,33 @@ form {
         text-align: left;
         cursor: pointer;
 
+        .form-tl-role {
+            font-size: 10px;
+            font-weight: 600;
+            line-height: 14px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--sf-text-3);
+        }
+
         b {
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            overflow: hidden;
             font-size: 13px;
             font-weight: 600;
+            line-height: 17px;
             overflow-wrap: anywhere;
         }
 
         small {
+            overflow: hidden;
             font-size: 12px;
+            line-height: 16px;
             color: var(--sf-text-3);
-            overflow-wrap: anywhere;
+            white-space: nowrap;
+            text-overflow: ellipsis;
         }
 
         &:hover {
@@ -1194,6 +1249,10 @@ form {
     .form-tl-item.result .form-tl-card.on {
         border-color: var(--color-accent-green-1);
         background: var(--sf-success-soft);
+    }
+
+    .form-tl-item.final .form-tl-role {
+        color: var(--sf-success-text);
     }
 
     .form-pres-doc {

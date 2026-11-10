@@ -1,6 +1,6 @@
 import { fakeAsync, tick } from '@angular/core/testing';
 import { FormArray, FormControl, FormGroup } from '@angular/forms';
-import { Subject } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { RequestDocumentBlockComponent } from './request-document-block.component';
 import { RequestDocumentFormComponent } from './form/request-document-form.component';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -29,6 +29,7 @@ describe('request document preview wiring', () => {
                 getTimeline: (result: any) => CalculationPreviewService.prototype.getTimeline.call(real, result),
                 getProblems: CalculationPreviewService.prototype.getProblems,
                 needsDiscoveryWarning: CalculationPreviewService.prototype.needsDiscoveryWarning,
+                getSchemaType: CalculationPreviewService.prototype.getSchemaType,
             },
         };
     };
@@ -74,6 +75,8 @@ describe('request document preview wiring', () => {
         component.previewRequiredText = '';
         component.docTab = 'doc';
         component.previewTab = 'doc';
+        component.previewSchemaNames = new Map<string, string>();
+        component.schemaService = { getSchemasByType: () => of(null) };
         return { component, calls: fake.calls, uploads, dialogs };
     };
 
@@ -333,7 +336,7 @@ describe('request document preview wiring', () => {
         await component.onStep();
         expect(component.screen).toBe('presults');
         expect(component.previewItems).toEqual([
-            { role: 'result', label: 'save', blockType: null, source: 'form', target: 'save', document: { id: 'vc-1' }, title: 'save', sub: 'save' },
+            { role: 'result', label: 'save', blockType: null, source: 'form', target: 'save', document: { id: 'vc-1' }, title: 'save', sub: 'save', schemaType: null },
         ]);
         expect(component.previewSelected?.document).toEqual({ id: 'vc-1' });
         expect(component.previewShowErrors).toBeFalse();
@@ -402,6 +405,7 @@ describe('request document preview wiring', () => {
         expect(component.isPreviewItemVisible(0)).toBeTrue();
         expect(component.isPreviewItemVisible(1)).toBeFalse();
         expect(component.isPreviewItemVisible(2)).toBeTrue();
+        expect(component.previewHiddenLabel(1)).toBe('1 intermediate document');
         component.showPreviewErrors();
         expect(component.previewHeading).toBe('The preview is incomplete');
     });
@@ -640,12 +644,12 @@ describe('request document preview wiring', () => {
     it('titles the input node with the schema name and the other nodes with their block', () => {
         const { component } = form([], blockParent());
         component.parent.schema = { name: 'Project description' };
-        const input = { role: 'input', label: 'Your form values', blockType: null, source: null, target: null, document: {} };
+        const input = { role: 'input', label: 'Form values', blockType: null, source: null, target: null, document: {} };
         const result = { role: 'result', label: 'save', blockType: 'sendToGuardianBlock', source: 'm', target: 'save', document: {} };
         const inputView = component.toPreviewItemView(input);
         const resultView = component.toPreviewItemView(result);
         expect(inputView.title).toBe('Project description');
-        expect(inputView.sub).toBe('Your form values');
+        expect(inputView.sub).toBe('Form values');
         expect(resultView.title).toBe('save');
         expect(resultView.sub).toBe('sendToGuardianBlock · save');
     });
@@ -1261,6 +1265,47 @@ describe('request document preview wiring', () => {
         expect(component.isPreviewItemVisible(1)).toBeTrue();
         await component.onStep();
         expect(component.previewExpanded).toBeFalse();
+    });
+
+    it('titles returned documents with their schema name and keeps the tag when it is unknown', async () => {
+        const result = normalizePreviewResult({ input: { document: { id: 'input' } }, documents: [
+            { source: 'form', target: 'middle_save', document: { document: { id: 'middle', credentialSubject: [{ type: 'schema-a' }] } } },
+            { final: true, source: 'calc', target: 'final_save', document: { document: { id: 'final', credentialSubject: [{ type: 'schema-b' }] } } },
+            { final: true, source: 'calc', target: 'other_save', document: { document: { id: 'other', credentialSubject: [{ type: 'schema-c' }] } } },
+        ] });
+        const { component } = form([Promise.resolve(result), Promise.resolve(result)], blockParent());
+        const names: Record<string, string> = { 'schema-a': 'Project Description', 'schema-b': 'Emission Reduction Removal' };
+        const getSchemasByType = jasmine.createSpy('getSchemasByType').and.callFake((type: string) =>
+            type in names ? of({ name: names[type] }) : throwError(() => new Error('not found')));
+        component.schemaService = { getSchemasByType };
+        component.previewMode = true;
+        await component.onStep();
+        expect(component.previewItems.map((item: any) => item.title))
+            .toEqual(['Form values', 'Project Description', 'Emission Reduction Removal', 'other_save']);
+        expect(component.previewItems[1].sub).toBe('middle_save');
+        expect(component.previewHiddenLabel(1)).toBe('1 intermediate document');
+        getSchemasByType.calls.reset();
+        await component.onStep();
+        expect(getSchemasByType.calls.allArgs()).toEqual([['schema-c']]);
+        expect(component.previewItems[2].title).toBe('Emission Reduction Removal');
+        component.destroy$.next();
+    });
+
+    it('ignores a schema name that arrives after the preview was replaced', async () => {
+        const result = normalizePreviewResult({ documents: [
+            { final: true, source: 'calc', target: 'final_save', document: { document: { id: 'final', credentialSubject: [{ type: 'schema-b' }] } } },
+        ] });
+        const { component } = form([Promise.resolve(result)], blockParent());
+        const answer = new Subject<{ name: string }>();
+        component.schemaService = { getSchemasByType: () => answer };
+        component.previewMode = true;
+        await component.onStep();
+        const items = component.previewItems;
+        component.resetPreviewResult();
+        answer.next({ name: 'Emission Reduction Removal' });
+        expect(items[0].title).toBe('final_save');
+        expect(component.previewSchemaNames.get('schema-b')).toBe('Emission Reduction Removal');
+        component.destroy$.next();
     });
 
     it('opens the input when no saved document is returned', async () => {

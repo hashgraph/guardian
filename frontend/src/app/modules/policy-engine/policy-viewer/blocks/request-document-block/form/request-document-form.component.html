@@ -194,7 +194,7 @@
               <ol class="form-timeline" aria-label="Calculation chain">
                 @for (item of previewItems; track $index; let i = $index) {
                   @if (isPreviewItemVisible(i)) {
-                  <li class="form-tl-item" [class.input]="item.role === 'input'" [class.result]="item.role === 'result'">
+                  <li class="form-tl-item" [class.input]="item.role === 'input'" [class.result]="item.role === 'result'" [class.final]="item.final === true">
                     <span class="form-tl-node" aria-hidden="true">
                       @if (item.role === 'result') {
                         <i class="pi pi-check"></i>
@@ -208,17 +208,17 @@
                       [class.on]="i === previewIndex"
                       [attr.aria-current]="i === previewIndex ? 'true' : null"
                       (click)="selectPreviewItem(i)">
-                      <b>{{ item.title }}</b>
-                      @if (item.final) {<span class="form-pill ok">Final</span>}
-                      <small>{{ item.sub }}</small>
+                      <span class="form-tl-role">{{ previewRoleLabel(item) }}</span>
+                      <b [attr.title]="item.title">{{ item.title }}</b>
+                      <small [attr.title]="item.sub">{{ item.sub }}</small>
                     </button>
                   </li>
                   } @else if (i === 0 || isPreviewItemVisible(i - 1)) {
                   <li class="form-tl-item form-tl-more">
-                    <span class="form-tl-node" aria-hidden="true"></span>
-                    <button type="button" class="form-tl-card form-tl-expand"
-                      aria-label="Show intermediate documents" aria-expanded="false"
-                      (click)="previewExpanded = true">…</button>
+                    <button type="button" class="form-tl-expand" aria-expanded="false" (click)="previewExpanded = true">
+                      <i class="pi pi-arrows-v" aria-hidden="true"></i>
+                      <span>{{ previewHiddenLabel(i) }}</span>
+                    </button>
                   </li>
                   }
                 }
@@ -226,7 +226,7 @@
               @if (previewSelected; as selected) {
                 <div class="form-pres-doc" [class.input]="selected.role === 'input'" [class.result]="selected.role === 'result'">
                   <div class="form-pres-head">
-                    <span class="form-pill" [class.ok]="selected.role === 'result'">{{ selected.final ? 'Final' : selected.role === 'input' ? 'Input' : 'Result' }}</span>
+                    <span class="form-pill" [class.ok]="selected.role === 'result'">{{ selected.final ? 'Final' : selected.role === 'input' ? 'Input' : 'Intermediate' }}</span>
                     <b>{{ selected.title }}</b>
                     <span class="form-pill">Temporary</span>
                     <small>{{ selected.sub }}</small>

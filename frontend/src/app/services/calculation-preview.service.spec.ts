@@ -209,7 +209,7 @@ describe('CalculationPreviewService', () => {
             ],
         });
         expect(service.getTimeline(preview)).toEqual([
-            { role: 'input', label: 'Your form values', blockType: null, source: null, target: null, document: { id: 'vc-input' } },
+            { role: 'input', label: 'Form values', blockType: null, source: null, target: null, document: { id: 'vc-input' } },
             { role: 'result', label: 't09_save_a', blockType: 'sendToGuardianBlock', source: 't09_math', target: 't09_save_a', document: { id: 'vc-a' } },
             { role: 'result', label: 't09_save_b', blockType: 'sendToGuardianBlock', source: 't09_math', target: 't09_save_b', document: { id: 'vc-b1' } },
             { role: 'result', label: 't09_save_b', blockType: 'sendToGuardianBlock', source: 't09_math', target: 't09_save_b', document: { id: 'vc-b2' } },
@@ -231,7 +231,7 @@ describe('CalculationPreviewService', () => {
     it('takes an input that is the document itself', () => {
         const preview = normalizePreviewResult({ input: { id: 'vc-input', credentialSubject: [] } });
         expect(service.getTimeline(preview)).toEqual([
-            { role: 'input', label: 'Your form values', blockType: null, source: null, target: null, document: { id: 'vc-input', credentialSubject: [] } },
+            { role: 'input', label: 'Form values', blockType: null, source: null, target: null, document: { id: 'vc-input', credentialSubject: [] } },
         ]);
     });
 
@@ -240,6 +240,14 @@ describe('CalculationPreviewService', () => {
             documents: [{ source: 'a', target: 'b', blockType: 'mathBlock', document: { document: { id: 'vc-a' } } }],
         });
         expect(service.getTimeline(preview).map((item) => item.role)).toEqual(['result']);
+    });
+
+    it('reads the schema type of a returned document', () => {
+        expect(service.getSchemaType({ credentialSubject: [{ type: 'schema-a&1.0.0' }] })).toBe('schema-a&1.0.0');
+        expect(service.getSchemaType({ credentialSubject: { type: 'schema-b' } })).toBe('schema-b');
+        expect(service.getSchemaType({ credentialSubject: [] })).toBeNull();
+        expect(service.getSchemaType({ id: 'vc' })).toBeNull();
+        expect(service.getSchemaType(null)).toBeNull();
     });
 
     it('drops the placeholder file id of a preview table so the viewer reads its csv', () => {
