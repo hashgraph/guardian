@@ -18,6 +18,7 @@ import { CalculationPreviewService } from 'src/app/services/calculation-preview.
 import { FormTakeoverService } from '../../../form-takeover/form-takeover.service';
 import { PolicyProgressService } from '../../../../services/policy-progress.service';
 import { ToastService } from 'src/app/services/toast.service';
+import { SchemaService } from 'src/app/services/schema.service';
 
 describe('RequestDocumentFormComponent', () => {
     const progress = {
@@ -70,6 +71,7 @@ describe('RequestDocumentFormComponent', () => {
                 { provide: PolicyTestAutomationService, useValue: {} },
                 { provide: FormulasService, useValue: {} },
                 { provide: CalculationPreviewService, useValue: {} },
+                { provide: SchemaService, useValue: { getSchemasByType: () => of(null) } },
                 { provide: PolicyProgressService, useValue: progress },
                 { provide: FormTakeoverService, useValue: takeover },
                 { provide: ToastService, useValue: { success: jasmine.createSpy('success') } },
@@ -388,12 +390,14 @@ describe('RequestDocumentFormComponent', () => {
             const element: HTMLElement = fixture.nativeElement;
             expect(element.querySelectorAll('.form-tl-item:not(.form-tl-more)').length).toBe(2);
             const expand = element.querySelector<HTMLButtonElement>('.form-tl-expand')!;
-            expect(expand.getAttribute('aria-label')).toBe('Show intermediate documents');
+            expect(expand.textContent?.trim()).toBe('2 intermediate documents');
             expand.click();
             fixture.detectChanges();
             expect(element.querySelector('.form-tl-expand')).toBeNull();
             const cards = element.querySelectorAll<HTMLButtonElement>('.form-tl-card');
             expect(Array.from(cards).map((card) => card.querySelector('b')?.textContent)).toEqual(['input', 'middle-a', 'middle-b', 'final']);
+            expect(Array.from(cards).map((card) => card.querySelector('.form-tl-role')?.textContent))
+                .toEqual(['Input document', 'Intermediate document', 'Intermediate document', 'Final document']);
             cards[1].click();
             fixture.detectChanges();
             expect(component.previewSelected?.document).toEqual({ id: 'middle-a' });
@@ -412,6 +416,9 @@ describe('RequestDocumentFormComponent', () => {
             expect(element.querySelectorAll('.form-tl-item:not(.form-tl-more)').length).toBe(2);
             expect(element.querySelector('.form-pres-doc')?.textContent).toContain('last');
             expect(element.querySelector('.form-pres-doc')?.textContent).not.toContain('Final');
+            expect(element.querySelector('.form-pres-head .form-pill')?.textContent).toBe('Intermediate');
+            const roles = element.querySelectorAll('.form-tl-role');
+            expect(roles[roles.length - 1].textContent).toBe('Intermediate document');
             expect(element.querySelector('.form-notice-warn')).toBeNull();
             expect(element.textContent).toContain('Incomplete result');
             fixture.destroy();
