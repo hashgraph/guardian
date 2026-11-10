@@ -354,8 +354,7 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
             SchemaTemplateUpdateResolutionAction.KEEP_AS_CUSTOM_LINK
         ];
         const reset = [
-            SchemaTemplateUpdateResolutionAction.RESET_TO_TEMPLATE,
-            SchemaTemplateUpdateResolutionAction.REMOVE_FROM_POLICY
+            SchemaTemplateUpdateResolutionAction.RESET_TO_TEMPLATE
         ];
         const wanted = mode === 'keep' ? keep : reset;
         return (conflict.allowedActions || []).find((action) => wanted.includes(action));
