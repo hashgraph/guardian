@@ -17,7 +17,7 @@ describe('resetMathLinkSchemas', () => {
         }],
     });
 
-    it('resets all pinned input links, including stale and cross-schema pins', () => {
+    it('resets input links pinned to the old input schema and keeps cross-schema links', () => {
         const expression = build();
         const changed = resetMathLinkSchemas(
             expression,
@@ -29,7 +29,7 @@ describe('resetMathLinkSchemas', () => {
         expect(items[0].schema).toBe('');
         expect(items[0].field).toBe('x');
         expect(items[1].schema).toBe('');
-        expect(items[2].schema).toBe('');
+        expect(items[2].schema).toBe('#other');
         expect((expression.outputs[0] as any).items[0].schema).toBe('#oldOut');
     });
 

@@ -38,7 +38,7 @@ export function resetMathLinkSchemas(
 
     if ((previous.inputSchema || '') !== (next.inputSchema || '')) {
         forEachLink(expression.variables, (link) => {
-            if (link.schema) {
+            if (link.schema && link.schema === previous.inputSchema) {
                 link.schema = '';
                 changed = true;
             }
