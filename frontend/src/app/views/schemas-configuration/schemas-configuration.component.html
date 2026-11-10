@@ -820,6 +820,17 @@
                                     (click)="!$last ? drillTo(i) : null">
                                     {{ entry.fieldLabel }}
                                 </button>
+                                @if ($last && (drilledSchema?.id || $any(drilledSchema)?._id)) {
+                                    <button class="sc-drill-open-tab"
+                                            pTooltip="Open this sub-schema as the root schema in a new tab"
+                                            tooltipPosition="bottom"
+                                            [showDelay]="100"
+                                            [hideDelay]="0"
+                                            aria-label="Open this sub-schema as the root schema in a new tab"
+                                            (click)="openDrilledSchemaInNewTab()">
+                                        <i class="pi pi-external-link"></i>
+                                    </button>
+                                }
                             }
                         </div>
 
@@ -2224,11 +2235,7 @@
                         <button class="sc-btn sc-btn-primary"
                             [disabled]="!canApplyArrayDependency() || isArrayDependencyFormLocked"
                             (click)="applyArrayDependency()">
-                            @if (editingArrayDependency) {
-                                <i class="pi pi-check"></i>Save link
-                            } @else {
-                                <i class="pi pi-plus"></i>Add link
-                            }
+                            Save link
                         </button>
                     </div>
                 </div>
