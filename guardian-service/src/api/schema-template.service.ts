@@ -2167,11 +2167,11 @@ export function buildFieldPolicyConflicts(input: {
 
         if (!policyField) {
             if (previousField.name && !hasFieldProperty(input.policyDocument, previousField.name)) {
-                const referenced = isFieldStructurallyReferenced(nextSchema, templateFieldId, nextField.name);
+                const removedReferenced = isFieldStructurallyReferenced(nextSchema, templateFieldId, nextField.name);
                 conflicts.push(createConflict(
                     SchemaTemplateUpdateConflictType.FIELD_REMOVED_IN_POLICY,
                     `Field "${label}" was deleted from the policy.` +
-                    (referenced ? ' The template depends on it, so it must be reset.' : ''),
+                    (removedReferenced ? ' The template depends on it, so it must be reset.' : ''),
                     {
                         templateSchemaId,
                         templateFieldId,
@@ -2179,7 +2179,7 @@ export function buildFieldPolicyConflicts(input: {
                         fieldName: label,
                         details: [{ label: 'Field', before: 'Deleted in policy', after: formatFieldSummary(nextField) }],
                         templateField: fieldBrief(nextField),
-                        allowedActions: referenced ? [SchemaTemplateUpdateResolutionAction.RESET_TO_TEMPLATE] : both
+                        allowedActions: removedReferenced ? [SchemaTemplateUpdateResolutionAction.RESET_TO_TEMPLATE] : both
                     }
                 ));
             }
