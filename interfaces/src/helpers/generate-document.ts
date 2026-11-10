@@ -1,6 +1,6 @@
 import { GenerateID, GenerateUUIDv4, SchemaCondition, SchemaField, SchemaHelper } from '../index.js';
 import { Schema } from '../models/schema.js';
-import { getAllContinents, getAllCountries, getCountriesOfContinent, getStatesOfCountry } from './geo-data/index.js';
+import { getAllContinents, getAllCountries, getCountriesOfContinent, getStatesOfCountry, isGeoCustomType } from './geo-data/index.js';
 
 interface GenerateOption {
     enableHiddenFields: boolean
@@ -244,7 +244,8 @@ export class DocumentGenerator {
             if (!field.isArray || !value.length) {
                 return undefined;
             }
-            const items = value.map((item) => DocumentGenerator._fitValue({ ...field, isArray: false }, item));
+            const itemField = { ...field, isArray: false };
+            const items = value.map((item) => DocumentGenerator._fitValue(itemField, item));
             return items.every((item) => item !== undefined) ? items : undefined;
         }
         if (Array.isArray(field.enum) && field.enum.length) {
@@ -286,18 +287,52 @@ export class DocumentGenerator {
      * @returns boolean
      */
     private static _isGeoField(field: SchemaField): boolean {
-        return !field.isRef && (
-            field.customType === 'continent' ||
-            field.customType === 'country' ||
-            field.customType === 'state'
-        );
+        return !field.isRef && isGeoCustomType(field.customType || '');
+    }
+
+    /**
+     * Cached default geo values (the geo data is static)
+     */
+    private static _firstContinent: string | undefined;
+    private static readonly _firstStates = new Map<string, string | undefined>();
+    private static readonly _firstCountries = new Map<string, string | undefined>();
+
+    /**
+     * First state of a country
+     * @param country country
+     * @returns state
+     */
+    private static _firstStateOf(country: string): string | undefined {
+        if (!DocumentGenerator._firstStates.has(country)) {
+            DocumentGenerator._firstStates.set(country, getStatesOfCountry(country)[0]?.value);
+        }
+        return DocumentGenerator._firstStates.get(country);
+    }
+
+    /**
+     * First country of a continent (or of the world), preferably one that has states
+     * @param continent continent
+     * @param withStates prefer a country with states
+     * @returns country
+     */
+    private static _firstCountryOf(continent: string | undefined, withStates: boolean): string | undefined {
+        const key = `${continent || ''}|${withStates}`;
+        if (!DocumentGenerator._firstCountries.has(key)) {
+            const list = continent
+                ? getCountriesOfContinent(continent)
+                : getAllCountries().map((item) => item.value);
+            const country = (withStates
+                ? list.find((item) => DocumentGenerator._firstStateOf(item) !== undefined)
+                : undefined) ?? list[0];
+            DocumentGenerator._firstCountries.set(key, country);
+        }
+        return DocumentGenerator._firstCountries.get(key);
     }
 
     /**
      * Generate a consistent continent, country and state values
      * @param field geo field
      * @param fields sibling fields
-     * @param json already generated values
      * @param rowPresets presets
      * @param visited visited fields
      * @returns value
@@ -305,22 +340,16 @@ export class DocumentGenerator {
     private static _generateGeo(
         field: SchemaField,
         fields: SchemaField[],
-        json: any,
         rowPresets?: Record<string, any>,
         visited: Set<string> = new Set()
     ): string | undefined {
         if (rowPresets?.[field.name] !== undefined) {
             return rowPresets[field.name];
         }
-        const hasStates = (code: string) => getStatesOfCountry(code).length > 0;
-        const countries = (continent?: string): string[] => continent
-            ? getCountriesOfContinent(continent)
-            : getAllCountries().map((item) => item.value);
-        const first = (list: string[], withStates: boolean) =>
-            (withStates ? list.find(hasStates) : undefined) ?? list[0];
-        const hasStateChild = (name: string) => fields.some((item) =>
-            item.customType === 'state' && item.dependency?.kind === 'geo' && item.dependency.on === name
-        );
+        if (field.customType === 'continent') {
+            DocumentGenerator._firstContinent ??= getAllContinents()[0]?.value;
+            return DocumentGenerator._firstContinent;
+        }
 
         visited.add(field.name);
         const parentName = field.dependency?.kind === 'geo' ? field.dependency.on : undefined;
@@ -328,30 +357,23 @@ export class DocumentGenerator {
             ? fields.find((item) => item.name === parentName && DocumentGenerator._isGeoField(item))
             : undefined;
         const parentValue = parent
-            ? DocumentGenerator._generateGeo(parent, fields, json, rowPresets, visited)
+            ? DocumentGenerator._generateGeo(parent, fields, rowPresets, visited)
             : undefined;
-
-        if (field.customType === 'continent') {
-            return getAllContinents()[0]?.value;
-        }
-        if (field.customType === 'country') {
-            if (parent && !parentValue) {
-                return undefined;
-            }
-            const continent = parent?.customType === 'continent' ? parentValue : undefined;
-            return first(countries(continent), hasStateChild(field.name));
-        }
         if (parent && !parentValue) {
             return undefined;
         }
-        let country: string | undefined;
-        if (parent?.customType === 'country') {
-            country = parentValue;
-        } else {
-            const continent = parent?.customType === 'continent' ? parentValue : undefined;
-            country = first(countries(continent), true);
+
+        const continent = parent?.customType === 'continent' ? parentValue : undefined;
+        if (field.customType === 'country') {
+            const hasStateChild = fields.some((item) =>
+                item.customType === 'state' && item.dependency?.kind === 'geo' && item.dependency.on === field.name
+            );
+            return DocumentGenerator._firstCountryOf(continent, hasStateChild);
         }
-        return country ? getStatesOfCountry(country)[0]?.value : undefined;
+        const country = parent?.customType === 'country'
+            ? parentValue
+            : DocumentGenerator._firstCountryOf(continent, true);
+        return country ? DocumentGenerator._firstStateOf(country) : undefined;
     }
 
     /**
@@ -376,15 +398,9 @@ export class DocumentGenerator {
                 if (isBranch ? json[field.name] !== undefined : field.conditionUserOrdered) {
                     continue;
                 }
-                let value: any;
-                if (DocumentGenerator._isGeoField(field)) {
-                    value = DocumentGenerator._generateGeo(field, list, json, rowPresets);
-                    if (value !== undefined && field.isArray && !Array.isArray(value)) {
-                        value = [value];
-                    }
-                } else {
-                    value = DocumentGenerator.generateField(field, context, option, rowPresets);
-                }
+                const value = DocumentGenerator._isGeoField(field)
+                    ? DocumentGenerator._wrapArray(field, DocumentGenerator._generateGeo(field, list, rowPresets))
+                    : DocumentGenerator.generateField(field, context, option, rowPresets);
                 if (value !== undefined) {
                     json[field.name] = value;
                 }
@@ -397,35 +413,27 @@ export class DocumentGenerator {
             return;
         }
         const revealMap = SchemaHelper.buildRevealMap(conditions);
-        const evaluate = (condition: SchemaCondition): boolean => {
-            const predicates = SchemaHelper.getConditionTriggerPredicates(condition.ifCondition);
-            const test = (predicate: any): boolean => {
-                if (predicate?.fieldPath?.length > 1 || !(predicate?.field?.name in json)) {
-                    return false;
-                }
-                return SchemaHelper.testPredicateValue(
-                    predicate.comparator,
-                    json[predicate.field.name],
-                    predicate.fieldValue
-                );
-            };
-            return SchemaHelper.isConditionDisjunctive(condition)
-                ? predicates.some(test)
-                : (predicates.length > 0 && predicates.every(test));
-        };
-        let changed = true;
-        while (changed) {
-            changed = false;
+        const evaluate = (condition: SchemaCondition): boolean =>
+            SchemaHelper.evaluateIfCondition(condition.ifCondition, json);
+        let size: number;
+        do {
+            size = Object.keys(json).length;
             for (const condition of conditions) {
-                if (!SchemaHelper.isConditionReachable(condition, revealMap, evaluate)) {
-                    continue;
+                if (SchemaHelper.isConditionReachable(condition, revealMap, evaluate)) {
+                    generate((evaluate(condition) ? condition.thenFields : condition.elseFields) || [], true);
                 }
-                const branch = (evaluate(condition) ? condition.thenFields : condition.elseFields) || [];
-                const before = Object.keys(json).length;
-                generate(branch, true);
-                changed = changed || Object.keys(json).length > before;
             }
-        }
+        } while (Object.keys(json).length > size);
+    }
+
+    /**
+     * Wrap a value in an array for array fields
+     * @param field field
+     * @param value value
+     * @returns value
+     */
+    private static _wrapArray(field: SchemaField, value: any): any {
+        return (field.isArray && value !== undefined && !Array.isArray(value)) ? [value] : value;
     }
 
     /**
@@ -475,7 +483,6 @@ export class DocumentGenerator {
                     case 'country':
                     case 'continent':
                     case 'state':
-                        return undefined;
                     case 'enum':
                         return undefined;
                     case 'hederaAccount':
@@ -563,16 +570,10 @@ export class DocumentGenerator {
         option: GenerateOption,
         rowPresets?: Record<string, any>,
     ): any {
-        const value = DocumentGenerator._generateField(field, context, option, rowPresets);
-        if (field.isArray && value !== undefined) {
-            if (Array.isArray(value)) {
-                return value;
-            } else {
-                return [value];
-            }
-        } else {
-            return value;
-        }
+        return DocumentGenerator._wrapArray(
+            field,
+            DocumentGenerator._generateField(field, context, option, rowPresets)
+        );
     }
 
     /**
