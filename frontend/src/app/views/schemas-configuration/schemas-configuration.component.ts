@@ -290,11 +290,23 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public get isTemplateConfigMode(): boolean {
-        return this.router.url.startsWith('/schema-template-configuration');
+        return this.templateRoute === 'configuration';
     }
 
     public get isTemplatePreviewMode(): boolean {
-        return this.router.url.startsWith('/schema-template-preview');
+        return this.templateRoute === 'preview';
+    }
+
+    private templateRouteValue?: 'configuration' | 'preview' | '';
+
+    private get templateRoute(): 'configuration' | 'preview' | '' {
+        if (this.templateRouteValue === undefined) {
+            const url = this.router.url;
+            this.templateRouteValue = url.startsWith('/schema-template-configuration')
+                ? 'configuration'
+                : url.startsWith('/schema-template-preview') ? 'preview' : '';
+        }
+        return this.templateRouteValue;
     }
 
     public get breadcrumbRootLabel(): string {
@@ -697,8 +709,21 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public schemaPropsCollapsed: boolean = false;
     public drillPropsCollapsed: boolean = false;
 
+    private drilledSchemaCache: { iri: string; schemas: Schema[]; schema: Schema } | null = null;
+
     public get drilledSchema(): Schema | null {
-        return this.resolveRefSchema(this.currentDrilledSchemaIri) ?? null;
+        const iri = this.currentDrilledSchemaIri;
+        if (!iri) { return null; }
+        const cache = this.drilledSchemaCache;
+        if (cache && cache.iri === iri && cache.schemas === this.schemas) {
+            return cache.schema;
+        }
+        const listed = this.schemas.find(s => s.iri === iri);
+        if (listed) {
+            this.drilledSchemaCache = { iri, schemas: this.schemas, schema: listed };
+            return listed;
+        }
+        return this._subSchemasByIri.get(iri) ?? null;
     }
 
     public get currentContextSchema(): Schema | null {
@@ -4048,6 +4073,47 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.setDragGhost(event);
     }
 
+    private schemaCycleCache: {
+        schemas: Schema[];
+        selectedSchema: Schema | null;
+        drillStack: DrillEntry[];
+        editVersion: number;
+        dataVersion: number;
+        schemaMap: Map<string, Schema>;
+        results: Map<Schema, boolean>;
+    } | null = null;
+
+    private isCircularDependencyCached(schema: Schema): boolean {
+        let cache = this.schemaCycleCache;
+        if (!cache
+            || cache.schemas !== this.schemas
+            || cache.selectedSchema !== this.selectedSchema
+            || cache.drillStack !== this.drillStack
+            || cache.editVersion !== this.schemaEditVersion
+            || cache.dataVersion !== this.arrayDependencyDataVersion) {
+            const schemaMap = new Map<string, Schema>();
+            for (const candidate of this.schemas) {
+                if (candidate.iri) { schemaMap.set(candidate.iri, candidate); }
+            }
+            cache = {
+                schemas: this.schemas,
+                selectedSchema: this.selectedSchema,
+                drillStack: this.drillStack,
+                editVersion: this.schemaEditVersion,
+                dataVersion: this.arrayDependencyDataVersion,
+                schemaMap,
+                results: new Map<Schema, boolean>(),
+            };
+            this.schemaCycleCache = cache;
+        }
+        let result = cache.results.get(schema);
+        if (result === undefined) {
+            result = this.isCircularDependency(schema, cache.schemaMap);
+            cache.results.set(schema, result);
+        }
+        return result;
+    }
+
     public isCircularDependency(schema: Schema, schemaMap?: Map<string, Schema>): boolean {
         const refs = schemaMap ?? new Map<string, Schema>();
         if (!schemaMap) {
@@ -4091,7 +4157,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (this.selectedSchema?.iri && schema.iri === this.selectedSchema.iri) { return false; }
         const contextIri = this.currentDrilledSchemaIri;
         if (contextIri && schema.iri === contextIri) { return false; }
-        if (this.isCircularDependency(schema, schemaMap)) { return false; }
+        const circular = schemaMap ? this.isCircularDependency(schema, schemaMap) : this.isCircularDependencyCached(schema);
+        if (circular) { return false; }
         return true;
     }
 
@@ -4105,7 +4172,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
         const contextIri = this.currentDrilledSchemaIri;
         if (contextIri && schema.iri === contextIri) { return 'Cannot add the currently viewed sub-schema to itself'; }
-        if (this.isCircularDependency(schema)) { return 'Would create a circular dependency'; }
+        if (this.isCircularDependencyCached(schema)) { return 'Would create a circular dependency'; }
         return '';
     }
 
