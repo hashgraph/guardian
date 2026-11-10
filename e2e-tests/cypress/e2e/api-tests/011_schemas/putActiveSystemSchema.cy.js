@@ -5,7 +5,7 @@ import * as Authorization from '../../../support/authorization';
 
 context('Schemas', { tags: ['schema', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-    const username = 'StandartRegistry';
+    const username = 'StandardRegistry';
     const schemaUUID = ('0000b23a-b1ea-408f-a573' + randomInt(999999) + 'a2060a')
 
     it('Make the created scheme active', () => {

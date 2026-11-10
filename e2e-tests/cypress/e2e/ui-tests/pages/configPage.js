@@ -1,4 +1,5 @@
 import { TIMEOUTS, POLL_INTERVAL } from '../../../support/CustomHelpers/timeouts';
+import { waitForTaskRoundtrip } from '../../../support/importFlow';
 // New-app wizard flows (PrimeNG DOM). The SR profile wizard lives at /config
 // (HEDERA -> DID -> [DID_KEYS] -> VC) and the user profile wizard at /user-profile
 // (select SR -> HEDERA -> DID document -> [VC document]). p-button keeps no label
@@ -13,6 +14,79 @@ export function dismissStickyToasts() {
 	cy.window().then((win) => {
 		win.document.querySelectorAll('button.p-toast-close-button').forEach((b) => b.click());
 	});
+}
+
+// The user wizard's footer renders exactly one primary button: "Next" while a
+// step remains, "Confirm" on the last step (p-button keeps no label attribute
+// in the DOM - the label is an inner span - so the button is matched by text).
+// Sticky toasts re-spawn on every failed re-poll and can sit on the button,
+// so the dismiss and the click run in the same tick.
+export function clickWizardFooterButton() {
+	cy.window().then((win) => {
+		win.document.querySelectorAll('button.p-toast-close-button').forEach((b) => b.click());
+		const btn = Array.from(win.document.querySelectorAll('.user-profile-finish-buttons button'))
+			.find((b) => ['Next', 'Confirm'].includes((b.textContent || '').trim()));
+		if (!btn) {
+			throw new Error('wizard footer button not found');
+		}
+		if (btn.disabled) {
+			throw new Error('wizard footer button is disabled');
+		}
+		btn.click();
+	});
+}
+
+// An active USER system schema in the workspace appends a VC document step to
+// the user wizard whose form is driven by that schema. The API suite's
+// 011_schemas spec activates one and the product cannot deactivate it, so the
+// schema is test data whose fields the driver must not know: every editable
+// control of the form is filled with a placeholder (readonly fields are
+// populated by the form engine itself).
+export function fillWizardSchemaForm() {
+	cy.get('app-schema-form-root .form-field', { timeout: TIMEOUTS.ui }).then(($fields) => {
+		let editable = 0;
+		$fields.each((_, field) => {
+			const control = field.querySelector('textarea, input');
+			if (!control || control.readOnly || control.disabled) {
+				return;
+			}
+			editable += 1;
+			cy.wrap(field).find('textarea, input').first().click();
+			cy.wrap(field).find('textarea, input').first().clear();
+			cy.wrap(field).find('textarea, input').first().type('e2e');
+		});
+		expect(editable, 'the VC step form to expose an editable field').to.be.greaterThan(0);
+	});
+}
+
+// Drives the wizard from the DID step to the onboarding push across both
+// shapes: without the appended VC step the footer click is the final Confirm,
+// with it the footer click advances to the VC step, whose form must be filled
+// before the real Confirm. The task navigation that follows the Confirm is
+// deliberately NOT awaited here: it is a backend round trip (the gateway
+// validates the JWT over NATS with no timeout, so the 202 has been seen to
+// land right at a short deadline) whose budget and recovery - reload + redo -
+// the callers own: waitForTaskNavigationOrRecover on the 00-spec path,
+// waitForTaskRoundtrip on the 02-spec path.
+export function completeUserWizard() {
+	clickWizardFooterButton();
+	// Poll only for the appended VC step: the step transition is client-side
+	// and lands quickly, and whatever the app is doing otherwise - leaving
+	// for /task, or stalling - is the caller's to settle with its own
+	// recovery logic.
+	const deadline = Date.now() + TIMEOUTS.ui;
+	const tick = () => cy.window().then((win) => {
+		if (win.document.querySelector('app-schema-form-root')) {
+			fillWizardSchemaForm();
+			clickWizardFooterButton();
+			return;
+		}
+		if (Date.now() < deadline) {
+			cy.wait(POLL_INTERVAL).then(tick);
+			return;
+		}
+	});
+	tick();
 }
 
 export class ConfigPage {
@@ -198,9 +272,12 @@ export class ConfigPage {
 		cy.contains('button', 'Connect').should('be.enabled', { timeout: TIMEOUTS.backend });
 		this.clickLabeledButton('Connect');
 		// Profile registration runs as a worker task: the app leaves to /task/:id
-		// and returns to the profile view when the task settles.
-		cy.location('pathname', { timeout: TIMEOUTS.backend }).should('include', '/task');
-		cy.location('pathname', { timeout: TIMEOUTS.backend }).should('not.include', '/task');
+		// and returns to the profile view when the task settles. The Connect
+		// chain (topic, DID, five schemas, roles, save) takes about 20 s
+		// server-side on a loaded Solo container - the whole short backend
+		// budget a fixed assert would get - so the return leg gets the
+		// longOperation budget of the shared round trip wait.
+		waitForTaskRoundtrip();
 		cy.contains('did:hedera', { timeout: TIMEOUTS.ui });
 		return cy.then(() => credentials);
 	}
@@ -272,8 +349,7 @@ export class ConfigPage {
 			cy.contains('button', 'Next').should('be.enabled');
 			this.clickLabeledButton('Next');
 			cy.contains('Create a New DID Document with Guardian').should('be.visible', { timeout: TIMEOUTS.ui });
-			cy.contains('button', 'Confirm').should('be.enabled', { timeout: TIMEOUTS.backend });
-			this.clickLabeledButton('Confirm');
+			completeUserWizard();
 		};
 
 		runWizard();

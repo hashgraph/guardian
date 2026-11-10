@@ -1,9 +1,10 @@
 # Registration wizard stalls forever when the task result is lost
 
-**Status:** open — product bug; `onAsyncCompleted()` no longer throws on a task body without a result (it shows a toast and releases the spinner), the other causes below remain. The push-failure item below is overstated: an HTTP error on the push is already toasted by the error interceptor, only a push that gets no answer at all is silent; the UI tests now work around it (see `pages/configPage.js generateHederaAccount`: up to 9 Generate tickets with a 15 s pace between them, a 15 s absent-or-disabled verdict, and a page reload + step redo after every loss; applied to both wizards)
+**Status:** open — latent product bug; the 31 Oct 2026 SR-wizard observation below is the only known evidence (a genuine loss, not explainable by the 9–10 Nov issue). The 9–10 Nov 2026 four UI spec failures that the "New evidence" section documented were re-attributed on 10 Nov 2026 to a different, fully pinned issue (an active USER system schema left by the 011 API spec appended a fifth step to the USER wizard — test-state coupling, fixed in the UI page objects; see `plan-fix-4-ui-spec-failures.md`). The mechanisms below remain open and are not exercised by that (now fixed) failure: in both Nov runs the wizard was alive — the Generate result landed via the HTTP task GET and the steps advanced.
 **Component:** `frontend` — `modules/common/async-progress/async-progress.component.ts`, `views/root-profile/root-profile.component.ts`; `api-gateway` — `helpers/task-manager.ts`, `api/service/websockets.ts`
-**Severity:** medium-high — onboarding dead-ends with no in-app recovery; only a page reload works, and every retry funds a new orphaned Hedera account
+**Severity:** medium — onboarding dead-ends with no in-app recovery; only a page reload works, and every retry funds a new orphaned Hedera account. Re-graded from medium-high on 10 Nov 2026: not reproduced in the 276-spec run of 9–10 Nov, no known repro conditions beyond the 31 Oct observation.
 **Found by:** `e2e-tests/cypress/e2e/ui-tests/specs/00_account_registration/createAccount_Generate.cy.js` — runs of 31 Oct 2026 (14:22, 15:5x, 17:56; the 17:56 run, account `TestSRUI675890527`, supplied the most complete evidence below)
+**Re-attribute (10 Nov 2026):** the "Reproduced by" line and the "New evidence" section of 9–10 Nov are superseded — those four spec failures were the schema coupling above, not this bug.
 
 ## Symptom
 
@@ -14,6 +15,18 @@ The worker completes the "Create random key" task in <1 s and the result exists 
 3. **Permanent preloader** — the centered `preloader-image` only (the 17:56 run's final frame): the wizard is unmounted and the small spinner never resolves. This is the `loading === true && taskId === undefined` template branch, i.e. `onAsyncCompleted()` ran, cleared `taskId`, then its follow-up `GET /tasks/:id` returned a body whose `result` was hidden (see mechanism 2) and the unconditional destructure below threw.
 
 In the 17:56 run the wizard went through variant 1, re-armed, was clicked again (a second funded account: `0.0.1294`, then `0.0.1295` — both orphaned), and then froze in variant 3. Every reload-and-retry funds yet another account.
+
+## Re-attribution of the 9–10 Nov 2026 spec failures (10 Nov 2026)
+
+The four failing specs of 9–10 Nov were **not** this bug. The full 276-spec run and the 4/4 rerun shared one root cause, pinned against the live stack on 10 Nov 2026:
+
+- The API spec `011_schemas/putActiveSystemSchema.cy.js` (running before the UI suite in every `all` run) creates and **activates** a system schema with `entity: 'USER'` in the `StandardRegistry` workspace, and the product cannot deactivate or delete an active system schema (every gateway route answers `422 "Schema is active."`; `ACTIVE_SCHEMA` in guardian-service only sets flags).
+- `user-profile.component.ts loadDate()` fetches `GET /schemas/system/entity/USER`, finds the active schema, and sets `vcDocumentType = true` — the wizard gains a fifth (VC document) step: the DID step renders **Next** instead of **Confirm** (`isFinish()` = `!didDocumentType && !vcDocumentType`), so the 00 specs' 10 s wait for a `Confirm` button that does not exist, and the 02 specs' Next click silently advances into the VC step whose unfilled form keeps the final Confirm a no-op — no push, no `/task` navigation, 20 s timeout. Live-verified: `GET /schemas/system/entity/USER` with a `StandardRegistry` session returned exactly the 011 spec's schema (uuid `0000b23a-b1ea-408f-a573…`, name `test`).
+- In both runs the wizard was alive: the Generate result landed (the drivers assert `#operatorId` non-empty before moving on) via the HTTP task GET; nothing was lost. Exactly four specs in the UI tree drive this wizard and exactly those four failed.
+
+The fix landed 10 Nov 2026 in the UI page objects (`homePage.js _runUserOnboarding`, `configPage.js runWizard` now drive the tail shape-agnostically, filling the appended VC form generically) and a one-off deactivation of the schema row; the 011 spec is untouched. Plan: `plan-fix-4-ui-spec-failures.md`.
+
+The request-level trace of that rerun remains as context for this bug, not as its evidence: the whole run carries exactly one WebSocket upgrade (the unauthenticated bootstrap one) and the app never re-upgrades — consistent with mechanism 3 below — but the completions still arrived over the one-shot `taskService.get()` in `onAsyncCompleted()`, so the wizard advanced to the step where the schema coupling stopped it. The gateway log's burst of four `Unauthorized request` lines within 30 ms during the 00 specs' registration step is likewise an open observation, not a pinned cause. The `ws` 8.22.1 dependency bump that landed in the same pull is not a candidate trigger for anything: it only fixes IPC-URL path handling.
 
 ## Why the wizard cannot recover
 

@@ -2,7 +2,7 @@ import URL from '../../../support/GuardianUrls';
 import CommonElements from '../../../support/defaultUIElements';
 import { waitForTaskRoundtrip } from '../../../support/importFlow';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
-import { dismissStickyToasts } from './configPage';
+import { dismissStickyToasts, completeUserWizard } from './configPage';
 
 const HomePageLocators = {
 	usernameInput: '[formcontrolname="username"]',
@@ -201,10 +201,10 @@ export class HomePage {
 		cy.get('#operatorKey', { timeout: TIMEOUTS.backend }).should('not.be.empty');
 		this._wizardStepNext();
 		// The default radio generates a new DID document and needs no input.
-		// If a workspace system schema for the USER entity ever appears, an
-		// extra VC step is appended and its form must be filled first, which
-		// would leave the button disabled and fail this wait deliberately.
-		this._wizardStepNext();
+		// An active USER system schema in the workspace appends a VC document
+		// step (the API suite's 011_schemas spec activates one and the product
+		// cannot deactivate it), so the tail is driven shape-agnostically.
+		completeUserWizard();
 		waitForTaskRoundtrip();
 		cy.get('div.user-profile-setup-title').should('not.exist');
 		this.logOut();
