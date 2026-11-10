@@ -66,6 +66,17 @@ describe('DocumentGenerator examples and defaults must fit the field', () => {
         assert.equal(doc.f, true);
     });
 
+    it('keeps a fitting falsy example or default', () => {
+        const doc = generate([
+            field({ name: 'a', type: 'number', examples: [0] }),
+            field({ name: 'b', type: 'boolean', default: false }),
+            field({ name: 'c', type: 'integer', default: 0 }),
+        ]);
+        assert.equal(doc.a, 0);
+        assert.equal(doc.b, false);
+        assert.equal(doc.c, 0);
+    });
+
     it('ignores a default of the wrong type', () => {
         const doc = generate([field({ type: 'number', default: 'abc' })]);
         assert.equal(doc.f, 1);
@@ -126,6 +137,24 @@ describe('DocumentGenerator geo fields', () => {
         const doc = generate([geo('country', 'country'), geo('state', 'state')]);
         assert.ok(doc.country);
         assert.ok(doc.state);
+    });
+
+    it('keeps a state revealed by a condition consistent with its top-level country', () => {
+        const state = geo('state', 'state', { on: 'country', kind: 'geo' });
+        const doc = generate(
+            [
+                geo('continent', 'continent'),
+                geo('country', 'country', { on: 'continent', kind: 'geo' }),
+                field({ name: 'trigger', customType: 'enum', enum: ['yes', 'no'] }),
+            ],
+            [{
+                ifCondition: { field: { name: 'trigger' }, fieldValue: 'yes' },
+                thenFields: [state],
+                elseFields: [],
+            }],
+        );
+        assert.equal(getContinentOfCountry(doc.country), doc.continent);
+        assert.ok(getStatesOfCountry(doc.country).some((s) => s.value === doc.state));
     });
 
     it('fills a state that depends on a country field with no continent', () => {

@@ -237,7 +237,7 @@ export class DocumentGenerator {
      * @returns value
      */
     private static _fitValue(field: SchemaField, value: any): any {
-        if (!value) {
+        if (value === undefined || value === null || value === '') {
             return undefined;
         }
         if (Array.isArray(value)) {
@@ -393,13 +393,23 @@ export class DocumentGenerator {
         option: GenerateOption,
         rowPresets?: Record<string, any>,
     ): void {
+        // A geo field in a condition branch may depend on a field outside of that branch
+        const geoScope = Array.isArray(conditions) && conditions.length
+            ? [
+                ...fields,
+                ...conditions.flatMap((condition) => [
+                    ...(condition.thenFields || []),
+                    ...(condition.elseFields || [])
+                ])
+            ]
+            : fields;
         const generate = (list: SchemaField[], isBranch: boolean) => {
             for (const field of list) {
                 if (isBranch ? json[field.name] !== undefined : field.conditionUserOrdered) {
                     continue;
                 }
                 const value = DocumentGenerator._isGeoField(field)
-                    ? DocumentGenerator._wrapArray(field, DocumentGenerator._generateGeo(field, list, rowPresets))
+                    ? DocumentGenerator._wrapArray(field, DocumentGenerator._generateGeo(field, geoScope, rowPresets))
                     : DocumentGenerator.generateField(field, context, option, rowPresets);
                 if (value !== undefined) {
                     json[field.name] = value;
