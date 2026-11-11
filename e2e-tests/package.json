@@ -18,6 +18,7 @@
         "solo:up": "node scripts/solo-network.mjs up",
         "test": "npx cypress run",
         "test:scripts": "node --test \"scripts/*.test.mjs\"",
+        "test:everything": "scripts/test-everything.sh",
         "test:smoke": "npx cypress run --env \"grepTags=smoke,grepFilterSpecs=true\" --spec \"cypress/e2e/api-tests/**/*.cy.js\" --browser chrome",
         "test:tag": "./run-test-by-tag.sh",
         "ui-only-headed": "npx cypress run --headed --env \"grepTags=ui,grepFilterSpecs=true\"",

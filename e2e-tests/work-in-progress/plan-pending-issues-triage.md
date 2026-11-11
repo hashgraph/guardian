@@ -116,7 +116,7 @@ Steps:
 2. Run `refactor-jasmine-vitest` and switch the `test` target to `@angular/build:unit-test`; run the specs in jsdom; list what fails and why (a migration artefact vs. a real failure vs. a spec that needs a real browser).
 3. Decide with that list; then do the same for `indexer-frontend` (Angular 17, and its `package.json` does not depend on `@angular/build`, where the `unit-test` builder lives: it stays on Karma headless or is upgraded — to be decided with its own list).
 
-**3b. Include the tests the suite does not run.** One documented entry point in `e2e-tests` (an npm script, described in its README) that runs everything locally: the Cypress suites, `test:scripts`, `report-test-summary.test.mjs`, the frontend unit specs, and `npx eslint cypress`.
+**3b. Include the tests the suite does not run. Done 12 Nov: `npm run test:everything` (`e2e-tests/scripts/test-everything.sh`), described in the README.** One documented entry point in `e2e-tests` (an npm script, described in its README) that runs everything locally: the Cypress suites, `test:scripts`, `report-test-summary.test.mjs`, the frontend unit specs, and `npx eslint cypress`.
 
 **3c. Run them in CI.** Add to `main.yml` (component tests): the frontend unit specs (headless or jsdom, per 3a), `indexer-service` tests (+ build), `npm run test:scripts`, `node --test .github/scripts/report-test-summary.test.mjs`, and `npx eslint cypress` once the 19 findings are fixed. The workflow change can only be verified by a CI run on GitHub, which needs `gh` or a push: ask before either. Then delete `tests-not-run-by-any-workflow.md` and, after the burn-down, the ESLint note.
 

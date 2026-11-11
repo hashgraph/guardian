@@ -36,6 +36,23 @@ npm run guardian:infra:down      # on the host: removes the containers
 
 `INFRA_HOST` is where the services reach the infra and the Hedera network: `127.0.0.1` by default, `host.docker.internal` when `/.dockerenv` exists. Export it to override the detection. The dev container has its own network namespace, so point Cypress at `http://127.0.0.1:3002` there (`--env apiServer=http://127.0.0.1:3002`).
 
+## Running every test
+
+`npm run test:everything` runs, one group after the other, everything the repository tests outside the service unit tests of `main.yml`: the linter on the specs, the tests of the helper scripts, the `indexer-service` tests, the frontend unit specs and the whole Cypress suite. A group that fails does not stop the others; the summary at the end lists each one and the exit code is non-zero when any failed. Name the groups to run only those:
+
+```bash
+npm run test:everything                       # lint, scripts, indexer-service, frontend, cypress
+npm run test:everything -- lint scripts       # only the linter and the helper-script tests
+```
+
+| Group | What it runs | Needs |
+|---|---|---|
+| `lint` | `npx eslint cypress` | |
+| `scripts` | `npm run test:scripts` and `.github/scripts/report-test-summary.test.mjs` | |
+| `indexer-service` | builds `indexer-interfaces`, `indexer-common` and `indexer-service`, then its mocha tests | |
+| `frontend` | `npx ng test --watch=false` in `frontend` (Vitest, headless Chromium) | `npx playwright install chromium` once |
+| `cypress` | `npm run guardian:test` | the stack: `npm run guardian:up` |
+
 ## Running tests manually
 
 Unless specified otherwise, the tests are idempotent and can be run multiple times without side effects, and in any order. The only requirement is preparing the environment with a few accounts using the `preparing` tag, and ensuring the accounts have enough balance for the operations performed during the tests (especially the StandardRegistry):
