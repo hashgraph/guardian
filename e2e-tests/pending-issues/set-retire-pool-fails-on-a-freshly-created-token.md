@@ -1,6 +1,6 @@
 # `POST /contracts/retire/{id}/pools` fails on a token the mirror node has not indexed yet
 
-**Status:** open
+**Status:** open — the symptom no longer reproduces on Solo 0.97.0, the ordering that makes it harmful is still in the code
 **Component:** `guardian-service` — `SET_RETIRE_POOLS` in `src/api/contract.service.ts`
 **Severity:** medium — the call reports failure after it has already changed the contract on-chain
 **Found by:** `e2e-tests/cypress/e2e/api-tests/013_contracts/006_setPools.cy.js`
@@ -41,6 +41,8 @@ outstanding reverts inside the retire contract's own `try/catch` — but it cost
 worth of gas per attempt, so the retry interval is deliberately long.
 
 Re-checked on 6 Nov 2026: the handler still calls the contract before `setPool`; `013_contracts/006_setPools.cy.js` passes (5/5) thanks to the retry in `Contracts.setRetirePool`.
+
+Re-checked on 11 Nov 2026 on Solo 0.97.0: a probe that mirrors `006_setPools` (a fresh wipe-bound token, the pool set immediately) was accepted on the first attempt, twice, in about 2 s, and `013_contracts` is green (14 specs, 149 tests). The symptom was not reproduced, probably because of the Solo upgrade. The ordering that made it harmful is still in the code: the handler calls `setPoolContract` (`contract.service.ts:3274`) before the mirror-node read in `setPool` (`:3285`), so a lagging mirror node would still produce the partial success.
 
 ## Proposed fix
 

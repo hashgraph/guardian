@@ -1,6 +1,6 @@
 # A half-finished onboarding leaves an orphan DID and re-runs the wizard on every boot
 
-**Status:** open — the half-finished state is confirmed in the local workspace; the exact loss point is suspected, not yet pinned down
+**Status:** open (re-checked statically on 11 Nov 2026: `UPDATE_USER` is still a plain `sendMessage` at `common/src/helpers/users.ts:152-153`, there is no compensation in `profile.service.ts:153-165`, and the wizard never resumes an existing DID, `user-profile.component.ts:523`) — the half-finished state is confirmed in the local workspace; the exact loss point is suspected, not yet pinned down
 **Component:** `api-gateway/src/api/service/profile.ts` (`PUT /profiles/push/:username`) + `api-gateway/src/helpers/task-manager.ts` + `guardian-service/src/api/profile.service.ts` (`CREATE_USER_PROFILE_COMMON_ASYNC`) + `guardian-service/src/api/helpers/profile-helper.ts` (`setupUserProfile` → `createUserProfile` → `saveUserProfile`) + `frontend/src/app/views/user-profile/user-profile.component.ts`
 **Severity:** medium — an onboarding attempt that dies between DID creation and the final user update leaves an orphan `did_document` + `USER_TOPIC` in `guardian_db`, and the affected user sees the setup wizard on every app boot
 **Found by:** the 02_policies idempotency work (2 Nov 2026), while investigating why the suite's `User2` was never fully onboarded in this workspace after repeated `ensureAccount` attempts.
@@ -9,7 +9,7 @@
 
 - A user whose onboarding attempt died part-way through the profile task has a complete `did_document` row (`status = CREATE`) and a `USER_TOPIC` owned by that DID in `guardian_db`, but the user document in `auth_db.user` has no `did`, `parent` or `hederaAccountId` — the final linking step never landed.
 - In the affected workspace the pattern had accumulated over repeated probe runs: 8 such `did_document` rows (one per attempt) plus a `USER_TOPIC` for the last one; the affected user is a shell — it registers, it logs in, and the User Profile Setup wizard renders on every boot.
-- `user-profile.component.ts` derives `confirmed` / `failed` at read time from `db.getDidDocument(user.did).status` (`CREATE` → confirmed, `FAILED` → failed). A user whose document carries no `did` is neither, so the wizard re-renders instead of the confirmed profile — forever, until the user is deleted or the link is written.
+- `guardian-service/src/api/profile.service.ts` (`:530-531`) derives `confirmed` / `failed` at read time from `db.getDidDocument(user.did).status` (`CREATE` → confirmed, `FAILED` → failed) and returns them to the component. A user whose document carries no `did` is neither, so the wizard re-renders instead of the confirmed profile — forever, until the user is deleted or the link is written.
 
 ## Where it comes from (suspected)
 

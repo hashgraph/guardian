@@ -1,7 +1,6 @@
 # VM0033: a created project never leaves the `new_project` step chain
 
-**Status:** open — `VM033.cy.js` is skipped (`context.skip`) until the VM0033 policy is updated; re-enable it once both VM0033 notes are resolved.
-**Previous status:** open — re-verified 31 Oct 2026, still open (see "Re-verified")
+**Status:** open, blocked behind the dotted field key of `vm0033-archives-cannot-be-published-field-key-with-a-dot.md`: on 11 Nov 2026 the publish already fails with a 500, so the project step chain is not reachable without editing the fixture. The `calculate_project_fields` rewind (`custom-logic-block.ts:177-178`, `:211`; `step-block.ts:268`) is unchanged by the merge of `develop`. `VM033.cy.js` is skipped (`context.skip`) until the VM0033 policy is updated; re-enable it once both VM0033 notes are resolved.
 **Component:** `policy-service` — `interfaceStepBlock` / `tool` block execution
 **Severity:** medium — the API reports success, the document is issued, and it then reaches no grid
 **Found by:** `e2e-tests/cypress/e2e/api-tests/009_policies/VM033.cy.js` — `Create application`
@@ -36,8 +35,7 @@ fails, and the thirteen after it are skipped.
 | 7 | `save_project_auto` | `sendToGuardianBlock` | `entityType: project` |
 
 Polling `GET /policies/{id}/tag/new_project/blocks` while the POST is processed shows `index` going
-**0 → 1 → 2** and then back to **0**. It never reaches 3. So the two `tool` blocks are where the
-chain stops.
+**0 → 1 → 2** and then back to **0**. It never reaches 3 (the chain dies on `calculate_project_fields`, index 5, not on the tools: see "Root cause").
 
 That is exactly why nothing shows up. Every `documentsSourceAddon` under `project_grid_pp_2` filters
 on schema `#4afe8837-…` *and* `option.status` (`Waiting to be Added`, `Waiting to Validate`, …),
@@ -55,36 +53,6 @@ a half-finished row.
 
 `GET /policies/{id}/documents?type=VC` on a freshly published copy confirms it: three VC documents,
 all belonging to the registrant/VVB flow, none carrying a `projectTitle`.
-
-## Re-verified (31 Oct 2026)
-
-Still open: `tool.ts`, `step-block.ts`, `requestVcDocumentBlock.ts` and `sendToGuardianBlock.ts`
-are all unchanged since this note, and so are the fixture and the spec. No fix has landed. Two
-refinements to "Where it stops", from a static reading of the current code:
-
-1. **The reset to 0 is a fingerprint, not a coincidence.** In `step-block.ts`, a cyclic step is
-   reset to index 0 by exactly two paths: `releaseChild` from an *end* child — the step declares no
-   `finalBlocks`, so only the last child (index 7), a path that saves the `project` document and
-   would fill the grids, and is ruled out by their being empty — and `unparkStalledChild` from a
-   *non-UI* child. The two `tool` children are `defaultActive: true`, so `unparkStalledChild`
-   never acts on them; a chain that died on a tool would leave `index` parked at 2, not 0. The
-   non-UI children are indices 1, 2, 5, 6 — so the observed 0 → 1 → 2 → 0 points at
-   `calculate_project_fields` (5): its `runAction` (the 31 Jul `unparkStalledChild` fix in
-   `custom-logic-block.ts`) rewinds the cyclic step to 0 both when the script returns an empty
-   result and when it throws. The original "stops on the tool" conclusion is consistent with a
-   few-second poll missing the fast 3–5 pass-through.
-2. **The tool wiring is not what the fixture shows.** `RegeneratePolicyComponents`
-   (`policy-components-utils.ts`) replaces each `tool` block's `inputEvents`/`outputEvents`/
-   `children` with the *published tool entity's* config (matched by `messageId` + `hash`) at
-   publish time, overwriting the fixture's `input_ar_tool_14`/`input_ar_tool_05` names. If the
-   imported tools' event names do not match the policy's link names, `ToolBlock.onAction` forwards
-   nothing and the chain dies on the tool — which would leave the index parked at 2,
-   distinguishable by polling `index` at sub-second resolution.
-
-Cheapest next step is the policy-service log: `unparkStalledChild` logs
-`step stalled on non-UI child "<tag>" (index <n>); rewinding to index 0` and the custom-logic
-empty-result branch logs `custom logic returned an empty result` — either line names the child the
-chain actually died on.
 
 ## Root cause (verified 5 Nov 2026)
 

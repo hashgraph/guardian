@@ -1,6 +1,6 @@
 # Importing a contract right after its deployment fails
 
-**Status:** open, cause not established (product or local network). The spec works around it with a bounded retry; the workaround is to be removed once a contract can be imported within seconds of its deployment.
+**Status:** open, cause not established (product or local network); not reproduced on Solo 0.97.0 (11 Nov 2026). The spec works around it with a bounded retry; the workaround is to be removed once a contract can be imported within seconds of its deployment.
 **Component:** `POST /contracts/import` (`api-gateway` → `guardian-service`), seen through the UI
 **Found by:** `e2e-tests/cypress/e2e/ui-tests/specs/04_contracts/contractImport.cy.js`
 
@@ -16,6 +16,8 @@ The same two contracts (`0.0.2486`, `0.0.2498`), imported as `Verra` through the
 Re-checked on 6 Nov 2026 on a fresh stack: without a retry the spec fails (`tr.card-row` never appears), and the worker log shows `INVALID_CONTRACT_ID` for the import made 15 s after the deployment. Importing the same WIPE and RETIRE contracts (`0.0.1293`, `0.0.1303`) as `Verra` through the API about 100 s after their creation answered 200 for both. With the retry described below, the whole spec takes about 35 s, so the contracts become importable well inside the 100 s budget; the exact delay was not measured.
 
 Before the waits in the suites were bounded (`support/CustomHelpers/timeouts.js`), the spec spent long enough in fixed pauses that the import landed after this window, and it passed.
+
+Re-checked on 11 Nov 2026 on Solo 0.97.0: three imports as `Verra`, made 0.8 s after the deployment, were each accepted on the first attempt, and the `contractImport` UI spec is green. The symptom no longer reproduces, probably because of the Solo upgrade (`5a4ed1fcc`). The retry in `ContractsPage.importContract` is still in place, so the spec alone does not prove it; removing it is the next step.
 
 ## How to reproduce
 

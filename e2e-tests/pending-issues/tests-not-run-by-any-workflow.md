@@ -5,7 +5,7 @@
 **Severity:** medium — these tests can break without anyone noticing
 **Found by:** reading every workflow and grepping the Cypress tags
 
-Nothing below has been run as part of this finding: the current pass/fail state of each item is unknown unless it says otherwise.
+Measured on 11 Nov 2026: `npm run test:scripts` 14/14 pass and `.github/scripts/report-test-summary.test.mjs` 11/11 pass. The frontend specs were not run (the dev container has no Chrome); the state of the other items is unknown.
 
 ## What the workflows run
 
@@ -18,6 +18,10 @@ Nothing below has been run as part of this finding: the current pass/fail state 
 ### Frontend unit tests (`frontend/**/*.spec.ts`, 107 files)
 
 `main.yml` builds the frontend but never runs `ng test`. `frontend/karma.conf.js` uses `browsers: ['Chrome']` and `singleRun: false`, so CI needs a headless Chrome launcher (`ChromeHeadless`, optionally with `--no-sandbox`) and `ng test --watch=false`.
+
+### `indexer-frontend` unit tests (10 `*.spec.ts` files)
+
+Angular 17.3 with `@angular-devkit/build-angular:karma`; no workflow builds or tests `indexer-frontend`.
 
 ### `indexer-service` unit tests (7 files in `indexer-service/tests`)
 
