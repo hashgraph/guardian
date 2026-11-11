@@ -1,6 +1,6 @@
 # Tests that no GitHub Actions workflow runs
 
-**Status:** open — found while moving the UI suite onto the shared e2e workflow (`.github/workflows/e2e-run.yml`); the e2e suites themselves are all selected by a workflow now.
+**Status:** the workflow steps are written (12 Nov 2026, `main.yml`: `Indexer service tests`, `Frontend unit tests`, `E2E tooling tests and lint`) but no CI run has executed them yet; delete this note once one is green. Open: the `indexer-frontend` specs. Found while moving the UI suite onto the shared e2e workflow (`.github/workflows/e2e-run.yml`); the e2e suites themselves are all selected by a workflow now.
 **Component:** CI (`.github/workflows/`), `e2e-tests`, `frontend`, `indexer-service`
 **Severity:** medium — these tests can break without anyone noticing
 **Found by:** reading every workflow and grepping the Cypress tags

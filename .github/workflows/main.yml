@@ -214,6 +214,47 @@ jobs:
           OPERATOR_ID: ${{ secrets.CI_HEDERA_ACCOUNT }}
           OPERATOR_KEY: ${{ secrets.CI_HEDERA_PRIV_KEY }}
 
+      # The indexer packages are workspaces too, but their tests import the compiled output.
+      - name: Indexer service tests
+        run: |
+          pushd indexer-interfaces
+          yarn run build
+          popd
+          pushd indexer-common
+          yarn run build
+          popd
+          pushd indexer-service
+          yarn run build
+          npm run test
+          popd
+        env:
+          CI: true
+          NODE_OPTIONS: --openssl-legacy-provider
+
+      # Vitest in headless Chromium; the frontend dependencies were installed by the Build step.
+      - name: Frontend unit tests
+        run: |
+          pushd frontend
+          npx playwright install --with-deps chromium
+          npx ng test --watch=false
+          popd
+        env:
+          CI: true
+
+      # Tests of the workflow helper scripts and of the e2e helpers, and the linter on the Cypress
+      # suites. e2e-tests is not a workspace; the Cypress binary is not needed for any of them.
+      - name: E2E tooling tests and lint
+        run: |
+          node --test .github/scripts/report-test-summary.test.mjs
+          pushd e2e-tests
+          npm ci
+          npm run test:scripts
+          npx eslint cypress
+          popd
+        env:
+          CI: true
+          CYPRESS_INSTALL_BINARY: '0'
+
       # Local replacement for the step-security publish-unit-test-result-action:
       # the mocha runs already wrote JUnit XML into test_results/, so render the
       # breakdown into the job summary instead of opening a check run.
