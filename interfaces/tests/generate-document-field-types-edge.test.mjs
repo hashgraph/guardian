@@ -39,16 +39,16 @@ describe('@unit DocumentGenerator.generateExample — boundary inputs', () => {
         assert.equal(DocumentGenerator.generateExample(field({ type: 'number', default: 7 })), 7);
     });
 
-    it('a falsy zero default is NOT used (truthiness check) and number falls back to 1', () => {
-        assert.equal(DocumentGenerator.generateExample(field({ type: 'number', default: 0 })), 1);
+    it('a zero default is used', () => {
+        assert.equal(DocumentGenerator.generateExample(field({ type: 'number', default: 0 })), 0);
     });
 
     it('a falsy empty-string default is NOT used and string falls back to "example"', () => {
         assert.equal(DocumentGenerator.generateExample(field({ type: 'string', default: '' })), 'example');
     });
 
-    it('a falsy false default is NOT used and boolean falls back to true', () => {
-        assert.equal(DocumentGenerator.generateExample(field({ type: 'boolean', default: false })), true);
+    it('a false default is used', () => {
+        assert.equal(DocumentGenerator.generateExample(field({ type: 'boolean', default: false })), false);
     });
 
     it('examples[0] truthy short-circuits over default and inferred', () => {
@@ -58,10 +58,10 @@ describe('@unit DocumentGenerator.generateExample — boundary inputs', () => {
         );
     });
 
-    it('examples[0] falsy 0 is skipped, then default used', () => {
+    it('examples[0] of 0 is used over the default', () => {
         assert.equal(
             DocumentGenerator.generateExample(field({ type: 'number', examples: [0], default: 5 })),
-            5,
+            0,
         );
     });
 

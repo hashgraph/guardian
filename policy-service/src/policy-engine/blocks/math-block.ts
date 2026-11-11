@@ -1,13 +1,11 @@
 import { findPreviewScriptFields } from '../helpers/preview-script-fields.js';
 import { PolicyCredential } from '../helpers/policy-credential.js';
-import { ArtifactType, GenerateUUIDv4, LocationType, Schema, SchemaHelper } from '@guardian/interfaces';
+import { ArtifactType, LocationType, Schema, SchemaHelper } from '@guardian/interfaces';
 import { ActionCallback, CalculateBlock } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { BlockActionError } from '../errors/index.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
-import { DatabaseServer } from '@guardian/common/database-modules/database-server';
-import { IPFS } from '@guardian/common/helpers/ipfs';
 import { ContextHelper } from '@guardian/hedera/vcjs/context-helper';
 import { VcDocument as VcDocumentDefinition } from '@guardian/hedera/vcjs/vc-document';
 import { VcHelper } from '@guardian/hedera/vc-helper';
@@ -31,13 +29,8 @@ import {
     hydrateTablesInObject,
     loadFileTextById
 } from '../helpers/table-field.js';
-import {
-    buildCompactTableJson,
-    buildPreviewTableJson,
-    buildTableOutputCsv,
-    gzipTableCsv,
-    isTableOutputValue
-} from '../helpers/table-output.js';
+import { isTableOutputValue } from '../helpers/table-output.js';
+import { convertTableValues, deleteTableOutputFiles, IStoredTable, storeTableOutputFile } from '../helpers/table-output-store.js';
 import {
     buildMathPreviewCalculation,
     getMathPreviewOutputPaths,
@@ -82,11 +75,6 @@ interface IMathWorkerResult {
     enumerated?: IPreviewWriteRecord[];
     error?: string;
     errorName?: string | null;
-}
-
-interface IStoredTable {
-    fileId: string;
-    cid: string | null;
 }
 
 /**
@@ -242,7 +230,7 @@ export class MathBlock {
         relationships: IPolicyDocument[] = []
     ): Promise<any> {
         const options = await ref.getOptions(user);
-        const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema);
+        const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema || options.inputSchema);
         const schema = new Schema(outputSchema);
 
         // Artifacts
@@ -384,16 +372,12 @@ export class MathBlock {
                 );
             }
 
-            const values: unknown[] = [];
-            for (const table of tables) {
-                if (isTableOutputValue(table) && preview) {
-                    values.push(buildPreviewTableJson(`preview-${GenerateUUIDv4()}`, buildTableOutputCsv(columns, table.rows), columns));
-                } else if (isTableOutputValue(table)) {
-                    values.push(await this.storeResultTable(ref, table.rows, columns, userId, storedTables));
-                } else {
-                    values.push(table);
-                }
-            }
+            const values = await convertTableValues(
+                tables,
+                columns,
+                preview,
+                (rows) => this.storeResultTable(ref, rows, columns, userId, storedTables)
+            );
             setDocumentValueByPath(schema, json, link.path, link.isTableList ? values : values[0]);
         }
     }
@@ -414,21 +398,7 @@ export class MathBlock {
         userId: string | null,
         storedTables: IStoredTable[]
     ): Promise<string> {
-        const buffer = await gzipTableCsv(buildTableOutputCsv(columns, rows));
-        const { fileId } = await DatabaseServer.upsertGridFile({
-            buffer,
-            filename: 'table.csv.gz',
-            contentType: 'application/gzip'
-        });
-        const stored: IStoredTable = { fileId, cid: null };
-        storedTables.push(stored);
-
-        if (!ref.dryRun) {
-            const { cid } = await IPFS.addFile(buffer, { userId, interception: null });
-            stored.cid = cid;
-        }
-
-        return buildCompactTableJson(stored.fileId, stored.cid, columns);
+        return await storeTableOutputFile(ref, rows, columns, userId, storedTables);
     }
 
     /**
@@ -441,13 +411,7 @@ export class MathBlock {
         ref: IPolicyCalculateBlock,
         storedTables: IStoredTable[]
     ): Promise<void> {
-        for (const stored of storedTables) {
-            try {
-                await DatabaseServer.deleteGridFile(stored.fileId);
-            } catch (error) {
-                ref.warn(`Failed to delete result table ${stored.fileId}: ${PolicyUtils.getErrorMessage(error)}`);
-            }
-        }
+        await deleteTableOutputFiles(ref, storedTables);
     }
 
     private getCredentialSubject(document: IPolicyDocument): IMathDocument {
@@ -614,7 +578,7 @@ export class MathBlock {
 
         const options = await ref.getOptions(user);
 
-        const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema);
+        const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema || options.inputSchema);
 
         const vcSubject: any = {
             ...SchemaHelper.getContext(outputSchema),

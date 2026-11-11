@@ -98,6 +98,7 @@
     color: var(--color-grey-5, #848FA9);
     margin-top: 2px;
     line-height: 1.45;
+    white-space: pre-line;
 }
 
 .vars-title {
@@ -140,6 +141,7 @@ table.vars {
     td.sym {
         grid-area: sym;
         font-size: 15px;
+        font-style: italic;
     }
 
     td.kind {
@@ -150,6 +152,8 @@ table.vars {
 
     td.desc {
         grid-area: desc;
+        margin-top: 4px;
+        white-space: pre-line;
     }
 
     td.desc:empty {

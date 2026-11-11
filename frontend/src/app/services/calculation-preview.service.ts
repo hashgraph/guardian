@@ -173,7 +173,7 @@ export class CalculationPreviewService {
         if (input) {
             items.push({
                 role: 'input',
-                label: 'Your form values',
+                label: 'Form values',
                 blockType: null,
                 source: null,
                 target: null,
@@ -200,6 +200,13 @@ export class CalculationPreviewService {
             }
         }
         return items;
+    }
+
+    public getSchemaType(document: unknown): string | null {
+        const subjects = document && typeof document === 'object' ? Reflect.get(document, 'credentialSubject') : null;
+        const subject = Array.isArray(subjects) ? subjects[0] : subjects;
+        const type = subject && typeof subject === 'object' ? Reflect.get(subject, 'type') : null;
+        return typeof type === 'string' && type ? type : null;
     }
 
     /** The document of a state wrapper (`{ document }`), or null when there is none. */
