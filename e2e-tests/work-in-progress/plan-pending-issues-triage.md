@@ -85,7 +85,7 @@ Once 2–3 are done the two WIP files can be deleted; their product follow-ups l
 
 **Karma elsewhere in the repository (checked 12 Nov 2026, `git grep -i karma`):** only `indexer-frontend` (its `angular.json` test target, five Karma dev dependencies, its README and a comment in `cryppo.spec.ts`). The `tests-not-run` note's reference to `frontend/karma.conf.js` was updated. No workflow or script runs Karma; the other hits are a place name in the methodology library data and the optional `karma` peer of `@angular/build` in the frontend lock (not installed).
 
-**Still open in 3a:** `indexer-frontend` (Angular 17, `@angular-devkit/build-angular:karma`, no `@angular/build`, so not on the `unit-test` builder without an upgrade).
+**`indexer-frontend` (user's decision: left for later):** its 10 specs (120 tests) do not compile under Karma as they are; with a temporary fix 118/120 pass. Details and what it takes are in `pending-issues/tests-not-run-by-any-workflow.md`. Step 3a is done.
 
 ## 4. Resolution order, grouped by theme
 

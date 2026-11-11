@@ -21,7 +21,11 @@ Measured on 11 Nov 2026: `npm run test:scripts` 14/14 pass and `.github/scripts/
 
 ### `indexer-frontend` unit tests (10 `*.spec.ts` files)
 
-Angular 17.3 with `@angular-devkit/build-angular:karma`; no workflow builds or tests `indexer-frontend`.
+Angular 17.3 with `@angular-devkit/build-angular:karma` (the only Karma left in the repository); no workflow builds or tests `indexer-frontend`.
+
+Measured on 12 Nov 2026 (after `npm ci` in `indexer-frontend` and a build of `indexer-interfaces`): the specs do not compile as they are. The Karma build is webpack-based and cannot resolve `url('@assets/main.jfif')` in `src/app/components/header/header.component.scss` (`@assets` is only a TypeScript path; the app build, on the esbuild `application` builder, does not hit it). With that url made relative for the measurement, and Playwright's Chromium as `CHROME_BIN` launched headless with `--no-sandbox` (the dev container has no usable sandbox), 118 of 120 tests pass. The two failures are the scaffold `app.component.spec.ts`: `No provider for InjectionToken TRANSLOCO_TRANSPILER`.
+
+To run them: make the url resolvable by the Karma build, add a `karma.conf.js` with a headless launcher, give `AppComponent`'s spec the Transloco providers (or drop it), then add the step to CI. Moving to Vitest like `frontend` needs an upgrade from Angular 17 to 21 first (the `unit-test` builder lives in `@angular/build`).
 
 ### `indexer-service` unit tests (7 files in `indexer-service/tests`)
 
