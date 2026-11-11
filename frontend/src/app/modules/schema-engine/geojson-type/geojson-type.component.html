@@ -110,8 +110,9 @@
         @if (dialogTab === 'file') {
           <div class="geo-tab-body">
             @if (hasImportedFile()) {
-              <div class="geo-file-head">
-                <div class="geo-file-text">
+              <div class="geo-file">
+               <div class="sf-record-head geo-file-head">
+                <div class="sf-record-text">
                   <b>{{ fileName() }}</b>
                   <small>
                     {{ fileSizeLabel() }}
@@ -122,13 +123,14 @@
                 </div>
                 <div class="geo-file-actions">
                   @if (importedLocations.length > 0) {
-                    <button type="button" class="geo-shape-toggle" (click)="includeAllImportedFeatures()">{{ isPreviewUnavailable() ? 'Add file point' : 'Select all' }}</button>
+                    <button type="button" class="sf-link" (click)="includeAllImportedFeatures()">{{ isPreviewUnavailable() ? 'Add file point' : 'Select all' }}</button>
                   }
                   @if (geometriesList.length > 0) {
-                    <button type="button" class="geo-shape-toggle" (click)="clearSelectionFeatures()">Clear selection</button>
+                    <button type="button" class="sf-link" (click)="clearSelectionFeatures()">Clear selection</button>
                   }
-                  <button type="button" class="geo-shape-toggle" (click)="showDropzone = !showDropzone">Choose another file</button>
+                  <button type="button" class="sf-link" (click)="showDropzone = !showDropzone">Choose another file</button>
                 </div>
+               </div>
               </div>
               @if (!isPreviewUnavailable()) {
                 <small class="geo-hint">Click shapes on the map to pick or unpick them.</small>
@@ -147,9 +149,9 @@
             @for (card of manualCards(); track card.geometry; let n = $index) {
               @let geometry = card.geometry;
               <div class="geo-shape">
-                <div class="geo-shape-head">
-                  <span class="geo-shape-ix">{{ n + 1 }}</span>
-                  <div class="geo-shape-text">
+                <div class="sf-record-head">
+                  <span class="sf-record-ix">{{ n + 1 }}</span>
+                  <div class="sf-record-text">
                     <b>Geometry</b>
                     @if (shapeSummary(geometry)) {
                       <small>{{ shapeSummary(geometry) }}</small>
@@ -157,19 +159,19 @@
                   </div>
                   <button
                     type="button"
-                    class="geo-shape-toggle"
+                    class="sf-link"
                     [attr.aria-expanded]="isCardOpen(geometry)"
                     (click)="toggleCard(geometry)">{{ isCardOpen(geometry) ? 'Close' : 'Edit' }}</button>
                   <button
                     type="button"
-                    class="guardian-icon-button big geo-shape-remove"
+                    class="guardian-icon-button big sf-remove"
                     aria-label="Remove geometry"
                     (click)="deleteGeometry(geometry.id)">
                     <svg-icon class="icon-btn" src="/assets/images/icons/delete.svg" svgClass="icon-color-delete"></svg-icon>
                   </button>
                 </div>
                 @if (isCardOpen(geometry)) {
-                <div class="geo-shape-body">
+                <div class="sf-record-body geo-shape-body">
                   <p-select
                     id="typeDropdown"
                     [(ngModel)]="geometry.type"

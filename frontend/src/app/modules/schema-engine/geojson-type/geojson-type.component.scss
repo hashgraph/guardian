@@ -1,3 +1,5 @@
+@use '../form-grid' as form-grid;
+
 .map-container {
     .map {
         width: 100%;
@@ -179,38 +181,14 @@
     padding-bottom: 16px;
 }
 
-// The picked file looks like a record row: name and details on the left, actions on the right.
-.geo-file-head {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 8px 8px 12px;
-    border: 1px solid var(--guardian-border-color);
-    border-radius: 10px;
-    background: var(--guardian-background);
+// The picked file and the geometry cards use the record-row look of the array fields.
+.geo-file,
+.geo-shape {
+    @include form-grid.sf-record;
 }
 
-.geo-file-text {
-    flex: 1;
-    min-width: 0;
-
-    b,
-    small {
-        display: block;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    b {
-        font-size: 13.5px;
-        font-weight: 600;
-    }
-
-    small {
-        font-size: 12px;
-        color: var(--color-grey-5);
-    }
+.sf-link {
+    @include form-grid.sf-link;
 }
 
 .geo-file-actions {
@@ -264,88 +242,10 @@
     flex: none;
 }
 
-// A geometry card follows the record rows of the array fields.
-.geo-shape {
-    border: 1px solid var(--guardian-border-color);
-    border-radius: 10px;
-    background: var(--guardian-background);
-}
-
-.geo-shape-head {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 8px 8px 12px;
-}
-
-.geo-shape-ix {
-    flex: none;
-    display: grid;
-    place-items: center;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: var(--guardian-primary-background);
-    color: var(--color-primary);
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.geo-shape-text {
-    flex: 1;
-    min-width: 0;
-
-    b,
-    small {
-        display: block;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    b {
-        font-size: 13.5px;
-        font-weight: 600;
-    }
-
-    small {
-        font-size: 12px;
-        color: var(--color-grey-5);
-    }
-}
-
-.geo-shape-remove {
-    flex: none;
-
-    ::ng-deep .icon-color-delete {
-        fill: var(--color-grey-5);
-    }
-}
-
-// Same look as the Edit / Close link of a record row.
-.geo-shape-toggle {
-    flex: none;
-    height: 30px;
-    padding: 0 10px;
-    border: 0;
-    border-radius: 7px;
-    background: transparent;
-    font-size: 12.5px;
-    color: var(--color-grey-5);
-    cursor: pointer;
-
-    &:hover {
-        background: var(--color-grey-2);
-        color: var(--guardian-font-color);
-    }
-}
-
 .geo-shape-body {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    padding: 12px;
-    border-top: 1px solid var(--guardian-border-color);
 }
 
 .geo-shape-type {
