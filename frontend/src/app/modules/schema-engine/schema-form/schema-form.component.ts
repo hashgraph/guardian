@@ -19,6 +19,7 @@ import { getErrorMessage, showError } from './schema-form-errors';
 import { countRequired, requiredWithoutControl } from './schema-form-completion';
 import { baseMetaTags, metaType } from './schema-form-metadata';
 import { recordSummary } from './schema-form-records';
+import { describeGeoValue, summarizeGeoValue } from '../geo-file/geo-value-summary';
 import { getMinutesAgoStream } from 'src/app/utils/autosave-utils';
 import { withNewTabLinks } from '../rich-text-editor/rich-text-sanitizer';
 import { markdownToHtml, markdownToPlainText } from '../rich-text-editor/markdown';
@@ -807,7 +808,13 @@ export class SchemaFormComponent implements OnInit, DoCheck {
     }
 
     private buildRecordText(item: IFieldControl<any>, listItem: IFieldIndexControl<any>): { title: string; sub: string } {
-        const geo = ['geo', 'sentinel'].includes(item.customType || '');
+        if (item.customType === 'geo') {
+            return {
+                title: item.description || '',
+                sub: describeGeoValue(summarizeGeoValue(listItem.control?.value)) || 'Empty'
+            };
+        }
+        const geo = item.customType === 'sentinel';
         const values = (listItem.model?.controls || []).map((field: IFieldControl<any>) =>
             field.isRef || field.isArray ? undefined
                 : this.isRichText(field) ? markdownToPlainText(field.control?.value) : field.control?.value

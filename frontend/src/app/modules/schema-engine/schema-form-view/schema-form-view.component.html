@@ -318,7 +318,7 @@
                                             >
                                                 <i class="pi pi-chevron-right sf-chev" aria-hidden="true"></i>
                                                 <span class="sf-record-ix">{{ idx + 1 }}</span>
-                                                <span class="sf-record-text">
+                                                <span class="sf-record-text" [class.sf-record-text-inline]="item.customType === 'geo'">
                                                     <b>{{ summary.title }}</b>
                                                     @if (summary.sub) {
                                                         <small>{{ summary.sub }}</small>

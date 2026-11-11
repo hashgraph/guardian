@@ -19,6 +19,7 @@ import { collectImageReferences, markdownToHtml, markdownToPlainText } from '../
 import { SchemaFormPreferencesService } from 'src/app/services/schema-form-preferences.service';
 import { baseMetaTags, IMetaTag, metaType } from '../schema-form/schema-form-metadata';
 import { recordSummary } from '../schema-form/schema-form-records';
+import { describeGeoValue, summarizeGeoValue } from '../geo-file/geo-value-summary';
 import { applyNestedConditions, applyViewConditions } from './schema-form-view-conditions';
 
 const PREVIEW_RENDER_CHUNK = 10;
@@ -776,6 +777,16 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
         const cached = row && typeof row === 'object' ? this.rowSummaryCache.get(row) : undefined;
         if (cached) {
             return cached;
+        }
+        if (item.customType === 'geo') {
+            const geoSummary = {
+                title: item.description || '',
+                sub: describeGeoValue(summarizeGeoValue(row)) || 'Empty'
+            };
+            if (row && typeof row === 'object') {
+                this.rowSummaryCache.set(row, geoSummary);
+            }
+            return geoSummary;
         }
         const values = (item.fields || [])
             .filter((field) => !field.isArray && !field.isRef && !field.hidden && !this.hide?.[field.name])

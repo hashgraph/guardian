@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, Input, OnChanges, SimpleChanges, ViewChild, } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, SimpleChanges, ViewChild, } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { GenerateUUIDv4, GeoJsonType } from '@guardian/interfaces';
@@ -24,6 +24,9 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { DEFAULT_GEOSPATIAL_LIMITS, GeospatialLimits, SettingsService } from 'src/app/services/settings.service';
 import { classifyGeoFile, PreviewableGeoFileFormat } from '../geo-file/geo-file-size';
 import { gunzipIfCompressed } from '../geo-file/geo-file-compression';
+import {
+    countPoints, countShapes, describeGeoValue, GeoValueSummary, summarizeGeoValue
+} from '../geo-file/geo-value-summary';
 import { GeoCoordinate, GeoJsonValidator, KmlWellFormedChecker, NetworkLinkFinder } from '@guardian/interfaces';
 import { GeoJsonCoordinateScanner } from '@guardian/interfaces';
 import { KmzBrowserSupportError, KmzEntry, KmzReader } from '@guardian/interfaces';
@@ -270,20 +273,22 @@ function importedStyleFunction(feature: any) {
     styleUrls: ['./geojson-type.component.scss'],
     standalone: false
 })
-export class GeojsonTypeComponent implements OnChanges {
+export class GeojsonTypeComponent implements OnChanges, OnDestroy {
     @ViewChild('map', { static: false }) mapElementRef!: ElementRef;
+    @ViewChild('dialogMap', { static: false }) dialogMapElementRef?: ElementRef;
 
     @Input('preset') presetDocument: any = null;
     @Input('form-model') formModel!: GeoForm;
     @Input('disabled') isDisabled: boolean = false;
-    /** Hides the Form / JSON switch, for read-only previews that only show the map. */
-    @Input('hide-view-switch') hideViewSwitch: boolean = false;
+    /** Hides the download links, for the document overview that only shows the map. */
+    @Input('hide-downloads') hideDownloads: boolean = false;
     @Input('available-options') availableOptions?: string[] = [];
 
     type: GeoJsonType = GeoJsonType.POINT;
     parsedCoordinates: any;
-    isJSON: boolean = false;
-    jsonInput: string = '';
+    private summarySource: unknown;
+    private summaryCache?: GeoValueSummary;
+    private largeAtLoad = false;
 
     typeOptions = [
         { label: 'Point', value: GeoJsonType.POINT },
@@ -295,7 +300,21 @@ export class GeojsonTypeComponent implements OnChanges {
     ];
 
     public map!: Map | null;
+    public dialogMap: Map | null = null;
     public mapCreated: boolean = false;
+    public dialogVisible = false;
+    public dialogTab: 'file' | 'manual' = 'file';
+    public showDropzone = false;
+    private dialogSnapshot?: {
+        value: any;
+        pendingGeoFile?: GeoFileLink;
+        selectedOriginalFile?: File;
+        importedLocations: any[];
+        allImportedLocations: any[];
+    };
+    private dialogSaved = false;
+    private dialogCreatedLinks: GeoFileLink[] = [];
+    private deferredDiscards: GeoFileLink[] = [];
     private vectorSource: VectorSource = new VectorSource();
     private geoShapesSource: VectorSource = new VectorSource();
     private importedShapesSource: VectorSource = new VectorSource();
@@ -474,6 +493,171 @@ export class GeojsonTypeComponent implements OnChanges {
         return { type: 'FeatureCollection', features: [] };
     }
 
+    public hasValue(): boolean {
+        return !!this.formModel?.getValue?.()?.type;
+    }
+
+    /** Text of the info row under the map. */
+    public summaryText(): string {
+        const summary = this.valueSummary();
+        return describeGeoValue(summary, this.isLargeValue() ? this.formatSize(summary.bytes) : undefined);
+    }
+
+    public canEdit(): boolean {
+        return !this.isDisabled && this.hasValue() && !this.isLargeValue() && !this.isPreviewUnavailable();
+    }
+
+    public openDialog(): void {
+        if (this.isDisabled || this.dialogVisible) {
+            return;
+        }
+        this.dialogSnapshot = {
+            value: this.cloneValue(this.formModel?.getValue?.()),
+            pendingGeoFile: this.pendingGeoFile,
+            selectedOriginalFile: this.selectedOriginalFile,
+            importedLocations: [...this.importedLocations],
+            allImportedLocations: [...this.allImportedLocations]
+        };
+        this.dialogSaved = false;
+        this.dialogCreatedLinks = [];
+        this.deferredDiscards = [];
+        const hasManual = this.geometriesList.some(geometry => !this.isFromFile(geometry));
+        this.dialogTab = hasManual && !this.pickedCount() ? 'manual' : 'file';
+        this.showDropzone = false;
+        this.importError = '';
+        // A lone card opens at once; with several the user opens the one to edit.
+        const cards = this.manualCards();
+        this.openCards = new Set(cards.length === 1 ? [cards[0].geometry.id] : []);
+        this.dialogVisible = true;
+    }
+
+    public onDialogShown(): void {
+        setTimeout(() => {
+            this.initDialogMap();
+            this.cdkRef.detectChanges();
+        });
+    }
+
+    public canSave(): boolean {
+        return this.hasValue() && !this.haveErrors() && !this.loading;
+    }
+
+    public saveDialog(): void {
+        if (!this.canSave()) {
+            return;
+        }
+        this.dialogSaved = true;
+        this.dialogVisible = false;
+        this.onDialogHide();
+    }
+
+    public cancelDialog(): void {
+        this.dialogVisible = false;
+        this.onDialogHide();
+    }
+
+    /** Runs for every way the dialog closes: Save, Cancel, the close icon, Escape and a click on the mask. */
+    public onDialogHide(): void {
+        const snapshot = this.dialogSnapshot;
+        if (!snapshot) {
+            return;
+        }
+        this.dialogSnapshot = undefined;
+        this.dialogVisible = false;
+        this.destroyDialogMap();
+        if (this.dialogSaved) {
+            const stale = this.deferredDiscards;
+            this.deferredDiscards = [];
+            this.dialogCreatedLinks = [];
+            stale.forEach(link => this.geoFiles.discard(link).catch(() => undefined));
+        } else {
+            const created = this.dialogCreatedLinks;
+            this.dialogCreatedLinks = [];
+            this.deferredDiscards = [];
+            created.forEach(link => this.geoFiles.discard(link).catch(() => undefined));
+            this.pendingGeoFile = snapshot.pendingGeoFile;
+            this.selectedOriginalFile = snapshot.selectedOriginalFile;
+            this.importedLocations = snapshot.importedLocations;
+            this.allImportedLocations = snapshot.allImportedLocations;
+            this.formModel?.setControlValue(snapshot.value ?? {}, false);
+        }
+        this.dialogSaved = false;
+        this.importError = '';
+        this.loading = false;
+        this.loadValue();
+        this.cdkRef.detectChanges();
+    }
+
+    public setDialogTab(tab: 'file' | 'manual'): void {
+        this.dialogTab = tab;
+    }
+
+    /** Clears the value, keeping the original file link for the next pick, like clearing the selection does. */
+    public clearValue(): void {
+        if (this.isDisabled) {
+            return;
+        }
+        this.pendingGeoFile = this.pendingGeoFile || this.formModel?.getValue?.()?.geoFile;
+        this.geometriesList = [];
+        this.geoShapesSource?.clear(true);
+        this.clearImportedLocations();
+        this.importedShapesSource?.clear();
+        this.setControlValue({});
+        this.loadValue();
+    }
+
+    private openCards = new Set<string>();
+
+    public isCardOpen(geometry: { id: string }): boolean {
+        return this.openCards.has(geometry.id);
+    }
+
+    public toggleCard(geometry: { id: string }): void {
+        if (!this.openCards.delete(geometry.id)) {
+            this.openCards.add(geometry.id);
+        }
+    }
+
+    /** Adds an empty card and opens it, so the user can type right away. */
+    public addManualCard(): void {
+        const card = this.addGeometry();
+        if (card) {
+            this.openCards.add(card.id);
+        }
+    }
+
+    /** The cards the user types in: the shapes picked from a file have no card. */
+    public manualCards(): { geometry: any; index: number }[] {
+        const picked = new Set(this.allImportedLocations.map(item => item.id));
+        return this.geometriesList
+            .map((geometry, index) => ({ geometry, index }))
+            .filter(card => !picked.has(card.geometry.id));
+    }
+
+    public isFromFile(geometry: { id: string }): boolean {
+        return this.allImportedLocations.some(item => item.id === geometry.id);
+    }
+
+    public pickedCount(): number {
+        const ids = new Set(this.allImportedLocations.map(item => item.id));
+        return this.geometriesList.filter(geometry => ids.has(geometry.id)).length;
+    }
+
+    public hasImportedFile(): boolean {
+        return this.allImportedLocations.length > 0 || this.isPreviewUnavailable();
+    }
+
+    public dialogHasPreview(): boolean {
+        return this.geoShapesSource.getFeatures().length > 0 || this.importedShapesSource.getFeatures().length > 0;
+    }
+
+    private cloneValue(value: any): any {
+        if (!value || typeof value !== 'object') {
+            return value;
+        }
+        return JSON.parse(JSON.stringify(value));
+    }
+
     public haveErrors(): boolean {
         return Object.values(this.formModel.getErrors()).some((errors) => errors.length);
     }
@@ -482,12 +666,52 @@ export class GeojsonTypeComponent implements OnChanges {
         return this.formModel.getErrors()[i] || [];
     }
 
+    /**
+     * Errors under one geometry card; nothing is reported until something is typed in it.
+     * The value holds only the cards that have points, so their errors are keyed by that position.
+     */
+    public rowErrors(index: number, geometry: { coordinatesString?: string; type?: string; coordinates?: any }): string[] {
+        if (!geometry.coordinatesString?.trim()) {
+            return [];
+        }
+        if (!this.hasPoints(geometry)) {
+            return this.getErrorsByIndex(index);
+        }
+        const shapeIndex = this.geometriesList.slice(0, index).filter(card => this.hasPoints(card)).length;
+        return this.getErrorsByIndex(shapeIndex);
+    }
+
+    private hasPoints(geometry: { type?: string; coordinates?: any }): boolean {
+        return countPoints({ type: geometry.type, coordinates: geometry.coordinates }) > 0;
+    }
+
+    /** "Polygon · 5 points" under the title of a geometry card. */
+    public shapeSummary(geometry: { type?: string; coordinates?: any }): string {
+        const points = countPoints({ type: geometry.type, coordinates: geometry.coordinates });
+        return [geometry.type, points ? `${points.toLocaleString('en-US')} ${points === 1 ? 'point' : 'points'}` : '']
+            .filter(Boolean).join(' · ');
+    }
+
+    /** The example coordinates on one line, so an empty card stays compact. */
+    public placeholderText(geometry: { coordinatesPlaceholder?: string }): string {
+        return (geometry.coordinatesPlaceholder || '').replace(/\s+/g, ' ').replace(/\[ /g, '[').replace(/ \]/g, ']');
+    }
+
     public getAllErrors(): string[] {
         const unpicked = this.hasUnpickedFile();
         return Object.entries(this.formModel.getErrors())
             .filter(([key]) => key !== ORIGINAL_FILE_ERRORS_KEY)
             .reduce((acc: string[], [, val]) => acc.concat(val), [])
             .filter(error => !unpicked || error !== GEOJSON_REQUIRED_ERROR);
+    }
+
+    /** The first errors of the value, so a value with thousands of problems does not flood the field. */
+    public visibleErrors(limit = 5): string[] {
+        return this.getAllErrors().slice(0, limit);
+    }
+
+    public hiddenErrorCount(limit = 5): number {
+        return Math.max(0, this.getAllErrors().length - limit);
     }
 
     public getOriginalFileErrors(): string[] {
@@ -506,21 +730,12 @@ export class GeojsonTypeComponent implements OnChanges {
         return !!this.pendingGeoFile && !this.formModel?.getValue?.()?.type;
     }
 
+    /** A value with validation errors can still be downloaded, to inspect and fix it in a GIS tool. */
     public canDownload(): boolean {
-        const haveErrors = this.haveErrors();
-
-        if (haveErrors) {
-            return false;
-        }
-
         const value = this.formModel?.getValue?.();
-        if (value?.geoFile && typeof value.type === 'string' && 'coordinates' in value) return true;
+        if (typeof value?.type === 'string' && 'coordinates' in value) return true;
 
-        if (!value?.features?.length) {
-            return false;
-        }
-
-        return true;
+        return !!value?.features?.length;
     }
 
     private makeFileName(): string {
@@ -607,6 +822,14 @@ export class GeojsonTypeComponent implements OnChanges {
         this.applyAvailableOptionsFilter();
         this.formModel.setAvailableTypes(this.typeOptions.map(({ value }) => value));
         this.formModel.setOriginalFileCheck(idbKey => this.geoFiles.ensurePendingFile(idbKey));
+        this.loadLimits()
+            .then(() => {
+                if (this.isLargeValue() !== this.largeAtLoad) {
+                    this.loadValue();
+                    this.cdkRef.detectChanges();
+                }
+            })
+            .catch(() => undefined);
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -615,20 +838,40 @@ export class GeojsonTypeComponent implements OnChanges {
             this.formModel.setAvailableTypes(this.typeOptions.map(({ value }) => value));
         }
         if (changes?.isDisabled && !changes?.isDisabled.firstChange) {
-            this.onViewTypeChange();
+            this.loadValue();
         }
     }
 
     ngAfterViewInit(): void {
-        // this.resetCoordinatesStructure();
-        if (this.getValue()) {
-            this.onViewTypeChange(false);
-        } else {
-            // this.onTypeChange(false, 0);
-            this.onViewTypeChange(false);
-        }
+        this.loadValue();
         this.setupMap();
     }
+
+    ngOnDestroy(): void {
+        this.map?.setTarget(undefined);
+        this.destroyDialogMap();
+    }
+
+    /** Counts of the current value, rebuilt only when the value object changes. */
+    public valueSummary(): GeoValueSummary {
+        const value = this.formModel?.getValue?.();
+        if (!this.summaryCache || this.summarySource !== value) {
+            this.summarySource = value;
+            this.summaryCache = summarizeGeoValue(value);
+        }
+        return this.summaryCache;
+    }
+
+    /**
+     * A value above the preview limits is shown as a summary only: no coordinates text and no editing.
+     * Uses the configured limits once they are loaded and the defaults before that.
+     */
+    public isLargeValue(): boolean {
+        const summary = this.valueSummary();
+        const limits = this.geospatialLimits ?? DEFAULT_GEOSPATIAL_LIMITS;
+        return summary.points > this.pointLimit(limits) || summary.shapes > this.shapeLimit(limits);
+    }
+
 
     private applyAvailableOptionsFilter(): void {
         if (!this.availableOptions || this.availableOptions.length === 0) {
@@ -649,33 +892,6 @@ export class GeojsonTypeComponent implements OnChanges {
         return GeoJsonType.POINT;
     }
 
-    private getValue() {
-        const value = this.formModel?.getValue();
-        if (!value || !value.type) {
-            // this.addGeometry();
-            return undefined;
-        }
-        if (
-            value.type === GeoJsonType.POINT ||
-            value.type === GeoJsonType.LINE_STRING ||
-            value.type === GeoJsonType.POLYGON ||
-            value.type === GeoJsonType.MULTI_POINT ||
-            value.type === GeoJsonType.MULTI_LINE_STRING ||
-            value.type === GeoJsonType.MULTI_POLYGON
-        ) {
-            this.addGeometry(value);
-            return value;
-        } else if (value.type === GeoJsonType.FEATURE_COLLECTION && value.features?.length > 0) {
-            value.features.forEach((feature: any) => {
-                if (feature && feature.geometry) {
-                    this.addGeometry(feature.geometry);
-                }
-            });
-        } else {
-            return undefined;
-        }
-    }
-
     private setControlValue(value: any, dirty = true) {
         const normalized = this.normalizeGeoJSON(value);
         this.formModel?.setControlValue(normalized, dirty);
@@ -688,9 +904,6 @@ export class GeojsonTypeComponent implements OnChanges {
                 this.initMap();
 
                 const shapesExtent = createEmpty();
-                if (this.importedLocations.length > 0) {
-                    extend(shapesExtent, this.importedShapesSource.getExtent());
-                }
                 if (this.geometriesList.length > 0) {
                     extend(shapesExtent, this.geoShapesSource.getExtent());
                 }
@@ -707,39 +920,72 @@ export class GeojsonTypeComponent implements OnChanges {
         }
     }
 
+    /** The map in the field shows the value only and is not interactive. */
     private initMap() {
-        const clusterSource = new Cluster({
-            distance: CLUSTER_DISTANCE.distance,
-            minDistance: CLUSTER_DISTANCE.minDistance,
-            source: this.vectorSource,
-        });
-        const clusterLayer = new VectorLayer({
-            source: clusterSource,
-            style: styleFunction,
-        });
+        this.map = this.buildMap(this.mapElementRef?.nativeElement, false);
+    }
 
-        const geoShapesLayer = new VectorLayer({
+    /** The map in the dialog also shows the shapes of an imported file, and picks or draws shapes. */
+    private initDialogMap() {
+        const target = this.dialogMapElementRef?.nativeElement;
+        if (!target) {
+            return;
+        }
+        this.destroyDialogMap();
+        this.dialogMap = this.buildMap(target, true);
+        this.fitDialogMap();
+    }
+
+    private destroyDialogMap() {
+        this.dialogMap?.setTarget(undefined);
+        this.dialogMap = null;
+    }
+
+    private fitDialogMap() {
+        if (!this.dialogMap) {
+            return;
+        }
+        this.dialogMap.updateSize();
+        const extent = createEmpty();
+        extend(extent, this.importedShapesSource.getExtent());
+        extend(extent, this.geoShapesSource.getExtent());
+        if (!isEmpty(extent)) {
+            this.dialogMap.getView().fit(extent, { padding: [40, 40, 40, 40], maxZoom: 12 });
+        }
+    }
+
+    private buildMap(target: any, interactive: boolean): Map {
+        const layers: any[] = [new TileLayer({ source: new OSM() })];
+        if (interactive) {
+            layers.push(new VectorLayer({
+                source: this.importedShapesSource,
+                style: importedStyleFunction,
+            }));
+        }
+        layers.push(new VectorLayer({
             source: this.geoShapesSource,
             style: styleFunction,
-        });
-
-        const importedShapesLayer = new VectorLayer({
-            source: this.importedShapesSource,
-            style: importedStyleFunction,
-        });
-
-        this.map = new Map({
-            layers: [
-                new TileLayer({
-                    source: new OSM(),
+        }));
+        if (interactive) {
+            layers.push(new VectorLayer({
+                source: new Cluster({
+                    distance: CLUSTER_DISTANCE.distance,
+                    minDistance: CLUSTER_DISTANCE.minDistance,
+                    source: this.vectorSource,
                 }),
-                importedShapesLayer,
-                geoShapesLayer,
-                clusterLayer
-            ],
-            target: this.mapElementRef?.nativeElement,
+                style: styleFunction,
+            }));
+        }
+
+        const map = new Map({
+            layers,
+            target,
             view: new View(MAP_OPTIONS),
         });
+        if (!interactive || this.isDisabled) {
+            return map;
+        }
+
         const selectHover = new Select({
             condition: pointerMove,
             style: activeStyleFunction,
@@ -749,108 +995,108 @@ export class GeojsonTypeComponent implements OnChanges {
             style: styleFunction,
         });
 
-        if (!this.isDisabled) {
-            this.map.on('singleclick', (evt) => {
-                const clickOnFeature = this.map?.forEachFeatureAtPixel(evt.pixel, (feature) => {
-                    const geom = feature.getGeometry();
+        map.on('singleclick', (evt) => {
+            const clickOnFeature = map.forEachFeatureAtPixel(evt.pixel, (feature) => {
+                const geom = feature.getGeometry();
 
-                    this.selectFeature(feature);
+                this.selectFeature(feature);
 
-                    if (geom instanceof Polygon) {
-                        const coords = geom.getCoordinates();
-                        const clickCoord = evt.coordinate;
+                if (geom instanceof Polygon) {
+                    const coords = geom.getCoordinates();
+                    const clickCoord = evt.coordinate;
 
-                        for (let i = 0; i < coords.length; i++) {
-                            const ring = new Polygon([coords[i]]);
+                    for (let i = 0; i < coords.length; i++) {
+                        const ring = new Polygon([coords[i]]);
+                        if (ring.intersectsCoordinate(clickCoord)) {
+                            this.selectedRingIndex = i;
+
+                            this.lastSelectedGeometry = feature;
+                            this.lastSelectedCoordinates = clickCoord;
+                            break;
+                        }
+                    }
+                } else if (geom instanceof MultiPolygon) {
+                    const polygons = geom.getPolygons();
+                    const clickCoord = evt.coordinate;
+
+                    for (let i = 0; i < polygons.length; i++) {
+                        const polygon = polygons[i];
+                        const coords = polygon.getCoordinates();
+
+                        for (let j = 0; j < coords.length; j++) {
+                            const ring = new Polygon([coords[j]]);
                             if (ring.intersectsCoordinate(clickCoord)) {
-                                this.selectedRingIndex = i;
-
-                                this.lastSelectedGeometry = feature;
-                                this.lastSelectedCoordinates = clickCoord;
+                                this.selectedFeatureIndex = i;
+                                this.selectedRingIndex = j;
                                 break;
                             }
                         }
-                    } else if (geom instanceof MultiPolygon) {
-                        const polygons = geom.getPolygons();
-                        const clickCoord = evt.coordinate;
+                    }
+                }
 
-                        for (let i = 0; i < polygons.length; i++) {
-                            const polygon = polygons[i];
-                            const coords = polygon.getCoordinates();
+                return true;
+            })
 
-                            for (let j = 0; j < coords.length; j++) {
-                                const ring = new Polygon([coords[j]]);
-                                if (ring.intersectsCoordinate(clickCoord)) {
-                                    this.selectedFeatureIndex = i;
-                                    this.selectedRingIndex = j;
-                                    break;
-                                }
+            if (!clickOnFeature && this.dialogTab === 'manual') {
+                this.mapClick(toLonLat(evt.coordinate));
+            }
+        });
+
+        map.getViewport().addEventListener('contextmenu', (evt) => {
+            evt.preventDefault();
+            if (this.dialogTab !== 'manual') {
+                return;
+            }
+
+            const pixel = map.getEventPixel(evt);
+            const coordinate = map.getCoordinateFromPixel(pixel);
+
+            let featureIndex = 0;
+            let ringIndex = 0;
+
+            const clickOnFeature = map.forEachFeatureAtPixel(pixel, (feature) => {
+                const geom = feature.getGeometry();
+                if (geom instanceof Polygon) {
+                    const coords = geom.getCoordinates();
+
+                    for (let i = 0; i < coords.length; i++) {
+                        const ring = new Polygon([coords[i]]);
+                        if (ring.intersectsCoordinate(coordinate)) {
+                            ringIndex = i;
+                            return true;
+                        }
+                    }
+                    return false;
+                } else if (geom instanceof MultiPolygon) {
+                    const polygons = geom.getPolygons();
+
+                    for (let i = 0; i < polygons.length; i++) {
+                        const polygon = polygons[i];
+                        const coords = polygon.getCoordinates();
+
+                        for (let j = 0; j < coords.length; j++) {
+                            const ring = new Polygon([coords[j]]);
+                            if (ring.intersectsCoordinate(coordinate)) {
+                                featureIndex = i;
+                                ringIndex = j;
+                                return true;
                             }
                         }
                     }
-
-                    return true;
-                })
-
-                if (!clickOnFeature) {
-                    this.mapClick(toLonLat(evt.coordinate));
+                    return false;
                 }
-            });
 
-            this.map.getViewport().addEventListener('contextmenu', (evt) => {
-                evt.preventDefault();
+                return true;
+            })
 
-                if (this.map) {
-                    const pixel = this.map.getEventPixel(evt);
-                    const coordinate = this.map.getCoordinateFromPixel(pixel);
+            if (clickOnFeature) {
+                this.mapRightclick(featureIndex, ringIndex);
+            }
+        });
 
-                    let featureIndex = 0;
-                    let ringIndex = 0;
-
-                    const clickOnFeature = this.map?.forEachFeatureAtPixel(pixel, (feature) => {
-                        const geom = feature.getGeometry();
-                        if (geom instanceof Polygon) {
-                            const coords = geom.getCoordinates();
-
-                            for (let i = 0; i < coords.length; i++) {
-                                const ring = new Polygon([coords[i]]);
-                                if (ring.intersectsCoordinate(coordinate)) {
-                                    ringIndex = i;
-                                    return true;
-                                }
-                            }
-                            return false;
-                        } else if (geom instanceof MultiPolygon) {
-                            const polygons = geom.getPolygons();
-
-                            for (let i = 0; i < polygons.length; i++) {
-                                const polygon = polygons[i];
-                                const coords = polygon.getCoordinates();
-
-                                for (let j = 0; j < coords.length; j++) {
-                                    const ring = new Polygon([coords[j]]);
-                                    if (ring.intersectsCoordinate(coordinate)) {
-                                        featureIndex = i;
-                                        ringIndex = j;
-                                        return true;
-                                    }
-                                }
-                            }
-                            return false;
-                        }
-
-                        return true;
-                    })
-
-                    if (clickOnFeature) {
-                        this.mapRightclick(featureIndex, ringIndex);
-                    }
-                }
-            });
-
-            this.map.addInteraction(selectHover);
-            this.map.addInteraction(selectDoubleClick);
-        }
+        map.addInteraction(selectHover);
+        map.addInteraction(selectDoubleClick);
+        return map;
     }
 
     private selectFeature(feature: any) {
@@ -912,7 +1158,7 @@ export class GeojsonTypeComponent implements OnChanges {
     }
 
     public displayLocationEditor() {
-        return this.geometriesList.length <= MAX_EDITABLE_SHAPES;
+        return !this.isLargeValue() && this.geometriesList.length <= MAX_EDITABLE_SHAPES;
     }
 
     public async clearSelectionFeatures(): Promise<void> {
@@ -927,11 +1173,10 @@ export class GeojsonTypeComponent implements OnChanges {
         });
 
         this.setControlValue({});
-        this.jsonInput = '';
     }
 
     private updateMap(updateInput: boolean = false) {
-        const shapeFeatures: any[] = this.geometriesList.map(item => {
+        const cards = this.geometriesList.map(item => {
             const rawCoords = Array.isArray(item.coordinates)
                 ? item.coordinates
                 : (item.coordinates && JSON.parse(item.coordinates)) || [];
@@ -947,11 +1192,16 @@ export class GeojsonTypeComponent implements OnChanges {
                 properties: {},
                 geometry: normalizedGeometry,
             }
-        })
+        });
+        // A card nobody filled in yet (for example right after its type was changed) is not a shape.
+        const shapeFeatures: any[] = cards.filter(feature => countPoints(feature.geometry) > 0);
 
         if (shapeFeatures.length <= 0) {
             this.geoShapesSource?.clear(true);
-            // if (updateInput) this.setControlValue({ type: 'FeatureCollection', features: [] }, true);
+            if (updateInput && cards.length > 0) {
+                this.pendingGeoFile = this.pendingGeoFile || this.formModel?.getValue?.()?.geoFile;
+                this.setControlValue({});
+            }
             return;
         }
 
@@ -1098,61 +1348,41 @@ export class GeojsonTypeComponent implements OnChanges {
         this.updateMap(true);
     }
 
-    public onViewTypeChange(dirty = true) {
+    /** Rebuilds the shapes and the map from the form value. Never writes the value back. */
+    public loadValue(): void {
         const value = this.formModel?.getValue();
+        this.largeAtLoad = this.isLargeValue();
 
         if (!value || !value.type) {
-            if (!this.isJSON) {
-                this.map = null;
-                this.mapCreated = false;
-                this.setupMap();
-            }
+            this.resetMap();
             return;
         }
 
-        if (this.isJSON || this.isDisabled) {
-            this.jsonInput = JSON.stringify(value, null, 4);
+        this.geometriesList = [];
+
+        if (value.type === GeoJsonType.FEATURE_COLLECTION && value.features) {
+            value.features.forEach((feature: any) => {
+                if (feature && feature.geometry && feature.geometry.type !== 'GeometryCollection') {
+                    this.addGeometry(feature.geometry);
+                }
+            });
+        } else {
+            this.addGeometry(value);
         }
 
-        if (!this.isJSON || this.isDisabled) {
-            this.geometriesList = [];
+        this.updateMap(false);
 
-            if (value.type === GeoJsonType.FEATURE_COLLECTION && value.features) {
-                value.features.forEach((feature: any) => {
-                    if (feature && feature.geometry && feature.geometry.type !== 'GeometryCollection') {
-                        this.addGeometry(feature.geometry);
-                    }
-                });
-            } else {
-                this.addGeometry(value);
-            }
+        this.resetMap();
 
-            this.updateMap(false);
-
-            // this.onTypeChange(null, dirty);
-
-            // this.allCoordinatesChanged();
-        }
-
-        if (!this.isJSON) {
-            this.map = null;
-            this.mapCreated = false;
-            this.setupMap();
-
-            this.centerMap(undefined, false);
-        }
+        this.centerMap(undefined, false, false);
+        this.fitDialogMap();
     }
 
-    public jsonChanged() {
-        try {
-            let value = JSON.parse(this.jsonInput);
-            if (value.features) {
-                value.features = value.features.filter((feature: any) => feature?.geometry?.type && feature.geometry.type !== 'GeometryCollection');
-            }
-            this.setControlValue(value);
-        } catch {
-            this.setControlValue({});
-        }
+    private resetMap(): void {
+        this.map?.setTarget(undefined);
+        this.map = null;
+        this.mapCreated = false;
+        this.setupMap();
     }
 
     public addGeometry(geometry?: any): any {
@@ -1161,7 +1391,9 @@ export class GeojsonTypeComponent implements OnChanges {
                 id: geometry.id || GenerateUUIDv4(),
                 type: geometry.type,
                 coordinates: Array.isArray(geometry.coordinates) ? geometry.coordinates : geometry.coordinates && JSON.parse(geometry.coordinates) || [],
-                coordinatesString: Array.isArray(geometry.coordinates) ? JSON.stringify(geometry.coordinates, null, 4) : geometry.coordinates
+                coordinatesString: Array.isArray(geometry.coordinates)
+                    ? (this.isLargeValue() ? undefined : JSON.stringify(geometry.coordinates, null, 4))
+                    : geometry.coordinates
             };
             this.geometriesList.push(newGeometry);
 
@@ -1190,7 +1422,6 @@ export class GeojsonTypeComponent implements OnChanges {
             if (!this.geometriesList.length) {
                 this.pendingGeoFile = this.pendingGeoFile || this.formModel?.getValue?.()?.geoFile;
                 this.setControlValue({});
-                this.jsonInput = '';
             }
             if (location) this.addImportedLocation(location);
             this.updateMap(true);
@@ -1201,7 +1432,7 @@ export class GeojsonTypeComponent implements OnChanges {
         return Array.isArray(geometry.coordinates) ? JSON.stringify(geometry.coordinates) : geometry.coordinates;
     }
 
-    private centerMap(geometry?: any, zoom = true) {
+    private centerMap(geometry?: any, zoom = true, commit = true) {
         setTimeout(() => {
             if (!geometry) {
                 geometry = this.formModel.getValue();
@@ -1258,13 +1489,17 @@ export class GeojsonTypeComponent implements OnChanges {
 
             if (this.center && this.center.length > 1) {
                 if (zoom) {
-                    this.map?.getView().animate({
-                        center: this.center,
-                        zoom: 6,
-                        duration: 350,
-                    });
+                    for (const map of [this.map, this.dialogMap]) {
+                        map?.getView().animate({
+                            center: this.center,
+                            zoom: 6,
+                            duration: 350,
+                        });
+                    }
                 }
-                this.updateMap(true);
+                if (commit) {
+                    this.updateMap(true);
+                }
             }
         }, 500);
     }
@@ -1590,10 +1825,20 @@ export class GeojsonTypeComponent implements OnChanges {
     private async replacePendingFile(file: File, format: GeoFileFormat): Promise<GeoFileLink> {
         const previous = this.browserGeoFile();
         const link = await this.geoFiles.keepOriginal(file, format);
+        if (this.dialogSnapshot) this.dialogCreatedLinks.push(link);
         try {
-            if (previous) await this.geoFiles.discard(previous);
+            if (previous) {
+                const created = this.dialogCreatedLinks.indexOf(previous);
+                if (this.dialogSnapshot && created < 0) {
+                    this.deferredDiscards.push(previous);
+                } else {
+                    await this.geoFiles.discard(previous);
+                    if (created >= 0) this.dialogCreatedLinks.splice(created, 1);
+                }
+            }
         } catch (error) {
             await this.geoFiles.discard(link);
+            this.dialogCreatedLinks = this.dialogCreatedLinks.filter(item => item !== link);
             throw error;
         }
         this.pendingGeoFile = link;
@@ -1603,7 +1848,6 @@ export class GeojsonTypeComponent implements OnChanges {
         this.clearImportedLocations();
         this.importedShapesSource?.clear();
         this.setControlValue({});
-        this.jsonInput = '';
         return link;
     }
 
@@ -1621,9 +1865,6 @@ export class GeojsonTypeComponent implements OnChanges {
             this.pendingGeoFile = restored;
             this.selectedOriginalFile = file;
             this.setControlValue({ ...value, geoFile: restored });
-            if (this.isJSON) {
-                this.jsonInput = JSON.stringify(this.formModel.getValue(), null, 4);
-            }
             return true;
         } catch (error) {
             this.importError = error instanceof Error ? error.message : String(error);
@@ -1699,15 +1940,11 @@ export class GeojsonTypeComponent implements OnChanges {
 
     private showFilePoint(coordinate: GeoCoordinate): void {
         this.addImportedLocation({ type: GeoJsonType.POINT, coordinates: coordinate });
-        this.isJSON = false;
-        this.onViewTypeChange();
+        this.loadValue();
     }
 
     private shapeCount(data: any): number {
-        return data?.type === 'FeatureCollection'
-            ? (data.features || []).filter((feature: any) =>
-                feature?.geometry?.type && feature.geometry.type !== 'GeometryCollection').length
-            : 1;
+        return countShapes(data);
     }
 
     private shapeLimit(limits: GeospatialLimits): number {
@@ -1719,17 +1956,7 @@ export class GeojsonTypeComponent implements OnChanges {
     }
 
     private pointCount(data: any): number {
-        const count = (coordinates: any): number => !Array.isArray(coordinates)
-            ? 0
-            : typeof coordinates[0] === 'number'
-                ? 1
-                : coordinates.reduce((sum: number, item: any) => sum + count(item), 0);
-        const geometries = data?.type === 'FeatureCollection'
-            ? (data.features || []).map((feature: any) => feature?.geometry)
-            : [data?.type === 'Feature' ? data.geometry : data];
-        return geometries
-            .filter((geometry: any) => geometry?.type && geometry.type !== 'GeometryCollection')
-            .reduce((sum: number, geometry: any) => sum + count(geometry.coordinates), 0);
+        return countPoints(data);
     }
 
     private pointLimit(limits: GeospatialLimits): number {
@@ -1811,10 +2038,9 @@ export class GeojsonTypeComponent implements OnChanges {
             }
         }
 
-        this.isJSON = false
         this.loading = false;
 
-        this.onViewTypeChange();
+        this.loadValue();
     }
 
     private clearImportedLocations() {
@@ -1875,8 +2101,6 @@ export class GeojsonTypeComponent implements OnChanges {
         // });
         // dialogRef.onClose.subscribe(async (result) => {
         //     if (result && result.feature) {
-        //         this.jsonInput = JSON.stringify(result.feature.geometry, null, 4);
-        //         this.jsonChanged();
         //     }
         // });
     }

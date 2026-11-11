@@ -1,10 +1,10 @@
-@if (importError) {
+@if (importError && !dialogVisible) {
   <small class="p-error">{{ importError }}</small>
 }
 @for (err of getFieldErrors(); track err) {
   <small class="p-error">{{ err }}</small>
 }
-@if (loading) {
+@if (loading && !dialogVisible) {
   <div class="geo-file-loading" role="status" aria-label="Loading">
     <div class="preloader-image preloader-image-l-size"></div>
   </div>
@@ -19,161 +19,234 @@
     <p class="geo-preview-file">{{ originalFileLabel() }}</p>
   </div>
 }
-@if (!hideViewSwitch) {
-  <div class="switch-btn">
-    <switch-button
-      [on-label]="'JSON'"
-      [off-label]="'Form'"
-      [(value)]="isJSON"
-      [disalbed]="loading"
-      (valueChange)="onViewTypeChange()">
-    </switch-button>
-  </div>
-}
-@if (isJSON) {
-  <div class="form-group type-selector">
-    <label for="geoJsonInput" class="form-label coordinates-input">GeoJSON</label>
-    <textarea
-      pInputTextarea
-      id="geoJsonInput"
-      placeholder="{}"
-      [disabled]="isDisabled"
-      required
-      [(ngModel)]="jsonInput"
-      (ngModelChange)="jsonChanged()"
-      class="full-width">
-    </textarea>
-    @if (getAllErrors().length) {
-      <ul class="p-error validation-errors">
-        @for (err of getAllErrors(); track err) {
-          <li>{{ err }}</li>
-        }
-      </ul>
-    }
-    @if (!isDisabled) {
-      <app-file-drag-n-drop
-        (onFileLoaded)="importFromFile($event)"
-        [dropZoneLabel]="'Upload file (.json, .kml, .kmz, .geojson)'"
-        [fileExtension]="'.json, .kml, .kmz, .geojson'"
-      ></app-file-drag-n-drop>
-    }
-  </div>
-} @else {
-  <div class="map-container">
-    <div class="map" #map id="map"></div>
-    @if (canDownload() && isDisabled) {
+@if (hasValue()) {
+  @if (!hideDownloads) {
+  <div class="geo-toolbar">
+    @if (canDownload()) {
       <button
         pButton
-        class="add-feature-button download-geo"
+        type="button"
+        class="geo-link-button download-geo"
         label="Download GeoJSON"
         (click)="downloadGeoJSON()">
       </button>
     }
-    @if (hasOriginalFile() && isDisabled) {
+    @if (hasOriginalFile()) {
       <button
         pButton
-        class="add-feature-button download-geo"
+        type="button"
+        class="geo-link-button download-geo"
         label="Download original file"
         (click)="downloadOriginal()">
       </button>
     }
   </div>
-  @if (!isDisabled) {
-    <div class="map-control-block">
-      <div class="map-control-buttons">
-        @if (importedLocations && importedLocations.length > 0) {
-          <button
-            (click)="includeAllImportedFeatures()"
-            pButton
-            class="add-feature-button"
-            [label]="isPreviewUnavailable() ? 'Add file point' : 'Include all'"
-          ></button>
-        }
-        @if (geometriesList && geometriesList.length > 0) {
-          <button
-            (click)="clearSelectionFeatures()"
-            pButton
-            class="add-feature-button"
-            label="Clear"
-          ></button>
-        }
-        @if (!isDisabled && displayLocationEditor()) {
-          <button
-            (click)="addGeometry()"
-            pButton
-            class="add-feature-button"
-            label="Add Geometry"
-          ></button>
-        }
-        @if (canDownload()) {
-          <button
-            pButton
-            class="add-feature-button download-geo"
-            label="Download GeoJSON"
-            (click)="downloadGeoJSON()">
-          </button>
-        }
-        @if (hasOriginalFile() && !isPreviewUnavailable()) {
-          <button
-            pButton
-            class="add-feature-button download-geo"
-            label="Download original file"
-            (click)="downloadOriginal()">
-          </button>
-        }
+  }
+  <div class="map-container">
+    <div class="map" #map id="map"></div>
+  </div>
+  <div class="geo-info">
+    <span class="geo-info-text">{{ summaryText() }}</span>
+    <span class="geo-info-spacer"></span>
+    @if (canEdit()) {
+      <button pButton type="button" class="geo-link-button" label="Edit" (click)="openDialog()"></button>
+    }
+    @if (!isDisabled) {
+      <button pButton type="button" class="geo-link-button" label="Clear" (click)="clearValue()"></button>
+    }
+  </div>
+  @if (visibleErrors().length) {
+    <ul class="p-error validation-errors">
+      @for (err of visibleErrors(); track err) {
+        <li>{{ err }}</li>
+      }
+      @if (hiddenErrorCount() > 0) {
+        <li>and {{ hiddenErrorCount() }} more</li>
+      }
+    </ul>
+  }
+} @else {
+  <div class="map-container geo-empty">
+    @if (isDisabled) {
+      <span>No geometry</span>
+    } @else {
+      <span>No geometry yet</span>
+      <button pButton type="button" class="add-feature-button" label="Add geometry" (click)="openDialog()"></button>
+    }
+  </div>
+}
+<p-dialog
+  [visible]="dialogVisible"
+  (visibleChange)="dialogVisible = $event"
+  (onShow)="onDialogShown()"
+  (onHide)="onDialogHide()"
+  [modal]="true"
+  appendTo="body"
+  [showHeader]="false"
+  [closable]="false"
+  [draggable]="false"
+  [resizable]="false"
+  [closeOnEscape]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '720px' }"
+  styleClass="guardian-dialog geo-dialog">
+  @if (dialogVisible) {
+    <div class="dialog-header">
+      <div class="header-container">
+        <div class="header-text">{{ hasValue() ? 'Edit geometry' : 'Add geometry' }}</div>
       </div>
-      @if (displayLocationEditor()) {
-        @for (geometry of geometriesList.slice(0, renderedRows); track geometry; let i = $index) {
-          <div>
-            <div class="location-control">
-              <p class="location-name">Location: {{i + 1}}</p>
-              <div class="form-group type-selector">
-                <p class="location-form-label">Type</p>
-                <p-select
-                  id="typeDropdown"
-                  [(ngModel)]="geometry.type"
-                  [options]="typeOptions"
-                  [disabled]="isDisabled"
-                  placeholder="None"
-                  class="full-width"
-                  (onChange)="onTypeChange(geometry)">
-                </p-select>
-                @if (!geometry.type) {
-                  <small class="p-error">This field is required.</small>
-                }
-              </div>
-              <div class="form-group type-selector">
-                <p class="location-form-label">Coordinates</p>
-                <textarea
-                  id="coordinatesInput"
-                  [(ngModel)]="geometry.coordinatesString"
-                  [placeholder]="geometry.coordinatesPlaceholder"
-                  (ngModelChange)="coordinatesChanged($event, geometry, i)"
-                  [disabled]="isDisabled"
-                  pInputTextarea
-                  required
-                  class="full-width location-coordinates"
-                ></textarea>
-                @if (getErrorsByIndex(i).length) {
-                  <ul class="p-error validation-errors">
-                    @for (err of getErrorsByIndex(i); track err) {
-                      <li>{{ err }}</li>
-                    }
-                  </ul>
-                }
-              </div>
-              <button
-                (click)="deleteGeometry(geometry.id)"
-                pButton
-                class="delete-feature-button guardian-button guardian-button-delete"
-                label="Delete Geometry"
-              ></button>
-            </div>
+      <div class="header-icon" (click)="cancelDialog()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+      </div>
+    </div>
+    <div class="dialog-body">
+      <div class="context">
+        <div class="geo-preview" [class.geo-preview-empty]="!dialogHasPreview()">
+          <div class="map" #dialogMap id="dialogMap"></div>
+          @if (!dialogHasPreview()) {
+            <div class="geo-preview-placeholder">Preview appears here</div>
+          }
+        </div>
+        @if (loading) {
+          <div class="geo-file-loading" role="status" aria-label="Loading">
+            <div class="preloader-image preloader-image-l-size"></div>
           </div>
         }
-      } @else {
-        <span class="form-label coordinates-input">{{ geometriesList.length }} shapes are selected. The list shows up to {{ maxEditableShapes }} shapes; the map shows them all.</span>
-      }
+        <p-tabs class="guardian-tabs geo-tabs" [value]="dialogTab" (valueChange)="setDialogTab($any($event))">
+          <p-tablist>
+            <p-tab value="file">Upload file</p-tab>
+            <p-tab value="manual">Enter manually</p-tab>
+          </p-tablist>
+        </p-tabs>
+        @if (importError) {
+          <small class="p-error">{{ importError }}</small>
+        }
+        @if (dialogTab === 'file') {
+          <div class="geo-tab-body">
+            @if (hasImportedFile()) {
+              <div class="geo-file-head">
+                <span class="geo-file-label">
+                  {{ originalFileLabel() || fileImportName }}
+                  @if (!isPreviewUnavailable()) {
+                    · {{ pickedCount() }} of {{ allImportedLocations.length }} shapes picked
+                  }
+                </span>
+                <span class="geo-info-spacer"></span>
+                @if (importedLocations.length > 0) {
+                  <button
+                    type="button"
+                    class="geo-link-button"
+                    (click)="includeAllImportedFeatures()">{{ isPreviewUnavailable() ? 'Add file point' : 'Select all' }}</button>
+                }
+                @if (geometriesList.length > 0) {
+                  <button type="button" class="geo-link-button" (click)="clearSelectionFeatures()">Clear selection</button>
+                }
+                <button type="button" class="geo-link-button" (click)="showDropzone = !showDropzone">Choose another file</button>
+              </div>
+              @if (!isPreviewUnavailable()) {
+                <small class="geo-hint">Click shapes on the map to pick or unpick them.</small>
+              }
+            }
+            @if (!hasImportedFile() || showDropzone) {
+              <app-file-drag-n-drop
+                (onFileLoaded)="showDropzone = false; importFromFile($event)"
+                [dropZoneLabel]="'Upload file (.json, .kml, .kmz, .geojson)'"
+                [fileExtension]="'.json, .kml, .kmz, .geojson'"
+              ></app-file-drag-n-drop>
+            }
+          </div>
+        } @else {
+          <div class="geo-tab-body">
+            @for (card of manualCards(); track card.geometry; let n = $index) {
+              @let geometry = card.geometry;
+              <div class="geo-shape">
+                <div class="geo-shape-head">
+                  <span class="geo-shape-ix">{{ n + 1 }}</span>
+                  <div class="geo-shape-text">
+                    <b>Geometry</b>
+                    @if (shapeSummary(geometry)) {
+                      <small>{{ shapeSummary(geometry) }}</small>
+                    }
+                  </div>
+                  <button
+                    type="button"
+                    class="geo-shape-toggle"
+                    [attr.aria-expanded]="isCardOpen(geometry)"
+                    (click)="toggleCard(geometry)">{{ isCardOpen(geometry) ? 'Close' : 'Edit' }}</button>
+                  <button
+                    type="button"
+                    class="guardian-icon-button big geo-shape-remove"
+                    aria-label="Remove geometry"
+                    (click)="deleteGeometry(geometry.id)">
+                    <svg-icon class="icon-btn" src="/assets/images/icons/delete.svg" svgClass="icon-color-delete"></svg-icon>
+                  </button>
+                </div>
+                @if (isCardOpen(geometry)) {
+                <div class="geo-shape-body">
+                  <p-select
+                    id="typeDropdown"
+                    [(ngModel)]="geometry.type"
+                    [options]="typeOptions"
+                    appendTo="body"
+                    placeholder="Type"
+                    class="guardian-dropdown geo-shape-type"
+                    (onChange)="onTypeChange(geometry)">
+                  </p-select>
+                  @if (!geometry.type) {
+                    <small class="p-error">This field is required.</small>
+                  }
+                  <textarea
+                    id="coordinatesInput"
+                    [(ngModel)]="geometry.coordinatesString"
+                    [placeholder]="placeholderText(geometry)"
+                    (ngModelChange)="coordinatesChanged($event, geometry, card.index)"
+                    pInputTextarea
+                    required
+                    rows="3"
+                    spellcheck="false"
+                    class="geo-shape-coordinates"
+                  ></textarea>
+                  @if (rowErrors(card.index, geometry).length) {
+                    <ul class="p-error validation-errors">
+                      @for (err of rowErrors(card.index, geometry); track err) {
+                        <li>{{ err }}</li>
+                      }
+                    </ul>
+                  }
+                </div>
+                }
+              </div>
+            }
+            <button
+              (click)="addManualCard()"
+              type="button"
+              class="guardian-button guardian-button-secondary geo-add-button">
+              <div class="guardian-button-icon">
+                <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/add.svg" svgClass="icon-color-primary"></svg-icon>
+              </div>
+              <div class="guardian-button-label">{{ geometriesList.length ? 'Add another geometry' : 'Add geometry' }}</div>
+            </button>
+          </div>
+        }
+        @if (dialogTab === 'file' && getAllErrors().length && geometriesList.length) {
+          <ul class="p-error validation-errors">
+            @for (err of getAllErrors(); track err) {
+              <li>{{ err }}</li>
+            }
+          </ul>
+        }
+      </div>
+    </div>
+    <div class="dialog-footer">
+      <span class="geo-footer-summary">{{ summaryText() }}</span>
+      <div class="action-buttons">
+        <div class="dialog-button">
+          <button type="button" class="guardian-button guardian-button-secondary" (click)="cancelDialog()">Cancel</button>
+        </div>
+        <div class="dialog-button">
+          <button type="button" class="guardian-button guardian-button-primary" [disabled]="!canSave()" (click)="saveDialog()">Save</button>
+        </div>
+      </div>
     </div>
   }
-}
+</p-dialog>
