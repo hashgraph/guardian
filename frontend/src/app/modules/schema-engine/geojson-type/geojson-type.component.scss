@@ -115,16 +115,13 @@
     flex: 1;
 }
 
+// The link look of the record rows; the resets below keep the PrimeNG button from adding its own box.
 .geo-link-button {
+    @include form-grid.sf-link;
     width: auto;
     height: auto;
     padding: 4px 8px;
-    border: 0;
-    background: transparent;
     box-shadow: none;
-    color: var(--color-primary);
-    font-size: 12px;
-    font-weight: 500;
     white-space: nowrap;
 }
 
