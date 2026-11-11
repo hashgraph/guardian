@@ -20,34 +20,20 @@
   </div>
 }
 @if (hasValue()) {
-  @if (!hideDownloads) {
-  <div class="geo-toolbar">
-    @if (canDownload()) {
-      <button
-        pButton
-        type="button"
-        class="geo-link-button download-geo"
-        label="Download GeoJSON"
-        (click)="downloadGeoJSON()">
-      </button>
-    }
-    @if (hasOriginalFile()) {
-      <button
-        pButton
-        type="button"
-        class="geo-link-button download-geo"
-        label="Download original file"
-        (click)="downloadOriginal()">
-      </button>
-    }
-  </div>
-  }
   <div class="map-container">
     <div class="map" #map id="map"></div>
   </div>
   <div class="geo-info">
     <span class="geo-info-text">{{ summaryText() }}</span>
     <span class="geo-info-spacer"></span>
+    @if (!hideDownloads) {
+      @if (canDownload()) {
+        <button pButton type="button" class="geo-link-button download-geo" label="Download GeoJSON" (click)="downloadGeoJSON()"></button>
+      }
+      @if (hasOriginalFile()) {
+        <button pButton type="button" class="geo-link-button download-geo" label="Download original file" (click)="downloadOriginal()"></button>
+      }
+    }
     @if (canEdit()) {
       <button pButton type="button" class="geo-link-button" label="Edit" (click)="openDialog()"></button>
     }

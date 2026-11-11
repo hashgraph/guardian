@@ -103,18 +103,11 @@
     }
 }
 
-.geo-toolbar,
 .geo-info {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 4px;
-}
-
-.geo-toolbar {
-    justify-content: flex-end;
-    margin-bottom: 8px;
-    min-height: 28px;
+    gap: 4px 12px;
 }
 
 .geo-info {
