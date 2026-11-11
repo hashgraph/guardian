@@ -56,11 +56,6 @@
     list-style: none;
 }
 
-.download-geo {
-    width: auto;
-    white-space: nowrap;
-}
-
 :host {
     display: block;
     position: relative;
@@ -108,9 +103,6 @@
     align-items: center;
     flex-wrap: wrap;
     gap: 4px 12px;
-}
-
-.geo-info {
     margin-top: 8px;
     font-size: 12px;
     line-height: 16px;
@@ -371,9 +363,6 @@
     line-height: 18px;
 
     &::placeholder {
-        font-family: Inter, sans-serif;
-        font-size: 14px;
-        font-weight: 400;
         color: var(--color-grey-5);
         opacity: 1;
     }

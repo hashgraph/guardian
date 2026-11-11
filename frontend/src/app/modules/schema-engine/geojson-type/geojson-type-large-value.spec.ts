@@ -59,7 +59,7 @@ describe('GeojsonTypeComponent large value', () => {
         expect(summary.shapes).toBe(1);
         expect(summary.polygons).toBe(4);
         expect(summary.points).toBe(40);
-        expect(summary.bytes).toBeGreaterThan(0);
+        expect(component.valueBytes()).toBeGreaterThan(0);
     });
 
     it('counts a FeatureCollection by its shapes and skips GeometryCollections', () => {

@@ -4,7 +4,6 @@ export interface GeoValueSummary {
     shapes: number;
     polygons: number;
     points: number;
-    bytes: number;
 }
 
 /** The geometries of a GeoJSON value, without the ones a field does not keep (GeometryCollection). */
@@ -16,10 +15,12 @@ export function geometriesOf(data: any): any[] {
 }
 
 export function countShapes(data: any): number {
-    return data?.type === 'FeatureCollection'
-        ? (data.features || []).filter((feature: any) =>
-            feature?.geometry?.type && feature.geometry.type !== 'GeometryCollection').length
-        : 1;
+    return data?.type === 'FeatureCollection' ? geometriesOf(data).length : 1;
+}
+
+/** Size of the serialized value. Costly for a large value, so ask for it only where it is shown. */
+export function geoValueBytes(value: any): number {
+    return value ? JSON.stringify(value).length : 0;
 }
 
 export function countPoints(data: any): number {
@@ -33,7 +34,7 @@ export function countPoints(data: any): number {
 
 export function summarizeGeoValue(value: any): GeoValueSummary {
     if (!value || typeof value !== 'object' || !value.type) {
-        return { shapes: 0, polygons: 0, points: 0, bytes: 0 };
+        return { shapes: 0, polygons: 0, points: 0 };
     }
     const geometries = geometriesOf(value);
     const polygons = geometries.reduce((sum: number, geometry: any) =>
@@ -45,9 +46,17 @@ export function summarizeGeoValue(value: any): GeoValueSummary {
         type: shapes === 1 ? geometries[0]?.type : undefined,
         shapes,
         polygons,
-        points: countPoints(value),
-        bytes: JSON.stringify(value).length
+        points: countPoints(value)
     };
+}
+
+export function noun(count: number, singular: string): string {
+    return `${count.toLocaleString('en-US')} ${count === 1 ? singular : `${singular}s`}`;
+}
+
+/** The row summary of a geo field in an array: its title and the counts. */
+export function geoRecordSummary(description: string | undefined, value: any): { title: string; sub: string } {
+    return { title: description || '', sub: describeGeoValue(summarizeGeoValue(value)) || 'Empty' };
 }
 
 /** "4,537 polygons · 133,656 points", the wording shared by the field and the array row. */
@@ -55,8 +64,6 @@ export function describeGeoValue(summary: GeoValueSummary, size?: string): strin
     if (!summary.shapes) {
         return '';
     }
-    const noun = (count: number, singular: string) =>
-        `${count.toLocaleString('en-US')} ${count === 1 ? singular : `${singular}s`}`;
     const parts: string[] = [];
     if (summary.shapes === 1 && summary.type === 'MultiPolygon') {
         parts.push(noun(summary.polygons, 'polygon'));

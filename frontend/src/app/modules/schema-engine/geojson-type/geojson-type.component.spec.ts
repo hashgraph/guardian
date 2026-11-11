@@ -879,7 +879,6 @@ describe('GeojsonTypeComponent original file link', () => {
 
         expect(component.geometriesList.length).toBe(1);
         expect(component.loading).toBeFalse();
-        expect(component.renderedRows).toBe(Infinity);
     });
 
     it('shows the loader while a clicked file shape is added and hides it afterwards', () => {
@@ -901,31 +900,6 @@ describe('GeojsonTypeComponent original file link', () => {
 
         expect(component.geometriesList.length).toBe(1);
         expect(component.importedLocations.length).toBe(0);
-        expect(component.loading).toBeFalse();
-    });
-
-    it('draws the rows in batches after Include all and keeps the loader until the last batch', () => {
-        jasmine.clock().install();
-        spyOn<any>(component, 'setupMap');
-        component.onUploadMultiLocationFile({
-            type: 'FeatureCollection',
-            features: Array.from({ length: 25 }, (_, i) => ({
-                type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [i, 2] }
-            }))
-        } as any);
-
-        component.includeAllImportedFeatures();
-        jasmine.clock().tick(0);
-        expect(component.geometriesList.length).toBe(25);
-        expect(component.renderedRows).toBe(10);
-        expect(component.loading).toBeTrue();
-
-        jasmine.clock().tick(0);
-        expect(component.renderedRows).toBe(20);
-
-        jasmine.clock().tick(0);
-        jasmine.clock().uninstall();
-        expect(component.renderedRows).toBe(Infinity);
         expect(component.loading).toBeFalse();
     });
 

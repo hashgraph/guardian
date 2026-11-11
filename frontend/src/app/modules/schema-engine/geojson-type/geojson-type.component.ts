@@ -25,7 +25,7 @@ import { DEFAULT_GEOSPATIAL_LIMITS, GeospatialLimits, SettingsService } from 'sr
 import { classifyGeoFile, PreviewableGeoFileFormat } from '../geo-file/geo-file-size';
 import { gunzipIfCompressed } from '../geo-file/geo-file-compression';
 import {
-    countPoints, countShapes, describeGeoValue, GeoValueSummary, summarizeGeoValue
+    countPoints, countShapes, describeGeoValue, geoValueBytes, GeoValueSummary, noun, summarizeGeoValue
 } from '../geo-file/geo-value-summary';
 import { GeoCoordinate, GeoJsonValidator, KmlWellFormedChecker, NetworkLinkFinder } from '@guardian/interfaces';
 import { GeoJsonCoordinateScanner } from '@guardian/interfaces';
@@ -35,8 +35,6 @@ import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog
 import { FeatureCollection } from 'geojson';
 import { kml } from '@tmcw/togeojson';
 
-const MAX_EDITABLE_SHAPES = 300;
-const ROWS_PER_BATCH = 10;
 const UNPICKED_FILE_ERROR = 'Select at least one shape from the file, or draw your own.';
 
 const MAP_OPTIONS = {
@@ -287,6 +285,8 @@ export class GeojsonTypeComponent implements OnChanges, OnDestroy {
     type: GeoJsonType = GeoJsonType.POINT;
     parsedCoordinates: any;
     private summarySource: unknown;
+    private bytesSource: any;
+    private bytesCache = 0;
     private summaryCache?: GeoValueSummary;
     private largeAtLoad = false;
 
@@ -360,8 +360,6 @@ export class GeojsonTypeComponent implements OnChanges, OnDestroy {
     public fileImportName: string = '';
     public fileImportSize: number = 0;
     public loading: boolean = false;
-    public readonly maxEditableShapes = MAX_EDITABLE_SHAPES;
-    public renderedRows: number = Infinity;
     public importError: string = '';
     private pendingGeoFile?: GeoFileLink;
     private selectedOriginalFile?: File;
@@ -499,8 +497,7 @@ export class GeojsonTypeComponent implements OnChanges, OnDestroy {
 
     /** Text of the info row under the map. */
     public summaryText(): string {
-        const summary = this.valueSummary();
-        return describeGeoValue(summary, this.isLargeValue() ? this.formatSize(summary.bytes) : undefined);
+        return describeGeoValue(this.valueSummary(), this.isLargeValue() ? this.formatSize(this.valueBytes()) : undefined);
     }
 
     public canEdit(): boolean {
@@ -648,7 +645,7 @@ export class GeojsonTypeComponent implements OnChanges, OnDestroy {
     }
 
     public dialogHasPreview(): boolean {
-        return this.geoShapesSource.getFeatures().length > 0 || this.importedShapesSource.getFeatures().length > 0;
+        return !this.geoShapesSource.isEmpty() || !this.importedShapesSource.isEmpty();
     }
 
     private cloneValue(value: any): any {
@@ -688,7 +685,7 @@ export class GeojsonTypeComponent implements OnChanges, OnDestroy {
     /** "Polygon · 5 points" under the title of a geometry card. */
     public shapeSummary(geometry: { type?: string; coordinates?: any }): string {
         const points = countPoints({ type: geometry.type, coordinates: geometry.coordinates });
-        return [geometry.type, points ? `${points.toLocaleString('en-US')} ${points === 1 ? 'point' : 'points'}` : '']
+        return [geometry.type, points ? noun(points, 'point') : '']
             .filter(Boolean).join(' · ');
     }
 
@@ -871,6 +868,16 @@ export class GeojsonTypeComponent implements OnChanges, OnDestroy {
         return this.summaryCache;
     }
 
+    /** Size of the value, rebuilt only when the value object changes. */
+    public valueBytes(): number {
+        const value = this.formModel?.getValue?.();
+        if (this.bytesSource !== value) {
+            this.bytesSource = value;
+            this.bytesCache = geoValueBytes(value);
+        }
+        return this.bytesCache;
+    }
+
     /**
      * A value above the preview limits is shown as a summary only: no coordinates text and no editing.
      * Uses the configured limits once they are loaded and the defaults before that.
@@ -946,7 +953,7 @@ export class GeojsonTypeComponent implements OnChanges, OnDestroy {
     }
 
     private destroyDialogMap() {
-        this.dialogMap?.setTarget(undefined);
+        this.dialogMap?.dispose();
         this.dialogMap = null;
     }
 
@@ -1137,21 +1144,9 @@ export class GeojsonTypeComponent implements OnChanges, OnDestroy {
         this.cdkRef.detectChanges();
         setTimeout(() => {
             this.selectAllImportedFeatures();
-            this.renderedRows = 0;
-            this.renderNextRows();
-        });
-    }
-
-    private renderNextRows(): void {
-        this.renderedRows += ROWS_PER_BATCH;
-        if (this.displayLocationEditor() && this.renderedRows < this.geometriesList.length) {
+            this.loading = false;
             this.cdkRef.detectChanges();
-            setTimeout(() => this.renderNextRows());
-            return;
-        }
-        this.renderedRows = Infinity;
-        this.loading = false;
-        this.cdkRef.detectChanges();
+        });
     }
 
     public selectAllImportedFeatures() {
@@ -1165,10 +1160,6 @@ export class GeojsonTypeComponent implements OnChanges, OnDestroy {
         this.importedLocations = [];
         this.updateMap(true);
         this.fitDialogMap();
-    }
-
-    public displayLocationEditor() {
-        return !this.isLargeValue() && this.geometriesList.length <= MAX_EDITABLE_SHAPES;
     }
 
     public async clearSelectionFeatures(): Promise<void> {
@@ -1390,7 +1381,7 @@ export class GeojsonTypeComponent implements OnChanges, OnDestroy {
     }
 
     private resetMap(): void {
-        this.map?.setTarget(undefined);
+        this.map?.dispose();
         this.map = null;
         this.mapCreated = false;
         this.setupMap();

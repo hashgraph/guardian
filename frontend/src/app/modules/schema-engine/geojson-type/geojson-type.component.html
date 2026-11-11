@@ -28,10 +28,10 @@
     <span class="geo-info-spacer"></span>
     @if (!hideDownloads) {
       @if (canDownload()) {
-        <button pButton type="button" class="geo-link-button download-geo" label="Download GeoJSON" (click)="downloadGeoJSON()"></button>
+        <button pButton type="button" class="geo-link-button" label="Download GeoJSON" (click)="downloadGeoJSON()"></button>
       }
       @if (hasOriginalFile()) {
-        <button pButton type="button" class="geo-link-button download-geo" label="Download original file" (click)="downloadOriginal()"></button>
+        <button pButton type="button" class="geo-link-button" label="Download original file" (click)="downloadOriginal()"></button>
       }
     }
     @if (canEdit()) {

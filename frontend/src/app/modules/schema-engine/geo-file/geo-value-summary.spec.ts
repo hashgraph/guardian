@@ -4,7 +4,7 @@ const square = (shift = 0) => [[[shift, 0], [shift + 1, 0], [shift + 1, 1], [shi
 
 describe('geo value summary', () => {
     it('summarizes nothing for an empty value', () => {
-        expect(summarizeGeoValue({})).toEqual({ shapes: 0, polygons: 0, points: 0, bytes: 0 });
+        expect(summarizeGeoValue({})).toEqual({ shapes: 0, polygons: 0, points: 0 });
         expect(describeGeoValue(summarizeGeoValue(undefined))).toBe('');
     });
 
