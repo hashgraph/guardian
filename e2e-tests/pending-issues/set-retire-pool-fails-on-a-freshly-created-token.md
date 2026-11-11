@@ -44,7 +44,7 @@ Re-checked on 6 Nov 2026: the handler still calls the contract before `setPool`;
 
 Re-checked on 11 Nov 2026 on Solo 0.97.0: a probe that mirrors `006_setPools` (a fresh wipe-bound token, the pool set immediately) was accepted on the first attempt, twice, in about 2 s, and `013_contracts` is green (14 specs, 149 tests). The symptom was not reproduced, probably because of the Solo upgrade. The ordering that made it harmful is still in the code: the handler calls `setPoolContract` (`contract.service.ts:3274`) before the mirror-node read in `setPool` (`:3285`), so a lagging mirror node would still produce the partial success.
 
-On 11 Nov 2026 the retry in `Contracts.setRetirePool` was removed for a trial run of `013_contracts`: the pool call was accepted at once in two of three runs and timed out after 20 s in one. The folder fails for an unrelated reason on a used workspace (`mirror-node-pagination-drops-the-port.md`), so the trial could not be completed and the retry is back in place. Repeat it once that note is fixed.
+On 11 Nov 2026 the retry in `Contracts.setRetirePool` was removed for a trial run of `013_contracts`: the pool call was accepted at once in two of three runs and timed out after 20 s in one. The folder was failing at that time for an unrelated reason (the mirror-node pagination, now fixed), so the trial could not be completed and the retry is back in place. Repeat it: remove the retry, run `013_contracts` twice. Note that a Solo mirror node answered one `503` during a later run (`POST /contracts/import` answered `500 Request failed with status code 503`).
 
 ## Proposed fix
 

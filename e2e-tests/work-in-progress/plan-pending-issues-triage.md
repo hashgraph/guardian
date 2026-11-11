@@ -61,7 +61,11 @@ Once 2–3 are done the two WIP files can be deleted; their product follow-ups l
 
 - `contract-import`: the retry in `ContractsPage.importContract` is removed; `contractImport.cy.js` 2/2 green; note deleted.
 - `notification-deletion`: the test asserts on the ids it deleted and kept instead of the total; `021_notifications` 2/2 green (21 tests each); note deleted.
-- `set-retire-pool`: the retry removal could not be verified. `013_contracts` fails on the unmodified code too (2 of 14, three runs plus a control), because of a new defect: `links.next` is followed without the mirror port, and `Registrant` now holds more than 100 NFTs (`pending-issues/mirror-node-pagination-drops-the-port.md`). The pool call was accepted at once in two of three trial runs and timed out after 20 s in one, so the retry stays and the note records the trial. Repeat it after the pagination fix (suggested in Step 4).
+- `set-retire-pool`: the retry removal could not be verified. `013_contracts` fails on the unmodified code too (2 of 14, three runs plus a control), because of a new defect: `links.next` is followed without the mirror port, and `Registrant` now holds more than 100 NFTs (`pending-issues/mirror-node-pagination-drops-the-port.md`). The pool call was accepted at once in two of three trial runs and timed out after 20 s in one, so the retry stays and the note records the trial. The pagination was fixed afterwards (§3.3); repeat the trial then.
+
+### 3.3 Mirror-node pagination fix (11 Nov 2026, added at the user's request)
+
+`HederaSDKHelper.resolveNextPage` resolves a mirror node's `links.next` against the request that returned it, at the three places that built it from `res.request.host` (no port). Unit tests: `worker-service/tests/mirror-node-pagination.test.mjs` (a local mirror on a non-default port; they failed with `ECONNREFUSED …:80` before the fix); worker-service suite 294/294, tslint clean. `013_contracts` after restarting the services: 1 of 2 runs green (149/149); the other had a `503` from the mirror node on `POST /contracts/import` and the failures that follow from it, and no `ECONNREFUSED :80` is left in the logs. The note was deleted. Still to do: the `setRetirePool` retry-removal trial (see the `set-retire-pool` note).
 
 ## 4. Resolution order, grouped by theme
 
@@ -106,7 +110,7 @@ In order of confidence and size:
 2. `demo-generate-key` — pass `userId` through both `demo.service.ts` handlers; guardian-service unit test; assert the round trip in `001_demo` if observable.
 3. `contract-bytecode` second defect — per-contract try/catch in `syncWipeContracts`/`syncRetireContracts`, and make `getContractVersion` report an unknown version instead of `'1.0.0'`; guardian-service unit tests.
 4. `set-retire-pool` latent ordering — resolve the token before the contract call, so a mirror-node miss fails before anything changes on-chain; guardian-service unit test with a stubbed `GET_TOKEN_INFO` failure asserting the contract is not called. Then delete the note.
-5. **Proposed, not yet approved (added 11 Nov, outside decision 4):** `mirror-node-pagination-drops-the-port` — resolve `links.next` against the request URL at the three places in `hedera-sdk-helper.ts`; worker-service unit test with a two-page mirror on a non-default port; then re-run `013_contracts` twice, repeat the `setRetirePool` retry removal of Step 2, and delete the note. Until then `013_contracts` fails on a workspace where an account holds more than 100 NFTs.
+5. ~~mirror-node pagination~~ — done on 11 Nov (§3.3).
 
 ### Step 5 — Reliability cluster: lost replies and lost task results (in scope: decision 4; frontend + gateway + common)
 
