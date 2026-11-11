@@ -145,14 +145,26 @@ nothing in this change chases them further.
   no-reply class, see the auth-guard note) plus the matching `pending-issues`
   bullet. It is out of the CDM scope and was held out of the v8 commit on
   purpose.
-- **Pass 2 (after commit 3):** re-run the `011_schemas` API specs (they own
-  the USER schema rows of the uuid family `0000b23a-b1ea-408f-a573…a2060a`
-  from `systemSchemas.js`; the product cannot deactivate a published system
-  schema, so a re-run that leaves an active row re-breaks the USER wizard —
-  re-clean if it does), then the four UI specs of Problem 1, then the full
-  `all`.
-- **All 18 `pending-issues/` notes stay open** — they describe product-side
-  gaps the tests now only buy time against.
+- **Pass 2 (after commit 3):** re-run the `011_schemas` API specs (each run
+  creates and activates a new `test` USER schema of the uuid family
+  `0000b23a-b1ea-408f-a573…a2060a` from `systemSchemas.js`; the product cannot
+  deactivate or delete an active system schema, so re-runs accumulate schema
+  rows in the database). The wizard drivers are shape-agnostic since
+  `a367d4e6c`, so the four UI specs of Problem 1 pass against either wizard
+  shape and need no cleanup for themselves; re-clean the accumulated rows
+  with the one-off Mongo write only if `07_system_schemas`'s listing
+  assertions object to them in the full run. Then the four UI specs of
+  Problem 1 (twice), then the full `all`.
+- **The 17 remaining `pending-issues/` notes stay open** — they describe
+  product-side gaps the tests now only buy time against. The one item the
+  recent commits actually resolved — the active-`USER`-system-schema note, a
+  *test-isolation* problem whose breakage the shape-agnostic wizard drivers
+  of `a367d4e6c` removed (verified 8/8 ×2, and CDM K/L run with the schema
+  still present) — is deleted from the folder. The 011 spec still leaves an
+  active `USER` system schema row (no API route deactivates one), but every
+  wizard driver now handles both shapes, so nothing in the suite breaks on
+  it; if the spec should also clean up after itself, that is a fresh, small
+  test-hygiene issue.
 
 ## Product follow-ups (approval-gated — none touched)
 
