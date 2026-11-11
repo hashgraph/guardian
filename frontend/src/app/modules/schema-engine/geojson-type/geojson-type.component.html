@@ -111,23 +111,24 @@
           <div class="geo-tab-body">
             @if (hasImportedFile()) {
               <div class="geo-file-head">
-                <span class="geo-file-label">
-                  {{ originalFileLabel() || fileImportName }}
-                  @if (!isPreviewUnavailable()) {
-                    · {{ pickedCount() }} of {{ allImportedLocations.length }} shapes picked
+                <div class="geo-file-text">
+                  <b>{{ fileName() }}</b>
+                  <small>
+                    {{ fileSizeLabel() }}
+                    @if (!isPreviewUnavailable()) {
+                      · {{ pickedCount() }} of {{ allImportedLocations.length }} shapes picked
+                    }
+                  </small>
+                </div>
+                <div class="geo-file-actions">
+                  @if (importedLocations.length > 0) {
+                    <button type="button" class="geo-shape-toggle" (click)="includeAllImportedFeatures()">{{ isPreviewUnavailable() ? 'Add file point' : 'Select all' }}</button>
                   }
-                </span>
-                <span class="geo-info-spacer"></span>
-                @if (importedLocations.length > 0) {
-                  <button
-                    type="button"
-                    class="geo-link-button"
-                    (click)="includeAllImportedFeatures()">{{ isPreviewUnavailable() ? 'Add file point' : 'Select all' }}</button>
-                }
-                @if (geometriesList.length > 0) {
-                  <button type="button" class="geo-link-button" (click)="clearSelectionFeatures()">Clear selection</button>
-                }
-                <button type="button" class="geo-link-button" (click)="showDropzone = !showDropzone">Choose another file</button>
+                  @if (geometriesList.length > 0) {
+                    <button type="button" class="geo-shape-toggle" (click)="clearSelectionFeatures()">Clear selection</button>
+                  }
+                  <button type="button" class="geo-shape-toggle" (click)="showDropzone = !showDropzone">Choose another file</button>
+                </div>
               </div>
               @if (!isPreviewUnavailable()) {
                 <small class="geo-hint">Click shapes on the map to pick or unpick them.</small>

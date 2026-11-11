@@ -806,6 +806,15 @@ export class GeojsonTypeComponent implements OnChanges, OnDestroy {
         return link ? `${link.name} (${this.formatSize(link.sizeBytes)})` : '';
     }
 
+    public fileName(): string {
+        return this.currentGeoFile()?.name || this.fileImportName || '';
+    }
+
+    public fileSizeLabel(): string {
+        const link = this.currentGeoFile();
+        return link ? this.formatSize(link.sizeBytes) : '';
+    }
+
     private currentGeoFile(): GeoFileLink | undefined {
         return this.formModel?.getValue?.()?.geoFile || this.pendingGeoFile;
     }
@@ -1155,6 +1164,7 @@ export class GeojsonTypeComponent implements OnChanges, OnDestroy {
         this.importedShapesSource?.clear();
         this.importedLocations = [];
         this.updateMap(true);
+        this.fitDialogMap();
     }
 
     public displayLocationEditor() {
@@ -1355,6 +1365,7 @@ export class GeojsonTypeComponent implements OnChanges, OnDestroy {
 
         if (!value || !value.type) {
             this.resetMap();
+            this.fitDialogMap();
             return;
         }
 

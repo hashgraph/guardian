@@ -187,12 +187,47 @@
     padding-bottom: 16px;
 }
 
+// The picked file looks like a record row: name and details on the left, actions on the right.
 .geo-file-head {
     display: flex;
     align-items: center;
+    gap: 10px;
+    padding: 8px 8px 8px 12px;
+    border: 1px solid var(--guardian-border-color);
+    border-radius: 10px;
+    background: var(--guardian-background);
+}
+
+.geo-file-text {
+    flex: 1;
+    min-width: 0;
+
+    b,
+    small {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    b {
+        font-size: 13.5px;
+        font-weight: 600;
+    }
+
+    small {
+        font-size: 12px;
+        color: var(--color-grey-5);
+    }
+}
+
+.geo-file-actions {
+    flex: none;
+    display: flex;
+    align-items: center;
     flex-wrap: wrap;
-    gap: 4px;
-    font-size: 12px;
+    justify-content: flex-end;
+    gap: 2px;
 }
 
 .geo-hint {

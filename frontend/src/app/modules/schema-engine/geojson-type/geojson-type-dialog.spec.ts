@@ -255,4 +255,31 @@ describe('GeojsonTypeComponent geometry dialog', () => {
         expect(component.isCardOpen(added)).toBeTrue();
         expect(component.isCardOpen(first)).toBeFalse();
     });
+
+    it('zooms the dialog map to the shapes of a file right after it is loaded', () => {
+        const fit = jasmine.createSpy('fit');
+        component.dialogMap = { updateSize: () => undefined, getView: () => ({ fit }) } as any;
+        const file = {
+            type: 'FeatureCollection',
+            features: [{ type: 'Feature', properties: {}, geometry: { type: 'MultiPolygon', coordinates: [[[[10, 10], [11, 10], [11, 11], [10, 10]]]] } }]
+        };
+        (component as any).geoJsonService = { getFileNames: () => new Map([['a', 'a.json']]), getFile: () => file, saveFile: () => undefined };
+
+        component.getShapeFromFile();
+
+        expect(fit).toHaveBeenCalled();
+    });
+
+    it('zooms the dialog map to the picked shapes', () => {
+        const fit = jasmine.createSpy('fit');
+        component.dialogMap = { updateSize: () => undefined, getView: () => ({ fit }) } as any;
+        component.onUploadMultiLocationFile({
+            type: 'FeatureCollection',
+            features: [{ type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [30, 40] } }]
+        } as any);
+
+        component.selectAllImportedFeatures();
+
+        expect(fit).toHaveBeenCalled();
+    });
 });
