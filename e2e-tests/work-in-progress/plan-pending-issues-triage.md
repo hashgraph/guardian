@@ -67,6 +67,24 @@ Once 2–3 are done the two WIP files can be deleted; their product follow-ups l
 
 `HederaSDKHelper.resolveNextPage` resolves a mirror node's `links.next` against the request that returned it, at the three places that built it from `res.request.host` (no port). Unit tests: `worker-service/tests/mirror-node-pagination.test.mjs` (a local mirror on a non-default port; they failed with `ECONNREFUSED …:80` before the fix); worker-service suite 294/294, tslint clean. `013_contracts` after restarting the services: 1 of 2 runs green (149/149); the other had a `503` from the mirror node on `POST /contracts/import` and the failures that follow from it, and no `ECONNREFUSED :80` is left in the logs. The note was deleted. Still to do: the `setRetirePool` retry-removal trial (see the `set-retire-pool` note).
 
+### 3.4 Outcome of Step 3a, Karma vs Vitest (12 Nov 2026)
+
+**Decision (user):** Vitest in a real browser (Chromium through Playwright), Karma removed. Committed with: `frontend/package.json` and its lock (`vitest` 4.1.12, `@vitest/browser-playwright` 4.1.12, `playwright` 1.65.0, exact pins; the Karma and Jasmine dev dependencies removed), `angular.json` (`test` → `@angular/build:unit-test`, `runner: vitest`, `browsers: ["ChromiumHeadless"]`, plus a `test` build configuration), `tsconfig.spec.json` (`vitest/globals` types), a new `frontend/vitest-base.config.ts`, 78 migrated spec files, `karma.conf.js` and `src/test.ts` deleted, the frontend README and `AGENTS.md` updated.
+
+**Baseline.** The Karma run could not be measured: the dev container has no Chrome. The Vitest runs below are the first measurement.
+
+**What the migration took** (each is needed for the specs to build and to keep Jasmine's semantics):
+
+1. `refactor-jasmine-vitest` (experimental schematic): 107 files scanned, 78 transformed, 0 TODOs reported.
+2. JIT for the test build (`aot: false` in the `test` build configuration). In AOT the spec program cannot see the app's NgModules (146 components fail to compile) and the two spec-local host components declared only in `TestBed` (`hedera-explorer`, `rich-text-editor`) cannot be resolved. Karma ran JIT too.
+3. Polyfills `zone.js`, `zone.js/testing`, `zone.js/plugins/vitest-patch`: the builder adds `zone.js/testing` only when the polyfills list the string `zone.js` (ours is a file), and without the zone.js 0.16.2 Vitest patch every `fakeAsync` test fails with "Expected to be running in 'ProxyZone'".
+4. 130 type errors the schematic leaves: `mock.lastCall[…]` possibly undefined (54), `vi.spyOn<any>(…)` (34), `mockResolvedValue()` without argument (16), former `createSpyObj` literals that need a cast (28), `xit`, a Jasmine expectation message, `spyOnProperty` → `vi.spyOn(…, 'get')`.
+5. Three semantic differences the schematic does not handle: a bare Jasmine `spyOn` is a **stub**, a bare `vi.spyOn` **calls through** (153 spies restored to stubs with `.mockImplementation(() => undefined)`, aligned call by call with the original files; the 10 `callThrough` ones left as they are); Jasmine removes spies after each spec (`restoreMocks: true` in `vitest-base.config.ts`); a 0 ms timer created during `jasmine.clock().tick(0)` runs on the next `tick(0)`, while Vitest's fake timers give it 1 ms (`geojson-type` batch test switched to `vi.advanceTimersToNextTimer()`; its failure left the fake timers installed and timed out the 22 tests after it).
+
+**Result:** in jsdom 2080 of 2310 passed; every one of the 230 failures was an API or layout jsdom does not have (`execCommand`, `CSS.supports`, `Blob.stream`, `matchMedia`, sizes and positions). In headless Chromium (Playwright 1.65.0, installed in the dev container with `NODE_OPTIONS=--use-system-ca npx playwright install chromium`, because the container's TLS proxy is only in the system store): **107 files, 2310 of 2310 tests pass, twice in a row**, about 8 s of test time plus the build. `jsdom` was removed again.
+
+**Still open in 3a:** check whether Karma is used anywhere else in the repository (user's request), then `indexer-frontend` (Angular 17, no `@angular/build`), which follows the same decision.
+
 ## 4. Resolution order, grouped by theme
 
 The order puts first what unblocks the rest: correct notes, a green baseline, the ability to unit-test the frontend, then the defect clusters, then what needs a product decision.

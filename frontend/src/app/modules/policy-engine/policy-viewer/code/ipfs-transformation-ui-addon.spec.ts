@@ -21,12 +21,7 @@ describe('IpfsTransformationUIAddonCode', () => {
             getFile: () => of(gzipHeader.buffer),
             getFileFromDryRunStorage: () => of(gzipHeader.buffer)
         };
-        return new IpfsTransformationUIAddonCode(
-            config,
-            {} as any,
-            ipfsService || defaultService,
-            false
-        );
+        return new IpfsTransformationUIAddonCode(config, {} as any, ipfsService || defaultService, false);
     }
 
     function gatewayConfig(): any {
@@ -289,7 +284,7 @@ describe('IpfsTransformationUIAddonCode', () => {
             sizeBytes: 2097152,
             previewSizeBytes: 2097152,
             compression: 'gzip',
-            resourceUrl: jasmine.stringMatching(/^https:\/\/host\/api\/v1\/ipfs\/file\//)
+            resourceUrl: expect.stringMatching(/^https:\/\/host\/api\/v1\/ipfs\/file\//)
         });
     });
 
@@ -338,7 +333,7 @@ describe('IpfsTransformationUIAddonCode', () => {
         await addon.run({ document, params: {}, history: [] });
 
         expect(document.field2.coordinates).toEqual([36.0012, -1.0021]);
-        expect(document.field2.geoFile.noPreview).toBeTrue();
+        expect(document.field2.geoFile.noPreview).toBe(true);
         expect(document.field2.geoFile.automaticPoint).toEqual([36.0012, -1.0021]);
         expect(document.field2.geoFile.resourceUrl).toContain('/api/v1/ipfs/file/');
         expect(document.field2.geoFile.fileId).toBeUndefined();

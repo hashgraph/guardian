@@ -1,16 +1,5 @@
 import { EntityStatus, FormulaItemType, IFormula, IFormulaConfig } from '@guardian/interfaces';
-import {
-    applyFieldBindingOps,
-    applyFieldBindingOpsToFormulas,
-    buildFieldPath,
-    createStubItem,
-    findFieldBindings,
-    getItemLinks,
-    IFieldTarget,
-    isEditableFormula,
-    moveLink,
-    NEW_FORMULA_DOCUMENT
-} from './field-bindings';
+import { applyFieldBindingOps, applyFieldBindingOpsToFormulas, buildFieldPath, createStubItem, findFieldBindings, getItemLinks, IFieldTarget, isEditableFormula, moveLink, NEW_FORMULA_DOCUMENT } from './field-bindings';
 
 const A: IFieldTarget = { schemaIri: '#s1', fieldPath: 'a' };
 const B: IFieldTarget = { schemaIri: '#s1', fieldPath: 'b' };
@@ -233,10 +222,10 @@ describe('field-bindings', () => {
     });
 
     it('isEditableFormula', () => {
-        expect(isEditableFormula({ status: EntityStatus.DRAFT })).toBeTrue();
-        expect(isEditableFormula({ status: EntityStatus.DRY_RUN })).toBeTrue();
-        expect(isEditableFormula({ status: EntityStatus.PUBLISHED })).toBeFalse();
-        expect(isEditableFormula(null)).toBeFalse();
+        expect(isEditableFormula({ status: EntityStatus.DRAFT })).toBe(true);
+        expect(isEditableFormula({ status: EntityStatus.DRY_RUN })).toBe(true);
+        expect(isEditableFormula({ status: EntityStatus.PUBLISHED })).toBe(false);
+        expect(isEditableFormula(null)).toBe(false);
     });
 
     it('buildFieldPath joins the drilled-into field names and the field name', () => {

@@ -17,20 +17,20 @@ describe('Selected polygon ring validation', () => {
 
     it('rejects a crossing polygon through the real form validator', () => {
         const control = validate('Polygon', [bowTie]);
-        expect(control.invalid).toBeTrue();
+        expect(control.invalid).toBe(true);
         expect(control.errors?.geoJsonFieldErrors[0].join(' ')).toContain('must not cross or touch itself');
     });
 
     it('rejects an invalid ring in a MultiPolygon and keeps its polygon index', () => {
         const control = validate('MultiPolygon', [[square], [bowTie]]);
-        expect(control.invalid).toBeTrue();
+        expect(control.invalid).toBe(true);
         expect(control.errors?.geoJsonFieldErrors[0]).toEqual([
             'MultiPolygon: polygon #1: ring #0 must not cross or touch itself',
         ]);
     });
 
     it('rejects a crossing interior ring', () => {
-        expect(validate('Polygon', [square, bowTie]).invalid).toBeTrue();
+        expect(validate('Polygon', [square, bowTie]).invalid).toBe(true);
     });
 
     it('rejects repeated vertices, overlapping edges and zero-area rings', () => {
@@ -43,7 +43,7 @@ describe('Selected polygon ring validation', () => {
     });
 
     it('accepts ordinary, reversed, concave and dateline-crossing simple rings', () => {
-        expect(validate('Polygon', [square]).valid).toBeTrue();
+        expect(validate('Polygon', [square]).valid).toBe(true);
         expect(polygonRingError([...square].reverse())).toBeNull();
         expect(polygonRingError([[0, 0], [4, 0], [2, 2], [4, 4], [0, 4], [0, 0]])).toBeNull();
         expect(polygonRingError([[179, 0], [-179, 0], [-179, 4], [179, 4], [179, 0]])).toBeNull();
@@ -59,7 +59,7 @@ describe('Selected polygon ring validation', () => {
     it('does not examine the original file and keeps its link on a valid selection', () => {
         const geoFile = { fileId: 'grid-1', cid: 'mixed-original', format: 'kml', noPreview: false };
         const control = validate('Polygon', [square], geoFile);
-        expect(control.valid).toBeTrue();
+        expect(control.valid).toBe(true);
         expect(control.value.geoFile).toBe(geoFile);
     });
 
@@ -73,7 +73,7 @@ describe('Selected polygon ring validation', () => {
         form.setAvailableTypes([GeoJsonType.POLYGON]);
         form.build();
         control.updateValueAndValidity();
-        expect(control.invalid).toBeTrue();
+        expect(control.invalid).toBe(true);
         expect(form.getErrors()[0].join(' ')).toContain('must not cross or touch itself');
     });
 
@@ -100,14 +100,14 @@ describe('Selected polygon ring validation', () => {
             const control = new UntypedFormControl({ type: 'Polygon', coordinates: [candidate] });
             new GeoForm(control).build();
             control.updateValueAndValidity();
-            expect(control.valid).toBeTrue();
+            expect(control.valid).toBe(true);
         }
     });
 
     it('keeps coordinate-range validation and does not throw for malformed rings', () => {
-        expect(validate('Polygon', [[[0, 0], [181, 0], [0, 4], [0, 0]]]).invalid).toBeTrue();
+        expect(validate('Polygon', [[[0, 0], [181, 0], [0, 4], [0, 0]]]).invalid).toBe(true);
         expect(() => validate('Polygon', [[null, [0, 0], [1, 1], [0, 0]]])).not.toThrow();
-        expect(validate('Polygon', [[null, [0, 0], [1, 1], [0, 0]]]).invalid).toBeTrue();
+        expect(validate('Polygon', [[null, [0, 0], [1, 1], [0, 0]]]).invalid).toBe(true);
     });
 });
 
@@ -122,7 +122,7 @@ describe('Polygon compatibility and performance', () => {
             const control = new UntypedFormControl({ type: 'Polygon', coordinates: [ring] });
             new GeoForm(control).build();
             control.updateValueAndValidity();
-            expect(control.valid).toBeTrue();
+            expect(control.valid).toBe(true);
             expect(JSON.stringify(ring)).toBe(before);
         }
     });
@@ -149,7 +149,7 @@ describe('Polygon compatibility and performance', () => {
             new GeoForm(control).build();
             control.updateValueAndValidity();
             const elapsed = performance.now() - started;
-            expect(control.valid).toBeTrue();
+            expect(control.valid).toBe(true);
             expect(elapsed).toBeLessThan(1000);
             expect(JSON.stringify(ring)).toBe(before);
             console.info('Polygon real-form comb', rotated, elapsed);
@@ -179,7 +179,7 @@ describe('Polygon compatibility and performance', () => {
                 new GeoForm(control).build();
                 control.updateValueAndValidity();
                 const elapsed = performance.now() - started;
-                expect(control.valid).toBeTrue();
+                expect(control.valid).toBe(true);
                 expect(elapsed).toBeLessThan(1000);
                 expect(JSON.stringify(ring)).toBe(before);
                 console.info('Polygon real-form star', points + 1, radius, elapsed);
@@ -198,7 +198,7 @@ describe('Polygon compatibility and performance', () => {
         new GeoForm(control).build();
         control.updateValueAndValidity();
         const elapsed = performance.now() - started;
-        expect(control.invalid).toBeTrue();
+        expect(control.invalid).toBe(true);
         expect(control.errors?.geoJsonFieldErrors[0]).toEqual([
             'Polygon: ring #0 must not cross or touch itself',
         ]);
@@ -230,9 +230,11 @@ describe('Polygon sweep differential regression', () => {
             const b = points[i];
             const c = points[(i + 1) % count];
             if (cross(a, b, c) === 0 &&
-                (a[0] - b[0]) * (c[0] - b[0]) + (a[1] - b[1]) * (c[1] - b[1]) > 0) return true;
+                (a[0] - b[0]) * (c[0] - b[0]) + (a[1] - b[1]) * (c[1] - b[1]) > 0)
+                return true;
             for (let j = i + 2; j < count; j++) {
-                if (i === 0 && j === count - 1) continue;
+                if (i === 0 && j === count - 1)
+                    continue;
                 const first = points[i];
                 const second = points[(i + 1) % count];
                 const third = points[j];
@@ -246,11 +248,11 @@ describe('Polygon sweep differential regression', () => {
                     (p === 0 && onSegment(first, second, third)) ||
                     (q === 0 && onSegment(first, second, fourth)) ||
                     (r === 0 && onSegment(third, fourth, first)) ||
-                    (s === 0 && onSegment(third, fourth, second))) return true;
+                    (s === 0 && onSegment(third, fourth, second)))
+                    return true;
             }
         }
-        return points.slice(0, count).reduce((sum, point, index) =>
-            sum + point[0] * points[(index + 1) % count][1] -
+        return points.slice(0, count).reduce((sum, point, index) => sum + point[0] * points[(index + 1) % count][1] -
             points[(index + 1) % count][0] * point[1], 0) === 0;
     }
 
@@ -278,8 +280,7 @@ describe('Polygon sweep differential regression', () => {
                 points.sort((a, b) => Math.atan2(a[1], a[0]) - Math.atan2(b[1], b[0]));
             }
             points.push([...points[0]]);
-            expect(Boolean(polygonRingError(points))).withContext('seeded ring ' + iteration)
-                .toBe(pairwiseInvalid(points));
+            expect(Boolean(polygonRingError(points)), 'seeded ring ' + iteration).toBe(pairwiseInvalid(points));
         }
     });
 });

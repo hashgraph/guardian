@@ -38,7 +38,7 @@ describe('buildSections', () => {
         expect(sections.map(section => section.title)).toEqual(['Alpha', 'Beta']);
         expect(sections[0].controls.map(item => item.name)).toEqual(['name', 'code', 'a']);
         expect(sections[1].controls.map(item => item.name)).toEqual(['b']);
-        expect(sections.every(section => section.owner === form)).toBeTrue();
+        expect(sections.every(section => section.owner === form)).toBe(true);
         form.destroy();
     });
 
@@ -90,7 +90,7 @@ describe('buildSections', () => {
             const sections = buildSections(form);
             expect(sections.map(section => section.title)).toEqual(['Alpha', 'Beta']);
             const root = form.controls![0];
-            expect(sections.every(section => section.owner === root.model)).toBeTrue();
+            expect(sections.every(section => section.owner === root.model)).toBe(true);
             expect(sections[0].controls.map(item => item.name)).toEqual(['head', 'a']);
             expect(promotedRootName(form)).toBe('Root');
             form.destroy();
@@ -133,7 +133,9 @@ describe('buildSections', () => {
             }
         } as any);
         const shown = (field: any) => !field.notCorrespondCondition;
-        const titles = (list: { title: string }[]) => list.map(item => item.title);
+        const titles = (list: {
+            title: string;
+        }[]) => list.map(item => item.title);
 
         it('splits like the edit form, with "Other details"', () => {
             const properties = {
@@ -186,8 +188,7 @@ describe('buildSections', () => {
 
     describe('splitSections', () => {
         it('titles a section by the item that closes it', () => {
-            const result = splitSections<string, string>(['x', 'S1', 'y'], item => item.startsWith('S'),
-                (title, items, last) => `${last ?? title}:${items.join('+')}`);
+            const result = splitSections<string, string>(['x', 'S1', 'y'], item => item.startsWith('S'), (title, items, last) => `${last ?? title}:${items.join('+')}`);
             expect(result).toEqual(['S1:x+S1', 'Other details:y']);
         });
     });

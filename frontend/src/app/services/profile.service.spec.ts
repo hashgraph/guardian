@@ -1,3 +1,4 @@
+import type { MockedObject } from "vitest";
 import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
@@ -9,10 +10,12 @@ import { ToastService } from './toast.service';
 describe('ProfileService profile pushes', () => {
     let service: ProfileService;
     let http: HttpTestingController;
-    let toast: jasmine.SpyObj<ToastService>;
+    let toast: MockedObject<ToastService>;
 
     beforeEach(() => {
-        toast = jasmine.createSpyObj('ToastService', ['error']);
+        toast = {
+            error: vi.fn().mockName("ToastService.error")
+        } as unknown as MockedObject<ToastService>;
         TestBed.configureTestingModule({
             providers: [
                 ProfileService,
@@ -26,7 +29,11 @@ describe('ProfileService profile pushes', () => {
         http = TestBed.inject(HttpTestingController);
     });
 
-    const pushes: [string, () => any, string][] = [
+    const pushes: [
+        string,
+        () => any,
+        string
+    ][] = [
         ['pushSetProfile', () => service.pushSetProfile({} as any), '/profiles/push/user'],
         ['restoreProfile', () => service.restoreProfile({} as any), '/profiles/restore/user'],
     ];
@@ -52,7 +59,8 @@ describe('ProfileService profile pushes', () => {
                 tick(1);
 
                 expect(failure).toBeInstanceOf(TimeoutError);
-                expect(toast.error).toHaveBeenCalledOnceWith(jasmine.any(String), 'Request timed out');
+                expect(toast.error).toHaveBeenCalledTimes(1);
+                expect(toast.error).toHaveBeenCalledWith(expect.any(String), 'Request timed out');
             }));
 
             it('leaves the message of an HTTP error to the error interceptor', () => {

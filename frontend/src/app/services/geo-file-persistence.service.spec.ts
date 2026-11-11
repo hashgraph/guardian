@@ -1,3 +1,4 @@
+import type { Mock } from "vitest";
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { DB_NAME, STORES_NAME } from '../constants';
@@ -9,31 +10,29 @@ import { IPFSService } from './ipfs.service';
 
 describe('GeoFilePersistenceService', () => {
     let records: Map<string, unknown>;
-    let put: jasmine.Spy;
-    let remove: jasmine.Spy;
-    let upsertFile: jasmine.Spy;
-    let getFileBlob: jasmine.Spy;
-    let deleteFile: jasmine.Spy;
-    let addFileDirect: jasmine.Spy;
+    let put: Mock;
+    let remove: Mock;
+    let upsertFile: Mock;
+    let getFileBlob: Mock;
+    let deleteFile: Mock;
+    let addFileDirect: Mock;
     let service: GeoFilePersistenceService;
 
     beforeEach(() => {
         records = new Map();
-        put = jasmine.createSpy('put').and.callFake(
-            async (_db: string, store: string, value: { id: string }) => {
-                records.set(`${store}:${value.id}`, value);
-                return value.id;
-            }
-        );
-        remove = jasmine.createSpy('delete').and.callFake(
-            async (_db: string, store: string, key: string) => {
-                records.delete(`${store}:${key}`);
-            }
-        );
-        upsertFile = jasmine.createSpy('upsertFile').and.returnValue(of({ fileId: 'grid-1' }));
-        getFileBlob = jasmine.createSpy('getFileBlob').and.returnValue(of(new Blob(['original'])));
-        deleteFile = jasmine.createSpy('deleteFile').and.returnValue(of(true));
-        addFileDirect = jasmine.createSpy('addFileDirect').and.returnValue(of('cid-1'));
+        put = vi.fn().mockImplementation(async (_db: string, store: string, value: {
+            id: string;
+        }) => {
+            records.set(`${store}:${value.id}`, value);
+            return value.id;
+        });
+        remove = vi.fn().mockImplementation(async (_db: string, store: string, key: string) => {
+            records.delete(`${store}:${key}`);
+        });
+        upsertFile = vi.fn().mockReturnValue(of({ fileId: 'grid-1' }));
+        getFileBlob = vi.fn().mockReturnValue(of(new Blob(['original'])));
+        deleteFile = vi.fn().mockReturnValue(of(true));
+        addFileDirect = vi.fn().mockReturnValue(of('cid-1'));
         TestBed.configureTestingModule({
             providers: [
                 GeoFilePersistenceService,
@@ -43,8 +42,7 @@ describe('GeoFilePersistenceService', () => {
                         registerStores: async () => undefined,
                         put,
                         delete: remove,
-                        get: async (_db: string, store: string, key: string) =>
-                            records.get(`${store}:${key}`)
+                        get: async (_db: string, store: string, key: string) => records.get(`${store}:${key}`)
                     }
                 },
                 { provide: ArtifactService, useValue: { upsertFile, getFileBlob, deleteFile } },
@@ -52,15 +50,15 @@ describe('GeoFilePersistenceService', () => {
             ]
         });
         service = TestBed.inject(GeoFilePersistenceService);
-        spyOn(crypto, 'randomUUID').and.returnValue(
-            'geo-key' as ReturnType<typeof crypto.randomUUID>
-        );
+        vi.spyOn(crypto, 'randomUUID').mockReturnValue('geo-key' as ReturnType<typeof crypto.randomUUID>);
     });
 
     it('stores the original File unchanged and returns its browser link', async () => {
         const file = new File(['original'], 'site.kml', { type: 'application/vnd.google-earth.kml+xml' });
         const link = await service.keepOriginal(file, 'kml');
-        const record = records.get(`${STORES_NAME.FILES_STORE}:geo-key`) as { blob: File };
+        const record = records.get(`${STORES_NAME.FILES_STORE}:geo-key`) as {
+            blob: File;
+        };
 
         expect(record.blob).toBe(file);
         expect(link).toEqual({
@@ -91,8 +89,8 @@ describe('GeoFilePersistenceService', () => {
 
         await service.persistGeoFilesInDocument(document, false);
 
-        expect(upsertFile).toHaveBeenCalledWith(jasmine.any(File));
-        expect(addFileDirect).toHaveBeenCalledWith(upsertFile.calls.mostRecent().args[0]);
+        expect(upsertFile).toHaveBeenCalledWith(expect.any(File));
+        expect(addFileDirect).toHaveBeenCalledWith(vi.mocked(upsertFile).mock.lastCall![0]);
         expect(link.fileId).toBe('grid-1');
         expect(link.cid).toBe('cid-1');
         expect(link.idbKey).toBeUndefined();
@@ -101,16 +99,16 @@ describe('GeoFilePersistenceService', () => {
 
     it('uploads GeoJSON and KML as gzip under the original name', async () => {
         for (const [name, format] of [['site.geojson', 'geojson'], ['site.kml', 'kml']] as const) {
-            upsertFile.calls.reset();
+            upsertFile.mockClear();
             const file = new File(['original'], name);
             const link = await service.keepOriginal(file, format);
 
             await service.persistGeoFilesInDocument({ place: { type: 'Point', coordinates: [1, 2], geoFile: link } }, true);
 
-            const uploaded: File = upsertFile.calls.mostRecent().args[0];
+            const uploaded: File = vi.mocked(upsertFile).mock.lastCall![0];
             expect(uploaded.name).toBe(name);
             expect(uploaded.type).toBe('application/gzip');
-            expect(await isGzipBlob(uploaded)).toBeTrue();
+            expect(await isGzipBlob(uploaded)).toBe(true);
             expect(await (await gunzipIfCompressed(uploaded)).text()).toBe('original');
             expect(link.sizeBytes).toBe(file.size);
         }
@@ -123,7 +121,7 @@ describe('GeoFilePersistenceService', () => {
 
         await service.persistGeoFilesInDocument({ place: { type: 'Point', coordinates: [1, 2], geoFile: link } }, false);
 
-        const uploaded: File = upsertFile.calls.mostRecent().args[0];
+        const uploaded: File = vi.mocked(upsertFile).mock.lastCall![0];
         expect(uploaded.name).toBe('site.kmz');
         expect(uploaded.type).toBe('application/vnd.google-earth.kmz');
         expect(new Uint8Array(await uploaded.arrayBuffer())).toEqual(bytes);
@@ -137,7 +135,9 @@ describe('GeoFilePersistenceService', () => {
 
         await service.rollbackGridFsUploads();
 
-        const record = records.get(`${STORES_NAME.FILES_STORE}:geo-key`) as { blob: Blob };
+        const record = records.get(`${STORES_NAME.FILES_STORE}:geo-key`) as {
+            blob: Blob;
+        };
         expect(record.blob).toBe(file);
     });
 
@@ -157,7 +157,7 @@ describe('GeoFilePersistenceService', () => {
 
         await service.persistGeoFilesInDocument({ place: { type: 'Point', coordinates: [1, 2], geoFile: link } }, false, true);
 
-        expect(records.has(`${STORES_NAME.DRAFT_STORE}:geo-key`)).toBeTrue();
+        expect(records.has(`${STORES_NAME.DRAFT_STORE}:geo-key`)).toBe(true);
         expect(upsertFile).not.toHaveBeenCalled();
         expect(link.idbKey).toBe('geo-key');
     });
@@ -169,7 +169,7 @@ describe('GeoFilePersistenceService', () => {
 
         await service.restoreGeoFilesFromDraft({ place: { type: 'Point', coordinates: [1, 2], geoFile: link } });
 
-        expect(records.has(`${STORES_NAME.FILES_STORE}:geo-key`)).toBeTrue();
+        expect(records.has(`${STORES_NAME.FILES_STORE}:geo-key`)).toBe(true);
     });
 
     it('restores GridFS bytes after a failed submit and leaves IPFS pinned', async () => {
@@ -179,8 +179,8 @@ describe('GeoFilePersistenceService', () => {
         await service.rollbackGridFsUploads();
 
         expect(getFileBlob).not.toHaveBeenCalled();
-        expect(records.has(`${STORES_NAME.FILES_STORE}:geo-key`)).toBeTrue();
-        expect(records.has(`${STORES_NAME.DRAFT_STORE}:geo-key`)).toBeTrue();
+        expect(records.has(`${STORES_NAME.FILES_STORE}:geo-key`)).toBe(true);
+        expect(records.has(`${STORES_NAME.DRAFT_STORE}:geo-key`)).toBe(true);
         expect(deleteFile).toHaveBeenCalledWith('grid-1');
         expect(addFileDirect).toHaveBeenCalledTimes(1);
         expect(link.idbKey).toBe('geo-key');
@@ -206,35 +206,31 @@ describe('GeoFilePersistenceService', () => {
     });
 
     it('keeps the browser record when IPFS upload fails', async () => {
-        addFileDirect.and.returnValue(throwError(() => new Error('ipfs failed')));
+        addFileDirect.mockReturnValue(throwError(() => new Error('ipfs failed')));
         const link = await service.keepOriginal(new File(['x'], 'site.kml'), 'kml');
 
-        await expectAsync(
-            service.persistGeoFilesInDocument({ place: { type: 'Point', coordinates: [1, 2], geoFile: link } }, false)
-        ).toBeRejectedWithError('ipfs failed');
+        await expect(service.persistGeoFilesInDocument({ place: { type: 'Point', coordinates: [1, 2], geoFile: link } }, false)).rejects.toThrowError('ipfs failed');
 
-        expect(records.has(`${STORES_NAME.FILES_STORE}:geo-key`)).toBeTrue();
+        expect(records.has(`${STORES_NAME.FILES_STORE}:geo-key`)).toBe(true);
     });
 
     it('removes the GridFS upload when IPFS fails and the caller rolls back', async () => {
-        addFileDirect.and.returnValue(throwError(() => new Error('ipfs failed')));
+        addFileDirect.mockReturnValue(throwError(() => new Error('ipfs failed')));
         const link = await service.keepOriginal(new File(['x'], 'site.kml'), 'kml');
 
-        await expectAsync(
-            service.persistGeoFilesInDocument({ place: { type: 'Point', coordinates: [1, 2], geoFile: link } }, false)
-        ).toBeRejectedWithError('ipfs failed');
+        await expect(service.persistGeoFilesInDocument({ place: { type: 'Point', coordinates: [1, 2], geoFile: link } }, false)).rejects.toThrowError('ipfs failed');
         await service.rollbackGridFsUploads();
 
         expect(deleteFile).toHaveBeenCalledWith('grid-1');
         expect(link.idbKey).toBe('geo-key');
         expect(link.fileId).toBeUndefined();
-        expect(records.has(`${STORES_NAME.FILES_STORE}:geo-key`)).toBeTrue();
+        expect(records.has(`${STORES_NAME.FILES_STORE}:geo-key`)).toBe(true);
     });
 
     it('reports a browser file that is still available', async () => {
         await service.keepOriginal(new File(['x'], 'site.kml'), 'kml');
 
-        expect(await service.ensurePendingFile('geo-key')).toBeTrue();
+        expect(await service.ensurePendingFile('geo-key')).toBe(true);
     });
 
     it('restores a browser file from the draft store', async () => {
@@ -242,19 +238,19 @@ describe('GeoFilePersistenceService', () => {
         await service.persistGeoFilesInDocument({ place: { type: 'Point', coordinates: [1, 2], geoFile: link } }, false, true);
         records.delete(`${STORES_NAME.FILES_STORE}:geo-key`);
 
-        expect(await service.ensurePendingFile('geo-key')).toBeTrue();
-        expect(records.has(`${STORES_NAME.FILES_STORE}:geo-key`)).toBeTrue();
+        expect(await service.ensurePendingFile('geo-key')).toBe(true);
+        expect(records.has(`${STORES_NAME.FILES_STORE}:geo-key`)).toBe(true);
     });
 
     it('reports a browser file that is missing', async () => {
-        expect(await service.ensurePendingFile('missing-key')).toBeFalse();
+        expect(await service.ensurePendingFile('missing-key')).toBe(false);
     });
 
     describe('when IndexedDB cannot be opened', () => {
-        let registerStores: jasmine.Spy;
+        let registerStores: Mock;
 
         beforeEach(() => {
-            registerStores = jasmine.createSpy('registerStores').and.rejectWith(new Error('blocked'));
+            registerStores = vi.fn().mockRejectedValue(new Error('blocked'));
             TestBed.inject(IndexedDbRegistryService).registerStores = registerStores;
         });
 
@@ -276,9 +272,7 @@ describe('GeoFilePersistenceService', () => {
                 sizeBytes: 1, previewSizeBytes: 1
             };
 
-            await expectAsync(
-                service.persistGeoFilesInDocument({ place: { type: 'Point', coordinates: [1, 2], geoFile: link } }, false)
-            ).toBeRejectedWithError('blocked');
+            await expect(service.persistGeoFilesInDocument({ place: { type: 'Point', coordinates: [1, 2], geoFile: link } }, false)).rejects.toThrowError('blocked');
         });
     });
 
@@ -297,7 +291,7 @@ describe('GeoFilePersistenceService', () => {
 
         await service.discard(link);
 
-        expect(records.has(`${STORES_NAME.FILES_STORE}:geo-key`)).toBeFalse();
-        expect(records.has(`${STORES_NAME.DRAFT_STORE}:geo-key`)).toBeFalse();
+        expect(records.has(`${STORES_NAME.FILES_STORE}:geo-key`)).toBe(false);
+        expect(records.has(`${STORES_NAME.DRAFT_STORE}:geo-key`)).toBe(false);
     });
 });

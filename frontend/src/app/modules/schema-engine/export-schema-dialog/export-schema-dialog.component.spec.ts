@@ -1,3 +1,4 @@
+import type { MockedObject } from "vitest";
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -5,10 +6,12 @@ import { SchemaService } from 'src/app/services/schema.service';
 import { ExportSchemaDialog } from './export-schema-dialog.component';
 
 describe('ExportSchemaDialog', () => {
-    let ref: jasmine.SpyObj<DynamicDialogRef>;
+    let ref: MockedObject<DynamicDialogRef>;
 
     function render(schema: any): ComponentFixture<ExportSchemaDialog> {
-        ref = jasmine.createSpyObj<DynamicDialogRef>('DynamicDialogRef', ['close']);
+        ref = {
+            close: vi.fn().mockName("DynamicDialogRef.close")
+        } as unknown as MockedObject<DynamicDialogRef>;
         TestBed.resetTestingModule();
         TestBed.configureTestingModule({
             declarations: [ExportSchemaDialog],

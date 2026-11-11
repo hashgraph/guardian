@@ -73,15 +73,15 @@ describe('SchemaFormNavComponent', () => {
         fixture.componentInstance.toggleRail();
         expect(el('.sf-rail-col')).toBeNull();
         expect(el('.sf-show-menu')).not.toBeNull();
-        expect(TestBed.createComponent(SchemaFormNavComponent).componentInstance.railHidden).toBeTrue();
+        expect(TestBed.createComponent(SchemaFormNavComponent).componentInstance.railHidden).toBe(true);
         el('.sf-show-menu')!.click();
         expect(el('.sf-rail-col')).not.toBeNull();
     });
 
     it('is inert while the host is locked', () => {
         create({ locked: true });
-        expect(el('.sf-rail-col')!.hasAttribute('inert')).toBeTrue();
-        expect(el('.sf-section-bar')!.hasAttribute('inert')).toBeTrue();
+        expect(el('.sf-rail-col')!.hasAttribute('inert')).toBe(true);
+        expect(el('.sf-section-bar')!.hasAttribute('inert')).toBe(true);
     });
 
     it('fits the rail to the height of the scroll parent', () => {
@@ -100,7 +100,8 @@ describe('SchemaFormNavComponent', () => {
             expect(expected).toBeGreaterThan(0);
             expect(rail.style.minHeight).toBe(`${expected}px`);
             expect(rail.style.maxHeight).toBe(`${expected}px`);
-        } finally {
+        }
+        finally {
             fixture.destroy();
             host.remove();
         }

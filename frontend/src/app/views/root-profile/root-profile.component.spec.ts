@@ -8,9 +8,13 @@ describe('RootProfileComponent.onAsyncCompleted', () => {
         component.taskId = 'task';
         component.operationMode = OperationMode.Generate;
         component.loading = true;
-        component.taskService = { get: jasmine.createSpy('get').and.returnValue(of(task)) };
-        component.toastService = jasmine.createSpyObj('ToastService', ['error']);
-        component.hederaForm = jasmine.createSpyObj('FormGroup', ['patchValue']);
+        component.taskService = { get: vi.fn().mockReturnValue(of(task)) };
+        component.toastService = {
+            error: vi.fn().mockName("ToastService.error")
+        };
+        component.hederaForm = {
+            patchValue: vi.fn().mockName("FormGroup.patchValue")
+        };
         return component;
     };
 
@@ -19,8 +23,10 @@ describe('RootProfileComponent.onAsyncCompleted', () => {
 
         component.onAsyncCompleted();
 
-        expect(component.hederaForm.patchValue).toHaveBeenCalledOnceWith({ hederaAccountId: '0.0.1', hederaAccountKey: 'secret' });
-        expect(component.loading).toBeFalse();
+        expect(component.hederaForm.patchValue).toHaveBeenCalledTimes(1);
+
+        expect(component.hederaForm.patchValue).toHaveBeenCalledWith({ hederaAccountId: '0.0.1', hederaAccountKey: 'secret' });
+        expect(component.loading).toBe(false);
     });
 
     it('releases the spinner and tells the user when the task body carries no result', () => {
@@ -28,8 +34,9 @@ describe('RootProfileComponent.onAsyncCompleted', () => {
 
         component.onAsyncCompleted();
 
-        expect(component.loading).toBeFalse();
-        expect(component.toastService.error).toHaveBeenCalledOnceWith(jasmine.any(String), 'Result missing');
+        expect(component.loading).toBe(false);
+        expect(component.toastService.error).toHaveBeenCalledTimes(1);
+        expect(component.toastService.error).toHaveBeenCalledWith(expect.any(String), 'Result missing');
         expect(component.hederaForm.patchValue).not.toHaveBeenCalled();
     });
 });

@@ -373,7 +373,7 @@ describe('Formulas references', () => {
         formulas.delete(formulas.getItem('a')!);
         expect(formulas.getItem('m')!.relationships).toEqual(['b']);
         expect(formulas.getItem('t')!.relationships).toEqual([]);
-        expect(formulas.getJson().formulas!.every((e) => !(e.relationships || []).includes('a'))).toBeTrue();
+        expect(formulas.getJson().formulas!.every((e) => !(e.relationships || []).includes('a'))).toBe(true);
     });
 
     it('fromData drops relationships that match no item', () => {

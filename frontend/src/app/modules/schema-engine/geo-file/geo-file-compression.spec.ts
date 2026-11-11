@@ -1,15 +1,14 @@
 import { gunzipIfCompressed, gzipBlob, isGzipBlob } from './geo-file-compression';
 
 describe('geo file compression', () => {
-    const bytes = async (blob: Blob): Promise<number[]> =>
-        Array.from(new Uint8Array(await blob.arrayBuffer()));
+    const bytes = async (blob: Blob): Promise<number[]> => Array.from(new Uint8Array(await blob.arrayBuffer()));
 
     it('writes gzip that starts with the gzip signature', async () => {
         const compressed = await gzipBlob(new Blob(['{"type":"Point","coordinates":[1,2]}']));
         const head = await bytes(compressed.slice(0, 2));
 
         expect(head).toEqual([0x1f, 0x8b]);
-        expect(await isGzipBlob(compressed)).toBeTrue();
+        expect(await isGzipBlob(compressed)).toBe(true);
     });
 
     it('returns the original bytes after a round trip', async () => {
@@ -41,7 +40,7 @@ describe('geo file compression', () => {
     });
 
     it('does not treat empty or one-byte files as gzip', async () => {
-        expect(await isGzipBlob(new Blob([]))).toBeFalse();
-        expect(await isGzipBlob(new Blob([new Uint8Array([0x1f])]))).toBeFalse();
+        expect(await isGzipBlob(new Blob([]))).toBe(false);
+        expect(await isGzipBlob(new Blob([new Uint8Array([0x1f])]))).toBe(false);
     });
 });

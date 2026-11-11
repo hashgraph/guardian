@@ -18,7 +18,10 @@ describe('SchemaFieldFormulas', () => {
         };
     }
 
-    function create(doc: IFormula = createDoc()): { model: any; updates: any[] } {
+    function create(doc: IFormula = createDoc()): {
+        model: any;
+        updates: any[];
+    } {
         const updates: any[] = [];
         const formulasService: any = {
             getFormula: () => of(JSON.parse(JSON.stringify(doc))),
@@ -27,9 +30,7 @@ describe('SchemaFieldFormulas', () => {
             getFormulas: () => of({ body: [], headers: { get: () => '0' } }),
             parsePage: () => ({ page: [], count: 0 }),
         };
-        const model: any = new SchemaFieldFormulas(
-            formulasService, {} as any, {} as any, () => {}, () => ''
-        );
+        const model: any = new SchemaFieldFormulas(formulasService, {} as any, {} as any, () => { }, () => '');
         model.policy = { id: 'p1', name: 'Policy' };
         model.canEdit = true;
         model.formulas.set('p1', [doc]);
@@ -60,15 +61,15 @@ describe('SchemaFieldFormulas', () => {
         expect(model.previewTree([]).getFields('#root')['#root/G7']).toBeDefined();
     });
 
-    it('keeps the saved link in the preview tree while the formulas reload', (done) => {
+    it('keeps the saved link in the preview tree while the formulas reload', async () => {
         const { model } = create();
         model.formulasService.getFormulas = () => NEVER;
         model.assign(scope([], 'G7'), 'd1|f1');
 
         model.save().subscribe(() => {
-            expect(model.hasPending).toBeFalse();
+            expect(model.hasPending).toBe(false);
             expect(model.previewTree([]).getFields('#root')['#root/G7']).toBeDefined();
-            done();
+            ;
         });
     });
 
@@ -86,21 +87,21 @@ describe('SchemaFieldFormulas', () => {
         expect(view.groups).toEqual([]);
     });
 
-    it('saves a binding with the prefix fixed when it was queued', (done) => {
+    it('saves a binding with the prefix fixed when it was queued', async () => {
         const { model, updates } = create();
         const s = scope(['risks'], 'G7');
         model.assign(s, 'd1|f1');
         s.prefix.push('changed');
         s.field.name = 'G8';
         model.save().subscribe((ok: boolean) => {
-            expect(ok).toBeTrue();
+            expect(ok).toBe(true);
             expect(updates[0].config.formulas[1].link).toEqual({ type: 'schema', entityId: '#root', item: 'risks.G8' });
-            expect(model.hasPending).toBeFalse();
-            done();
+            expect(model.hasPending).toBe(false);
+            ;
         });
     });
 
-    it('adds a link to an item that is already linked, and unlinks only that link', (done) => {
+    it('adds a link to an item that is already linked, and unlinks only that link', async () => {
         const { model, updates } = create();
         const s = scope(['risks'], 'G7');
         model.assign(s, 'd1|v1');
@@ -111,7 +112,7 @@ describe('SchemaFieldFormulas', () => {
                 { type: 'schema', entityId: '#root', item: 'risks.G7' }
             ]);
             expect(item.link).toEqual(item.links[0]);
-            done();
+            ;
         });
     });
 
@@ -145,11 +146,11 @@ describe('SchemaFieldFormulas', () => {
         model.newName = 'New';
         model.newDocument = 'd1';
         model.create(s);
-        expect(model.creating).toBeFalse();
+        expect(model.creating).toBe(false);
         expect(model.newDocument).toBe('');
         model.startCreate();
         model.view(scope(['risks'], 'G9'), true, false);
-        expect(model.creating).toBeFalse();
+        expect(model.creating).toBe(false);
     });
 
     it('creates nothing until a formula document is chosen', () => {
@@ -158,11 +159,11 @@ describe('SchemaFieldFormulas', () => {
         model.view(s, true, false);
         model.startCreate();
         model.newName = 'New';
-        expect(model.canCreate).toBeFalse();
+        expect(model.canCreate).toBe(false);
         model.create(s);
-        expect(model.hasPending).toBeFalse();
+        expect(model.hasPending).toBe(false);
         model.newDocument = 'd1';
-        expect(model.canCreate).toBeTrue();
+        expect(model.canCreate).toBe(true);
     });
     describe('renames and deletes', () => {
         function savedScope(name: string = 'G6', status: string = 'DRAFT'): IFieldScope {
@@ -176,15 +177,15 @@ describe('SchemaFieldFormulas', () => {
             const s = savedScope('G7');
             model.assign(s, 'd1|f1');
             model.release(s);
-            expect(model.hasPending).toBeFalse();
+            expect(model.hasPending).toBe(false);
         });
 
-        it('unbinds the saved link when the field is deleted', (done) => {
+        it('unbinds the saved link when the field is deleted', async () => {
             const { model, updates } = create();
             model.release(savedScope());
             model.save().subscribe(() => {
                 expect(updates[0].config.formulas[0].link).toBeNull();
-                done();
+                ;
             });
         });
 
@@ -192,21 +193,21 @@ describe('SchemaFieldFormulas', () => {
             const { model } = create();
             model.release(savedScope('G6', 'PUBLISHED'));
             model.rename(savedScope('G6', 'PUBLISHED'));
-            expect(model.hasPending).toBeFalse();
+            expect(model.hasPending).toBe(false);
         });
 
-        it('moves the saved link to the new key', (done) => {
+        it('moves the saved link to the new key', async () => {
             const { model, updates } = create();
             const s = savedScope();
             model.rename(s);
             s.field.name = 'G9';
             model.save().subscribe(() => {
                 expect(updates[0].config.formulas[0].link).toEqual({ type: 'schema', entityId: '#root', item: 'risks.G9' });
-                done();
+                ;
             });
         });
 
-        it('unbinds the saved key when a renamed field is deleted', (done) => {
+        it('unbinds the saved key when a renamed field is deleted', async () => {
             const { model, updates } = create();
             const s = savedScope();
             model.rename(s);
@@ -214,7 +215,7 @@ describe('SchemaFieldFormulas', () => {
             model.release(s);
             model.save().subscribe(() => {
                 expect(updates[0].config.formulas[0].link).toBeNull();
-                done();
+                ;
             });
         });
 
@@ -223,31 +224,31 @@ describe('SchemaFieldFormulas', () => {
             const s = savedScope();
             model.rename(s);
             s.field.name = 'G9';
-            expect(model.hasPending).toBeTrue();
+            expect(model.hasPending).toBe(true);
             s.field.name = 'G6';
-            expect(model.hasPending).toBeFalse();
+            expect(model.hasPending).toBe(false);
         });
 
-        it('writes nothing when the key is typed back to the saved one', (done) => {
+        it('writes nothing when the key is typed back to the saved one', async () => {
             const { model, updates } = create();
             const s = savedScope();
             model.rename(s);
             s.field.name = 'G9';
             s.field.name = 'G6';
             model.save().subscribe((ok: boolean) => {
-                expect(ok).toBeTrue();
+                expect(ok).toBe(true);
                 expect(updates.length).toBe(0);
-                done();
+                ;
             });
         });
 
         it('queues nothing when the schema has no saved links', () => {
             const { model } = create();
             model.rename(savedScope('G7'));
-            expect(model.hasPending).toBeFalse();
+            expect(model.hasPending).toBe(false);
         });
 
-        it('keeps the unbind on the saved key when the key is renamed afterwards', (done) => {
+        it('keeps the unbind on the saved key when the key is renamed afterwards', async () => {
             const { model, updates } = create();
             const s = savedScope();
             const row = model.view(s, true, false).rows[0];
@@ -256,11 +257,11 @@ describe('SchemaFieldFormulas', () => {
             s.field.name = 'G9';
             model.save().subscribe(() => {
                 expect(updates[0].config.formulas[0].link).toBeNull();
-                done();
+                ;
             });
         });
 
-        it('unbinds the saved key when the key was renamed before the unbind', (done) => {
+        it('unbinds the saved key when the key was renamed before the unbind', async () => {
             const { model, updates } = create();
             const s = savedScope();
             model.rename(s);
@@ -269,10 +270,10 @@ describe('SchemaFieldFormulas', () => {
             model.unbind(s, row);
             model.save().subscribe(() => {
                 expect(updates[0].config.formulas[0].link).toBeNull();
-                done();
+                ;
             });
         });
-        it('keeps the link on the old key when the new key is already used by another field', (done) => {
+        it('keeps the link on the old key when the new key is already used by another field', async () => {
             const { model, updates } = create();
             const s = savedScope();
             s.fields.push({ name: 'G9' } as any);
@@ -280,7 +281,7 @@ describe('SchemaFieldFormulas', () => {
             s.field.name = 'G9';
             model.save().subscribe(() => {
                 expect(updates[0].config.formulas[0].link).toEqual({ type: 'schema', entityId: '#root', item: 'risks.G6' });
-                done();
+                ;
             });
         });
 
@@ -305,7 +306,7 @@ describe('SchemaFieldFormulas', () => {
 
             const link = (item: string) => ({ type: 'schema', entityId: '#root', item });
 
-            it('follows the child rename and then the parent rename', (done) => {
+            it('follows the child rename and then the parent rename', async () => {
                 const { model, updates } = create(nestedDoc());
                 const f = scopes();
                 model.rename(f.childScope());
@@ -314,11 +315,11 @@ describe('SchemaFieldFormulas', () => {
                 f.parent.name = 'Y';
                 model.save().subscribe(() => {
                     expect(updates[0].config.formulas[0].link).toEqual(link('Y.b'));
-                    done();
+                    ;
                 });
             });
 
-            it('follows the parent rename and then the child rename', (done) => {
+            it('follows the parent rename and then the child rename', async () => {
                 const { model, updates } = create(nestedDoc());
                 const f = scopes();
                 model.rename(f.parentScope());
@@ -327,11 +328,11 @@ describe('SchemaFieldFormulas', () => {
                 f.child.name = 'b';
                 model.save().subscribe(() => {
                     expect(updates[0].config.formulas[0].link).toEqual(link('Y.b'));
-                    done();
+                    ;
                 });
             });
 
-            it('unbinds the link of a child deleted after the parent rename', (done) => {
+            it('unbinds the link of a child deleted after the parent rename', async () => {
                 const { model, updates } = create(nestedDoc());
                 const f = scopes();
                 model.rename(f.parentScope());
@@ -339,11 +340,11 @@ describe('SchemaFieldFormulas', () => {
                 model.release(f.childScope());
                 model.save().subscribe(() => {
                     expect(updates[0].config.formulas[0].link).toBeNull();
-                    done();
+                    ;
                 });
             });
 
-            it('follows a second child rename after the parent rename', (done) => {
+            it('follows a second child rename after the parent rename', async () => {
                 const { model, updates } = create(nestedDoc());
                 const f = scopes();
                 model.rename(f.childScope());
@@ -354,7 +355,7 @@ describe('SchemaFieldFormulas', () => {
                 f.child.name = 'c';
                 model.save().subscribe(() => {
                     expect(updates[0].config.formulas[0].link).toEqual(link('Y.c'));
-                    done();
+                    ;
                 });
             });
         });
@@ -366,30 +367,30 @@ describe('SchemaFieldFormulas', () => {
                 return doc;
             }
 
-            it('moves the links inside the field to the new key', (done) => {
+            it('moves the links inside the field to the new key', async () => {
                 const { model, updates } = create(nestedDoc());
                 const s = savedScope();
                 model.rename(s);
                 s.field.name = 'G9';
                 model.save().subscribe(() => {
                     expect(updates[0].config.formulas[0].link).toEqual({ type: 'schema', entityId: '#root', item: 'risks.G9.child' });
-                    done();
+                    ;
                 });
             });
 
-            it('unbinds the links inside the field when it is deleted', (done) => {
+            it('unbinds the links inside the field when it is deleted', async () => {
                 const { model, updates } = create(nestedDoc());
                 model.release(savedScope());
                 model.save().subscribe(() => {
                     expect(updates[0].config.formulas[0].link).toBeNull();
-                    done();
+                    ;
                 });
             });
 
             it('leaves the links of a field with a similar key alone', () => {
                 const { model } = create(nestedDoc());
                 model.release(savedScope('G'));
-                expect(model.hasPending).toBeFalse();
+                expect(model.hasPending).toBe(false);
             });
         });
     });

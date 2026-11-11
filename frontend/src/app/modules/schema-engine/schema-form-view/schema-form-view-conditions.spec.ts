@@ -5,27 +5,27 @@ describe('schema-form-view-conditions', () => {
 
     describe('evaluateIfCondition', () => {
         it('judges a single predicate', () => {
-            expect(evaluateIfCondition({ field: name('kind'), fieldValue: 'a' }, { kind: 'a' })).toBeTrue();
-            expect(evaluateIfCondition({ field: name('kind'), fieldValue: 'a' }, { kind: 'b' })).toBeFalse();
+            expect(evaluateIfCondition({ field: name('kind'), fieldValue: 'a' }, { kind: 'a' })).toBe(true);
+            expect(evaluateIfCondition({ field: name('kind'), fieldValue: 'a' }, { kind: 'b' })).toBe(false);
         });
 
         it('needs every predicate of an AND and one of an OR', () => {
             const predicates = [{ field: name('a'), fieldValue: 1 }, { field: name('b'), fieldValue: 2 }];
-            expect(evaluateIfCondition({ AND: predicates }, { a: 1, b: 2 })).toBeTrue();
-            expect(evaluateIfCondition({ AND: predicates }, { a: 1, b: 3 })).toBeFalse();
-            expect(evaluateIfCondition({ OR: predicates }, { a: 0, b: 2 })).toBeTrue();
-            expect(evaluateIfCondition({ OR: predicates }, { a: 0, b: 0 })).toBeFalse();
+            expect(evaluateIfCondition({ AND: predicates }, { a: 1, b: 2 })).toBe(true);
+            expect(evaluateIfCondition({ AND: predicates }, { a: 1, b: 3 })).toBe(false);
+            expect(evaluateIfCondition({ OR: predicates }, { a: 0, b: 2 })).toBe(true);
+            expect(evaluateIfCondition({ OR: predicates }, { a: 0, b: 0 })).toBe(false);
         });
 
         it('walks a full path and is false when a step is missing', () => {
             const ic = { field: name('x'), fieldValue: 5, fieldPath: ['sub', 'x'] };
-            expect(evaluateIfCondition(ic, { sub: { x: 5 } })).toBeTrue();
-            expect(evaluateIfCondition(ic, {})).toBeFalse();
-            expect(evaluateIfCondition(ic, undefined)).toBeFalse();
+            expect(evaluateIfCondition(ic, { sub: { x: 5 } })).toBe(true);
+            expect(evaluateIfCondition(ic, {})).toBe(false);
+            expect(evaluateIfCondition(ic, undefined)).toBe(false);
         });
 
         it('is false for a condition it does not know', () => {
-            expect(evaluateIfCondition({}, { a: 1 })).toBeFalse();
+            expect(evaluateIfCondition({}, { a: 1 })).toBe(false);
         });
     });
 
@@ -55,23 +55,23 @@ describe('schema-form-view-conditions', () => {
         it('judges the conditions of a sub-schema by its own values', () => {
             const inner = [name('x'), name('y')];
             const fields: any[] = [{
-                name: 'sub',
-                fields: inner,
-                conditions: [{ ifCondition: { field: name('kind'), fieldValue: 'a' }, thenFields: [name('x')], elseFields: [] }],
-            }];
+                    name: 'sub',
+                    fields: inner,
+                    conditions: [{ ifCondition: { field: name('kind'), fieldValue: 'a' }, thenFields: [name('x')], elseFields: [] }],
+                }];
             applyNestedConditions(fields, { sub: { kind: 'b' } });
-            expect((inner[0] as any).notCorrespondCondition).toBeTrue();
+            expect((inner[0] as any).notCorrespondCondition).toBe(true);
             expect((inner[1] as any).notCorrespondCondition).toBeUndefined();
         });
 
         it('leaves the conditions of an array to its rows', () => {
             const inner = [name('x')];
             const fields: any[] = [{
-                name: 'rows',
-                isArray: true,
-                fields: inner,
-                conditions: [{ ifCondition: { field: name('kind'), fieldValue: 'a' }, thenFields: [name('x')], elseFields: [] }],
-            }];
+                    name: 'rows',
+                    isArray: true,
+                    fields: inner,
+                    conditions: [{ ifCondition: { field: name('kind'), fieldValue: 'a' }, thenFields: [name('x')], elseFields: [] }],
+                }];
             applyNestedConditions(fields, { rows: [{ kind: 'a' }] });
             expect((inner[0] as any).notCorrespondCondition).toBeUndefined();
         });

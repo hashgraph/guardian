@@ -9,11 +9,13 @@ import { CalculationPreviewService, normalizePreviewResult } from 'src/app/servi
 describe('request document preview wiring', () => {
     const saved = [{ source: 'form', target: 'save', document: { document: { id: 'vc-1' } } }];
     const scriptError = { message: 'rate is required', blockType: 'customLogicBlock', errorData: null };
-    const response = (fields: string[], missingFields: string[] = [], documents: unknown[] = saved, errors: unknown[] = []) =>
-        normalizePreviewResult({ fields, missingFields, documents, errors });
+    const response = (fields: string[], missingFields: string[] = [], documents: unknown[] = saved, errors: unknown[] = []) => normalizePreviewResult({ fields, missingFields, documents, errors });
 
     const preview = (results: Promise<unknown>[]) => {
-        const calls: { previewFields: boolean; ref: unknown }[] = [];
+        const calls: {
+            previewFields: boolean;
+            ref: unknown;
+        }[] = [];
         const real = Object.create(CalculationPreviewService.prototype);
         return {
             calls,
@@ -22,8 +24,8 @@ describe('request document preview wiring', () => {
                     calls.push({ previewFields, ref });
                     return results.shift();
                 },
-                loadMode: jasmine.createSpy('loadMode').and.returnValue(false),
-                saveMode: jasmine.createSpy('saveMode'),
+                loadMode: vi.fn().mockReturnValue(false),
+                saveMode: vi.fn(),
                 getInputValidation: CalculationPreviewService.prototype.getInputValidation,
                 updateRequiredFields: CalculationPreviewService.prototype.updateRequiredFields,
                 getTimeline: (result: any) => CalculationPreviewService.prototype.getTimeline.call(real, result),
@@ -38,13 +40,16 @@ describe('request document preview wiring', () => {
         const component = Object.create(RequestDocumentFormComponent.prototype) as any;
         const fake = preview(results);
         const uploads: string[] = [];
-        const dialogs: { type: unknown; config: any }[] = [];
+        const dialogs: {
+            type: unknown;
+            config: any;
+        }[] = [];
         component.calculationPreview = fake.service;
         component.parent = parent;
         component.destroy$ = new Subject<void>();
         component.dataForm = { valid: true, getRawValue: () => ({ amount: 5 }) };
         component.changeDetectorRef = { markForCheck: () => undefined, detectChanges: () => undefined };
-        component.formRoot = { revealErrors: jasmine.createSpy('revealErrors'), getIssues: () => [], focusField: () => undefined };
+        component.formRoot = { revealErrors: vi.fn(), getIssues: () => [], focusField: () => undefined };
         component.issues = [];
         component.ruleIssues = [];
         component.dialogService = { open: (type: unknown, config: any) => dialogs.push({ type, config }) };
@@ -98,10 +103,10 @@ describe('request document preview wiring', () => {
         const state = form(results, blockParent());
         const group = new FormGroup({ mode: new FormControl('ccb'), title: new FormControl('old'), other: new FormControl('x') });
         state.component.formRoot.model = { controls: [
-            { name: 'mode', enum: ['ccb', 'vcs'], control: group.get('mode') },
-            { name: 'title', type: 'string', control: group.get('title') },
-            { name: 'other', type: 'string', control: group.get('other') }
-        ] };
+                { name: 'mode', enum: ['ccb', 'vcs'], control: group.get('mode') },
+                { name: 'title', type: 'string', control: group.get('title') },
+                { name: 'other', type: 'string', control: group.get('other') }
+            ] };
         state.component.initForm(group, false);
         state.component.previewMode = true;
         state.component.setPreviewRequiredFields(['mode', 'title']);
@@ -111,11 +116,11 @@ describe('request document preview wiring', () => {
     it('refreshes requirements when a read choice changes', fakeAsync(() => {
         const { component, group, calls } = observedForm([Promise.resolve(response(['mode', 'vcs']))]);
         group.get('mode')!.setValue('vcs');
-        expect(component.previewRequirementsStale).toBeTrue();
+        expect(component.previewRequirementsStale).toBe(true);
         tick();
         expect(calls.length).toBe(1);
         expect(component.previewRequiredFields).toEqual(['mode', 'vcs']);
-        expect(component.previewRequirementsStale).toBeFalse();
+        expect(component.previewRequirementsStale).toBe(false);
         component.destroy$.next();
     }));
 
@@ -132,7 +137,7 @@ describe('request document preview wiring', () => {
         resolveFirst(response(['mode', 'title']));
         tick();
         expect(calls.length).toBe(1);
-        expect(component.previewRequirementsStale).toBeFalse();
+        expect(component.previewRequirementsStale).toBe(false);
         component.destroy$.next();
     }));
 
@@ -145,7 +150,7 @@ describe('request document preview wiring', () => {
         group.get('title')!.setValue('new');
         tick();
         expect(calls.length).toBe(0);
-        expect(component.previewRequirementsStale).toBeTrue();
+        expect(component.previewRequirementsStale).toBe(true);
         expect(component.previewProgressPending).toBeFalsy();
         tick();
         expect(calls.length).toBe(0);
@@ -192,7 +197,7 @@ describe('request document preview wiring', () => {
         component.onPreviewNavigation();
         tick();
         expect(calls.length).toBe(1);
-        expect(component.previewRequirementsStale).toBeFalse();
+        expect(component.previewRequirementsStale).toBe(false);
         component.onPreviewNavigation();
         tick();
         expect(calls.length).toBe(1);
@@ -224,7 +229,7 @@ describe('request document preview wiring', () => {
         resolveFirst(response(['mode', 'title']));
         tick();
         expect(calls.length).toBe(1);
-        expect(component.previewRequirementsStale).toBeFalse();
+        expect(component.previewRequirementsStale).toBe(false);
         component.destroy$.next();
     }));
 
@@ -254,7 +259,7 @@ describe('request document preview wiring', () => {
         resolveFirst(response(['old']));
         tick();
         expect(calls.length).toBe(1);
-        expect(component.previewRequirementsStale).toBeTrue();
+        expect(component.previewRequirementsStale).toBe(true);
         expect(component.previewRequiredFields).toEqual(['mode', 'title']);
         void component.refreshStalePreview();
         tick();
@@ -273,18 +278,18 @@ describe('request document preview wiring', () => {
         rows.push(new FormGroup({ name: new FormControl('') }));
         tick();
         expect(calls.length).toBe(1);
-        expect(component.previewRequirementsStale).toBeFalse();
+        expect(component.previewRequirementsStale).toBe(false);
         component.destroy$.next();
     }));
 
     it('keeps requirements stale after a failed refresh and sends no request in ordinary mode', fakeAsync(() => {
-        spyOn(console, 'error');
+        vi.spyOn(console, 'error').mockImplementation(() => undefined);
         const offline = Promise.reject(new Error('offline'));
         offline.catch(() => undefined);
         const { component, group, calls } = observedForm([offline]);
         group.get('mode')!.setValue('vcs');
         tick();
-        expect(component.previewRequirementsStale).toBeTrue();
+        expect(component.previewRequirementsStale).toBe(true);
         expect(component.previewRequiredFields).toEqual(['mode', 'title']);
         component.previewMode = false;
         group.get('mode')!.setValue('ccb');
@@ -301,11 +306,11 @@ describe('request document preview wiring', () => {
         component.relayerAccountType = 'relayerAccount';
         component.currentRelayerAccount = '0.0.999';
         component.parent.relayerAccount = true;
-        const run = jasmine.createSpy('run').and.resolveTo(response([]));
+        const run = vi.fn().mockResolvedValue(response([]));
         component.calculationPreview.run = run;
         component.previewMode = true;
         await component.runPreview(true);
-        expect(run.calls.mostRecent().args[5]).toEqual({ relayerAccount: '0.0.999',
+        expect(vi.mocked(run).mock.lastCall![5]).toEqual({ relayerAccount: '0.0.999',
             evidence: [{ dataType: 'message', data: 'selected proof' }] });
     });
 
@@ -315,7 +320,7 @@ describe('request document preview wiring', () => {
         expect(calls).toEqual([{ previewFields: true, ref: { id: 'ref-2' } }]);
         expect(component.previewRequiredFields).toEqual(['amount', 'rate']);
         expect(dialogs.length).toBe(0);
-        expect(component.loading).toBeFalse();
+        expect(component.loading).toBe(false);
     });
 
     it('runs a preview instead of the evidence and relayer steps and uploads nothing', async () => {
@@ -339,7 +344,7 @@ describe('request document preview wiring', () => {
             { role: 'result', label: 'save', blockType: null, source: 'form', target: 'save', document: { id: 'vc-1' }, title: 'save', sub: 'save', schemaType: null },
         ]);
         expect(component.previewSelected?.document).toEqual({ id: 'vc-1' });
-        expect(component.previewShowErrors).toBeFalse();
+        expect(component.previewShowErrors).toBe(false);
         expect(component.previewHeading).toBe('Preview results');
         expect(component.issues).toEqual([]);
     });
@@ -365,14 +370,14 @@ describe('request document preview wiring', () => {
         expect(component.previewProblems).toEqual([{ blockType: 'customLogicBlock', message: 'rate is required', errorData: null }]);
         expect(component.screen).toBe('presults');
         expect(component.previewItems.length).toBe(1);
-        expect(component.previewShowErrors).toBeFalse();
-        expect(component.previewShowErrors).toBeFalse();
+        expect(component.previewShowErrors).toBe(false);
+        expect(component.previewShowErrors).toBe(false);
         expect(component.previewHeading).toBe('Preview results');
         component.showPreviewErrors();
-        expect(component.previewShowErrors).toBeTrue();
+        expect(component.previewShowErrors).toBe(true);
         expect(component.previewHeading).toBe('The preview is incomplete');
         component.showPreviewResults();
-        expect(component.previewShowErrors).toBeFalse();
+        expect(component.previewShowErrors).toBe(false);
         expect(component.previewHeading).toBe('Preview results');
         expect(component.previewItems.length).toBe(1);
         expect(component.screen).toBe('presults');
@@ -384,7 +389,7 @@ describe('request document preview wiring', () => {
         await component.onStep();
         expect(component.previewItems).toEqual([]);
         expect(component.previewHeading).toBe('Preview results');
-        expect(component.previewShowErrors).toBeFalse();
+        expect(component.previewShowErrors).toBe(false);
         component.showPreviewErrors();
         expect(component.previewHeading).toBe('The preview is incomplete');
     });
@@ -402,16 +407,16 @@ describe('request document preview wiring', () => {
         expect(component.previewSelected.document).toEqual({ id: 'last' });
         expect(component.previewHeading).toBe('Preview results');
         expect(component.previewProblems[0].message).toContain('the operator $elemMatch');
-        expect(component.isPreviewItemVisible(0)).toBeTrue();
-        expect(component.isPreviewItemVisible(1)).toBeFalse();
-        expect(component.isPreviewItemVisible(2)).toBeTrue();
+        expect(component.isPreviewItemVisible(0)).toBe(true);
+        expect(component.isPreviewItemVisible(1)).toBe(false);
+        expect(component.isPreviewItemVisible(2)).toBe(true);
         expect(component.previewHiddenLabel(1)).toBe('1 intermediate document');
         component.showPreviewErrors();
         expect(component.previewHeading).toBe('The preview is incomplete');
     });
 
     it('opens the results screen with the missing values when Preview answers 422', async () => {
-        spyOn(console, 'error');
+        vi.spyOn(console, 'error').mockImplementation(() => undefined);
         const error = new HttpErrorResponse({ status: 422, error: { data: { preview: true, fields: ['amount', 'rate'], missingFields: ['rate'] } } });
         const { component } = form([Promise.reject(error), Promise.resolve(response(['amount', 'rate'], ['rate']))], blockParent());
         component.formRoot.getIssues = () => [{ path: 'rate', label: 'rate', message: 'Enter a value' }];
@@ -426,7 +431,7 @@ describe('request document preview wiring', () => {
     });
 
     it('asks for every field of the branch when Preview answers 422 and lists them all', async () => {
-        spyOn(console, 'error');
+        vi.spyOn(console, 'error').mockImplementation(() => undefined);
         const error = new HttpErrorResponse({ status: 422, error: { data: { preview: true, fields: ['period'], missingFields: ['period'] } } });
         const { component, calls } = form([Promise.reject(error), Promise.resolve(response(['title', 'period', 'burning'], ['period', 'burning', 'rows.0.cell']))], blockParent());
         component.previewMode = true;
@@ -437,11 +442,11 @@ describe('request document preview wiring', () => {
         expect(component.previewMissingFields).toEqual(['period', 'burning', 'rows.0.cell']);
         expect(component.issues.map((issue: any) => issue.path)).toEqual(['period', 'burning']);
         expect(component.screen).toBe('results');
-        expect(component.loading).toBeFalse();
+        expect(component.loading).toBe(false);
     });
 
     it('keeps what only the 422 names, such as a section that was not added, next to the fields found again', async () => {
-        spyOn(console, 'error');
+        vi.spyOn(console, 'error').mockImplementation(() => undefined);
         const error = new HttpErrorResponse({ status: 422, error: { data: { preview: true, fields: ['monitoring'], missingFields: ['monitoring'] } } });
         const { component } = form([Promise.reject(error), Promise.resolve(response(['title'], ['monitoring.rows.0.cell']))], blockParent());
         component.previewMode = true;
@@ -454,7 +459,7 @@ describe('request document preview wiring', () => {
     });
 
     it('lists a table that the 422 names while it has no rows', async () => {
-        spyOn(console, 'error');
+        vi.spyOn(console, 'error').mockImplementation(() => undefined);
         const error = new HttpErrorResponse({ status: 422, error: { data: { preview: true, fields: ['rows'], missingFields: ['rows'] } } });
         const { component } = form([Promise.reject(error), Promise.resolve(response(['rows'], ['rows.0.cell']))], blockParent());
         component.formRoot.model = { controls: [{ name: 'rows', title: 'Rows', isArray: true, list: [], control: { disabled: false, invalid: false } }] };
@@ -465,7 +470,7 @@ describe('request document preview wiring', () => {
     });
 
     it('lists an empty table inside an existing row instead of the cells of its missing rows', async () => {
-        spyOn(console, 'error');
+        vi.spyOn(console, 'error').mockImplementation(() => undefined);
         const error = new HttpErrorResponse({ status: 422, error: { data: { preview: true, fields: ['rows.0.values'], missingFields: ['rows.0.values'] } } });
         const { component } = form([Promise.reject(error), Promise.resolve(response(['rows.0.values.0.v'], ['rows.0.values.0.v', 'rows.0.extra.v']))], blockParent());
         const values = { name: 'values', title: 'Values', isArray: true, list: [], control: { disabled: false, invalid: false } };
@@ -481,7 +486,7 @@ describe('request document preview wiring', () => {
     });
 
     it('keeps the list of the 422 when asking for every field fails', async () => {
-        spyOn(console, 'error');
+        vi.spyOn(console, 'error').mockImplementation(() => undefined);
         const error = new HttpErrorResponse({ status: 422, error: { data: { preview: true, fields: ['period'], missingFields: ['period'] } } });
         const { component, calls } = form([Promise.reject(error), Promise.reject(new HttpErrorResponse({ status: 500 }))], blockParent());
         component.previewMode = true;
@@ -493,7 +498,7 @@ describe('request document preview wiring', () => {
     });
 
     it('keeps the form open when the field discovery answers 422', async () => {
-        spyOn(console, 'error');
+        vi.spyOn(console, 'error').mockImplementation(() => undefined);
         const error = new HttpErrorResponse({ status: 422, error: { data: { preview: true, fields: ['amount'], missingFields: ['amount'] } } });
         const { component } = form([Promise.reject(error)], blockParent());
         await component.onPreviewModeChange(true);
@@ -504,14 +509,14 @@ describe('request document preview wiring', () => {
     it('warns on the form, not in a toast, when the field discovery stopped on an error', async () => {
         const { component } = form([Promise.resolve(response(['amount'], [], [], [scriptError]))], blockParent());
         await component.onPreviewModeChange(true);
-        expect(component.previewDiscoveryWarning).toBeTrue();
+        expect(component.previewDiscoveryWarning).toBe(true);
         component.calculationPreview.run = () => Promise.resolve(response(['amount']));
         await component.onStep();
-        expect(component.previewDiscoveryWarning).toBeFalse();
+        expect(component.previewDiscoveryWarning).toBe(false);
     });
 
     it('drops the old results and returns to the form when Preview again fails for another reason', async () => {
-        spyOn(console, 'error');
+        vi.spyOn(console, 'error').mockImplementation(() => undefined);
         const { component } = form([Promise.resolve(response(['amount'])), Promise.reject(new HttpErrorResponse({ status: 500 }))], blockParent());
         component.previewMode = true;
         await component.onStep();
@@ -541,12 +546,13 @@ describe('request document preview wiring', () => {
         component.previewRequirementsStale = true;
         component.previewRequiredFields = ['title'];
         component.dataForm = { valid: false, getRawValue: () => ({ title: 'changed' }) };
-        component.formRoot.expandPreviewIssues = jasmine.createSpy('expandPreviewIssues');
+        component.formRoot.expandPreviewIssues = vi.fn();
         component.computeRuleIssues = () => [{ path: 'section.rule', label: 'Rule', message: 'Rule failed' }];
         await component.onStep();
         expect(calls.map((call) => call.previewFields)).toEqual([true]);
         expect(component.previewMissingFields).toEqual(['section.amount']);
-        expect(component.formRoot.expandPreviewIssues).toHaveBeenCalledOnceWith(['section.amount', 'section.rule']);
+        expect(component.formRoot.expandPreviewIssues).toHaveBeenCalledTimes(1);
+        expect(component.formRoot.expandPreviewIssues).toHaveBeenCalledWith(['section.amount', 'section.rule']);
         expect(component.screen).toBe('results');
     });
 
@@ -564,7 +570,7 @@ describe('request document preview wiring', () => {
     it('does not expand preview paths during ordinary validation', async () => {
         const { component, calls } = form([], blockParent());
         component.dataForm = { valid: false, getRawValue: () => ({}) };
-        component.formRoot.expandPreviewIssues = jasmine.createSpy('expandPreviewIssues');
+        component.formRoot.expandPreviewIssues = vi.fn();
         await component.onStep();
         expect(calls).toEqual([]);
         expect(component.formRoot.expandPreviewIssues).not.toHaveBeenCalled();
@@ -594,7 +600,7 @@ describe('request document preview wiring', () => {
     });
 
     it('keeps the requirements and shows the validation results when asking for the fields again fails', async () => {
-        spyOn(console, 'error');
+        vi.spyOn(console, 'error').mockImplementation(() => undefined);
         const { component, calls } = form([Promise.reject(new HttpErrorResponse({ status: 500 }))], blockParent());
         component.previewMode = true;
         component.previewRequiredFields = ['amount', 'rate'];
@@ -629,7 +635,7 @@ describe('request document preview wiring', () => {
     });
 
     it('goes back to a clean form when the toggle is switched off on the missing values screen', async () => {
-        spyOn(console, 'error');
+        vi.spyOn(console, 'error').mockImplementation(() => undefined);
         const error = new HttpErrorResponse({ status: 422, error: { data: { preview: true, fields: ['rate'], missingFields: ['rate'] } } });
         const { component } = form([Promise.reject(error), Promise.resolve(response(['rate'], ['rate']))], blockParent());
         component.formRoot.getIssues = () => [{ path: 'rate', label: 'rate', message: 'Enter a value' }];
@@ -714,10 +720,10 @@ describe('request document preview wiring', () => {
         const missing = (fields: string[]) => new HttpErrorResponse({ status: 422, error: { data: { preview: true, fields, missingFields: fields } } });
 
         it('refreshes the issues once for a 422 that brings no new requirements', async () => {
-            spyOn(console, 'error');
+            vi.spyOn(console, 'error').mockImplementation(() => undefined);
             const { component } = form([Promise.reject(missing(['rate'])), Promise.resolve(response(['rate'], ['rate']))], blockParent());
-            const getIssues = spyOn(component.formRoot, 'getIssues').and.returnValue([]);
-            const detect = spyOn(component.changeDetectorRef, 'detectChanges');
+            const getIssues = vi.spyOn(component.formRoot, 'getIssues').mockReturnValue([]);
+            const detect = vi.spyOn(component.changeDetectorRef, 'detectChanges').mockImplementation(() => undefined);
             component.previewMode = true;
             component.previewRequiredFields = ['rate'];
             await component.runPreview(false);
@@ -727,9 +733,9 @@ describe('request document preview wiring', () => {
         });
 
         it('lets the form take new requirements before listing what is missing', async () => {
-            spyOn(console, 'error');
+            vi.spyOn(console, 'error').mockImplementation(() => undefined);
             const { component } = form([Promise.reject(missing(['rate'])), Promise.resolve(response(['rate'], ['rate']))], blockParent());
-            const detect = spyOn(component.changeDetectorRef, 'detectChanges');
+            const detect = vi.spyOn(component.changeDetectorRef, 'detectChanges').mockImplementation(() => undefined);
             component.previewMode = true;
             component.previewRequiredFields = ['amount'];
             await component.runPreview(false);
@@ -739,7 +745,7 @@ describe('request document preview wiring', () => {
 
         it('refreshes the results only when the form stops rendering', () => {
             const { component } = form([], blockParent());
-            const refresh = spyOn<any>(component, 'refreshIssues');
+            const refresh = vi.spyOn(component as any, 'refreshIssues').mockImplementation(() => undefined);
             component.previewMode = true;
             component.screen = 'results';
             component.onPreviewRenderingChange(false);
@@ -787,14 +793,14 @@ describe('request document preview wiring', () => {
     it('keeps ordinary file handling and payload without preview flags when the toggle is off', async () => {
         const { component, calls, uploads } = form([], blockParent());
         component.previewMode = false;
-        const send = spyOn(component.policyEngineService, 'setBlockDataWithResult').and.callThrough();
+        const send = vi.spyOn(component.policyEngineService, 'setBlockDataWithResult');
         await component.onStep();
         expect(calls).toEqual([]);
         expect(uploads).toEqual(['tables', 'geo', 'submit']);
-        const payload = send.calls.mostRecent().args[2];
-        expect(payload).toEqual(jasmine.objectContaining({ document: { amount: 5 } }));
-        expect(Object.prototype.hasOwnProperty.call(payload, 'preview')).toBeFalse();
-        expect(Object.prototype.hasOwnProperty.call(payload, 'previewFields')).toBeFalse();
+        const payload = vi.mocked(send).mock.lastCall![2];
+        expect(payload).toEqual(expect.objectContaining({ document: { amount: 5 } }));
+        expect(Object.prototype.hasOwnProperty.call(payload, 'preview')).toBe(false);
+        expect(Object.prototype.hasOwnProperty.call(payload, 'previewFields')).toBe(false);
     });
 
     it('saves a draft the normal way while the toggle is on', async () => {
@@ -829,20 +835,20 @@ describe('request document preview wiring', () => {
         const { component } = form([], blockParent());
         component.previewRendering = false;
         component.previewBusyHold = false;
-        component.changeDetectorRef = { markForCheck: jasmine.createSpy('markForCheck') };
+        component.changeDetectorRef = { markForCheck: vi.fn() };
         component.previewMode = true;
         component.onPreviewRenderingChange(true);
-        expect(component.isPreviewBusy).toBeTrue();
-        expect(component.ifDisabledBtn({ id: 'cancel' })).toBeFalse();
-        expect(component.ifDisabledBtn({ id: 'submit' })).toBeTrue();
+        expect(component.isPreviewBusy).toBe(true);
+        expect(component.ifDisabledBtn({ id: 'cancel' })).toBe(false);
+        expect(component.ifDisabledBtn({ id: 'submit' })).toBe(true);
         component.onPreviewRenderingChange(false);
-        expect(component.isPreviewBusy).toBeFalse();
+        expect(component.isPreviewBusy).toBe(false);
         component.loading = true;
-        expect(component.isPreviewBusy).toBeTrue();
+        expect(component.isPreviewBusy).toBe(true);
         component.previewMode = false;
         component.onPreviewRenderingChange(true);
-        expect(component.isPreviewBusy).toBeFalse();
-        expect(component.ifDisabledBtn({ id: 'cancel' })).toBeFalse();
+        expect(component.isPreviewBusy).toBe(false);
+        expect(component.ifDisabledBtn({ id: 'cancel' })).toBe(false);
     });
 
     it('does not open a late Preview result after the form closes', async () => {
@@ -860,13 +866,13 @@ describe('request document preview wiring', () => {
     it('keeps Preview controls busy across short gaps between loading phases', fakeAsync(() => {
         const { component } = form([], blockParent());
         component.previewRendering = false;
-        component.changeDetectorRef = { markForCheck: jasmine.createSpy('markForCheck') };
+        component.changeDetectorRef = { markForCheck: vi.fn() };
         component.previewMode = true;
         component.loading = true;
         component.ngDoCheck();
         component.loading = false;
         component.ngDoCheck();
-        expect(component.isPreviewBusy).toBeTrue();
+        expect(component.isPreviewBusy).toBe(true);
         tick(200);
         component.previewRendering = true;
         component.ngDoCheck();
@@ -874,9 +880,9 @@ describe('request document preview wiring', () => {
         component.previewRendering = false;
         component.ngDoCheck();
         tick(299);
-        expect(component.isPreviewBusy).toBeTrue();
+        expect(component.isPreviewBusy).toBe(true);
         tick(1);
-        expect(component.isPreviewBusy).toBeFalse();
+        expect(component.isPreviewBusy).toBe(false);
         component.ngOnDestroy();
     }));
 
@@ -885,10 +891,10 @@ describe('request document preview wiring', () => {
         component.previewRendering = false;
         component.loading = true;
         component.ngDoCheck();
-        expect(component.isPreviewBusy).toBeFalse();
+        expect(component.isPreviewBusy).toBe(false);
         component.loading = false;
         component.ngDoCheck();
-        expect(component.isPreviewBusy).toBeFalse();
+        expect(component.isPreviewBusy).toBe(false);
         expect(Reflect.get(component, 'previewBusyTimer')).toBeFalsy();
         component.ngOnDestroy();
     }));
@@ -899,8 +905,8 @@ describe('request document preview wiring', () => {
         component.loading = true;
         component.dataForm = { dirty: true };
         const decision = new Subject<string>();
-        component.dialogService = { open: jasmine.createSpy('open').and.returnValue({ onClose: decision }) };
-        component.dialogRef = { close: jasmine.createSpy('close') };
+        component.dialogService = { open: vi.fn().mockReturnValue({ onClose: decision }) };
+        component.dialogRef = { close: vi.fn() };
         component.onClose();
         expect(component.dialogService.open).toHaveBeenCalledTimes(1);
         decision.next('Confirm');
@@ -914,17 +920,19 @@ describe('request document preview wiring', () => {
             component.previewRendering = preview;
             component.dataForm = { dirty: false };
             const decision = new Subject<string>();
-            component.dialogService = { open: jasmine.createSpy('open').and.returnValue({ onClose: decision }) };
-            component.dialogRef = { close: jasmine.createSpy('close') };
+            component.dialogService = { open: vi.fn().mockReturnValue({ onClose: decision }) };
+            component.dialogRef = { close: vi.fn() };
             component.onClose();
             if (preview) {
                 expect(component.dialogService.open).toHaveBeenCalledTimes(1);
                 expect(component.dialogRef.close).not.toHaveBeenCalled();
                 decision.next('Confirm');
-            } else {
+            }
+            else {
                 expect(component.dialogService.open).not.toHaveBeenCalled();
             }
-            expect(component.dialogRef.close).toHaveBeenCalledOnceWith(null);
+            expect(component.dialogRef.close).toHaveBeenCalledTimes(1);
+            expect(component.dialogRef.close).toHaveBeenCalledWith(null);
         });
     }
 
@@ -945,7 +953,7 @@ describe('request document preview wiring', () => {
         component.ngDoCheck();
         const pending = component.onPreviewModeChange(true);
         component.ngDoCheck();
-        expect(component.loading).toBeTrue();
+        expect(component.loading).toBe(true);
         expect(component.getButtonName({ id: 'submit' })).toBe('Validate & Create');
         answer(response(['amount']));
         await pending;
@@ -983,12 +991,12 @@ describe('request document preview wiring', () => {
         answerA(response(['rate'], ['rate'], saved, [scriptError]));
         await first;
         expect(component.previewRequiredFields).toBeNull();
-        expect(component.previewDiscoveryWarning).toBeFalse();
-        expect(component.loading).toBeTrue();
+        expect(component.previewDiscoveryWarning).toBe(false);
+        expect(component.loading).toBe(true);
         answerB(response(['fuel'], ['fuel']));
         await second;
         expect(component.previewRequiredFields).toEqual(['fuel']);
-        expect(component.loading).toBeFalse();
+        expect(component.loading).toBe(false);
     });
 
     it('drops an older form answer once the block loads new values, before the form is rebuilt', async () => {
@@ -1004,7 +1012,7 @@ describe('request document preview wiring', () => {
         answerA(response(['rate'], ['rate']));
         await pending;
         expect(component.previewRequiredFields).toEqual(['amount']);
-        expect(component.loading).toBeTrue();
+        expect(component.loading).toBe(true);
     });
 
     it('ignores a late answer in the form after the toggle was switched off', async () => {
@@ -1014,7 +1022,7 @@ describe('request document preview wiring', () => {
         await component.onPreviewModeChange(false);
         answer(response(['amount']));
         await pending;
-        expect(component.previewMode).toBeFalse();
+        expect(component.previewMode).toBe(false);
         expect(component.previewRequiredFields).toBeNull();
         expect(dialogs.length).toBe(0);
         expect(component.getButtonName({ id: 'submit' })).toBe('Validate & Create');
@@ -1025,14 +1033,15 @@ describe('request document preview wiring', () => {
             let answer: (value: unknown) => void = () => undefined;
             const responsePromise = new Promise(resolve => { answer = resolve; });
             const { component, dialogs } = form([responsePromise], blockParent());
-            if (!discovery) component.previewMode = true;
+            if (!discovery)
+                component.previewMode = true;
             const pending = discovery ? component.onPreviewModeChange(true) : component.onStep();
             await settle();
-            expect(component.loading).toBeTrue();
+            expect(component.loading).toBe(true);
             expect(dialogs.length).toBe(0);
             answer(response(['amount']));
             await pending;
-            expect(component.loading).toBeFalse();
+            expect(component.loading).toBe(false);
             expect(component.screen).toBe(discovery ? 'form' : 'presults');
         });
     }
@@ -1041,30 +1050,30 @@ describe('request document preview wiring', () => {
         const state = form([Promise.resolve(response(['amount'], ['amount'], [], [scriptError]))], blockParent());
         await state.component.onPreviewModeChange(true);
         expect(state.component.previewRequiredFields).toEqual(['amount']);
-        expect(state.component.previewDiscoveryWarning).toBeTrue();
+        expect(state.component.previewDiscoveryWarning).toBe(true);
         expect(state.component.screen).toBe('form');
-        expect(state.component.loading).toBeFalse();
+        expect(state.component.loading).toBe(false);
     });
 
     it('shows no discovery warning when field discovery finished cleanly', async () => {
         const state = form([Promise.resolve(response(['amount'], ['amount']))], blockParent());
         await state.component.onPreviewModeChange(true);
-        expect(state.component.previewDiscoveryWarning).toBeFalse();
+        expect(state.component.previewDiscoveryWarning).toBe(false);
     });
 
     it('updates missing fields after API rejection and opens the missing values screen', async () => {
         const failure = new HttpErrorResponse({ status: 422, error: { data: {
-            preview: true, fields: ['amount', 'bonus'], missingFields: ['bonus']
-        } } });
+                    preview: true, fields: ['amount', 'bonus'], missingFields: ['bonus']
+                } } });
         const state = form([Promise.reject(failure), Promise.resolve(response(['amount', 'bonus'], ['bonus']))], blockParent());
         const { component } = state;
         component.previewMode = true;
         component.previewRequiredFields = ['amount'];
-        spyOn(console, 'error');
+        vi.spyOn(console, 'error').mockImplementation(() => undefined);
         await component.onStep();
         expect(component.previewRequiredFields).toEqual(['amount', 'bonus']);
         expect(component.screen).toBe('results');
-        expect(component.loading).toBeFalse();
+        expect(component.loading).toBe(false);
         expect(state.calls.map((call) => call.previewFields)).toEqual([false, true]);
     });
 
@@ -1072,25 +1081,25 @@ describe('request document preview wiring', () => {
         const path = 'vcs_project_description.estimatedGHG.exAnteCSVArea.0.PEt';
         const field = 'vcs_project_description.estimatedGHG.exAnteCSVArea.PEt';
         const failure = new HttpErrorResponse({ status: 422, error: {
-            statusCode: 422,
-            message: 'Missing calculation inputs',
-            data: { preview: true, fields: [field], missingFields: [path] }
-        } });
+                statusCode: 422,
+                message: 'Missing calculation inputs',
+                data: { preview: true, fields: [field], missingFields: [path] }
+            } });
         const state = form([Promise.reject(failure), Promise.resolve(response([field], [path]))], blockParent());
         const { component } = state;
         const values = { vcs_project_description: { estimatedGHG: {
-            exAnteCSVArea: [{ PBt: 0.1, LKt: 2, PEt: null, UNCt: 0.05 }]
-        } } };
+                    exAnteCSVArea: [{ PBt: 0.1, LKt: 2, PEt: null, UNCt: 0.05 }]
+                } } };
         component.dataForm.getRawValue = () => values;
         component.previewMode = true;
         const required = [path, field];
         component.previewRequiredFields = required;
-        spyOn(console, 'error');
+        vi.spyOn(console, 'error').mockImplementation(() => undefined);
         await component.runPreview(false);
         expect(component.previewMissingFields).toEqual([path]);
         expect(component.previewRequiredFields).toEqual(required);
         expect(component.dataForm.getRawValue()).toEqual(values);
-        expect(component.loading).toBeFalse();
+        expect(component.loading).toBe(false);
         expect(component.screen).toBe('results');
         await component.onPreviewModeChange(false);
         expect(component.previewMissingFields).toEqual([]);
@@ -1102,16 +1111,16 @@ describe('request document preview wiring', () => {
         let reject: (error: unknown) => void = () => undefined;
         const pendingResult = new Promise((_resolve, fail) => { reject = fail; });
         const { component, dialogs } = form([pendingResult], blockParent());
-        spyOn(console, 'error');
+        vi.spyOn(console, 'error').mockImplementation(() => undefined);
         const pending = component.onPreviewModeChange(true);
         await component.onPreviewModeChange(false);
         reject(new HttpErrorResponse({ status: 422, error: { data: {
-            preview: true, fields: ['amount'], missingFields: ['amount']
-        } } }));
+                    preview: true, fields: ['amount'], missingFields: ['amount']
+                } } }));
         await pending;
         expect(component.previewRequiredFields).toBeNull();
         expect(dialogs.length).toBe(0);
-        expect(component.loading).toBeFalse();
+        expect(component.loading).toBe(false);
     });
 
     it('keeps discovery requirements and normal validity gating, then takes the latest requirements', async () => {
@@ -1125,14 +1134,14 @@ describe('request document preview wiring', () => {
         await component.onPreviewModeChange(true);
         expect(component.previewRequiredFields).toEqual(['amount', 'bonus']);
         component.dataForm.valid = false;
-        expect(component.ifDisabledBtn({ id: 'submit' })).toBeFalse();
+        expect(component.ifDisabledBtn({ id: 'submit' })).toBe(false);
         await component.onStep();
         expect(component.screen).toBe('results');
         expect(component.formRoot.revealErrors).toHaveBeenCalledWith(false);
         expect(state.calls.length).toBe(2);
         expect(dialogs.length).toBe(0);
         component.dataForm.valid = true;
-        expect(component.ifDisabledBtn({ id: 'submit' })).toBeFalse();
+        expect(component.ifDisabledBtn({ id: 'submit' })).toBe(false);
         await component.onStep();
         expect(state.calls.map((call) => call.previewFields)).toEqual([true, true, false]);
         expect(component.previewRequiredFields).toEqual(['later']);
@@ -1148,7 +1157,7 @@ describe('request document preview wiring', () => {
         state.component.dataForm.valid = false;
         state.component.parent.isLocalUser = true;
         state.component.ifRelayerAccountDisabled = () => false;
-        expect(state.component.ifDisabledBtn({ id: 'submit' })).toBeFalse();
+        expect(state.component.ifDisabledBtn({ id: 'submit' })).toBe(false);
         await state.component.onStep();
         expect(state.component.screen).toBe('results');
         expect(state.component.formRoot.revealErrors).toHaveBeenCalledWith(false);
@@ -1160,7 +1169,7 @@ describe('request document preview wiring', () => {
         const { component } = form([Promise.resolve(response(['amount']))], blockParent());
         await component.onPreviewModeChange(true);
         await component.onPreviewModeChange(false);
-        expect(component.calculationPreview.saveMode.calls.allArgs()).toEqual([
+        expect(vi.mocked(component.calculationPreview.saveMode).mock.calls).toEqual([
             ['user-1', 'policy-1', 'block-1', true], ['user-1', 'policy-1', 'block-1', false]
         ]);
         expect(component.previewRequiredFields).toBeNull();
@@ -1169,18 +1178,18 @@ describe('request document preview wiring', () => {
     it('restores a saved flag only when the real form is ready and discovers fresh requirements once', async () => {
         const { component, calls, dialogs } = form([Promise.resolve(response(['fresh']))], blockParent());
         component.parent.schema = {};
-        component.calculationPreview.loadMode.and.returnValue(true);
+        component.calculationPreview.loadMode.mockReturnValue(true);
         const group = new FormGroup({ amount: new FormControl(5) });
-        const run = spyOn(component.calculationPreview, 'run').and.callThrough();
+        const run = vi.spyOn(component.calculationPreview, 'run');
         component.initForm(group, false);
         expect(component.calculationPreview.loadMode).not.toHaveBeenCalled();
         component.initForm(group);
         await Promise.resolve();
-        expect(component.previewMode).toBeTrue();
+        expect(component.previewMode).toBe(true);
         expect(component.previewRequiredFields).toEqual(['fresh']);
-        expect(component.calculationPreview.loadMode).toHaveBeenCalledOnceWith('user-1', 'policy-1', 'block-1');
-        expect(run).toHaveBeenCalledWith('policy-1', 'block-1', { amount: 5 },
-            { id: 'ref-2' }, true, { relayerAccount: null, evidence: undefined });
+        expect(component.calculationPreview.loadMode).toHaveBeenCalledTimes(1);
+        expect(component.calculationPreview.loadMode).toHaveBeenCalledWith('user-1', 'policy-1', 'block-1');
+        expect(run).toHaveBeenCalledWith('policy-1', 'block-1', { amount: 5 }, { id: 'ref-2' }, true, { relayerAccount: null, evidence: undefined });
         expect(dialogs.length).toBe(0);
         component.initForm(group);
         await Promise.resolve();
@@ -1197,10 +1206,10 @@ describe('request document preview wiring', () => {
         const { component, calls } = form([], blockParent());
         component.parent.schema = {};
         component.parent.disabled = true;
-        component.calculationPreview.loadMode.and.returnValue(true);
+        component.calculationPreview.loadMode.mockReturnValue(true);
         component.initForm(new FormGroup({ amount: new FormControl(5) }));
         expect(component.calculationPreview.loadMode).not.toHaveBeenCalled();
-        expect(component.previewMode).toBeFalse();
+        expect(component.previewMode).toBe(false);
         expect(calls.length).toBe(0);
         component.destroy$.next();
     });
@@ -1209,7 +1218,7 @@ describe('request document preview wiring', () => {
         const { component, calls } = form([], blockParent());
         component.parent.schema = {};
         component.initForm(new FormGroup({ amount: new FormControl(5) }));
-        expect(component.previewMode).toBeFalse();
+        expect(component.previewMode).toBe(false);
         expect(component.previewRequiredFields).toBeNull();
         expect(calls.length).toBe(0);
         expect(component.calculationPreview.saveMode).not.toHaveBeenCalled();
@@ -1218,29 +1227,29 @@ describe('request document preview wiring', () => {
 
     it('does not restore a preview flag for a Request Addon form', () => {
         const { component, calls } = form([], { user: { id: 'user-1' }, id: 'addon-1', policyId: 'policy-1', schema: {} });
-        component.calculationPreview.loadMode.and.returnValue(true);
+        component.calculationPreview.loadMode.mockReturnValue(true);
         component.initForm(new FormGroup({ amount: new FormControl(5) }));
         expect(component.calculationPreview.loadMode).not.toHaveBeenCalled();
-        expect(component.previewMode).toBeFalse();
+        expect(component.previewMode).toBe(false);
         expect(calls.length).toBe(0);
         component.destroy$.next();
     });
 
     it('offers the toggle only for a Request document block', () => {
-        expect(form([], blockParent()).component.previewAvailable).toBeTrue();
-        expect(form([], { id: 'addon-1' }).component.previewAvailable).toBeFalse();
+        expect(form([], blockParent()).component.previewAvailable).toBe(true);
+        expect(form([], { id: 'addon-1' }).component.previewAvailable).toBe(false);
     });
 
     it('keeps every missing address without opening results', async () => {
         const error = new HttpErrorResponse({ status: 422, error: { data: {
-            preview: true, fields: ['amount'], missingFields: ['rows.1.bonus','rows.3.rate']
-        } } });
+                    preview: true, fields: ['amount'], missingFields: ['rows.1.bonus', 'rows.3.rate']
+                } } });
         const { component, dialogs } = form([Promise.reject(error), Promise.resolve(response(['amount'], ['rows.1.bonus', 'rows.3.rate']))], blockParent());
         component.previewMode = true;
         component.previewRequiredFields = ['amount'];
         await component.runPreview(false);
-        expect(component.previewMissingFields).toEqual(['rows.1.bonus','rows.3.rate']);
-        expect(component.previewRequiredFields).toEqual(['amount','rows.1.bonus','rows.3.rate']);
+        expect(component.previewMissingFields).toEqual(['rows.1.bonus', 'rows.3.rate']);
+        expect(component.previewRequiredFields).toEqual(['amount', 'rows.1.bonus', 'rows.3.rate']);
         expect(component.dataForm.getRawValue()).toEqual({ amount: 5 });
         expect(dialogs.length).toBe(0);
         component.destroy$.next();
@@ -1248,35 +1257,34 @@ describe('request document preview wiring', () => {
 
     it('keeps all branches and resets intermediate expansion for a new preview', async () => {
         const result = normalizePreviewResult({ sameSchema: true, input: { document: { id: 'input' } }, documents: [
-            { final: false, document: { document: { id: 'middle' } } },
-            { final: true, sameSchema: true, document: { document: { id: 'matching' } } },
-            { final: true, sameSchema: false, document: { document: { id: 'other' } } },
-        ] });
+                { final: false, document: { document: { id: 'middle' } } },
+                { final: true, sameSchema: true, document: { document: { id: 'matching' } } },
+                { final: true, sameSchema: false, document: { document: { id: 'other' } } },
+            ] });
         const { component } = form([Promise.resolve(result), Promise.resolve(result)], blockParent());
         component.previewMode = true;
         await component.onStep();
         expect(component.previewItems.length).toBe(4);
         expect(component.previewSelected.document).toEqual({ id: 'matching' });
-        expect(component.isPreviewItemVisible(0)).toBeTrue();
-        expect(component.isPreviewItemVisible(1)).toBeFalse();
-        expect(component.isPreviewItemVisible(2)).toBeTrue();
-        expect(component.isPreviewItemVisible(3)).toBeTrue();
+        expect(component.isPreviewItemVisible(0)).toBe(true);
+        expect(component.isPreviewItemVisible(1)).toBe(false);
+        expect(component.isPreviewItemVisible(2)).toBe(true);
+        expect(component.isPreviewItemVisible(3)).toBe(true);
         component.previewExpanded = true;
-        expect(component.isPreviewItemVisible(1)).toBeTrue();
+        expect(component.isPreviewItemVisible(1)).toBe(true);
         await component.onStep();
-        expect(component.previewExpanded).toBeFalse();
+        expect(component.previewExpanded).toBe(false);
     });
 
     it('titles returned documents with their schema name and keeps the tag when it is unknown', async () => {
         const result = normalizePreviewResult({ input: { document: { id: 'input' } }, documents: [
-            { source: 'form', target: 'middle_save', document: { document: { id: 'middle', credentialSubject: [{ type: 'schema-a' }] } } },
-            { final: true, source: 'calc', target: 'final_save', document: { document: { id: 'final', credentialSubject: [{ type: 'schema-b' }] } } },
-            { final: true, source: 'calc', target: 'other_save', document: { document: { id: 'other', credentialSubject: [{ type: 'schema-c' }] } } },
-        ] });
+                { source: 'form', target: 'middle_save', document: { document: { id: 'middle', credentialSubject: [{ type: 'schema-a' }] } } },
+                { final: true, source: 'calc', target: 'final_save', document: { document: { id: 'final', credentialSubject: [{ type: 'schema-b' }] } } },
+                { final: true, source: 'calc', target: 'other_save', document: { document: { id: 'other', credentialSubject: [{ type: 'schema-c' }] } } },
+            ] });
         const { component } = form([Promise.resolve(result), Promise.resolve(result)], blockParent());
         const names: Record<string, string> = { 'schema-a': 'Project Description', 'schema-b': 'Emission Reduction Removal' };
-        const getSchemasByType = jasmine.createSpy('getSchemasByType').and.callFake((type: string) =>
-            type in names ? of({ name: names[type] }) : throwError(() => new Error('not found')));
+        const getSchemasByType = vi.fn().mockImplementation((type: string) => type in names ? of({ name: names[type] }) : throwError(() => new Error('not found')));
         component.schemaService = { getSchemasByType };
         component.previewMode = true;
         await component.onStep();
@@ -1284,19 +1292,21 @@ describe('request document preview wiring', () => {
             .toEqual(['Form values', 'Project Description', 'Emission Reduction Removal', 'other_save']);
         expect(component.previewItems[1].sub).toBe('middle_save');
         expect(component.previewHiddenLabel(1)).toBe('1 intermediate document');
-        getSchemasByType.calls.reset();
+        getSchemasByType.mockClear();
         await component.onStep();
-        expect(getSchemasByType.calls.allArgs()).toEqual([['schema-c']]);
+        expect(vi.mocked(getSchemasByType).mock.calls).toEqual([['schema-c']]);
         expect(component.previewItems[2].title).toBe('Emission Reduction Removal');
         component.destroy$.next();
     });
 
     it('ignores a schema name that arrives after the preview was replaced', async () => {
         const result = normalizePreviewResult({ documents: [
-            { final: true, source: 'calc', target: 'final_save', document: { document: { id: 'final', credentialSubject: [{ type: 'schema-b' }] } } },
-        ] });
+                { final: true, source: 'calc', target: 'final_save', document: { document: { id: 'final', credentialSubject: [{ type: 'schema-b' }] } } },
+            ] });
         const { component } = form([Promise.resolve(result)], blockParent());
-        const answer = new Subject<{ name: string }>();
+        const answer = new Subject<{
+            name: string;
+        }>();
         component.schemaService = { getSchemasByType: () => answer };
         component.previewMode = true;
         await component.onStep();
@@ -1315,7 +1325,7 @@ describe('request document preview wiring', () => {
         await component.onStep();
         expect(component.previewSelected.document).toEqual({ id: 'input' });
         expect(component.previewHeading).toBe('Preview results');
-        expect(component.previewShowErrors).toBeFalse();
+        expect(component.previewShowErrors).toBe(false);
         component.showPreviewErrors();
         expect(component.previewHeading).toBe('The preview is incomplete');
     });
@@ -1323,16 +1333,16 @@ describe('request document preview wiring', () => {
     it('selects the last returned unsaved output when no final exists', async () => {
         const unsaved = { credentialSubject: [{ type: 'Output', total: 6 }] };
         const result = normalizePreviewResult({ input: { document: { id: 'input' } }, documents: [
-            { source: 'save', final: false, document: { id: 'stored-record', document: { id: 'saved' } } },
-            { source: 'math', final: false, document: { document: unsaved } },
-        ] });
+                { source: 'save', final: false, document: { id: 'stored-record', document: { id: 'saved' } } },
+                { source: 'math', final: false, document: { document: unsaved } },
+            ] });
         const { component } = form([Promise.resolve(result)], blockParent());
         component.previewMode = true;
         await component.onStep();
         expect(component.previewSelected.document).toEqual(unsaved);
-        expect(component.previewSelected.final).toBeFalse();
-        expect(component.isPreviewItemVisible(2)).toBeTrue();
-        expect(component.isPreviewItemVisible(1)).toBeFalse();
+        expect(component.previewSelected.final).toBe(false);
+        expect(component.isPreviewItemVisible(2)).toBe(true);
+        expect(component.isPreviewItemVisible(1)).toBe(false);
         component.previewExpanded = true;
         component.selectPreviewItem(1);
         expect(component.previewSelected.document).toEqual({ id: 'saved' });
