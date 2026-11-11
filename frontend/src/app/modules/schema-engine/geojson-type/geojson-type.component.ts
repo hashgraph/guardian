@@ -35,6 +35,7 @@ import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog
 import { FeatureCollection } from 'geojson';
 import { kml } from '@tmcw/togeojson';
 
+const UNRECOGNIZED_FORMAT_ERROR = 'Unrecognized GeoJSON format';
 const UNPICKED_FILE_ERROR = 'Select at least one shape from the file, or draw your own.';
 
 const MAP_OPTIONS = {
@@ -311,6 +312,7 @@ export class GeojsonTypeComponent implements OnChanges, OnDestroy {
         selectedOriginalFile?: File;
         importedLocations: any[];
         allImportedLocations: any[];
+        interaction?: { dirty: boolean; touched: boolean };
     };
     private dialogSaved = false;
     private dialogCreatedLinks: GeoFileLink[] = [];
@@ -513,7 +515,8 @@ export class GeojsonTypeComponent implements OnChanges, OnDestroy {
             pendingGeoFile: this.pendingGeoFile,
             selectedOriginalFile: this.selectedOriginalFile,
             importedLocations: [...this.importedLocations],
-            allImportedLocations: [...this.allImportedLocations]
+            allImportedLocations: [...this.allImportedLocations],
+            interaction: this.formModel?.getInteraction?.()
         };
         this.dialogSaved = false;
         this.dialogCreatedLinks = [];
@@ -577,6 +580,9 @@ export class GeojsonTypeComponent implements OnChanges, OnDestroy {
             this.importedLocations = snapshot.importedLocations;
             this.allImportedLocations = snapshot.allImportedLocations;
             this.formModel?.setControlValue(snapshot.value ?? {}, false);
+            if (snapshot.interaction) {
+                this.formModel?.setInteraction?.(snapshot.interaction);
+            }
         }
         this.dialogSaved = false;
         this.importError = '';
@@ -672,7 +678,8 @@ export class GeojsonTypeComponent implements OnChanges, OnDestroy {
             return [];
         }
         if (!this.hasPoints(geometry)) {
-            return this.getErrorsByIndex(index);
+            // Such a card is not in the value, so only its own parse error belongs to it.
+            return this.getErrorsByIndex(index).filter(error => error === UNRECOGNIZED_FORMAT_ERROR);
         }
         const shapeIndex = this.geometriesList.slice(0, index).filter(card => this.hasPoints(card)).length;
         return this.getErrorsByIndex(shapeIndex);
@@ -1246,7 +1253,7 @@ export class GeojsonTypeComponent implements OnChanges, OnDestroy {
                     }
                 } catch {
                     this.formModel.setExternalErrors({
-                        [i]: ["Unrecognized GeoJSON format"]
+                        [i]: [UNRECOGNIZED_FORMAT_ERROR]
                     })
                 }
             })
@@ -1519,7 +1526,7 @@ export class GeojsonTypeComponent implements OnChanges, OnDestroy {
             geometry.coordinatesString = value;
 
             this.formModel.setExternalErrors({
-                [index]: ["Unrecognized GeoJSON format"]
+                [index]: [UNRECOGNIZED_FORMAT_ERROR]
             })
         }
     }

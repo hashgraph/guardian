@@ -102,6 +102,20 @@ export class GeoForm {
         }
     }
 
+    /** Whether the user changed or touched the value, so a cancelled edit can put that mark back. */
+    public getInteraction(): { dirty: boolean; touched: boolean } {
+        return { dirty: !!this.form?.dirty, touched: !!this.form?.touched };
+    }
+
+    public setInteraction(state: { dirty: boolean; touched: boolean }): void {
+        if (!state.dirty) {
+            this.form?.markAsPristine();
+        }
+        if (!state.touched) {
+            this.form?.markAsUntouched();
+        }
+    }
+
     public getValue() {
         return this.form?.value;
     }

@@ -143,11 +143,11 @@ describe('GeojsonTypeComponent geometry dialog', () => {
     });
 
     it('reports nothing for a geometry card that is still empty, for example after the type was changed', () => {
-        errors = { 0: ['A GeoJSON object is required', 'Invalid Point coordinates'] };
+        errors = { 0: ['A GeoJSON object is required', 'Invalid Point coordinates', 'Unrecognized GeoJSON format'] };
 
         expect(component.rowErrors(0, { coordinatesString: undefined })).toEqual([]);
         expect(component.rowErrors(0, { coordinatesString: '  ' })).toEqual([]);
-        expect(component.rowErrors(0, { coordinatesString: '[1, 2' })).toEqual(['A GeoJSON object is required', 'Invalid Point coordinates']);
+        expect(component.rowErrors(0, { coordinatesString: '[1, 2' })).toEqual(['Unrecognized GeoJSON format']);
     });
 
     it('shows the example coordinates on one line', () => {
@@ -281,5 +281,35 @@ describe('GeojsonTypeComponent geometry dialog', () => {
         component.selectAllImportedFeatures();
 
         expect(fit).toHaveBeenCalled();
+    });
+
+    it('shows under a card without points only its own parse error, not the error of another shape', () => {
+        const empty = { coordinatesString: '[]', type: 'Polygon', coordinates: [] };
+        errors = { 0: ['Feature #0: ring must be closed', 'Unrecognized GeoJSON format'] };
+
+        expect(component.rowErrors(0, empty)).toEqual(['Unrecognized GeoJSON format']);
+
+        errors = { 0: ['Feature #0: ring must be closed'] };
+        expect(component.rowErrors(0, empty)).toEqual([]);
+    });
+
+    it('puts the unchanged mark back when the dialog is cancelled after an edit', () => {
+        let interaction = { dirty: false, touched: false };
+        value = { type: 'Point', coordinates: [1, 2] };
+        (component.formModel as any).getInteraction = () => interaction;
+        (component.formModel as any).setInteraction = (state: any) => interaction = state;
+        (component.formModel as any).setControlValue = (next: unknown, dirty = true) => {
+            value = next;
+            if (dirty) interaction = { dirty: true, touched: true };
+        };
+
+        component.openDialog();
+        (component as any).setControlValue({ type: 'Point', coordinates: [3, 4] });
+        expect(interaction.dirty).toBeTrue();
+
+        component.cancelDialog();
+
+        expect(value).toEqual({ type: 'Point', coordinates: [1, 2] });
+        expect(interaction).toEqual({ dirty: false, touched: false });
     });
 });
