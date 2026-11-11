@@ -6,7 +6,7 @@ import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyAddonBlock, IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { VcHelper } from '@guardian/hedera/vc-helper';
-import { ArtifactType, LocationType, SchemaHelper, ScriptLanguageOption } from '@guardian/interfaces';
+import { ArtifactType, LocationType, Schema, SchemaHelper, ScriptLanguageOption } from '@guardian/interfaces';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyUser } from '../policy-user.js';
@@ -17,6 +17,9 @@ import { PolicyActionsUtils } from '../policy-actions/utils.js';
 import { IGenerateDidBatch } from '../policy-actions/generate-did.js';
 import { BlockActionError } from '../errors/index.js';
 import { collectTablesPack, hydrateTablesInObject, loadFileTextById } from '../helpers/table-field.js';
+import { isPlainObject } from '@guardian/common/helpers/table-csv';
+import { deleteTableOutputFiles, IStoredTable } from '../helpers/table-output-store.js';
+import { hasTableOutputValue, storeSchemaTableOutputs } from '../helpers/schema-table-output.js';
 import { RecordActionStep } from '../record-action-step.js';
 import { buildSandboxWorkerEnv } from '../helpers/workers/sandbox-worker-env.js';
 import {
@@ -314,7 +317,9 @@ export class CustomLogicBlock {
                             return await this.createDocument(json, metadata, ref, userId, actionStatus?.id, user, didBatch);
                         }
                     }
+                    const storedTables: IStoredTable[] = [];
                     const processing = async (json: any): Promise<IPolicyDocument> => {
+                        await this.storeResultTables(ref, options, json, userId, storedTables, !!actionStatus?.preview);
                         const item = await createItem(json);
                         if (!actionStatus?.preview) {
                             return item;
@@ -338,31 +343,23 @@ export class CustomLogicBlock {
                             ...getPreviewChangedPaths(source ? getPreviewSubject(source) : output, output, reads)
                         ]);
                     }
-                    if (Array.isArray(result)) {
-                        const items = await this.processItems(result, processing, ref);
-                        await triggerEvents(items);
-                        if (final) {
-                            try {
-                                disposeTables();
-                            } catch {
-                                //
-                            }
-
-                            safeResolve(items);
+                    let items: IPolicyDocument | IPolicyDocument[];
+                    try {
+                        items = Array.isArray(result)
+                            ? await this.processItems(result, processing, ref)
+                            : await processing(result);
+                    } catch (error) {
+                        await deleteTableOutputFiles(ref, storedTables);
+                        throw error;
+                    }
+                    await triggerEvents(items);
+                    if (final) {
+                        try {
+                            disposeTables();
+                        } catch {
+                            return safeResolve(items);
                         }
-                        return;
-                    } else {
-                        const item = await processing(result);
-                        await triggerEvents(item);
-                        if (final) {
-                            try {
-                                disposeTables();
-                            } catch {
-                                //
-                            }
-                            safeResolve(item);
-                        }
-                        return;
+                        safeResolve(items);
                     }
                 }
 
@@ -653,6 +650,35 @@ export class CustomLogicBlock {
                 safeReject(error);
             }
         });
+    }
+
+    private async storeResultTables(
+        ref: IPolicyCalculateBlock,
+        options: { passOriginal?: boolean; outputSchema?: string },
+        json: unknown,
+        userId: string | null,
+        storedTables: IStoredTable[],
+        preview: boolean
+    ): Promise<void> {
+        if (!hasTableOutputValue(json) || !isPlainObject(json)) {
+            return;
+        }
+        const schemaId = options.passOriginal ? json.schema : options.outputSchema;
+        if (typeof schemaId !== 'string' || !schemaId) {
+            return;
+        }
+        const schemaCollection = await PolicyUtils.loadSchemaByID(ref, schemaId);
+        if (!schemaCollection) {
+            throw new BlockActionError(`Table output schema "${schemaId}" was not found`, ref.blockType, ref.uuid);
+        }
+        const schema = new Schema(schemaCollection);
+        const subject = options.passOriginal
+            ? (isPlainObject(json.document) ? json.document.credentialSubject : undefined)
+            : json;
+        const subjects = options.passOriginal && Array.isArray(subject) ? subject : [subject];
+        for (const item of subjects) {
+            await storeSchemaTableOutputs(ref, schema.fields, item, userId, storedTables, preview);
+        }
     }
 
     /**
