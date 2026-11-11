@@ -9,13 +9,6 @@ context('Get session', { tags: ['accounts', 'firstPool', 'api-all', 'all', 'all-
     const UserUsername = Cypress.env('User');
     const sessionUrl = `${API.ApiServer}${API.AccountSession}`;
 
-    const getSessionWithAuth = (authorization) =>
-        cy.request({
-            method: METHOD.GET,
-            url: sessionUrl,
-            headers: { authorization },
-        });
-
     const getSessionWithoutAuth = (headers = {}) =>
         cy.request({
             method: METHOD.GET,

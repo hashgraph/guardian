@@ -768,7 +768,7 @@ export class HomePage {
 		// })
 	}
 
-	createStandartRegistryAccount(username) {
+	createStandartRegistryAccount() {
 		// cy.contains(HomePageLocators.createLnk).click();
 		// cy.get(HomePageLocators.acceptBtn).click();
 		// cy.contains(HomePageLocators.SRtype).click();
@@ -785,7 +785,7 @@ export class HomePage {
 		// cy.get(HomePageLocators.dialog).find(HomePageLocators.requestAccessBtn).click();
 	}
 
-	createAuditor(username) {
+	createAuditor() {
 		// cy.contains(HomePageLocators.createLnk).click();
 		// cy.contains(HomePageLocators.auditorBtn).click();
 		// const inputName = cy.get(CommonPatterns.formControlNamePattern("username"));
@@ -803,7 +803,7 @@ export class HomePage {
 		// cy.contains(HomePageLocators.trustChainEle).should('not.be.null');
 	}
 
-	createUserAccount(username) {
+	createUserAccount() {
 		// cy.contains(HomePageLocators.createLnk).click();
 		// cy.get(HomePageLocators.acceptBtn).click();
 		// cy.contains(HomePageLocators.userType).click();

@@ -727,7 +727,7 @@ export class UserPoliciesPage {
         Checks.waitForElement(UserPoliciesPageLocators.waitingForValidation);
     }
 
-    createGroup(role) {
+    createGroup() {
         // cy.contains("Policies").click({ force: true });
         // cy.contains("List of Policies").click({ force: true });
         // cy.wait(1000)
@@ -773,7 +773,7 @@ export class UserPoliciesPage {
         // cy.wait("@waitForRegistrant", {timeout: TIMEOUTS.backend})
     }
 
-    chooseRole(role) {
+    chooseRole() {
         // cy.contains("Policies").click({force: true});
         // cy.get("td").first().parent().get("td").eq("4").click();
         // cy.get(RegistrantPageLocators.roleSelect)

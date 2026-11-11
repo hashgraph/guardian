@@ -72,7 +72,12 @@ Run the linter on the specs and helpers (the folders Cypress generates, such as 
 npx eslint cypress
 ```
 
-The findings that are still open, with the fix for each rule, are listed in [`pending-issues/eslint-findings-in-the-cypress-suites.md`](pending-issues/eslint-findings-in-the-cypress-suites.md).
+The linter reports no finding, and CI keeps it that way. Rules worth knowing:
+
+- `cypress/unsafe-to-chain-command`: a command that changes the subject (`click`, `clear`, `type`, `blur`, `invoke`) must not be followed by another chained command; re-query instead (`cy.get(selector).clear(); cy.get(selector).type(value);`).
+- `cypress/no-assigning-return-values`: a Cypress command returns a chainable, not a value; use `.then()` or an alias (`.as()` and `cy.get('@name')`).
+- `cypress/no-unnecessary-waiting`: wait for the condition, never for a fixed time. Take budgets from `support/CustomHelpers/timeouts.js` (`TIMEOUTS.ui`, `TIMEOUTS.backend`, `TIMEOUTS.longOperation`), poll backend state with `pollUntil` (`support/checkingMethods.js`), wait for a policy block with `waitForBlockAvailable`, and for UI state use a retrying `cy.get(..., { timeout }).should(...)`. Polling loops pause `POLL_INTERVAL` between two reads; the only fixed pause left is the 1 s in `waitForTaskComplete`, silenced with a reason.
+- `max-len` (360): build a long document as an object and `JSON.stringify` it (as `support/CustomHelpers/systemSchemas.js` does), or split the string.
 
 To check that a change adds no finding, compare with the findings of the last commit. Extract it with `git archive HEAD e2e-tests/cypress/e2e e2e-tests/cypress/support e2e-tests/eslint.config.mjs e2e-tests/package.json | tar -x -C <dir>`, symlink `node_modules` into it and run `npx eslint cypress` there. ESLint pads its columns to the longest message of each file, so squeeze repeated spaces before diffing the two outputs.
 

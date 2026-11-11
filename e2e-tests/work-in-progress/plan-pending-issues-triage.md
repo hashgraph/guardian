@@ -120,7 +120,7 @@ Steps:
 
 **3c. Run them in CI.** Add to `main.yml` (component tests): the frontend unit specs (headless or jsdom, per 3a), `indexer-service` tests (+ build), `npm run test:scripts`, `node --test .github/scripts/report-test-summary.test.mjs`, and `npx eslint cypress` once the 19 findings are fixed. The workflow change can only be verified by a CI run on GitHub, which needs `gh` or a push: ask before either. Then delete `tests-not-run-by-any-workflow.md` and, after the burn-down, the ESLint note.
 
-**3d. ESLint burn-down** (19 findings, mechanical, mostly unused variables) — prerequisite of the ESLint CI step.
+**3d. ESLint burn-down. Done 12 Nov: 0 findings, note deleted, the rule guidance moved to the README.** (19 findings, mechanical, mostly unused variables) — prerequisite of the ESLint CI step.
 
 ### Step 4 — Small, well-scoped product defects (in scope: decision 4; each with a failing unit test first)
 

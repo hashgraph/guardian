@@ -239,7 +239,7 @@ context.skip('Policies', { tags: ['remote_policy', 'secondPool', 'api-all', 'all
                                         body: {
                                             terms: 'MGS.v2',
                                         }
-                                    }).then((response) => {
+                                    }).then(() => {
                                         cy.request({
                                             method: METHOD.PUT,
                                             url: API.ApiMGS + API.Profiles + MainSRUsername,

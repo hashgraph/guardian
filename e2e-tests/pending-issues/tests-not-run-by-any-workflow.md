@@ -37,7 +37,7 @@ The package has a `test` script (mocha), but `main.yml` does not build or test a
 
 ### ESLint on the Cypress suites
 
-`main.yml` lints the backend services only. `npx eslint cypress` in `e2e-tests` runs nowhere; adding it as a CI step is blocked by the findings listed in `eslint-findings-in-the-cypress-suites.md`.
+`main.yml` lints the backend services only. `npx eslint cypress` in `e2e-tests` runs nowhere; it reports no finding since 12 Nov 2026, so it can be added as a CI step.
 
 ## Already tracked elsewhere
 
@@ -45,4 +45,4 @@ The package has a `test` script (mocha), but `main.yml` does not build or test a
 
 ## What a fix needs
 
-One decision per item above (delete, fix and tag, or add a step to `main.yml`). The frontend, indexer and tooling tests belong in `main.yml` (component tests); the ESLint step waits for the findings to be burned down. Delete this note once every item is either running or deliberately dropped.
+One decision per item above (delete, fix and tag, or add a step to `main.yml`). The frontend, indexer and tooling tests belong in `main.yml` (component tests); the ESLint step can go in with them. Delete this note once every item is either running or deliberately dropped.
