@@ -83,7 +83,9 @@ Once 2–3 are done the two WIP files can be deleted; their product follow-ups l
 
 **Result:** in jsdom 2080 of 2310 passed; every one of the 230 failures was an API or layout jsdom does not have (`execCommand`, `CSS.supports`, `Blob.stream`, `matchMedia`, sizes and positions). In headless Chromium (Playwright 1.65.0, installed in the dev container with `NODE_OPTIONS=--use-system-ca npx playwright install chromium`, because the container's TLS proxy is only in the system store): **107 files, 2310 of 2310 tests pass, twice in a row**, about 8 s of test time plus the build. `jsdom` was removed again.
 
-**Still open in 3a:** check whether Karma is used anywhere else in the repository (user's request), then `indexer-frontend` (Angular 17, no `@angular/build`), which follows the same decision.
+**Karma elsewhere in the repository (checked 12 Nov 2026, `git grep -i karma`):** only `indexer-frontend` (its `angular.json` test target, five Karma dev dependencies, its README and a comment in `cryppo.spec.ts`). The `tests-not-run` note's reference to `frontend/karma.conf.js` was updated. No workflow or script runs Karma; the other hits are a place name in the methodology library data and the optional `karma` peer of `@angular/build` in the frontend lock (not installed).
+
+**Still open in 3a:** `indexer-frontend` (Angular 17, `@angular-devkit/build-angular:karma`, no `@angular/build`, so not on the `unit-test` builder without an upgrade).
 
 ## 4. Resolution order, grouped by theme
 

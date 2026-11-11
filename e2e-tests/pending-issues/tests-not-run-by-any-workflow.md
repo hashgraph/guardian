@@ -17,7 +17,7 @@ Measured on 11 Nov 2026: `npm run test:scripts` 14/14 pass and `.github/scripts/
 
 ### Frontend unit tests (`frontend/**/*.spec.ts`, 107 files)
 
-`main.yml` builds the frontend but never runs `ng test`. `frontend/karma.conf.js` uses `browsers: ['Chrome']` and `singleRun: false`, so CI needs a headless Chrome launcher (`ChromeHeadless`, optionally with `--no-sandbox`) and `ng test --watch=false`.
+`main.yml` builds the frontend but never runs `ng test`. The specs run with Vitest in headless Chromium through Playwright (2310/2310 pass on 12 Nov 2026), so CI needs `npx playwright install --with-deps chromium` before `npx ng test --watch=false` in `frontend`.
 
 ### `indexer-frontend` unit tests (10 `*.spec.ts` files)
 
