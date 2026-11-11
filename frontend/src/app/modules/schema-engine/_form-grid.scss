@@ -118,6 +118,22 @@
             font-size: 12px;
             color: var(--color-grey-5);
         }
+
+        // A geo row keeps its title and counts on one line.
+        &.sf-record-text-inline {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+
+            b {
+                flex: none;
+            }
+
+            small {
+                flex: 1;
+                min-width: 0;
+            }
+        }
     }
 
     .sf-record-head .sf-link {
