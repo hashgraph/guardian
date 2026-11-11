@@ -1,6 +1,6 @@
 import URL from '../../../support/GuardianUrls';
 import * as Checks from '../../../support/checkingMethods';
-import { waitForPageReady } from '../../../support/pageReadiness';
+import { waitForPageReady, withReloadBudget, docProbe } from '../../../support/pageReadiness';
 import { addTag, deleteTag } from '../../../support/tagsExplorer';
 import { TIMEOUTS, POLL_INTERVAL } from '../../../support/CustomHelpers/timeouts';
 
@@ -51,12 +51,12 @@ const L = {
 export class TokensPage {
 
     openTokensTab() {
-        cy.visit(URL.Root + URL.Tokens);
+        cy.visit(URL.Root + URL.Tokens, docProbe());
         waitForPageReady(L.grid, 3);
     }
 
     openUserTokensTab() {
-        cy.visit(URL.Root + URL.TokensUser);
+        cy.visit(URL.Root + URL.TokensUser, docProbe());
         waitForPageReady(L.grid, 3);
     }
 
@@ -75,6 +75,22 @@ export class TokensPage {
             const cell = el.querySelector('span.text-truncate');
             return cell && cell.textContent.trim() === username;
         });
+    }
+
+    /**
+     * Waits for `username`'s row to (re)appear after a push-triggered reload of
+     * the per-token view. The view clears its rows and re-fetches them (the
+     * per-row relayer info included) right after a push 202, and that refetch
+     * can run past a single cy.get budget - or stall for good on a dropped
+     * one-shot reply (see pending-issues) - so budget it with the fresh-boot
+     * ladder before _userRow makes its (shorter) standard wait.
+     */
+    _rowSettled(username) {
+        withReloadBudget((win) => Array.from(win.document.querySelectorAll(L.gridRow)).some((row) => {
+            const cell = row.querySelector('span.text-truncate');
+            return cell && cell.textContent.trim() === username;
+        }), 3);
+        return this._userRow(username);
     }
 
     /**
@@ -137,7 +153,7 @@ export class TokensPage {
             const tokenId = Cypress.env('runTokenId');
             expect(tokenId, 'call storeTokenId (as SR) before associatePolicyToken')
                 .to.be.a('string').and.not.be.empty;
-            cy.visit(`${URL.Root}${URL.TokensUser}?tokenId=${btoa(tokenId)}`);
+            cy.visit(`${URL.Root}${URL.TokensUser}?tokenId=${btoa(tokenId)}`, docProbe());
         });
         waitForPageReady(L.grid, 3);
         cy.get(L.gridRow, { timeout: TIMEOUTS.backend }).first().as('accountRow');
@@ -168,6 +184,11 @@ export class TokensPage {
                 }
                 cy.log(`Account ${username} is already KYC`);
             });
+        // The grant's push 202 makes the view re-load its rows (see
+        // _waitForLabelFlip); that reload's refetch can outlive a single budget
+        // (or hang on a dropped one-shot reply), so budget the row's
+        // re-appearance before the label-flip loop reads it.
+        this._rowSettled(username);
         this._waitForLabelFlip(() => this._userRow(username), L.kycButton, 'Revoke KYC');
     }
 

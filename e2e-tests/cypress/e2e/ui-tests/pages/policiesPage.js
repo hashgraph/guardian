@@ -1,8 +1,8 @@
 import URL from '../../../support/GuardianUrls';
 import * as Checks from '../../../support/checkingMethods';
 import CommonElements from '../../../support/defaultUIElements';
-import { waitForPageReady } from '../../../support/pageReadiness';
-import { dropFile, waitForTaskRoundtrip, replaceInaccessibleTools } from '../../../support/importFlow';
+import { waitForPageReady, waitForPageSettled, waitForTaskRoundtripWithRecovery, docProbe } from '../../../support/pageReadiness';
+import { dropFile, replaceInaccessibleTools } from '../../../support/importFlow';
 import { clickButtonInWizardSteps, clickWizardTab } from '../../../support/wizardSteps';
 import { addGeoJsonPoint, openOverviewSection } from './userPoliciesPage';
 import { TIMEOUTS, POLL_INTERVAL } from '../../../support/CustomHelpers/timeouts';
@@ -130,8 +130,20 @@ const nameCellMatches = (name) => (_, el) => {
 export class PoliciesPage {
 
     openPoliciesTab() {
-        cy.visit(URL.Root + URL.Policies);
-        waitForPageReady(L.searchInput, 3);
+        cy.visit(URL.Root + URL.Policies, docProbe());
+        // Gate on the toolbar, not on the search input: the app renders the
+        // filter bar (and with it the search input) only when the list is
+        // non-empty (showFilterBar = hasPolicies || hasStatusFilter), so on a
+        // fresh workspace the input never exists and no amount of reloading
+        // will surface it. The toolbar renders as soon as the list fetch
+        // settles in either state. Presence alone is not a gate on this app
+        // base: the route content is in the DOM under the loading overlay
+        // while the workspace bootstrap runs (a fresh boot after a visit, or
+        // the app's own permission-update reload), and a hung one-shot in it
+        // keeps the overlay over the toolbar - the next click would die on
+        // the cover.
+        waitForPageReady('div.actions-container', 3);
+        waitForPageSettled('div.loading');
     }
 
     createPolicy() {
@@ -154,13 +166,15 @@ export class PoliciesPage {
     }
 
     backToPoliciesList() {
-        cy.visit(URL.Root + URL.Policies);
+        cy.visit(URL.Root + URL.Policies, docProbe());
         waitForPageReady(L.searchInput, 3);
+        waitForPageSettled('div.loading');
     }
 
     backToPoliciesListBtn() {
-        cy.visit(URL.Root + URL.Policies);
+        cy.visit(URL.Root + URL.Policies, docProbe());
         waitForPageReady(L.searchInput, 3);
+        waitForPageSettled('div.loading');
     }
 
     /**
@@ -197,6 +211,14 @@ export class PoliciesPage {
         // every list interaction: fail on the mask itself so the screenshot
         // shows the culprit.
         cy.get(L.dialogMask, { timeout: TIMEOUTS.ui }).should('not.exist');
+        // The app reloads itself on every permission update, and the reload
+        // lands in the middle of a workspace bootstrap: the route content is
+        // back in the DOM under its loading overlay, which a presence gate
+        // would pass straight through. A hung one-shot in that bootstrap keeps
+        // the overlay on top of the search box forever (a 10 s cy.clear retry
+        // then dies on the cover), so the gate is overlay-gone with a reload
+        // budget; on a settled page it passes on the first 200 ms poll.
+        waitForPageSettled('div.loading');
         // separate commands: the framework re-renders the input on each
         // keystroke, so a .clear().type() chain can detach mid-command
         cy.get(L.searchInput).clear();
@@ -257,10 +279,17 @@ export class PoliciesPage {
      * not refresh on its own, so the row must only be read after the round
      * trip - a cy.visit before it would snapshot the pre-change status and
      * never update (the publish toast fires, the row still says Draft).
+     *
+     * The round trip waits through the task page with a reload budget: the
+     * task page completes on a one-shot GET plus a single user-gated WS push
+     * (no polling), so a push lost in the token-refresh window parks the app
+     * on /task/:id forever even though the task completed server-side (see
+     * pending-issues/registration-wizard-stalls-when-the-task-result-is-lost.md).
+     * A reload re-issues the GET, which returns the result once it exists.
      */
     _waitForAsyncStatusChange() {
         Checks.waitForLoading();
-        waitForTaskRoundtrip();
+        waitForTaskRoundtripWithRecovery();
     }
 
     discontinuePolicy(name) {

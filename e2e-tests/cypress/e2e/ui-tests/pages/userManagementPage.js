@@ -1,5 +1,5 @@
 import URL from '../../../support/GuardianUrls';
-import { waitForPageReady } from '../../../support/pageReadiness';
+import { waitForPageReady, waitForPageSettled, docProbe, waitForLocation } from '../../../support/pageReadiness';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 const L = {
@@ -7,6 +7,11 @@ const L = {
     searchInput: 'input.search-input',
     userRow: 'tr.guardian-grid-row',
     userName: 'span.user-name',
+    // The page's loading overlay. It is a sibling of the content, which stays
+    // in the DOM underneath it: presence markers for the content pass while
+    // the overlay covers the page, so readiness is gated on the overlay being
+    // gone (a dropped one-shot reply leaves it up forever - pending-issues).
+    loadingOverlay: 'app-user-management div.loading',
     // detail page (route /user-management/:username)
     detailName: 'span.policy-identity-name',
     assignedTab: 'p-tabs.user-tabs p-tab',
@@ -22,8 +27,13 @@ const L = {
 export class UserManagementPage {
 
     openUserManagementTab() {
-        cy.visit(URL.Root + URL.UserManagement);
+        cy.visit(URL.Root + URL.UserManagement, docProbe());
         waitForPageReady('p-table.guardian-grid-table, div.not-exist', 3);
+        // The presence gate above cannot see the overlay: on the current base
+        // the content it covers is always in the DOM, so a boot that hung its
+        // one-shot fetches passes it and freezes on the spinner. Only a fresh
+        // boot breaks that hang, which is what the settled wait retries.
+        waitForPageSettled(L.loadingOverlay, 3);
     }
 
     /**
@@ -39,7 +49,12 @@ export class UserManagementPage {
         // row's detail navigation, leaving the test on the list page.
         cy.get(L.searchInput, { timeout: TIMEOUTS.backend }).clear();
         cy.get(L.searchInput).type(userName + '{enter}');
-        cy.location('search', { timeout: TIMEOUTS.ui }).should('include', `username=${encodeURIComponent(userName)}`);
+        // The Enter commits the filter (onFilter -> loadData), which re-raises
+        // the overlay until the refetch settles; if that refetch is the one
+        // that hung, the overlay stays and the row below is covered. The filter
+        // lives in the URL query, so the settled wait's reload keeps it.
+        waitForPageSettled(L.loadingOverlay, 3);
+        waitForLocation(`username=${encodeURIComponent(userName)}`, { part: 'search', timeout: TIMEOUTS.ui });
         cy.get(L.userRow, { timeout: TIMEOUTS.backend }).filter((_, el) => {
             const cell = el.querySelector(L.userName);
             return cell && cell.textContent.trim() === userName;

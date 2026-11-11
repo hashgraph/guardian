@@ -1,5 +1,6 @@
 import { TIMEOUTS, POLL_INTERVAL } from '../../../support/CustomHelpers/timeouts';
 import { waitForTaskRoundtrip } from '../../../support/importFlow';
+import { reloadProbed, waitForLocation, waitForLocationAwayFrom } from '../../../support/pageReadiness';
 // New-app wizard flows (PrimeNG DOM). The SR profile wizard lives at /config
 // (HEDERA -> DID -> [DID_KEYS] -> VC) and the user profile wizard at /user-profile
 // (select SR -> HEDERA -> DID document -> [VC document]). p-button keeps no label
@@ -96,7 +97,7 @@ export class ConfigPage {
 	// redirect can take as long as the app bootstrap on a loaded container, so the
 	// wait is generous: a momentary /login in between must not fail the check.
 	verifyUserCreated(username) {
-		cy.location('pathname', { timeout: TIMEOUTS.backend }).should('not.include', '/login');
+		waitForLocationAwayFrom('/login', { timeout: TIMEOUTS.backend });
 		cy.get('.user-name', { timeout: TIMEOUTS.backend }).should('be.visible').should('contain.text', username);
 	}
 
@@ -205,7 +206,7 @@ export class ConfigPage {
 						throw new Error('#operatorId never filled and the Generate button is not coming back - the wizard is frozen and the recovery budget is exhausted');
 					}
 					recoveries += 1;
-					cy.reload().then(() => {
+					reloadProbed().then(() => {
 						reHedera();
 						noButtonSince = null;
 						cy.wait(POLL_INTERVAL).then(tick);
@@ -335,7 +336,7 @@ export class ConfigPage {
 		// The wizard re-opens at the SR card list after a reload, so recovery
 		// redoes the navigation from there to the HEDERA step.
 		const reHedera = () => {
-			cy.location('pathname', { timeout: TIMEOUTS.backend }).should('include', '/user-profile');
+			waitForLocation('/user-profile', { timeout: TIMEOUTS.backend });
 			this.selectStandardRegistry(SRNameToLink);
 			cy.contains('button', 'Next').should('be.enabled');
 			this.clickLabeledButton('Next');
@@ -356,7 +357,7 @@ export class ConfigPage {
 		this.waitForTaskNavigationOrRecover(runWizard);
 		// Profile registration runs as a worker task: the app leaves to /task/:id
 		// and returns to the profile view when the task settles.
-		cy.location('pathname', { timeout: TIMEOUTS.backend }).should('not.include', '/task');
+		waitForLocationAwayFrom('/task', { timeout: TIMEOUTS.backend });
 		cy.contains('did:hedera', { timeout: TIMEOUTS.ui });
 	}
 
@@ -403,8 +404,8 @@ export class ConfigPage {
 						throw new Error('the app never navigated to /task after two attempts');
 					}
 					recovered = true;
-					cy.reload();
-					cy.location('pathname', { timeout: TIMEOUTS.backend }).should('include', '/user-profile');
+					reloadProbed();
+					waitForLocation('/user-profile', { timeout: TIMEOUTS.backend });
 					// Let the page decide: a completed profile renders the DID,
 					// a missing one re-opens the wizard (the SR card list).
 					const settleDeadline = Date.now() + TIMEOUTS.ui;
