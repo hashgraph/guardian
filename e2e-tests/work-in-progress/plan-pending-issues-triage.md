@@ -1,6 +1,6 @@
 # Plan — triage of the pending issues and the work in progress, and the order to resolve them
 
-**Status (11 Nov 2026):** triage done. Every note in `pending-issues/` and both plans in `work-in-progress/` were checked against the code on branch `fixing-pending-issues` (HEAD `485181eca`, clean tree, after the `develop` merge) and, where a live check was possible, against a fresh stack (Solo 0.97.0, infra on the host, services and `ng serve` in the dev container, all packages rebuilt). Nothing in the repository was changed by the triage, apart from this file. The run logs are in `e2e-tests/.local/verify-1111-*.log` (git-ignored). The user's decisions are recorded in §5 and folded into the steps of §4 (Steps 0–6 in scope, Step 7 left for later); Step 0 and Step 1 are done (see §3.1).
+**Status (11 Nov 2026):** triage done. Every note in `pending-issues/` and both plans in `work-in-progress/` were checked against the code on branch `fixing-pending-issues` (HEAD `485181eca`, clean tree, after the `develop` merge) and, where a live check was possible, against a fresh stack (Solo 0.97.0, infra on the host, services and `ng serve` in the dev container, all packages rebuilt). Nothing in the repository was changed by the triage, apart from this file. The run logs are in `e2e-tests/.local/verify-1111-*.log` (git-ignored). The user's decisions are recorded in §5 and folded into the steps of §4 (Steps 0–6 in scope, Step 7 left for later); Steps 0–2 are done (see §3.1, §3.2).
 
 > **Agent executing this plan: read §7 before starting any step.** Each step has an assigned model and effort level. If yours do not match the step you are about to start, do not start it: stop and ask the user to switch (`/model`, `/effort`).
 
@@ -57,6 +57,12 @@ Once 2–3 are done the two WIP files can be deleted; their product follow-ups l
 - Pass 2 (twice each): `00_account_registration` 2/2 (15/15 tests each time); `flow_CDM_0001` 0/2 (overlay click, then `assignReport` option not found); `iREC5Group` 1/2 (overlay click). The UI flows are intermittent on the re-init loop, which Step 5 item 4 addresses; the evidence is in `pending-issues/frontend-workspace-reinitializes-every-few-seconds.md`.
 - The two WIP files were deleted.
 
+### 3.2 Outcome of Step 2 (11 Nov 2026)
+
+- `contract-import`: the retry in `ContractsPage.importContract` is removed; `contractImport.cy.js` 2/2 green; note deleted.
+- `notification-deletion`: the test asserts on the ids it deleted and kept instead of the total; `021_notifications` 2/2 green (21 tests each); note deleted.
+- `set-retire-pool`: the retry removal could not be verified. `013_contracts` fails on the unmodified code too (2 of 14, three runs plus a control), because of a new defect: `links.next` is followed without the mirror port, and `Registrant` now holds more than 100 NFTs (`pending-issues/mirror-node-pagination-drops-the-port.md`). The pool call was accepted at once in two of three trial runs and timed out after 20 s in one, so the retry stays and the note records the trial. Repeat it after the pagination fix (suggested in Step 4).
+
 ## 4. Resolution order, grouped by theme
 
 The order puts first what unblocks the rest: correct notes, a green baseline, the ability to unit-test the frontend, then the defect clusters, then what needs a product decision.
@@ -100,6 +106,7 @@ In order of confidence and size:
 2. `demo-generate-key` — pass `userId` through both `demo.service.ts` handlers; guardian-service unit test; assert the round trip in `001_demo` if observable.
 3. `contract-bytecode` second defect — per-contract try/catch in `syncWipeContracts`/`syncRetireContracts`, and make `getContractVersion` report an unknown version instead of `'1.0.0'`; guardian-service unit tests.
 4. `set-retire-pool` latent ordering — resolve the token before the contract call, so a mirror-node miss fails before anything changes on-chain; guardian-service unit test with a stubbed `GET_TOKEN_INFO` failure asserting the contract is not called. Then delete the note.
+5. **Proposed, not yet approved (added 11 Nov, outside decision 4):** `mirror-node-pagination-drops-the-port` — resolve `links.next` against the request URL at the three places in `hedera-sdk-helper.ts`; worker-service unit test with a two-page mirror on a non-default port; then re-run `013_contracts` twice, repeat the `setRetirePool` retry removal of Step 2, and delete the note. Until then `013_contracts` fails on a workspace where an account holds more than 100 NFTs.
 
 ### Step 5 — Reliability cluster: lost replies and lost task results (in scope: decision 4; frontend + gateway + common)
 
