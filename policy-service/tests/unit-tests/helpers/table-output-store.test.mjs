@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { gunzipSync } from 'node:zlib';
 import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import { IPFS } from '@guardian/common/helpers/ipfs';
-import { storeTableOutputFile, deleteTableOutputFiles } from '../../../dist/policy-engine/helpers/table-output-store.js';
+import { convertTableValues, storeTableOutputFile, deleteTableOutputFiles } from '../../../dist/policy-engine/helpers/table-output-store.js';
 
 const columns = [{ name: 'Year', key: 'year' }, { name: 'CO2', key: 'co2' }];
 
@@ -78,5 +78,83 @@ describe('@unit table output file storage', () => {
         await deleteTableOutputFiles(ref, [{ fileId: 'bad', cid: 'cid-a' }, { fileId: 'good', cid: 'cid-b' }]);
         assert.deepEqual(deleted, ['bad', 'good']);
         assert.deepEqual(warnings, ['Failed to delete result table bad: unavailable']);
+    });
+});
+
+
+describe('@unit table output value conversion', () => {
+    it('builds inline Preview CSV in declared column order without storing', async () => {
+        const rows = [{ co2: 'a,b', year: 2020 }];
+        const values = await convertTableValues([{ type: 'table', rows }], columns, true, async () => assert.fail('Preview must not store files'));
+        const value = JSON.parse(values[0]);
+        assert.match(value.fileId, /^preview-/);
+        assert.deepEqual({ ...value, fileId: undefined }, {
+            type: 'table', fileId: undefined, csv: 'Year,CO2\r\n2020,"a,b"',
+            columnNames: ['Year', 'CO2'], columnKeys: ['year', 'co2']
+        });
+        assert.deepEqual(rows, [{ co2: 'a,b', year: 2020 }]);
+    });
+
+    it('converts tables sequentially and preserves the order and identity of other values', async () => {
+        let release;
+        let started;
+        const blocked = new Promise((resolve) => { release = resolve; });
+        const firstStarted = new Promise((resolve) => { started = resolve; });
+        const first = { type: 'table', rows: [{ year: 2020 }] };
+        const second = { type: 'table', rows: [{ year: 2021 }] };
+        const reference = { type: 'table', fileId: 'existing', rows: [] };
+        const malformed = { type: 'table', rows: 'invalid' };
+        const input = [first, reference, malformed, null, 'text', second];
+        const calls = [];
+        const pending = convertTableValues(input, columns, false, async (rows) => {
+            calls.push(rows);
+            if (rows === first.rows) {
+                started();
+                await blocked;
+                return 'stored-first';
+            }
+            return 'stored-second';
+        });
+        await firstStarted;
+        assert.deepEqual(calls, [first.rows]);
+        release();
+        const values = await pending;
+        assert.deepEqual(calls, [first.rows, second.rows]);
+        assert.deepEqual(values, ['stored-first', reference, malformed, null, 'text', 'stored-second']);
+        assert.equal(values[1], reference);
+        assert.equal(values[2], malformed);
+        assert.equal(input[0], first);
+        assert.equal(input[5], second);
+    });
+
+    for (const preview of [false, true]) {
+        it(`preserves values without new rows with preview=${preview}`, async () => {
+            const reference = { type: 'table', fileId: 'existing', rows: [] };
+            const values = [reference, '{"type":"table","rows":[]}', { type: 'table', rows: 'bad' }, null];
+            const store = async () => assert.fail('Existing values must not be stored');
+            const output = await convertTableValues(values, columns, preview, store);
+            assert.deepEqual(output, values);
+            output.forEach((value, index) => assert.equal(value, values[index]));
+            assert.deepEqual(await convertTableValues([], columns, preview, store), []);
+        });
+    }
+
+    it('returns a header-only inline table for empty rows', async () => {
+        const values = await convertTableValues([{ type: 'table', rows: [] }], columns, true, async () => assert.fail('Preview must not store files'));
+        assert.equal(JSON.parse(values[0]).csv, 'Year,CO2');
+    });
+
+    it('propagates a storage error without attempting later tables', async () => {
+        const error = new Error('storage unavailable');
+        const rows = [{ year: 2020 }];
+        const calls = [];
+        await assert.rejects(convertTableValues([
+            { type: 'table', rows },
+            { type: 'table', rows: [{ year: 2021 }] }
+        ], columns, false, async (value) => {
+            calls.push(value);
+            throw error;
+        }), (actual) => actual === error);
+        assert.deepEqual(calls, [rows]);
     });
 });

@@ -1,6 +1,6 @@
 import { findPreviewScriptFields } from '../helpers/preview-script-fields.js';
 import { PolicyCredential } from '../helpers/policy-credential.js';
-import { ArtifactType, GenerateUUIDv4, LocationType, Schema, SchemaHelper } from '@guardian/interfaces';
+import { ArtifactType, LocationType, Schema, SchemaHelper } from '@guardian/interfaces';
 import { ActionCallback, CalculateBlock } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
@@ -29,12 +29,8 @@ import {
     hydrateTablesInObject,
     loadFileTextById
 } from '../helpers/table-field.js';
-import {
-    buildPreviewTableJson,
-    buildTableOutputCsv,
-    isTableOutputValue
-} from '../helpers/table-output.js';
-import { deleteTableOutputFiles, IStoredTable, storeTableOutputFile } from '../helpers/table-output-store.js';
+import { isTableOutputValue } from '../helpers/table-output.js';
+import { convertTableValues, deleteTableOutputFiles, IStoredTable, storeTableOutputFile } from '../helpers/table-output-store.js';
 import {
     buildMathPreviewCalculation,
     getMathPreviewOutputPaths,
@@ -376,16 +372,12 @@ export class MathBlock {
                 );
             }
 
-            const values: unknown[] = [];
-            for (const table of tables) {
-                if (isTableOutputValue(table) && preview) {
-                    values.push(buildPreviewTableJson(`preview-${GenerateUUIDv4()}`, buildTableOutputCsv(columns, table.rows), columns));
-                } else if (isTableOutputValue(table)) {
-                    values.push(await this.storeResultTable(ref, table.rows, columns, userId, storedTables));
-                } else {
-                    values.push(table);
-                }
-            }
+            const values = await convertTableValues(
+                tables,
+                columns,
+                preview,
+                (rows) => this.storeResultTable(ref, rows, columns, userId, storedTables)
+            );
             setDocumentValueByPath(schema, json, link.path, link.isTableList ? values : values[0]);
         }
     }

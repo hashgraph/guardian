@@ -1,9 +1,9 @@
 import { isPlainObject } from '@guardian/common/helpers/table-csv';
-import { GenerateUUIDv4, SchemaField } from '@guardian/interfaces';
+import { SchemaField } from '@guardian/interfaces';
 import { BlockActionError } from '../errors/index.js';
 import { IPolicyCalculateBlock } from '../policy-engine.interface.js';
-import { buildPreviewTableJson, buildTableOutputCsv, isTableOutputValue } from './table-output.js';
-import { IStoredTable, storeTableOutputFile } from './table-output-store.js';
+import { isTableOutputValue } from './table-output.js';
+import { convertTableValues, IStoredTable, storeTableOutputFile } from './table-output-store.js';
 
 export function hasTableOutputValue(value: unknown): boolean {
     const pending: unknown[] = [value];
@@ -66,16 +66,12 @@ export async function storeSchemaTableOutputs(
             if (unknown.size) {
                 throw new BlockActionError(`Table output "${field.path}" has unknown columns: ${[...unknown].join(', ')}`, ref.blockType, ref.uuid);
             }
-            const values: unknown[] = [];
-            for (const table of tables) {
-                if (isTableOutputValue(table) && preview) {
-                    values.push(buildPreviewTableJson(`preview-${GenerateUUIDv4()}`, buildTableOutputCsv(columns, table.rows), columns));
-                } else if (isTableOutputValue(table)) {
-                    values.push(await storeTableOutputFile(ref, table.rows, columns, userId, storedTables));
-                } else {
-                    values.push(table);
-                }
-            }
+            const values = await convertTableValues(
+                tables,
+                columns,
+                preview,
+                (rows) => storeTableOutputFile(ref, rows, columns, userId, storedTables)
+            );
             value[field.name] = field.isArray ? values : values[0];
         } else if (field.isRef && Array.isArray(field.fields)) {
             const items = field.isArray ? (Array.isArray(current) ? current : []) : [current];
