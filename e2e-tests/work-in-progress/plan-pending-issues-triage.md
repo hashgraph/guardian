@@ -1,6 +1,6 @@
 # Plan — triage of the pending issues and the work in progress, and the order to resolve them
 
-**Status (11 Nov 2026):** triage done. Every note in `pending-issues/` and both plans in `work-in-progress/` were checked against the code on branch `fixing-pending-issues` (HEAD `485181eca`, clean tree, after the `develop` merge) and, where a live check was possible, against a fresh stack (Solo 0.97.0, infra on the host, services and `ng serve` in the dev container, all packages rebuilt). Nothing in the repository was changed by the triage, apart from this file. The run logs are in `e2e-tests/.local/verify-1111-*.log` (git-ignored). The user's decisions are recorded in §5 and folded into the steps of §4 (Steps 0–6 in scope, Step 7 left for later); execution has not started.
+**Status (11 Nov 2026):** triage done. Every note in `pending-issues/` and both plans in `work-in-progress/` were checked against the code on branch `fixing-pending-issues` (HEAD `485181eca`, clean tree, after the `develop` merge) and, where a live check was possible, against a fresh stack (Solo 0.97.0, infra on the host, services and `ng serve` in the dev container, all packages rebuilt). Nothing in the repository was changed by the triage, apart from this file. The run logs are in `e2e-tests/.local/verify-1111-*.log` (git-ignored). The user's decisions are recorded in §5 and folded into the steps of §4 (Steps 0–6 in scope, Step 7 left for later); Step 0 and Step 1 are done (see §3.1).
 
 > **Agent executing this plan: read §7 before starting any step.** Each step has an assigned model and effort level. If yours do not match the step you are about to start, do not start it: stop and ask the user to switch (`/model`, `/effort`).
 
@@ -50,6 +50,12 @@ What is left, de-duplicated:
 4. The 9 product follow-ups of the handover map onto Steps 4 and 5 below.
 
 Once 2–3 are done the two WIP files can be deleted; their product follow-ups live on in the notes and in this plan.
+
+### 3.1 Outcome of Step 1 (11 Nov 2026)
+
+- Full `all` run (`.local/baseline-all-1111.log`, 2 h 24): 2 of 276 specs failed (1027 tests, 1002 passed, 23 skipped): `deleteNotifications` (`expected 58 to deeply equal 56`, Step 2) and `iREC5Group` (click covered by `div.loading`). `flow_CDM_0001` passed (15:54).
+- Pass 2 (twice each): `00_account_registration` 2/2 (15/15 tests each time); `flow_CDM_0001` 0/2 (overlay click, then `assignReport` option not found); `iREC5Group` 1/2 (overlay click). The UI flows are intermittent on the re-init loop, which Step 5 item 4 addresses; the evidence is in `pending-issues/frontend-workspace-reinitializes-every-few-seconds.md`.
+- The two WIP files were deleted.
 
 ## 4. Resolution order, grouped by theme
 

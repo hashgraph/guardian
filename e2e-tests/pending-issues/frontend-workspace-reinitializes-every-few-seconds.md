@@ -11,6 +11,8 @@
 - In the last 30 s before the failure the workspace re-initialized every 5–7 s: `GET /accounts/session` bursts at 18:07:40, :46, :53, :57, 18:08:02 and :08, each followed by the workspace fetch set. No 401, no WebSocket upgrade, one 503 on `tag/add_report_bnt/blocks`.
 - The same shape was seen on 10 Nov in run I of the handover: a re-init loop of about 1 Hz in the final minute whose overlay starved the wizard step click for the full 10 s, and a ~11 s same-document re-init after every login 200 (a re-POST of `/accounts/login`, a WebSocket rebind, the branding, session, profile and balance fetches).
 
+- Baseline and pass 2 of 11 Nov 2026 (same stack, used workspace): the full `all` run failed `iREC5Group` on a click covered by `div.loading` (tab "Issue R…"). The follow-up runs, twice each: `flow_CDM_0001` 0/2 (a wizard step click covered by `div.loading`; then `li[role="option"]` never found in `UserPoliciesPage.assignReport`, `userPoliciesPage.js:650`), `iREC5Group` 1/2 (the failing run again a click covered by `div.loading`). `flow_CDM_0001` had passed (15:54) in the baseline run itself, so the failure is intermittent, not tied to a fresh database. `00_account_registration` was 2/2 green.
+
 ## Where it may come from (candidates, none verified)
 
 - The WebSocket rebind after the access token is set (`web-socket.service.ts`). No 11 s timer exists in `frontend/src/app`, so the cadence is not a constant in the code.
