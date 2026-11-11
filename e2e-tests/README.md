@@ -38,10 +38,10 @@ npm run guardian:infra:down      # on the host: removes the containers
 
 ## Running every test
 
-`npm run test:everything` runs, one group after the other, everything the repository tests outside the service unit tests of `main.yml`: the linter on the specs, the tests of the helper scripts, the `indexer-service` tests, the frontend unit specs and the whole Cypress suite. A group that fails does not stop the others; the summary at the end lists each one and the exit code is non-zero when any failed. Name the groups to run only those:
+`npm run test:everything` runs, one group after the other, everything the repository tests outside the service unit tests of `main.yml`: the linter on the specs, the tests of the helper scripts, the frontend unit specs and the whole Cypress suite. A group that fails does not stop the others; the summary at the end lists each one and the exit code is non-zero when any failed. Name the groups to run only those:
 
 ```bash
-npm run test:everything                       # lint, scripts, indexer-service, frontend, cypress
+npm run test:everything                       # lint, scripts, frontend, cypress
 npm run test:everything -- lint scripts       # only the linter and the helper-script tests
 ```
 
@@ -49,7 +49,6 @@ npm run test:everything -- lint scripts       # only the linter and the helper-s
 |---|---|---|
 | `lint` | `npx eslint cypress` | |
 | `scripts` | `npm run test:scripts` and `.github/scripts/report-test-summary.test.mjs` | |
-| `indexer-service` | builds `indexer-interfaces`, `indexer-common` and `indexer-service`, then its mocha tests | |
 | `frontend` | `npx ng test --watch=false` in `frontend` (Vitest, headless Chromium) | `npx playwright install chromium` once |
 | `cypress` | `npm run guardian:test` | the stack: `npm run guardian:up` |
 

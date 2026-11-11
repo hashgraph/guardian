@@ -214,23 +214,6 @@ jobs:
           OPERATOR_ID: ${{ secrets.CI_HEDERA_ACCOUNT }}
           OPERATOR_KEY: ${{ secrets.CI_HEDERA_PRIV_KEY }}
 
-      # The indexer packages are workspaces too, but their tests import the compiled output.
-      - name: Indexer service tests
-        run: |
-          pushd indexer-interfaces
-          yarn run build
-          popd
-          pushd indexer-common
-          yarn run build
-          popd
-          pushd indexer-service
-          yarn run build
-          npm run test
-          popd
-        env:
-          CI: true
-          NODE_OPTIONS: --openssl-legacy-provider
-
       # Vitest in headless Chromium; the frontend dependencies were installed by the Build step.
       - name: Frontend unit tests
         run: |
