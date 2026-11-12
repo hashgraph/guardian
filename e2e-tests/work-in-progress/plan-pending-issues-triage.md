@@ -126,7 +126,7 @@ Steps:
 
 In order of confidence and size:
 
-1. `split-block` — reproduced; key the cycle check on the document as well as the target (or exempt a block's own fan-out); policy-service unit test with a split of at least two chunks; then un-skip `iREC7Split` and delete the note.
+1. ~~`split-block`~~ done 12 Nov (each chunk gets its own cycle scope, `RecordActionStep.scoped()`; `iREC7Split` un-skipped, 2/2; note deleted) — was: reproduced; key the cycle check on the document as well as the target (or exempt a block's own fan-out); policy-service unit test with a split of at least two chunks; then un-skip `iREC7Split` and delete the note.
 2. `demo-generate-key` — pass `userId` through both `demo.service.ts` handlers; guardian-service unit test; assert the round trip in `001_demo` if observable.
 3. `contract-bytecode` second defect — per-contract try/catch in `syncWipeContracts`/`syncRetireContracts`, and make `getContractVersion` report an unknown version instead of `'1.0.0'`; guardian-service unit tests.
 4. `set-retire-pool` latent ordering — resolve the token before the contract call, so a mirror-node miss fails before anything changes on-chain; guardian-service unit test with a stubbed `GET_TOKEN_INFO` failure asserting the contract is not called. Then delete the note.
