@@ -4,7 +4,7 @@ import { ISession, IStandardRegistryResponse, IUser, UserCategory, UserRole } fr
 import { Observable, of, Subject, Subscription, throwError } from 'rxjs';
 import { API_BASE_URL } from './api';
 import { SILENT_HTTP_ERRORS, SKIP_AUTH_REFRESH } from '../constants';
-import { catchError, finalize, map, shareReplay, switchMap } from 'rxjs/operators';
+import { catchError, finalize, map, shareReplay, switchMap, timeout } from 'rxjs/operators';
 
 /**
  * Services for working from accounts.
@@ -184,6 +184,12 @@ export class AuthService {
     }
 }
 
+/**
+ * How long the requests that failed with 401 wait for the shared token refresh. The gateway gives
+ * the auth service 30 s to answer it; past this the refresh counts as failed.
+ */
+export const REFRESH_TIMEOUT_MS = 40 * 1000;
+
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
     // Shared in-flight refresh, so several requests failing with 401 at once
@@ -200,7 +206,7 @@ export class AuthInterceptor implements HttpInterceptor {
         return next.handle(this.addToken(req)).pipe(
             catchError((error: any) => {
                 if (this.shouldAttemptRefresh(error, req)) {
-                    return this.refreshAndRetry(req, next);
+                    return this.refreshAndRetry(req, next, error);
                 }
                 return throwError(() => error);
             })
@@ -239,8 +245,13 @@ export class AuthInterceptor implements HttpInterceptor {
         );
     }
 
-    private refreshAndRetry(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    /**
+     * A refresh that fails or never answers hands the request its original 401, which the error
+     * interceptor turns into the end of the session and the login page, instead of leaving it pending.
+     */
+    private refreshAndRetry(req: HttpRequest<any>, next: HttpHandler, unauthorized: any): Observable<HttpEvent<any>> {
         return this.refreshToken().pipe(
+            catchError(() => throwError(() => unauthorized)),
             switchMap((accessToken: string) => next.handle(this.withBearer(req, accessToken)))
         );
     }
@@ -249,6 +260,7 @@ export class AuthInterceptor implements HttpInterceptor {
         if (!this.refresh$) {
             const auth = this.injector.get(AuthService);
             this.refresh$ = auth.updateAccessToken().pipe(
+                timeout(REFRESH_TIMEOUT_MS),
                 shareReplay(1),
                 finalize(() => { this.refresh$ = null; })
             );

@@ -4,6 +4,8 @@ import { AuthService } from './auth.service';
 import { AppThemeService } from './app-theme.service';
 import { environment } from '../../environments/environment';
 
+const REFRESH_REFUSED_STATUSES = [401, 403, 422];
+
 @Injectable({
     providedIn: 'root'
 })
@@ -23,7 +25,9 @@ export class AuthStateService {
             if (isLogin) {
                 if (!this.refreshTokenTimer) {
                     this.refreshTokenTimer = setInterval(() => {
-                        this.authService.updateAccessToken().subscribe();
+                        this.authService.updateAccessToken().subscribe({
+                            error: (error) => this.onRefreshFailed(error)
+                        });
                     }, environment.accessTokenUpdateInterval || 29 * 1000)
                 }
             } else {
@@ -31,6 +35,16 @@ export class AuthStateService {
                 this.refreshTokenTimer = null;
             }
         })
+    }
+
+    /**
+     * The auth service refused the refresh token (missing, expired or revoked): the session is over,
+     * so end it rather than retry forever. Any other failure (network, gateway) is left to the next tick.
+     */
+    private onRefreshFailed(error: any): void {
+        if (REFRESH_REFUSED_STATUSES.includes(error?.status)) {
+            this.clearSession();
+        }
     }
 
     public get value(): Observable<boolean> {
