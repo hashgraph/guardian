@@ -945,7 +945,7 @@
                                   <div class="sf-record-head">
                                     <span class="sf-record-ix">{{ listItem.index2 }}</span>
                                     @let rt = recordText(item, listItem);
-                                    <div class="sf-record-text">
+                                    <div class="sf-record-text" [class.sf-record-text-inline]="item.customType === 'geo'">
                                       <b>{{ rt.title }}</b>
                                       @if (rt.sub) {
                                         <small>{{ rt.sub }}</small>

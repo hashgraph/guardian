@@ -9,7 +9,6 @@ import { SettingsService } from 'src/app/services/settings.service';
 import { ArtifactService } from 'src/app/services/artifact.service';
 import { GeoFilePersistenceService } from 'src/app/services/geo-file-persistence.service';
 import { GeoJsonService } from 'src/app/services/geo-json.service';
-import { SwitchButton } from '../../common/switch-button/switch-button.component';
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { gzipBlob } from '../geo-file/geo-file-compression';
 import { KmlCoordinateScanner, KmzBrowserSupportError, KmzRootEntryError } from '@guardian/interfaces';
@@ -228,10 +227,10 @@ describe('GeojsonTypeComponent original file link', () => {
         expect(component.canDownload()).toBe(true);
     });
 
-    it('keeps a legacy single geometry without a GeoJSON download', () => {
+    it('offers the GeoJSON download for a single geometry', () => {
         value = { type: 'Point', coordinates: [1, 2] };
 
-        expect(component.canDownload()).toBe(false);
+        expect(component.canDownload()).toBe(true);
     });
 
     it('keeps a pending original when the selection is cleared', async () => {
@@ -282,37 +281,18 @@ describe('GeojsonTypeComponent original file link', () => {
         expect(component.importedLocations.map(location => location.coordinates)).toEqual([[1, 2], [3, 4]]);
     });
 
-    it('empties the JSON text when the selection is cleared', async () => {
-        const loaded = {
-            idbKey: 'old-key', name: 'old.geojson', format: 'geojson' as const,
-            sizeBytes: 10, previewSizeBytes: 10
-        };
-        value = { type: 'Point', coordinates: [1, 2], geoFile: loaded };
-        component.jsonInput = JSON.stringify(value, null, 4);
-        geoFiles.discard.mockResolvedValue(undefined);
-
-        await component.clearSelectionFeatures();
-        component.isJSON = true;
-        component.onViewTypeChange();
-
-        expect(value).toEqual({});
-        expect(component.jsonInput).toBe('');
-    });
-
     it('empties the value when the last shape is deleted', () => {
         const link = {
             idbKey: 'geo-key', name: 'site.geojson', format: 'geojson' as const,
             sizeBytes: 10, previewSizeBytes: 10
         };
         value = { type: 'Point', coordinates: [1, 2], geoFile: link };
-        component.jsonInput = JSON.stringify(value, null, 4);
         const geometry = component.addGeometry(value);
 
         component.deleteGeometry(geometry.id);
 
         expect(component.geometriesList.length).toBe(0);
         expect(value).toEqual({});
-        expect(component.jsonInput).toBe('');
         expect(geoFiles.discard).not.toHaveBeenCalled();
     });
 
@@ -361,7 +341,6 @@ describe('GeojsonTypeComponent original file link', () => {
         value = { type: 'Point', coordinates: [1, 2], geoFile: loaded };
         component.addGeometry(value);
         component.importedLocations = [{ id: 'candidate', type: GeoJsonType.POINT, coordinates: [5, 6] }];
-        component.jsonInput = JSON.stringify(value, null, 4);
         geoFiles.keepOriginal.mockResolvedValue(imported);
         geoFiles.discard.mockResolvedValue(undefined);
 
@@ -373,7 +352,6 @@ describe('GeojsonTypeComponent original file link', () => {
         expect(value).toEqual({});
         expect(component.geometriesList.length).toBe(0);
         expect(component.importedLocations.length).toBe(0);
-        expect(component.jsonInput).toBe('');
         expect((component as any).pendingGeoFile).toBe(imported);
     });
 
@@ -491,7 +469,7 @@ describe('GeojsonTypeComponent original file link', () => {
             expect(value.geoFile).toEqual(lost);
         });
 
-        it('keeps the restored file when the JSON text is edited afterwards', async () => {
+        it('keeps the restored file when the value is edited afterwards', async () => {
             const control = new UntypedFormControl(value);
             const model = new GeoForm(control);
             model.build();
@@ -499,8 +477,7 @@ describe('GeojsonTypeComponent original file link', () => {
             component.formModel = model;
             await new Promise(resolve => setTimeout(resolve, 0));
             expect(model.getErrors()[ORIGINAL_FILE_ERRORS_KEY]).toBeDefined();
-            component.isJSON = true;
-            component.onViewTypeChange(false);
+            component.loadValue();
             geoFiles.fileHash.mockResolvedValue('same-hash');
             geoFiles.keepOriginal.mockResolvedValue({ ...lost, idbKey: 'new-key' });
 
@@ -508,17 +485,13 @@ describe('GeojsonTypeComponent original file link', () => {
             await new Promise(resolve => setTimeout(resolve, 0));
             expect(control.valid).toBe(true);
 
-            component.jsonInput += '\n';
-            component.jsonChanged();
+            (component as any).setControlValue({ ...control.value });
             await new Promise(resolve => setTimeout(resolve, 0));
             expect(control.value.geoFile.idbKey).toBe('new-key');
             expect(control.valid).toBe(true);
             expect(model.getErrors()[ORIGINAL_FILE_ERRORS_KEY]).toBeUndefined();
 
-            const edited = JSON.parse(component.jsonInput);
-            edited.coordinates = [5, 6];
-            component.jsonInput = JSON.stringify(edited, null, 4);
-            component.jsonChanged();
+            (component as any).setControlValue({ ...control.value, coordinates: [5, 6] });
             await new Promise(resolve => setTimeout(resolve, 0));
             expect(control.value.coordinates).toEqual([5, 6]);
             expect(control.value.geoFile.idbKey).toBe('new-key');
@@ -849,27 +822,24 @@ describe('GeojsonTypeComponent original file link', () => {
         expect(component.geometriesList.length).toBe(1);
     });
 
-    it('zooms the map to the imported shapes when the map is set up', () => {
-        vi.useFakeTimers();
+    it('zooms the dialog map to the imported shapes', () => {
         const view = {
             fit: vi.fn().mockName("View.fit"),
             animate: vi.fn().mockName("View.animate")
         };
-        vi.spyOn(component as any, 'initMap').mockImplementation(() => (component as any).map = { getView: () => view });
+        (component as any).dialogMap = { getView: () => view, updateSize: () => undefined };
         component.onUploadMultiLocationFile({
             type: 'FeatureCollection',
             features: [{ type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [36, -1] } }]
         } as any);
 
-        (component as any).setupMap();
-        vi.advanceTimersByTime(0);
-        vi.useRealTimers();
+        (component as any).fitDialogMap();
 
         expect(view.fit).toHaveBeenCalledWith(expect.any(Array), expect.objectContaining({ maxZoom: 12 }));
         expect(view.animate).not.toHaveBeenCalled();
     });
 
-    it('fits the map to the selected shapes after switching back from JSON, without the zoom 6 jump', () => {
+    it('fits the map to the selected shapes after the value is reloaded, without the zoom 6 jump', () => {
         vi.useFakeTimers();
         const view = {
             fit: vi.fn().mockName("View.fit"),
@@ -889,8 +859,7 @@ describe('GeojsonTypeComponent original file link', () => {
         view.fit.mockClear();
         view.animate.mockClear();
 
-        component.isJSON = false;
-        component.onViewTypeChange();
+        component.loadValue();
         vi.advanceTimersByTime(1000);
         vi.useRealTimers();
 
@@ -918,7 +887,6 @@ describe('GeojsonTypeComponent original file link', () => {
 
         expect(component.geometriesList.length).toBe(1);
         expect(component.loading).toBe(false);
-        expect(component.renderedRows).toBe(Infinity);
     });
 
     it('shows the loader while a clicked file shape is added and hides it afterwards', () => {
@@ -940,31 +908,6 @@ describe('GeojsonTypeComponent original file link', () => {
 
         expect(component.geometriesList.length).toBe(1);
         expect(component.importedLocations.length).toBe(0);
-        expect(component.loading).toBe(false);
-    });
-
-    it('draws the rows in batches after Include all and keeps the loader until the last batch', () => {
-        vi.useFakeTimers();
-        vi.spyOn(component as any, 'setupMap').mockImplementation(() => undefined);
-        component.onUploadMultiLocationFile({
-            type: 'FeatureCollection',
-            features: Array.from({ length: 25 }, (_, i) => ({
-                type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [i, 2] }
-            }))
-        } as any);
-
-        component.includeAllImportedFeatures();
-        vi.advanceTimersToNextTimer();
-        expect(component.geometriesList.length).toBe(25);
-        expect(component.renderedRows).toBe(10);
-        expect(component.loading).toBe(true);
-
-        vi.advanceTimersToNextTimer();
-        expect(component.renderedRows).toBe(20);
-
-        vi.advanceTimersToNextTimer();
-        vi.useRealTimers();
-        expect(component.renderedRows).toBe(Infinity);
         expect(component.loading).toBe(false);
     });
 
@@ -1498,13 +1441,13 @@ describe('GeojsonTypeComponent loading state', () => {
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            declarations: [GeojsonTypeComponent, SwitchButton],
+            declarations: [GeojsonTypeComponent],
             imports: [FormsModule],
             providers: [
                 { provide: GeoJsonService, useValue: {} },
                 { provide: GeoFilePersistenceService, useValue: {} },
                 { provide: ArtifactService, useValue: {} },
-                { provide: SettingsService, useValue: {} },
+                { provide: SettingsService, useValue: { getGeospatialLimits: () => of({}) } },
                 { provide: DialogService, useValue: {} }
             ],
             schemas: [NO_ERRORS_SCHEMA]
@@ -1561,18 +1504,19 @@ describe('GeojsonTypeComponent loading state', () => {
             sizeBytes: 20, previewSizeBytes: 20, noPreview: true, automaticPoint: [1, 2]
         };
         component.importedLocations = [{ id: 'point', type: GeoJsonType.POINT, coordinates: [1, 2] }];
+        component.dialogVisible = true;
         vi.spyOn(component, 'ngAfterViewInit').mockImplementation(() => undefined);
 
         fixture.detectChanges(false);
 
         const notice = fixture.nativeElement.querySelector('.geo-preview-unavailable');
-        const controls = Array.from(fixture.nativeElement.querySelectorAll('.map-control-buttons button'))
-            .map((button: any) => button.label || button.getAttribute('label'));
+        const controls = Array.from(fixture.nativeElement.querySelectorAll('.geo-file-head button'))
+            .map((button: any) => button.textContent.trim());
         expect(notice.textContent).toContain('Preview unavailable: this file is too large to show on the map. The map shows the first point from the file and/or the shapes you added.');
         expect(notice.textContent).not.toContain('Download it to view.');
         expect(notice.querySelectorAll('button').length).toBe(0);
         expect(controls).toContain('Add file point');
-        expect(controls).not.toContain('Include all');
+        expect(controls).not.toContain('Select all');
     });
 
     it('keeps the same notice after the file point is added', () => {
@@ -1631,7 +1575,6 @@ describe('GeojsonTypeComponent loading state', () => {
                 setAvailableTypes: () => undefined,
                 setOriginalFileCheck: () => undefined
             } as any;
-            component.isJSON = true;
             vi.spyOn(component, 'ngAfterViewInit').mockImplementation(() => undefined);
         });
 
@@ -1650,39 +1593,34 @@ describe('GeojsonTypeComponent loading state', () => {
             expect(component.haveErrors()).toBe(true);
         });
 
-        it('keeps the required message under the JSON text when no file is imported', () => {
+        it('offers to add a geometry and no Edit or Clear for an empty value', () => {
             fixture.detectChanges(false);
 
-            const errors = Array.from(fixture.nativeElement.querySelectorAll('.p-error'))
-                .map((element: any) => element.textContent.trim());
-            expect(errors).toEqual(['A GeoJSON object is required']);
-            expect(fixture.nativeElement.querySelector('.validation-errors').textContent)
-                .toContain('A GeoJSON object is required');
+            const labels = Array.from(fixture.nativeElement.querySelectorAll('button[label]'))
+                .map((button: any) => button.getAttribute('label'));
+            expect(labels).toEqual(['Add geometry']);
+            expect(fixture.nativeElement.querySelector('.map')).toBeNull();
         });
     });
 
-    it('shows the JSON text for an imported file above 1 MB', () => {
-        component.isJSON = true;
-        component.fileImportSize = 4;
+    it('shows only the summary, with no coordinates text and no Edit, for a large value', () => {
+        const polygons = Array.from({ length: 25 }, (_, p) => [Array.from({ length: 1000 }, (_, i) => [p + i / 10000, i / 10000])]);
+        component.formModel = {
+            getValue: () => ({ type: 'MultiPolygon', coordinates: polygons }),
+            getErrors: () => ({}),
+            setControlValue: () => undefined,
+            setAvailableTypes: () => undefined,
+            setOriginalFileCheck: () => undefined
+        } as any;
         vi.spyOn(component, 'ngAfterViewInit').mockImplementation(() => undefined);
 
         fixture.detectChanges(false);
 
-        expect(fixture.nativeElement.querySelector('#geoJsonInput')).not.toBeNull();
-        expect(fixture.nativeElement.textContent).not.toContain('too large to view');
-    });
-
-    it('explains why the shape list is hidden above 300 shapes', () => {
-        component.geometriesList = Array.from({ length: 301 }, (_, i) => ({
-            id: String(i), type: GeoJsonType.POINT, coordinates: [1, 2]
-        })) as any;
-        vi.spyOn(component, 'ngAfterViewInit').mockImplementation(() => undefined);
-
-        fixture.detectChanges(false);
-
-        expect(fixture.nativeElement.textContent)
-            .toContain('301 shapes are selected. The list shows up to 300 shapes; the map shows them all.');
-        expect(fixture.nativeElement.textContent).not.toContain('exceeds in-browser preview limits');
+        const labels = Array.from(fixture.nativeElement.querySelectorAll('button[label]'))
+            .map((button: any) => button.getAttribute('label'));
+        expect(fixture.nativeElement.querySelector('.geo-info-text').textContent).toContain('25 polygons · 25,000 points');
+        expect(labels).toEqual(['Download GeoJSON', 'Clear']);
+        expect(fixture.nativeElement.querySelector('textarea')).toBeNull();
     });
 
     describe('download buttons in the document view', () => {
@@ -1710,7 +1648,7 @@ describe('GeojsonTypeComponent loading state', () => {
             expect(render({ ...collection, geoFile })).toEqual(['Download GeoJSON', 'Download original file']);
         });
 
-        it('offers both downloads side by side under the map for a file without preview', () => {
+        it('offers both downloads above the map for a file without preview', () => {
             const labels = render({
                 type: 'Point', coordinates: [1, 2],
                 geoFile: { ...geoFile, noPreview: true, automaticPoint: [1, 2] }
@@ -1722,6 +1660,12 @@ describe('GeojsonTypeComponent loading state', () => {
 
         it('offers only the GeoJSON download for a document without a file', () => {
             expect(render(collection)).toEqual(['Download GeoJSON']);
+        });
+
+        it('offers no downloads when the links are hidden, as in the document overview', () => {
+            component.hideDownloads = true;
+
+            expect(render({ ...collection, geoFile })).toEqual([]);
         });
     });
 });
