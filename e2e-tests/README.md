@@ -920,7 +920,7 @@ Start the app with the `proxy.hostdocker.js` logger (see [Preparing the app for 
 ```
 
 - `(auth)` / `(NO-AUTH)` is the presence of the `Authorization` header, so a tokenless call stands out.
-- A request that is logged as sent but **never gets a `<- <status>` line** was accepted by the gateway and is hanging — the typical cause is the gateway auth guard waiting forever on a NATS reply from the auth service (see `pending-issues/gateway-auth-guard-hangs-*.md`). In the UI this shows as a page stuck on a spinner; a page reload is the workaround the UI tests apply.
+- A request that is logged as sent but **never gets a `<- <status>` line** was accepted by the gateway and is still open. In the UI this shows as a page stuck on a spinner.
 - `WS-UPGRADE` lines without a follow-up indicate the WebSocket was accepted but never used by the app.
 
 ##### The services run old code after a pull

@@ -1,5 +1,5 @@
 import URL from '../../../support/GuardianUrls';
-import { waitForPageReady, docProbe } from '../../../support/pageReadiness';
+import { waitForPageReady } from '../../../support/pageReadiness';
 import { dropFile, waitForTaskRoundtrip, replaceInaccessibleTools } from '../../../support/importFlow';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
@@ -47,13 +47,13 @@ export class ToolsPage {
      */
     openToolsTab(search) {
         const url = URL.Root + URL.Tools + (search ? `?search=${encodeURIComponent(search)}` : '');
-        cy.visit(url, docProbe());
+        cy.visit(url);
         // waitForPageReady polls with querySelector, which cannot use the
         // :contains in L.importButton. The search bar is the readiness marker:
         // it renders as soon as the tools fetch resolves (the grid below it is
         // a <p-table> component, so no div.guardian-grid-table exists in the
         // DOM, and the grid container is absent for an empty list).
-        waitForPageReady('div.tool-filters', 3);
+        waitForPageReady('div.tool-filters');
     }
 
     _search(name) {

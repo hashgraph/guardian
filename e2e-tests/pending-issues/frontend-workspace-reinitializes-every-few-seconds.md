@@ -1,6 +1,6 @@
 # A policy block's loading overlay stays on and starves UI clicks
 
-**Status:** open — narrowed down on 12 Nov 2026, not pinned to a block yet. (The note was first written as "the app re-initializes its workspace every few seconds"; that was wrong, see below.)
+**Status:** open — narrowed down on 12 Nov 2026, not pinned to a block yet, and not reproduced since: `flow_CDM_0001` passed 4 times and `iREC5Group` 3 times later on 12 Nov (three full UI runs and one single run, after the Step 5 fixes and with the page objects' reload recoveries removed, so a stuck overlay would now fail the test). (The note was first written as "the app re-initializes its workspace every few seconds"; that was wrong, see below.)
 **Component:** `frontend` — `modules/policy-engine/policy-viewer/blocks/*` (each block has its own `div.loading`)
 **Severity:** medium — `flow_CDM_0001` and `iREC5Group` fail when a click lands under the overlay or the overlay never goes
 **Found by:** `e2e-tests/cypress/e2e/ui-tests/specs/02_policies/flow_CDM_0001.cy.js`, `iREC5Group.cy.js`

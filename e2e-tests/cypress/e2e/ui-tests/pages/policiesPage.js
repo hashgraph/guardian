@@ -1,7 +1,7 @@
 import URL from '../../../support/GuardianUrls';
 import * as Checks from '../../../support/checkingMethods';
 import CommonElements from '../../../support/defaultUIElements';
-import { waitForPageReady, waitForPageSettled, docProbe } from '../../../support/pageReadiness';
+import { waitForPageReady, waitForPageSettled } from '../../../support/pageReadiness';
 import { dropFile, replaceInaccessibleTools, waitForTaskRoundtrip } from '../../../support/importFlow';
 import { clickButtonInWizardSteps, clickWizardTab } from '../../../support/wizardSteps';
 import { addGeoJsonPoint, openOverviewSection } from './userPoliciesPage';
@@ -130,19 +130,16 @@ const nameCellMatches = (name) => (_, el) => {
 export class PoliciesPage {
 
     openPoliciesTab() {
-        cy.visit(URL.Root + URL.Policies, docProbe());
+        cy.visit(URL.Root + URL.Policies);
         // Gate on the toolbar, not on the search input: the app renders the
         // filter bar (and with it the search input) only when the list is
         // non-empty (showFilterBar = hasPolicies || hasStatusFilter), so on a
-        // fresh workspace the input never exists and no amount of reloading
-        // will surface it. The toolbar renders as soon as the list fetch
-        // settles in either state. Presence alone is not a gate on this app
-        // base: the route content is in the DOM under the loading overlay
-        // while the workspace bootstrap runs (a fresh boot after a visit, or
-        // the app's own permission-update reload), and a hung one-shot in it
-        // keeps the overlay over the toolbar - the next click would die on
-        // the cover.
-        waitForPageReady('div.actions-container', 3);
+        // fresh workspace the input never exists. The toolbar renders as soon
+        // as the list fetch settles in either state. Presence alone is not a
+        // gate on this app base: the route content is in the DOM under the
+        // loading overlay while the workspace bootstrap runs, and a click on
+        // the toolbar would land on the cover.
+        waitForPageReady('div.actions-container');
         waitForPageSettled('div.loading');
     }
 
@@ -162,18 +159,18 @@ export class PoliciesPage {
         // editor from the freshly created row instead.
         this.backToPoliciesList();
         this._row(name).find(L.editIcon, { timeout: TIMEOUTS.backend }).click();
-        waitForPageReady(L.editorViews, 4);
+        waitForPageReady(L.editorViews);
     }
 
     backToPoliciesList() {
-        cy.visit(URL.Root + URL.Policies, docProbe());
-        waitForPageReady(L.searchInput, 3);
+        cy.visit(URL.Root + URL.Policies);
+        waitForPageReady(L.searchInput);
         waitForPageSettled('div.loading');
     }
 
     backToPoliciesListBtn() {
-        cy.visit(URL.Root + URL.Policies, docProbe());
-        waitForPageReady(L.searchInput, 3);
+        cy.visit(URL.Root + URL.Policies);
+        waitForPageReady(L.searchInput);
         waitForPageSettled('div.loading');
     }
 
@@ -214,10 +211,7 @@ export class PoliciesPage {
         // The app reloads itself on every permission update, and the reload
         // lands in the middle of a workspace bootstrap: the route content is
         // back in the DOM under its loading overlay, which a presence gate
-        // would pass straight through. A hung one-shot in that bootstrap keeps
-        // the overlay on top of the search box forever (a 10 s cy.clear retry
-        // then dies on the cover), so the gate is overlay-gone with a reload
-        // budget; on a settled page it passes on the first 200 ms poll.
+        // would pass straight through, so wait for the overlay to go.
         waitForPageSettled('div.loading');
         // separate commands: the framework re-renders the input on each
         // keystroke, so a .clear().type() chain can detach mid-command
@@ -313,7 +307,7 @@ export class PoliciesPage {
         this._choosePreviewImport();
         // Heavy policies (CDM: four tools, a couple dozen schemas) take a while
         // to render in the editor, so allow extra readiness attempts.
-        waitForPageReady(L.editorViews, 4);
+        waitForPageReady(L.editorViews);
     }
 
     importPolicyFromIPFS(messageId) {
@@ -324,7 +318,7 @@ export class PoliciesPage {
         cy.get(L.dialog).find(CommonElements.Button, 'Import').should('not.be.disabled');
         cy.get(L.dialog).find(CommonElements.Button, 'Import').last().click();
         this._choosePreviewImport();
-        waitForPageReady(L.editorViews, 3);
+        waitForPageReady(L.editorViews);
     }
 
     /**
@@ -361,12 +355,12 @@ export class PoliciesPage {
 
     openPolicy(name) {
         this._row(name).find(L.instanceButton, { timeout: TIMEOUTS.backend }).click();
-        waitForPageReady(L.viewerIdentity, 3);
+        waitForPageReady(L.viewerIdentity);
     }
 
     openEditingPolicy(name) {
         this._row(name).find(L.editIcon, { timeout: TIMEOUTS.backend }).click();
-        waitForPageReady(L.editorViews, 4);
+        waitForPageReady(L.editorViews);
     }
 
     // ---- Viewer approvals (wizard steps) ----
