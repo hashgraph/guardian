@@ -106,7 +106,7 @@ const L = {
     ipfsInput: 'div.ipfs-url textarea',
     ipfsError: "small.p-error:contains('Invalid IPFS')",
     addLocationButton: 'button.add-feature-button',
-    addGeometryButton: "button.add-feature-button:contains('Add Geometry')",
+    addGeometryButton: "button.add-feature-button:contains('Add geometry')",
     includeAllButton: "button.add-feature-button:contains('Include all')",
     geoClearButton: "button.add-feature-button:contains('Clear')",
     geoTypeDropdown: 'p-select#typeDropdown',
@@ -815,7 +815,7 @@ export class PoliciesPage {
     // An optional GeoJSON field starts without an entry; a geometry needs a type and its coordinates.
     _fillGeoJsonPoint() {
         cy.get(L.requestForm).then(($form) => {
-            if (!$form.find('app-geojson-type button:contains("Add Geometry")').length) {
+            if (!$form.find('app-geojson-type button:contains("Add geometry")').length) {
                 cy.contains(`${L.requestForm} button`, 'Add geojson').click();
             }
         });

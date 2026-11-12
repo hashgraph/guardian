@@ -49,7 +49,7 @@ const UserPoliciesPageLocators = {
     IPFSInput: 'div.ipfs-url textarea',
     IPFSErrorLabel: ' Invalid IPFS CID/URL ',
     addLocButton: 'button.add-btn',
-    addGeoButton: 'Add Geometry',
+    addGeoButton: 'Add geometry',
     geoJSONTypeDropdown: "p-select[id='typeDropdown']",
     geoJSONTypeDropdownList: 'li[role="option"]',
     geoJSONErrorLabel: 'A GeoJSON object is required',
@@ -165,12 +165,23 @@ function answerField($field) {
 }
 
 // Adds a Point geometry to a GeoJSON editor (`getEditor` yields the app-geojson-type element).
+// The GeoJSON field edits its value in a dialog (appended to the body): Add geometry opens it on the
+// file tab for an empty value; a manual geometry is a card with a type and its coordinates, kept by Save.
+const GEO_DIALOG = '.p-dialog.geo-dialog';
+
 export function addGeoJsonPoint(getEditor) {
-    getEditor().contains('button', 'Add Geometry', { timeout: TIMEOUTS.ui }).click();
-    getEditor().find('p-select#typeDropdown').first().click();
+    getEditor().contains('button', 'Add geometry', { timeout: TIMEOUTS.ui }).click();
+    cy.get(GEO_DIALOG, { timeout: TIMEOUTS.ui }).should('be.visible');
+    cy.get(GEO_DIALOG).contains('p-tab', 'Enter manually').click();
+    cy.get(GEO_DIALOG).find('button.geo-add-button').click();
+    cy.get(GEO_DIALOG).find('p-select#typeDropdown').last().click();
     cy.contains(CommonElements.dropdownOption, /^Point$/).click();
-    getEditor().find('#coordinatesInput').first().type('[1.23,4.56]', { force: true });
-    getEditor().find('.validation-errors').should('not.exist');
+    cy.get(GEO_DIALOG).find('#coordinatesInput').last().type('[1.23,4.56]', { force: true });
+    cy.get(GEO_DIALOG).find('.validation-errors').should('not.exist');
+    cy.get(GEO_DIALOG).contains('button', 'Save').should('not.be.disabled').click();
+    cy.get('body').should(($body) => {
+        expect($body.find(`${GEO_DIALOG}:visible`).length, 'the GeoJSON dialog closed').to.eq(0);
+    });
 }
 
 // The link focuses its target once it has scrolled to it, which takes up to about a second. Yields the
@@ -208,7 +219,7 @@ function answerIncompleteEntries() {
         return cy.get(form).then(($openForm) => {
             // A GeoJSON entry has no input to answer until a geometry is added.
             const $emptyGeoEditors = $openForm.find('.sf-record-open app-geojson-type')
-                .filter((_, editor) => !editor.querySelector('#coordinatesInput'));
+                .filter((_, editor) => !!editor.querySelector('button.add-feature-button'));
             $emptyGeoEditors.each((_, editor) => addGeoJsonPoint(() => cy.wrap(editor)));
             const $invalid = $openForm.find('.sf-record-open').find([
                 'textarea.ng-invalid',
