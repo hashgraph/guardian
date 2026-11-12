@@ -75,3 +75,65 @@ describe('RequestVcDocumentBlockAddon runtime — getData schema reference', () 
         assertReference(data.schema);
     });
 });
+
+// A draft reaches the server only when a link listens to the DraftEvent, so the
+// client uses draftEnabled to decide where a "Save Draft" can go.
+
+const draftLink = { outputType: 'DraftEvent' };
+const runLink = { outputType: 'RunEvent' };
+
+async function requestBlockData(sourceLinks) {
+    const block = Object.create(RequestVcDocumentBlock.prototype);
+    block._schema = fullSchema();
+    block._accessMap = new Map();
+    block.state = {};
+    const ref = {
+        uuid: 'blk',
+        blockType: 'requestVcDocumentBlock',
+        actionType: 'local',
+        sourceLinks,
+        async getSources() { return []; },
+    };
+    PolicyComponentsUtils.GetBlockRef = () => ref;
+    PolicyComponentsUtils.GetBlockUniqueOptionsObject = () => ({});
+    return block.getData({ id: 'u1', location: 'local' });
+}
+
+async function addonBlockData(sourceLinks) {
+    const block = Object.create(RequestVcDocumentBlockAddon.prototype);
+    block._schema = fullSchema();
+    block._accessMap = new Map();
+    const ref = {
+        uuid: 'blk',
+        blockType: 'requestVcDocumentBlockAddon',
+        actionType: 'local',
+        sourceLinks,
+        async getOptions() { return {}; },
+    };
+    PolicyComponentsUtils.GetBlockRef = () => ref;
+    return block.getData({ id: 'u1', location: 'local' });
+}
+
+describe('RequestVcDocumentBlock runtime — getData draftEnabled', () => {
+    it('is true when a DraftEvent link is registered', async () => {
+        assert.isTrue((await requestBlockData([runLink, draftLink])).draftEnabled);
+    });
+
+    it('is false when only other events are linked', async () => {
+        assert.isFalse((await requestBlockData([runLink])).draftEnabled);
+    });
+
+    it('is false when nothing is linked', async () => {
+        assert.isFalse((await requestBlockData([])).draftEnabled);
+    });
+});
+
+describe('RequestVcDocumentBlockAddon runtime — getData draftEnabled', () => {
+    it('is true when a DraftEvent link is registered', async () => {
+        assert.isTrue((await addonBlockData([draftLink])).draftEnabled);
+    });
+
+    it('is false when no DraftEvent link is registered', async () => {
+        assert.isFalse((await addonBlockData([runLink])).draftEnabled);
+    });
+});

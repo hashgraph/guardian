@@ -28,6 +28,7 @@ interface IRequestDocumentData {
     relayerAccount: boolean;
     enableAdditionalData: boolean;
     draft: boolean;
+    draftEnabled?: boolean;
     editType: 'new' | 'edit';
     uiMetaData: {
         type: string;
@@ -85,6 +86,8 @@ export class RequestDocumentBlockComponent
     public restoreData: any;
     public readonly: boolean = false;
     public draft: boolean;
+    /** The server stores a draft only when the policy listens to the draft event */
+    public draftEnabled: boolean = true;
     public relayerAccount: boolean;
     public draftId?: string;
     public form: RequestDocumentFormComponent | null = null;
@@ -207,6 +210,7 @@ export class RequestDocumentBlockComponent
             this.relayerAccount = !!data.relayerAccount && !this.dryRun;
             this.enableAdditionalData = !!data.enableAdditionalData && !this.dryRun;
             this.draft = isDraft;
+            this.draftEnabled = data.draftEnabled !== false;
             this.draftId = (isDraft && row) ? row.id : null;
             if (uiMetaData.privateFields) {
                 for (

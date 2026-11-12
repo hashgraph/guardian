@@ -148,6 +148,10 @@ export class RequestVcDocumentBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
         const sources = await ref.getSources(user);
         const restoreData = this.state[user.id] && this.state[user.id].restoreData;
+        // A draft is stored on the server only when something listens to the DraftEvent
+        const draftEnabled = (ref.sourceLinks || []).some(
+            (link) => link.outputType === PolicyOutputEventType.DraftEvent
+        );
 
         return {
             id: ref.uuid,
@@ -174,6 +178,7 @@ export class RequestVcDocumentBlock {
             hideFields: options.hideFields || [],
             data: sources && sources.length && sources[0] || null,
             restoreData,
+            draftEnabled,
         };
     }
 

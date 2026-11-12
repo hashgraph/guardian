@@ -145,6 +145,10 @@ export class RequestVcDocumentBlockAddon {
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
         const options = await ref.getOptions(user);
+        // A draft is stored on the server only when something listens to the DraftEvent
+        const draftEnabled = (ref.sourceLinks || []).some(
+            (link) => link.outputType === PolicyOutputEventType.DraftEvent
+        );
 
         const data: IPolicyGetData = {
             id: ref.uuid,
@@ -163,6 +167,7 @@ export class RequestVcDocumentBlockAddon {
                 name: this._schema.name,
                 version: this._schema.version,
             },
+            draftEnabled,
         };
         return data;
     }

@@ -1,7 +1,7 @@
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { FormControl, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { of, Subscription } from 'rxjs';
+import { of, Subscription, throwError } from 'rxjs';
 import { DatePipe } from '@angular/common';
 import { DialogService } from 'primeng/dynamicdialog';
 import { RequestDocumentFormComponent } from './request-document-form.component';
@@ -436,6 +436,66 @@ describe('RequestDocumentFormComponent', () => {
             expect(element.textContent).toContain('Back to the form');
             expect(element.textContent).toContain('Preview again');
             expect(element.textContent).not.toContain('Go to field');
+            fixture.destroy();
+        });
+    });
+
+    describe('draft and autosave', () => {
+        const prepare = (component: RequestDocumentFormComponent) => {
+            const target = component as any;
+            target.storage = {
+                load: jasmine.createSpy('load').and.resolveTo(null),
+                save: jasmine.createSpy('save').and.resolveTo(undefined),
+                delete: jasmine.createSpy('delete').and.resolveTo(undefined),
+            };
+            target.tablePersist = { persistTablesInDocument: async () => undefined, rollbackIpfsUploads: async () => undefined };
+            target.geoFilePersist = { persistGeoFilesInDocument: async () => undefined, rollbackGridFsUploads: async () => undefined };
+            component.dataForm.addControl('title', new FormControl('Blue carbon'));
+            return target.storage as { load: jasmine.Spy; save: jasmine.Spy; delete: jasmine.Spy };
+        };
+        const settle = () => new Promise<void>((resolve) => setTimeout(resolve));
+
+        it('saves a draft only in the browser when the policy does not store drafts', async () => {
+            const { fixture, component } = create({ draftEnabled: false });
+            const storage = prepare(component);
+            await component.onStep(true);
+            expect(apiCall).not.toHaveBeenCalled();
+            expect(storage.save).toHaveBeenCalledWith('autosave', { title: 'Blue carbon' });
+            expect(storage.delete).not.toHaveBeenCalled();
+            expect(component.dataSaved).toBeTrue();
+            fixture.destroy();
+        });
+
+        it('sends the draft to the server when the policy stores drafts', async () => {
+            const { fixture, component } = create({ draftEnabled: true });
+            const storage = prepare(component);
+            apiCall.and.returnValue(of({ response: {} }));
+            await component.onStep(true);
+            expect(apiCall).toHaveBeenCalledTimes(1);
+            expect(apiCall.calls.mostRecent().args[2].draft).toBeTrue();
+            expect(storage.save).not.toHaveBeenCalled();
+            fixture.destroy();
+        });
+
+        it('keeps the autosave when the server rejects the request', async () => {
+            const { fixture, component } = create();
+            const storage = prepare(component);
+            apiCall.and.returnValue(throwError(() => ({ error: 'rejected' })));
+            spyOn(console, 'error');
+            await (component as any).onSubmit(true);
+            await settle();
+            expect(apiCall).toHaveBeenCalled();
+            expect(storage.delete).not.toHaveBeenCalled();
+            fixture.destroy();
+        });
+
+        it('deletes the autosave once the server accepts the request', async () => {
+            const { fixture, component } = create();
+            const storage = prepare(component);
+            apiCall.and.returnValue(of({ response: {} }));
+            await (component as any).onSubmit(true);
+            await settle();
+            expect(storage.delete).toHaveBeenCalledWith('autosave');
             fixture.destroy();
         });
     });

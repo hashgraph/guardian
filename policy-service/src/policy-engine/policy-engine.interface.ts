@@ -395,6 +395,11 @@ export interface IPolicyBlock {
     afterInit(): Promise<void>;
 
     /**
+     * Links of the events this block emits
+     */
+    sourceLinks: { outputType: PolicyOutputEventType }[];
+
+    /**
      * Add source link
      * @param link
      */

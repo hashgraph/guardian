@@ -102,6 +102,8 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     public get autosaveId() { return this.parent?.getAutosaveId(); }
     public get edit() { return this.parent?.edit; }
     public get draft() { return this.parent?.draft; }
+    /** False when the policy has nothing that stores a draft, so "Save Draft" can only save locally */
+    public get draftEnabled() { return this.parent?.draftEnabled !== false; }
     public get relayerAccount() { return this.parent?.relayerAccount; }
     public get user() { return this.parent?.user; }
     public get isLocalUser() { return this.parent?.isLocalUser; }
@@ -509,17 +511,23 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
             this.activeStepLabel = step?.label ?? null;
         });
         this.initForm(this.dataForm, false);
-        this.sub = interval(this.AUTOSAVE_INTERVAL).subscribe(async () => {
-            const data = this.dataForm.getRawValue();
-            const savedData = await this.storage.load(this.autosaveId);
-            const saveNeeded = await autosaveValueChanged(data, savedData);
-
-            if (saveNeeded) {
-                this.storage.save(this.autosaveId, data);
-                this.lastSavedAt = new Date();
-            }
-        });
+        this.sub = interval(this.AUTOSAVE_INTERVAL).subscribe(() => this.autosave());
         this.buttonNames['submit'] = (this.edit && !this.draft) ? 'Validate & Update' : 'Validate & Create';
+    }
+
+    /**
+     * Writes the current form values to the browser storage (IndexedDB) when they differ
+     * from what is already stored. Used by the timer and by a local "Save Draft".
+     */
+    private async autosave(): Promise<void> {
+        const data = this.dataForm.getRawValue();
+        const savedData = await this.storage.load(this.autosaveId);
+        const saveNeeded = await autosaveValueChanged(data, savedData);
+
+        if (saveNeeded) {
+            await this.storage.save(this.autosaveId, data);
+            this.lastSavedAt = new Date();
+        }
     }
 
     ngOnDestroy(): void {
@@ -829,7 +837,6 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
 
         prepareVcData(data);
         const draftId = this.parent instanceof RequestDocumentBlockComponent ? this.parent.draftId : null;
-        this.storage.delete(this.autosaveId);
 
         const evidence = this.enableAdditionalData ? this.buildEvidence() : undefined;
 
@@ -847,6 +854,8 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         this.policyEngineService
             .setBlockDataWithResult(this.id, this.policyId, payload)
             .subscribe((result) => {
+                // The autosave is the only copy until the server has accepted the document
+                this.storage.delete(this.autosaveId);
                 if (captureOutput) {
                     this.policyTest.captureTestCase({
                         policyId: this.policyId,
@@ -1135,7 +1144,11 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
             return;
         }
         if (draft) {
-            await this.onSubmit(true);
+            if (this.draftEnabled) {
+                await this.onSubmit(true);
+            } else {
+                await this.saveLocally();
+            }
             return;
         }
         const refreshed = this.previewMode && this.previewRequirementsStale;
@@ -1163,6 +1176,15 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         } else {
             await this.onSubmit(false);
         }
+    }
+
+    /**
+     * Save Draft for a policy that stores no drafts: keep the values in this browser,
+     * the same place the timer writes to, so the restore prompt offers them next time.
+     */
+    private async saveLocally(): Promise<void> {
+        await this.autosave();
+        this.dataSaved = true;
     }
 
     private restorePreviewMode(): void {
