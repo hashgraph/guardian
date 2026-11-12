@@ -114,7 +114,7 @@ export class MessagesReport {
         }
         this.messages.set(timestamp, null);
 
-        const message = await MessageServer
+        let message = await MessageServer
             .tryGetMessage({
                 messageId: timestamp,
                 loadIPFS: false,
@@ -124,15 +124,45 @@ export class MessagesReport {
                 mockId: ref.mockId
             });
 
+        if (!message && ref.dryRun && ref.mockId) {
+            message = await MessageServer.tryGetMessage({
+                messageId: timestamp,
+                loadIPFS: false,
+                userId,
+                interception: null,
+                dryRun: ref.dryRun,
+                mockId: null
+            });
+        }
+
         if (!message) {
             return;
         }
 
+        if (ref.dryRun && (message.type === MessageType.EVCDocument ||
+            ('encodedData' in message && message.encodedData))) {
+            return;
+        }
+
         if (this.needDocument(message)) {
-            await MessageServer.loadDocument(message, null, {
-                dryRun: ref.dryRun,
-                mockId: ref.mockId,
-            });
+            try {
+                await MessageServer.loadDocument(message, null, {
+                    dryRun: ref.dryRun,
+                    mockId: ref.mockId,
+                });
+            } catch (error) {
+                if (!ref.dryRun) {
+                    throw error;
+                }
+                const filters = { messageId: timestamp, policyId: ref.policyId };
+                const record = message.type === MessageType.VPDocument
+                    ? await ref.databaseServer.getVpDocument(filters)
+                    : await ref.databaseServer.getVcDocument(filters);
+                if (!record?.document) {
+                    return;
+                }
+                await message.loadDocuments([JSON.stringify(record.document)], null);
+            }
         }
 
         this.messages.set(timestamp, message.toJson());
@@ -197,10 +227,39 @@ export class MessagesReport {
         }
         this.topics.set(topicId, null);
 
-        const message = await MessageServer.getTopic(topicId, userId, {
-            dryRun: ref.dryRun,
-            mockId: ref.mockId,
-        });
+        let message: TopicMessage;
+        if (!ref.dryRun || ref.mockId) {
+            try {
+                message = await MessageServer.getTopic(topicId, userId, {
+                    dryRun: ref.dryRun,
+                    mockId: ref.mockId,
+                });
+            } catch (error) {
+                if (!ref.dryRun) {
+                    throw error;
+                }
+            }
+        }
+        if (!message && ref.dryRun) {
+            const messages = await MessageServer.getDryRunMessages<TopicMessage>({
+                dryRun: ref.dryRun,
+                topicId,
+                type: MessageType.Topic,
+                action: MessageAction.CreateTopic,
+                userId
+            });
+            message = messages.find((item) => !item.childId);
+            if (!message && !ref.mockId) {
+                try {
+                    message = await MessageServer.getTopic(topicId, userId, {
+                        dryRun: ref.dryRun,
+                        mockId: ref.mockId,
+                    });
+                } catch (error) {
+                    return;
+                }
+            }
+        }
 
         if (!message) {
             return;
@@ -229,6 +288,9 @@ export class MessagesReport {
         message: TopicMessage,
         userId: string | null
     ) {
+        if (ref.dryRun && !ref.mockId) {
+            return;
+        }
         if (message.messageType === TopicType.PolicyTopic) {
             const messages: any[] = await MessageServer.getTopicMessages({
                 topicId: message.getTopicId(),
