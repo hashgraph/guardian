@@ -1,5 +1,5 @@
 import { of, Subject, throwError } from 'rxjs';
-import { Schema, SchemaField } from '@guardian/interfaces';
+import { Schema, SchemaEntity, SchemaField } from '@guardian/interfaces';
 import { SchemasConfigurationComponent } from './schemas-configuration.component';
 import { FIELD_TYPES_UI } from 'src/app/modules/schema-engine/field-type-ui';
 
@@ -3794,6 +3794,81 @@ describe('SchemasConfigurationComponent', () => {
             component.openDrilledSchemaInNewTab();
 
             expect(open).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('the System tab', () => {
+        // A system schema exists only through the /schemas/system routes, with the Standard Registry or
+        // User entity: anything else is stored as a plain draft that no system list shows.
+        function systemComponent(state: any = {}): any {
+            const component = createComponent({ ...state, type: 'system' });
+            component.schemaService.createSystemSchemas = (s: any) => { component.created.push(s); return of({ ...s, id: 'sys-1' }); };
+            component.schemaService.getSystemSchemas = vi.fn(() => of({ body: [makeSchema({ id: 'sys-1' })], headers: { get: () => '1' } }));
+            component.schemaService.getSchemasByPage = vi.fn(() => of({ body: [], headers: { get: () => '0' } }));
+            component.schemaService.create = vi.fn(() => of([]));
+            return component;
+        }
+
+        it('offers only the Standard Registry and User entities for the schema', () => {
+            const component = systemComponent();
+
+            expect(component.schemaEntityOptions.map((o: any) => o.value)).toEqual([SchemaEntity.STANDARD_REGISTRY, SchemaEntity.USER]);
+        });
+
+        it('keeps the usual entities outside the System tab', () => {
+            const component = createComponent();
+
+            expect(component.schemaEntityOptions.map((o: any) => o.value)).toEqual([SchemaEntity.NONE, SchemaEntity.VC, SchemaEntity.EVC]);
+        });
+
+        it('starts a new schema as a Standard Registry schema', () => {
+            const component = systemComponent();
+            component.newSchemaName = 'New system schema';
+
+            component.saveNewSchema();
+
+            expect(component.selectedSchema.entity).toBe(SchemaEntity.STANDARD_REGISTRY);
+        });
+
+        it('creates a new schema through the system schema route', () => {
+            const fresh = makeSchema({ uuid: 'u-new', entity: SchemaEntity.USER, fields: [makeField()] });
+            fresh.id = undefined;
+            fresh._id = undefined;
+            const component = systemComponent({ schemas: [fresh], selectedSchema: fresh, dirtyIds: ['new:u-new'], newKeys: ['new:u-new'] });
+
+            component.saveAll();
+
+            expect(component.schemaService.create).not.toHaveBeenCalled();
+            expect(component.created.map((s: any) => s.uuid)).toEqual(['u-new']);
+            expect(fresh.id).toBe('sys-1');
+            expect(component.hasUnsavedChanges).toBe(false);
+        });
+
+        it('lists the system schemas in the sidebar', () => {
+            const component = systemComponent();
+
+            component.loadSchemas('');
+
+            expect(component.schemaService.getSchemasByPage).not.toHaveBeenCalled();
+            expect(component.schemas.map((s: any) => s.id)).toEqual(['sys-1']);
+        });
+
+        it('deletes a schema through the system schema route', () => {
+            const schema: any = makeSchema({ id: 'sys-1' });
+            const component = systemComponent({ schemas: [schema], selectedSchema: schema });
+            component.schemaService.getSchemaDeletionPreview = () => of({ deletableChildren: [], blockedChildren: [] });
+            component.schemaService.delete = vi.fn(() => of({ taskId: 'generic' }));
+            component.schemaService.deleteSystemSchema = vi.fn(() => of({ taskId: 'system' }));
+            component.router.createUrlTree = () => ({});
+            component.router.serializeUrl = () => '/schema-configuration';
+            component.router.navigate = vi.fn(() => Promise.resolve(true));
+            component.dialogService = { open: () => ({ onClose: of({ action: 'Delete', includeChildren: false }) }) };
+
+            component.onDeleteSchema(schema);
+
+            expect(component.schemaService.delete).not.toHaveBeenCalled();
+            expect(component.schemaService.deleteSystemSchema).toHaveBeenCalledWith('sys-1');
+            expect(component.router.navigate).toHaveBeenCalledWith(['task', 'system'], expect.anything());
         });
     });
 });
