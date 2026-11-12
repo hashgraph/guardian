@@ -11,8 +11,10 @@ describe('ProfileService profile pushes', () => {
     let service: ProfileService;
     let http: HttpTestingController;
     let toast: MockedObject<ToastService>;
+    let auth: { requireUsername: () => string };
 
     beforeEach(() => {
+        auth = { requireUsername: () => 'user' };
         toast = {
             error: vi.fn().mockName("ToastService.error")
         } as unknown as MockedObject<ToastService>;
@@ -21,7 +23,7 @@ describe('ProfileService profile pushes', () => {
                 ProfileService,
                 provideHttpClient(),
                 provideHttpClientTesting(),
-                { provide: AuthService, useValue: { getUsername: () => 'user' } },
+                { provide: AuthService, useValue: auth },
                 { provide: ToastService, useValue: toast },
             ],
         });
@@ -73,5 +75,15 @@ describe('ProfileService profile pushes', () => {
                 expect(toast.error).not.toHaveBeenCalled();
             });
         });
+    });
+
+    it('fails without sending a request when there is no signed-in user', () => {
+        auth.requireUsername = () => { throw new Error('There is no signed-in user'); };
+        let failure: unknown;
+
+        service.getBalance().subscribe({ error: (error: unknown) => failure = error });
+
+        http.expectNone(() => true);
+        expect((failure as Error).message).toBe('There is no signed-in user');
     });
 });

@@ -96,34 +96,13 @@ export class AuthService {
         this.accessTokenSubject.next(null);
     }
 
-    public setUsername(username: string) {
-        localStorage.setItem('username', username);
-    }
-
-    public removeUsername() {
-        localStorage.removeItem('username');
-    }
-
-    public getUsername(): string {
-        return localStorage.getItem('username') as string;
-    }
-
     /**
-     * The user id carried by the access token, or null when there is no usable
-     * session.
+     * The username carried by the access token, or null when there is no usable session.
      *
-     * Used only to scope preferences stored in this browser to the account that
-     * chose them - never as an access decision. The token is not verified here,
-     * and a forged one would only let its bearer read their own local settings.
+     * Read from the token rather than stored on its own, so it always names the account the requests
+     * are made as. The token is not verified here: never use it as an access decision.
      */
-    /**
-     * Identifies the signed-in account for per-user client storage.
-     *
-     * `username`, not an id: generateAccessToken signs { username, did, role,
-     * expireAt } and nothing else, so reading any id claim yields null for every
-     * real session.
-     */
-    public getUserKey(): string | null {
+    public getUsername(): string | null {
         const token = localStorage.getItem('accessToken');
         if (!token) {
             return null;
@@ -141,6 +120,18 @@ export class AuthService {
         } catch {
             return null;
         }
+    }
+
+    /**
+     * The signed-in username, for requests addressed to the user's own resources. Throws when there is
+     * no session, so such a request is never sent as `/null`.
+     */
+    public requireUsername(): string {
+        const username = this.getUsername();
+        if (!username) {
+            throw new Error('There is no signed-in user');
+        }
+        return username;
     }
 
     public getAccessToken() {

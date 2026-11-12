@@ -20,10 +20,10 @@ describe('AuthStateService — theme scoping', () => {
             reset: vi.fn().mockName("AppThemeService.reset")
         } as unknown as MockedObject<AppThemeService>;
         auth = {
-            getUserKey: vi.fn().mockName("AuthService.getUserKey"),
+            getUsername: vi.fn().mockName("AuthService.getUsername"),
             updateAccessToken: vi.fn().mockName("AuthService.updateAccessToken")
         } as unknown as MockedObject<AuthService>;
-        auth.getUserKey.mockReturnValue('user-a');
+        auth.getUsername.mockReturnValue('user-a');
 
         TestBed.configureTestingModule({
             providers: [

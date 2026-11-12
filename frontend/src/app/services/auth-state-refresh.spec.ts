@@ -19,10 +19,9 @@ describe('AuthStateService periodic token refresh', () => {
         localStorage.setItem('accessToken', 'token');
         localStorage.setItem('refreshToken', 'refresh');
         auth = {
-            getUserKey: vi.fn().mockReturnValue('user-a'),
+            getUsername: vi.fn().mockReturnValue('user-a'),
             updateAccessToken: vi.fn(),
             removeAccessToken: vi.fn(() => localStorage.removeItem('accessToken')),
-            removeUsername: vi.fn(),
         } as unknown as MockedObject<AuthService>;
         TestBed.configureTestingModule({
             providers: [
