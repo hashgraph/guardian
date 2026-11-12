@@ -1,5 +1,5 @@
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { TestBed, fakeAsync, flushMicrotasks, tick } from '@angular/core/testing';
 import { FormControl, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { of, Subscription, throwError } from 'rxjs';
 import { DatePipe } from '@angular/common';
@@ -476,6 +476,22 @@ describe('RequestDocumentFormComponent', () => {
             expect(storage.save).not.toHaveBeenCalled();
             fixture.destroy();
         });
+
+        it('does not write the autosave on the timer right after a draft was saved', fakeAsync(() => {
+            const { fixture, component } = create();
+            const storage = prepare(component);
+            // Adding the control above counts as an edit, so let it settle first
+            tick(2000);
+            component.dataSaved = true;
+            tick(118000);
+            flushMicrotasks();
+            expect(storage.save).not.toHaveBeenCalled();
+            component.dataSaved = false;
+            tick(120000);
+            flushMicrotasks();
+            expect(storage.save).toHaveBeenCalledTimes(1);
+            fixture.destroy();
+        }));
 
         it('keeps the autosave when the server rejects the request', async () => {
             const { fixture, component } = create();

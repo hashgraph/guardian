@@ -511,7 +511,12 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
             this.activeStepLabel = step?.label ?? null;
         });
         this.initForm(this.dataForm, false);
-        this.sub = interval(this.AUTOSAVE_INTERVAL).subscribe(() => this.autosave());
+        this.sub = interval(this.AUTOSAVE_INTERVAL).subscribe(() => {
+            // Nothing changed since the last save, so there is nothing new to keep
+            if (!this.dataSaved) {
+                this.autosave();
+            }
+        });
         this.buttonNames['submit'] = (this.edit && !this.draft) ? 'Validate & Update' : 'Validate & Create';
     }
 
