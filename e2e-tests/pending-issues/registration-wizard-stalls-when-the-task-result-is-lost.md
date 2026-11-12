@@ -4,12 +4,6 @@
 **Component:** `frontend` — `views/user-profile`, the `/task/:id` page
 **Severity:** medium — a user's task page that stops issuing requests fails the 00 suite intermittently
 
-## To verify: the onboarding round trip on a first-ever registration
-
-`flow_CDM_0001` on a fresh database failed in `HomePage._runUserOnboarding` with `expected '/user-profile' to include '/task'` (11 Nov twice, 12 Nov once). The 12 Nov run had the dev-server request trace and a browser-side trace: the app did go to the task page (`GET /tasks/<id>` 20 ms after `PUT /profiles/push/User2`) and came back to `/user-profile` 2.5 s later, when the task completed. The test missed the round trip: `completeUserWizard` (`configPage.js`) kept polling for the optional VC step for up to 10 s after the page had left the wizard, so `waitForTaskRoundtrip` started looking for `/task` when it was already over. A fresh database has no active USER system schema, hence no VC step, and its tasks are fast. The 11 Nov reading ("the app never navigated to `/task`") was wrong: the single `GET` of the task object 41 ms after the push was the task page.
-
-Fixed in the helper on 12 Nov: the poll stops once the page has left `/user-profile`, and its deadline is armed when it runs instead of when it is queued. Still to do: run `flow_CDM_0001` on a fresh database (a first-ever registration of `User2`) and delete this section if it passes.
-
 ## Open: a user's onboarding task page that does nothing (12 Nov 2026)
 
 `createAccount_Generate.cy.js` "Create and registration user" failed twice in a row right after a restart of the services (`the location pathname is still /task/<id> after 20000 ms`), and passed in the five runs before and after. Both times the onboarding completed server-side (the user had its DID, the task `Connect user` answered `completed: true` with the DID as result afterwards), the page had issued one `GET /tasks/<id>` (in progress), and then the dev-server proxy logged no request at all for the rest of the wait: no read of the task every 5 s, which the page does now, and no document reload. In a passing run of the same step the document reloads about 1.5 s after the first read (a new WebSocket and a full bootstrap: the `UPDATE_PERMISSIONS` push that follows the user's role change calls `location.reload()`) and lands on the home page. A page that stops issuing any request looks like a blocked or replaced document rather than a missed result; not pinned down. To look into it: capture the browser console of a failing run (`ELECTRON_ENABLE_LOGGING=1`) and the screenshot.
