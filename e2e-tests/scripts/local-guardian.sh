@@ -43,7 +43,11 @@ load_environment() {
   # shellcheck disable=SC1090
   source "$SOLO_ENV"
   set +a
-  eval "$(node "$E2E_DIR/scripts/quickstart-env.mjs")"
+  # A failure inside the substitution would not stop eval, so capture the output first.
+  local quickstart_exports
+  quickstart_exports=$(node "$E2E_DIR/scripts/quickstart-env.mjs") || fail "cannot read the quickstart JWT keys"
+  [[ -n "$quickstart_exports" ]] || fail "scripts/quickstart-env.mjs printed no JWT keys"
+  eval "$quickstart_exports"
   export JWT_PRIVATE_KEY JWT_PUBLIC_KEY SERVICE_JWT_PUBLIC_KEY_ALL SERVICE_JWT_SECRET_KEY_ALL
 }
 

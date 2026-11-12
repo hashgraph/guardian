@@ -35,7 +35,8 @@ export function renderExports(parsedEnv) {
     }).join('\n');
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+// realpath: argv[1] keeps a symlinked checkout path, while import.meta.url is always the resolved one.
+if (process.argv[1] && import.meta.url === pathToFileURL(fs.realpathSync(process.argv[1])).href) {
     try {
         console.log(renderExports(dotenv.parse(fs.readFileSync(process.argv[2] || defaultConfig))));
     } catch (error) {
