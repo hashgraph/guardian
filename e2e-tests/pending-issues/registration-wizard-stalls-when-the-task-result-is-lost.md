@@ -19,6 +19,10 @@ The user setup wizard's final (onboarding) task, from the post-reboot `flow_CDM_
 
 Not re-checked after the polling fix: it needs a fresh database (a first-ever registration of `User2`). If it still happens, the page re-initialization of `frontend-workspace-reinitializes-every-few-seconds.md` is the first suspect: the page left the wizard three seconds after the push, before any task page was shown.
 
+## Open: a user's onboarding task page that does nothing (12 Nov 2026)
+
+`createAccount_Generate.cy.js` "Create and registration user" failed twice in a row right after a restart of the services (`the location pathname is still /task/<id> after 20000 ms`), and passed in the five runs before and after. Both times the onboarding completed server-side (the user had its DID, the task `Connect user` answered `completed: true` with the DID as result afterwards), the page had issued one `GET /tasks/<id>` (in progress), and then the dev-server proxy logged no request at all for the rest of the wait: no read of the task every 5 s, which the page does now, and no document reload. In a passing run of the same step the document reloads about 1.5 s after the first read (a new WebSocket and a full bootstrap: the `UPDATE_PERMISSIONS` push that follows the user's role change calls `location.reload()`) and lands on the home page. A page that stops issuing any request looks like a blocked or replaced document rather than a missed result; not pinned down. To look into it: capture the browser console of a failing run (`ELECTRON_ENABLE_LOGGING=1`) and the screenshot.
+
 ## Open: the Generate ticket budget of the 00 suite
 
 A failed `PUT /profiles/push` in `root-profile.randomKey()` is not silent: the HTTP error interceptor shows a toast for every error but a 401, which goes through the token refresh. What the polling fix does not cover is whether the three wizard end states the budget below was built for (silent reset, spinner freeze, permanent preloader) still happen. To retire it: run the 00 specs a number of times with a log of how many tickets each Generate takes, and drop the budget if it is always one.
