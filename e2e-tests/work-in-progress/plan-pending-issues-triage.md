@@ -193,7 +193,7 @@ The plan is run with the cheapest model and effort that fit each step: Claude So
 | 4 — small product defects (items 1–4) | Claude Sonnet 5.5 | `high` |
 | 5 — reliability cluster (items 1–5) | Claude Opus 5.5 | `high` |
 | 6 — design-choice defects | Claude Opus 5.5 | `high` |
-| Final full `all` run | Claude Sonnet 5.5 | `medium` |
+| Final full `all` run (done 12 Nov: 276 specs passed, 1007 tests passed, 20 skipped) | Claude Sonnet 5.5 | `medium` |
 
 Rules for the agent:
 
