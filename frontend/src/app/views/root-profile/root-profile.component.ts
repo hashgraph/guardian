@@ -206,7 +206,11 @@ export class RootProfileComponent implements OnInit, OnDestroy {
                 this.cdRef.detectChanges();
             })
         );
-        this.loadProfile();
+        // changeTab() has just loaded it for the general tab. A second load would end the loading state
+        // again after the wizard is shown, and drop the progress of a Generate clicked in between.
+        if (this.tab !== 'general') {
+            this.loadProfile();
+        }
         this.step = 'HEDERA';
         this.refreshOtpStatus();
         this.subscriptions.add(

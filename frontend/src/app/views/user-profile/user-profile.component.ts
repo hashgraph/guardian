@@ -481,7 +481,11 @@ export class UserProfileComponent implements OnInit {
                 this.cdRef.detectChanges();
             })
         );
-        this.loadDate();
+        // changeTab() has just loaded it for the general tab. A second load would end the loading state
+        // again after the wizard is shown, and drop the progress of a Generate clicked in between.
+        if (this.tab !== 'general') {
+            this.loadDate();
+        }
         this.update();
         this.refreshOtpStatus();
     }
