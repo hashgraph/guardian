@@ -6,6 +6,7 @@
     "scripts": {
         "api-tests": "npx cypress run --env \"grepTags=all,grepFilterSpecs=true\" --spec \"cypress/e2e/api-tests/**/*.cy.js\" --browser chrome",
         "e2e": "npx cypress run",
+        "guardian:build": "scripts/local-guardian.sh build",
         "guardian:down": "scripts/local-guardian.sh down",
         "guardian:infra:down": "scripts/local-guardian.sh infra-down",
         "guardian:infra:up": "scripts/local-guardian.sh infra-up",

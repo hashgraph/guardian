@@ -3,6 +3,7 @@
 # the same way .github/workflows/e2e-tests.yml does, and runs the e2e suite against it.
 #
 #   npm run solo:up                          # once, creates the network and .solo/solo.env
+#   scripts/local-guardian.sh build [PKG...] # installs the Guardian workspace and builds the packages the stack runs
 #   scripts/local-guardian.sh infra-up       # infra containers only (needs docker: run it where docker is)
 #   scripts/local-guardian.sh services-up    # Guardian services only, waits until ready (can run in a dev container)
 #   scripts/local-guardian.sh up             # infra-up + services-up
@@ -34,6 +35,11 @@ if [[ -z "${INFRA_HOST:-}" ]]; then
   if [[ -f /.dockerenv ]]; then INFRA_HOST=host.docker.internal; else INFRA_HOST=127.0.0.1; fi
 fi
 INFRA_CONTAINERS=(guardian-e2e-cache guardian-e2e-nats guardian-e2e-mongo guardian-e2e-ipfs)
+GUARDIAN_PACKAGES=(
+  @guardian/interfaces @guardian/common @guardian/hedera
+  logger-service notification-service auth-service queue-service topic-listener-service
+  policy-service worker-service guardian-service api-gateway
+)
 
 fail() { echo "error: $*" >&2; exit 1; }
 
@@ -67,6 +73,24 @@ export_service_environment() {
   export LOCALNODE_ADDRESS="${LOCALNODE_ADDRESS//127.0.0.1/$INFRA_HOST}"
   export OVERRIDE_HEDERA_CONSENSUS_NODES="${OVERRIDE_HEDERA_CONSENSUS_NODES//127.0.0.1/$INFRA_HOST}"
   export OVERRIDE_HEDERA_MIRROR_NODES="${OVERRIDE_HEDERA_MIRROR_NODES//127.0.0.1/$INFRA_HOST}"
+}
+
+# The Yarn release is vendored (yarnPath in .yarnrc.yml), so neither a global yarn nor corepack is needed.
+run_yarn() {
+  local yarn_path
+  yarn_path=$(sed -n 's/^yarnPath: *//p' "$REPO_ROOT/.yarnrc.yml")
+  [[ -n "$yarn_path" ]] || fail "no yarnPath in $REPO_ROOT/.yarnrc.yml"
+  (cd "$REPO_ROOT" && node "$REPO_ROOT/$yarn_path" "$@")
+}
+
+# The same build as .github/workflows/e2e-run.yml; the services run dist/, so restart them afterwards.
+build_guardian() {           # build_guardian [package...], every package of the stack by default
+  [[ $# -gt 0 ]] || set -- "${GUARDIAN_PACKAGES[@]}"
+  local include_flags=() package
+  for package in "$@"; do include_flags+=(--include "$package"); done
+  run_yarn install --immutable
+  NODE_OPTIONS=--openssl-legacy-provider \
+    run_yarn workspaces foreach -A --topological-dev --parallel --jobs 4 "${include_flags[@]}" run build
 }
 
 start_infra() {
@@ -151,6 +175,10 @@ run_tests() {                # run_tests <tags> [spec...]
 }
 
 case "${1:-}" in
+  build)
+    shift
+    build_guardian "$@"
+    ;;
   infra-up)
     start_infra
     echo "Infra is up (MongoDB 27017, NATS 4222, Valkey 6379, Kubo 5001/8080)"
@@ -185,6 +213,6 @@ case "${1:-}" in
     stop_infra
     ;;
   *)
-    fail "usage: local-guardian.sh infra-up|services-up|up|test [SPEC...]|smoke|services-down|infra-down|down"
+    fail "usage: local-guardian.sh build [PKG...]|infra-up|services-up|up|test [SPEC...]|smoke|services-down|infra-down|down"
     ;;
 esac

@@ -4,12 +4,18 @@ The `/e2e-tests` folder comprises the Guardian Cypress test automation framework
 
 ## Quickstart
 
+You need Node.js 24, Docker, `kind` and `kubectl`. From a fresh clone:
+
 ```bash
 cd e2e-tests
+npm ci                       # the test dependencies
+npm run guardian:build       # installs the Guardian workspace and builds the packages the stack runs
 npm run solo:up              # the network, once
 npm run guardian:up          # MongoDB, NATS, Valkey and Kubo containers, then every Guardian service
 npm run guardian:test:smoke  # only the tests tagged smoke
 ```
+
+The services run the built `dist/` folders: after changing the Guardian sources, run `npm run guardian:build` again and restart them with `npm run guardian:services:down` and `npm run guardian:services:up`.
 
 **NOTE: Behind a TLS-intercepting proxy (for example Zscaler) image pulls inside the kind node fail with `x509: certificate signed by unknown authority`**. Set `SOLO_EXTRA_CA_CERT` to the PEM bundle of the proxy CA and `solo:up` installs it in the node before Solo creates any pod:
 
@@ -29,6 +35,7 @@ The two halves can run in different places, for example when the tests are drive
 
 ```bash
 npm run guardian:infra:up        # on the host: MongoDB, NATS, Valkey and Kubo containers
+npm run guardian:build           # in the dev container: installs and builds Guardian for the container's platform
 npm run guardian:services:up     # in the dev container: every Guardian service, gateway on http://127.0.0.1:3002
 npm run guardian:services:down   # restart the services without touching the infra or the database
 npm run guardian:infra:down      # on the host: removes the containers
@@ -38,19 +45,21 @@ npm run guardian:infra:down      # on the host: removes the containers
 
 ## Running every test
 
-`npm run test:everything` runs, one group after the other, everything the repository tests outside the service unit tests of `main.yml`: the linter on the specs, the tests of the helper scripts, the frontend unit specs and the whole Cypress suite. A group that fails does not stop the others; the summary at the end lists each one and the exit code is non-zero when any failed. Name the groups to run only those:
+`npm run test:everything` runs, one group after the other, everything the repository tests outside the service unit tests of `main.yml`: the linter on the specs, the tests of the helper scripts, the frontend unit specs and the whole Cypress suite. A group that fails does not stop the others; the summary at the end lists each one and the exit code is non-zero when any failed. Every group prepares what it needs first (`npm ci`, the Playwright browser, `npm run guardian:build`), so nothing has to be installed or built by hand; the `cypress` group only needs the network and the infra (`npm run solo:up` and `npm run guardian:infra:up`). Name the groups to run only those:
 
 ```bash
 npm run test:everything                       # lint, scripts, frontend, cypress
 npm run test:everything -- lint scripts       # only the linter and the helper-script tests
 ```
 
-| Group | What it runs | Needs |
+| Group | What it runs | Prepares |
 |---|---|---|
-| `lint` | `npx eslint cypress` | |
-| `scripts` | `npm run test:scripts` and `.github/scripts/report-test-summary.test.mjs` | |
-| `frontend` | `npx ng test --watch=false` in `frontend` (Vitest, headless Chromium) | `npx playwright install chromium` once |
-| `cypress` | `npm run guardian:test` | the stack: `npm run guardian:up` |
+| `lint` | `npx eslint cypress` | `npm ci` in `e2e-tests` |
+| `scripts` | `npm run test:scripts` and `.github/scripts/report-test-summary.test.mjs` | `npm ci` in `e2e-tests` |
+| `frontend` | `npx ng test --watch=false` in `frontend` (Vitest, headless Chromium) | `npm run guardian:build -- @guardian/interfaces`, `npm ci` in `frontend`, `npx playwright install chromium` |
+| `cypress` | `npm run guardian:test` | `npm ci` in `e2e-tests`, then stops the Guardian services, runs `npm run guardian:build` and starts them again (a failed build leaves them stopped) |
+
+`e2e-tests` is installed once per run even when several groups need it. In the dev container, prefix the command with `NODE_OPTIONS=--use-system-ca` when you run the `frontend` group: the Playwright download goes through the container's TLS proxy, whose certificate is only in the system store.
 
 ## Running tests manually
 
@@ -182,10 +191,10 @@ UI_GATEWAY_HOST=host.docker.internal UI_GATEWAY_PORT=3002 docker compose run --r
 
 #### Manual Setup
 
-From the `/e2e-tests` folder, run the following command to install Cypress:
+From the `/e2e-tests` folder, install Cypress and the other test dependencies from the lockfile:
 
 ```bash
-npm install cypress
+npm ci
 ```
 
 ### Configuration
@@ -715,19 +724,12 @@ The network is published on `127.0.0.1:35211` (consensus node, account `0.0.3`) 
 
 #### Pointing Guardian at it
 
-To run Guardian natively and the suite against it, the way the workflow does, install and build Guardian once from the repository root (this is the workflow's build step), then use the `e2e-tests` scripts:
-
-```bash
-yarn install --immutable
-yarn workspaces foreach -A --topological-dev --parallel --jobs 4 \
-  --include '@guardian/interfaces' --include '@guardian/common' --include '@guardian/hedera' \
-  --include notification-service --include logger-service --include auth-service \
-  --include queue-service --include topic-listener-service --include guardian-service \
-  --include policy-service --include worker-service --include api-gateway run build
-```
+To run Guardian natively and the suite against it, the way the workflow does, use the `e2e-tests` scripts. `guardian:build` installs the Guardian workspace with the Yarn release vendored in `.yarn/releases` and runs the workflow's build step; pass package names (`npm run guardian:build -- @guardian/interfaces`) to build only those. Run it before `solo:up`, which uploads the contract bytecode with the workspace's Hedera SDK:
 
 ```bash
 cd e2e-tests
+npm ci                       # the test dependencies
+npm run guardian:build       # the Guardian workspace and the packages the stack runs
 npm run solo:up              # the network, once
 npm run guardian:up          # MongoDB, NATS, Valkey and Kubo containers, then every Guardian service
 npm run guardian:test        # the whole suite
@@ -859,7 +861,7 @@ The HTML report includes:
 #### Pattern 1: Basic API Test Run
 
 ```bash
-npm install
+npm ci
 npx cypress run --browser chrome --env "grepTags=all,grepFilterSpecs=true"
 ```
 

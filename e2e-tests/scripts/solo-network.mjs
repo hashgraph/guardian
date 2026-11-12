@@ -252,7 +252,7 @@ async function createOperatorAccount(genesis) {
 
 function compileContracts() {
     const contractsDir = path.join(repoRoot, 'contracts');
-    run('npm', ['install'], { cwd: contractsDir });
+    run('npm', ['ci', '--no-audit', '--no-fund'], { cwd: contractsDir });
     // hardhat.config reads RPC_URL at load time, but `compile` never connects to it.
     run('npx', ['hardhat', 'compile'], { cwd: contractsDir, env: { ...process.env, RPC_URL: 'http://localhost:7546' } });
 }
