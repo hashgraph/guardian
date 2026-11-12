@@ -317,10 +317,10 @@
         </div>
     }
 
-    <div class="sc-main">
+    <div class="sc-main" #schemaLayout>
 
         <!-- ── Sidebar ──────────────────────────────────────────── -->
-        <aside class="sc-sidebar">
+        <aside class="sc-sidebar" [appSchemaListResize]="schemaLayout" #sidebarResize="schemaListResize">
 
             <div class="sc-sidebar-tabs">
                 @if (!isTemplateConfigMode) {
@@ -417,7 +417,7 @@
                                         <i class="pi pi-file"></i>
                                     </div>
                                     <div class="sc-schema-info">
-                                        <span class="sc-schema-name">
+                                        <span class="sc-schema-name" [appSchemaNameTooltip]="schema.name || ''">
                                             @if (isSchemaFeatured(schema)) {
                                                 <i class="pi pi-star-fill schema-featured-icon" pTooltip="Featured" tooltipPosition="right"></i>
                                             }
@@ -461,6 +461,14 @@
             }
 
         </aside>
+        <div class="sc-sidebar-resizer"
+             role="separator"
+             aria-label="Resize schema list"
+             aria-orientation="vertical"
+             [attr.aria-valuemin]="sidebarResize.minWidthPercent"
+             [attr.aria-valuemax]="sidebarResize.maxWidthPercent"
+             [attr.aria-valuenow]="sidebarResize.widthPercent"
+             (pointerdown)="sidebarResize.start($event)"></div>
 
         <!-- ═══════════════════════════════════════════════════════ CANVAS -->
         <div class="sc-canvas">

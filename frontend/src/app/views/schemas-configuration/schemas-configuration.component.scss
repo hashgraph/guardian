@@ -952,13 +952,27 @@ $sc-accent: var(--guardian-schema-accent, var(--color-primary, #4169E2));
 
 /* ── Sidebar ── */
 .sc-sidebar {
-    width: 230px;
+    box-sizing: border-box;
     background: var(--guardian-background, #fff);
     border-right: 1px solid var(--guardian-border-color, #E1E7EF);
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
     overflow: hidden;
+}
+
+.sc-sidebar-resizer {
+    width: 6px;
+    flex-shrink: 0;
+    cursor: col-resize;
+    touch-action: none;
+    user-select: none;
+    background: var(--guardian-background, #fff);
+
+    &:hover,
+    &:active {
+        background: var(--color-primary, #4169E2);
+    }
 }
 
 .sc-sidebar-tabs {
@@ -1039,6 +1053,7 @@ $sc-accent: var(--guardian-schema-accent, var(--color-primary, #4169E2));
 
 .sc-search-wrap {
     flex: 1;
+    min-width: 0;
     position: relative;
     display: flex;
     align-items: center;
@@ -1054,6 +1069,8 @@ $sc-accent: var(--guardian-schema-accent, var(--color-primary, #4169E2));
 
 .sc-search-input {
     width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
     font-size: 14px;
     padding: 5px 9px 5px 28px;
     border-radius: var(--sc-radius-sm);
