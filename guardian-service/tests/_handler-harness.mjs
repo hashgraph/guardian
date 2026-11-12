@@ -220,8 +220,10 @@ function splitByModule(pkg, modules, symbols) {
  * @param {object} overrides  partial module overrides; '@guardian/common' is merged
  *                            into the defaults, other keys replace wholesale.
  * @param {Array}  apiArgs    extra args after logger for multi-arg API fns.
+ * @param {Array}  [callArgs] the complete argument list of the API function, for those that do not
+ *                            take the logger first (`contractAPI(dataBaseServer, logger)`).
  */
-export async function loadAPI(distPath, apiFnName, overrides = {}, apiArgs = []) {
+export async function loadAPI(distPath, apiFnName, overrides = {}, apiArgs = [], callArgs = null) {
     const db = overrides.__db || makeDb();
     const commonDefaults = defaultCommonMocks(db);
     const mergedCommon = { ...commonDefaults, ...(overrides['@guardian/common'] || {}) };
@@ -248,7 +250,7 @@ export async function loadAPI(distPath, apiFnName, overrides = {}, apiArgs = [])
     const mod = await esmock(absDist, local, globals);
     const start = capturedHandlers.length;
     const logger = { error: async () => {}, info: async () => {}, warn: async () => {}, debug: async () => {} };
-    await mod[apiFnName](logger, ...apiArgs);
+    await mod[apiFnName](...(callArgs || [logger, ...apiArgs]));
     const mine = capturedHandlers.slice(start);
     const map = {};
     for (const { event, cb } of mine) map[event] = cb;
