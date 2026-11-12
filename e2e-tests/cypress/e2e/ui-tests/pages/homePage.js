@@ -5,6 +5,18 @@ import { docProbe, trackDocument, waitForLocation } from '../../../support/pageR
 import { TIMEOUTS, POLL_INTERVAL } from '../../../support/CustomHelpers/timeouts';
 import { dismissStickyToasts, completeUserWizard } from './configPage';
 
+// The account the app is signed in as: the username claim of the stored access token, which is
+// what the app itself reads (AuthService.getUsername). Null when there is no token.
+function sessionUsername(win) {
+	const token = win.localStorage.getItem('accessToken');
+	if (!token) {
+		return null;
+	}
+	const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+	const bytes = Uint8Array.from(win.atob(payload), (ch) => ch.charCodeAt(0));
+	return JSON.parse(new TextDecoder().decode(bytes)).username ?? null;
+}
+
 const HomePageLocators = {
 	usernameInput: '[formcontrolname="username"]',
 	usernameLoginInput: '[formcontrolname="login"]',
@@ -42,7 +54,7 @@ export class HomePage {
 		// knows when a swapped document starts a fresh bootstrap.
 		cy.visit(URL.Root, docProbe({
 			onBeforeLoad(win) {
-				['accessToken', 'refreshToken', 'username'].forEach((key) => win.localStorage.removeItem(key));
+				['accessToken', 'refreshToken'].forEach((key) => win.localStorage.removeItem(key));
 			},
 		}));
 		// A fresh browser must pull the whole app module graph through the dev server,
@@ -57,10 +69,8 @@ export class HomePage {
 		// while a login is in flight (the loading flag) and re-renders after,
 		// sign-out tears the session down and the app can re-establish it, and
 		// the dev build (environment.displayDemoAccounts) overlays the form
-		// with a demo accounts panel whose cards auto-log-in the app on click -
-		// one such login stores a null username and the app then boots a
-		// profiles/null session (422s, an eternal "Creating DID" wizard). So
-		// every form interaction is gated on the live document, the submit
+		// with a demo accounts panel whose cards auto-log-in the app on click
+		// as another user. So every form interaction is gated on the live document, the submit
 		// does its gate, its writes and its click in the page itself (see
 		// submit()), and the budgets below end in a recovery (or a loud
 		// failure): the only lever against a session establishment or a login
@@ -116,12 +126,11 @@ export class HomePage {
 		let generation = 0;
 		const sessionEstablished = (win) =>
 			win.location.pathname !== '/login' &&
-			!!win.localStorage.accessToken &&
-			win.localStorage.username === username;
+			sessionUsername(win) === username;
 		const otherSession = (win) =>
 			win.location.pathname !== '/login' &&
-			!!win.localStorage.accessToken &&
-			win.localStorage.username !== username;
+			sessionUsername(win) !== null &&
+			sessionUsername(win) !== username;
 		const formInput = (win) => win.document.querySelector(HomePageLocators.usernameLoginInput);
 		const formLive = (win) => {
 			if (win.location.pathname !== '/login') {
@@ -164,8 +173,7 @@ export class HomePage {
 		// login, so a v5 chain could gate on an enabled input and then type
 		// into a disabled or detached one (the 10 Nov v5 run B died on a
 		// disabled login input), and a coordinate click could land on a demo
-		// card or a toast instead of the button (the same run's app then
-		// logged itself into a null-username session). Done natively there is
+		// card or a toast instead of the button. Done natively there is
 		// no window for that: the gate, the value writes and the click happen
 		// in the same turn, the click dispatches on the button element itself
 		// (an overlay cannot steal it), and if the form is disabled or taken
@@ -227,7 +235,7 @@ export class HomePage {
 				});
 			});
 		};
-		const WIPED_KEYS = ['accessToken', 'refreshToken', 'username'];
+		const WIPED_KEYS = ['accessToken', 'refreshToken'];
 		const wipeSession = (win) => {
 			WIPED_KEYS.forEach((key) => win.localStorage.removeItem(key));
 		};
@@ -295,9 +303,9 @@ export class HomePage {
 					}
 					if (otherSession(win)) {
 						if (recovered) {
-							throw new Error(`login as ${username}: the app keeps re-establishing a session for ${win.localStorage.username} after the recovery boot`);
+							throw new Error(`login as ${username}: the app keeps re-establishing a session for ${sessionUsername(win)} after the recovery boot`);
 						}
-						return recover(win, `the app holds a session for ${win.localStorage.username}`);
+						return recover(win, `the app holds a session for ${sessionUsername(win)}`);
 					}
 					if (Date.now() < state.deadline) {
 						return cy.wait(POLL_INTERVAL).then(poll);
@@ -364,7 +372,7 @@ export class HomePage {
 					}
 					trackDocument(state, SESSION_STABLE_WINDOW, win);
 					if (!sessionEstablished(win)) {
-						const detail = `state: ${win.location.pathname}; stored user: ${win.localStorage.username || '(none)'}; token: ${win.localStorage.accessToken ? 'present' : 'absent'}`;
+						const detail = `state: ${win.location.pathname}; session user: ${sessionUsername(win) || '(none)'}; token: ${win.localStorage.accessToken ? 'present' : 'absent'}`;
 						if (recovered) {
 							throw new Error(`login as ${username}: the session was torn down after the recovery login (${detail})`);
 						}
