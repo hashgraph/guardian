@@ -3,6 +3,7 @@
 **Status:** open, content of the VM0033 policy (methodology calculation); to be confirmed against the VM0033 methodology by its maintainers
 **Component:** the custom-logic script of `calculate_project_fields` and `calculate_report_fields` in `Methodology Library/Verra/Verified Carbon Standard (VCS)/VM0033/VM0033.policy`; the e2e fixture `e2e-tests/cypress/fixtures/VM0033_7_23.policy` has the same script
 **Severity:** to be assessed. If one of the two branches is wrong, the shrub and herbaceous carbon terms are counted for the wrong strata, and that changes the computed emission reductions.
+**Issue:** https://github.com/hashgraph/guardian/issues/7357
 **Found while:** fixing the conditional output fields of the same script (`3a32dffd3`). That commit does not change this behavior: the same checks were in the script before it.
 
 ## What the script does
