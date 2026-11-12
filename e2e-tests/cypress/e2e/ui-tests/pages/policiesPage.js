@@ -1,8 +1,8 @@
 import URL from '../../../support/GuardianUrls';
 import * as Checks from '../../../support/checkingMethods';
 import CommonElements from '../../../support/defaultUIElements';
-import { waitForPageReady, waitForPageSettled, waitForTaskRoundtripWithRecovery, docProbe } from '../../../support/pageReadiness';
-import { dropFile, replaceInaccessibleTools } from '../../../support/importFlow';
+import { waitForPageReady, waitForPageSettled, docProbe } from '../../../support/pageReadiness';
+import { dropFile, replaceInaccessibleTools, waitForTaskRoundtrip } from '../../../support/importFlow';
 import { clickButtonInWizardSteps, clickWizardTab } from '../../../support/wizardSteps';
 import { addGeoJsonPoint, openOverviewSection } from './userPoliciesPage';
 import { TIMEOUTS, POLL_INTERVAL } from '../../../support/CustomHelpers/timeouts';
@@ -279,17 +279,10 @@ export class PoliciesPage {
      * not refresh on its own, so the row must only be read after the round
      * trip - a cy.visit before it would snapshot the pre-change status and
      * never update (the publish toast fires, the row still says Draft).
-     *
-     * The round trip waits through the task page with a reload budget: the
-     * task page completes on a one-shot GET plus a single user-gated WS push
-     * (no polling), so a push lost in the token-refresh window parks the app
-     * on /task/:id forever even though the task completed server-side (see
-     * pending-issues/registration-wizard-stalls-when-the-task-result-is-lost.md).
-     * A reload re-issues the GET, which returns the result once it exists.
      */
     _waitForAsyncStatusChange() {
         Checks.waitForLoading();
-        waitForTaskRoundtripWithRecovery();
+        waitForTaskRoundtrip();
     }
 
     discontinuePolicy(name) {
