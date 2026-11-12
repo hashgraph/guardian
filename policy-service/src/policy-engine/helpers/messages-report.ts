@@ -111,7 +111,8 @@ export class MessagesReport {
     private async checkMessage(
         ref: AnyBlockType,
         timestamp: string,
-        userId: string | null
+        userId: string | null,
+        allowHedera = false
     ) {
         if (this.messages.has(timestamp)) {
             return;
@@ -139,20 +140,29 @@ export class MessagesReport {
             });
         }
 
+        let fromHedera = false;
+        if (!message && ref.dryRun && allowHedera) {
+            message = await MessageServer.tryGetMessage({
+                messageId: timestamp,
+                loadIPFS: false,
+                userId,
+                interception: null,
+                dryRun: null,
+                mockId: null
+            });
+            fromHedera = !!message;
+        }
         if (!message) {
             return;
         }
 
-        if (ref.dryRun && (message.type === MessageType.EVCDocument ||
-            ('encodedData' in message && message.encodedData))) {
-            return;
-        }
-
-        if (this.needDocument(message)) {
+        const encrypted = ref.dryRun && (message.type === MessageType.EVCDocument ||
+            ('encodedData' in message && message.encodedData));
+        if (this.needDocument(message) && !encrypted) {
             try {
                 await MessageServer.loadDocument(message, null, {
-                    dryRun: ref.dryRun,
-                    mockId: ref.mockId,
+                    dryRun: fromHedera ? null : ref.dryRun,
+                    mockId: fromHedera ? null : ref.mockId,
                 });
             } catch (error) {
                 if (!ref.dryRun) {
@@ -162,21 +172,29 @@ export class MessagesReport {
                 const record = message.type === MessageType.VPDocument
                     ? await ref.databaseServer.getVpDocument(filters)
                     : await ref.databaseServer.getVcDocument(filters);
-                if (!record?.document) {
-                    return;
+                if (record?.document) {
+                    await message.loadDocuments([JSON.stringify(record.document)], null);
                 }
-                await message.loadDocuments([JSON.stringify(record.document)], null);
             }
         }
 
-        this.messages.set(timestamp, message.toJson());
+        const json = message.toJson();
+        if (encrypted) {
+            json.document = null;
+        }
+        if (ref.dryRun && (encrypted || (this.needDocument(message) && !json.document))) {
+            json.documentUnavailable = true;
+        }
+        this.messages.set(timestamp, json);
         this.users.set(message.getOwner(), null);
 
-        await this.checkToken(ref, message, userId);
+        if (!encrypted) {
+            await this.checkToken(ref, message, userId);
+        }
         await this.checkTopic(ref, message.getTopicId(), userId);
 
         for (const id of message.getRelationships()) {
-            await this.checkMessage(ref, id, userId);
+            await this.checkMessage(ref, id, userId, true);
         }
     }
 
@@ -275,7 +293,7 @@ export class MessagesReport {
             await this.checkTopic(ref, message.parentId, userId);
         }
         if (message.rationale) {
-            await this.checkMessage(ref, message.rationale, userId);
+            await this.checkMessage(ref, message.rationale, userId, true);
         }
 
         await this.checkSchemas(ref, message, userId);

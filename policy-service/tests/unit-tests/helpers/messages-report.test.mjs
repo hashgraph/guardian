@@ -230,7 +230,7 @@ function reportTopic(topicId = '0.0.20', extra = {}) {
 
 async function reportHarness({
     dryRun = 'dry-run-1', mockId = null,
-    messages = [], mockMessages = messages,
+    messages = [], mockMessages = messages, networkMessages = messages,
     records = [], files = new Map(),
     virtualTopics = [reportTopic()], networkTopics = [reportTopic()],
     readTopicMessages = async () => [],
@@ -273,7 +273,7 @@ async function reportHarness({
             '@guardian/hedera/message/message-server': {
                 MessageServer: {
                     async tryGetMessage(options) {
-                        const source = options.mockId ? mockMessages : messages;
+                        const source = options.mockId ? mockMessages : options.dryRun ? messages : networkMessages;
                         return source.find((item) => item.id === options.messageId) || null;
                     },
                     async loadDocument(message, key, options) {
@@ -414,7 +414,7 @@ describe('@unit MessagesReport dry-run documents and topics', () => {
         assert.equal(reportDocuments(report)[0]?.id, '1.1');
     });
 
-    it('omits a missing related document while keeping the rest of the chain', async () => {
+    it('keeps a missing related document and follows its relationships', async () => {
         const { report, ref } = await reportHarness({
             messages: [reportMessage('3.1', MessageType.VCDocument, ['2.1', '1.1']),
                 reportMessage('2.1', MessageType.VCDocument, ['0.1']),
@@ -422,13 +422,16 @@ describe('@unit MessagesReport dry-run documents and topics', () => {
             records: ['3.1', '1.1', '0.1'].map((id) => recordFor(id))
         });
         await report.start(ref, '3.1', null);
-        assert.deepEqual(reportDocuments(report).map((item) => item.id), ['3.1', '1.1']);
+        assert.deepEqual(reportDocuments(report).map((item) => item.id), ['3.1', '2.1', '0.1', '1.1']);
+        assert.isNull(reportDocuments(report).find((item) => item.id === '2.1').document);
     });
 
-    it('returns an empty report when the searched document record is missing', async () => {
+    it('keeps a searched message without content when its record is missing', async () => {
         const { report, ref } = await reportHarness({ messages: [reportMessage('1.1')] });
         await report.start(ref, '1.1', null);
-        assert.deepEqual(report.toJson(), { roles: [], topics: [], schemas: [], users: [], tokens: [] });
+        assert.equal(reportDocuments(report)[0]?.id, '1.1');
+        assert.isNull(reportDocuments(report)[0].document);
+        assert.isTrue(reportDocuments(report)[0].documentUnavailable);
     });
 
     it('does not use records from a different policy or dry run', async () => {
@@ -439,7 +442,8 @@ describe('@unit MessagesReport dry-run documents and topics', () => {
             ]
         });
         await report.start(ref, '1.1', null);
-        assert.deepEqual(reportDocuments(report), []);
+        assert.equal(reportDocuments(report)[0]?.id, '1.1');
+        assert.isNull(reportDocuments(report)[0].document);
     });
 
     for (const mockId of [null, 'mock-1']) {
@@ -448,14 +452,18 @@ describe('@unit MessagesReport dry-run documents and topics', () => {
             [MessageType.VCDocument, { encodedData: true }],
             [MessageType.RoleDocument, { encodedData: true }]
         ]) {
-            it(`omits encrypted ${type} contents and relationships with mock ${mockId}`, async () => {
+            it(`keeps encrypted ${type} metadata and relationships without exposing contents with mock ${mockId}`, async () => {
                 const { report, ref } = await reportHarness({
                     mockId, messages: [reportMessage('1.1', type, ['0.1'], extra), reportMessage('0.1')],
                     records: [recordFor('1.1', storedCredential('Private body')), recordFor('0.1')],
                     files: new Map([['1.1', storedCredential('Private body')]])
                 });
                 await report.start(ref, '1.1', null);
-                assert.deepEqual(report.toJson(), { roles: [], topics: [], schemas: [], users: [], tokens: [] });
+                const messages = reportDocuments(report);
+                assert.deepEqual(messages.map((item) => item.id), ['1.1', '0.1']);
+                assert.isNull(messages[0].document);
+                assert.isTrue(messages[0].documentUnavailable);
+                assert.notInclude(JSON.stringify(report.toJson()), 'Private body');
             });
         }
     }
@@ -832,5 +840,118 @@ describe('@unit MessagesReport dry-run users and tokens', () => {
         await report.start(ref, '1.1', null);
         assert.deepEqual(report.toJson().tokens, [null]);
         assert.deepEqual(report.toJson().users, []);
+    });
+});
+
+describe('@unit MessagesReport historical document messages', () => {
+    const cases = [
+        {
+            name: 'emission reductions linked to the first project description',
+            rootId: '1794.432960076', oldId: '1794.414951554', latestId: '1794.433034035',
+            roleId: '1794.413415539', policyId: '1794.413284824',
+            rootTag: 'pp_ex_calculations_assign_update_save'
+        },
+        {
+            name: 'issuance request linked to an earlier verified project record',
+            rootId: '1794.435208584', oldId: '1794.435193721', latestId: '1794.435211817',
+            roleId: '1794.435027761', policyId: '1794.435016834',
+            rootTag: 'admin_issuance_approve_save'
+        }
+    ];
+    for (const sample of cases) {
+        for (const mockId of [null, 'mock-later']) {
+            it(`keeps the complete chain for ${sample.name} with mock ${mockId}`, async () => {
+                const old = reportMessage(sample.oldId, MessageType.VCDocument, [sample.roleId], { startMessage: sample.oldId });
+                const latest = reportMessage(sample.latestId, MessageType.VCDocument, [sample.roleId]);
+                const root = reportMessage(sample.rootId, MessageType.VCDocument, [sample.oldId], { tag: sample.rootTag });
+                const role = reportMessage(sample.roleId, MessageType.RoleDocument);
+                const policy = reportMessage(sample.policyId, 'Instance-Policy');
+                const historicalFile = storedCredential('Original historical body');
+                const { report, ref } = await reportHarness({
+                    mockId, messages: [root, old, latest, role, policy],
+                    virtualTopics: [reportTopic('0.0.20', { rationale: sample.policyId })],
+                    networkTopics: [],
+                    records: [recordFor(sample.rootId), recordFor(sample.roleId),
+                        recordFor(sample.latestId, storedCredential('Latest content must not become historical content'))]
+                });
+                await report.start(ref, sample.rootId, null);
+                const messages = reportDocuments(report);
+                assert.sameMembers(messages.map((item) => item.id),
+                    [sample.rootId, sample.oldId, sample.roleId, sample.policyId]);
+                const oldCard = messages.find((item) => item.id === sample.oldId);
+                assert.isNull(oldCard.document);
+                assert.isTrue(oldCard.documentUnavailable);
+                assert.deepEqual(oldCard.relationships, [sample.roleId]);
+                assert.equal(report.toJson().roles[0].id, sample.roleId);
+                assert.notInclude(JSON.stringify(report.toJson()), 'Latest content must not');
+                const { report: latestReport, ref: latestRef } = await reportHarness({
+                    messages: [latest], records: [recordFor(sample.latestId, storedCredential('Latest content'))]
+                });
+                await latestReport.start(latestRef, sample.latestId, null);
+                assert.equal(reportDocuments(latestReport)[0].document.credentialSubject[0].name, 'Latest content');
+                const { report: mockReport, ref: mockRef } = await reportHarness({
+                    mockId: 'mock-available', messages: [reportMessage(sample.oldId)],
+                    files: new Map([[sample.oldId, historicalFile]]),
+                    records: [recordFor(sample.latestId, storedCredential('Later state'))]
+                });
+                await mockReport.start(mockRef, sample.oldId, null);
+                assert.deepEqual(reportDocuments(mockReport)[0].document, historicalFile);
+                assert.isUndefined(reportDocuments(mockReport)[0].documentUnavailable);
+            });
+        }
+    }
+
+    it('keeps cycle protection when a missing body links back to the searched message', async () => {
+        const { report, ref } = await reportHarness({
+            messages: [reportMessage('2.1', MessageType.VCDocument, ['1.1']),
+                reportMessage('1.1', MessageType.VCDocument, ['2.1'])],
+            records: [recordFor('2.1')]
+        });
+        await report.start(ref, '2.1', null);
+        assert.sameMembers(reportDocuments(report).map((message) => message.id), ['2.1', '1.1']);
+    });
+});
+
+describe('@unit MessagesReport pre-existing chain messages', () => {
+    it('loads a real create-policy rationale reached through the policy topic', async () => {
+        const createPolicy = reportMessage('1794412906.816569104', 'Policy', [], { topicId: '0.0.10' });
+        const { report, ref } = await reportHarness({
+            messages: [reportMessage('1.1')], records: [recordFor('1.1')], networkMessages: [createPolicy],
+            virtualTopics: [reportTopic('0.0.20', { parentId: '0.0.30' }),
+                reportTopic('0.0.30', { rationale: createPolicy.id, parentId: '0.0.10' })],
+            networkTopics: [reportTopic('0.0.10')]
+        });
+        await report.start(ref, '1.1', null);
+        assert.equal(reportDocuments(report).find((message) => message.id === createPolicy.id)?.type, 'Policy');
+    });
+
+    it('does not search Hedera for an initial non-mock dry-run query', async () => {
+        const { report, ref } = await reportHarness({ messages: [],
+            networkMessages: [reportMessage('1794412906.816569104', 'Policy')] });
+        await report.start(ref, '1794412906.816569104', null);
+        assert.deepEqual(report.toJson(), { topics: [], roles: [], schemas: [], tokens: [], users: [] });
+    });
+
+    it('reads a pre-existing linked document file outside the virtual file context', async () => {
+        const real = reportMessage('1794412906.816569104');
+        const document = storedCredential('Before dry run');
+        const { report, ref } = await reportHarness({
+            messages: [reportMessage('1.1', 'Instance-Policy', [real.id])], networkMessages: [real],
+            readDocument: async (message, key, options) => {
+                if (options.dryRun) { throw new Error('Real file read incorrectly marked virtual'); }
+                await message.loadDocuments([JSON.stringify(document)], key);
+                return message;
+            }
+        });
+        await report.start(ref, '1.1', null);
+        assert.deepEqual(reportDocuments(report).find((message) => message.id === real.id)?.document, document);
+    });
+
+    it('finishes when a linked message is missing from both stores', async () => {
+        const { report, ref } = await reportHarness({
+            messages: [reportMessage('1.1', 'Instance-Policy', ['missing'])], networkMessages: []
+        });
+        await report.start(ref, '1.1', null);
+        assert.deepEqual(reportDocuments(report).map((message) => message.id), ['1.1']);
     });
 });
