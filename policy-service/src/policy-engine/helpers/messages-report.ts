@@ -10,7 +10,7 @@ import { SchemaMessage } from '@guardian/hedera/message/schema-message';
 import { TopicMessage } from '@guardian/hedera/message/topic-message';
 import { UrlType } from '@guardian/hedera/message/url.interface';
 import { VCMessage } from '@guardian/hedera/message/vc-message';
-import { TopicType, WorkerTaskType } from '@guardian/interfaces';
+import { TokenType, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { AnyBlockType } from '../policy-engine.interface.js';
 
 /**
@@ -383,6 +383,9 @@ export class MessagesReport {
     private async checkUsers(ref: AnyBlockType, userId: string | null) {
         const topics: Set<string> = new Set<string>();
         for (const did of this.users.keys()) {
+            if (ref.dryRun && !ref.mockId) {
+                continue;
+            }
             try {
                 const { topicId } = HederaDid.parse(did);
                 topics.add(topicId);
@@ -413,6 +416,31 @@ export class MessagesReport {
                 continue;
             }
         }
+        if (ref.dryRun) {
+            for (const did of this.users.keys()) {
+                if (!did || this.users.get(did)) {
+                    continue;
+                }
+                const record = await ref.databaseServer.getDidDocument(did)
+                    || await DatabaseServer.getDidDocument(did);
+                if (!record?.document) {
+                    continue;
+                }
+                const message = DIDMessage.fromJson({
+                    id: record.messageId || null,
+                    type: MessageType.DIDDocument,
+                    action: MessageAction.CreateDID,
+                    did,
+                    topicId: record.topicId || HederaDid.parse(did).topicId,
+                    document: record.document
+                });
+                const json = message.toJson();
+                this.users.set(did, json);
+                if (record.messageId) {
+                    this.messages.set(record.messageId, json);
+                }
+            }
+        }
     }
 
     /**
@@ -438,10 +466,29 @@ export class MessagesReport {
                 dryRun: ref.dryRun,
                 mockId: ref.mockId,
             });
-            return info;
+            if (info || !ref.dryRun) {
+                return info;
+            }
         } catch (error) {
-            return null;
+            if (!ref.dryRun) {
+                return null;
+            }
         }
+        if (ref.dryRun) {
+            const token = await ref.databaseServer.getToken(tokenId, ref.dryRun)
+                || await DatabaseServer.getToken(tokenId);
+            if (token) {
+                return {
+                    name: token.tokenName,
+                    symbol: token.tokenSymbol,
+                    token_id: token.tokenId,
+                    type: token.tokenType === TokenType.NON_FUNGIBLE ? 'NON_FUNGIBLE_UNIQUE' : 'FUNGIBLE_COMMON',
+                    memo: '',
+                    decimals: token.decimals
+                };
+            }
+        }
+        return null;
     }
 
     /**

@@ -1,6 +1,7 @@
 import { assert } from 'chai';
 import esmock from 'esmock';
 import { SchemaMessage as ReportSchemaMessage } from '@guardian/hedera/message/schema-message';
+import { DIDMessage as ReportDIDMessage } from '@guardian/hedera/message/did-message';
 
 const MessageType = {
     VCDocument: 'VC-Document',
@@ -46,6 +47,7 @@ const { MessagesReport } = await esmock.strict(
             VCMessage: class {}
         },
         '@guardian/interfaces': {
+            TokenType: { NON_FUNGIBLE: 'non-fungible', FUNGIBLE: 'fungible' },
             TopicType: { PolicyTopic: 'PolicyTopic' },
             WorkerTaskType: { GET_TOKEN_INFO: 'GET_TOKEN_INFO' },
         },
@@ -183,7 +185,7 @@ describe('@unit MessagesReport.getToken', () => {
     });
 });
 
-const reportTypes = { ...MessageType, EVCDocument: 'EVC-Document', Topic: 'Topic' };
+const reportTypes = { ...MessageType, EVCDocument: 'EVC-Document', Topic: 'Topic', DIDDocument: 'DID-Document' };
 const fileError = new Error('Unable to get virtual file');
 
 function storedCredential(label = 'Project Description') {
@@ -199,7 +201,7 @@ function storedCredential(label = 'Project Description') {
 function reportMessage(id, type = MessageType.VCDocument, relationships = [], extra = {}) {
     return {
         id, type, relationships, topicId: '0.0.20', document: null, ...extra,
-        getOwner() { return 'did:hedera:testnet:virtual'; },
+        getOwner() { return this.owner || 'did:hedera:testnet:virtual'; },
         getTopicId() { return this.topicId; },
         getRelationships() { return this.relationships; },
         loadDocuments(documents) { this.document = JSON.parse(documents[0]); },
@@ -234,7 +236,10 @@ async function reportHarness({
     readTopicMessages = async () => [],
     readVirtualTopics,
     readDocument, missingTopicReturnsNull = false,
-    schemaStore = [], readSchemas
+    schemaStore = [], readSchemas, didRecords = [], globalDidRecords = [],
+    tokenRecords = [], globalTokenRecords = [],
+    parseDid = () => ({ topicId: '0.0.20' }),
+    readToken = async () => { throw new Error('Token not on network'); }
 } = {}) {
     const topicError = new Error('Topic not found');
     const { MessagesReport: Report } = await esmock.strict(
@@ -242,6 +247,8 @@ async function reportHarness({
         {
             '@guardian/common/database-modules/database-server': {
                 DatabaseServer: {
+                    async getDidDocument(did) { return globalDidRecords.find((item) => item.did === did) || null; },
+                    async getToken(tokenId) { return globalTokenRecords.find((item) => item.tokenId === tokenId) || null; },
                     async getSchemas(filters) {
                         if (readSchemas) {
                             return readSchemas(filters);
@@ -251,10 +258,10 @@ async function reportHarness({
                     }
                 }
             },
-            '@guardian/common/helpers/workers': { Workers: class {} },
-            '@guardian/hedera/message/did-message': { DIDMessage: class {} },
+            '@guardian/common/helpers/workers': { Workers: class { async addRetryableTask() { return readToken(); } } },
+            '@guardian/hedera/message/did-message': { DIDMessage: ReportDIDMessage },
             '@guardian/hedera/vcjs/did/hedera-did': {
-                HederaDid: { parse() { throw new Error('No public DID topic in this fixture'); } }
+                HederaDid: { parse: parseDid }
             },
             '@guardian/hedera/message/message': { Message: class {} },
             '@guardian/hedera/message/message-action': {
@@ -302,6 +309,7 @@ async function reportHarness({
             '@guardian/hedera/message/url.interface': { UrlType: { url: 'url' } },
             '@guardian/hedera/message/vc-message': { VCMessage: class {} },
             '@guardian/interfaces': {
+                TokenType: { NON_FUNGIBLE: 'non-fungible', FUNGIBLE: 'fungible' },
                 TopicType: { PolicyTopic: 'POLICY_TOPIC' },
                 WorkerTaskType: { GET_TOKEN_INFO: 'GET_TOKEN_INFO' }
             }
@@ -311,6 +319,8 @@ async function reportHarness({
         dryRun, mockId, policyId: 'policy-1',
         policyInstance: { topicId: '0.0.30', tools: [{ topicId: '0.0.40' }] },
         databaseServer: {
+            async getDidDocument(did) { return didRecords.find((item) => item.did === did) || null; },
+            async getToken(tokenId) { return tokenRecords.find((item) => item.tokenId === tokenId) || null; },
             async getVcDocument(filters) {
                 return records.find((item) => item.kind === 'vc' &&
                     item.dryRun === dryRun && item.policyId === filters.policyId &&
@@ -699,5 +709,128 @@ describe('@unit MessagesReport dry-run schemas', () => {
         await report.start(ref, '1.1', null);
         assert.equal(reportDocuments(report)[0].id, '1.1');
         assert.deepEqual(report.toJson().schemas, []);
+    });
+});
+
+function storedDid(did = 'did:hedera:testnet:virtual', extra = {}) {
+    return { did, topicId: '0.0.20', document: { id: did, verificationMethod: [{ id: `${did}#key-1` }] }, ...extra };
+}
+
+function storedToken(extra = {}) {
+    return { tokenId: '0.0.50', tokenName: 'Project credits', tokenSymbol: 'PRJ',
+        tokenType: 'non-fungible', decimals: 0, ...extra };
+}
+
+function mintCredential() {
+    const document = storedCredential();
+    document.credentialSubject = [{ type: 'MintToken', tokenId: '0.0.50', amount: 1 }];
+    return document;
+}
+
+describe('@unit MessagesReport dry-run users and tokens', () => {
+    it('returns the virtual DID document without requiring a published DID message', async () => {
+        const did = storedDid();
+        const { report, ref } = await reportHarness({
+            messages: [reportMessage('1.1')], files: new Map([['1.1', storedCredential()]]),
+            didRecords: [did], readTopicMessages: async () => { throw new Error('DID is not on network'); }
+        });
+        await report.start(ref, '1.1', null);
+        const [user] = report.toJson().users;
+        assert.equal(user?.did, did.did);
+        assert.equal(user.type, 'DID-Document');
+        assert.equal(user.action, 'create-did');
+        assert.deepEqual(user.document, did.document);
+        assert.equal(reportDocuments(report).length, 1);
+    });
+
+    it('uses the global registry DID when no dry-run DID record exists', async () => {
+        const did = storedDid('did:hedera:testnet:registry', { messageId: '0.1' });
+        const { report, ref } = await reportHarness({
+            messages: [reportMessage('1.1', MessageType.VCDocument, [], { owner: did.did })],
+            files: new Map([['1.1', storedCredential()]]), globalDidRecords: [did]
+        });
+        await report.start(ref, '1.1', null);
+        assert.deepEqual(report.toJson().users[0]?.document, did.document);
+        assert.equal(report.toJson().users[0]?.id, '0.1');
+        assert.equal(reportDocuments(report).find((item) => item.id === '0.1')?.type, 'DID-Document');
+    });
+
+    it('prefers the dry-run DID over a global record for the same DID', async () => {
+        const did = storedDid();
+        const { report, ref } = await reportHarness({
+            messages: [reportMessage('1.1')], files: new Map([['1.1', storedCredential()]]),
+            didRecords: [did], globalDidRecords: [storedDid(did.did, { document: { id: 'other' } })]
+        });
+        await report.start(ref, '1.1', null);
+        assert.deepEqual(report.toJson().users[0]?.document, did.document);
+    });
+
+    it('retains a DID document successfully loaded through mocks', async () => {
+        const did = storedDid();
+        const message = ReportDIDMessage.fromJson({ id: '0.1', type: 'DID-Document',
+            action: 'create-did', topicId: '0.0.20', did: did.did, document: did.document });
+        const { report, ref } = await reportHarness({
+            mockId: 'mock-1', messages: [reportMessage('1.1')],
+            files: new Map([['1.1', storedCredential()], ['0.1', did.document]]),
+            didRecords: [storedDid(did.did, { document: { id: 'later' } })],
+            readTopicMessages: async () => [message]
+        });
+        await report.start(ref, '1.1', null);
+        assert.deepEqual(report.toJson().users[0]?.document, did.document);
+    });
+
+    it('keeps the chain usable when a DID is missing from both stores', async () => {
+        const { report, ref } = await reportHarness({
+            messages: [reportMessage('1.1')], files: new Map([['1.1', storedCredential()]])
+        });
+        await report.start(ref, '1.1', null);
+        assert.deepEqual(report.toJson().users, []);
+        assert.equal(reportDocuments(report)[0].id, '1.1');
+    });
+
+    for (const [label, tokenRecords, globalTokenRecords] of [
+        ['dry-run', [storedToken()], []], ['pre-existing', [], [storedToken()]]
+    ]) {
+        it(`returns the ${label} token name and symbol from stored data`, async () => {
+            const { report, ref } = await reportHarness({
+                messages: [reportMessage('1.1')], files: new Map([['1.1', mintCredential()]]),
+                tokenRecords, globalTokenRecords
+            });
+            await report.start(ref, '1.1', null);
+            assert.deepEqual(report.toJson().tokens, [{ name: 'Project credits', symbol: 'PRJ',
+                tokenId: '0.0.50', type: 'NON_FUNGIBLE_UNIQUE', memo: '', decimals: 0 }]);
+        });
+    }
+
+    it('uses stored token data when the worker returns no token', async () => {
+        const { report, ref } = await reportHarness({
+            messages: [reportMessage('1.1')], files: new Map([['1.1', mintCredential()]]),
+            tokenRecords: [storedToken({ tokenType: 'fungible', decimals: 2 })], readToken: async () => null
+        });
+        await report.start(ref, '1.1', null);
+        assert.equal(report.toJson().tokens[0]?.type, 'FUNGIBLE_COMMON');
+        assert.equal(report.toJson().tokens[0]?.decimals, 2);
+    });
+
+    it('retains the token information returned by the existing worker', async () => {
+        const { report, ref } = await reportHarness({
+            messages: [reportMessage('1.1')], files: new Map([['1.1', mintCredential()]]),
+            tokenRecords: [storedToken()],
+            readToken: async () => ({ name: 'Original token', symbol: 'ORIG', token_id: '0.0.50',
+                type: 'NON_FUNGIBLE_UNIQUE', memo: 'original memo', decimals: 0 })
+        });
+        await report.start(ref, '1.1', null);
+        assert.equal(report.toJson().tokens[0].name, 'Original token');
+        assert.equal(report.toJson().tokens[0].memo, 'original memo');
+    });
+
+    it('preserves published missing-token and missing-DID behavior without reading local fallback data', async () => {
+        const { report, ref } = await reportHarness({
+            dryRun: null, messages: [reportMessage('1.1')], files: new Map([['1.1', mintCredential()]]),
+            tokenRecords: [storedToken()], didRecords: [storedDid()]
+        });
+        await report.start(ref, '1.1', null);
+        assert.deepEqual(report.toJson().tokens, [null]);
+        assert.deepEqual(report.toJson().users, []);
     });
 });
