@@ -49,16 +49,8 @@ const UserPoliciesPageLocators = {
     IPFSInput: 'div.ipfs-url textarea',
     IPFSErrorLabel: ' Invalid IPFS CID/URL ',
     addLocButton: 'button.add-btn',
-    addGeoButton: 'Add geometry',
     geoJSONTypeDropdown: "p-select[id='typeDropdown']",
     geoJSONTypeDropdownList: 'li[role="option"]',
-    geoJSONErrorLabel: 'A GeoJSON object is required',
-    switchButtonGeoJSONInput: 'switch-button',
-    // the form's draft menu has a file input of its own
-    geoJSONFileInput: 'app-geojson-type app-file-drag-n-drop input[type="file"]',
-    includeAllButton: 'Include all',
-    clearButton: 'Clear',
-    locationPanel: 'div.location-control',
     largeFileDialogHeader: 'File too large to preview',
     largeFileAccept: 'Upload without preview',
     previewUnavailable: 'app-geojson-type .geo-preview-unavailable',
@@ -170,14 +162,27 @@ function answerField($field) {
 const GEO_DIALOG = '.p-dialog.geo-dialog';
 
 export function addGeoJsonPoint(getEditor) {
-    getEditor().contains('button', 'Add geometry', { timeout: TIMEOUTS.ui }).click();
-    cy.get(GEO_DIALOG, { timeout: TIMEOUTS.ui }).should('be.visible');
+    openGeoDialog(getEditor);
     cy.get(GEO_DIALOG).contains('p-tab', 'Enter manually').click();
     cy.get(GEO_DIALOG).find('button.geo-add-button').click();
     cy.get(GEO_DIALOG).find('p-select#typeDropdown').last().click();
     cy.contains(CommonElements.dropdownOption, /^Point$/).click();
     cy.get(GEO_DIALOG).find('#coordinatesInput').last().type('[1.23,4.56]', { force: true });
     cy.get(GEO_DIALOG).find('.validation-errors').should('not.exist');
+    saveGeoDialog();
+}
+
+// The GeoJSON field of the location entry added last.
+function lastGeoField() {
+    return cy.get('app-geojson-type').last();
+}
+
+function openGeoDialog(getField) {
+    getField().contains('button', 'Add geometry', { timeout: TIMEOUTS.ui }).click();
+    cy.get(GEO_DIALOG, { timeout: TIMEOUTS.ui }).should('be.visible');
+}
+
+function saveGeoDialog() {
     cy.get(GEO_DIALOG).contains('button', 'Save').should('not.be.disabled').click();
     cy.get('body').should(($body) => {
         expect($body.find(`${GEO_DIALOG}:visible`).length, 'the GeoJSON dialog closed').to.eq(0);
@@ -446,32 +451,45 @@ export class UserPoliciesPage {
         cy.contains(UserPoliciesPageLocators.IPFSErrorLabel).should('exist');
     }
 
+    // The location's GeoJSON field accepts only polygons: a manual geometry starts as one and offers
+    // no other type.
     validateListOfGeoJSONTypes() {
         cy.get(UserPoliciesPageLocators.addLocButton).click();
-        cy.contains(UserPoliciesPageLocators.addGeoButton).click();
-        cy.contains(UserPoliciesPageLocators.geoJSONErrorLabel).should('exist');
-        cy.get(UserPoliciesPageLocators.geoJSONTypeDropdown).click();
+        openGeoDialog(lastGeoField);
+        cy.get(GEO_DIALOG).contains('p-tab', 'Enter manually').click();
+        cy.get(GEO_DIALOG).find('button.geo-add-button').click();
+        cy.get(GEO_DIALOG).find('.geo-shape').last().should('contain.text', 'Polygon');
+        cy.get(GEO_DIALOG).find(UserPoliciesPageLocators.geoJSONTypeDropdown).last().click();
         cy.get(UserPoliciesPageLocators.geoJSONTypeDropdownList).should('have.length', 1);
-        cy.get(UserPoliciesPageLocators.geoJSONTypeDropdownList).first().find('span').should('have.text', 'Polygon');
+        cy.get(UserPoliciesPageLocators.geoJSONTypeDropdownList).first().should('have.text', 'Polygon');
     }
 
+    // A file's shapes are picked in the dialog; once saved the field summarises them.
     validateGeoJSONFileImport(fileName) {
         openOverviewSection();
         cy.get(UserPoliciesPageLocators.addLocButton).click();
-        cy.get(UserPoliciesPageLocators.switchButtonGeoJSONInput).click();
-        cy.get(UserPoliciesPageLocators.geoJSONFileInput).selectFile('cypress/fixtures/' + fileName, { force: true });
-        cy.contains(UserPoliciesPageLocators.includeAllButton).click();
-        cy.get(UserPoliciesPageLocators.locationPanel).should('have.length', 2);
-        cy.contains(UserPoliciesPageLocators.geoJSONErrorLabel).should('not.exist');
-        cy.contains(UserPoliciesPageLocators.clearButton).click();
+        openGeoDialog(lastGeoField);
+        cy.get(GEO_DIALOG).find('app-file-drag-n-drop input[type="file"]').selectFile('cypress/fixtures/' + fileName, { force: true });
+        cy.get(GEO_DIALOG).find('.geo-file-head', { timeout: TIMEOUTS.backend }).should('contain.text', fileName);
+        cy.get(GEO_DIALOG).contains('button', 'Select all').click();
+        cy.get(GEO_DIALOG).find('.geo-file-head').should('contain.text', '2 of 2 shapes picked');
+        cy.get(GEO_DIALOG).find('.validation-errors').should('not.exist');
+        saveGeoDialog();
+        lastGeoField().find('.geo-info-text').should('contain.text', '2 shapes');
+        lastGeoField().find('.p-error').should('not.exist');
+        lastGeoField().contains('button', 'Clear').click();
+        lastGeoField().contains('button', 'Add geometry').should('exist');
     }
 
     // A file above the preview limit is imported without a map preview, after the user agrees to that.
     validateGeoJSONLargeFileImport(fileName) {
-        cy.get(UserPoliciesPageLocators.switchButtonGeoJSONInput).click();
-        cy.get(UserPoliciesPageLocators.geoJSONFileInput).selectFile('cypress/fixtures/' + fileName, { force: true });
+        openGeoDialog(lastGeoField);
+        cy.get(GEO_DIALOG).find('app-file-drag-n-drop input[type="file"]').selectFile('cypress/fixtures/' + fileName, { force: true });
         cy.contains(UserPoliciesPageLocators.largeFileDialogHeader, { timeout: TIMEOUTS.backend }).should('exist');
         cy.contains('button', UserPoliciesPageLocators.largeFileAccept).click();
+        cy.get(GEO_DIALOG).find('.geo-file-head', { timeout: TIMEOUTS.backend }).should('contain.text', fileName);
+        cy.get(GEO_DIALOG).contains('button', 'Add file point').click();
+        saveGeoDialog();
         cy.get(UserPoliciesPageLocators.previewUnavailable, { timeout: TIMEOUTS.backend })
             .should('contain.text', 'this file is too large to show on the map');
         cy.get(UserPoliciesPageLocators.previewFileName).should('contain.text', fileName);
