@@ -1,28 +1,20 @@
-# The app re-initializes its workspace every few seconds and the loading overlay starves UI clicks
+# A policy block's loading overlay stays on and starves UI clicks
 
-**Status:** open — observed repeatedly, trigger not pinned down.
-**Component:** `frontend` — app bootstrap (`app.component`, `AuthStateService`, `web-socket.service.ts`); possibly `api-gateway` WebSocket rebind
-**Severity:** medium — wizard and page-object clicks land under a `div.loading` overlay and time out; `flow_CDM_0001` fails on it after about 14 minutes
-**Found by:** `e2e-tests/cypress/e2e/ui-tests/specs/02_policies/flow_CDM_0001.cy.js` (second run on 11 Nov 2026) and, earlier, runs I and J of the downstream handover
+**Status:** open — narrowed down on 12 Nov 2026, not pinned to a block yet. (The note was first written as "the app re-initializes its workspace every few seconds"; that was wrong, see below.)
+**Component:** `frontend` — `modules/policy-engine/policy-viewer/blocks/*` (each block has its own `div.loading`)
+**Severity:** medium — `flow_CDM_0001` and `iREC5Group` fail when a click lands under the overlay or the overlay never goes
+**Found by:** `e2e-tests/cypress/e2e/ui-tests/specs/02_policies/flow_CDM_0001.cy.js`, `iREC5Group.cy.js`
+
+## What the earlier "re-initialization" was
+
+The bursts of `GET /accounts/session` every 5–7 s in the dev-server request trace (11 Nov) are the test's own navigations: each URL change runs the route guard and the header's update (`new-header.component.ts`, `update()` on `NavigationEnd`), which call `sessions()` three or four times, re-emit the login state (`AuthStateService.updateState`) and re-read the external-policy counters. The burst contents follow the flow (policy list, viewer, `blocks/<id>` of each wizard step, `search-documents`). Redundant requests, but not a loop and not the cause of the failures.
 
 ## What was observed
 
-- 11 Nov 2026, Solo 0.97.0, fresh stack, `ng serve` with the request trace on (`UI_PROXY_LOG=true`): the onboarding of `User2` passed (the account was already complete), then the flow ran 14 minutes and failed on a wizard step click covered by the `div.loading` overlay (`wizardSteps.js:144`, logged in as `User2`), against a 10 s click budget.
-- In the last 30 s before the failure the workspace re-initialized every 5–7 s: `GET /accounts/session` bursts at 18:07:40, :46, :53, :57, 18:08:02 and :08, each followed by the workspace fetch set. No 401, no WebSocket upgrade, one 503 on `tag/add_report_bnt/blocks`.
-- The same shape was seen on 10 Nov in run I of the handover: a re-init loop of about 1 Hz in the final minute whose overlay starved the wizard step click for the full 10 s, and a ~11 s same-document re-init after every login 200 (a re-POST of `/accounts/login`, a WebSocket rebind, the branding, session, profile and balance fetches).
-
-- Baseline and pass 2 of 11 Nov 2026 (same stack, used workspace): the full `all` run failed `iREC5Group` on a click covered by `div.loading` (tab "Issue R…"). The follow-up runs, twice each: `flow_CDM_0001` 0/2 (a wizard step click covered by `div.loading`; then `li[role="option"]` never found in `UserPoliciesPage.assignReport`, `userPoliciesPage.js:650`), `iREC5Group` 1/2 (the failing run again a click covered by `div.loading`). `flow_CDM_0001` had passed (15:54) in the baseline run itself, so the failure is intermittent, not tied to a fresh database. `00_account_registration` was 2/2 green.
-
-## Where it may come from (candidates, none verified)
-
-- The WebSocket rebind after the access token is set (`web-socket.service.ts`). No 11 s timer exists in `frontend/src/app`, so the cadence is not a constant in the code.
-- An `UPDATE_PERMISSIONS` push triggers a hard `location.reload()` (`web-socket.service.ts`, around L239): a document swap with no hook for a test.
-- The dev server's HMR socket (`ng serve`); a run against a production build would exclude it.
+- 12 Nov, `flow_CDM_0001` (dev server, Solo 0.97.0, after the Step 5 fixes): at the "VVB documents" step the grid is loaded and a block below it shows its spinner; `div.loading` (three of them) stayed in the DOM for the whole 20 s budget (`Expected [ <div.loading>, 2 more... ] not to exist in the DOM`). The last requests of the page all answered 200: `tag/revoke_vvb_own_document_btn/blocks`, `document-owners`, `tokens`, `search-documents` (twice). Screenshot in `e2e-tests/.local/evidence/diag-cdm2-1/` (local, git-ignored).
+- `iREC5Group`: a click on the "Issue Requests" tab covered by `div.loading`, in 2 of 3 runs on 11 Nov; 3 of 3 green on 12 Nov after the Step 5 fixes (task-result polling, bounded auth-service waits, the refresh that hands waiting requests their 401). A request stuck behind a refresh that never settled kept a block loading forever, which those fixes end; the 12 Nov CDM failure above happened with all requests answered, so it is a different path.
+- The policy viewer threw `Cannot read properties of undefined (reading 'STANDARD_REGISTRY')` on every change detection before its profile arrived (fixed 12 Nov); it was not shown to cause the overlay.
 
 ## How to pin it
 
-Run the flow with the request trace on and correlate each `GET /accounts/session` burst with the WebSocket frames (the proxy does not log frames: log them in the browser with a `console.debug` in `web-socket.service.ts` for one run) and with `location.reload` calls; repeat on a production build to rule out HMR.
-
-## Test impact
-
-`flow_CDM_0001` cannot be made reliable on a used workspace while the re-init cycle is shorter than the page objects' budgets: a click budget in seconds lands between two cycles. The page objects wait for the loading overlay to be gone (`pageReadiness.js`, `waitForPageSettled`), which helps only when the cycle is longer than the settle time.
+In a failing run, find which block component still has `loading === true` (the three `div.loading` of the CDM screenshot) and why: a load path without an error branch, an update push (`BlockUpdateFn`, 2000 ms batch) re-triggering the load, or a request the block waits on that the trace does not show. A run with the browser console (`ELECTRON_ENABLE_LOGGING=1`) and a DOM dump of the `div.loading` parents at the failure would settle it.
