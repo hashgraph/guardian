@@ -64,7 +64,10 @@ export class MessagesReport {
      */
     private readonly users: Map<string, any>;
 
+    private readonly virtualMessages: Set<string>;
+
     constructor() {
+        this.virtualMessages = new Set<string>();
         this.topics = new Map<string, any>();
         this.messages = new Map<string, any>();
         this.schemas = new Map<string, any>();
@@ -119,6 +122,7 @@ export class MessagesReport {
         }
         this.messages.set(timestamp, null);
 
+        let virtualMessage = !!ref.dryRun && !ref.mockId;
         let message = await MessageServer
             .tryGetMessage({
                 messageId: timestamp,
@@ -138,6 +142,7 @@ export class MessagesReport {
                 dryRun: ref.dryRun,
                 mockId: null
             });
+            virtualMessage = !!message;
         }
 
         let fromHedera = false;
@@ -151,6 +156,7 @@ export class MessagesReport {
                 mockId: null
             });
             fromHedera = !!message;
+            virtualMessage = false;
         }
         if (!message) {
             return;
@@ -184,6 +190,9 @@ export class MessagesReport {
         }
         if (ref.dryRun && (encrypted || (this.needDocument(message) && !json.document))) {
             json.documentUnavailable = true;
+        }
+        if (virtualMessage) {
+            this.virtualMessages.add(message.id);
         }
         this.messages.set(timestamp, json);
         this.users.set(message.getOwner(), null);
@@ -549,7 +558,29 @@ export class MessagesReport {
             }
         }
 
-        messages.sort((a, b) => a.id > b.id ? 1 : -1);
+        const timestamps = new Map<string, bigint>();
+        if (this.virtualMessages.size) {
+            for (const message of messages) {
+                const parts = /^(\d+)\.(\d{1,9})$/.exec(message.id);
+                if (!parts) {
+                    timestamps.clear();
+                    break;
+                }
+                const timestamp = BigInt(parts[1]) * 1_000_000_000n + BigInt(parts[2].padEnd(9, '0'));
+                timestamps.set(message.id, this.virtualMessages.has(message.id)
+                    ? timestamp * 1_000_000n
+                    : timestamp);
+            }
+        }
+        if (timestamps.size && timestamps.size === messages.length) {
+            messages.sort((a, b) => {
+                const left = timestamps.get(a.id);
+                const right = timestamps.get(b.id);
+                return left < right ? -1 : left > right ? 1 : 0;
+            });
+        } else {
+            messages.sort((a, b) => a.id > b.id ? 1 : -1);
+        }
         for (let index = 0; index < messages.length; index++) {
             messages[index].order = index;
         }

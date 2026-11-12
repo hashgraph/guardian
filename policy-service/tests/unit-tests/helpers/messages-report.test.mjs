@@ -2,6 +2,9 @@ import { assert } from 'chai';
 import esmock from 'esmock';
 import { SchemaMessage as ReportSchemaMessage } from '@guardian/hedera/message/schema-message';
 import { DIDMessage as ReportDIDMessage } from '@guardian/hedera/message/did-message';
+import { VCMessage as ReportVCMessage } from '@guardian/hedera/message/vc-message';
+import { VPMessage as ReportVPMessage } from '@guardian/hedera/message/vp-message';
+import { RoleMessage as ReportRoleMessage } from '@guardian/hedera/message/role-message';
 
 const MessageType = {
     VCDocument: 'VC-Document',
@@ -954,4 +957,124 @@ describe('@unit MessagesReport pre-existing chain messages', () => {
         await report.start(ref, '1.1', null);
         assert.deepEqual(reportDocuments(report).map((message) => message.id), ['1.1']);
     });
+});
+
+describe('@unit MessagesReport message columns', () => {
+    const orderedIds = (report) => reportDocuments(report).sort((a, b) => a.order - b.order).map((message) => message.id);
+
+    for (const mockId of [null, 'mock-enabled-later']) {
+        it(`places real policy messages before native dry-run messages with mock ${mockId}`, async () => {
+            const createId = '1794432486.918928104';
+            const instanceId = '1794.432502360';
+            const requestId = '1794.432506831';
+            const createPolicy = reportMessage(createId, 'Policy', [], { topicId: '0.0.10' });
+            const did = storedDid('did:hedera:testnet:virtual', {
+                topicId: '0.0.10', messageId: '1786971810.334647133'
+            });
+            const { report, ref } = await reportHarness({
+                mockId, mockMessages: [createPolicy],
+                messages: [reportMessage(requestId, MessageType.VCDocument, [instanceId]),
+                    reportMessage(instanceId, 'Instance-Policy', [createId])],
+                records: [recordFor(requestId)], networkMessages: [createPolicy], globalDidRecords: [did],
+                networkTopics: [], virtualTopics: [reportTopic(), reportTopic('0.0.10')]
+            });
+            await report.start(ref, requestId, null);
+            assert.deepEqual(orderedIds(report), [did.messageId, createId, instanceId, requestId]);
+            assert.equal(reportDocuments(report).find((message) => message.id === createId).order, 1);
+            const again = orderedIds(report);
+            assert.deepEqual(again, [did.messageId, createId, instanceId, requestId]);
+        });
+    }
+
+    it('keeps nanosecond precision when ordering real messages alongside virtual ones', async () => {
+        const firstId = '1794432486.918928104';
+        const nextId = '1794432486.918928105';
+        const rootId = '1794.432506831';
+        const { report, ref } = await reportHarness({
+            messages: [reportMessage(rootId, 'Instance-Policy', [nextId, firstId])],
+            networkMessages: [reportMessage(nextId, 'Policy'), reportMessage(firstId, 'Policy')]
+        });
+        await report.start(ref, rootId, null);
+        assert.deepEqual(orderedIds(report), [firstId, nextId, rootId]);
+    });
+
+    it('preserves a mock-only report order without applying the native virtual time scale', async () => {
+        const createId = '1794432513.078262104';
+        const instanceId = '17944325299.618270208';
+        const requestId = '17944325336.317388800';
+        const { report, ref } = await reportHarness({
+            mockId: 'mock-from-start', messages: [reportMessage(requestId, 'Instance-Policy', [instanceId]),
+                reportMessage(instanceId, 'Instance-Policy', [createId]), reportMessage(createId, 'Policy')]
+        });
+        await report.start(ref, requestId, null);
+        assert.deepEqual(orderedIds(report), [createId, instanceId, requestId]);
+    });
+
+    it('preserves the existing ordering of published messages', async () => {
+        const firstId = '1786971810.334647133';
+        const policyId = '1794432486.918928104';
+        const rootId = '1794432502.360000000';
+        const { report, ref } = await reportHarness({
+            dryRun: null, messages: [reportMessage(rootId, 'Instance-Policy', [policyId, firstId]),
+                reportMessage(policyId, 'Policy'), reportMessage(firstId, 'DID-Document')]
+        });
+        await report.start(ref, rootId, null);
+        assert.deepEqual(orderedIds(report), [firstId, policyId, rootId]);
+    });
+});
+
+describe('@unit MessagesReport serialized document availability', () => {
+    for (const [type, MessageClass] of [
+        [MessageType.VCDocument, ReportVCMessage],
+        [MessageType.VPDocument, ReportVPMessage],
+        [MessageType.RoleDocument, ReportRoleMessage]
+    ]) {
+        it(`preserves metadata and links of a real ${type} instance without a stored body`, async () => {
+            const id = '1794.432506831';
+            const latestId = '1794.432506900';
+            const ancestorId = '1794.432502360';
+            const owner = 'did:example:issuer';
+            const makeMessage = (messageId) => {
+                const message = MessageClass.fromMessageObject({
+                    id: `urn:uuid:${messageId}`, status: 'ISSUE', type,
+                    action: type === MessageType.VPDocument ? 'create-vp-document' : 'create-vc-document',
+                    issuer: owner, relationships: [ancestorId], cid: `cid-${messageId}`,
+                    role: 'Project Proponent', group: 'Project group'
+                });
+                message.setId(messageId);
+                message.setTopicId('0.0.20');
+                return message;
+            };
+            const latestBody = type === MessageType.VPDocument
+                ? { '@context': ['https://www.w3.org/2018/credentials/v1'],
+                    type: ['VerifiablePresentation'], holder: owner, verifiableCredential: [storedCredential('Latest body')] }
+                : storedCredential('Latest body');
+            const { report, ref } = await reportHarness({
+                messages: [makeMessage(id), reportMessage(ancestorId, 'Instance-Policy')],
+                records: [recordFor(latestId, latestBody, { kind: type === MessageType.VPDocument ? 'vp' : 'vc' })]
+            });
+            await report.start(ref, id, null);
+            const messages = reportDocuments(report);
+            const card = messages.find((message) => message.id === id);
+            assert.equal(card.type, type);
+            assert.equal(card.issuer, owner);
+            assert.notExists(card.document);
+            assert.isTrue(card.documentUnavailable);
+            assert.deepEqual(card.relationships, [ancestorId]);
+            assert.exists(messages.find((message) => message.id === ancestorId));
+            assert.notInclude(JSON.stringify(report.toJson()), 'Latest body');
+            if (type === MessageType.RoleDocument) {
+                assert.equal(report.toJson().roles[0].role, 'Project Proponent');
+                assert.equal(report.toJson().roles[0].group, 'Project group');
+            }
+            const { report: latestReport, ref: latestRef } = await reportHarness({
+                messages: [makeMessage(latestId), reportMessage(ancestorId, 'Instance-Policy')],
+                records: [recordFor(latestId, latestBody, { kind: type === MessageType.VPDocument ? 'vp' : 'vc' })]
+            });
+            await latestReport.start(latestRef, latestId, null);
+            const latest = reportDocuments(latestReport).find((message) => message.id === latestId);
+            assert.deepEqual(latest.document, latestBody);
+            assert.isUndefined(latest.documentUnavailable);
+        });
+    }
 });
