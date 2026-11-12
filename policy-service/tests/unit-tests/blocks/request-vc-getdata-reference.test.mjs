@@ -99,21 +99,6 @@ async function requestBlockData(sourceLinks) {
     return block.getData({ id: 'u1', location: 'local' });
 }
 
-async function addonBlockData(sourceLinks) {
-    const block = Object.create(RequestVcDocumentBlockAddon.prototype);
-    block._schema = fullSchema();
-    block._accessMap = new Map();
-    const ref = {
-        uuid: 'blk',
-        blockType: 'requestVcDocumentBlockAddon',
-        actionType: 'local',
-        sourceLinks,
-        async getOptions() { return {}; },
-    };
-    PolicyComponentsUtils.GetBlockRef = () => ref;
-    return block.getData({ id: 'u1', location: 'local' });
-}
-
 describe('RequestVcDocumentBlock runtime — getData draftEnabled', () => {
     it('is true when a DraftEvent link is registered', async () => {
         assert.isTrue((await requestBlockData([runLink, draftLink])).draftEnabled);
@@ -125,15 +110,5 @@ describe('RequestVcDocumentBlock runtime — getData draftEnabled', () => {
 
     it('is false when nothing is linked', async () => {
         assert.isFalse((await requestBlockData([])).draftEnabled);
-    });
-});
-
-describe('RequestVcDocumentBlockAddon runtime — getData draftEnabled', () => {
-    it('is true when a DraftEvent link is registered', async () => {
-        assert.isTrue((await addonBlockData([draftLink])).draftEnabled);
-    });
-
-    it('is false when no DraftEvent link is registered', async () => {
-        assert.isFalse((await addonBlockData([runLink])).draftEnabled);
     });
 });

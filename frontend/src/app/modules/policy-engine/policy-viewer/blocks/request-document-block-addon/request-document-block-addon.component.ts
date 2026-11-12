@@ -34,7 +34,6 @@ interface IRequestDocumentAddonData {
     preset: boolean;
     presetFields: any[];
     restoreData: any;
-    draftEnabled?: boolean;
 }
 
 /**
@@ -80,8 +79,8 @@ export class RequestDocumentBlockAddonComponent
     public form: RequestDocumentFormComponent | null = null;
     // Drafts are always allowed here: `edit` and `draft` are never set for the addon
     public readonly allowDraft: boolean = true;
-    /** The server stores a draft only when the policy listens to the draft event */
-    public draftEnabled: boolean = true;
+    /** The addon request never stores a draft on the server, so Save Draft stays in this browser */
+    public readonly draftEnabled: boolean = false;
     private formTakeover = inject(FormTakeoverService, { optional: true });
     private destroyed = false;
     public edit: boolean;
@@ -165,7 +164,6 @@ export class RequestDocumentBlockAddonComponent
             this.uiClass = data.uiClass;
             this.dialogTitle = data.dialogTitle;
             this.disabled = active === false;
-            this.draftEnabled = data.draftEnabled !== false;
             this.isExist = true;
             this.relayerAccount = !!data.relayerAccount && !this.dryRun;
             this.enableAdditionalData = !!data.enableAdditionalData && !this.dryRun;
