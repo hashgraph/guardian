@@ -107,13 +107,10 @@ const L = {
     ipfsError: "small.p-error:contains('Invalid IPFS')",
     addLocationButton: 'button.add-feature-button',
     addGeometryButton: "button.add-feature-button:contains('Add geometry')",
-    includeAllButton: "button.add-feature-button:contains('Include all')",
     geoClearButton: "button.add-feature-button:contains('Clear')",
     geoTypeDropdown: 'p-select#typeDropdown',
     coordinatesInput: 'textarea#coordinatesInput',
     geoError: 'small.p-error',
-    geoLocationPanel: 'div.location-control',
-    geoFileSwitch: 'div.switch-btn label.guardian-switch-button',
     actionDropdown: 'div.content-dropdown p-select',
     revokeButton: "button.btn-option:contains('Revoke')",
 
