@@ -45,21 +45,23 @@ npm run guardian:infra:down      # on the host: removes the containers
 
 ## Running every test
 
-`npm run test:everything` runs, one group after the other, everything the repository tests outside the service unit tests of `main.yml`: the linter on the specs, the tests of the helper scripts, the frontend unit specs and the whole Cypress suite. A group that fails does not stop the others; the summary at the end lists each one and the exit code is non-zero when any failed. Every group prepares what it needs first (`npm ci`, the Playwright browser, `npm run guardian:build`), so nothing has to be installed or built by hand; the `cypress` group only needs the network and the infra (`npm run solo:up` and `npm run guardian:infra:up`). Name the groups to run only those:
+`npm run test:everything` runs, one group after the other, everything the repository tests outside the service unit tests of `main.yml`: the linter on the specs, the tests of the helper scripts, the frontend unit specs and the whole Cypress suite. A group that fails does not stop the others; the summary at the end lists each one and the exit code is non-zero when any failed. Name the groups to run only those:
 
 ```bash
 npm run test:everything                       # lint, scripts, frontend, cypress
 npm run test:everything -- lint scripts       # only the linter and the helper-script tests
 ```
 
-| Group | What it runs | Prepares |
-|---|---|---|
-| `lint` | `npx eslint cypress` | `npm ci` in `e2e-tests` |
-| `scripts` | `npm run test:scripts` and `.github/scripts/report-test-summary.test.mjs` | `npm ci` in `e2e-tests` |
-| `frontend` | `npx ng test --watch=false` in `frontend` (Vitest, headless Chromium) | `npm run guardian:build -- @guardian/interfaces`, `npm ci` in `frontend`, `npx playwright install chromium` |
-| `cypress` | `npm run guardian:test` | `npm ci` in `e2e-tests`, then stops the Guardian services, runs `npm run guardian:build` and starts them again (a failed build leaves them stopped) |
+It expects the [Quickstart](#quickstart) to be done and does not touch the stack: the `cypress` group runs against the services already running, so after changing the Guardian sources rebuild and restart them first, as the Quickstart says. Before the first group it prepares, once, what the Quickstart does not: `npm ci` in `frontend` and `npx playwright install chromium`, when the `frontend` group runs. If that fails, the `frontend` group is reported as failed and the others still run.
 
-`e2e-tests` is installed once per run even when several groups need it. In the dev container, prefix the command with `NODE_OPTIONS=--use-system-ca` when you run the `frontend` group: the Playwright download goes through the container's TLS proxy, whose certificate is only in the system store.
+| Group | What it runs |
+|---|---|
+| `lint` | `npx eslint cypress` |
+| `scripts` | `npm run test:scripts` and `.github/scripts/report-test-summary.test.mjs` |
+| `frontend` | `npx ng test --watch=false` in `frontend` (Vitest, headless Chromium) |
+| `cypress` | `npm run guardian:test` |
+
+In the dev container, prefix the command with `NODE_OPTIONS=--use-system-ca` when you run the `frontend` group: the Playwright download goes through the container's TLS proxy, whose certificate is only in the system store.
 
 ## Running tests manually
 
