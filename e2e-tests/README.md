@@ -215,12 +215,12 @@ npx cypress open
 
 #### Local Command Line Execution
 
-The project pins Cypress 14.x (`package.json`). If you use **Cypress 15+**, `--env` requires **JSON** (see [Cypress 15 and --env](#cypress-15-and---env) below).
+The project pins Cypress 15 (`package.json`). `--env` takes either `key=value` pairs separated by commas or a JSON object, so separate several tags with spaces, not commas (see [--env and "Cannot parse as valid JSON"](#--env-and-cannot-parse-as-valid-json) below).
 
 ##### Run all API tests (most basic)
 
 ```bash
-npx cypress run --browser chrome --env "grepTags=all,grepFilterSpecs=true"
+npx cypress run --browser chrome --env "grepTags=api-all,grepFilterSpecs=true"
 ```
 
 ##### Run with specific tags (sanity testing with user preparation)
@@ -229,7 +229,7 @@ npx cypress run --browser chrome --env "grepTags=all,grepFilterSpecs=true"
 npx cypress run --browser chrome --headed --env "grepTags=preparing policies,grepFilterSpecs=true"
 ```
 
-**Cypress 15+ only** (if you see "Cannot parse as valid JSON"):
+The same with a JSON object:
 
 ```bash
 npx cypress run --browser chrome --headed --env '{"grepTags":"preparing policies","grepFilterSpecs":true}'
@@ -266,7 +266,7 @@ UI_GATEWAY_ORIGIN=http://host.docker.internal:3002/ \
 
 `ui`-tagged specs drive the real frontend in a persistent browser profile, and the backend state they create (users, tools, policies, tokens) survives the run. Suites 00–02 are idempotent — every spec passes on repeated runs against the same workspace; suite 03 uses the same per-run naming isolation; 04 and later are not converted yet. The patterns they share, worth knowing before extending a UI suite, live in `cypress/support/` and `ui-tests/pages/`:
 
-- **Clean boot** (`homePage.js` → `visit()`): the profile persists `accessToken`, `refreshToken` and `username` in `localStorage`, so a failed run would auto-log the next one in and skip the login page the Sign Up / login flows depend on. `visit()` wipes those keys in `onBeforeLoad`, then waits for the app shell's loader to release before the first assertion.
+- **Clean boot** (`homePage.js` → `visit()`): the profile persists `accessToken` and `refreshToken` in `localStorage` (the app reads the username from the access token), so a failed run would auto-log the next one in and skip the login page the Sign Up / login flows depend on. `visit()` wipes those keys in `onBeforeLoad`, then waits for the app shell's loader to release before the first assertion.
 - **Settled-phase waits** (`homePage.js` → `_settledUserProfilePhase()`): the user-profile view flashes through several render states as its first load settles, so a one-shot read mis-branches. The helper polls with a real timer until a terminal state (`wizard` or `ready`) has *held* for a short while, resolves with the settled phase, and rejects with the last phase seen on the deadline, so a stuck load fails loudly instead of hanging. The same idiom backs the Sign Up settle wait in `ensureAccount`, which always ends logged out on a known state.
 - **Task round trips** (`importFlow.js` → `waitForTaskRoundtrip()`): import, create, publish and dry-run actions run as backend tasks — the app navigates to `/task/:id` and redirects back on completion, and lists do not refresh on their own. Flows wait for the full round trip, then re-land with a fresh `cy.visit`.
 - **Import-preview tool checks** (`importFlow.js` → `settleToolRowChecks()` / `replaceInaccessibleTools()`): a preview row settles to valid/invalid when its per-row check request answers, but that request has no client-side timeout — one check the gateway never answers pins its row at `load`, which keeps the Import button disabled forever. The helper waits with a deadline, re-issues the checks for rows still loading (the row's change handler re-runs them), and after the last attempt fails the test with the stuck `messageIds`. Rows pointing at tool messages this gateway cannot resolve are re-pointed at the same-named workspace tool through the row's search picker — and the picker only lists *published* tools, which is why `toolsPage.js` → `ensureToolPublished()` imports the Methodology Library tools and publishes them on demand first (published ones are left alone, drafts are published, missing ones imported).
@@ -296,7 +296,7 @@ Tests are tagged on the Mocha context object: `context('...', { tags: ['ui', 'sm
 **All API tests (basic run):**
 
 ```bash
-npx cypress run --browser chrome --env "grepTags=all,grepFilterSpecs=true"
+npx cypress run --browser chrome --env "grepTags=api-all,grepFilterSpecs=true"
 ```
 
 **Sanity run (preparing + specific feature, e.g. policies):**
@@ -305,23 +305,25 @@ npx cypress run --browser chrome --env "grepTags=all,grepFilterSpecs=true"
 npx cypress run --browser chrome --headed --env "grepTags=preparing policies,grepFilterSpecs=true"
 ```
 
-**Cypress 15+:** use JSON for `--env`, e.g. `--env '{"grepTags":"preparing policies","grepFilterSpecs":true}'`
-
 ##### Single Tag
 
 ```bash
 npx cypress run --browser chrome --env "grepTags=accounts,grepFilterSpecs=true"
 ```
 
-##### Multiple Tags (AND operation)
+##### Multiple Tags (OR operation)
+
+Tags separated by spaces select the specs that have **any** of them:
 
 ```bash
 npx cypress run --browser chrome --env "grepTags=preparing policies,grepFilterSpecs=true"
 ```
 
+To select only the specs that have **every** tag, join them with `+` (`grepTags=policies+smoke`).
+
 **Important**:
 
-- **Local CLI (`--env "..."`)**: use spaces, e.g. `preparing policies`
+- **Local CLI (`--env "..."`)**: use spaces, e.g. `preparing policies`. A comma separates two `--env` entries, so `grepTags=preparing,policies` is not a tag list
 - **Docker (`CYPRESS_grepTags=...`)**: spaces or commas are accepted, e.g. `preparing policies` or `preparing,policies`
 
 ##### Available Tags
@@ -356,7 +358,7 @@ npx cypress run --browser chrome --env "grepTags=preparing policies,grepFilterSp
 
 **General Tags:**
 
-- `all` - every test: API, policy, UI and disaster recovery. It needs the frontend, so the CI starts it whenever the tags select a UI test
+- `all` - every test: API, policy, UI and disaster recovery, except the specs that do not carry it (`009_policies/VM033.cy.js`, tagged `VM0033`, and the `017_indexer` specs). It needs the frontend, so the CI starts it whenever the tags select a UI test
 - `api-all` - all API tests
 - `policy-all` - all policy tests (CDM and iREC; `policyAT` selects the same specs)
 - `ui-all` - all UI tests
@@ -737,6 +739,8 @@ npm run guardian:down        # stops the services and removes the containers
 
 `guardian:test` accepts any number of specs after `--`, each a file or a glob (`*` and `**` work, as in the default pattern `cypress/e2e/api-tests/**/*.cy.js`), or one comma-separated list. Quote the globs, so that Cypress expands them rather than your shell. Specs that need users or seeded artefacts rely on `000_accounts_creating/create_accounts.cy.js` and, on a local network, `000_accounts_creating/seedHederaArtefacts.cy.js`, which run first in a full run; include them when you run a spec on a freshly started stack.
 
+`guardian:test` always filters on the `all` tag, also when it is given specs: a spec without that tag (`009_policies/VM033.cy.js`, the `017_indexer` specs) is left out, and a run of only such specs ends with "Can't run because no spec files were found". Run those with `npx cypress run --spec <file>`, or with `entrypoint.sh` and `CYPRESS_grepTags` set to one of their tags.
+
 `scripts/local-guardian.sh` loads `.solo/solo.env` for you and takes the JWT keys from `configs/.env.quickstart.guardian.system`, so nothing has to be configured. Service logs are in `e2e-tests/.local/logs`. The infra containers are recreated on every `guardian:up`, because the ledger is empty after each `solo:up` and an older database would point at accounts that no longer exist. Stop a running `guardian-quickstart` first: they use the same ports.
 
 To start the services yourself instead, load the variables in every shell that starts one, and in the one that runs the suite:
@@ -884,25 +888,18 @@ npx cypress run --browser chrome --env "grepTags=preparing policies schemas arti
 
 ### Troubleshooting
 
-#### Cypress 15 and --env
+#### --env and "Cannot parse as valid JSON"
 
-If you see **"Cannot parse as valid JSON"** when using `--env`, you are on Cypress 15+, which requires `--env` to be a JSON object.
+Cypress reads `--env` as `key=value` pairs separated by commas, and falls back to JSON when a part is not a pair. A comma between two tags makes such a part (in `--env "grepTags=all,policies,grepFilterSpecs=true"`, `policies` is not a pair), so Cypress stops with **"Cannot parse as valid JSON"**. Separate the tags with spaces, or pass a JSON object:
 
-- **Option A (recommended):** Use the project’s Cypress 14 from `e2e-tests`: run `npm install` in `e2e-tests` and use `npx cypress run` from that directory so the pinned version (14.x) is used.
-- **Option B:** Use JSON for `--env`:
+```bash
+npx cypress run --browser chrome --env "grepTags=preparing policies,grepFilterSpecs=true"
+npx cypress run --browser chrome --env '{"grepTags":"preparing policies","grepFilterSpecs":true}'
+```
 
-  ```bash
-  npx cypress run --browser chrome --env '{"grepTags":"preparing policies","grepFilterSpecs":true}'
-  ```
-
-  For all API tests: `--env '{"grepTags":"all","grepFilterSpecs":true}'`
+`CYPRESS_grepTags` (Docker, `entrypoint.sh`) is not parsed that way: there, commas and spaces both separate tags.
 
 #### Common Issues
-
-##### Tag Syntax Errors
-
-- **Wrong**: `grepTags=all, policies` (space before comma)
-- **Correct**: `grepTags=all,policies` or `grepTags=all, policies` (space only after comma)
 
 ##### No Tests Found
 
