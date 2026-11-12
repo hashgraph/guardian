@@ -15,7 +15,6 @@ import { IPFSService } from 'src/app/services/ipfs.service';
 import { PolicyTestAutomationService } from '../../../policy-test-automation/policy-test-automation.service';
 import { FormulasService } from 'src/app/services/formulas.service';
 import { CalculationPreviewService } from 'src/app/services/calculation-preview.service';
-import { FormTakeoverService } from '../../../form-takeover/form-takeover.service';
 import { PolicyProgressService } from '../../../../services/policy-progress.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { SchemaService } from 'src/app/services/schema.service';
@@ -26,7 +25,6 @@ describe('RequestDocumentFormComponent', () => {
         getCurrentRole: () => 'Project Proponent',
         getHasNavigation: () => true,
     };
-    const takeover = { keep: vi.fn() };
     const apiCall = vi.fn();
 
     const create = (parentOverrides: Record<string, unknown> = {}, formOverrides: Record<string, unknown> = {}) => {
@@ -53,7 +51,6 @@ describe('RequestDocumentFormComponent', () => {
     };
 
     beforeEach(async () => {
-        takeover.keep.mockClear();
         apiCall.mockClear();
         await TestBed.configureTestingModule({
             declarations: [RequestDocumentFormComponent],
@@ -73,7 +70,6 @@ describe('RequestDocumentFormComponent', () => {
                 { provide: CalculationPreviewService, useValue: {} },
                 { provide: SchemaService, useValue: { getSchemasByType: () => of(null) } },
                 { provide: PolicyProgressService, useValue: progress },
-                { provide: FormTakeoverService, useValue: takeover },
                 { provide: ToastService, useValue: { success: vi.fn() } },
             ],
             schemas: [NO_ERRORS_SCHEMA],
@@ -325,23 +321,22 @@ describe('RequestDocumentFormComponent', () => {
             return target.onSubmit(draft) as Promise<void>;
         };
 
-        it('keeps the takeover as soon as the request returns, before the 1 s delay', fakeAsync(() => {
+        it('shows the Submitted screen 1 s after the request returns', fakeAsync(() => {
             const { fixture, component } = create();
             submit(component, false);
             tick(0);
             expect(apiCall).toHaveBeenCalled();
-            expect(takeover.keep).toHaveBeenCalledWith(component);
             expect(component.screen).not.toBe('submitted');
             tick(1000);
             expect(component.screen).toBe('submitted');
             fixture.destroy();
         }));
 
-        it('does not keep the takeover for a draft', fakeAsync(() => {
+        it('marks a draft as saved instead of showing the Submitted screen', fakeAsync(() => {
             const { fixture, component } = create();
             submit(component, true);
             tick(1000);
-            expect(takeover.keep).not.toHaveBeenCalled();
+            expect(component.screen).not.toBe('submitted');
             expect(component.dataSaved).toBe(true);
             fixture.destroy();
         }));
