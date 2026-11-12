@@ -1,5 +1,6 @@
 import { assert } from 'chai';
 import esmock from 'esmock';
+import { SchemaMessage as ReportSchemaMessage } from '@guardian/hedera/message/schema-message';
 
 const MessageType = {
     VCDocument: 'VC-Document',
@@ -10,6 +11,7 @@ const MessageType = {
 const { MessagesReport } = await esmock.strict(
     '../../../dist/policy-engine/helpers/messages-report.js',
     {
+        '@guardian/common/database-modules/database-server': { DatabaseServer: class {} },
         '@guardian/common/helpers/workers': {
             Workers: class {}
         },
@@ -231,12 +233,24 @@ async function reportHarness({
     virtualTopics = [reportTopic()], networkTopics = [reportTopic()],
     readTopicMessages = async () => [],
     readVirtualTopics,
-    readDocument, missingTopicReturnsNull = false
+    readDocument, missingTopicReturnsNull = false,
+    schemaStore = [], readSchemas
 } = {}) {
     const topicError = new Error('Topic not found');
     const { MessagesReport: Report } = await esmock.strict(
         '../../../dist/policy-engine/helpers/messages-report.js',
         {
+            '@guardian/common/database-modules/database-server': {
+                DatabaseServer: {
+                    async getSchemas(filters) {
+                        if (readSchemas) {
+                            return readSchemas(filters);
+                        }
+                        return schemaStore.filter((schema) => filters.topicId.$in.includes(schema.topicId) &&
+                            (!filters.contextURL || filters.contextURL.$in.includes(schema.contextURL)));
+                    }
+                }
+            },
             '@guardian/common/helpers/workers': { Workers: class {} },
             '@guardian/hedera/message/did-message': { DIDMessage: class {} },
             '@guardian/hedera/vcjs/did/hedera-did': {
@@ -283,7 +297,7 @@ async function reportHarness({
                 }
             },
             '@guardian/hedera/message/message-type': { MessageType: reportTypes },
-            '@guardian/hedera/message/schema-message': { SchemaMessage: class {} },
+            '@guardian/hedera/message/schema-message': { SchemaMessage: ReportSchemaMessage },
             '@guardian/hedera/message/topic-message': { TopicMessage: class {} },
             '@guardian/hedera/message/url.interface': { UrlType: { url: 'url' } },
             '@guardian/hedera/message/vc-message': { VCMessage: class {} },
@@ -295,6 +309,7 @@ async function reportHarness({
     );
     const ref = {
         dryRun, mockId, policyId: 'policy-1',
+        policyInstance: { topicId: '0.0.30', tools: [{ topicId: '0.0.40' }] },
         databaseServer: {
             async getVcDocument(filters) {
                 return records.find((item) => item.kind === 'vc' &&
@@ -540,5 +555,149 @@ describe('@unit MessagesReport dry-run documents and topics', () => {
         await report.start(ref, '1.1', null);
         assert.deepEqual(reportDocuments(report)[0].document, document);
         assert.equal(report.toJson().topics[0].topicId, '0.0.20');
+    });
+});
+
+function storedSchema(contextURL = 'schema:project', extra = {}) {
+    return {
+        name: 'Project Description Schema', topicId: '0.0.30', contextURL,
+        documentURL: 'schema:project-document', uuid: 'project-schema', version: '1.0.0',
+        document: { type: 'object', properties: { name: { type: 'string' } } },
+        context: { '@context': { Project: 'schema:project#Project' } }, ...extra
+    };
+}
+
+function fileSchema(name = 'Published schema') {
+    const schema = new ReportSchemaMessage('publish-schema');
+    schema.setDocument(storedSchema('schema:project', { name }));
+    schema.setUrls([
+        { cid: 'project-document', url: 'schema:project-document' },
+        { cid: 'project', url: 'schema:project' }
+    ]);
+    return schema;
+}
+
+describe('@unit MessagesReport dry-run schemas', () => {
+    it('returns the schema name, form document and context in the report', async () => {
+        const schema = storedSchema();
+        const { report, ref } = await reportHarness({
+            messages: [reportMessage('1.1')], files: new Map([['1.1', storedCredential()]]),
+            schemaStore: [schema]
+        });
+        await report.start(ref, '1.1', null);
+        const [result] = report.toJson().schemas;
+        assert.equal(result?.name, schema.name);
+        assert.equal(result.contextUrl, schema.contextURL);
+        assert.equal(result.documentUrl, schema.documentURL);
+        assert.deepEqual(result.document, schema.document);
+        assert.deepEqual(result.context, schema.context);
+    });
+
+    it('includes matching tool schemas and excludes schemas on unrelated topics', async () => {
+        const document = storedCredential();
+        document['@context'].push('schema:tool');
+        const { report, ref } = await reportHarness({
+            messages: [reportMessage('1.1')], files: new Map([['1.1', document]]),
+            schemaStore: [
+                storedSchema('schema:project', { topicId: '0.0.99', name: 'Wrong topic' }),
+                storedSchema('schema:tool', { topicId: '0.0.40', name: 'Tool schema' }),
+                storedSchema(), storedSchema('schema:unused', { name: 'Unused schema' })
+            ]
+        });
+        await report.start(ref, '1.1', null);
+        assert.sameMembers(report.toJson().schemas.map((schema) => schema.name),
+            ['Project Description Schema', 'Tool schema']);
+    });
+
+    it('includes the schema of a VC embedded in a VP', async () => {
+        const document = { '@context': ['https://www.w3.org/2018/credentials/v1'],
+            verifiableCredential: [storedCredential()] };
+        const { report, ref } = await reportHarness({
+            messages: [reportMessage('1.1', MessageType.VPDocument)],
+            files: new Map([['1.1', document]]), schemaStore: [storedSchema()]
+        });
+        await report.start(ref, '1.1', null);
+        assert.equal(report.toJson().schemas[0]?.contextUrl, 'schema:project');
+    });
+
+    it('retains a schema already loaded through Mock Data', async () => {
+        const schema = fileSchema();
+        const { report, ref } = await reportHarness({
+            mockId: 'mock-1', messages: [reportMessage('1.1')],
+            networkTopics: [reportTopic('0.0.20', { messageType: 'POLICY_TOPIC' })],
+            schemaStore: [storedSchema('schema:project', { name: 'Later schema' })],
+            readTopicMessages: async () => [schema],
+            readDocument: async (message) => {
+                if (message.type !== 'Schema') {
+                    await message.loadDocuments([JSON.stringify(storedCredential())]);
+                }
+                return message;
+            }
+        });
+        await report.start(ref, '1.1', null);
+        assert.equal(report.toJson().schemas.length, 1);
+        assert.equal(report.toJson().schemas[0].name, 'Published schema');
+    });
+
+    it('recovers the schema store after a mocked topic listing fails', async () => {
+        const { report, ref } = await reportHarness({
+            mockId: 'mock-1', messages: [reportMessage('1.1')],
+            files: new Map([['1.1', storedCredential()]]),
+            networkTopics: [reportTopic('0.0.20', { messageType: 'POLICY_TOPIC' })],
+            readTopicMessages: async () => { throw new Error('Mock schema messages unavailable'); },
+            schemaStore: [storedSchema()]
+        });
+        await report.start(ref, '1.1', null);
+        assert.equal(report.toJson().schemas[0]?.name, 'Project Description Schema');
+    });
+
+    it('recovers a missing schema file without discarding other loaded schemas', async () => {
+        const missing = fileSchema('Missing file');
+        const loaded = fileSchema('Loaded schema');
+        loaded.setUrls([{ cid: 'other-document', url: 'schema:other-document' },
+            { cid: 'other', url: 'schema:other' }]);
+        const { report, ref } = await reportHarness({
+            mockId: 'mock-1', messages: [reportMessage('1.1')],
+            networkTopics: [reportTopic('0.0.20', { messageType: 'POLICY_TOPIC' })],
+            readTopicMessages: async () => [missing, loaded], schemaStore: [storedSchema()],
+            readDocument: async (message) => {
+                if (message === missing) {
+                    throw new Error('Missing mock and IPFS schema file');
+                }
+                if (message.type !== 'Schema') {
+                    await message.loadDocuments([JSON.stringify(storedCredential())]);
+                }
+                return message;
+            }
+        });
+        await report.start(ref, '1.1', null);
+        assert.sameMembers(report.toJson().schemas.map((schema) => schema.name),
+            ['Loaded schema', 'Project Description Schema']);
+    });
+
+    it('keeps published schema errors and does not query the local schema store', async () => {
+        const failure = new Error('Published schema unavailable');
+        const { report, ref } = await reportHarness({
+            dryRun: null, messages: [reportMessage('1.1')],
+            files: new Map([['1.1', storedCredential()]]),
+            networkTopics: [reportTopic('0.0.20', { messageType: 'POLICY_TOPIC' })],
+            readTopicMessages: async () => { throw failure; },
+            readSchemas: async () => { assert.fail('Published report queried schema store'); }
+        });
+        try {
+            await report.start(ref, '1.1', null);
+            assert.fail('Expected published schema error');
+        } catch (error) {
+            assert.strictEqual(error, failure);
+        }
+    });
+
+    it('leaves a report with no matching stored schema usable', async () => {
+        const { report, ref } = await reportHarness({
+            messages: [reportMessage('1.1')], files: new Map([['1.1', storedCredential()]])
+        });
+        await report.start(ref, '1.1', null);
+        assert.equal(reportDocuments(report)[0].id, '1.1');
+        assert.deepEqual(report.toJson().schemas, []);
     });
 });

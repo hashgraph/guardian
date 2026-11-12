@@ -1,3 +1,4 @@
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import { Workers } from '@guardian/common/helpers/workers';
 import { DIDMessage } from '@guardian/hedera/message/did-message';
 import { HederaDid } from '@guardian/hedera/vcjs/did/hedera-did';
@@ -83,6 +84,9 @@ export class MessagesReport {
         userId: string | null
     ) {
         await this.checkMessage(ref, messageId, userId);
+        if (ref.dryRun) {
+            await this.checkDryRunSchemas(ref);
+        }
         await this.checkUsers(ref, userId);
     }
 
@@ -292,24 +296,82 @@ export class MessagesReport {
             return;
         }
         if (message.messageType === TopicType.PolicyTopic) {
-            const messages: any[] = await MessageServer.getTopicMessages({
-                topicId: message.getTopicId(),
-                userId,
-                dryRun: ref.dryRun,
-                mockId: ref.mockId,
-            });
+            let messages: any[];
+            try {
+                messages = await MessageServer.getTopicMessages({
+                    topicId: message.getTopicId(),
+                    userId,
+                    dryRun: ref.dryRun,
+                    mockId: ref.mockId,
+                });
+            } catch (error) {
+                if (!ref.dryRun) {
+                    throw error;
+                }
+                return;
+            }
             const schemas: SchemaMessage[] = messages
                 .filter((m: SchemaMessage) => m.action === MessageAction.PublishSchema || m.action === MessageAction.PublishSystemSchema);
             for (const schema of schemas) {
                 const id = schema.getContextUrl(UrlType.url);
                 if (!this.schemas.has(id)) {
-                    await MessageServer.loadDocument(schema, null, {
-                        dryRun: ref.dryRun,
-                        mockId: ref.mockId,
-                    });
-                    this.schemas.set(id, schema.toJson());
+                    try {
+                        await MessageServer.loadDocument(schema, null, {
+                            dryRun: ref.dryRun,
+                            mockId: ref.mockId,
+                        });
+                        this.schemas.set(id, schema.toJson());
+                    } catch (error) {
+                        if (!ref.dryRun) {
+                            throw error;
+                        }
+                    }
                 }
             }
+        }
+    }
+
+    private async checkDryRunSchemas(ref: AnyBlockType) {
+        const contexts = new Set<string>();
+        for (const message of this.messages.values()) {
+            if (!message?.document) {
+                continue;
+            }
+            const documents = [message.document, ...(message.document.verifiableCredential || [])];
+            for (const document of documents) {
+                if (Array.isArray(document?.['@context'])) {
+                    for (const context of document['@context']) {
+                        if (typeof context === 'string' && !this.schemas.has(context)) {
+                            contexts.add(context);
+                        }
+                    }
+                }
+            }
+        }
+        if (!contexts.size) {
+            return;
+        }
+        const topicIds = [
+            ref.policyInstance.topicId,
+            ...(ref.policyInstance.tools || []).map((tool) => tool.topicId)
+        ].filter(Boolean);
+        const schemas = await DatabaseServer.getSchemas({
+            topicId: { $in: topicIds },
+            contextURL: { $in: Array.from(contexts) }
+        });
+        for (const schema of schemas) {
+            if (!schema.contextURL || this.schemas.has(schema.contextURL)) {
+                continue;
+            }
+            const message = new SchemaMessage(MessageAction.PublishSchema);
+            message.setDocument(schema);
+            message.setId(schema.messageId);
+            message.setTopicId(schema.topicId);
+            this.schemas.set(schema.contextURL, {
+                ...message.toJson(),
+                documentUrl: schema.documentURL || null,
+                contextUrl: schema.contextURL
+            });
         }
     }
 
