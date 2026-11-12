@@ -28,6 +28,10 @@ on:
         type: string
         default: ""
         description: Solo release that deploys the local Hiero network (empty uses the workflow default)
+      ui_request_trace:
+        type: boolean
+        default: false
+        description: Log every request the Angular dev server proxies to the gateway (UI_PROXY_LOG, frontend/proxy.hostdocker.js) into frontend-1.log of the guardian-logs artifact. It makes the log large; it is for diagnosing a UI failure
       timeout_minutes:
         type: number
         default: 120
@@ -433,6 +437,7 @@ jobs:
         env:
           GUARDIAN_LOG_DIR: ${{ runner.temp }}/guardian-logs
           UI_GATEWAY_ORIGIN: http://127.0.0.1:3002/
+          UI_PROXY_LOG: ${{ inputs.ui_request_trace }}
           NG_CLI_ANALYTICS: "false"
           CI: true
         run: |
