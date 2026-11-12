@@ -99,7 +99,8 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     public get policyId() { return this.parent?.policyId; }
     public get disabled() { return this.parent?.disabled; }
     public get docRef() { return this.parent?.getRef(); }
-    public get autosaveId() { return this.parent?.getAutosaveId(); }
+    /** Once the first Save Draft created a record, the autosave belongs to that record */
+    public get autosaveId() { return this.connectedDraftId ?? this.parent?.getAutosaveId(); }
     public get edit() { return this.parent?.edit; }
     public get draft() { return this.parent?.draft; }
     /** False when the policy has nothing that stores a draft, so "Save Draft" can only save locally */
@@ -119,6 +120,11 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     private sub?: Subscription;
     private readonly AUTOSAVE_INTERVAL = 120000;
     public dataSaved: boolean = false;
+    /**
+     * Id of the draft record created by this form's first Save Draft. It is kept here and not on
+     * the parent block, which resets its own draft id on every refresh. Later saves update this record.
+     */
+    private connectedDraftId: string | null = null;
     public step: FormStep = 'fill';
     public screen: FormScreen = 'form';
     public issues: IFormIssue[] = [];
@@ -841,7 +847,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         }
 
         prepareVcData(data);
-        const draftId = this.parent instanceof RequestDocumentBlockComponent ? this.parent.draftId : null;
+        const draftId = this.connectedDraftId ?? (this.parent as { draftId?: string | null })?.draftId ?? null;
 
         const evidence = this.enableAdditionalData ? this.buildEvidence() : undefined;
 
@@ -861,6 +867,11 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
             .subscribe((result) => {
                 // The autosave is the only copy until the server has accepted the document
                 this.storage.delete(this.autosaveId);
+                // A new draft record: further saves update it, and the autosave moves to its id
+                const createdId = result?.response?._id;
+                if (draft && !draftId && typeof createdId === 'string') {
+                    this.connectedDraftId = createdId;
+                }
                 if (captureOutput) {
                     this.policyTest.captureTestCase({
                         policyId: this.policyId,

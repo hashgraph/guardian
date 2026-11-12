@@ -11,7 +11,7 @@ import { FormTakeoverService } from '../../form-takeover/form-takeover.service';
 import { SchemaService } from 'src/app/services/schema.service';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { SavepointFlowService } from 'src/app/services/savepoint-flow.service';
-import { DocumentAutosaveStorage } from '../../../structures';
+import { DocumentAutosaveStorage, isAutosaveStale } from '../../../structures';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { TablePersistenceService } from 'src/app/services/table-persistence.service';
 import { GeoFilePersistenceService } from 'src/app/services/geo-file-persistence.service';
@@ -182,9 +182,26 @@ export class RequestDocumentBlockComponent
         }, 500);
     }
 
-    async showAutosaveDiag() {
+    /**
+     * The autosave to offer, or null. An opened draft may have been saved again elsewhere
+     * after this autosave was written; that autosave is deleted instead of offered, since
+     * restoring it would overwrite the newer data.
+     */
+    private async loadFreshAutosave(): Promise<any> {
         const autosaveId = this.getAutosaveId();
-        const autosaveDocument = await this.storage.load(autosaveId);
+        const record = await this.storage.loadRecord(autosaveId);
+        if (!record) {
+            return null;
+        }
+        if (this.draft && isAutosaveStale(record.updatedAt, this.ref?.updateDate)) {
+            await this.storage.delete(autosaveId);
+            return null;
+        }
+        return record.value;
+    }
+
+    async showAutosaveDiag() {
+        const autosaveDocument = await this.loadFreshAutosave();
 
         if (autosaveDocument) {
             this.showAutosaveDialog(autosaveDocument);
@@ -335,8 +352,7 @@ export class RequestDocumentBlockComponent
     }
 
     public async onDialogOpen() {
-        const autosaveId = this.getAutosaveId();
-        const autosaveDocument = await this.storage.load(autosaveId);
+        const autosaveDocument = await this.loadFreshAutosave();
 
         if (autosaveDocument) {
             this.showAutosaveDialog(autosaveDocument);

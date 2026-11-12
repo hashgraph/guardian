@@ -514,6 +514,67 @@ describe('RequestDocumentFormComponent', () => {
             expect(storage.delete).toHaveBeenCalledWith('autosave');
             fixture.destroy();
         });
+
+        describe('connected draft', () => {
+            it('updates the record created by the first Save Draft instead of creating another one', async () => {
+                const { fixture, component } = create();
+                prepare(component);
+                apiCall.and.returnValues(of({ response: { _id: 'draft-1' } }), of({ response: {} }));
+                await (component as any).onSubmit(true);
+                await settle();
+                await (component as any).onSubmit(true);
+                await settle();
+                expect(apiCall.calls.argsFor(0)[2].draftId).toBeNull();
+                expect(apiCall.calls.argsFor(1)[2].draftId).toBe('draft-1');
+                fixture.destroy();
+            });
+
+            it('keeps the id of the opened draft when it is saved again', async () => {
+                const { fixture, component } = create({ draftId: 'opened-1' });
+                prepare(component);
+                apiCall.and.returnValue(of({ response: {} }));
+                await (component as any).onSubmit(true);
+                await settle();
+                expect(apiCall.calls.mostRecent().args[2].draftId).toBe('opened-1');
+                fixture.destroy();
+            });
+
+            it('moves the autosave to the draft id after the first save', async () => {
+                const { fixture, component } = create();
+                const storage = prepare(component);
+                apiCall.and.returnValue(of({ response: { _id: 'draft-1' } }));
+                await (component as any).onSubmit(true);
+                await settle();
+                expect(storage.delete).toHaveBeenCalledWith('autosave');
+                expect(component.autosaveId).toBe('draft-1');
+                fixture.destroy();
+            });
+
+            it('turns the connected draft into the final document on submit', async () => {
+                const { fixture, component } = create();
+                prepare(component);
+                apiCall.and.returnValues(of({ response: { _id: 'draft-1' } }), of({ response: {} }));
+                await (component as any).onSubmit(true);
+                await settle();
+                await (component as any).onSubmit(false);
+                expect(apiCall.calls.mostRecent().args[2].draftId).toBe('draft-1');
+                expect(apiCall.calls.mostRecent().args[2].draft).toBeFalsy();
+                fixture.destroy();
+            });
+
+            it('keeps creating records and the shared autosave when the response has no id', async () => {
+                const { fixture, component } = create();
+                prepare(component);
+                apiCall.and.returnValue(of({ response: {} }));
+                await (component as any).onSubmit(true);
+                await settle();
+                await (component as any).onSubmit(true);
+                await settle();
+                expect(apiCall.calls.argsFor(1)[2].draftId).toBeNull();
+                expect(component.autosaveId).toBe('autosave');
+                fixture.destroy();
+            });
+        });
     });
 
 });
