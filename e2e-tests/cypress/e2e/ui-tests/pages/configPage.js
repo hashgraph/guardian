@@ -74,9 +74,15 @@ export function completeUserWizard() {
 	// Poll only for the appended VC step: the step transition is client-side
 	// and lands quickly, and whatever the app is doing otherwise - leaving
 	// for /task, or stalling - is the caller's to settle with its own
-	// recovery logic.
-	const deadline = Date.now() + TIMEOUTS.ui;
+	// recovery logic. Once the page has left the wizard there is no VC step to
+	// wait for, and polling on would let a fast /task round trip end unseen.
+	// The deadline is armed when the poll runs, not when it is queued.
+	let deadline;
 	const tick = () => cy.window().then((win) => {
+		deadline ??= Date.now() + TIMEOUTS.ui;
+		if (!win.location.pathname.includes('/user-profile')) {
+			return;
+		}
 		if (win.document.querySelector('app-schema-form-root')) {
 			fillWizardSchemaForm();
 			clickWizardFooterButton();
