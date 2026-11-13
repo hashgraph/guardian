@@ -853,6 +853,41 @@ describe('SchemaFormViewComponent', () => {
             expect(render(fields, values).componentInstance.isLoneField(1)).toBeFalse();
             expect(render(fields, values, { hideNotProvided: true }).componentInstance.isLoneField(1)).toBeTrue();
         });
+
+        it('says there is nothing to show when every field of the form is hidden', () => {
+            const fixture = render([field('a'), field('b', { isArray: true }), sub()], {}, { hideNotProvided: true });
+            expect(texts(fixture, '.sf-ro-nothing')).toEqual(['Nothing to show']);
+        });
+
+        it('does not say there is nothing to show while it is off', () => {
+            const fixture = render([field('a'), field('hidden', { hide: true })], {});
+            expect(fixture.nativeElement.querySelector('.sf-ro-nothing')).toBeNull();
+        });
+
+        it('says there is nothing to show inside a sub-schema whose fields are all empty', () => {
+            const fixture = render([sub()], { sub: { inner: '', note: '' } }, { hideNotProvided: true });
+            expect(texts(fixture, '.sf-sub-head')).toEqual(['Sub']);
+            expect(texts(fixture, '.sf-ro-sub .sf-ro-nothing')).toEqual(['Nothing to show']);
+            expect(fixture.nativeElement.querySelectorAll('.sf-ro-nothing').length).toBe(1);
+        });
+
+        it('counts a visible sub-schema as something to show', () => {
+            const fixture = render([field('a'), sub()], { sub: { inner: 'x' } }, { hideNotProvided: true });
+            expect(fixture.nativeElement.querySelector('.sf-ro-nothing')).toBeNull();
+        });
+
+        it('says there is nothing to show inside an opened record card whose fields are all empty', () => {
+            const fixture = render([rows()], { rows: [{}] }, { hideNotProvided: true });
+            fixture.nativeElement.querySelector('.sf-record-toggle').click();
+            fixture.detectChanges();
+            expect(texts(fixture, '.sf-record-body .sf-ro-nothing')).toEqual(['Nothing to show']);
+        });
+
+        it('does not say there is nothing to show when a referenced empty field stays visible', () => {
+            const fixture = render([field('a'), field('b')], {}, { hideNotProvided: true, discussion: { a: 1 } });
+            expect(texts(fixture, '.sf-ro-lt')).toEqual(['A']);
+            expect(fixture.nativeElement.querySelector('.sf-ro-nothing')).toBeNull();
+        });
     });
 
     describe('sections in a calculation preview', () => {

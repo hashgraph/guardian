@@ -393,6 +393,9 @@
             }
         }
     }
+    @if (hideNotProvided && !hasVisibleFields()) {
+        <span class="sf-ro-nothing sf-empty">Nothing to show</span>
+    }
 </div>
 
 <p-popover #richTextPopover styleClass="rich-text-view-popover">

@@ -860,6 +860,10 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
         return !item.hide && !item.notCorrespondCondition && !this.isHiddenAsEmpty(item);
     }
 
+    public hasVisibleFields(): boolean {
+        return (this.fields || []).some((item) => this.ifFieldVisible(item));
+    }
+
     private isHiddenAsEmpty(item: IFieldControl): boolean {
         return this.hideNotProvided
             && !this.isDiscussionCount(item)
