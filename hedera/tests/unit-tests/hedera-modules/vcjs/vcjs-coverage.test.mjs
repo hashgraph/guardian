@@ -358,6 +358,123 @@ describe('VCJS coverage (offline paths)', function () {
         });
     });
 
+    describe('array-typed cross-schema target wrapped in items', function () {
+        // A root scalar condition targeting a field of a repeatable sub-schema compiles to
+        // `list.items.{required|properties}`. `properties` directly on an array is inert, so
+        // the `items` wrapper is what makes the rule apply to every entry.
+        function makeSchema() {
+            return {
+                type: 'object',
+                properties: {
+                    kind: { type: 'string' },
+                    list: { type: 'array', items: { $ref: '#Sub' } }
+                },
+                required: [],
+                allOf: [{
+                    if: { properties: { kind: { const: 'full' } }, required: ['kind'] },
+                    then: { properties: { list: { items: { required: ['b'] } } } },
+                    else: { properties: { list: { items: { properties: { b: false } } } } }
+                }],
+                $defs: {
+                    '#Sub': {
+                        $id: '#Sub',
+                        type: 'object',
+                        properties: { a: { type: 'number' }, b: { type: 'number' } },
+                        required: ['a', 'b']
+                    }
+                }
+            };
+        }
+
+        async function verify(subject) {
+            const vcjs = makeVcjs();
+            const schema = makeSchema();
+            vcjs.schemaLoader = async () => schema;
+            return await vcjs.verifySubject({ type: 'T', ...subject });
+        }
+
+        it('strips the target from the clone required and leaves the original intact', function () {
+            const vcjs = makeVcjs();
+            const schema = makeSchema();
+            vcjs.prepareSchema(schema);
+
+            const cloneKey = schema.properties.list.items.$ref;
+            assert.notEqual(cloneKey, '#Sub');
+            assert.notInclude(schema.$defs[cloneKey].required ?? [], 'b');
+            assert.include(schema.$defs['#Sub'].required, 'b');
+        });
+
+        it('requires the target in every entry when the condition holds', async function () {
+            const ok = await verify({ kind: 'full', list: [{ a: 1, b: 2 }, { a: 3, b: 4 }] });
+            assert.isTrue(ok.ok);
+
+            const second = await verify({ kind: 'full', list: [{ a: 1, b: 2 }, { a: 3 }] });
+            assert.isFalse(second.ok, 'the second entry is missing b');
+        });
+
+        it('forbids the target in every entry when the condition does not hold', async function () {
+            const ok = await verify({ kind: 'other', list: [{ a: 1 }, { a: 3 }] });
+            assert.isTrue(ok.ok);
+
+            const second = await verify({ kind: 'other', list: [{ a: 1 }, { a: 3, b: 4 }] });
+            assert.isFalse(second.ok, 'the second entry carries b although it is not revealed');
+        });
+
+        it('accepts an empty list', async function () {
+            assert.isTrue((await verify({ kind: 'full', list: [] })).ok);
+        });
+
+        describe('a list inside a list', function () {
+            function makeNestedSchema() {
+                return {
+                    type: 'object',
+                    properties: {
+                        kind: { type: 'string' },
+                        outer: { type: 'array', items: { $ref: '#Outer' } }
+                    },
+                    required: [],
+                    allOf: [{
+                        if: { properties: { kind: { const: 'full' } }, required: ['kind'] },
+                        then: { properties: { outer: { items: { properties: { inner: { items: { required: ['leaf'] } } } } } } },
+                        else: { properties: { outer: { items: { properties: { inner: { items: { properties: { leaf: false } } } } } } } }
+                    }],
+                    $defs: {
+                        '#Outer': {
+                            $id: '#Outer',
+                            type: 'object',
+                            properties: { inner: { type: 'array', items: { $ref: '#Inner' } } }
+                        },
+                        '#Inner': {
+                            $id: '#Inner',
+                            type: 'object',
+                            properties: { x: { type: 'number' }, leaf: { type: 'number' } },
+                            required: ['x', 'leaf']
+                        }
+                    }
+                };
+            }
+
+            async function verifyNested(subject) {
+                const vcjs = makeVcjs();
+                const schema = makeNestedSchema();
+                vcjs.schemaLoader = async () => schema;
+                return await vcjs.verifySubject({ type: 'T', ...subject });
+            }
+
+            it('requires the target in every inner entry of every outer entry', async function () {
+                const entry = (leaf) => ({ x: 1, ...(leaf === undefined ? {} : { leaf }) });
+                assert.isTrue((await verifyNested({ kind: 'full', outer: [{ inner: [entry(1), entry(2)] }, { inner: [entry(3)] }] })).ok);
+                assert.isFalse((await verifyNested({ kind: 'full', outer: [{ inner: [entry(1)] }, { inner: [entry(3), entry()] }] })).ok,
+                    'the second inner entry of the second outer entry is missing leaf');
+            });
+
+            it('forbids the target in every inner entry when the condition does not hold', async function () {
+                assert.isTrue((await verifyNested({ kind: 'other', outer: [{ inner: [{ x: 1 }] }] })).ok);
+                assert.isFalse((await verifyNested({ kind: 'other', outer: [{ inner: [{ x: 1 }, { x: 1, leaf: 2 }] }] })).ok);
+            });
+        });
+    });
+
     describe('verifySubject', function () {
         it('throws when no schema loader is configured', async function () {
             const vcjs = makeVcjs();

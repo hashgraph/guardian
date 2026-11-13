@@ -35,6 +35,20 @@ The condition belongs to the **lowest common ancestor**. This is the schema that
 
 That placement keeps the sub-schemas independent. Neither sub-schema needs to know about the other.
 
+### Targets inside repeatable sub-schemas
+
+A target can also be a field of a sub-schema that is a **repeatable** (array) reference. The condition then applies to **every entry** of that list:
+
+* When the condition holds, the target field appears in each entry, and a required target must be filled in each one.
+* When it does not hold, the target field is hidden in each entry and must not appear in any of them.
+* An empty list has no entries to check, so it always passes.
+
+Guardian compiles this by placing the rule under the list's `items`, so that it is enforced for each entry when the document is validated.
+
+{% hint style="info" %}
+A trigger that lives inside a repeatable sub-schema and controls a field outside it is not supported, because it is unclear whether one entry or all of them should decide. See [Array Element Conditions](../array-element-conditions/README.md) for conditions on list values.
+{% endhint %}
+
 ### Related
 
 * Task: [Configure Nested and Cross-Schema Conditions](configure-nested-and-cross-schema-conditions.md)

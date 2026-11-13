@@ -433,10 +433,12 @@ export class FieldForm {
         const ifSizes = item.expr.pairs
             .map(p => this.getGroupSize(p.path ? p.path.split('.') : []))
             .filter((size): size is number => size !== null);
-        if (targetSize === null && !ifSizes.length) {
+        // A condition that reads no repeatable entry (a plain field of this form) governs every
+        // entry of a repeatable target alike, so it is evaluated once for all of them.
+        if (!ifSizes.length) {
             return [null];
         }
-        if (targetSize === null || !ifSizes.length) {
+        if (targetSize === null) {
             return [];
         }
         const size = Math.min(targetSize, ...ifSizes);
@@ -815,8 +817,7 @@ export class FieldForm {
             for (const model of models) {
                 const ctrl = model.findControl(name);
                 if (ctrl?.isArray && ctrl.isRef) {
-                    if (entryIndex === null) { continue; }
-                    if (model.isGroupArray(ctrl)) {
+                    if (entryIndex !== null && model.isGroupArray(ctrl)) {
                         const entry = ctrl.list?.[entryIndex]?.model as FieldForm | undefined;
                         if (entry) { next.push(entry); }
                     } else {

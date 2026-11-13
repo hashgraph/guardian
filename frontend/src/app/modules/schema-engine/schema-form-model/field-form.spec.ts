@@ -851,3 +851,128 @@ describe('FieldForm — pattern with a format', () => {
         form.destroy();
     });
 });
+
+describe('FieldForm — a plain field governing a repeatable sub-schema', () => {
+    let form: FieldForm;
+
+    // if kind == 'full' then list[].detail is revealed
+    const build = (): FieldForm => buildFieldsForm(
+        [
+            plainField('kind'),
+            plainField('list', {
+                type: '#sub',
+                isArray: true,
+                isRef: true,
+                required: true,
+                fields: [plainField('name')],
+            }),
+        ],
+        [{
+            ifCondition: { field: plainField('kind'), fieldValue: 'full' },
+            thenFields: [],
+            elseFields: [],
+            thenTargets: [{ field: plainField('detail'), fieldPath: ['list', 'detail'] }],
+        }]
+    );
+
+    const entry = (index: number) => controlOf(form, 'list').list![index].control;
+
+    afterEach(() => form?.destroy());
+
+    it('reveals the target in the existing entry when the condition holds', () => {
+        form = build();
+        expect(entry(0).get('detail')).toBeNull();
+        answer(form, 'kind', 'full');
+        expect(entry(0).get('detail')).not.toBeNull();
+    });
+
+    it('hides the target again when the condition stops holding', () => {
+        form = build();
+        answer(form, 'kind', 'full');
+        answer(form, 'kind', 'other');
+        expect(entry(0).get('detail')).toBeNull();
+    });
+
+    it('reveals the target in an entry added while the condition holds', () => {
+        form = build();
+        answer(form, 'kind', 'full');
+        form.addItem(controlOf(form, 'list'));
+        expect(entry(1).get('detail')).not.toBeNull();
+    });
+});
+
+describe('FieldForm — a plain field governing nested repeatable sub-schemas', () => {
+    let form: FieldForm;
+
+    const comment = (id: string, links: any[] = []): string => JSON.stringify({
+        '@id': `ctx:${id}`,
+        term: id,
+        ...(links.length ? { arrayDependencies: links } : {}),
+    });
+
+    // outer is linked to places (a group array), inner is an ordinary repeatable list inside it.
+    // if kind == 'full' then outer[].inner[].leaf is revealed
+    const nestedDocument = (): any => ({
+        $id: '#u-1&1.0.0',
+        $comment: comment('#u-1&1.0.0', [{ field: ['outer'], on: ['places'], kind: 'array' }]),
+        title: 'Root',
+        description: 'Root',
+        type: 'object',
+        properties: {
+            kind: { type: 'string', title: 'kind', description: 'kind' },
+            places: arrayOf('#place'),
+            outer: arrayOf('#outer'),
+        },
+        required: [],
+        allOf: [{
+            if: { properties: { kind: { const: 'full' } }, required: ['kind'] },
+            then: { properties: { outer: { items: { properties: { inner: { items: { required: ['leaf'] } } } } } } },
+        }],
+        $defs: {
+            '#place': subSchema('#place', 'name'),
+            '#inn': {
+                ...subSchema('#inn', 'x'),
+                properties: {
+                    x: { type: 'string', title: 'x', description: 'x' },
+                    leaf: { type: 'string', title: 'leaf', description: 'leaf' },
+                },
+            },
+            '#outer': {
+                $id: '#outer',
+                $comment: comment('#outer'),
+                title: 'outer',
+                description: 'outer',
+                type: 'object',
+                properties: { inner: arrayOf('#inn') },
+                required: [],
+            },
+        },
+    });
+
+    const innerEntries = (outerEntry: any): any[] =>
+        (outerEntry.model.controls as IFieldControl<any>[]).find((c) => c.name === 'inner')!.list!;
+
+    afterEach(() => form?.destroy());
+
+    it('reveals the target in every inner entry of every outer entry', () => {
+        form = buildForm(nestedDocument());
+        const places = controlOf(form, 'places');
+        form.addItem(places);
+        form.addItem(places);
+        const outer = controlOf(form, 'outer');
+        for (const entry of outer.list!) {
+            const inner = (entry.model.controls as IFieldControl<any>[]).find((c) => c.name === 'inner')!;
+            entry.model.addItem(inner);
+            entry.model.addItem(inner);
+        }
+        form.form.get('kind')?.setValue('full');
+
+        expect(outer.list!.length).toBe(2);
+        for (const entry of outer.list!) {
+            expect(innerEntries(entry).length).toBe(2);
+            for (const inner of innerEntries(entry)) {
+                expect(inner.control.get('leaf')).not.toBeNull();
+            }
+        }
+    });
+});

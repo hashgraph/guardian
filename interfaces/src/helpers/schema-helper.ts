@@ -1205,17 +1205,20 @@ export class SchemaHelper {
                     hasCrossKeys = true;
                     const childPath = [...pathPrefix, key];
                     const childFields: SchemaField[] = refFieldsOf(refField);
-                    if (Array.isArray(val.required)) {
-                        for (const fieldName of val.required) {
+                    // Repeatable sub-schemas carry the constraint under `items`; documents saved
+                    // before that wrapper was emitted carry it directly on the property.
+                    const body = val.items ?? val;
+                    if (Array.isArray(body.required)) {
+                        for (const fieldName of body.required) {
                             const childField = childFields.find(f => f.name === fieldName);
                             if (childField) {
                                 thenTargets.push({ field: childField, fieldPath: [...childPath, fieldName] });
                             }
                         }
                     }
-                    if (val.properties) {
-                        for (const fieldName of Object.keys(val.properties)) {
-                            const subVal = val.properties[fieldName];
+                    if (body.properties) {
+                        for (const fieldName of Object.keys(body.properties)) {
+                            const subVal = body.properties[fieldName];
                             if (subVal === false) {
                                 const childField = childFields.find(f => f.name === fieldName);
                                 if (childField) {
@@ -1538,6 +1541,8 @@ export class SchemaHelper {
                     }
                 } else if (key === 'required') {
                     result.required = [...new Set([...(a.required || []), ...(b.required || [])])];
+                } else if (key === 'items' && a.items) {
+                    result.items = deepMergeSchemaObj(a.items, b.items);
                 } else {
                     result[key] = b[key];
                 }
@@ -1551,6 +1556,29 @@ export class SchemaHelper {
             return result;
         };
 
+        /**
+         * Walks `path` down a cross-schema constraint tree, creating the node of every hop, and
+         * returns the node that holds the target field itself. The hop of a repeatable
+         * sub-schema is wrapped in `items`: `properties` is only honoured on objects, so without
+         * the wrapper the constraint is inert and the condition enforces nothing for any entry.
+         */
+        const crossContainer = (root: any, path: string[]): any => {
+            let node = root;
+            let level: SchemaField[] = fields;
+            for (let i = 0; i < path.length - 1; i++) {
+                const hop = level.find(f => f.name === path[i]);
+                if (!node.properties) { node.properties = {}; }
+                if (!node.properties[path[i]]) { node.properties[path[i]] = {}; }
+                node = node.properties[path[i]];
+                if (hop?.isArray) {
+                    if (!node.items) { node.items = {}; }
+                    node = node.items;
+                }
+                level = hop?.fields || [];
+            }
+            return node;
+        };
+
         const buildCrossRequired = (targets?: { field: SchemaField; fieldPath: string[] }[]): any | undefined => {
             if (!targets?.length) { return undefined; }
             const root: any = {};
@@ -1559,12 +1587,7 @@ export class SchemaHelper {
                 if (!t.field.required) { continue; }
                 const path = t.fieldPath;
                 if (!path || path.length < 2) { continue; }
-                let node = root;
-                for (let i = 0; i < path.length - 1; i++) {
-                    if (!node.properties) { node.properties = {}; }
-                    if (!node.properties[path[i]]) { node.properties[path[i]] = {}; }
-                    node = node.properties[path[i]];
-                }
+                const node = crossContainer(root, path);
                 const fieldName = path[path.length - 1];
                 if (!node.required) { node.required = []; }
                 if (!node.required.includes(fieldName)) { node.required.push(fieldName); }
@@ -1578,15 +1601,9 @@ export class SchemaHelper {
             for (const t of targets) {
                 const path = t.fieldPath;
                 if (!path || path.length < 2) { continue; }
-                let node = root;
-                for (let i = 0; i < path.length - 1; i++) {
-                    if (!node.properties) { node.properties = {}; }
-                    if (!node.properties[path[i]]) { node.properties[path[i]] = {}; }
-                    node = node.properties[path[i]];
-                }
-                const fieldName = path[path.length - 1];
+                const node = crossContainer(root, path);
                 if (!node.properties) { node.properties = {}; }
-                node.properties[fieldName] = false;
+                node.properties[path[path.length - 1]] = false;
             }
             return Object.keys(root).length ? root : undefined;
         };

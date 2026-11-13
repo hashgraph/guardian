@@ -969,6 +969,75 @@ describe('preparePolicySchemaUpdate — condition-branch membership', () => {
             'the template-driven then field must still be present, untouched');
     });
 
+    it('restores a policy-added cross-schema target inside a repeatable sub-schema', () => {
+        // The wrapper of a repeatable container nests under `items`; the carry-over must follow it
+        // or the target is silently dropped when the template is updated.
+        const trigger = field('trigger', { templateFieldId: 'tpl-trigger-1' });
+        const requiredChild = field('childField', { required: true });
+        const parentRef = field('parentRef', { isArray: true, isRef: true, type: '#SubIri', fields: [requiredChild] });
+        const targetDocument = SchemaHelper.buildDocument(
+            baseSchema(),
+            [trigger, parentRef],
+            [{
+                ifCondition: { field: trigger, fieldValue: 'yes' },
+                thenFields: [],
+                elseFields: [],
+                thenTargets: [{ field: requiredChild, fieldPath: ['parentRef', 'childField'] }],
+            }]
+        );
+        stripEnvelope(targetDocument);
+        // Only the compiled condition matters here; the ref property would need sub-schema $defs to parse.
+        delete targetDocument.properties.parentRef;
+
+        const sourceTrigger = field('trigger', { templateFieldId: 'tpl-trigger-1' });
+        const sourcePlaceholder = field('placeholder', { templateFieldId: 'tpl-placeholder' });
+        const sourceDocument = SchemaHelper.buildDocument(
+            baseSchema(),
+            [sourceTrigger, sourcePlaceholder],
+            [{ ifCondition: { field: sourceTrigger, fieldValue: 'yes' }, thenFields: [sourcePlaceholder], elseFields: [] }]
+        );
+
+        const target = asSchema(targetDocument);
+        const source = asSchema(sourceDocument);
+
+        preparePolicySchemaUpdate(target, source, 'template-1', { customFieldsLocked: false, schemaSettingsLocked: false });
+
+        assert.deepEqual(target.document.allOf[0].then.properties.parentRef, { items: { required: ['childField'] } });
+        assert.deepEqual(target.document.allOf[0].else.properties.parentRef, { items: { properties: { childField: false } } });
+    });
+
+    it('merges a policy-added target into a repeatable sub-schema the template already targets', () => {
+        const buildWith = (targetFields) => {
+            const trigger = field('trigger', { templateFieldId: 'tpl-trigger-1' });
+            const parentRef = field('parentRef', { isArray: true, isRef: true, type: '#SubIri', fields: targetFields });
+            const document = SchemaHelper.buildDocument(
+                baseSchema(),
+                [trigger, parentRef],
+                [{
+                    ifCondition: { field: trigger, fieldValue: 'yes' },
+                    thenFields: [],
+                    elseFields: [],
+                    thenTargets: targetFields.map((f) => ({ field: f, fieldPath: ['parentRef', f.name] })),
+                }]
+            );
+            stripEnvelope(document);
+            delete document.properties.parentRef;
+            return document;
+        };
+        const templateChild = field('templateChild', { required: true });
+        const policyChild = field('policyChild', { required: true });
+
+        const target = asSchema(buildWith([templateChild, policyChild]));
+        const source = asSchema(buildWith([templateChild]));
+
+        preparePolicySchemaUpdate(target, source, 'template-1', { customFieldsLocked: false, schemaSettingsLocked: false });
+
+        assert.deepEqual(target.document.allOf[0].then.properties.parentRef.items.required.sort(),
+            ['policyChild', 'templateChild']);
+        assert.deepEqual(Object.keys(target.document.allOf[0].else.properties.parentRef.items.properties).sort(),
+            ['policyChild', 'templateChild']);
+    });
+
     it('does not restore a cross-schema target that came from the previous template snapshot', () => {
         const trigger = field('status', { templateFieldId: 'tpl-status' });
         const zip = field('zip', { required: true });
@@ -1023,6 +1092,66 @@ describe('preparePolicySchemaUpdate — condition-branch membership', () => {
             'a target removed from the template must not be restored from the old policy document');
         assert.equal(target.document.allOf[0].else?.properties?.address, undefined);
         assert.ok(target.document.allOf[0].then.properties.placeholder);
+    });
+
+    it('restores only the policy-added target of a repeatable sub-schema when the snapshot also had targets', () => {
+        const trigger = field('status', { templateFieldId: 'tpl-status' });
+        const zip = field('zip', { required: true });
+        const city = field('city', { required: true });
+        const parentRef = (fields) => field('address', { isArray: true, isRef: true, type: '#SubIri', fields });
+        const targetsOf = (fields) => fields.map((f) => ({ field: f, fieldPath: ['address', f.name] }));
+
+        const targetDocument = SchemaHelper.buildDocument(
+            baseSchema(),
+            [trigger, parentRef([zip, city])],
+            [{
+                ifCondition: { field: trigger, fieldValue: 'solar' },
+                thenFields: [],
+                elseFields: [],
+                thenTargets: targetsOf([zip, city]),
+            }]
+        );
+        stripEnvelope(targetDocument);
+        // Only the compiled condition matters here; the ref property would need sub-schema $defs to parse.
+        delete targetDocument.properties.address;
+
+        const sourceTrigger = field('status', { templateFieldId: 'tpl-status' });
+        const sourcePlaceholder = field('placeholder', { templateFieldId: 'tpl-placeholder' });
+        const sourceDocument = SchemaHelper.buildDocument(
+            baseSchema(),
+            [sourceTrigger, sourcePlaceholder],
+            [{ ifCondition: { field: sourceTrigger, fieldValue: 'solar' }, thenFields: [sourcePlaceholder], elseFields: [] }]
+        );
+
+        const previousSnapshotSchema = {
+            templateSchemaId: 'tsid-1',
+            name: 'N',
+            description: 'D',
+            version: '1.0.0',
+            fields: [trigger, parentRef([zip])],
+            conditions: [{
+                ifCondition: { field: trigger, fieldValue: 'solar' },
+                thenFields: [],
+                elseFields: [],
+                thenTargets: targetsOf([zip]),
+            }],
+        };
+
+        const target = asSchema(targetDocument);
+        const source = asSchema(sourceDocument);
+
+        preparePolicySchemaUpdate(
+            target,
+            source,
+            'template-1',
+            { customFieldsLocked: false, schemaSettingsLocked: false },
+            [],
+            new Map(),
+            previousSnapshotSchema
+        );
+
+        assert.deepEqual(target.document.allOf[0].then.properties.address, { items: { required: ['city'] } });
+        assert.deepEqual(target.document.allOf[0].else.properties.address, { items: { properties: { city: false } } });
     });
 
     it('restores only policy-added cross-schema targets when snapshot also had targets', () => {

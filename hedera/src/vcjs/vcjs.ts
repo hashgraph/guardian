@@ -494,18 +494,20 @@ export class VCJS {
                 if (!ref || !defsObj[ref]) { continue; }
                 const containerPath = [...pathSoFar, propKey];
                 const pathKey = containerPath.join('.');
-                if (Array.isArray(val.required)) {
+                // A repeatable sub-schema carries its constraint under `items`.
+                const body = val.items ?? val;
+                if (Array.isArray(body.required)) {
                     if (!stripByPath.has(pathKey)) { stripByPath.set(pathKey, new Set()); }
-                    for (const f of val.required) { stripByPath.get(pathKey)!.add(f); }
+                    for (const f of body.required) { stripByPath.get(pathKey)!.add(f); }
                 }
-                if (val.properties) {
-                    for (const [fieldName, fieldVal] of Object.entries(val.properties) as [string, any][]) {
+                if (body.properties) {
+                    for (const [fieldName, fieldVal] of Object.entries(body.properties) as [string, any][]) {
                         if (fieldVal === false) {
                             if (!stripByPath.has(pathKey)) { stripByPath.set(pathKey, new Set()); }
                             stripByPath.get(pathKey)!.add(fieldName);
                         }
                     }
-                    collectPath(val, containerPath, defsObj[ref]?.properties || {});
+                    collectPath(body, containerPath, defsObj[ref]?.properties || {});
                 }
             }
         };
