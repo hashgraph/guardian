@@ -51,6 +51,10 @@ interface IRichTextEntry {
     value: any;
 }
 
+interface IHtmlTextValue {
+    html: string;
+}
+
 interface IFieldIndexControl {
     value: any;
     loading: boolean;
@@ -100,7 +104,7 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
     /** Rendered rich text per markdown value; dropped whenever an image resolves, since that changes the HTML. */
     private richHtmlCache = new Map<string, string>();
     private rowSummaryCache = new WeakMap<object, { title: string; sub: string }>();
-    private htmlTextCache = new Map<string, string>();
+    private htmlTextCache = new Map<string, IHtmlTextValue | ''>();
     private imgRequests = new Map<string, Promise<string | null>>();
     private previewFrames = new Map<IFieldControl, number>();
     public previewRenderLimit: number = Infinity;
@@ -602,7 +606,7 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
         return html;
     }
 
-    public htmlText(item: IFieldControl, value: unknown): string {
+    public htmlText(item: IFieldControl, value: unknown): IHtmlTextValue | '' {
         if (
             item.type !== 'string' ||
             this.isPrefix(item) ||
@@ -614,7 +618,7 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
         }
         let html = this.htmlTextCache.get(value);
         if (html === undefined) {
-            html = HTML_TAG.test(value) ? sanitizeRichText(value) : '';
+            html = HTML_TAG.test(value) ? { html: sanitizeRichText(value) } : '';
             this.htmlTextCache.set(value, html);
         }
         return html;
@@ -857,7 +861,10 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     private isHiddenAsEmpty(item: IFieldControl): boolean {
-        return this.hideNotProvided && !this.isLinkedField(item) && this.isEmptyField(item);
+        return this.hideNotProvided
+            && !this.isDiscussionCount(item)
+            && !this.isLinkedField(item)
+            && this.isEmptyField(item);
     }
 
     private isLinkedField(item: IFieldControl): boolean {

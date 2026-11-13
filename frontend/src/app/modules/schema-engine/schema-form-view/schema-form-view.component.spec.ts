@@ -573,9 +573,40 @@ describe('SchemaFormViewComponent', () => {
         });
     });
 
+    describe('HTML detection results', () => {
+        it('preserves a recognized closing tag as an empty HTML result', () => {
+            expect(component.htmlText(field('note'), '</b>')).toEqual(jasmine.objectContaining({ html: '' }));
+        });
+
+        it('preserves an empty HTML result when all recognized content is removed', () => {
+            expect(component.htmlText(field('note'), '<script>"<p>"</script>')).toEqual(jasmine.objectContaining({ html: '' }));
+        });
+
+        it('sanitizes an empty HTML result only once across repeated reads', () => {
+            const createDocument = spyOn(document.implementation, 'createHTMLDocument').and.callThrough();
+            expect(component.htmlText(field('note'), '</b>')).toEqual(jasmine.objectContaining({ html: '' }));
+            expect(component.htmlText(field('note'), '</b>')).toEqual(jasmine.objectContaining({ html: '' }));
+            expect(createDocument).toHaveBeenCalledTimes(1);
+        });
+    });
+
     describe('HTML in plain string fields', () => {
         const shown = (fixture: ComponentFixture<SchemaFormViewComponent>): HTMLElement | null =>
             fixture.nativeElement.querySelector('.sf-ro-value .sf-ro-rt');
+
+        it('renders a closing tag through the HTML branch without exposing the stored tag', () => {
+            const fixture = render([field('note')], { note: '</b>' });
+            expect(shown(fixture)).not.toBeNull();
+            expect(shown(fixture)!.innerHTML).toBe('');
+            expect(fixture.nativeElement.querySelector('.sf-ro-text')).toBeNull();
+        });
+
+        it('does not fall back to stored markup when sanitation removes the entire value', () => {
+            const fixture = render([field('note')], { note: '<script>"<p>"</script>' });
+            expect(shown(fixture)).not.toBeNull();
+            expect(shown(fixture)!.innerHTML).toBe('');
+            expect(fixture.nativeElement.querySelector('.sf-ro-text')).toBeNull();
+        });
 
         it('shows pasted HTML as formatted text, without the tags', () => {
             const fixture = render([field('risks')], { risks: '<p>First</p>\n<br>\n<p><b>Risks identified[5]</b></p>' });
@@ -663,9 +694,96 @@ describe('SchemaFormViewComponent', () => {
         });
     });
 
+    describe('saved comment references', () => {
+        const visible = () => component.fields!
+            .filter(item => component.ifFieldVisible(item))
+            .map(item => item.name);
+
+        beforeEach(() => {
+            component.hideNotProvided = true;
+            component.fields = ['a', 'b', 'other'].map(name => ({
+                ...field(name, { fullPath: `report.${name}` }),
+                hide: false,
+                value: '',
+            }));
+        });
+
+        it('keeps every referenced empty field visible before any navigation', () => {
+            component.discussionData = { 'report.a': 1, 'report.b': 2, 'report.other': 0 };
+            expect(visible()).toEqual(['a', 'b']);
+        });
+
+        it('keeps saved targets visible after the navigation signal is cleared', () => {
+            component.discussionData = { 'report.a': 1, 'report.b': 1 };
+            component.openField('a');
+            component.openField();
+            expect(visible()).toEqual(['a', 'b']);
+        });
+
+        it('uses current reference counts when targets are added or removed', () => {
+            expect(visible()).toEqual([]);
+            component.discussionData = { 'report.a': 1 };
+            expect(visible()).toEqual(['a']);
+            component.discussionData = { 'report.a': 0, 'report.b': 1 };
+            expect(visible()).toEqual(['b']);
+            component.discussionData = undefined;
+            expect(visible()).toEqual([]);
+        });
+
+        it('does not expose private or conditionally hidden fields with saved references', () => {
+            component.discussionData = { 'report.a': 1, 'report.b': 1 };
+            component.fields![0].hide = true;
+            component.fields![1].notCorrespondCondition = true;
+            expect(visible()).toEqual([]);
+        });
+    });
+
     describe('hide not provided', () => {
         const sub = () => field('sub', { isRef: true, fields: [field('inner', {}, 'sub'), field('note', {}, 'sub')] });
         const rows = () => field('rows', { isArray: true, isRef: true, fields: [field('name', {}, 'rows'), field('size', { type: 'number' }, 'rows')] });
+
+        it('renders all saved targets and hides unrelated empty fields without a link input', () => {
+            const fixture = render([field('a'), field('b'), field('other')], {}, {
+                hideNotProvided: true,
+                discussion: { a: 1, b: 2 },
+            });
+            expect(texts(fixture, '.sf-ro-lt')).toEqual(['A', 'B']);
+            expect(texts(fixture, '.sf-empty')).toEqual(['Not provided', 'Not provided']);
+        });
+
+        it('updates the visible saved targets when discussion counts change', () => {
+            const fixture = render([field('a'), field('b')], {}, { hideNotProvided: true });
+            expect(texts(fixture, '.sf-ro-lt')).toEqual([]);
+            fixture.componentRef.setInput('discussion', { a: 1 });
+            fixture.detectChanges();
+            expect(texts(fixture, '.sf-ro-lt')).toEqual(['A']);
+            fixture.componentRef.setInput('discussion', { a: 0, b: 1 });
+            fixture.detectChanges();
+            expect(texts(fixture, '.sf-ro-lt')).toEqual(['B']);
+        });
+
+        it('keeps a stored group and its referenced empty child without a deep emptiness check', () => {
+            const fixture = render([sub()], { sub: {} }, {
+                hideNotProvided: true,
+                discussion: { 'sub.inner': 1 },
+            });
+            expect(texts(fixture, '.sf-sub-head')).toEqual(['Sub']);
+            expect(texts(fixture, '.sf-ro-lt')).toEqual(['Inner']);
+            expect(texts(fixture, '.sf-empty')).toEqual(['Not provided']);
+        });
+
+        it('keeps a referenced empty field inside an opened record without changing card numbering', () => {
+            const fixture = render([rows()], { rows: [{}] }, {
+                hideNotProvided: true,
+                discussion: { 'rows.name': 1 },
+            });
+            const host: HTMLElement = fixture.nativeElement;
+            host.querySelector<HTMLButtonElement>('.sf-record-toggle')!.click();
+            fixture.detectChanges();
+            expect(texts(fixture, '.sf-record-ix')).toEqual(['1']);
+            expect(texts(fixture, '.sf-record-body .sf-ro-lt')).toEqual(['Name']);
+            expect(texts(fixture, '.sf-record-body .sf-empty')).toEqual(['Not provided']);
+        });
 
         it('changes nothing while it is off', () => {
             const fixture = render([field('a'), field('b', { isArray: true }), sub(), rows()], {});
