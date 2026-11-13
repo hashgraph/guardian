@@ -1,6 +1,7 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { publishOwnPolicyCopy } from '../../../support/CustomHelpers/ipfsSeeding';
 
 context('Trustchains', { tags: ['trustchains', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
@@ -14,8 +15,8 @@ context('Trustchains', { tags: ['trustchains', 'thirdPool', 'api-all', 'all', 'a
             failOnStatusCode: false,
         });
 
-    before('Get policy id for trustchain', () => {
-        cy.getOrCreateIRec4Policy(SRUsername).then((policy) => {
+    before('Publish a copy of the policy for trustchain', () => {
+        publishOwnPolicyCopy(SRUsername, 'iRec_4.policy').then((policy) => {
             policyId = policy.id;
         });
     });

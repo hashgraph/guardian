@@ -71,7 +71,19 @@ const yieldExportedMessageId = (response, fixtureName) => {
  * Yields the Hedera message ID of the freshly published policy.
  */
 export const publishPolicyFixture = (username, fixtureName, policyVersion = '1.0.0') =>
-    Authorization.getAccessToken(username).then((authorization) => readFixtureArchive(fixtureName)
+    Authorization.getAccessToken(username).then((authorization) =>
+        importAndPublishPolicyArchive(authorization, fixtureName, policyVersion)
+            .then((policyId) => cy.request({
+                method: METHOD.GET,
+                url: `${API.ApiServer}${API.Policies}${policyId}/${API.ExportMessage}`,
+                headers: { authorization },
+                timeout: PUBLISH_TIMEOUT,
+            }))
+            .then((exportResponse) => yieldExportedMessageId(exportResponse, fixtureName)));
+
+/** Imports a policy fixture from file and publishes it. Yields the id of the published policy. */
+const importAndPublishPolicyArchive = (authorization, fixtureName, policyVersion) =>
+    readFixtureArchive(fixtureName)
         .then((file) => importArchive(authorization, API.ApiServer + API.PolicisImportFile, file))
         .then((response) => {
             expect(response.status, `import of ${fixtureName}`).to.eq(STATUS_CODE.SUCCESS);
@@ -84,14 +96,31 @@ export const publishPolicyFixture = (username, fixtureName, policyVersion = '1.0
                 timeout: PUBLISH_TIMEOUT,
             }).then((publishResponse) => {
                 expectPublished(publishResponse, fixtureName);
-                return cy.request({
-                    method: METHOD.GET,
-                    url: `${API.ApiServer}${API.Policies}${policyId}/${API.ExportMessage}`,
-                    headers: { authorization },
-                    timeout: PUBLISH_TIMEOUT,
-                });
-            }).then((exportResponse) => yieldExportedMessageId(exportResponse, fixtureName));
-        }));
+                return cy.wrap(policyId, { log: false });
+            });
+        });
+
+/**
+ * Imports a policy fixture from file and publishes it, for a spec folder that works on a published
+ * policy of its own: the run stops the policy processes of a folder once it moves to the next one
+ * (STOP_POLICIES_BETWEEN_SUITES), and Guardian does not restart a published policy on demand.
+ * Published policies cannot be deleted, so the copy stays behind.
+ *
+ * Yields the published policy.
+ */
+export const publishOwnPolicyCopy = (username, fixtureName, policyVersion = '1.0.0') =>
+    Authorization.getAccessToken(username).then((authorization) =>
+        importAndPublishPolicyArchive(authorization, fixtureName, policyVersion)
+            .then((policyId) => cy.request({
+                method: METHOD.GET,
+                url: `${API.ApiServer}${API.Policies}${policyId}`,
+                headers: { authorization },
+                timeout: TIMEOUTS.backend,
+            }))
+            .then((response) => {
+                expect(response.status, `the published copy of ${fixtureName}`).to.eq(STATUS_CODE.OK);
+                return response.body;
+            }));
 
 /**
  * Imports a module fixture from file and publishes it. Same reasoning as publishPolicyFixture.
