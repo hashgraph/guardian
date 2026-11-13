@@ -1,5 +1,7 @@
-import { Component, Input, SimpleChanges } from '@angular/core';
-import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from 'src/app/services/api';
+import { Component, Input, OnChanges } from '@angular/core';
+import { IPFSService } from 'src/app/services/ipfs.service';
+import { ToastService } from 'src/app/services/toast.service';
+import { ipfsCid, ipfsGatewayLink } from 'src/app/utils/ipfs-file';
 
 @Component({
     selector: 'ipfs-link',
@@ -7,22 +9,42 @@ import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from 'src/app/services/api';
     styleUrls: ['./ipfs-link.component.scss'],
     standalone: false
 })
-export class IPFSLinkComponent {
-    @Input('url') url: string | undefined;
+export class IPFSLinkComponent implements OnChanges {
+    @Input() url: string | undefined;
 
-    public link:string;
+    @Input() dryRun = false;
 
-    constructor() {
+    constructor(private ipfs: IPFSService, private toast: ToastService) {}
+
+    public link = '';
+    public cid = '';
+
+    public ngOnChanges(): void {
+        this.link = ipfsGatewayLink(this.url || '');
+        this.cid = ipfsCid(this.url);
     }
 
-    ngOnChanges(changes: SimpleChanges): void {
-        this.link = '';
-        if(this.url) {
-            if(this.url.startsWith(IPFS_SCHEMA)) {
-                this.link = API_IPFS_GATEWAY_URL + this.url.replace(IPFS_SCHEMA, '');
-            } else {
-                this.link = this.url;
-            }
+    public openFile(): void {
+        const tab = window.open('', '_blank');
+        if (!tab) {
+            this.toast.warn('Allow pop-ups for this site to open the file.');
+            return;
         }
+        tab.opener = null;
+        tab.document.body.textContent = 'Loading file…';
+        this.ipfs.getDryRunFile(this.url || '').subscribe({
+            next: (blob) => {
+                if (tab.closed) {
+                    return;
+                }
+                const objectUrl = URL.createObjectURL(blob);
+                tab.location.href = objectUrl;
+                setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
+            },
+            error: () => {
+                tab.close();
+                this.toast.error('File not found');
+            },
+        });
     }
 }

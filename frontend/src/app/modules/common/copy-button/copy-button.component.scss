@@ -25,10 +25,15 @@
         font-size: 13px;
     }
 
-    &:hover,
-    &:focus-visible {
+    &:not(:disabled):hover,
+    &:not(:disabled):focus-visible {
         background: var(--guardian-hover, var(--color-grey-2));
         color: var(--guardian-font-color);
+    }
+
+    &:disabled {
+        opacity: 0.45;
+        cursor: default;
     }
 
     &.copied {

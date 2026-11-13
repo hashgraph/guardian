@@ -1,1 +1,17 @@
-<a class="link" [href]="link">{{url}}</a>
+@if (url) {
+    <div class="sf-ro-file-links">
+        @if (dryRun && !cid) {
+            <button type="button" class="sf-ro-open" (click)="openFile()">
+                <i class="pi pi-external-link" aria-hidden="true"></i>
+                Open
+            </button>
+        } @else {
+            <a class="sf-ro-open" [href]="link" target="_blank" rel="noopener noreferrer">
+                <i class="pi pi-external-link" aria-hidden="true"></i>
+                Open
+            </a>
+        }
+        <sf-copy [value]="url" tip="Copy link"></sf-copy>
+        <sf-copy [value]="cid" [disabled]="!cid" tip="Copy CID" label="CID"></sf-copy>
+    </div>
+}

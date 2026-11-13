@@ -19,11 +19,12 @@
           <tr>
             <td class="ff-col-name">{{ file.name }}</td>
             <td class="ff-col-url">
-              <span class="ff-url"
-                [truncateTooltip]="file.url"
-                tooltipPosition="bottom">
+              <div class="ff-file-link">
+                <span class="ff-url"
+                  [truncateTooltip]="file.url"
+                  tooltipPosition="bottom">{{ file.url }}</span>
                 <ipfs-link [url]="file.url"></ipfs-link>
-              </span>
+              </div>
             </td>
             <td class="ff-col-action">
               @if (!readonly) {
