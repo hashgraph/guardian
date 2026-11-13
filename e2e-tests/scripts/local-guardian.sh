@@ -24,7 +24,8 @@
 # solo:up, so a database left over from an earlier run would point at accounts that no longer exist.
 # Logs and pids are in e2e-tests/.local/logs/. `test` and `smoke` run the `status` checks first and stop
 # when one fails, rather than leaving Cypress waiting on a stack that does not answer. With
-# STOP_POLICIES_AFTER_TESTS=1 they run `stop-policies` once Cypress ends, whatever its result. Credentials: the JWT keys come from
+# STOP_POLICIES_BETWEEN_SUITES=1 the policy processes are stopped each time the run moves to another spec
+# folder, and once Cypress ends, whatever its result. Credentials: the JWT keys come from
 # configs/.env.quickstart.guardian.system, the operator and network settings from .solo/solo.env.
 set -euo pipefail
 
@@ -251,9 +252,10 @@ stop_policies() {
   node "$E2E_DIR/scripts/stop-policies.mjs" "$LOG_DIR" "$INFRA_HOST:4222"
 }
 
-# Exits with the status of Cypress, stopping the policy processes first when asked to.
+# Exits with the status of Cypress, stopping the processes the last suite started when asked to
+# (cypress.config.js stops the earlier suites' ones as each new suite begins).
 finish_tests() {             # finish_tests <cypress status>
-  if [[ "${STOP_POLICIES_AFTER_TESTS:-}" == 1 ]]; then
+  if [[ "${STOP_POLICIES_BETWEEN_SUITES:-}" == 1 ]]; then
     stop_policies
   fi
   exit "$1"
@@ -264,6 +266,7 @@ run_tests() {                # run_tests <tags> [spec...]
   shift
   spec=$(IFS=,; echo "$*")
   cd "$E2E_DIR"
+  STOP_POLICIES_NATS="$INFRA_HOST:4222" \
   CYPRESS_portApi=3002 CYPRESS_BROWSER="${CYPRESS_BROWSER:-electron}" \
     CYPRESS_minPasswordLength=4 CYPRESS_passwordComplexity=easy \
     CYPRESS_grepTags="$tags" CYPRESS_SPEC="$spec" ./entrypoint.sh

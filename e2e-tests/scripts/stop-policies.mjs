@@ -2,6 +2,7 @@
 // Each one is sent the DELETE_POLICY event it listens to, so it exits with code 0 and policy-service
 // does not respawn it (a process killed by a signal is respawned). Nothing is removed from the database:
 // Guardian starts a policy again when it is published, put in dry run, or at the next boot.
+// cypress.config.js calls stopPolicies between suites when STOP_POLICIES_BETWEEN_SUITES=1.
 //
 //   node scripts/stop-policies.mjs <dir with policy-service-*.log> <NATS host:port>
 import { execFileSync } from 'node:child_process';
@@ -45,7 +46,7 @@ export function deletePolicyMessage(policyId) {
 
 const listPolicyPids = () => runningPolicyPids(execFileSync('ps', ['-eo', 'pid,stat,args'], { encoding: 'utf8' }));
 
-async function stopPolicies(logDir, natsServer) {
+export async function stopPolicies(logDir, natsServer) {
     const pids = listPolicyPids();
     if (!pids.length) {
         console.log('no policy process is running');
