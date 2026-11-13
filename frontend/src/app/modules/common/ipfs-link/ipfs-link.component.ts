@@ -1,5 +1,5 @@
-import { Component, Input, SimpleChanges } from '@angular/core';
-import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from 'src/app/services/api';
+import { Component, Input, OnChanges } from '@angular/core';
+import { ipfsCid, ipfsGatewayLink } from 'src/app/utils/ipfs-file';
 
 @Component({
     selector: 'ipfs-link',
@@ -7,22 +7,14 @@ import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from 'src/app/services/api';
     styleUrls: ['./ipfs-link.component.scss'],
     standalone: false
 })
-export class IPFSLinkComponent {
-    @Input('url') url: string | undefined;
+export class IPFSLinkComponent implements OnChanges {
+    @Input() url: string | undefined;
 
-    public link:string;
+    public link = '';
+    public cid = '';
 
-    constructor() {
-    }
-
-    ngOnChanges(changes: SimpleChanges): void {
-        this.link = '';
-        if(this.url) {
-            if(this.url.startsWith(IPFS_SCHEMA)) {
-                this.link = API_IPFS_GATEWAY_URL + this.url.replace(IPFS_SCHEMA, '');
-            } else {
-                this.link = this.url;
-            }
-        }
+    public ngOnChanges(): void {
+        this.link = ipfsGatewayLink(this.url || '');
+        this.cid = ipfsCid(this.url);
     }
 }

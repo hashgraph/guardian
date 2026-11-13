@@ -1,5 +1,5 @@
 import { Clipboard } from '@angular/cdk/clipboard';
-import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { ChangeDetectorRef, NO_ERRORS_SCHEMA } from '@angular/core';
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { CommonModule } from '@angular/common';
 import { CopyButtonComponent } from './copy-button.component';
@@ -55,8 +55,35 @@ describe('CopyButtonComponent', () => {
         expect(icon(fixture)).toContain('pi-check');
     });
 
+
+    it('disables copying even when a value is present', () => {
+        const { fixture, clipboard } = build('abc');
+        fixture.componentRef.setInput('disabled', true);
+        fixture.detectChanges();
+        const button: HTMLButtonElement = fixture.nativeElement.querySelector('button');
+        expect(button.disabled).toBeTrue();
+        button.click();
+        fixture.componentInstance.copy();
+        expect(clipboard.copy).not.toHaveBeenCalled();
+        expect(fixture.componentInstance.copied).toBeFalse();
+    });
+
     it('names the button by its tip', () => {
         const { fixture } = build('abc');
         expect(fixture.nativeElement.querySelector('button').getAttribute('aria-label')).toBe('Copy CID');
+    });
+});
+
+describe('CopyButtonComponent direct copying', () => {
+    it('does not copy a value when disabled', () => {
+        const clipboard = jasmine.createSpyObj<Clipboard>('Clipboard', ['copy']);
+        clipboard.copy.and.returnValue(true);
+        const detector = jasmine.createSpyObj<ChangeDetectorRef>('ChangeDetectorRef', ['markForCheck']);
+        const button = new CopyButtonComponent(clipboard, detector);
+        Object.assign(button, { value: 'abc', disabled: true });
+        button.copy();
+        expect(clipboard.copy).not.toHaveBeenCalled();
+        expect(button.copied).toBeFalse();
+        button.ngOnDestroy();
     });
 });

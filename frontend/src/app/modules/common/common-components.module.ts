@@ -46,6 +46,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { MathLiveComponent } from './mathlive/mathlive.component';
 import { MenuButton } from './menu-button/menu-button.component';
 import { CheckboxButton } from './checkbox-button/checkbox-button.component';
+import { CopyButtonComponent } from './copy-button/copy-button.component';
 import { IPFSLinkComponent } from './ipfs-link/ipfs-link.component';
 import { TableDialogComponent } from './table-dialog/table-dialog.component';
 import { AgGridModule } from 'ag-grid-angular';
@@ -94,6 +95,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
         MenuButton,
         CheckboxButton,
         IPFSLinkComponent,
+        CopyButtonComponent,
         TableDialogComponent,
         PolicyComments,
         TextInputAutocompleteDirective,
@@ -164,6 +166,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
         MenuButton,
         CheckboxButton,
         IPFSLinkComponent,
+        CopyButtonComponent,
         TableDialogComponent,
         PolicyComments,
         TextInputAutocompleteDirective,

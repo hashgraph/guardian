@@ -237,7 +237,10 @@
             </div>
             <div class="guardian-input-container">
               <label class="form-label">URL</label>
-              <ipfs-link [url]="file.url" class="guardian-input"></ipfs-link>
+              <div class="file-link guardian-input">
+                <span class="file-url" [title]="file.url">{{ file.url }}</span>
+                <ipfs-link [url]="file.url"></ipfs-link>
+              </div>
             </div>
           </div>
         }

@@ -1,3 +1,4 @@
+import { of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { IPFSService } from './ipfs.service';
@@ -16,7 +17,18 @@ describe('IPFSService', () => {
         service = TestBed.inject(IPFSService);
     });
 
-    describe('getImageWithDryRunFallback', () => {
+    it('reads the CID from gateway and IPFS URLs in the JSON and image readers', async () => {
+        const cid = 'bafybeiavprz5ld3ktizv4gsqos3dg7nbexcrhvtswzvoatgmea5ncvr3di';
+        const json = spyOn(service, 'getJsonFile').and.returnValue(of({ ok: true }));
+        const file = spyOn(service, 'getFile').and.returnValue(of(new ArrayBuffer(0)));
+        expect(await service.getJsonFileByLink(`ipfs://${cid}?name=test`)).toEqual({ ok: true });
+        service.loadJsonFileByLink(`https://ipfs.io/ipfs/${cid}`).subscribe();
+        await service.getImageByLink(`ipfs://${cid}`);
+        expect(json.calls.allArgs()).toEqual([[cid], [cid]]);
+        expect(file).toHaveBeenCalledOnceWith(cid);
+    });
+
+    describe('getImageWithDryRunFallback' , () => {
         it('reads from IPFS only when the view is not a dry run', async () => {
             const byLink = spyOn(service, 'getImageByLink').and.resolveTo('data:ipfs');
             const dryRun = spyOn(service, 'getImageFromDryRunStorage').and.resolveTo('data:dry-run');

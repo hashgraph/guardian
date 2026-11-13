@@ -1,6 +1,7 @@
 <button
     type="button"
     class="sf-copy"
+    [disabled]="disabled"
     [class.copied]="copied"
     [attr.aria-label]="tip"
     [pTooltip]="copied ? 'Copied' : tip"

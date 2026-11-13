@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
+import { ipfsCid } from '../utils/ipfs-file';
 
 /**
  * Services for working from user profile.
@@ -9,8 +10,6 @@ import { API_BASE_URL } from './api';
 @Injectable()
 export class IPFSService {
     private readonly url: string = `${API_BASE_URL}/ipfs`;
-    private readonly cidPattern: RegExp =
-        /Qm[1-9A-HJ-NP-Za-km-z]{44,}|b[A-Za-z2-7]{58,}|B[A-Z2-7]{58,}|z[1-9A-HJ-NP-Za-km-z]{48,}|F[0-9A-F]{50,}/;
     constructor(private http: HttpClient) { }
 
     public addFile(file: any): Observable<any> {
@@ -55,8 +54,7 @@ export class IPFSService {
 
     public getImageByLink(link: string): Promise<string> {
         return new Promise((resolve, reject) => {
-            const cidMatches = link.match(this.cidPattern);
-            this.getFile((cidMatches && cidMatches[0]) || '').subscribe(
+            this.getFile(ipfsCid(link)).subscribe(
                 (res) => {
                     resolve(
                         `data:image/jpg;base64,${btoa(
@@ -98,8 +96,7 @@ export class IPFSService {
 
     public getJsonFileByLink(link: string): Promise<any> {
         return new Promise((resolve, reject) => {
-            let cidMatches = link.match(this.cidPattern);
-            this.getJsonFile((cidMatches && cidMatches[0]) || '')
+            this.getJsonFile(ipfsCid(link))
                 .subscribe(
                     (res) => {
                         resolve(res);
@@ -110,8 +107,7 @@ export class IPFSService {
     }
 
     public loadJsonFileByLink(link: string): Observable<any> {
-        let cidMatches = link.match(this.cidPattern);
-        return this.getJsonFile((cidMatches && cidMatches[0]) || '')
+        return this.getJsonFile(ipfsCid(link))
     }
 
     public deleteCid(cid: string): Observable<void> {

@@ -50,14 +50,7 @@
             <div class="sf-ro-fn">
                 <span class="sf-ro-url">{{ entry.value }}</span>
             </div>
-            <div class="sf-ro-file-links">
-                <a class="sf-ro-open" [href]="ipfsLink(entry.value)" target="_blank" rel="noopener noreferrer">
-                    <i class="pi pi-external-link" aria-hidden="true"></i>
-                    Open
-                </a>
-                <sf-copy [value]="entry.value" tip="Copy link"></sf-copy>
-                <sf-copy [value]="getCID(entry.value)" tip="Copy CID" label="CID"></sf-copy>
-            </div>
+            <ipfs-link [url]="entry.value"></ipfs-link>
         </div>
     } @else if (isBoolean(item)) {
         <span class="sf-ro-text">{{ isBooleanView(entry.value) }}</span>
