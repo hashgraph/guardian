@@ -1,6 +1,18 @@
-import { AfterViewInit, ChangeDetectorRef, Directive, ElementRef, HostBinding, HostListener, Input, NgZone, OnChanges, OnDestroy, OnInit, Optional, Self, SkipSelf } from '@angular/core';
+import { AfterViewInit, booleanAttribute, ChangeDetectorRef, Directive, ElementRef, HostBinding, HostListener, Input, NgZone, OnChanges, OnDestroy, OnInit, Optional, Self, SkipSelf } from '@angular/core';
 import { Tooltip } from 'primeng/tooltip';
 import { LAST_USER_STORAGE_KEY } from '../../services/app-theme.service';
+
+function positionSchemaTooltip(tooltip: Tooltip | null): void {
+    const container: unknown = tooltip?.container;
+    if (!tooltip || !(container instanceof HTMLElement) || !container.classList.contains('sc-row-tooltip')) { return; }
+    tooltip.alignTop();
+    if (container.getBoundingClientRect().top < 12) { tooltip.alignBottom(); }
+    const bounds = container.getBoundingClientRect();
+    const left = Math.max(12, Math.min(bounds.left, window.innerWidth - bounds.width - 12));
+    const top = Math.max(12, Math.min(bounds.top, window.innerHeight - bounds.height - 12));
+    container.style.left = `${left + window.scrollX}px`;
+    container.style.top = `${top + window.scrollY}px`;
+}
 
 @Directive({
     selector: '[appSchemaListResize]',
@@ -203,29 +215,84 @@ export class SchemaNameTooltipDirective implements AfterViewInit, OnChanges, OnD
     selector: '[appSchemaRowInnerTooltip]',
     standalone: true
 })
-export class SchemaRowInnerTooltipDirective implements OnInit, OnDestroy {
+export class SchemaRowInnerTooltipDirective implements OnInit, OnChanges, OnDestroy {
+    @Input({ alias: 'appSchemaRowInnerTooltip', transform: booleanAttribute }) public enabled = true;
+    @HostBinding('attr.appSchemaRowInnerTooltip') public readonly marker = '';
     private readonly events = new AbortController();
+    private pointerInside = false;
+    private childInside = false;
 
     constructor(
         private readonly element: ElementRef<HTMLElement>,
         private readonly zone: NgZone,
-        @Optional() @SkipSelf() private readonly rowTooltip: Tooltip | null
+        @Optional() @SkipSelf() private readonly rowTooltip: Tooltip | null,
+        @Optional() @Self() private readonly ownTooltip: Tooltip | null,
+        @Optional() @SkipSelf() private readonly parent: SchemaRowInnerTooltipDirective | null
     ) {}
 
     public ngOnInit(): void {
-        const rowTooltip = this.rowTooltip;
-        if (!rowTooltip) { return; }
         const element = this.element.nativeElement;
         const { signal } = this.events;
         this.zone.runOutsideAngular(() => {
-            element.addEventListener('mouseenter', () => rowTooltip.deactivate(), { signal });
-            element.addEventListener('mouseleave', (event: MouseEvent) => {
-                const target = event.relatedTarget;
-                if (target instanceof Node && rowTooltip.el.nativeElement.contains(target)) {
-                    rowTooltip.activate();
+            element.addEventListener('mouseenter', () => {
+                this.pointerInside = true;
+                if (this.enabled) {
+                    this.hideAncestors();
+                    setTimeout(() => positionSchemaTooltip(this.ownTooltip));
                 }
             }, { signal });
+            element.addEventListener('mouseleave', (event: MouseEvent) => {
+                this.pointerInside = false;
+                if (this.enabled && event.relatedTarget instanceof Node) {
+                    this.restoreAncestor(event.relatedTarget);
+                }
+            }, { signal });
+            element.addEventListener('click', (event: MouseEvent) => {
+                if (event.target instanceof Element && event.target.closest('[appSchemaRowInnerTooltip]') !== element) { return; }
+                this.restoreAfterRender();
+            }, { signal });
         });
+    }
+
+    public ngOnChanges(): void {
+        if (!this.pointerInside || this.childInside) { return; }
+        if (this.enabled) {
+            this.hideAncestors();
+            this.restoreAfterRender();
+        } else {
+            this.ownTooltip?.deactivate();
+            this.restoreAncestor(this.element.nativeElement);
+        }
+    }
+
+    private hideAncestors(): void {
+        this.rowTooltip?.deactivate();
+        if (this.parent) {
+            this.parent.childInside = true;
+            this.parent.hideAncestors();
+        }
+    }
+
+    private restoreAncestor(target: Node): void {
+        if (this.parent) { this.parent.childInside = false; }
+        if (this.rowTooltip?.el.nativeElement.contains(target) && this.rowTooltip.content) {
+            this.rowTooltip.activate();
+            positionSchemaTooltip(this.rowTooltip);
+        } else {
+            this.parent?.restoreAncestor(target);
+        }
+    }
+
+    private restoreAfterRender(): void {
+        this.zone.runOutsideAngular(() => setTimeout(() => {
+            if (this.pointerInside && !this.childInside && !this.events.signal.aborted) {
+                if (this.enabled) {
+                    this.ownTooltip?.activate();
+                    positionSchemaTooltip(this.ownTooltip);
+                }
+                else { this.restoreAncestor(this.element.nativeElement); }
+            }
+        }));
     }
 
     public ngOnDestroy(): void {
@@ -253,12 +320,18 @@ export class SchemaRowTooltipDirective implements OnInit, OnDestroy {
         const element = this.element.nativeElement;
         const { signal } = this.events;
         this.zone.runOutsideAngular(() => {
-            element.addEventListener('mouseenter', () => { this.pointerInside = true; }, { signal });
+            element.addEventListener('mouseenter', () => {
+                this.pointerInside = true;
+                setTimeout(() => positionSchemaTooltip(tooltip));
+            }, { signal });
             element.addEventListener('mouseleave', () => { this.pointerInside = false; }, { signal });
             element.addEventListener('click', (event: MouseEvent) => {
                 if (event.target instanceof Element && event.target.closest('[appSchemaRowInnerTooltip]')) { return; }
                 setTimeout(() => {
-                    if (this.pointerInside && !signal.aborted) { tooltip.activate(); }
+                    if (this.pointerInside && !signal.aborted) {
+                        tooltip.activate();
+                        positionSchemaTooltip(tooltip);
+                    }
                 });
             }, { signal });
         });

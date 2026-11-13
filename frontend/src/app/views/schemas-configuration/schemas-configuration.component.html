@@ -407,17 +407,23 @@
                                     [class.active]="(schema._id && selectedSchema?._id === schema._id) || (schema.id && selectedSchema?.id === schema.id)"
                                     [class.sc-schema-row--no-drop]="!canDragSchema(schema)"
                                     [draggable]="canDragSchema(schema)"
-                                    [pTooltip]="schemaNameTooltip.rowTooltip(rowMessage, schemaRowTooltip)"
-                                    [tooltipStyleClass]="schemaNameTooltip.rowTooltipClass(rowMessage)"
+                                    [pTooltip]="rowMessage ? schemaWarningTooltip : ''"
+                                    tooltipStyleClass="sc-row-tooltip"
                                     appSchemaRowTooltip
-                                    tooltipPosition="right"
+                                    tooltipPosition="top"
                                     (mouseenter)="hoveredSchemaId = schema.id || schema._id"
                                     (mouseleave)="hoveredSchemaId = null"
                                     (dragstart)="onSchemaDragStart($event, schema)"
                                     (dragend)="onDragEnd()"
                                     (click)="switchSchema(schema)">
-                                    <ng-template #schemaRowTooltip>
-                                        @if (schemaNameTooltip.truncated) {<span class="sc-row-tooltip-name">{{ schema.name }}</span>}@if (rowMessage) {@if (schemaNameTooltip.truncated) {<span class="sc-row-tooltip-separator">·</span>}<span class="sc-row-tooltip-message"><i class="pi pi-exclamation-triangle"></i>{{ rowMessage }}</span>}
+                                    <ng-template #schemaWarningTooltip>
+                                        <span class="sc-row-tooltip-message"><i class="pi pi-exclamation-triangle"></i><span>{{ rowMessage }}</span></span>
+                                    </ng-template>
+                                    <ng-template #schemaNameContent>
+                                        <span class="sc-row-tooltip-name">{{ schema.name }}</span>
+                                        @if (rowMessage) {
+                                            <span class="sc-row-tooltip-message sc-row-tooltip-message--separated"><i class="pi pi-exclamation-triangle"></i><span>{{ rowMessage }}</span></span>
+                                        }
                                     </ng-template>
                                     <div class="sc-schema-icon">
                                         <i class="pi pi-file"></i>
@@ -425,7 +431,11 @@
                                     <div class="sc-schema-info">
                                         <span class="sc-schema-name"
                                               [appSchemaNameTooltip]="schema.name || ''"
-                                              #schemaNameTooltip="schemaNameTooltip">
+                                              #schemaNameTooltip="schemaNameTooltip"
+                                              [pTooltip]="schemaNameTooltip.rowTooltip('', schemaNameContent)"
+                                              tooltipStyleClass="sc-row-tooltip"
+                                              tooltipPosition="top"
+                                              [appSchemaRowInnerTooltip]="schemaNameTooltip.truncated">
                                             @if (isSchemaFeatured(schema)) {
                                                 <i class="pi pi-star-fill schema-featured-icon" pTooltip="Featured" tooltipPosition="right" appSchemaRowInnerTooltip></i>
                                             }

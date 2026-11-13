@@ -1154,30 +1154,34 @@ $sc-accent: var(--guardian-schema-accent, var(--color-primary, #4169E2));
     }
 }
 
-::ng-deep .sc-row-tooltip {
-    max-width: 90vw;
+::ng-deep .p-tooltip.sc-row-tooltip {
+    max-width: min(480px, calc(100vw - 24px));
 
     .p-tooltip-text {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        white-space: normal;
+        overflow-wrap: anywhere;
     }
 }
 
 .sc-row-tooltip-name {
+    display: block;
     font-weight: 600;
 }
 
-.sc-row-tooltip-separator {
-    margin: 0 6px;
-    opacity: 0.75;
-}
-
 .sc-row-tooltip-message {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
     opacity: 0.85;
 
+    &--separated {
+        border-top: 1px solid currentColor;
+        margin-top: 8px;
+        padding-top: 8px;
+    }
+
     i {
-        margin-right: 4px;
+        flex-shrink: 0;
         font-size: 11px;
         color: var(--color-accent-yellow-1, #DA9B22);
     }

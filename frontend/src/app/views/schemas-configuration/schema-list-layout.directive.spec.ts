@@ -805,19 +805,25 @@ describe('Schema row inner tooltips', () => {
 });
 
 @Component({
-    imports: [Tooltip, SchemaNameTooltipDirective],
+    imports: [Tooltip, SchemaNameTooltipDirective, SchemaRowInnerTooltipDirective, SchemaRowTooltipDirective],
     template: `
-        <div class="row" [pTooltip]="nameTooltip.rowTooltip(message, content)" [tooltipStyleClass]="nameTooltip.rowTooltipClass(message)">
+        <div class="row" [pTooltip]="message ? warning : ''" tooltipStyleClass="sc-row-tooltip" tooltipPosition="top" appSchemaRowTooltip>
+            <ng-template #warning><span class="sc-row-tooltip-message"><i class="pi pi-exclamation-triangle"></i><span>{{ message }}</span></span></ng-template>
             <ng-template #content>
-                @if (nameTooltip.truncated) {<span class="sc-row-tooltip-name">{{ name }}</span>}@if (message) {@if (nameTooltip.truncated) {<span class="sc-row-tooltip-separator">·</span>}<span class="sc-row-tooltip-message">{{ message }}</span>}
+                <span class="sc-row-tooltip-name">{{ name }}</span>
+                @if (message) {<span class="sc-row-tooltip-message sc-row-tooltip-message--separated"><i class="pi pi-exclamation-triangle"></i><span>{{ message }}</span></span>}
             </ng-template>
             <span class="name"
                   [appSchemaNameTooltip]="name"
-                  #nameTooltip="schemaNameTooltip">{{ name }}</span>
+                  #nameTooltip="schemaNameTooltip"
+                  [pTooltip]="nameTooltip.rowTooltip('', content)"
+                  tooltipStyleClass="sc-row-tooltip" tooltipPosition="top"
+                  [appSchemaRowInnerTooltip]="nameTooltip.truncated">{{ name }}<i class="star" pTooltip="Featured" appSchemaRowInnerTooltip></i></span>
+            <span class="metadata">Draft</span>
         </div>
     `,
     styleUrls: ['./schemas-configuration.component.scss'],
-    styles: [`.row { width: 120px; } .name { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }`]
+    styles: [`.row { position: fixed; width: 120px; top: 240px; left: 260px; } .name { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }`]
 })
 class RowTooltipContentHostComponent {
     public name = '<b>Monitored Parameters by Project Instance</b>';
@@ -841,11 +847,14 @@ describe('Schema row tooltip content', () => {
         await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         await fixture.whenStable();
         fixture.detectChanges();
-        fixture.debugElement.query(By.css('.row')).injector.get(Tooltip).activate();
+        const name = fixture.debugElement.query(By.css('.name'));
+        const target = name.injector.get(SchemaNameTooltipDirective).truncated ? name : fixture.debugElement.query(By.css('.row'));
+        target.nativeElement.dispatchEvent(new MouseEvent('mouseenter'));
+        await new Promise(resolve => setTimeout(resolve));
         return document.querySelector('.p-tooltip .p-tooltip-text');
     }
 
-    it('shows the clipped name and the message as separate parts on one line, with the name as plain text', async () => {
+    it('separates the full name from the warning below it, with the name as plain text', async () => {
         const text = await showRowTooltip();
         const name = text?.querySelector('.sc-row-tooltip-name');
         const message = text?.querySelector('.sc-row-tooltip-message');
@@ -853,9 +862,9 @@ describe('Schema row tooltip content', () => {
         expect(text?.querySelector('.sc-row-tooltip-name b')).toBeNull();
         expect(message?.textContent).toBe('Cannot use the current schema as a sub-schema');
         expect(document.querySelector('.p-tooltip')?.classList.contains('sc-row-tooltip')).toBeTrue();
-        expect(name?.getClientRects().length).toBe(1);
-        expect(message?.getClientRects().length).toBe(1);
-        expect(name?.getBoundingClientRect().top).toBeCloseTo(message?.getBoundingClientRect().top ?? -1, 0);
+        expect(message?.classList.contains('sc-row-tooltip-message--separated')).toBeTrue();
+        expect(message?.getBoundingClientRect().top).toBeGreaterThan(name?.getBoundingClientRect().bottom ?? Infinity);
+        expect(message?.querySelector('i.pi-exclamation-triangle')).not.toBeNull();
     });
 
     it('shows the clipped name alone, in the same tooltip style, when the row has no message', async () => {
@@ -880,6 +889,119 @@ describe('Schema row tooltip content', () => {
         expect(document.querySelector('.p-tooltip')?.classList.contains('sc-row-tooltip')).toBeTrue();
     });
 
+    function expectEndingVisible(element: Element, clippingArea: HTMLElement): void {
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+        let lastText: Node | null = null;
+        for (let text = walker.nextNode(); text; text = walker.nextNode()) {
+            if (text.textContent?.length) { lastText = text; }
+        }
+        if (!lastText) { fail('Expected tooltip text'); return; }
+        const range = document.createRange();
+        const length = lastText.textContent?.length ?? 0;
+        range.setStart(lastText, length - 1);
+        range.setEnd(lastText, length);
+        const ending = range.getBoundingClientRect();
+        const bounds = clippingArea.getBoundingClientRect();
+        expect(ending.left).toBeGreaterThanOrEqual(bounds.left - 1);
+        expect(ending.right).toBeLessThanOrEqual(bounds.right + 1);
+        expect(ending.top).toBeGreaterThanOrEqual(bounds.top - 1);
+        expect(ending.bottom).toBeLessThanOrEqual(bounds.bottom + 1);
+    }
+
+    it('keeps an oversized full name and its warning visible inside the viewport', async () => {
+        fixture.componentInstance.name = 'Monitoring parameters '.repeat(20) + 'END-OF-NAME';
+        fixture.changeDetectorRef.markForCheck();
+        fixture.detectChanges();
+        const text = await showRowTooltip();
+        if (!(text instanceof HTMLElement)) { fail('Expected a full-name tooltip'); return; }
+        expect(text.scrollWidth).toBeLessThanOrEqual(text.clientWidth + 1);
+        expect(text.scrollHeight).toBeLessThanOrEqual(text.clientHeight + 1);
+        expect(text.querySelector('.sc-row-tooltip-name')?.textContent).toContain('END-OF-NAME');
+        expect(text.querySelector('.sc-row-tooltip-message')?.textContent).toBe(fixture.componentInstance.message);
+        const name = text.querySelector('.sc-row-tooltip-name');
+        const warning = text.querySelector('.sc-row-tooltip-message');
+        if (!name || !warning) { fail('Expected both full name and warning'); return; }
+        expectEndingVisible(name, text);
+        expectEndingVisible(warning, text);
+        const overlay = document.querySelector('.p-tooltip')?.getBoundingClientRect();
+        expect(overlay?.left).toBeGreaterThanOrEqual(0);
+        expect(overlay?.right).toBeLessThanOrEqual(window.innerWidth);
+    });
+
+    it('wraps an unbroken title without clipping its ending', async () => {
+        fixture.componentInstance.name = 'X'.repeat(300);
+        fixture.componentInstance.message = '';
+        fixture.changeDetectorRef.markForCheck();
+        fixture.detectChanges();
+        const text = await showRowTooltip();
+        if (!(text instanceof HTMLElement)) { fail('Expected a full-name tooltip'); return; }
+        expect(text.scrollWidth).toBeLessThanOrEqual(text.clientWidth + 1);
+        expect(text.querySelector('.sc-row-tooltip-name')?.textContent).toBe('X'.repeat(300));
+        const name = text.querySelector('.sc-row-tooltip-name');
+        if (!name) { fail('Expected the unbroken name'); return; }
+        expectEndingVisible(name, text);
+        expect(text.querySelector('.sc-row-tooltip-message')).toBeNull();
+    });
+
+    it('anchors the full-name tooltip above the name', async () => {
+        await showRowTooltip();
+        const overlay = document.querySelector('.p-tooltip');
+        const name = fixture.nativeElement.querySelector('.name').getBoundingClientRect();
+        expect(overlay?.classList.contains('p-tooltip-top')).toBeTrue();
+        expect(overlay?.getBoundingClientRect().bottom).toBeLessThanOrEqual(name.top + 1);
+    });
+
+    it('keeps a long tooltip above an edge name when there is room above', async () => {
+        fixture.nativeElement.querySelector('.row').style.left = '0';
+        fixture.componentInstance.name = 'Monitoring parameters '.repeat(20) + 'END-OF-NAME';
+        fixture.changeDetectorRef.markForCheck();
+        fixture.detectChanges();
+        await showRowTooltip();
+        const overlay = document.querySelector('.p-tooltip');
+        expect(overlay?.classList.contains('p-tooltip-top')).toBeTrue();
+        expect(overlay?.getBoundingClientRect().left).toBeGreaterThanOrEqual(0);
+        expect(overlay?.getBoundingClientRect().right).toBeLessThanOrEqual(window.innerWidth);
+    });
+
+    it('keeps the tooltip visible when the name is against the viewport edge', async () => {
+        fixture.nativeElement.querySelector('.row').style.left = '0';
+        await showRowTooltip();
+        const overlay = document.querySelector('.p-tooltip')?.getBoundingClientRect();
+        expect(overlay?.left).toBeGreaterThanOrEqual(0);
+        expect(overlay?.right).toBeLessThanOrEqual(window.innerWidth);
+        expect(overlay?.top).toBeGreaterThanOrEqual(0);
+        expect(overlay?.bottom).toBeLessThanOrEqual(window.innerHeight);
+    });
+
+    it('shows only the warning over the card even when its name is truncated', async () => {
+        await fixture.whenStable();
+        fixture.detectChanges();
+        fixture.nativeElement.querySelector('.row').dispatchEvent(new MouseEvent('mouseenter'));
+        const text = document.querySelector('.p-tooltip-text');
+        expect(text?.querySelector('.sc-row-tooltip-name')).toBeNull();
+        expect(text?.querySelector('.sc-row-tooltip-message')?.textContent).toBe(fixture.componentInstance.message);
+    });
+
+    it('keeps only one overlay while moving from the card to the name and back', async () => {
+        await showRowTooltip();
+        const row: HTMLElement = fixture.nativeElement.querySelector('.row');
+        const name: HTMLElement = fixture.nativeElement.querySelector('.name');
+        expect(document.querySelectorAll('.p-tooltip').length).toBe(1);
+        name.dispatchEvent(new MouseEvent('mouseleave', { relatedTarget: row }));
+        expect(document.querySelectorAll('.p-tooltip').length).toBe(1);
+        expect(document.querySelector('.p-tooltip .sc-row-tooltip-name')).toBeNull();
+        name.dispatchEvent(new MouseEvent('mouseenter'));
+        expect(document.querySelectorAll('.p-tooltip').length).toBe(1);
+        expect(document.querySelector('.p-tooltip .sc-row-tooltip-name')).not.toBeNull();
+    });
+
+    it('shows only Featured when the star inside the name is hovered', async () => {
+        await showRowTooltip();
+        fixture.nativeElement.querySelector('.star').dispatchEvent(new MouseEvent('mouseenter'));
+        expect(document.querySelectorAll('.p-tooltip').length).toBe(1);
+        expect(document.querySelector('.p-tooltip-text')?.textContent).toBe('Featured');
+    });
+
     it('shows no tooltip when the name fits and the row has no message', async () => {
         fixture.componentInstance.name = 'X';
         fixture.componentInstance.message = '';
@@ -896,16 +1018,19 @@ describe('Schema row tooltip content', () => {
         @for (copy of [0]; track copy) {
             @let rowMessage = message;
             <div class="row" [style.width.px]="rowWidth" style="display: flex"
-                 [pTooltip]="nameTooltip.rowTooltip(rowMessage, content)"
-                 [tooltipStyleClass]="nameTooltip.rowTooltipClass(rowMessage)"
+                 [pTooltip]="rowMessage"
+                 tooltipStyleClass="sc-row-tooltip"
                  appSchemaRowTooltip
-                 tooltipPosition="right"
+                 tooltipPosition="top"
                  (mouseenter)="hovered = true"
                  (mouseleave)="hovered = false">
                 <ng-template #content>@if (nameTooltip.truncated) {<span class="sc-row-tooltip-name">{{ name }}</span>}@if (rowMessage) {<span class="sc-row-tooltip-message">{{ rowMessage }}</span>}</ng-template>
                 <span class="name"
                       [appSchemaNameTooltip]="name"
-                      #nameTooltip="schemaNameTooltip">{{ name }}</span>
+                      #nameTooltip="schemaNameTooltip"
+                      [pTooltip]="nameTooltip.rowTooltip('', content)"
+                      tooltipStyleClass="sc-row-tooltip" tooltipPosition="top"
+                      [appSchemaRowInnerTooltip]="nameTooltip.truncated">{{ name }}</span>
                 @if (hovered) {
                     <button class="delete" pTooltip="Delete" tooltipPosition="right" appSchemaRowInnerTooltip>Delete</button>
                 }
@@ -941,7 +1066,7 @@ describe('Schema row tooltip when hovering makes the name clipped', () => {
         fixture?.destroy();
     });
 
-    it('shows the name tooltip once a button that appears on hover clips the name', async () => {
+    it('shows the tooltip on name hover after the delete button clips the name', async () => {
         const row: HTMLElement = fixture.nativeElement.querySelector('.row');
         const name: HTMLElement = fixture.nativeElement.querySelector('.name');
         expect(name.scrollWidth).toBeLessThanOrEqual(name.clientWidth);
@@ -952,6 +1077,233 @@ describe('Schema row tooltip when hovering makes the name clipped', () => {
         await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         expect(fixture.nativeElement.querySelector('.delete')).not.toBeNull();
         expect(name.scrollWidth).toBeGreaterThan(name.clientWidth);
+        expect(document.querySelector('.p-tooltip')).toBeNull();
+        name.dispatchEvent(new MouseEvent('mouseenter'));
+        await fixture.whenStable();
         expect(document.querySelector('.p-tooltip .sc-row-tooltip-name')?.textContent).toBe('Value applied for CODinflow,i,y');
+    });
+});
+
+describe('Schema nested tooltip ownership', () => {
+    const directives: SchemaRowInnerTooltipDirective[] = [];
+    const zone = { runOutsideAngular: (action: () => void) => action() };
+
+    function tooltip(element: HTMLElement, content = 'Warning') {
+        return {
+            el: new ElementRef(element), content, active: true,
+            activate() { this.active = !!this.content; },
+            deactivate() { this.active = false; }
+        };
+    }
+
+    function attach(element: HTMLElement, parent: ReturnType<typeof tooltip>, own: ReturnType<typeof tooltip>, ancestor: SchemaRowInnerTooltipDirective | null = null) {
+        const directive: SchemaRowInnerTooltipDirective = Reflect.construct(SchemaRowInnerTooltipDirective, [new ElementRef(element), zone, parent, own, ancestor]);
+        element.setAttribute('appSchemaRowInnerTooltip', '');
+        Object.assign(directive, { enabled: !!own.content });
+        directives.push(directive);
+        directive.ngOnInit();
+        return directive;
+    }
+
+    afterEach(() => {
+        directives.splice(0).forEach(directive => directive.ngOnDestroy());
+    });
+
+    it('restores the full name when leaving a nested icon for the name', () => {
+        const row = document.createElement('div');
+        const name = document.createElement('span');
+        const star = document.createElement('i');
+        row.appendChild(name);
+        name.appendChild(star);
+        const warning = tooltip(row);
+        const fullName = tooltip(name, 'Full name');
+        const parent = attach(name, warning, fullName);
+        attach(star, fullName, tooltip(star, 'Featured'), parent);
+        star.dispatchEvent(new MouseEvent('mouseenter'));
+        star.dispatchEvent(new MouseEvent('mouseleave', { relatedTarget: name }));
+        expect(fullName.active).toBeTrue();
+        expect(warning.active).toBeFalse();
+    });
+
+    it('restores only the warning when leaving an icon for a fitting name', () => {
+        const row = document.createElement('div');
+        const name = document.createElement('span');
+        const star = document.createElement('i');
+        row.appendChild(name);
+        name.appendChild(star);
+        const warning = tooltip(row);
+        const fullName = tooltip(name, '');
+        const parent = attach(name, warning, fullName);
+        attach(star, fullName, tooltip(star, 'Featured'), parent);
+        star.dispatchEvent(new MouseEvent('mouseenter'));
+        star.dispatchEvent(new MouseEvent('mouseleave', { relatedTarget: name }));
+        expect(warning.active).toBeTrue();
+        expect(fullName.active).toBeFalse();
+    });
+
+    it('keeps ancestors hidden when leaving a nested icon for outside the card', () => {
+        const row = document.createElement('div');
+        const name = document.createElement('span');
+        const star = document.createElement('i');
+        row.appendChild(name);
+        name.appendChild(star);
+        const warning = tooltip(row);
+        const fullName = tooltip(name, 'Full name');
+        const parent = attach(name, warning, fullName);
+        attach(star, fullName, tooltip(star, 'Featured'), parent);
+        star.dispatchEvent(new MouseEvent('mouseenter'));
+        star.dispatchEvent(new MouseEvent('mouseleave', { relatedTarget: document.createElement('div') }));
+        expect(fullName.active).toBeFalse();
+        expect(warning.active).toBeFalse();
+    });
+
+    it('switches to the warning when the hovered name stops being truncated', () => {
+        const row = document.createElement('div');
+        const name = document.createElement('span');
+        row.appendChild(name);
+        const warning = tooltip(row);
+        const fullName = tooltip(name, 'Full name');
+        const directive = attach(name, warning, fullName);
+        name.dispatchEvent(new MouseEvent('mouseenter'));
+        fullName.content = '';
+        directive.enabled = false;
+        directive.ngOnChanges();
+        expect(fullName.active).toBeFalse();
+        expect(warning.active).toBeTrue();
+    });
+
+    it('switches to the full name when the hovered name becomes truncated', async () => {
+        const row = document.createElement('div');
+        const name = document.createElement('span');
+        row.appendChild(name);
+        const warning = tooltip(row);
+        const fullName = tooltip(name, '');
+        const directive = attach(name, warning, fullName);
+        name.dispatchEvent(new MouseEvent('mouseenter'));
+        fullName.content = 'Full name';
+        directive.enabled = true;
+        directive.ngOnChanges();
+        await new Promise(resolve => setTimeout(resolve));
+        expect(fullName.active).toBeTrue();
+        expect(warning.active).toBeFalse();
+    });
+
+    it('does not reveal ancestors while truncation changes under a hovered icon', () => {
+        const row = document.createElement('div');
+        const name = document.createElement('span');
+        const star = document.createElement('i');
+        row.appendChild(name);
+        name.appendChild(star);
+        const warning = tooltip(row);
+        const fullName = tooltip(name, 'Full name');
+        const parent = attach(name, warning, fullName);
+        attach(star, fullName, tooltip(star, 'Featured'), parent);
+        name.dispatchEvent(new MouseEvent('mouseenter'));
+        star.dispatchEvent(new MouseEvent('mouseenter'));
+        fullName.content = '';
+        parent.enabled = false;
+        parent.ngOnChanges();
+        expect(fullName.active).toBeFalse();
+        expect(warning.active).toBeFalse();
+    });
+
+    it('restores the warning after clicking a fitting name', async () => {
+        const row = document.createElement('div');
+        const name = document.createElement('span');
+        row.appendChild(name);
+        const warning = tooltip(row);
+        attach(name, warning, tooltip(name, ''));
+        name.dispatchEvent(new MouseEvent('mouseenter'));
+        warning.active = false;
+        name.dispatchEvent(new MouseEvent('click'));
+        await new Promise(resolve => setTimeout(resolve));
+        expect(warning.active).toBeTrue();
+    });
+
+    it('does not restore a clicked name after it is destroyed', async () => {
+        const row = document.createElement('div');
+        const name = document.createElement('span');
+        row.appendChild(name);
+        const fullName = tooltip(name, 'Full name');
+        const directive = attach(name, tooltip(row), fullName);
+        name.dispatchEvent(new MouseEvent('mouseenter'));
+        fullName.active = false;
+        name.dispatchEvent(new MouseEvent('click'));
+        directive.ngOnDestroy();
+        await new Promise(resolve => setTimeout(resolve));
+        expect(fullName.active).toBeFalse();
+    });
+
+    it('does not restore a clicked name after the pointer leaves', async () => {
+        const row = document.createElement('div');
+        const name = document.createElement('span');
+        row.appendChild(name);
+        const fullName = tooltip(name, 'Full name');
+        attach(name, tooltip(row), fullName);
+        name.dispatchEvent(new MouseEvent('mouseenter'));
+        fullName.active = false;
+        name.dispatchEvent(new MouseEvent('click'));
+        name.dispatchEvent(new MouseEvent('mouseleave', { relatedTarget: row }));
+        await new Promise(resolve => setTimeout(resolve));
+        expect(fullName.active).toBeFalse();
+    });
+
+    it('keeps the card warning visible when a fitting name has no tooltip', () => {
+        const row = document.createElement('div');
+        const name = document.createElement('span');
+        row.appendChild(name);
+        const warning = tooltip(row);
+        attach(name, warning, tooltip(name, ''));
+        name.dispatchEvent(new MouseEvent('mouseenter'));
+        expect(warning.active).toBeTrue();
+    });
+
+    it('hides both ancestor tooltips when a featured icon inside the name is hovered', () => {
+        const row = document.createElement('div');
+        const name = document.createElement('span');
+        const star = document.createElement('i');
+        row.appendChild(name);
+        name.appendChild(star);
+        const warning = tooltip(row);
+        const fullName = tooltip(name, 'Full name');
+        const parent = attach(name, warning, fullName);
+        attach(star, fullName, tooltip(star, 'Featured'), parent);
+        star.dispatchEvent(new MouseEvent('mouseenter'));
+        expect(fullName.active).toBeFalse();
+        expect(warning.active).toBeFalse();
+    });
+
+    it('restores only the card warning when leaving a nested icon directly for the card', () => {
+        const row = document.createElement('div');
+        const name = document.createElement('span');
+        const star = document.createElement('i');
+        const metadata = document.createElement('span');
+        row.appendChild(name);
+        row.appendChild(metadata);
+        name.appendChild(star);
+        const warning = tooltip(row);
+        const fullName = tooltip(name, 'Full name');
+        const parent = attach(name, warning, fullName);
+        attach(star, fullName, tooltip(star, 'Featured'), parent);
+        warning.active = false;
+        star.dispatchEvent(new MouseEvent('mouseenter'));
+        star.dispatchEvent(new MouseEvent('mouseleave', { relatedTarget: metadata }));
+        expect(warning.active).toBeTrue();
+        expect(fullName.active).toBeFalse();
+    });
+
+    it('restores the full-name tooltip after clicking the name without restoring the card warning', async () => {
+        const row = document.createElement('div');
+        const name = document.createElement('span');
+        row.appendChild(name);
+        const warning = tooltip(row);
+        const fullName = tooltip(name, 'Full name');
+        attach(name, warning, fullName);
+        name.dispatchEvent(new MouseEvent('mouseenter'));
+        fullName.active = false;
+        name.dispatchEvent(new MouseEvent('click'));
+        await new Promise(resolve => setTimeout(resolve));
+        expect(fullName.active).toBeTrue();
+        expect(warning.active).toBeFalse();
     });
 });
