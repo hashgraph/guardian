@@ -1,4 +1,4 @@
-// Runs a copy of an e2e-tests shell script in a throwaway checkout where npm, npx and node are stubs
+// Runs a copy of an e2e-tests shell script in a throwaway checkout where npm, npx, node and docker are stubs
 // that append the command line to a log, and fail when it contains failingCommand.
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -7,7 +7,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const scriptsDir = path.dirname(fileURLToPath(import.meta.url));
-const STUBBED_COMMANDS = ['npm', 'npx', 'node'];
+const STUBBED_COMMANDS = ['npm', 'npx', 'node', 'docker'];
 
 export function createSandbox(scriptName, { yarnrc = 'nodeLinker: node-modules\n\nyarnPath: .yarn/releases/yarn-9.9.9.cjs\n' } = {}) {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'script-sandbox-'));

@@ -103,7 +103,7 @@ start_infra() {
   docker run -d --name guardian-e2e-nats -p 127.0.0.1:4222:4222 -p 127.0.0.1:8222:8222 nats:2.12-alpine >/dev/null
   docker run -d --name guardian-e2e-mongo -p 127.0.0.1:27017:27017 mongo:7.0.41 >/dev/null
   docker run -d --name guardian-e2e-ipfs --init -e GOLOG_LOG_LEVEL=warn -e IPFS_TELEMETRY=off \
-    -p 127.0.0.1:4001:4001 -p 127.0.0.1:5001:5001 -p 127.0.0.1:8080:8080 ipfs/kubo:v0.43.1 >/dev/null
+    -p 127.0.0.1:4001:4001 -p 127.0.0.1:5001:5001 -p 127.0.0.1:8080:8080 ipfs/kubo:v0.43.1 daemon --offline >/dev/null
 
   local deadline=$((SECONDS + 180))
   until check_infra 127.0.0.1 >/dev/null; do
@@ -177,7 +177,16 @@ check_stack() {
 }
 
 stop_infra() {
-  docker rm -f "${INFRA_CONTAINERS[@]}" >/dev/null 2>&1 || true
+  docker info >/dev/null 2>&1 || fail "docker is not reachable: start it, or run this where docker is"
+  local container
+  for container in "${INFRA_CONTAINERS[@]}"; do
+    if docker container inspect "$container" >/dev/null 2>&1; then
+      echo "removing $container"
+      docker rm -f "$container" >/dev/null
+    else
+      echo "$container is not there"
+    fi
+  done
 }
 
 start_service() {            # start_service <service> [instance]

@@ -68,3 +68,27 @@ describe('local-guardian.sh status', () => {
         assert.match(stdout, /^FAIL {2}services +queue-service#1 \(pid 999999\) running; log \.local\/logs\/queue-service-1\.log$/m);
     });
 });
+
+describe('local-guardian.sh infra-down', () => {
+    let sandbox;
+    afterEach(() => { sandbox.remove(); });
+
+    it('says which infra containers it removes and which were not there', () => {
+        sandbox = createSandbox('local-guardian.sh');
+        const { status, stderr, stdout } = sandbox.run(['infra-down'], { failingCommand: 'container inspect guardian-e2e-ipfs' });
+        assert.equal(status, 0, stderr);
+        assert.deepEqual(stdout.trimEnd().split('\n'), [
+            'removing guardian-e2e-cache',
+            'removing guardian-e2e-nats',
+            'removing guardian-e2e-mongo',
+            'guardian-e2e-ipfs is not there',
+        ]);
+    });
+
+    it('fails when docker does not answer', () => {
+        sandbox = createSandbox('local-guardian.sh');
+        const { status, stderr } = sandbox.run(['infra-down'], { failingCommand: 'docker info' });
+        assert.notEqual(status, 0);
+        assert.match(stderr, /docker is not reachable/);
+    });
+});
