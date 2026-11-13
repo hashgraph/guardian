@@ -1,3 +1,4 @@
+import type { Mock } from "vitest";
 import { fakeAsync, tick } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { GeojsonTypeComponent } from './geojson-type.component';
@@ -18,7 +19,7 @@ const multiPolygon = (polygons: number, pointsPerPolygon: number) => ({
 
 describe('GeojsonTypeComponent large value', () => {
     let value: any;
-    let setControlValue: jasmine.Spy;
+    let setControlValue: Mock;
     let component: GeojsonTypeComponent;
 
     const limits = (points: number, features: number) => {
@@ -33,22 +34,15 @@ describe('GeojsonTypeComponent large value', () => {
 
     beforeEach(() => {
         value = {};
-        setControlValue = jasmine.createSpy('setControlValue').and.callFake((next: unknown) => value = next);
+        setControlValue = vi.fn().mockImplementation((next: unknown) => value = next);
         const settings: any = { getGeospatialLimits: () => of({}) };
-        component = new GeojsonTypeComponent(
-            { detectChanges: () => undefined } as any,
-            { saveFile: () => undefined, getFileNames: () => [], getFile: () => undefined } as any,
-            {} as any,
-            {} as any,
-            settings,
-            {} as any
-        );
+        component = new GeojsonTypeComponent({ detectChanges: () => undefined } as any, { saveFile: () => undefined, getFileNames: () => [], getFile: () => undefined } as any, {} as any, {} as any, settings, {} as any);
         component.formModel = {
             getValue: () => value,
             setControlValue,
             getErrors: () => ({})
         } as any;
-        spyOn<any>(component, 'setupMap');
+        vi.spyOn(component as any, 'setupMap').mockImplementation(() => undefined);
     });
 
     it('counts shapes, polygons and points of a single MultiPolygon', () => {
@@ -82,26 +76,26 @@ describe('GeojsonTypeComponent large value', () => {
     it('is large above the point limit and not at it', () => {
         limits(40, 1500);
         value = multiPolygon(4, 10);
-        expect(component.isLargeValue()).toBeFalse();
+        expect(component.isLargeValue()).toBe(false);
 
         value = multiPolygon(4, 11);
-        expect(component.isLargeValue()).toBeTrue();
+        expect(component.isLargeValue()).toBe(true);
     });
 
     it('is large above the shape limit', () => {
-        limits(1_000_000, 2);
+        limits(1000000, 2);
         value = {
             type: 'FeatureCollection',
             features: [1, 2, 3].map(x => ({ type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [x, x] } }))
         };
 
-        expect(component.isLargeValue()).toBeTrue();
+        expect(component.isLargeValue()).toBe(true);
     });
 
     it('uses the default limits until the configured ones are loaded', () => {
         value = multiPolygon(25, 1000);
 
-        expect(component.isLargeValue()).toBeTrue();
+        expect(component.isLargeValue()).toBe(true);
     });
 
     it('does not rebuild the summary for the same value', () => {

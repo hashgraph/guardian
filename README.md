@@ -860,26 +860,21 @@ docker builder prune --all
 docker compose build --no-cache
 ```
 
-## Unit tests
+## Tests
 
-To run **guardian-service** unit tests, following commands needs to be executed:
+Each service and shared package (`interfaces`, `common`, `guardian-service`, `policy-service`, `api-gateway`, `auth-service`, `worker-service`, `queue-service`, …) has mocha unit tests in its `tests/` folder. Most of them import the compiled output, so build the package first:
 
 ```shell
 cd guardian-service
-npm run test
+npx tsc -p .
+npm run test         # writes a JUnit report to ../test_results/; `npm run test:local` prints the results instead
 ```
 
-It is also an ability to run Hedera network tests only. To do that, the following command needs to be executed:
+`guardian-service` also has stability tests (certain transactions are executed 10 times each): `npm run test:stability`.
 
-```shell
-npm run test:network
-```
+The frontend unit specs run with Vitest in headless Chromium: `npx playwright install chromium` once, then `npx ng test --watch=false` from `frontend`.
 
-To run stability tests (certain transactions will be executed 10 times each), the following command needs to be executed:
-
-```shell
-npm run test:stability
-```
+The end-to-end suites (API, policy and UI, with Cypress against a local Hiero network) are described in [e2e-tests/README.md](./e2e-tests/README.md); `npm run test:everything` from `e2e-tests` runs the linter, the helper-script tests, the frontend unit specs and the Cypress suite in one go. How to add a test for a change is in [AGENTS.md](./AGENTS.md).
 
 ## Additional documentation
 

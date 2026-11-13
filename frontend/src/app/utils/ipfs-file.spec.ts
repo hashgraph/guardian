@@ -26,7 +26,7 @@ describe('IPFS file links', () => {
 
     it('does not treat database ids, generated ids, UUIDs or plain URLs as CIDs', () => {
         for (const value of [undefined, null, '', 'ipfs://6af6e8ec63af3cd1188591c0', 'ipfs://56fbc24e8ec55d9ba2f9e21a735bebd2', 'ipfs://3f2a9c1e-1234-4321-9876-123456789012', 'https://example.com/doc.pdf']) {
-            expect(ipfsCid(value)).withContext(String(value)).toBe('');
+            expect(ipfsCid(value), String(value)).toBe('');
         }
     });
 });
@@ -40,7 +40,7 @@ describe('IPFS dry-run file values', () => {
 
     it('does not extract ids from unrelated addresses or empty values', () => {
         for (const value of ['', '6af6e8ec63af3cd1188591c0', 'https://example.com/doc.pdf', 'https://ipfs.io.evil/ipfs/id', 'ipfs://']) {
-            expect(ipfsDryRunId(value)).withContext(value).toBe('');
+            expect(ipfsDryRunId(value), value).toBe('');
         }
     });
 });

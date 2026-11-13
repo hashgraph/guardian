@@ -48,11 +48,11 @@ describe('SchemaPathInputComponent', () => {
     it('flags an unknown path only when paths are known', () => {
         const component = make();
         component.value = 'emissions.basline';
-        expect(component.unknown).toBeTrue();
+        expect(component.unknown).toBe(true);
         component.value = 'title';
-        expect(component.unknown).toBeFalse();
+        expect(component.unknown).toBe(false);
         component.value = '';
-        expect(component.unknown).toBeFalse();
-        expect(make(null).unknown).toBeFalse();
+        expect(component.unknown).toBe(false);
+        expect(make(null).unknown).toBe(false);
     });
 });

@@ -122,22 +122,63 @@ test('formatDuration renders ms, seconds and minutes', () => {
     assert.equal(formatDuration(NaN), '-');
 });
 
-test('CLI: a missing results directory warns and exits 0', () => {
-    const missing = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'junit-')), 'nope');
-    const out = execFileSync(process.execPath, [SCRIPT, missing], { encoding: 'utf8' });
-    assert.match(out, /::warning::No test results/);
-});
+// Runs the CLI as CI does. Only a summary file given here may receive its output.
+const runCli = (target) => {
+    const summaryFile = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'summary-')), 'summary.md');
+    const out = execFileSync(process.execPath, [SCRIPT, target], {
+        encoding: 'utf8',
+        env: { ...process.env, GITHUB_STEP_SUMMARY: summaryFile },
+    });
+    const summary = fs.existsSync(summaryFile) ? fs.readFileSync(summaryFile, 'utf8') : '';
+    return { out, summary };
+};
 
-test('CLI: aggregates the xml files in the results directory into the summary', () => {
+const sampleResults = () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'junit-'));
     fs.mkdirSync(path.join(dir, 'nested'));
     fs.writeFileSync(path.join(dir, 'nested', 'ws.xml'), SAMPLE);
     fs.writeFileSync(path.join(dir, 'notes.txt'), 'not xml');
+    return dir;
+};
 
-    const out = execFileSync(process.execPath, [SCRIPT, dir], { encoding: 'utf8' });
+test('CLI: a missing results directory warns and exits 0', () => {
+    const missing = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'junit-')), 'nope');
+    const { out } = runCli(missing);
+    assert.match(out, /::warning::No test results/);
+});
+
+test('CLI: aggregates the xml files in the results directory into the summary', () => {
+    const { out } = runCli(sampleResults());
     assert.match(out, /## Unit test results/);
     assert.match(out, /1 workspaces · 5 tests/);
     // The workspace row comes from the file basename, found through the nested dir.
     assert.match(out, /`ws`/);
     assert.match(out, /failing tests/);
+});
+
+test('CLI: appends the summary to the file named by GITHUB_STEP_SUMMARY', () => {
+    const { out, summary } = runCli(sampleResults());
+    assert.match(summary, /## Unit test results/);
+    assert.match(summary, /1 workspaces · 5 tests/);
+    assert.equal(summary.trim(), out.trim());
+});
+
+test('CLI: the sample results never reach the job summary of the run that tests the script', (t) => {
+    // In CI this process has GITHUB_STEP_SUMMARY set; the sample failures must not land in it.
+    const jobSummary = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'summary-')), 'job.md');
+    fs.writeFileSync(jobSummary, '');
+    const previous = process.env.GITHUB_STEP_SUMMARY;
+    process.env.GITHUB_STEP_SUMMARY = jobSummary;
+    t.after(() => {
+        if (previous === undefined) {
+            delete process.env.GITHUB_STEP_SUMMARY;
+        } else {
+            process.env.GITHUB_STEP_SUMMARY = previous;
+        }
+    });
+
+    runCli(sampleResults());
+    runCli(path.join(os.tmpdir(), 'no-such-results'));
+
+    assert.equal(fs.readFileSync(jobSummary, 'utf8'), '');
 });

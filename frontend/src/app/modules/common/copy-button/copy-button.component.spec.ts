@@ -6,7 +6,7 @@ import { CopyButtonComponent } from './copy-button.component';
 
 describe('CopyButtonComponent', () => {
     const build = (value: string, copyResult = true) => {
-        const clipboard = { copy: jasmine.createSpy('copy').and.returnValue(copyResult) };
+        const clipboard = { copy: vi.fn().mockReturnValue(copyResult) };
         TestBed.configureTestingModule({
             declarations: [CopyButtonComponent],
             imports: [CommonModule],
@@ -61,11 +61,11 @@ describe('CopyButtonComponent', () => {
         fixture.componentRef.setInput('disabled', true);
         fixture.detectChanges();
         const button: HTMLButtonElement = fixture.nativeElement.querySelector('button');
-        expect(button.disabled).toBeTrue();
+        expect(button.disabled).toBe(true);
         button.click();
         fixture.componentInstance.copy();
         expect(clipboard.copy).not.toHaveBeenCalled();
-        expect(fixture.componentInstance.copied).toBeFalse();
+        expect(fixture.componentInstance.copied).toBe(false);
     });
 
     it('names the button by its tip', () => {
@@ -76,14 +76,15 @@ describe('CopyButtonComponent', () => {
 
 describe('CopyButtonComponent direct copying', () => {
     it('does not copy a value when disabled', () => {
-        const clipboard = jasmine.createSpyObj<Clipboard>('Clipboard', ['copy']);
-        clipboard.copy.and.returnValue(true);
-        const detector = jasmine.createSpyObj<ChangeDetectorRef>('ChangeDetectorRef', ['markForCheck']);
+        const clipboard = Object.create(Clipboard.prototype);
+        vi.spyOn(clipboard, 'copy').mockReturnValue(true);
+        const detector = Object.create(ChangeDetectorRef.prototype);
+        vi.spyOn(detector, 'markForCheck').mockImplementation(() => undefined);
         const button = new CopyButtonComponent(clipboard, detector);
         Object.assign(button, { value: 'abc', disabled: true });
         button.copy();
         expect(clipboard.copy).not.toHaveBeenCalled();
-        expect(button.copied).toBeFalse();
+        expect(button.copied).toBe(false);
         button.ngOnDestroy();
     });
 });

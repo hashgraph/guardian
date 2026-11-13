@@ -140,8 +140,7 @@ export class SchemasPage {
             cy.get(SchemasPageLocators.policySchemaentityEVCinput).click();
 
         }
-        const descNameEdit = cy.get(SchemasPageLocators.descriptionInput);
-        descNameEdit.type('Added Description in edit flow')
+        cy.get(SchemasPageLocators.descriptionInput).type('Added Description in edit flow');
         cy.contains(SchemasPageLocators.saveBtn).click({ force: true });
         SchemasPage.waitForSchemaStatusToComplete();
         cy.contains(SchemasPageLocators.schemaName, editName).should(ASSERT.exist);
@@ -189,8 +188,7 @@ export class SchemasPage {
 
     importSchemaMessage(msg) {
         cy.contains(SchemasPageLocators.importMsgBtn).click();
-        const inputMessage = cy.get(SchemasPageLocators.msgInput);
-        inputMessage.type(msg);
+        cy.get(SchemasPageLocators.msgInput).type(msg);
         cy.intercept(SchemasPageLocators.taskReq).as(
             'waitForSchemaImport'
         );

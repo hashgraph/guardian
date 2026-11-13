@@ -5,7 +5,7 @@ import * as Authorization from '../../../support/authorization';
 
 context('Schemas', { tags: ['schema', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-    const username = 'StandartRegistry';
+    const username = 'StandardRegistry';
     const schemaUUID = ('0000b23a-b1ea-408f-a573' + randomInt(999999) + 'a2060a')
 
     it('Make the created scheme active', () => {
@@ -24,7 +24,9 @@ context('Schemas', { tags: ['schema', 'thirdPool', 'api-all', 'all', 'all-no-mgs
                     name: 'test',
                     entity: 'USER',
                     document:
-                        '{"$id":"#${schemaUUID}","$comment":"{\\"term\\": \\"${schemaUUID}\\", \\"@id\\": \\"https://localhost/schema#${schemaUUID}\\"}","title":"test","description":" test","type":"object","properties":{"@context":{"oneOf":[{"type":"string"},{"type":"array","items":{"type":"string"}}],"readOnly":true},"type":{"oneOf":[{"type":"string"},{"type":"array","items":{"type":"string"}}],"readOnly":true},"id":{"type":"string","readOnly":true},"field0":{"title":"test field","description":"test field","readOnly":false,"$comment":"{\\"term\\": \\"field0\\", \\"@id\\": \\"https://www.schema.org/text\\"}","type":"string"}},"required":["@context","type"],"additionalProperties":false}',
+                        '{"$id":"#${schemaUUID}","$comment":"{\\"term\\": \\"${schemaUUID}\\", \\"@id\\": \\"https://localhost/schema#${schemaUUID}\\"}","title":"test","description":" test","type":"object",' +
+                            '"properties":{"@context":{"oneOf":[{"type":"string"},{"type":"array","items":{"type":"string"}}],"readOnly":true},"type":{"oneOf":[{"type":"string"},{"type":"array","items":{"type":"string"}}],"readOnly":true},' +
+                            '"id":{"type":"string","readOnly":true},"field0":{"title":"test field","description":"test field","readOnly":false,"$comment":"{\\"term\\": \\"field0\\", \\"@id\\": \\"https://www.schema.org/text\\"}","type":"string"}},"required":["@context","type"],"additionalProperties":false}',
                 },
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.SUCCESS);

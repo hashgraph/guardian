@@ -1,3 +1,4 @@
+import type { MockedObject } from "vitest";
 import { of } from 'rxjs';
 import { GeoFileLink } from 'src/app/services/geo-file-persistence.service';
 import { GeojsonTypeComponent } from './geojson-type.component';
@@ -5,7 +6,7 @@ import { GeojsonTypeComponent } from './geojson-type.component';
 describe('GeojsonTypeComponent geometry dialog', () => {
     let value: any;
     let errors: Record<string, string[]>;
-    let geoFiles: jasmine.SpyObj<any>;
+    let geoFiles: MockedObject<any>;
     let component: GeojsonTypeComponent;
 
     const link = (idbKey: string): GeoFileLink => ({
@@ -15,23 +16,19 @@ describe('GeojsonTypeComponent geometry dialog', () => {
     beforeEach(() => {
         value = {};
         errors = {};
-        geoFiles = jasmine.createSpyObj('GeoFilePersistenceService', ['keepOriginal', 'discard']);
-        geoFiles.discard.and.resolveTo();
-        component = new GeojsonTypeComponent(
-            { detectChanges: () => undefined } as any,
-            { saveFile: () => undefined, getFileNames: () => [], getFile: () => undefined } as any,
-            geoFiles,
-            {} as any,
-            { getGeospatialLimits: () => of({}) } as any,
-            {} as any
-        );
+        geoFiles = {
+            keepOriginal: vi.fn().mockName("GeoFilePersistenceService.keepOriginal"),
+            discard: vi.fn().mockName("GeoFilePersistenceService.discard")
+        };
+        geoFiles.discard.mockResolvedValue(undefined);
+        component = new GeojsonTypeComponent({ detectChanges: () => undefined } as any, { saveFile: () => undefined, getFileNames: () => [], getFile: () => undefined } as any, geoFiles, {} as any, { getGeospatialLimits: () => of({}) } as any, {} as any);
         component.formModel = {
             getValue: () => value,
             setControlValue: (next: unknown) => value = next,
             getErrors: () => errors
         } as any;
-        spyOn<any>(component, 'setupMap');
-        spyOn<any>(component, 'centerMap');
+        vi.spyOn(component as any, 'setupMap').mockImplementation(() => undefined);
+        vi.spyOn(component as any, 'centerMap').mockImplementation(() => undefined);
     });
 
     it('describes a single shape, several shapes and a large value', () => {
@@ -52,30 +49,30 @@ describe('GeojsonTypeComponent geometry dialog', () => {
     });
 
     it('adds the size to the description of a large value', () => {
-        const ring = Array.from({ length: 25_000 }, (_, i) => [i / 100000, i / 100000]);
+        const ring = Array.from({ length: 25000 }, (_, i) => [i / 100000, i / 100000]);
         value = { type: 'Polygon', coordinates: [ring] };
 
-        expect(component.isLargeValue()).toBeTrue();
+        expect(component.isLargeValue()).toBe(true);
         expect(component.summaryText()).toMatch(/^1 polygon · 25,000 points · [\d.]+ MB$/);
     });
 
     it('offers Edit only for a small value that has a preview', () => {
         value = {};
-        expect(component.canEdit()).toBeFalse();
+        expect(component.canEdit()).toBe(false);
 
         value = { type: 'Point', coordinates: [1, 2] };
-        expect(component.canEdit()).toBeTrue();
+        expect(component.canEdit()).toBe(true);
 
         value = { type: 'Point', coordinates: [1, 2], geoFile: { ...link('a'), noPreview: true } };
-        expect(component.canEdit()).toBeFalse();
+        expect(component.canEdit()).toBe(false);
 
-        const ring = Array.from({ length: 25_000 }, (_, i) => [i / 100000, i / 100000]);
+        const ring = Array.from({ length: 25000 }, (_, i) => [i / 100000, i / 100000]);
         value = { type: 'Polygon', coordinates: [ring] };
-        expect(component.canEdit()).toBeFalse();
+        expect(component.canEdit()).toBe(false);
 
         component.isDisabled = true;
         value = { type: 'Point', coordinates: [1, 2] };
-        expect(component.canEdit()).toBeFalse();
+        expect(component.canEdit()).toBe(false);
     });
 
     it('restores the value and the original file when the dialog is cancelled after a new file was picked', async () => {
@@ -84,7 +81,7 @@ describe('GeojsonTypeComponent geometry dialog', () => {
         value = original;
         (component as any).pendingGeoFile = previous;
         const picked = link('picked');
-        geoFiles.keepOriginal.and.resolveTo(picked);
+        geoFiles.keepOriginal.mockResolvedValue(picked);
 
         component.openDialog();
         await (component as any).replacePendingFile(new File(['x'], 'picked.geojson'), 'geojson');
@@ -95,8 +92,9 @@ describe('GeojsonTypeComponent geometry dialog', () => {
 
         expect(value).toEqual(original);
         expect((component as any).pendingGeoFile).toBe(previous);
-        expect(geoFiles.discard).toHaveBeenCalledOnceWith(picked);
-        expect(component.dialogVisible).toBeFalse();
+        expect(geoFiles.discard).toHaveBeenCalledTimes(1);
+        expect(geoFiles.discard).toHaveBeenCalledWith(picked);
+        expect(component.dialogVisible).toBe(false);
     });
 
     it('discards the previous file only when the dialog is saved', async () => {
@@ -104,7 +102,7 @@ describe('GeojsonTypeComponent geometry dialog', () => {
         value = { type: 'Point', coordinates: [1, 2], geoFile: previous };
         (component as any).pendingGeoFile = previous;
         const picked = link('picked');
-        geoFiles.keepOriginal.and.resolveTo(picked);
+        geoFiles.keepOriginal.mockResolvedValue(picked);
 
         component.openDialog();
         await (component as any).replacePendingFile(new File(['x'], 'picked.geojson'), 'geojson');
@@ -112,7 +110,8 @@ describe('GeojsonTypeComponent geometry dialog', () => {
         component.saveDialog();
 
         expect(value.coordinates).toEqual([3, 4]);
-        expect(geoFiles.discard).toHaveBeenCalledOnceWith(previous);
+        expect(geoFiles.discard).toHaveBeenCalledTimes(1);
+        expect(geoFiles.discard).toHaveBeenCalledWith(previous);
     });
 
     it('does not close with Save while the value has errors', () => {
@@ -122,16 +121,16 @@ describe('GeojsonTypeComponent geometry dialog', () => {
 
         component.saveDialog();
 
-        expect(component.canSave()).toBeFalse();
-        expect(component.dialogVisible).toBeTrue();
+        expect(component.canSave()).toBe(false);
+        expect(component.dialogVisible).toBe(true);
     });
 
     it('keeps the GeoJSON download for a value with validation errors', () => {
         value = { type: 'Polygon', coordinates: [[[0, 0], [1, 0], [1, 1], [0, 0]]] };
         errors = { 0: ['Polygon: ring #1 must not cross or touch ring #0'] };
 
-        expect(component.haveErrors()).toBeTrue();
-        expect(component.canDownload()).toBeTrue();
+        expect(component.haveErrors()).toBe(true);
+        expect(component.canDownload()).toBe(true);
     });
 
     it('lists the first five errors and counts the rest', () => {
@@ -236,7 +235,7 @@ describe('GeojsonTypeComponent geometry dialog', () => {
         component.openDialog();
         component.clearValue();
 
-        expect(component.dialogVisible).toBeFalse();
+        expect(component.dialogVisible).toBe(false);
         expect(value).toEqual({ type: 'Point', coordinates: [1, 2] });
     });
 
@@ -245,19 +244,19 @@ describe('GeojsonTypeComponent geometry dialog', () => {
         component.loadValue();
         component.openDialog();
         const [first] = component.manualCards().map(card => card.geometry);
-        expect(component.isCardOpen(first)).toBeTrue();
+        expect(component.isCardOpen(first)).toBe(true);
 
         component.toggleCard(first);
-        expect(component.isCardOpen(first)).toBeFalse();
+        expect(component.isCardOpen(first)).toBe(false);
 
         component.addManualCard();
         const added = component.manualCards()[1].geometry;
-        expect(component.isCardOpen(added)).toBeTrue();
-        expect(component.isCardOpen(first)).toBeFalse();
+        expect(component.isCardOpen(added)).toBe(true);
+        expect(component.isCardOpen(first)).toBe(false);
     });
 
     it('zooms the dialog map to the shapes of a file right after it is loaded', () => {
-        const fit = jasmine.createSpy('fit');
+        const fit = vi.fn();
         component.dialogMap = { updateSize: () => undefined, getView: () => ({ fit }) } as any;
         const file = {
             type: 'FeatureCollection',
@@ -271,7 +270,7 @@ describe('GeojsonTypeComponent geometry dialog', () => {
     });
 
     it('zooms the dialog map to the picked shapes', () => {
-        const fit = jasmine.createSpy('fit');
+        const fit = vi.fn();
         component.dialogMap = { updateSize: () => undefined, getView: () => ({ fit }) } as any;
         component.onUploadMultiLocationFile({
             type: 'FeatureCollection',
@@ -300,12 +299,13 @@ describe('GeojsonTypeComponent geometry dialog', () => {
         (component.formModel as any).setInteraction = (state: any) => interaction = state;
         (component.formModel as any).setControlValue = (next: unknown, dirty = true) => {
             value = next;
-            if (dirty) interaction = { dirty: true, touched: true };
+            if (dirty)
+                interaction = { dirty: true, touched: true };
         };
 
         component.openDialog();
         (component as any).setControlValue({ type: 'Point', coordinates: [3, 4] });
-        expect(interaction.dirty).toBeTrue();
+        expect(interaction.dirty).toBe(true);
 
         component.cancelDialog();
 

@@ -65,7 +65,6 @@ export class RegisterComponent implements OnInit {
                     this.auth.setRefreshToken(result.refreshToken);
                     this.auth.updateAccessToken().subscribe((_result) => {
                         this.auth.setAccessToken(_result);
-                        this.auth.setUsername(d.login);
                         this.authState.updateState(true);
                         const home = this.auth.home(result.role);
                         this.router.navigate([home]);

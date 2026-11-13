@@ -52,12 +52,12 @@ export class TokensPage {
 
     openTokensTab() {
         cy.visit(URL.Root + URL.Tokens);
-        waitForPageReady(L.grid, 3);
+        waitForPageReady(L.grid);
     }
 
     openUserTokensTab() {
         cy.visit(URL.Root + URL.TokensUser);
-        waitForPageReady(L.grid, 3);
+        waitForPageReady(L.grid);
     }
 
     /**
@@ -139,7 +139,7 @@ export class TokensPage {
                 .to.be.a('string').and.not.be.empty;
             cy.visit(`${URL.Root}${URL.TokensUser}?tokenId=${btoa(tokenId)}`);
         });
-        waitForPageReady(L.grid, 3);
+        waitForPageReady(L.grid);
         cy.get(L.gridRow, { timeout: TIMEOUTS.backend }).first().as('accountRow');
         cy.get('@accountRow')
             .find(L.associateButton, { timeout: TIMEOUTS.backend })
@@ -158,7 +158,7 @@ export class TokensPage {
     grantKYC(policyName, username) {
         this.openTokensTab();
         this._tokenRow(policyName).find(L.tokenUsersIcon, { timeout: TIMEOUTS.ui }).closest(L.manage.iconButton).click();
-        waitForPageReady(L.grid, 3);
+        waitForPageReady(L.grid);
         this._userRow(username)
             .find(L.kycButton, { timeout: TIMEOUTS.backend })
             .then(($button) => {
@@ -175,7 +175,7 @@ export class TokensPage {
     verifyBalance(policyName, username, balance = ' 1 ') {
         this.openTokensTab();
         this._tokenRow(policyName).find(L.tokenUsersIcon, { timeout: TIMEOUTS.ui }).closest(L.manage.iconButton).click();
-        waitForPageReady(L.grid, 3);
+        waitForPageReady(L.grid);
         // the balance cell renders only for an associated account; a missing cell
         // means the association state has not landed, so fail with a clear wait
         this._userRow(username)

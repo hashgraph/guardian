@@ -2,8 +2,8 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/spec",
-    "types": ["jasmine", "node"]
+    "types": ["vitest/globals", "node"]
   },
-  "files": ["src/test.ts", "src/prototypes/date-prototype.ts"],
+  "files": ["src/prototypes/date-prototype.ts"],
   "include": ["src/**/*.spec.ts", "src/**/*.d.ts"]
 }

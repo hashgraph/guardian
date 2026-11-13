@@ -52,9 +52,9 @@ describe('SchemaFormOverviewComponent', () => {
 
     it('draws the ring of a card in its state', () => {
         create({ cards: [
-            { id: 'a', title: 'A', action: 'Start', ring: { pct: 40, done: false, optional: false } },
-            { id: 'b', title: 'B', action: 'Review', ring: { pct: 100, done: true, optional: false } },
-        ] });
+                { id: 'a', title: 'A', action: 'Start', ring: { pct: 40, done: false, optional: false } },
+                { id: 'b', title: 'B', action: 'Review', ring: { pct: 100, done: true, optional: false } },
+            ] });
         const rings = all('app-schema-form-ring');
         expect(rings.length).toBe(2);
     });
@@ -91,6 +91,6 @@ describe('SchemaFormOverviewComponent', () => {
 
     it('is inert while locked', () => {
         create({ locked: true });
-        expect(el('.sf-overview')!.hasAttribute('inert')).toBeTrue();
+        expect(el('.sf-overview')!.hasAttribute('inert')).toBe(true);
     });
 });

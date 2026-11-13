@@ -25,8 +25,8 @@ describe('LatexMarkupDirective', () => {
         ];
         for (const latex of cases) {
             const host = render(latex);
-            expect(host.children.length).withContext(latex).toBe(0);
-            expect(host.textContent).withContext(latex).toBe(latex);
+            expect(host.children.length, latex).toBe(0);
+            expect(host.textContent, latex).toBe(latex);
         }
     });
 });

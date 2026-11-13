@@ -53,7 +53,7 @@ const retireAbi = new ethers.Interface([
 
 // Not backwards compatible with contracts deployed before the 'Version' -> 'VersionInfo' event
 // rename: their version event carries a different topic, `getContractVersion` below cannot match it
-// and reports 1.0.0, and the wipe events of what is really a 1.0.1 contract are then decoded with
+// and fails, instead of the wipe events of what is really a 1.0.1 contract being decoded with
 // the 1.0.0 ABI. The bytecode file ids in `configs/*.guardian.system` have to come from a build of
 // this same generation.
 const versionEventsAbi = new ethers.Interface([
@@ -231,18 +231,18 @@ export function getTokenContractId(wipeKey: { _type: string; key: string }) {
     return '0.0.' + id.toString();
 }
 
-async function setPool(
+/**
+ * Reads the tokens of a pool from the mirror node. This has to happen before the pool is set on the
+ * contract: a token the mirror node has not indexed yet fails here, while nothing has changed.
+ */
+async function getPoolTokenInfos(
     workers: Workers,
-    dataBaseServer: DatabaseServer,
-    contractId: string,
-    options: { tokens: RetireTokenPool[]; immediately: boolean },
+    tokens: RetireTokenPool[],
     userId: string | null
 ) {
-    const pool = JSON.parse(JSON.stringify(options));
-    pool.contractId = contractId;
-    pool.tokens = await Promise.all(
-        options.tokens.map(async (item) => {
-            const tokenInfo = await workers.addRetryableTask(
+    return await Promise.all(
+        tokens.map((item) =>
+            workers.addRetryableTask(
                 {
                     type: WorkerTaskType.GET_TOKEN_INFO,
                     data: { tokenId: item.token, payload: { userId } },
@@ -250,7 +250,24 @@ async function setPool(
                 {
                     priority: 10
                 }
-            );
+            )
+        )
+    );
+}
+
+async function setPool(
+    workers: Workers,
+    dataBaseServer: DatabaseServer,
+    contractId: string,
+    options: { tokens: RetireTokenPool[]; immediately: boolean },
+    tokenInfos: any[],
+    userId: string | null
+) {
+    const pool = JSON.parse(JSON.stringify(options));
+    pool.contractId = contractId;
+    pool.tokens = await Promise.all(
+        options.tokens.map(async (item, index) => {
+            const tokenInfo = tokenInfos[index];
             const wipeContractId = getTokenContractId(tokenInfo.wipe_key);
 
             let isWiper = false;
@@ -518,11 +535,8 @@ export async function syncWipeContracts(
         }
     });
 
-    //A contract whose events cannot be decoded throws out of this loop and takes the rest of the
-    //pass with it, so one contract left over from an incompatible bytecode generation stops wipe
-    //requests being ingested for every other contract as well.
-    for (const [contractId, lastSyncEventTimeStamp] of contractIds) {
-        await syncWipeContract(
+    await syncEachContract('wipe', contractIds, (contractId, lastSyncEventTimeStamp) =>
+        syncWipeContract(
             dataBaseServer,
             workers,
             users,
@@ -531,6 +545,31 @@ export async function syncWipeContracts(
                 version: contractVersions.get(contractId)
             },
             lastSyncEventTimeStamp
+        )
+    );
+}
+
+/**
+ * Synchronizes the contracts one by one. A contract that fails (for example one left over from an
+ * incompatible bytecode generation, whose events cannot be decoded) does not stop the others: the
+ * failures are collected and reported together once every contract has been tried.
+ */
+async function syncEachContract(
+    type: string,
+    contractIds: Map<string, string>,
+    sync: (contractId: string, lastSyncEventTimeStamp: string) => Promise<void>
+): Promise<void> {
+    const failures: string[] = [];
+    for (const [contractId, lastSyncEventTimeStamp] of contractIds) {
+        try {
+            await sync(contractId, lastSyncEventTimeStamp);
+        } catch (error) {
+            failures.push(`${contractId}: ${error?.message ?? error}`);
+        }
+    }
+    if (failures.length) {
+        throw new Error(
+            `Synchronization of ${failures.length} ${type} contract(s) failed: ${failures.join('; ')}`
         );
     }
 }
@@ -864,15 +903,15 @@ export async function syncRetireContracts(
             );
         }
     });
-    for (const [contractId, lastSyncEventTimeStamp] of contractIds) {
-        await syncRetireContract(
+    await syncEachContract('retire', contractIds, (contractId, lastSyncEventTimeStamp) =>
+        syncRetireContract(
             dataBaseServer,
             workers,
             users,
             contractId,
             lastSyncEventTimeStamp
-        );
-    }
+        )
+    );
 }
 
 async function resolveNumericAccountId(
@@ -989,6 +1028,7 @@ export async function syncRetireContract(
                             tokens,
                             immediately: data[1],
                         },
+                        await getPoolTokenInfos(workers, tokens, userId),
                         userId
                     );
                     if (!sendNotifications) {
@@ -1367,10 +1407,10 @@ async function getContractPermissions(
 /**
  * Reads the version a contract announced when it was created.
  *
- * Falling back to '1.0.0' when the version event cannot be decoded makes a contract deployed from
- * mismatched bytecode look like an old but supported one, and the wipe event ABI picked from it
- * then fails to decode anything: see
- * `e2e-tests/pending-issues/contract-bytecode-must-match-the-service-abi.md`.
+ * A contract that announced no version is of the first generation, '1.0.0'. A version event that
+ * cannot be decoded is an error: claiming '1.0.0' for it makes a contract deployed from mismatched
+ * bytecode look like an old but supported one, and the wipe event ABI picked from it then fails to
+ * decode anything: see `e2e-tests/pending-issues/contract-bytecode-must-match-the-service-abi.md`.
  */
 export async function getContractVersion(log: any): Promise<string> {
     if (!log) {
@@ -1386,8 +1426,10 @@ export async function getContractVersion(log: any): Promise<string> {
         );
         return version[0].join('.');
     } catch (error) {
-        console.error(error);
-        return '1.0.0';
+        throw new Error(
+            `Cannot identify the version of the contract: ${error?.message ?? error}. ` +
+            'Its bytecode is probably not of the same generation as this service.'
+        );
     }
 }
 
@@ -3271,6 +3313,8 @@ export async function contractAPI(
                 throw new Error(error);
             }
 
+            const tokenInfos = await getPoolTokenInfos(workers, options.tokens, userId);
+
             await setPoolContract(
                 workers,
                 contractId,
@@ -3289,6 +3333,7 @@ export async function contractAPI(
                     dataBaseServer,
                     contractId,
                     options,
+                    tokenInfos,
                     userId
                 )
             );

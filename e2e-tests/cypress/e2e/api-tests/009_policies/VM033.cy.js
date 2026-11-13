@@ -7,9 +7,7 @@ import { importPolicyArchive } from '../../../support/cdmTools';
 import { seededMessageId, usesSeededMessages } from '../../../support/CustomHelpers/ipfsSeeding';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-// Skipped until the VM0033 policy is updated: see pending-issues/vm0033-*.md
-// (dotted field key rejected on publish, and the calculate_project_fields script emits fields its schema forbids).
-context.skip('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
+context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const PPUser = Cypress.env('PPUser');
@@ -401,11 +399,13 @@ context.skip('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                 (row) => projectNameOf(row) === projectName && row.type === 'approved_project'
             ).then((projectDataRef) => {
                 cy.fixture('payload.json').then((payload) => {
-                    // The report carries the same project name, which is what ties it to this run.
+                    // The report carries the project's data under the same project name, which is what ties it
+                    // to this run; the report schema has no project description (project_details).
                     const document = {
                         ...payload.document,
                         projectTitle: projectName
                     };
+                    delete document.project_details;
                     cy.request({
                         method: METHOD.POST,
                         url: API.ApiServer + API.Policies + policyId + '/' + API.AddReportBtn,
@@ -476,7 +476,8 @@ context.skip('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
         })
     })
 
-    it('Create validation report', () => {
+    // Skipped: valrep.json and verrep.json do not match the current report schemas, see pending-issues/vm0033-report-fixtures-do-not-match-the-schemas.md
+    it.skip('Create validation report', () => {
         Authorization.getAccessToken(VVBUser).then((authorization) => {
             cy.fixture('valrep.json').then((payload) => {
                 Checks.waitForRow(
@@ -504,7 +505,7 @@ context.skip('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
         })
     })
 
-    it('Approve validation report', () => {
+    it.skip('Approve validation report', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             Checks.waitForRow(
                 blockRequest(authorization, API.ValidationReportsVerra),
@@ -527,7 +528,7 @@ context.skip('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
         })
     })
 
-    it('Create verification report', () => {
+    it.skip('Create verification report', () => {
         Authorization.getAccessToken(VVBUser).then((authorization) => {
             cy.fixture('verrep.json').then((payload) => {
                 Checks.waitForRow(
@@ -553,7 +554,7 @@ context.skip('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
         })
     })
 
-    it('Approve verification report', () => {
+    it.skip('Approve verification report', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             Checks.waitForRow(
                 blockRequest(authorization, API.VerificationReportsVerra),

@@ -34,19 +34,19 @@ describe('ExternalPoliciesService', () => {
     it('marks preview and import as handled inline', () => {
         service.preview('msg-1').subscribe();
         const preview = httpMock.expectOne(`${URL}/preview`);
-        expect(preview.request.context.get(SILENT_HTTP_ERRORS)).toBeTrue();
+        expect(preview.request.context.get(SILENT_HTTP_ERRORS)).toBe(true);
         preview.flush({});
 
         service.import('msg-1').subscribe();
         const imported = httpMock.expectOne(`${URL}/import`);
-        expect(imported.request.context.get(SILENT_HTTP_ERRORS)).toBeTrue();
+        expect(imported.request.context.get(SILENT_HTTP_ERRORS)).toBe(true);
         imported.flush({});
     });
 
     it('leaves other external-policy calls on the global toast', () => {
         service.approve('msg-1').subscribe();
         const req = httpMock.expectOne(`${URL}/msg-1/approve`);
-        expect(req.request.context.get(SILENT_HTTP_ERRORS)).toBeFalse();
+        expect(req.request.context.get(SILENT_HTTP_ERRORS)).toBe(false);
         req.flush({});
     });
 
@@ -55,17 +55,17 @@ describe('ExternalPoliciesService', () => {
         service.approveAction('msg-1').subscribe();
         const approve = httpMock.expectOne(`${URL}/requests/msg-1/approve`);
         expect(approve.request.method).toBe('PUT');
-        expect(approve.request.context.get(SILENT_HTTP_ERRORS)).toBeFalse();
+        expect(approve.request.context.get(SILENT_HTTP_ERRORS)).toBe(false);
         approve.flush({});
 
         service.approveAction('msg-2', true).subscribe();
         const silentApprove = httpMock.expectOne(`${URL}/requests/msg-2/approve`);
-        expect(silentApprove.request.context.get(SILENT_HTTP_ERRORS)).toBeTrue();
+        expect(silentApprove.request.context.get(SILENT_HTTP_ERRORS)).toBe(true);
         silentApprove.flush({});
 
         service.rejectAction('msg-3', true).subscribe();
         const silentReject = httpMock.expectOne(`${URL}/requests/msg-3/reject`);
-        expect(silentReject.request.context.get(SILENT_HTTP_ERRORS)).toBeTrue();
+        expect(silentReject.request.context.get(SILENT_HTTP_ERRORS)).toBe(true);
         silentReject.flush({});
     });
 

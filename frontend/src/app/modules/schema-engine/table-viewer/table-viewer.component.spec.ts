@@ -14,12 +14,21 @@ describe('TableViewerComponent inline csv', () => {
         viewer.PREVIEW_ROWS_LIMIT = 4;
         viewer.delimiter = ',';
         viewer.csvService = new CsvService();
-        viewer.dialog = jasmine.createSpyObj('DialogService', ['open']);
-        viewer.artifactService = jasmine.createSpyObj('ArtifactService', ['getFileBlob']);
-        viewer.idb = jasmine.createSpyObj('IndexedDbRegistryService', ['get', 'put']);
+        viewer.dialog = {
+            open: vi.fn().mockName("DialogService.open")
+        };
+        viewer.artifactService = {
+            getFileBlob: vi.fn().mockName("ArtifactService.getFileBlob")
+        };
+        viewer.idb = {
+            get: vi.fn().mockName("IndexedDbRegistryService.get"),
+            put: vi.fn().mockName("IndexedDbRegistryService.put")
+        };
         viewer.cdr = { markForCheck: () => undefined };
-        viewer.zone = jasmine.createSpyObj('NgZone', ['run']);
-        viewer.zone.run.and.callFake((fn: () => unknown) => fn());
+        viewer.zone = {
+            run: vi.fn().mockName("NgZone.run")
+        };
+        viewer.zone.run.mockImplementation((fn: () => unknown) => fn());
         return viewer;
     };
 
@@ -34,7 +43,7 @@ describe('TableViewerComponent inline csv', () => {
         const viewer = create(inline);
         expect(viewer.fileId).toBeNull();
         expect(viewer.inlineCsv).toBe('Year,Area\r\n2024,10\r\n2025,20\r\n');
-        expect(viewer.hasData).toBeTrue();
+        expect(viewer.hasData).toBe(true);
     });
 
     it('opens the inline table without loading a file', async () => {
@@ -42,19 +51,19 @@ describe('TableViewerComponent inline csv', () => {
         await viewer.openDialog();
         expect(viewer.artifactService.getFileBlob).not.toHaveBeenCalled();
         expect(viewer.idb.get).not.toHaveBeenCalled();
-        const config = viewer.dialog.open.calls.mostRecent().args[1];
+        const config = vi.mocked(viewer.dialog.open).mock.lastCall![1];
         expect(config.data.rowData).toEqual([{ year: '2024', area: '10' }, { year: '2025', area: '20' }]);
         expect(config.data.columnDefs.map((column: any) => column.headerName)).toEqual(['Year', 'Area']);
-        expect(viewer.isLoading).toBeFalse();
+        expect(viewer.isLoading).toBe(false);
     });
 
     it('fills the preview of an inline table at once, without the browser table store', () => {
         const viewer = create(inline);
-        viewer.idb.registerStores = jasmine.createSpy('registerStores');
+        viewer.idb.registerStores = vi.fn();
         viewer.ngOnChanges();
         expect(viewer.previewHeaderKeysLimited).toEqual(['year', 'area']);
         expect(viewer.previewRowsLimited).toEqual([{ year: '2024', area: '10' }, { year: '2025', area: '20' }]);
-        expect(viewer.isLoading).toBeFalse();
+        expect(viewer.isLoading).toBe(false);
         expect(viewer.idb.registerStores).not.toHaveBeenCalled();
         expect(viewer.artifactService.getFileBlob).not.toHaveBeenCalled();
     });
@@ -68,6 +77,6 @@ describe('TableViewerComponent inline csv', () => {
     it('has no data for an empty table value', () => {
         const viewer = create(JSON.stringify({ type: 'table' }));
         expect(viewer.inlineCsv).toBeNull();
-        expect(viewer.hasData).toBeFalse();
+        expect(viewer.hasData).toBe(false);
     });
 });

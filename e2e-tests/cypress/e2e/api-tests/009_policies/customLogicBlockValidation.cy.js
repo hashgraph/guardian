@@ -8,7 +8,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'api-all', 'all', 'all-no
 
     const SRUsername = Cypress.env('SRUser');
 
-    let policyId; let fileId; let adminDid; let registrantDid; let topicId; let appDetailsSchemaId; let schema; let fileId2;
+    let policyId; let fileId; let adminDid; let registrantDid;
 
     it('Flow for custom logic block - Import and dry run policy', () => {
         //Create retire contract and save id
@@ -28,7 +28,6 @@ context('Policies', { tags: ['policies', 'secondPool', 'api-all', 'all', 'all-no
                     }).then((response) => {
                         expect(response.status).to.eq(STATUS_CODE.SUCCESS);
                         policyId = JSON.parse(new TextDecoder().decode(response.body)).at(0).id;
-                        topicId = JSON.parse(new TextDecoder().decode(response.body)).at(0).topicId;
                         Authorization.getAccessToken(SRUsername).then((authorization) => {
                             cy.request({
                                 method: METHOD.PUT,

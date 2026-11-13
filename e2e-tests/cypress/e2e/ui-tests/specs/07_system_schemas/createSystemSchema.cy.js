@@ -18,6 +18,7 @@ context('System Schema Creation', { tags: ['ui', 'ui-all', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     // Unique per run: the schemas of earlier runs stay in the list.
     const schemaName = 'UISystemSchema' + randomInt(1000000000);
+    const editorSchemaName = 'UIEditorSystemSchema' + randomInt(1000000000);
 
     before(() => {
         createSystemSchema(SRUsername, schemaName);
@@ -27,9 +28,10 @@ context('System Schema Creation', { tags: ['ui', 'ui-all', 'all'] }, () => {
         login(SRUsername);
     });
 
-    // The editor cannot pick the Standard Registry or User entity a system schema needs: see
-    // pending-issues/system-schema-editor-cannot-create-a-system-schema.md. Re-enable it once it can.
-    it.skip('create system schema', () => {});
+    it('create system schema', () => {
+        schemaPage.createSchema(editorSchemaName);
+        schemaPage.systemSchemaEntity(editorSchemaName).should('eq', 'STANDARD_REGISTRY');
+    });
 
     it('lists a system schema created through the API', () => {
         schemaPage._row(schemaName).should('exist');
@@ -38,5 +40,6 @@ context('System Schema Creation', { tags: ['ui', 'ui-all', 'all'] }, () => {
     after(() => {
         login(SRUsername);
         schemaPage.deleteSchema(schemaName);
+        schemaPage.deleteSchema(editorSchemaName);
     });
 });

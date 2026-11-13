@@ -30,16 +30,16 @@ describe('SchemaFormComponent Preview table validation', () => {
             schemas: [NO_ERRORS_SCHEMA],
         });
         const schema = new Schema({ iri: '#calc&1.0.0', document: {
-            $id: '#calc&1.0.0',
-            $comment: JSON.stringify({ '@id': 'ctx:#calc&1.0.0', term: 'calc&1.0.0' }),
-            type: SchemaDataTypes.object,
-            properties: { rows: { type: SchemaDataTypes.array, items: { $ref: '#row' } } },
-            $defs: { '#row': {
-                $id: '#row', type: SchemaDataTypes.object,
-                properties: { rate: { type: SchemaDataTypes.number, title: 'Rate', description: 'Rate' } },
-                required: ['rate'],
-            } },
-        } });
+                $id: '#calc&1.0.0',
+                $comment: JSON.stringify({ '@id': 'ctx:#calc&1.0.0', term: 'calc&1.0.0' }),
+                type: SchemaDataTypes.object,
+                properties: { rows: { type: SchemaDataTypes.array, items: { $ref: '#row' } } },
+                $defs: { '#row': {
+                        $id: '#row', type: SchemaDataTypes.object,
+                        properties: { rate: { type: SchemaDataTypes.number, title: 'Rate', description: 'Rate' } },
+                        required: ['rate'],
+                    } },
+            } });
         const model = new FieldForm(new UntypedFormGroup({}));
         model.setData({ schema, preset: { rows: [{ rate: 0 }, {}] }, requiredFields: ['rows.rate'] });
         model.build();
@@ -51,7 +51,7 @@ describe('SchemaFormComponent Preview table validation', () => {
             target.open = true;
         }
         if (ready) {
-            spyOn(fixture.componentInstance, 'isPreviewSectionReady').and.returnValue(true);
+            vi.spyOn(fixture.componentInstance, 'isPreviewSectionReady').mockReturnValue(true);
         }
         fixture.detectChanges();
         const first = model.controls![0].list![0].model.controls[0];
@@ -62,8 +62,8 @@ describe('SchemaFormComponent Preview table validation', () => {
     it('reports opening a section as navigation only in preview mode', () => {
         const { fixture } = render();
         const component = fixture.componentInstance;
-        const navigation = spyOn(component.previewNavigation, 'emit');
-        const interaction = spyOn(component.previewInteraction, 'emit');
+        const navigation = vi.spyOn(component.previewNavigation, 'emit').mockImplementation(() => undefined);
+        const interaction = vi.spyOn(component.previewInteraction, 'emit').mockImplementation(() => undefined);
         const field = component.formModel.controls![0];
         component.toggleOpen(field, false);
         expect(navigation).not.toHaveBeenCalled();
@@ -88,13 +88,13 @@ describe('SchemaFormComponent Preview table validation', () => {
         });
         const fixture = TestBed.createComponent(SchemaFormRootComponent);
         fixture.componentRef.setInput('schema', new Schema({ iri: '#input', document: {
-            $id: '#input', type: SchemaDataTypes.object,
-            properties: { section: { $ref: '#section', title: 'Section', description: 'Section' } },
-            required: ['section'],
-            $defs: { '#section': { $id: '#section', type: SchemaDataTypes.object,
-                properties: { rate: { type: SchemaDataTypes.number, title: 'Rate', description: 'Rate' } },
-                required: ['rate'] } },
-        } }));
+                $id: '#input', type: SchemaDataTypes.object,
+                properties: { section: { $ref: '#section', title: 'Section', description: 'Section' } },
+                required: ['section'],
+                $defs: { '#section': { $id: '#section', type: SchemaDataTypes.object,
+                        properties: { rate: { type: SchemaDataTypes.number, title: 'Rate', description: 'Rate' } },
+                        required: ['rate'] } },
+            } }));
         fixture.componentRef.setInput('requiredFields', ['section.rate']);
         fixture.detectChanges();
         tick(256);
@@ -120,26 +120,26 @@ describe('SchemaFormComponent Preview table validation', () => {
     it('renders a required Preview section before its optional sub-form is added', () => {
         const { fixture } = render();
         const schema = new Schema({ iri: '#optional', document: {
-            $id: '#optional', type: SchemaDataTypes.object,
-            properties: { section: { $ref: '#section', title: 'Section', description: 'Section' } },
-            $defs: { '#section': {
-                $id: '#section', type: SchemaDataTypes.object,
-                properties: { rate: { type: SchemaDataTypes.number, title: 'Rate', description: 'Rate' } },
-            } },
-        } });
+                $id: '#optional', type: SchemaDataTypes.object,
+                properties: { section: { $ref: '#section', title: 'Section', description: 'Section' } },
+                $defs: { '#section': {
+                        $id: '#section', type: SchemaDataTypes.object,
+                        properties: { rate: { type: SchemaDataTypes.number, title: 'Rate', description: 'Rate' } },
+                    } },
+            } });
         const model = new FieldForm(new UntypedFormGroup({}));
         model.setData({ schema, requiredFields: ['section.rate'] });
         model.build();
         const section = model.controls![0];
         expect(section.control).toBeNull();
-        expect(section.required).toBeTrue();
+        expect(section.required).toBe(true);
         fixture.componentRef.setInput('form-model', model);
         expect(() => fixture.detectChanges()).not.toThrow();
         const header = fixture.nativeElement.querySelector(`[data-field-id="${section.id}"]`);
         expect(header.querySelector('.sf-req')).not.toBeNull();
         fixture.componentInstance.addGroup(section);
         expect(() => fixture.detectChanges()).not.toThrow();
-        expect(section.control.get('rate')?.errors?.['required']).toBeTrue();
+        expect(section.control.get('rate')?.errors?.['required']).toBe(true);
         section.control.disable();
         fixture.detectChanges();
         expect(header.querySelector('.sf-req')).toBeNull();
@@ -150,7 +150,8 @@ describe('SchemaFormComponent Preview table validation', () => {
         const toggle = fixture.debugElement.query(By.css('.sf-card-toggle')).nativeElement as HTMLElement;
         if ((toggle.getAttribute('aria-expanded') === 'true') !== open) {
             toggle.click();
-        } else {
+        }
+        else {
             fixture.componentInstance.toggleOpen(fixture.componentInstance.formModel.controls![0], open);
         }
     };
@@ -161,15 +162,15 @@ describe('SchemaFormComponent Preview table validation', () => {
         const model = new FieldForm(new UntypedFormGroup({}));
         model.setData({
             schema: new Schema({ iri: '#sections', document: {
-                $id: '#sections', type: SchemaDataTypes.object,
-                properties: { section: array ? { type: SchemaDataTypes.array, items: { $ref: '#section' } } : { $ref: '#section' } },
-                $defs: {
-                    '#section': { $id: '#section', type: SchemaDataTypes.object,
-                        properties: { details: { $ref: '#details' } } },
-                    '#details': { $id: '#details', type: SchemaDataTypes.object,
-                        properties: { rate: { type: SchemaDataTypes.number, title: 'Rate', description: 'Rate' } } },
-                },
-            } }),
+                    $id: '#sections', type: SchemaDataTypes.object,
+                    properties: { section: array ? { type: SchemaDataTypes.array, items: { $ref: '#section' } } : { $ref: '#section' } },
+                    $defs: {
+                        '#section': { $id: '#section', type: SchemaDataTypes.object,
+                            properties: { details: { $ref: '#details' } } },
+                        '#details': { $id: '#details', type: SchemaDataTypes.object,
+                            properties: { rate: { type: SchemaDataTypes.number, title: 'Rate', description: 'Rate' } } },
+                    },
+                } }),
             preset: { section: array ? [{ details: { rate: 3 } }] : { details: { rate: 3 } } },
             requiredFields: preview ? [] : null,
         });
@@ -189,18 +190,19 @@ describe('SchemaFormComponent Preview table validation', () => {
         it(`reports loading before rendering a Preview input section with array ${array}`, fakeAsync(() => {
             const fixture = renderSection(true, array);
             const view = fixture.componentInstance;
-            const changes = spyOn(view.previewLoadingChange, 'emit');
+            const changes = vi.spyOn(view.previewLoadingChange, 'emit').mockImplementation(() => undefined);
             setOpen(fixture, true);
             fixture.detectChanges();
-            expect(changes).toHaveBeenCalledOnceWith(true);
+            expect(changes).toHaveBeenCalledTimes(1);
+            expect(changes).toHaveBeenCalledWith(true);
             expect(fixture.debugElement.query(By.directive(SchemaFormComponent))).toBeNull();
             tick(16);
-            expect(view.isPreviewSectionReady(view.formModel.controls![0])).toBeFalse();
+            expect(view.isPreviewSectionReady(view.formModel.controls![0])).toBe(false);
             tick(16);
             fixture.detectChanges();
             expect(fixture.debugElement.query(By.directive(SchemaFormComponent))).not.toBeNull();
             tick(16);
-            expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+            expect(vi.mocked(changes).mock.calls).toEqual([[true], [false]]);
             expect(view.formModel.form.getRawValue().section).toEqual(array ? [{ details: { rate: 3 } }] : { details: { rate: 3 } });
         }));
     }
@@ -208,7 +210,7 @@ describe('SchemaFormComponent Preview table validation', () => {
     it('renders an ordinary input section immediately without Preview loading', fakeAsync(() => {
         const fixture = renderSection(false);
         const view = fixture.componentInstance;
-        const changes = spyOn(view.previewLoadingChange, 'emit');
+        const changes = vi.spyOn(view.previewLoadingChange, 'emit').mockImplementation(() => undefined);
         setOpen(fixture, true);
         fixture.detectChanges();
         expect(fixture.debugElement.query(By.directive(SchemaFormComponent))).not.toBeNull();
@@ -218,26 +220,26 @@ describe('SchemaFormComponent Preview table validation', () => {
     it('cancels pending Preview input rendering and balances its notification on close', fakeAsync(() => {
         const fixture = renderSection(true);
         const view = fixture.componentInstance;
-        const changes = spyOn(view.previewLoadingChange, 'emit');
+        const changes = vi.spyOn(view.previewLoadingChange, 'emit').mockImplementation(() => undefined);
         setOpen(fixture, true);
         tick(16);
         setOpen(fixture, false);
         tick(64);
-        expect(changes.calls.allArgs()).toEqual([[true], [false]]);
-        expect(view.isPreviewSectionReady(view.formModel.controls![0])).toBeFalse();
+        expect(vi.mocked(changes).mock.calls).toEqual([[true], [false]]);
+        expect(view.isPreviewSectionReady(view.formModel.controls![0])).toBe(false);
     }));
 
     it('cancels queued Preview input work when ordinary validation is restored', fakeAsync(() => {
         const fixture = renderSection(true);
         const view = fixture.componentInstance;
-        const changes = spyOn(view.previewLoadingChange, 'emit');
+        const changes = vi.spyOn(view.previewLoadingChange, 'emit').mockImplementation(() => undefined);
         setOpen(fixture, true);
         tick(16);
         fixture.componentRef.setInput('previewValidation', false);
         fixture.detectChanges();
         expect(fixture.debugElement.query(By.directive(SchemaFormComponent))).not.toBeNull();
         tick(64);
-        expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+        expect(vi.mocked(changes).mock.calls).toEqual([[true], [false]]);
         expect(Reflect.get(view, 'previewFrames').size).toBe(0);
     }));
 
@@ -248,15 +250,15 @@ describe('SchemaFormComponent Preview table validation', () => {
             const model = new FieldForm(new UntypedFormGroup({}));
             model.setData({
                 schema: new Schema({ iri: '#sections', document: {
-                    $id: '#sections', type: SchemaDataTypes.object,
-                    properties: { section: { type: SchemaDataTypes.array, items: { $ref: '#section' } } },
-                    $defs: {
-                        '#section': { $id: '#section', type: SchemaDataTypes.object,
-                            properties: { details: { $ref: '#details' } } },
-                        '#details': { $id: '#details', type: SchemaDataTypes.object,
-                            properties: { rate: { type: SchemaDataTypes.number, title: 'Rate', description: 'Rate' } } },
-                    },
-                } }),
+                        $id: '#sections', type: SchemaDataTypes.object,
+                        properties: { section: { type: SchemaDataTypes.array, items: { $ref: '#section' } } },
+                        $defs: {
+                            '#section': { $id: '#section', type: SchemaDataTypes.object,
+                                properties: { details: { $ref: '#details' } } },
+                            '#details': { $id: '#details', type: SchemaDataTypes.object,
+                                properties: { rate: { type: SchemaDataTypes.number, title: 'Rate', description: 'Rate' } } },
+                        },
+                    } }),
                 preset: { section: [{ details: { rate: 3 } }] },
                 requiredFields: preview ? [] : null,
             });
@@ -268,31 +270,30 @@ describe('SchemaFormComponent Preview table validation', () => {
             fixture.detectChanges();
             const view = fixture.componentInstance;
             const rows = view.formModel.controls![0];
-            expect(rows.open).toBeTrue();
-            const changes = spyOn(view.previewLoadingChange, 'emit');
+            expect(rows.open).toBe(true);
+            const changes = vi.spyOn(view.previewLoadingChange, 'emit').mockImplementation(() => undefined);
             view.addItem(rows);
             fixture.detectChanges(false);
             const added = rows.list![1];
-            expect(added.open).toBeTrue();
+            expect(added.open).toBe(true);
             tick(64);
             fixture.detectChanges(false);
-            expect(view.isPreviewSectionReady(added)).toBeTrue();
-            expect(changes.calls.allArgs()).toEqual(preview ? [[true], [false]] : []);
+            expect(view.isPreviewSectionReady(added)).toBe(true);
+            expect(vi.mocked(changes).mock.calls).toEqual(preview ? [[true], [false]] : []);
         }));
     }
 
     const renderLarge = (preview: boolean) => {
         const { fixture } = render();
         tick(48);
-        const properties = Object.fromEntries(Array.from({ length: 25 }, (_, index) =>
-            [`f${index}`, { type: SchemaDataTypes.number, title: `F${index}`, description: `F${index}` }]));
+        const properties = Object.fromEntries(Array.from({ length: 25 }, (_, index) => [`f${index}`, { type: SchemaDataTypes.number, title: `F${index}`, description: `F${index}` }]));
         const model = new FieldForm(new UntypedFormGroup({}));
         model.setData({
             schema: new Schema({ iri: '#large', document: { $id: '#large', type: SchemaDataTypes.object, properties } }),
             requiredFields: preview ? [] : null,
         });
         model.build();
-        const changes = spyOn(fixture.componentInstance.previewLoadingChange, 'emit');
+        const changes = vi.spyOn(fixture.componentInstance.previewLoadingChange, 'emit').mockImplementation(() => undefined);
         fixture.componentRef.setInput('previewValidation', preview);
         fixture.componentRef.setInput('form-model', model);
         fixture.detectChanges();
@@ -303,14 +304,14 @@ describe('SchemaFormComponent Preview table validation', () => {
     it('renders Preview input fields in parts across frames and reports loading until the last part', fakeAsync(() => {
         const { fixture, changes, count } = renderLarge(true);
         expect(count()).toBe(10);
-        expect(changes.calls.allArgs()).toEqual([[true]]);
+        expect(vi.mocked(changes).mock.calls).toEqual([[true]]);
         tick(16);
         expect(count()).toBe(20);
         tick(16);
         expect(count()).toBe(25);
-        expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+        expect(vi.mocked(changes).mock.calls).toEqual([[true], [false]]);
         tick(64);
-        expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+        expect(vi.mocked(changes).mock.calls).toEqual([[true], [false]]);
         fixture.destroy();
     }));
 
@@ -327,26 +328,28 @@ describe('SchemaFormComponent Preview table validation', () => {
             tick(16);
             if (action === 'destroy') {
                 fixture.destroy();
-            } else {
+            }
+            else {
                 fixture.componentRef.setInput('previewValidation', false);
                 fixture.detectChanges();
                 expect(count()).toBe(25);
             }
             tick(64);
-            expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+            expect(vi.mocked(changes).mock.calls).toEqual([[true], [false]]);
         }));
     }
 
     it('prepares a Preview input section opened from outside, like a rail card or Jump to next missing', fakeAsync(() => {
         const fixture = renderSection(true);
         const view = fixture.componentInstance;
-        const changes = spyOn(view.previewLoadingChange, 'emit');
+        const changes = vi.spyOn(view.previewLoadingChange, 'emit').mockImplementation(() => undefined);
         view.formModel.controls![0].open = true;
         view.prepareOpenPreviewSections();
-        expect(changes).toHaveBeenCalledOnceWith(true);
+        expect(changes).toHaveBeenCalledTimes(1);
+        expect(changes).toHaveBeenCalledWith(true);
         tick(1200);
-        expect(changes.calls.allArgs()).toEqual([[true], [false]]);
-        expect(view.isPreviewSectionReady(view.formModel.controls![0])).toBeTrue();
+        expect(vi.mocked(changes).mock.calls).toEqual([[true], [false]]);
+        expect(view.isPreviewSectionReady(view.formModel.controls![0])).toBe(true);
     }));
 
     it('prepares a section opened inside an already open Preview input section', fakeAsync(() => {
@@ -359,11 +362,11 @@ describe('SchemaFormComponent Preview table validation', () => {
         const details = view.formModel.controls![0].model!.controls![0];
         details.open = false;
         nested.preparePreviewSection(details);
-        expect(nested.isPreviewSectionReady(details)).toBeFalse();
+        expect(nested.isPreviewSectionReady(details)).toBe(false);
         details.open = true;
         view.prepareOpenPreviewSections();
         tick(1200);
-        expect(nested.isPreviewSectionReady(details)).toBeTrue();
+        expect(nested.isPreviewSectionReady(details)).toBe(true);
     }));
 
     it('shows root loading synchronously for a real Preview input accordion-header click', fakeAsync(() => {
@@ -379,11 +382,11 @@ describe('SchemaFormComponent Preview table validation', () => {
         });
         const fixture = TestBed.createComponent(SchemaFormRootComponent);
         fixture.componentRef.setInput('schema', new Schema({ iri: '#input', document: {
-            $id: '#input', type: SchemaDataTypes.object,
-            properties: { section: { $ref: '#section', title: 'Section', description: 'Section' } },
-            $defs: { '#section': { $id: '#section', type: SchemaDataTypes.object,
-                properties: { rate: { type: SchemaDataTypes.number, title: 'Rate', description: 'Rate' } } } },
-        } }));
+                $id: '#input', type: SchemaDataTypes.object,
+                properties: { section: { $ref: '#section', title: 'Section', description: 'Section' } },
+                $defs: { '#section': { $id: '#section', type: SchemaDataTypes.object,
+                        properties: { rate: { type: SchemaDataTypes.number, title: 'Rate', description: 'Rate' } } } },
+            } }));
         fixture.componentRef.setInput('preset', { section: { rate: 3 } });
         fixture.componentRef.setInput('requiredFields', []);
         fixture.componentRef.setInput('showButtons', true);
@@ -407,17 +410,17 @@ describe('SchemaFormComponent Preview table validation', () => {
         expect(fixture.componentInstance.previewLoadingCount).toBeGreaterThan(0);
         const cancel: HTMLButtonElement = Array.from<HTMLButtonElement>(fixture.nativeElement.querySelectorAll('.progress-footer button')).find(button => button.textContent?.trim() === 'Cancel')!;
         expect(cancel).toBeDefined();
-        expect(cancel.disabled).toBeFalse();
+        expect(cancel.disabled).toBe(false);
         expect(cancel.closest('[inert]')).toBeNull();
-        const cancelled = spyOn(fixture.componentInstance.cancelBtnEvent, 'emit');
+        const cancelled = vi.spyOn(fixture.componentInstance.cancelBtnEvent, 'emit').mockImplementation(() => undefined);
         cancel.click();
         expect(cancelled).toHaveBeenCalled();
-        expect(fixture.nativeElement.querySelector('.form-field-container').inert).toBeTrue();
+        expect(fixture.nativeElement.querySelector('.form-field-container').inert).toBe(true);
         expect(fixture.nativeElement.querySelector('.preview-loading-overlay')).not.toBeNull();
         tick(48);
         fixture.detectChanges();
         expect(fixture.nativeElement.querySelector('.preview-loading-overlay')).toBeNull();
-        expect(fixture.nativeElement.querySelector('.form-field-container').inert).toBeFalse();
+        expect(fixture.nativeElement.querySelector('.form-field-container').inert).toBe(false);
     }));
 
     it('marks only the reported empty cell and exposes its exact scroll target', () => {
@@ -427,17 +430,17 @@ describe('SchemaFormComponent Preview table validation', () => {
         const label = fixture.nativeElement.querySelector(`[data-field-id="${second.id}"]`);
         expect(label).not.toBeNull();
         const target = label.closest('.form-field').querySelector('.form-field-value');
-        expect(target.classList.contains('preview-missing-field')).toBeTrue();
+        expect(target.classList.contains('preview-missing-field')).toBe(true);
         expect(getComputedStyle(target).outlineStyle).toBe('none');
         expect(getComputedStyle(target.querySelector('textarea')).borderColor).toBe('rgb(255, 67, 42)');
         expect(target.textContent).not.toContain('Required for calculation preview');
         expect(target.querySelector('textarea')).not.toBeNull();
         const firstField = fixture.nativeElement.querySelector(`[data-field-id="${first.id}"]`).closest('.form-field');
-        expect(firstField.querySelector('.form-field-value').classList.contains('preview-missing-field')).toBeFalse();
+        expect(firstField.querySelector('.form-field-value').classList.contains('preview-missing-field')).toBe(false);
         expect(first.control.value).toBe(0);
         second.control.setValue(3);
         fixture.detectChanges();
-        expect(target.classList.contains('preview-missing-field')).toBeFalse();
+        expect(target.classList.contains('preview-missing-field')).toBe(false);
         expect(target.querySelector('[role="alert"]')).toBeNull();
     });
 
@@ -445,8 +448,9 @@ describe('SchemaFormComponent Preview table validation', () => {
         const { fixture, first, second } = render();
         fixture.componentRef.setInput('previewMissingFieldIds', [second.id]);
         fixture.detectChanges();
-        const root = new SchemaFormRootComponent(new UntypedFormBuilder(),
-            jasmine.createSpyObj<ChangeDetectorRef>('ChangeDetectorRef', ['detectChanges']));
+        const root = new SchemaFormRootComponent(new UntypedFormBuilder(), {
+            detectChanges: vi.fn().mockName("ChangeDetectorRef.detectChanges")
+        } as any);
         root.model = fixture.componentInstance.formModel;
         root.previewMissingFields = ['rows.1.rate'];
         Object.assign(root, {
@@ -455,13 +459,15 @@ describe('SchemaFormComponent Preview table validation', () => {
         });
         const target = fixture.nativeElement.querySelector(`[data-field-id="${second.id}"]`);
         const neighbour = fixture.nativeElement.querySelector(`[data-field-id="${first.id}"]`);
-        const scroll = spyOn(target, 'scrollIntoView');
-        const otherScroll = spyOn(neighbour, 'scrollIntoView');
-        const focus = spyOn(target.closest('.form-field').querySelector('textarea'), 'focus');
+        const scroll = vi.spyOn(target, 'scrollIntoView').mockImplementation(() => undefined);
+        const otherScroll = vi.spyOn(neighbour, 'scrollIntoView').mockImplementation(() => undefined);
+        const focus = vi.spyOn(target.closest('.form-field').querySelector('textarea'), 'focus').mockImplementation(() => undefined);
         root.focusField('rows.1.rate');
-        expect(scroll).toHaveBeenCalledOnceWith({ behavior: 'smooth', block: 'center' });
+        expect(scroll).toHaveBeenCalledTimes(1);
+        expect(scroll).toHaveBeenCalledWith({ behavior: 'smooth', block: 'center' });
         expect(otherScroll).not.toHaveBeenCalled();
-        expect(focus).toHaveBeenCalledOnceWith({ preventScroll: true });
+        expect(focus).toHaveBeenCalledTimes(1);
+        expect(focus).toHaveBeenCalledWith({ preventScroll: true });
         expect(first.control.value).toBe(0);
     });
 
@@ -486,11 +492,11 @@ describe('SchemaFormComponent Preview table validation', () => {
         fixture.detectChanges();
         expect(fixture.nativeElement.querySelectorAll('.preview-missing-field').length).toBe(1);
         expect(fixture.nativeElement.textContent).not.toContain('Required for calculation preview');
-        expect(first.control.valid).toBeTrue();
+        expect(first.control.valid).toBe(true);
         second.control.setValue(0);
         fixture.detectChanges();
         expect(fixture.nativeElement.querySelector('.preview-missing-field')).toBeNull();
-        expect(second.control.valid).toBeTrue();
+        expect(second.control.valid).toBe(true);
     });
 
     it('shows an optional ordinary field validator error and ignores disabled cells', () => {
@@ -503,7 +509,7 @@ describe('SchemaFormComponent Preview table validation', () => {
         second.control.disable();
         fixture.detectChanges();
         const rows = fixture.nativeElement.querySelectorAll('.sf-record');
-        expect(first.control.invalid).toBeTrue();
+        expect(first.control.invalid).toBe(true);
         expect(rows[0].querySelector('.preview-missing-field')).not.toBeNull();
         expect(rows[1].querySelector('.preview-missing-field')).toBeNull();
         first.control.setValue(2);
@@ -550,12 +556,12 @@ describe('SchemaFormComponent large tables inside opened sections', () => {
             preset = { [`s${depth - 1}`]: preset };
         }
         const schema = new Schema({ iri: '#large&1.0.0', document: {
-            $id: '#large&1.0.0',
-            $comment: JSON.stringify({ '@id': 'ctx:#large&1.0.0', term: 'large&1.0.0' }),
-            type: SchemaDataTypes.object,
-            properties: { s3: { $ref: '#s3', title: 'Section 3', description: 'Section 3' } },
-            $defs: definitions,
-        } } as any);
+                $id: '#large&1.0.0',
+                $comment: JSON.stringify({ '@id': 'ctx:#large&1.0.0', term: 'large&1.0.0' }),
+                type: SchemaDataTypes.object,
+                properties: { s3: { $ref: '#s3', title: 'Section 3', description: 'Section 3' } },
+                $defs: definitions,
+            } } as any);
         const model = new FieldForm(new UntypedFormGroup({}));
         model.setData({ schema, preset: { s3: preset }, requiredFields: preview ? [] : null });
         model.build();
@@ -604,7 +610,8 @@ describe('SchemaFormComponent large tables inside opened sections', () => {
                 fixture.detectChanges();
                 await frames(4);
                 await openAll(fixture);
-            } catch (caught: any) {
+            }
+            catch (caught: any) {
                 errors.push(String(caught?.message || caught));
             }
             window.removeEventListener('error', onError);
@@ -612,7 +619,7 @@ describe('SchemaFormComponent large tables inside opened sections', () => {
             const cells = fixture.debugElement.queryAll(By.css('.sf-record-body textarea'));
             expect(cells.length).toBe(600);
             expect(cells[0].nativeElement.value).toBe('0-c0');
-            expect(cells.every((cell) => !!cell.injector.get(Textarea, null))).toBeTrue();
+            expect(cells.every((cell) => !!cell.injector.get(Textarea, null))).toBe(true);
         });
     });
 });
@@ -629,12 +636,12 @@ describe('SchemaFormComponent error timing', () => {
             schemas: [NO_ERRORS_SCHEMA],
         });
         const schema = new Schema({ iri: '#flat&1.0.0', document: {
-            $id: '#flat&1.0.0',
-            $comment: JSON.stringify({ '@id': 'ctx:#flat&1.0.0', term: 'flat&1.0.0' }),
-            type: SchemaDataTypes.object,
-            properties: { code: { type: SchemaDataTypes.string, title: 'Code', description: 'Code', pattern: '^[a-z]+$' } },
-            required: ['code'],
-        } });
+                $id: '#flat&1.0.0',
+                $comment: JSON.stringify({ '@id': 'ctx:#flat&1.0.0', term: 'flat&1.0.0' }),
+                type: SchemaDataTypes.object,
+                properties: { code: { type: SchemaDataTypes.string, title: 'Code', description: 'Code', pattern: '^[a-z]+$' } },
+                required: ['code'],
+            } });
         const model = new FieldForm(new UntypedFormGroup({}));
         model.setData({ schema, preset });
         model.build();
@@ -728,8 +735,8 @@ describe('SchemaFormComponent render caches', () => {
         const { view, model } = create(document, '#mg&1.0.0', { locations: [{ instanceName: 'North' }] });
         const locations = model.controls!.find((c) => c.name === 'locations')!;
         const instances = model.controls!.find((c) => c.name === 'instances')!;
-        expect(view.isManagedArray(instances)).toBeTrue();
-        expect(view.isManagedArray(locations)).toBeFalse();
+        expect(view.isManagedArray(instances)).toBe(true);
+        expect(view.isManagedArray(locations)).toBe(false);
         const row = instances.list![0];
         expect(view.recordText(instances, row).title).toBe('North');
         locations.list![0].control.get('instanceName')!.setValue('South');
@@ -773,10 +780,14 @@ describe('SchemaFormComponent render caches', () => {
         const expected = (limit: number) => {
             const lone = new Set<number>();
             for (let i = 0; i < Math.min(limit, list.length); i++) {
-                if (view.isFullRow(list[i])) { continue; }
+                if (view.isFullRow(list[i])) {
+                    continue;
+                }
                 const prev = i === 0 || view.isFullRow(list[i - 1]);
                 const next = i + 1 >= Math.min(limit, list.length) || view.isFullRow(list[i + 1]);
-                if (prev && next) { lone.add(i); }
+                if (prev && next) {
+                    lone.add(i);
+                }
             }
             return lone;
         };

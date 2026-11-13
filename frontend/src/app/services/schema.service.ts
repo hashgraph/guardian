@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ISchema, ISchemaDeletionPreview, SchemaCategory, SchemaEntity, SchemaNode } from '@guardian/interfaces';
-import { Observable, catchError, shareReplay, throwError } from 'rxjs';
+import { Observable, catchError, defer, shareReplay, throwError } from 'rxjs';
 import { API_BASE_URL } from './api';
 import { AuthService } from './auth.service';
 import { headersV2 } from '../constants';
@@ -225,18 +225,18 @@ export class SchemaService {
     }
 
     public createSystemSchemas(schema: ISchema): Observable<ISchema> {
-        const username = encodeURIComponent(this.auth.getUsername());
-        return this.http.post<any>(`${this.url}/system/${username}`, schema);
+        return defer(() => this.http.post<any>(`${this.url}/system/${encodeURIComponent(this.auth.requireUsername())}`, schema));
     }
 
     public getSystemSchemas(options?: {
         pageIndex?: number,
         pageSize?: number
     }): Observable<HttpResponse<ISchema[]>> {
-        const username = encodeURIComponent(this.auth.getUsername());
-        const url = `${this.url}/system/${username}`;
         const params = SchemaService.getOptions(options);
-        return this.http.get<any>(url, { observe: 'response', headers: headersV2, params });
+        return defer(() => this.http.get<any>(
+            `${this.url}/system/${encodeURIComponent(this.auth.requireUsername())}`,
+            { observe: 'response', headers: headersV2, params }
+        ));
     }
 
     public deleteSystemSchema(id: string): Observable<any> {

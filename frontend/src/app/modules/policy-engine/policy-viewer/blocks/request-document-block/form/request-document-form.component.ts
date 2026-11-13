@@ -28,7 +28,6 @@ import { SchemaService } from 'src/app/services/schema.service';
 import { IFormTarget, isIndexSegment, walkFields } from 'src/app/modules/schema-engine/schema-form/schema-form-walk';
 import { IFormCompletion } from 'src/app/modules/schema-engine/schema-form/schema-form-completion';
 import { ToastService } from 'src/app/services/toast.service';
-import { FormTakeoverService } from '../../../form-takeover/form-takeover.service';
 import { PolicyProgressService } from '../../../../services/policy-progress.service';
 
 export interface IPreviewItemView extends ICalculationPreviewTimelineItem {
@@ -86,7 +85,6 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     public dialogRef = inject(DynamicDialogRef, { optional: true });
     public config = inject(DynamicDialogConfig, { optional: true });
     private policyProgressService = inject(PolicyProgressService, { optional: true });
-    private formTakeover = inject(FormTakeoverService, { optional: true });
     private toastService = inject(ToastService);
     private activeStepLabel: string | null = null;
 
@@ -857,9 +855,6 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
                         ...payload,
                         result: result?.result || result?.response
                     });
-                }
-                if (!draft) {
-                    this.formTakeover?.keep(this);
                 }
                 if (this.submitTimer !== null) clearTimeout(this.submitTimer);
                 this.submitTimer = setTimeout(() => {

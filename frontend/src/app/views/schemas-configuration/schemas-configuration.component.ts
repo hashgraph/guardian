@@ -52,6 +52,23 @@ interface ArrayDependencyFieldGroup {
     items: ArrayDependencyFieldOption[];
 }
 
+interface EntityOption {
+    label: string;
+    value: SchemaEntity;
+}
+
+const ENTITY_OPTIONS: EntityOption[] = [
+    { label: 'Default',                        value: SchemaEntity.NONE },
+    { label: 'Verifiable Credential',          value: SchemaEntity.VC   },
+    { label: 'Encrypted Verifiable Credential', value: SchemaEntity.EVC },
+];
+
+// The system schema routes accept only these two entities
+const SYSTEM_ENTITY_OPTIONS: EntityOption[] = [
+    { label: 'Standard Registry', value: SchemaEntity.STANDARD_REGISTRY },
+    { label: 'User',              value: SchemaEntity.USER },
+];
+
 @Component({
     selector: 'app-schemas-configuration',
     templateUrl: './schemas-configuration.component.html',
@@ -751,11 +768,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             });
     }
 
-    public readonly entityOptions: { label: string; value: SchemaEntity }[] = [
-        { label: 'Default',                        value: SchemaEntity.NONE },
-        { label: 'Verifiable Credential',          value: SchemaEntity.VC   },
-        { label: 'Encrypted Verifiable Credential', value: SchemaEntity.EVC },
-    ];
+    public readonly entityOptions = ENTITY_OPTIONS;
+
+    public get schemaEntityOptions(): EntityOption[] {
+        return this.type === 'system' ? SYSTEM_ENTITY_OPTIONS : ENTITY_OPTIONS;
+    }
 
     public copiedField: 'iri' | 'uuid' | 'id' | null = null;
     public showTemplateSettings: boolean = false;
@@ -2385,7 +2402,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         // Phase 2: rebuild $defs via BFS through fields — avoids circular deps from $defs recursion.
         allSchemas.forEach(s => { if (s.document) { s.document.$defs = this._buildRefs(s); } });
         const createObs = toCreate.map(s =>
-            this.schemaService.create(s.category ?? this.getCategory(), s, this.topic).pipe(
+            this.createSchema(s).pipe(
                 map((schemas: ISchema[]) => {
                     const matches = schemas.filter(r => r.uuid === s.uuid);
                     const saved = matches.find(r => r.topicId === this.topic) ?? matches[0];
@@ -4670,7 +4687,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (!name) { return; }
         const schema = new Schema();
         schema.name = name;
-        schema.entity = SchemaEntity.NONE;
+        schema.entity = this.type === 'system' ? SchemaEntity.STANDARD_REGISTRY : SchemaEntity.NONE;
         schema.category = this.getCategory();
         schema.topicId = this.topic || '';
         if (this.templateId) {
@@ -5506,14 +5523,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
         const search = this.schemaSearch.trim() || undefined;
         this._cancelLoadSchemas$.next();
-        this.schemaService.getSchemasByPage({
-            category: this.getCategory(),
-            topicId,
-            templateId: this.templateId || undefined,
-            pageIndex: this.schemasPage,
-            pageSize: this.schemasPageSize,
-            search,
-        })
+        this.listSchemas(topicId, search)
             .pipe(
                 map((response: HttpResponse<ISchema[]>) => {
                     const items = (response.body || [])
@@ -5622,6 +5632,27 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return field as SchemaField;
     }
 
+    private createSchema(schema: Schema): Observable<ISchema[]> {
+        if (this.type === 'system') {
+            return this.schemaService.createSystemSchemas(schema).pipe(map(created => [created]));
+        }
+        return this.schemaService.create(schema.category ?? this.getCategory(), schema, this.topic);
+    }
+
+    private listSchemas(topicId: string, search: string | undefined): Observable<HttpResponse<ISchema[]>> {
+        if (this.type === 'system') {
+            return this.schemaService.getSystemSchemas({ pageIndex: this.schemasPage, pageSize: this.schemasPageSize });
+        }
+        return this.schemaService.getSchemasByPage({
+            category: this.getCategory(),
+            topicId,
+            templateId: this.templateId || undefined,
+            pageIndex: this.schemasPage,
+            pageSize: this.schemasPageSize,
+            search,
+        });
+    }
+
     private getCategory(): SchemaCategory {
         switch (this.type) {
             case 'tool':    return SchemaCategory.TOOL;
@@ -5702,7 +5733,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                             });
                             returnUrl = location.origin + this.router.serializeUrl(urlTree);
                         }
-                        this.schemaService.delete(id, res.includeChildren)
+                        const deletion = this.type === 'system'
+                            ? this.schemaService.deleteSystemSchema(id)
+                            : this.schemaService.delete(id, res.includeChildren);
+                        deletion
                             .pipe(takeUntil(this.destroy$))
                             .subscribe((result: any) => {
                                 void this.router.navigate(['task', result.taskId], {

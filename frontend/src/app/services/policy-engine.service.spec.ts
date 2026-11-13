@@ -42,7 +42,7 @@ describe('PolicyEngineService', () => {
         it('omits the status parameter when no status is selected', () => {
             service.page(0, 10, 'remote', []).subscribe();
             const req = httpMock.expectOne((r) => r.url === URL);
-            expect(req.request.params.has('status')).toBeFalse();
+            expect(req.request.params.has('status')).toBe(false);
             req.flush([]);
         });
 
@@ -50,7 +50,7 @@ describe('PolicyEngineService', () => {
             service.page(0, 100).subscribe();
             const req = httpMock.expectOne((r) => r.url === URL);
             expect(req.request.headers.get('Api-Version')).toBe('2');
-            expect(req.request.params.has('status')).toBeFalse();
+            expect(req.request.params.has('status')).toBe(false);
             req.flush([]);
         });
     });

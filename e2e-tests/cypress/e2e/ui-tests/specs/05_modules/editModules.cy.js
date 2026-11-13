@@ -1,8 +1,3 @@
-import { ModulesPage } from '../../pages/modulesPage';
-const modulesPage = new ModulesPage();
-
-import { HomePage } from '../../pages/homePage';
-const homePage = new HomePage();
 //TBD: w8 for "Back" button
 // context("Workflow Module Editing", { tags: ['ui', 'ui-all', 'all'] }, () => {
 

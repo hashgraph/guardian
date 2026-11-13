@@ -66,22 +66,25 @@ describe('MathEditorDialogComponent Table column fields', () => {
         return dialog;
     }
 
-    function schema(tableColumns?: { name: string; key: string }[]): any {
+    function schema(tableColumns?: {
+        name: string;
+        key: string;
+    }[]): any {
         return {
             getDeepFields: () => [{
-                path: 'siteTable',
-                arrayLvl: 0,
-                type: 'string',
-                field: {
-                    name: 'siteTable',
-                    description: 'Site table',
+                    path: 'siteTable',
+                    arrayLvl: 0,
                     type: 'string',
-                    customType: 'table',
-                    isArray: false,
-                    tableColumns
-                },
-                fields: []
-            }]
+                    field: {
+                        name: 'siteTable',
+                        description: 'Site table',
+                        type: 'string',
+                        customType: 'table',
+                        isArray: false,
+                        tableColumns
+                    },
+                    fields: []
+                }]
         };
     }
 
@@ -121,7 +124,7 @@ describe('MathEditorDialogComponent Table column fields', () => {
         dialog.schemaFieldMap = new Map();
         const item: any = { field: 'area', schema: null };
 
-        expect(dialog.getPaths(item, 'input')?.has('siteTable.area_ha')).toBeTrue();
+        expect(dialog.getPaths(item, 'input')?.has('siteTable.area_ha')).toBe(true);
         expect(dialog.inputSchemaFieldMap.get('siteTable').type).toBe('string');
     });
 
@@ -162,26 +165,26 @@ describe('MathEditorDialogComponent Table column fields', () => {
         const dialog = makeDialog();
         dialog.outputSchemaFieldMap = new Map<string, any>([
             ['tables', {
-                path: 'tables',
-                arrayLvl: 1,
-                type: 'string[]',
-                field: { name: 'tables', type: 'string', customType: 'table', isArray: true },
-                fields: []
-            }],
+                    path: 'tables',
+                    arrayLvl: 1,
+                    type: 'string[]',
+                    field: { name: 'tables', type: 'string', customType: 'table', isArray: true },
+                    fields: []
+                }],
             ['note', {
-                path: 'note',
-                arrayLvl: 0,
-                type: 'string',
-                field: { name: 'note', type: 'string', isArray: false },
-                fields: []
-            }],
+                    path: 'note',
+                    arrayLvl: 0,
+                    type: 'string',
+                    field: { name: 'note', type: 'string', isArray: false },
+                    fields: []
+                }],
             ['amounts', {
-                path: 'amounts',
-                arrayLvl: 1,
-                type: 'number[]',
-                field: { name: 'amounts', type: 'number', isArray: true },
-                fields: []
-            }]
+                    path: 'amounts',
+                    arrayLvl: 1,
+                    type: 'number[]',
+                    field: { name: 'amounts', type: 'number', isArray: true },
+                    fields: []
+                }]
         ]);
 
         expect(dialog.getFieldType('output', null, 'tables')).toBe('table[]');
@@ -202,13 +205,13 @@ describe('MathEditorDialogComponent Table column fields', () => {
 
         dialog.onPathChange(item, 'siteTable.area_ha', 'output');
 
-        expect(dialog.getPaths(item, 'output').has('siteTable.area_ha')).toBeFalse();
-        expect(dialog.fieldWarnings.get('out-1')).toBeTrue();
+        expect(dialog.getPaths(item, 'output').has('siteTable.area_ha')).toBe(false);
+        expect(dialog.fieldWarnings.get('out-1')).toBe(true);
 
         dialog.onPathChange(item, 'siteTable', 'output');
 
-        expect(dialog.getPaths(item, 'output').has('siteTable')).toBeTrue();
-        expect(dialog.fieldWarnings.get('out-1')).toBeFalse();
+        expect(dialog.getPaths(item, 'output').has('siteTable')).toBe(true);
+        expect(dialog.fieldWarnings.get('out-1')).toBe(false);
     });
 
     it('does not add input-only Table columns to the output picker', () => {
@@ -260,18 +263,14 @@ describe('MathEditorDialogComponent Table test results', () => {
 
         await dialog.onTest();
 
-        expect(dialog.result.error).toBe(
-            'Table column "Area" replaced 2 nonnumeric cells with 0.'
-        );
+        expect(dialog.result.error).toBe('Table column "Area" replaced 2 nonnumeric cells with 0.');
         expect(dialog.result.output).toContain('"done": true');
     });
 
     it('shows a shared Table row-limit error instead of hiding it as invalid config', async () => {
         const context = {
             setDocument: () => {
-                throw new Error(
-                    'Table column "Area" has 10001 rows; General formulas are limited to 10000'
-                );
+                throw new Error('Table column "Area" has 10001 rows; General formulas are limited to 10000');
             }
         };
         const dialog = makeDialog(context);
@@ -285,7 +284,10 @@ describe('MathEditorDialogComponent Table test results', () => {
 });
 
 describe('MathEditorDialogComponent Table outputs', () => {
-    function node(path: string, tableColumns?: { name: string; key: string }[], arrayLvl: number = 0): any {
+    function node(path: string, tableColumns?: {
+        name: string;
+        key: string;
+    }[], arrayLvl: number = 0): any {
         return {
             path,
             arrayLvl,
@@ -342,8 +344,8 @@ describe('MathEditorDialogComponent Table outputs', () => {
         expect(dialog.getTableColumns(output('legacy'))).toEqual([]);
         expect(dialog.getTableColumns(output('deep.results'))).toEqual([]);
         expect(dialog.getTableColumns(output('total'))).toEqual([]);
-        expect(dialog.isTableListField(output('nested.results'))).toBeTrue();
-        expect(dialog.isTableListField(output('results'))).toBeFalse();
+        expect(dialog.isTableListField(output('nested.results'))).toBe(true);
+        expect(dialog.isTableListField(output('results'))).toBe(false);
     });
 
     it('turns an output into a grid with one empty row when a declared Table is chosen', () => {
@@ -352,7 +354,7 @@ describe('MathEditorDialogComponent Table outputs', () => {
 
         dialog.onPathChange(item, 'results', 'output');
 
-        expect(item.isTable).toBeTrue();
+        expect(item.isTable).toBe(true);
         expect(item.rows).toEqual([{ year: '', co2: '' }]);
     });
 
@@ -363,7 +365,7 @@ describe('MathEditorDialogComponent Table outputs', () => {
 
         dialog.onPathChange(item, 'total', 'output');
 
-        expect(item.isTable).toBeFalse();
+        expect(item.isTable).toBe(false);
         expect(item.rows).toBeNull();
     });
 
@@ -387,7 +389,7 @@ describe('MathEditorDialogComponent Table outputs', () => {
         item.rows![0].year = 'y';
 
         dialog.onPathChange(item, 'group', 'output');
-        expect(item.isTable).toBeFalse();
+        expect(item.isTable).toBe(false);
 
         dialog.onPathChange(item, 'group.results', 'output');
         expect(item.rows).toEqual([{ year: 'y' }]);
@@ -425,7 +427,7 @@ describe('MathEditorDialogComponent Table outputs', () => {
 
         dialog.onPathChange(item, 'legacy', 'output');
 
-        expect(item.isTable).toBeFalse();
+        expect(item.isTable).toBe(false);
     });
 
     it('adds 1 to 20 rows per click and stops at 1000', () => {
@@ -519,7 +521,7 @@ describe('MathEditorDialogComponent Table outputs', () => {
 
         dialog.onPathChange(item, 'nested.results', 'output');
 
-        expect(item.isTableList).toBeTrue();
+        expect(item.isTableList).toBe(true);
         expect(item.rows).toBeNull();
         expect(item.tables).toEqual([[{ year: '' }]]);
     });
@@ -596,7 +598,7 @@ describe('MathEditorDialogComponent Table outputs', () => {
 
         dialog.onPathChange(item, 'results', 'output');
         dialog.onPathChange(item, 'total', 'output');
-        expect(item.isTable).toBeFalse();
+        expect(item.isTable).toBe(false);
 
         dialog.onPathChange(item, 'nested.results', 'output');
         expect(item.tables).toEqual([[{ year: '' }], [{ year: 'b' }]]);
@@ -610,7 +612,7 @@ describe('MathEditorDialogComponent Table outputs', () => {
         item.tables![1][0].year = 'b';
 
         dialog.onPathChange(item, 'total', 'output');
-        expect(item.isTable).toBeFalse();
+        expect(item.isTable).toBe(false);
 
         dialog.onPathChange(item, 'nested.results', 'output');
         expect(item.tables).toEqual([[{ year: '' }], [{ year: 'b' }]]);
@@ -640,12 +642,12 @@ describe('MathEditorDialogComponent Table outputs', () => {
     it('offers the columns mode for a declared Table, single or one repeated level down', () => {
         const dialog = makeDialog();
 
-        expect(dialog.canUseTableColumns(output('results'))).toBeTrue();
-        expect(dialog.canUseTableColumns(output('group.results'))).toBeTrue();
-        expect(dialog.canUseTableColumns(output('nested.results'))).toBeTrue();
-        expect(dialog.canUseTableColumns(output('deep.results'))).toBeFalse();
-        expect(dialog.canUseTableColumns(output('legacy'))).toBeFalse();
-        expect(dialog.canUseTableColumns(output('total'))).toBeFalse();
+        expect(dialog.canUseTableColumns(output('results'))).toBe(true);
+        expect(dialog.canUseTableColumns(output('group.results'))).toBe(true);
+        expect(dialog.canUseTableColumns(output('nested.results'))).toBe(true);
+        expect(dialog.canUseTableColumns(output('deep.results'))).toBe(false);
+        expect(dialog.canUseTableColumns(output('legacy'))).toBe(false);
+        expect(dialog.canUseTableColumns(output('total'))).toBe(false);
     });
 
     it('switches a single Table between cells and columns and keeps what was typed in both', () => {
@@ -657,7 +659,7 @@ describe('MathEditorDialogComponent Table outputs', () => {
         dialog.setTableColumnsMode(item, true);
         expect(item.columns).toEqual({ year: '', co2: '' });
         expect(item.rows).toBeNull();
-        expect(item.isTable).toBeTrue();
+        expect(item.isTable).toBe(true);
         item.columns!.year = 'years';
 
         dialog.setTableColumnsMode(item, false);
@@ -692,7 +694,7 @@ describe('MathEditorDialogComponent Table outputs', () => {
         expect(item.columns).toEqual({ year: 'years', co2: '' });
 
         dialog.onPathChange(item, 'total', 'output');
-        expect(item.isTable).toBeFalse();
+        expect(item.isTable).toBe(false);
         expect(item.columns).toBeNull();
 
         dialog.onPathChange(item, 'results', 'output');
@@ -710,13 +712,13 @@ describe('MathEditorDialogComponent Table outputs', () => {
 
         dialog.onPathChange(item, 'nested.results', 'output');
         expect(item.columns).toEqual({ year: 'years' });
-        expect(item.tableList).toBeTrue();
-        expect(item.isTableList).toBeTrue();
+        expect(item.tableList).toBe(true);
+        expect(item.isTableList).toBe(true);
         expect(item.tables).toBeNull();
 
         dialog.onPathChange(item, 'results', 'output');
         expect(item.columns).toEqual({ year: 'years', co2: '' });
-        expect(item.tableList).toBeFalse();
+        expect(item.tableList).toBe(false);
         expect(item.tables).toBeNull();
 
         dialog.setTableColumnsMode(item, false);
@@ -732,12 +734,12 @@ describe('MathEditorDialogComponent Table outputs', () => {
 
         dialog.setTableColumnsMode(item, true);
         expect(item.columns).toEqual({ year: '' });
-        expect(item.tableList).toBeTrue();
+        expect(item.tableList).toBe(true);
         expect(item.tables).toBeNull();
 
         dialog.setTableColumnsMode(item, false);
         expect(item.columns).toBeNull();
-        expect(item.tableList).toBeFalse();
+        expect(item.tableList).toBe(false);
         expect(item.tables).toEqual([[{ year: '' }], [{ year: 'b' }]]);
     });
 
@@ -767,7 +769,7 @@ describe('MathEditorDialogComponent Table outputs', () => {
 
         dialog.openTableColumns(item);
         expect(item.columns).toEqual({ year: 'years', co2: '' });
-        expect(dialog.tableColumnsMode[item.id]).toBeTrue();
+        expect(dialog.tableColumnsMode[item.id]).toBe(true);
 
         dialog.onPathChange(item, 'total', 'output');
         dialog.onPathChange(item, 'results', 'output');
@@ -801,11 +803,7 @@ describe('MathEditorDialogComponent Table outputs', () => {
 });
 
 describe('MathEditorDialogComponent Table output test results', () => {
-    function makeDialog(
-        outputs: FieldLink[],
-        scope: any,
-        advanced: (result: any) => any = (result) => result
-    ): any {
+    function makeDialog(outputs: FieldLink[], scope: any, advanced: (result: any) => any = (result) => result): any {
         const dialog: any = Object.create(MathEditorDialogComponent.prototype);
         const documents = new DocumentMap();
         documents.addDocument({ schema: '#schema', document: { inputValue: 21 } });
@@ -1096,8 +1094,10 @@ describe('MathEditorDialogComponent Table output test results', () => {
 
 describe('MathEditorDialogComponent rendered Testing table', () => {
     async function render(rows: Record<string, number>[]): Promise<ComponentFixture<MathEditorDialogComponent>> {
-        spyOn(MathEditorDialogComponent.prototype, 'ngOnInit').and.stub();
-        spyOn(MathEditorDialogComponent.prototype, 'ngAfterContentInit').and.stub();
+        vi.spyOn(MathEditorDialogComponent.prototype, 'ngOnInit').mockImplementation(() => {
+        });
+        vi.spyOn(MathEditorDialogComponent.prototype, 'ngAfterContentInit').mockImplementation(() => {
+        });
         await TestBed.configureTestingModule({
             declarations: [MathEditorDialogComponent],
             imports: [CommonModule],
@@ -1137,13 +1137,13 @@ describe('MathEditorDialogComponent rendered Testing table', () => {
             error: ''
         };
         dialog.outputSchemaFieldMap = new Map([['results', {
-            arrayLvl: 0,
-            field: {
-                description: 'Results',
-                customType: 'table',
-                tableColumns: [{ name: 'Year', key: 'year' }]
-            }
-        }]]);
+                    arrayLvl: 0,
+                    field: {
+                        description: 'Results',
+                        customType: 'table',
+                        tableColumns: [{ name: 'Year', key: 'year' }]
+                    }
+                }]]);
         fixture.detectChanges();
         return fixture;
     }
@@ -1153,9 +1153,7 @@ describe('MathEditorDialogComponent rendered Testing table', () => {
         const fixture = await render(rows);
         const tableOutput: HTMLElement = fixture.nativeElement.querySelector('.table-output');
 
-        expect(tableOutput.querySelector('.form-label')?.textContent?.trim()).toBe(
-            'Rows (25), showing the first 20. All rows are in Code → Output'
-        );
+        expect(tableOutput.querySelector('.form-label')?.textContent?.trim()).toBe('Rows (25), showing the first 20. All rows are in Code → Output');
         const renderedRows = tableOutput.querySelectorAll('tbody tr');
         expect(renderedRows.length).toBe(20);
         expect(renderedRows[19].textContent).toContain('2019');
@@ -1193,13 +1191,13 @@ describe('MathEditorDialogComponent issues', () => {
         dialog.updateIssues();
 
         expect(dialog.mathIssues).toEqual([{
-            id: 'variables-v-1',
-            group: 'inputs',
-            step: 'step_1',
-            pageId: 'tab-1',
-            title: 'Path not found in schema',
-            message: 'missing.path'
-        }]);
+                id: 'variables-v-1',
+                group: 'inputs',
+                step: 'step_1',
+                pageId: 'tab-1',
+                title: 'Path not found in schema',
+                message: 'missing.path'
+            }]);
         expect(dialog.issueGroups[0].issues).toEqual(dialog.mathIssues);
     });
 
@@ -1217,11 +1215,11 @@ describe('MathEditorDialogComponent issues', () => {
             message: 'result.path'
         });
 
-        expect(dialog.issuesVisible).toBeFalse();
+        expect(dialog.issuesVisible).toBe(false);
         expect(calls).toEqual([[
-            'step_3',
-            'tab-3',
-            '.rows-container[data-issue-id="outputs-o-1"]'
-        ]]);
+                'step_3',
+                'tab-3',
+                '.rows-container[data-issue-id="outputs-o-1"]'
+            ]]);
     });
 });

@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ComponentRef, Input, OnInit, TemplateRef, ViewChild, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild, inject } from '@angular/core';
 import { DocumentGenerator, ISchema, LocationType, Schema } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -97,8 +97,6 @@ export class RequestDocumentBlockComponent
     private formTakeover = inject(FormTakeoverService, { optional: true });
     private pageFormOpened = false;
     private destroyed = false;
-    // Handed to a modal form (opened with this block as its data) on its first render
-    private takeoverRef: ComponentRef<RequestDocumentFormComponent> | null = null;
 
     constructor(
         policyEngineService: PolicyEngineService,
@@ -128,11 +126,10 @@ export class RequestDocumentBlockComponent
         return this.destroyed;
     }
 
+    // An open form outlives the block: a pushed update recreates the block under it, and the
+    // viewer cannot tell that from a removal. The viewer closes it when its context changes.
     ngOnDestroy(): void {
         this.destroyed = true;
-        if (this.takeoverRef) {
-            this.formTakeover?.close(this.takeoverRef);
-        }
         this.destroy();
     }
 
@@ -261,7 +258,7 @@ export class RequestDocumentBlockComponent
         if (this.type !== 'page' || this.pageFormOpened || !this.formTakeover || this.disabled || this.readonly) {
             return;
         }
-        // A Submitted form that outlived its block is still open
+        // A form that outlived its block is still open
         this.pageFormOpened = true;
         if (!this.formTakeover.active$.value) {
             setTimeout(() => this.onDialogOpen());
@@ -373,16 +370,10 @@ export class RequestDocumentBlockComponent
             return;
         }
         if (this.formTakeover) {
-            this.takeoverRef = this.formTakeover.open(RequestDocumentFormComponent, {
+            this.formTakeover.open(RequestDocumentFormComponent, {
                 parent: this,
                 allowDraft: this.allowDraft,
                 duplicatedFrom
-            });
-            const ref = this.takeoverRef;
-            ref.instance.closed.subscribe(() => {
-                if (this.takeoverRef === ref) {
-                    this.takeoverRef = null;
-                }
             });
             return;
         }

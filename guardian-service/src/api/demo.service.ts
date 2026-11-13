@@ -93,11 +93,12 @@ export async function demoAPI(
 ): Promise<void> {
     ApiResponse(MessageAPI.GENERATE_DEMO_KEY,
         async (msg: {
-            role: string
+            role: string,
+            userId: string
         }) => {
             try {
-                const role = msg?.role;
-                const result = await generateDemoKey(role, NewNotifier.empty(), null);
+                const { role, userId } = msg;
+                const result = await generateDemoKey(role, NewNotifier.empty(), userId);
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], null);
@@ -108,13 +109,14 @@ export async function demoAPI(
     ApiResponse(MessageAPI.GENERATE_DEMO_KEY_ASYNC,
         async (msg: {
             role: string,
-            task: any
+            task: any,
+            userId: string
         }) => {
-            const { role, task } = msg;
+            const { role, task, userId } = msg;
             const notifier = await NewNotifier.create(task);
 
             RunFunctionAsync(async () => {
-                const result = await generateDemoKey(role, notifier, null);
+                const result = await generateDemoKey(role, notifier, userId);
                 notifier.result(result);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], null);

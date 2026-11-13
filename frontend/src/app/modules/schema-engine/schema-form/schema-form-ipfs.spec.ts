@@ -70,7 +70,7 @@ describe('SchemaFormComponent IPFS actions', () => {
                 expect(actions().length).toBe(1);
                 expect(actions()[0].componentInstance.url).toBe(value);
                 expect(actions()[0].nativeElement.querySelector('a').textContent).toContain('Open');
-                expect(actions()[0].nativeElement.querySelector('button[aria-label="Copy CID"]').disabled).toBeTrue();
+                expect(actions()[0].nativeElement.querySelector('button[aria-label="Copy CID"]').disabled).toBe(true);
                 entry.control.setValue('');
                 render(fixture);
                 expect(actions().length).toBe(0);
@@ -125,7 +125,7 @@ describe('SchemaFormComponent IPFS actions', () => {
                 tick();
                 render(fixture);
                 const row: HTMLElement = fixture.nativeElement.querySelector('.sf-lock');
-                expect(field.control.disabled).toBeTrue();
+                expect(field.control.disabled).toBe(true);
                 expect(row.querySelector('.pi-lock')).not.toBeNull();
                 expect(row.querySelector('code')?.textContent).toBe(url);
                 expect(actions().length).toBe(1);
@@ -133,7 +133,7 @@ describe('SchemaFormComponent IPFS actions', () => {
                 expect(actions()[0].componentInstance.dryRun).toBe(expected);
                 expect(row.querySelector('a')?.getAttribute('href')).toBe(`https://ipfs.io/ipfs/${cid}`);
                 expect(Array.from(row.querySelectorAll('button')).map((button) => button.getAttribute('aria-label'))).toEqual(['Copy link', 'Copy CID']);
-                expect(row.querySelector<HTMLButtonElement>('button[aria-label="Copy CID"]')?.disabled).toBeFalse();
+                expect(row.querySelector<HTMLButtonElement>('button[aria-label="Copy CID"]')?.disabled).toBe(false);
             }));
         }
 
@@ -144,15 +144,15 @@ describe('SchemaFormComponent IPFS actions', () => {
             tick();
             render(fixture);
             const row: HTMLElement = fixture.nativeElement.querySelector('.sf-lock');
-            expect(field.control.disabled).toBeTrue();
+            expect(field.control.disabled).toBe(true);
             expect(row.querySelector('code')?.textContent).toBe(value);
             expect(actions().length).toBe(1);
             expect(actions()[0].componentInstance.url).toBe(value);
-            expect(actions()[0].componentInstance.dryRun).toBeTrue();
+            expect(actions()[0].componentInstance.dryRun).toBe(true);
             expect(row.querySelector('a')).toBeNull();
             expect(row.querySelector('button.sf-ro-open')?.textContent).toContain('Open');
             expect(Array.from(row.querySelectorAll('button[aria-label]')).map((button) => button.getAttribute('aria-label'))).toEqual(['Copy link', 'Copy CID']);
-            expect(row.querySelector<HTMLButtonElement>('button[aria-label="Copy CID"]')?.disabled).toBeTrue();
+            expect(row.querySelector<HTMLButtonElement>('button[aria-label="Copy CID"]')?.disabled).toBe(true);
         }));
 
         it('keeps one Copy value action for a locked non-IPFS field', fakeAsync(() => {
@@ -160,7 +160,7 @@ describe('SchemaFormComponent IPFS actions', () => {
             tick();
             render(fixture);
             const row: HTMLElement = fixture.nativeElement.querySelector('.sf-lock');
-            expect(field.control.disabled).toBeTrue();
+            expect(field.control.disabled).toBe(true);
             expect(row.querySelector('.pi-lock')).not.toBeNull();
             expect(row.querySelector('code')?.textContent).toBe('Project name');
             expect(actions().length).toBe(0);
@@ -180,6 +180,6 @@ describe('SchemaFormComponent IPFS actions', () => {
         render(fixture);
         expect(actions().length).toBe(1);
         expect(actions()[0].componentInstance.url).toBe(field.list![1].control.value);
-        expect(actions()[0].nativeElement.querySelector('button[aria-label="Copy CID"]').disabled).toBeFalse();
+        expect(actions()[0].nativeElement.querySelector('button[aria-label="Copy CID"]').disabled).toBe(false);
     });
 });

@@ -46,7 +46,7 @@ for (const dialog of [FormulaFilesDialog, FormulasViewDialog]) {
             const links = Array.from(root.querySelectorAll<HTMLAnchorElement>('ipfs-link a'));
             expect(links.map((link) => link.textContent?.trim())).toEqual(['Open', 'Open']);
             expect(links.map((link) => link.getAttribute('href'))).toEqual([`https://ipfs.io/ipfs/${cid}`, urls[1]]);
-            expect(links.every((link) => link.target === '_blank')).toBeTrue();
+            expect(links.every((link) => link.target === '_blank')).toBe(true);
             expect(root.textContent).toContain(urls[0]);
             expect(root.textContent).not.toContain('Ipfs://Bafy');
             expect(Array.from(root.querySelectorAll<HTMLButtonElement>('button[aria-label="Copy CID"]')).map((button) => button.disabled)).toEqual([false, true]);
