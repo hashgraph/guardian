@@ -6,7 +6,7 @@
  *
  * Every workspace's mocha run already writes JUnit XML to test_results/<workspace>.xml
  * at the repo root (see the `test` scripts in the package.json files), and the
- * frontend's Vitest run writes test_results/frontend.xml (see main.yml). This
+ * frontend's Vitest run writes test_results/frontend.xml (see vitest-base.config.ts). This
  * aggregates those files and appends the table to $GITHUB_STEP_SUMMARY in CI.
  *
  * The shape mocha-junit-reporter emits is flat enough to parse without an XML

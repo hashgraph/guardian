@@ -215,12 +215,12 @@ jobs:
           OPERATOR_KEY: ${{ secrets.CI_HEDERA_PRIV_KEY }}
 
       # Vitest in headless Chromium; the frontend dependencies were installed by the Build step.
-      # The junit report joins the mocha ones in test_results/ for the summary table.
+      # Under GitHub Actions vitest-base.config.ts writes test_results/frontend.xml for the summary table.
       - name: Frontend unit tests
         run: |
           pushd frontend
           npx playwright install --with-deps chromium
-          npx ng test --watch=false --reporters=junit --reporters=default --output-file=../test_results/frontend.xml
+          npx ng test --watch=false
           popd
         env:
           CI: true
