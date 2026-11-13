@@ -1216,6 +1216,11 @@ function mergeCrossTargetWrapper(target: any, source: any): void {
             }
         }
     }
+    // A repeatable sub-schema nests its constraint under `items`.
+    if (source.items && typeof source.items === 'object') {
+        target.items = target.items || {};
+        mergeCrossTargetWrapper(target.items, source.items);
+    }
 }
 
 function hasCrossTargetWrapperContent(wrapper: any): boolean {
@@ -1223,7 +1228,8 @@ function hasCrossTargetWrapperContent(wrapper: any): boolean {
         typeof wrapper === 'object' &&
         (
             (Array.isArray(wrapper.required) && wrapper.required.length > 0) ||
-            (wrapper.properties && typeof wrapper.properties === 'object' && Object.keys(wrapper.properties).length > 0)
+            (wrapper.properties && typeof wrapper.properties === 'object' && Object.keys(wrapper.properties).length > 0) ||
+            hasCrossTargetWrapperContent(wrapper.items)
         );
 }
 
@@ -1263,6 +1269,12 @@ function subtractCrossTargetWrapper(source: any, baseline: any): any {
         }
         if (Object.keys(properties).length) {
             result.properties = properties;
+        }
+    }
+    if (isCrossTargetWrapper(source.items)) {
+        const items = subtractCrossTargetWrapper(source.items, baseline.items);
+        if (items) {
+            result.items = items;
         }
     }
     return hasCrossTargetWrapperContent(result) ? result : undefined;
