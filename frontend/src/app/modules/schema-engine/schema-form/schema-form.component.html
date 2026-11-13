@@ -116,7 +116,11 @@
                       <div class="sf-lock">
                         <i class="pi pi-lock" aria-hidden="true"></i>
                         <code>{{ item.control.value }}</code>
-                        <sf-copy [value]="'' + item.control.value" tip="Copy value"></sf-copy>
+                        @if (isIPFS(item)) {
+                          <ipfs-link [url]="item.control.value" [dryRun]="!!(dryRun && policyId)"></ipfs-link>
+                        } @else {
+                          <sf-copy [value]="'' + item.control.value" tip="Copy value"></sf-copy>
+                        }
                       </div>
                     } @else {
                     @if (item.customType === 'table') {
@@ -213,6 +217,9 @@
                           </div>
                         }
                       </div>
+                      @if (isIPFS(item) && item.control.value && !item.fileUploading) {
+                        <ipfs-link class="sf-file-actions" [url]="item.control.value" [dryRun]="!!(dryRun && policyId)"></ipfs-link>
+                      }
                     }
                     @if (isDateTime(item)) {
                       <div
@@ -549,6 +556,9 @@
                                   </div>
                                 }
                               </div>
+                              @if (isIPFS(item) && listItem.control.value && !listItem.fileUploading) {
+                                <ipfs-link class="sf-file-actions" [url]="listItem.control.value" [dryRun]="!!(dryRun && policyId)"></ipfs-link>
+                              }
                             }
                             @if (isDateTime(item)) {
                               <div
