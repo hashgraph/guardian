@@ -28,7 +28,7 @@ describe('VCViewerDialog', () => {
         const dialog = open({ type: 'VC', viewDocument: true, document: { id: 'vc-1' } });
         expect(dialog.document).toEqual({ id: 'vc-1' });
         expect(JSON.parse(dialog.json)).toEqual({ id: 'vc-1' });
-        expect(dialog.viewDocument).toBeTrue();
+        expect(dialog.viewDocument).toBe(true);
     }));
 
     it('keeps the compact measure of an ordinary document', fakeAsync(() => {
@@ -73,14 +73,13 @@ describe('VCViewerDialog', () => {
             const before = view(fixture);
             show(fixture, false);
             expect(view(fixture)).toBe(before);
-            expect(view(fixture).closest('.view-dialog-document').hidden).toBeTrue();
+            expect(view(fixture).closest('.view-dialog-document').hidden).toBe(true);
             show(fixture, true);
             expect(view(fixture)).toBe(before);
-            expect(view(fixture).closest('.view-dialog-document').hidden).toBeFalse();
+            expect(view(fixture).closest('.view-dialog-document').hidden).toBe(false);
         }));
 
-        const toggleButtons = (fixture: ComponentFixture<VCViewerDialog>) =>
-            Array.from(fixture.nativeElement.querySelectorAll('.view-dialog-bar .form-toggle button')) as HTMLButtonElement[];
+        const toggleButtons = (fixture: ComponentFixture<VCViewerDialog>) => Array.from(fixture.nativeElement.querySelectorAll('.view-dialog-bar .form-toggle button')) as HTMLButtonElement[];
 
         it('renders one toggle button per view option, including appended ones', fakeAsync(() => {
             const fixture = render({
@@ -98,7 +97,7 @@ describe('VCViewerDialog', () => {
             toggleButtons(fixture)[1].click();
             fixture.componentRef.changeDetectorRef.markForCheck();
             fixture.detectChanges();
-            expect(fixture.componentInstance.viewDocument).toBeFalse();
+            expect(fixture.componentInstance.viewDocument).toBe(false);
             expect(toggleButtons(fixture).map((b) => b.getAttribute('aria-pressed'))).toEqual(['false', 'true']);
         }));
 
@@ -130,9 +129,9 @@ describe('VCViewerDialog', () => {
             fixture.componentInstance.loading = true;
             fixture.componentRef.changeDetectorRef.markForCheck();
             fixture.detectChanges();
-            expect(fixture.nativeElement.querySelector('.context').inert).toBeFalse();
-            expect(fixture.nativeElement.querySelector('.header-icon.resize').hasAttribute('aria-disabled')).toBeFalse();
-            expect(fixture.nativeElement.querySelector('.dialog-footer button').disabled).toBeFalse();
+            expect(fixture.nativeElement.querySelector('.context').inert).toBe(false);
+            expect(fixture.nativeElement.querySelector('.header-icon.resize').hasAttribute('aria-disabled')).toBe(false);
+            expect(fixture.nativeElement.querySelector('.dialog-footer button').disabled).toBe(false);
         }));
     });
 });

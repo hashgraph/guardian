@@ -18,14 +18,14 @@ describe('SchemaFormViewComponent', () => {
 
     beforeEach(() => {
         ipfs = {
-            getImageByLink: jasmine.createSpy('getImageByLink').and.returnValue(Promise.resolve('')),
-            getImageFromDryRunStorage: jasmine.createSpy('getImageFromDryRunStorage').and.returnValue(Promise.resolve('')),
+            getImageByLink: vi.fn().mockReturnValue(Promise.resolve('')),
+            getImageFromDryRunStorage: vi.fn().mockReturnValue(Promise.resolve('')),
             getImageWithDryRunFallback: IPFSService.prototype.getImageWithDryRunFallback,
         };
         dialogService = {
-            open: jasmine.createSpy('open').and.returnValue({ onClose: { subscribe: jasmine.createSpy() } }),
+            open: vi.fn().mockReturnValue({ onClose: { subscribe: vi.fn() } }),
         };
-        cdr = { detectChanges: jasmine.createSpy('detectChanges'), markForCheck: jasmine.createSpy('markForCheck') };
+        cdr = { detectChanges: vi.fn(), markForCheck: vi.fn() };
         preferences = { showFieldMetadata$: new BehaviorSubject<boolean>(false) };
         component = new SchemaFormViewComponent(ipfs as any, cdr as any, preferences as any);
         component.hide = {};
@@ -36,7 +36,7 @@ describe('SchemaFormViewComponent', () => {
         const makeItem = () => ({ value: 'ipfs://cid1', loading: false, imgSrc: '' } as any);
 
         it('fetches a link once and serves later renders from cache', async () => {
-            ipfs.getImageByLink.and.returnValue(Promise.resolve('data:image/png;base64,AAA'));
+            ipfs.getImageByLink.mockReturnValue(Promise.resolve('data:image/png;base64,AAA'));
 
             const first = makeItem();
             await (component as any).loadImg(first);
@@ -51,7 +51,7 @@ describe('SchemaFormViewComponent', () => {
 
         it('does not re-request a link that failed to resolve', async () => {
             component.dryRun = true;
-            ipfs.getImageFromDryRunStorage.and.returnValue(Promise.reject(new Error('404')));
+            ipfs.getImageFromDryRunStorage.mockReturnValue(Promise.reject(new Error('404')));
 
             const first = makeItem();
             await (component as any).loadImg(first);
@@ -64,7 +64,7 @@ describe('SchemaFormViewComponent', () => {
         });
 
         it('shares a single request between fields loaded concurrently', async () => {
-            ipfs.getImageByLink.and.returnValue(Promise.resolve('data:image/png;base64,BBB'));
+            ipfs.getImageByLink.mockReturnValue(Promise.resolve('data:image/png;base64,BBB'));
 
             const items = [makeItem(), makeItem(), makeItem()];
             await Promise.all(items.map((item) => (component as any).loadImg(item)));
@@ -74,8 +74,8 @@ describe('SchemaFormViewComponent', () => {
         });
 
         it('keeps dry-run and live lookups in separate cache entries', async () => {
-            ipfs.getImageByLink.and.returnValue(Promise.resolve('live'));
-            ipfs.getImageFromDryRunStorage.and.returnValue(Promise.resolve('dry'));
+            ipfs.getImageByLink.mockReturnValue(Promise.resolve('live'));
+            ipfs.getImageFromDryRunStorage.mockReturnValue(Promise.resolve('dry'));
 
             const live = makeItem();
             await (component as any).loadImg(live);
@@ -123,7 +123,7 @@ describe('SchemaFormViewComponent', () => {
         } as any);
 
         it('resolves a reference inside the value and renders it as src', async () => {
-            ipfs.getImageByLink.and.returnValue(Promise.resolve(dataUrl));
+            ipfs.getImageByLink.mockReturnValue(Promise.resolve(dataUrl));
             component.values = { field0: markdown };
 
             (component as any).update([richTextField('field0')]);
@@ -136,7 +136,7 @@ describe('SchemaFormViewComponent', () => {
         });
 
         it('fetches one reference once when two fields share it', async () => {
-            ipfs.getImageByLink.and.returnValue(Promise.resolve(dataUrl));
+            ipfs.getImageByLink.mockReturnValue(Promise.resolve(dataUrl));
             component.values = { field0: markdown, field1: markdown };
 
             (component as any).update([richTextField('field0'), richTextField('field1')]);
@@ -146,7 +146,7 @@ describe('SchemaFormViewComponent', () => {
         });
 
         it('leaves src empty when the fetch fails and does not request it again', async () => {
-            ipfs.getImageByLink.and.returnValue(Promise.reject(new Error('404')));
+            ipfs.getImageByLink.mockReturnValue(Promise.reject(new Error('404')));
             component.values = { field0: markdown };
 
             (component as any).update([richTextField('field0')]);
@@ -160,8 +160,8 @@ describe('SchemaFormViewComponent', () => {
 
         it('falls back to ipfs when the dry-run store has no such file', async () => {
             component.dryRun = true;
-            ipfs.getImageFromDryRunStorage.and.returnValue(Promise.reject(new Error('404')));
-            ipfs.getImageByLink.and.returnValue(Promise.resolve(dataUrl));
+            ipfs.getImageFromDryRunStorage.mockReturnValue(Promise.reject(new Error('404')));
+            ipfs.getImageByLink.mockReturnValue(Promise.resolve(dataUrl));
             component.values = { field0: markdown };
 
             (component as any).update([richTextField('field0')]);
@@ -187,11 +187,11 @@ describe('SchemaFormViewComponent', () => {
             link.setAttribute('href', 'https://example.com');
             const event = new MouseEvent('click', { cancelable: true });
             Object.defineProperty(event, 'target', { value: link });
-            const openSpy = spyOn(window, 'open');
+            const openSpy = vi.spyOn(window, 'open').mockImplementation(() => undefined as never);
 
             component.onRichTextLinkClick(event);
 
-            expect(event.defaultPrevented).toBeTrue();
+            expect(event.defaultPrevented).toBe(true);
             expect(openSpy).toHaveBeenCalledWith('https://example.com', '_blank', 'noopener,noreferrer');
         });
 
@@ -200,11 +200,11 @@ describe('SchemaFormViewComponent', () => {
             link.setAttribute('href', 'javascript:alert(1)');
             const event = new MouseEvent('click', { cancelable: true });
             Object.defineProperty(event, 'target', { value: link });
-            const openSpy = spyOn(window, 'open');
+            const openSpy = vi.spyOn(window, 'open').mockImplementation(() => undefined as never);
 
             component.onRichTextLinkClick(event);
 
-            expect(event.defaultPrevented).toBeFalse();
+            expect(event.defaultPrevented).toBe(false);
             expect(openSpy).not.toHaveBeenCalled();
         });
     });
@@ -221,11 +221,9 @@ describe('SchemaFormViewComponent', () => {
         ...extra,
     });
 
-    const render = (
-        fields: any[],
-        values: any,
-        inputs: { [name: string]: any } = {}
-    ): ComponentFixture<SchemaFormViewComponent> => {
+    const render = (fields: any[], values: any, inputs: {
+        [name: string]: any;
+    } = {}): ComponentFixture<SchemaFormViewComponent> => {
         TestBed.resetTestingModule();
         TestBed.configureTestingModule({
             declarations: [SchemaFormViewComponent],
@@ -249,46 +247,32 @@ describe('SchemaFormViewComponent', () => {
         return fixture;
     };
 
-    const texts = (fixture: ComponentFixture<SchemaFormViewComponent>, selector: string): string[] =>
-        Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll(selector)).map((node) => node.textContent!.replace(/\s+/g, ' ').trim());
+    const texts = (fixture: ComponentFixture<SchemaFormViewComponent>, selector: string): string[] => Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll(selector)).map((node) => node.textContent!.replace(/\s+/g, ' ').trim());
 
     describe('values', () => {
         it('shows false and 0 and says "No" for a boolean that is false', () => {
-            const fixture = render(
-                [field('count', { type: 'number' }), field('flag', { type: 'boolean' })],
-                { count: 0, flag: false }
-            );
+            const fixture = render([field('count', { type: 'number' }), field('flag', { type: 'boolean' })], { count: 0, flag: false });
             expect(texts(fixture, '.sf-ro-value')).toEqual(['0', 'No']);
             expect(fixture.nativeElement.querySelector('.sf-empty')).toBeNull();
         });
 
         it('shows "Not provided" for an empty value, an empty list and an unset boolean', () => {
-            const fixture = render(
-                [field('a'), field('b', { isArray: true }), field('c', { type: 'boolean' })],
-                { a: '', b: [] }
-            );
+            const fixture = render([field('a'), field('b', { isArray: true }), field('c', { type: 'boolean' })], { a: '', b: [] });
             expect(texts(fixture, '.sf-empty')).toEqual(['Not provided', 'Not provided', 'Not provided']);
         });
 
         it('leaves out a field hidden by a failed condition and a private field', () => {
             const hidden = field('hidden', { notCorrespondCondition: true });
-            const fixture = render(
-                [field('shown'), hidden, field('secret')],
-                { shown: 'a', hidden: 'b', secret: 'c' },
-                { 'private-fields': { secret: true } }
-            );
+            const fixture = render([field('shown'), hidden, field('secret')], { shown: 'a', hidden: 'b', secret: 'c' }, { 'private-fields': { secret: true } });
             expect(texts(fixture, '.sf-ro-lt')).toEqual(['Shown']);
         });
 
         it('formats dates and shows a boolean as Yes or No', () => {
-            const fixture = render(
-                [
-                    field('day', { format: 'date' }),
-                    field('moment', { format: 'date-time' }),
-                    field('ok', { type: 'boolean' }),
-                ],
-                { day: '2024-03-05', moment: '2024-03-05T10:20:00Z', ok: true }
-            );
+            const fixture = render([
+                field('day', { format: 'date' }),
+                field('moment', { format: 'date-time' }),
+                field('ok', { type: 'boolean' }),
+            ], { day: '2024-03-05', moment: '2024-03-05T10:20:00Z', ok: true });
             const values = texts(fixture, '.sf-ro-value');
             expect(values[0]).toBe('Mar 5, 2024');
             expect(values[1]).toContain('Mar 5, 2024');
@@ -301,28 +285,19 @@ describe('SchemaFormViewComponent', () => {
         });
 
         it('shows a unit before or after the value', () => {
-            const fixture = render(
-                [field('a', { type: 'number', unit: '$', unitSystem: UnitSystem.Prefix }), field('b', { type: 'number', unit: 'kg', unitSystem: UnitSystem.Postfix })],
-                { a: 5, b: 6 }
-            );
+            const fixture = render([field('a', { type: 'number', unit: '$', unitSystem: UnitSystem.Prefix }), field('b', { type: 'number', unit: 'kg', unitSystem: UnitSystem.Postfix })], { a: 5, b: 6 });
             expect(texts(fixture, '.sf-ro-value')).toEqual(['$5', '6kg']);
         });
 
         it('shows a link for a URL and a mailto link for an email', () => {
-            const fixture = render(
-                [field('site', { format: 'url' }), field('mail', { format: 'email' })],
-                { site: 'https://example.com', mail: 'a@b.com' }
-            );
+            const fixture = render([field('site', { format: 'url' }), field('mail', { format: 'email' })], { site: 'https://example.com', mail: 'a@b.com' });
             const links = Array.from<HTMLAnchorElement>(fixture.nativeElement.querySelectorAll('a.sf-ro-a')).map((a) => a.getAttribute('href'));
             expect(links).toEqual(['https://example.com', 'mailto:a@b.com']);
         });
 
         it('shows an IPFS file with its CID and an Open link', () => {
             const cid = 'QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG';
-            const fixture = render(
-                [field('file', { pattern: '^ipfs://.+', customType: 'file' })],
-                { file: `ipfs://${cid}` }
-            );
+            const fixture = render([field('file', { pattern: '^ipfs://.+', customType: 'file' })], { file: `ipfs://${cid}` });
             expect(texts(fixture, '.sf-ro-url')).toEqual([`ipfs://${cid}`]);
             expect(fixture.nativeElement.querySelector('a.sf-ro-open').getAttribute('href')).toBe(`https://ipfs.io/ipfs/${cid}`);
             const copies = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.sf-ro-file-links sf-copy'));
@@ -330,18 +305,12 @@ describe('SchemaFormViewComponent', () => {
         });
 
         it('lists files without bullets', () => {
-            const fixture = render(
-                [field('files', { isArray: true, pattern: '^ipfs://.+', customType: 'file' })],
-                { files: ['ipfs://QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG'] }
-            );
+            const fixture = render([field('files', { isArray: true, pattern: '^ipfs://.+', customType: 'file' })], { files: ['ipfs://QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG'] });
             expect(fixture.nativeElement.querySelector('.sf-ro-list').classList).toContain('sf-ro-plain');
         });
 
         it('shows short list values as chips and long ones as a list', () => {
-            const fixture = render(
-                [field('tags', { isArray: true }), field('notes', { isArray: true })],
-                { tags: ['a', 'b'], notes: ['x'.repeat(60)] }
-            );
+            const fixture = render([field('tags', { isArray: true }), field('notes', { isArray: true })], { tags: ['a', 'b'], notes: ['x'.repeat(60)] });
             expect(texts(fixture, '.sf-ro-chip')).toEqual(['a', 'b']);
             expect(fixture.nativeElement.querySelectorAll('.sf-ro-list li').length).toBe(1);
         });
@@ -360,10 +329,7 @@ describe('SchemaFormViewComponent', () => {
         });
 
         it('spans the full row for long values and a single column for short ones', () => {
-            const fixture = render(
-                [field('text'), field('num', { type: 'number' }), field('other', { type: 'number' }), field('rich', { customType: 'richText' })],
-                { text: 'a', num: 1, other: 2, rich: 'b' }
-            );
+            const fixture = render([field('text'), field('num', { type: 'number' }), field('other', { type: 'number' }), field('rich', { customType: 'richText' })], { text: 'a', num: 1, other: 2, rich: 'b' });
             const full = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.sf-ro-cell')).map((cell) => cell.classList.contains('sf-full'));
             expect(full).toEqual([true, false, false, true]);
         });
@@ -395,10 +361,10 @@ describe('SchemaFormViewComponent', () => {
                 isRef: true,
                 fields: [field('kind', {}, 'rows'), field('area', { type: 'number' }, 'rows'), field('other', {}, 'rows')],
                 conditions: [{
-                    ifCondition: { field: { name: 'kind' }, fieldValue: 'land' },
-                    thenFields: [{ name: 'area' }],
-                    elseFields: [{ name: 'other' }],
-                }],
+                        ifCondition: { field: { name: 'kind' }, fieldValue: 'land' },
+                        thenFields: [{ name: 'area' }],
+                        elseFields: [{ name: 'other' }],
+                    }],
             });
             const fixture = render([conditional], { rows: [{ kind: 'land', area: 5 }, { kind: 'sea', other: 'x' }] });
             (fixture.nativeElement.querySelector('.sf-ro-recbar-actions .sf-link') as HTMLElement).click();
@@ -480,11 +446,7 @@ describe('SchemaFormViewComponent', () => {
         });
 
         it('keeps the payload of the discussion output', () => {
-            const fixture = render(
-                [field('amount', { type: 'number', title: 'Amount' })],
-                { amount: 3 },
-                { 'discussion-view': true, discussion: { amount: 2 }, 'discussion-action': true }
-            );
+            const fixture = render([field('amount', { type: 'number', title: 'Amount' })], { amount: 3 }, { 'discussion-view': true, discussion: { amount: 2 }, 'discussion-action': true });
             const events: any[] = [];
             fixture.componentInstance.discussionActionEvent.subscribe((event) => events.push(event));
             expect(texts(fixture, '.sf-ro-cm .icon-count')).toEqual(['2']);
@@ -500,7 +462,7 @@ describe('SchemaFormViewComponent', () => {
         it('shows a comment button without a count when there are no comments', () => {
             const fixture = render([field('amount', { type: 'number' })], { amount: 3 }, { 'discussion-view': true, discussion: {} });
             const button = fixture.nativeElement.querySelector('.sf-ro-cm') as HTMLElement;
-            expect(button.classList.contains('zero')).toBeTrue();
+            expect(button.classList.contains('zero')).toBe(true);
             expect(button.querySelector('.icon-count')).toBeNull();
         });
 
@@ -523,21 +485,15 @@ describe('SchemaFormViewComponent', () => {
 
     describe('layout', () => {
         it('gives a cell with no neighbour the whole row', () => {
-            const fixture = render(
-                [field('a', { isArray: true, isRef: true }), field('b', { format: 'date' }), field('c', { type: 'number' }), field('d', { isRef: true })],
-                { b: '2020-01-01', c: 1 }
-            );
+            const fixture = render([field('a', { isArray: true, isRef: true }), field('b', { format: 'date' }), field('c', { type: 'number' }), field('d', { isRef: true })], { b: '2020-01-01', c: 1 });
             const component = fixture.componentInstance;
-            expect(component.isLoneField(1)).toBeFalse();
-            expect(component.isLoneField(2)).toBeFalse();
+            expect(component.isLoneField(1)).toBe(false);
+            expect(component.isLoneField(2)).toBe(false);
         });
 
         it('expands a single field between full rows', () => {
-            const fixture = render(
-                [field('a', { isArray: true }), field('b', { type: 'number' }), field('c', { isArray: true })],
-                { a: ['x'], b: 1, c: ['y'] }
-            );
-            expect(fixture.componentInstance.isLoneField(1)).toBeTrue();
+            const fixture = render([field('a', { isArray: true }), field('b', { type: 'number' }), field('c', { isArray: true })], { a: ['x'], b: 1, c: ['y'] });
+            expect(fixture.componentInstance.isLoneField(1)).toBe(true);
         });
     });
 
@@ -892,11 +848,11 @@ describe('SchemaFormViewComponent', () => {
 
     describe('sections in a calculation preview', () => {
         const sectionFields = (array: boolean) => [{
-            name: 'section', fullPath: 'section', description: 'Section', type: '#Section',
-            isRef: true, isArray: array,
-            fields: [{ name: 'details', fullPath: 'section.details', description: 'Details', type: '#Details', isRef: true, isArray: false,
-                fields: [{ name: 'amount', fullPath: 'section.details.amount', description: 'Amount', type: 'number', isRef: false, isArray: false }] }],
-        }];
+                name: 'section', fullPath: 'section', description: 'Section', type: '#Section',
+                isRef: true, isArray: array,
+                fields: [{ name: 'details', fullPath: 'section.details', description: 'Details', type: '#Details', isRef: true, isArray: false,
+                        fields: [{ name: 'amount', fullPath: 'section.details.amount', description: 'Amount', type: 'number', isRef: false, isArray: false }] }],
+            }];
 
         const prepare = (preview: boolean, array = false) => {
             TestBed.resetTestingModule();
@@ -910,7 +866,7 @@ describe('SchemaFormViewComponent', () => {
                 schemas: [NO_ERRORS_SCHEMA],
             });
             const fixture = TestBed.createComponent(SchemaFormViewComponent);
-            const changes = spyOn(fixture.componentInstance.previewLoadingChange, 'emit');
+            const changes = vi.spyOn(fixture.componentInstance.previewLoadingChange, 'emit').mockImplementation(() => undefined);
             fixture.componentRef.setInput('private-fields', {});
             fixture.componentRef.setInput('fields', sectionFields(array));
             fixture.componentRef.setInput('values', { section: array ? [{ details: { amount: 3 } }] : { details: { amount: 3 } } });
@@ -922,10 +878,10 @@ describe('SchemaFormViewComponent', () => {
         it('reports loading before it renders an always-open sub-schema in a Preview', fakeAsync(() => {
             const { fixture, changes } = prepare(true);
             const view = fixture.componentInstance;
-            expect(changes.calls.allArgs()).toEqual([[true]]);
+            expect(vi.mocked(changes).mock.calls).toEqual([[true]]);
             expect(fixture.debugElement.queryAll(By.directive(SchemaFormViewComponent)).length).toBe(0);
             tick(16);
-            expect(view.fields![0].previewReady).not.toBeTrue();
+            expect(view.fields![0].previewReady).not.toBe(true);
             tick(16);
             fixture.detectChanges();
             const child = fixture.debugElement.query(By.directive(SchemaFormViewComponent));
@@ -934,7 +890,7 @@ describe('SchemaFormViewComponent', () => {
             tick(64);
             fixture.detectChanges();
             expect(fixture.debugElement.queryAll(By.directive(SchemaFormViewComponent)).length).toBe(2);
-            const sent = changes.calls.allArgs().map((args) => args[0]);
+            const sent = vi.mocked(changes).mock.calls.map((args) => args[0]);
             expect(sent.filter(Boolean).length).toBe(2);
             expect(sent.filter((value) => !value).length).toBe(2);
         }));
@@ -959,12 +915,13 @@ describe('SchemaFormViewComponent', () => {
                 const { fixture, changes } = prepare(true);
                 if (action === 'destroy') {
                     fixture.destroy();
-                } else {
+                }
+                else {
                     fixture.componentRef.setInput('fields', []);
                     fixture.detectChanges();
                 }
                 tick(64);
-                expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+                expect(vi.mocked(changes).mock.calls).toEqual([[true], [false]]);
             }));
         }
     });
@@ -986,7 +943,7 @@ describe('SchemaFormViewComponent', () => {
                 schemas: [NO_ERRORS_SCHEMA],
             });
             const fixture = TestBed.createComponent(SchemaFormViewComponent);
-            const changes = spyOn(fixture.componentInstance.previewLoadingChange, 'emit');
+            const changes = vi.spyOn(fixture.componentInstance.previewLoadingChange, 'emit').mockImplementation(() => undefined);
             fixture.componentRef.setInput('private-fields', {});
             fixture.componentRef.setInput('fields', fields);
             fixture.componentRef.setInput('values', values);
@@ -999,14 +956,14 @@ describe('SchemaFormViewComponent', () => {
         it('renders Preview fields in parts across frames and reports loading until the last part', fakeAsync(() => {
             const { fixture, changes, count } = prepare(true);
             expect(count()).toBe(10);
-            expect(changes.calls.allArgs()).toEqual([[true]]);
+            expect(vi.mocked(changes).mock.calls).toEqual([[true]]);
             tick(16);
             expect(count()).toBe(20);
             tick(16);
             expect(count()).toBe(25);
-            expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+            expect(vi.mocked(changes).mock.calls).toEqual([[true], [false]]);
             tick(64);
-            expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+            expect(vi.mocked(changes).mock.calls).toEqual([[true], [false]]);
             fixture.destroy();
         }));
 
@@ -1022,7 +979,7 @@ describe('SchemaFormViewComponent', () => {
             tick(16);
             fixture.destroy();
             tick(64);
-            expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+            expect(vi.mocked(changes).mock.calls).toEqual([[true], [false]]);
         }));
     });
 

@@ -61,10 +61,10 @@ describe('SchemaFormComponent layout helpers', () => {
     it('gives long controls the full row and short ones one column', () => {
         const { view, control } = setup();
         for (const name of ['name', 'tags', 'group', 'kind']) {
-            expect(view.isFullRow(control(name))).withContext(name).toBeTrue();
+            expect(view.isFullRow(control(name)), name).toBe(true);
         }
         for (const name of ['count', 'whole', 'when', 'email', 'flag', 'yesNo', 'many']) {
-            expect(view.isFullRow(control(name))).withContext(name).toBeFalse();
+            expect(view.isFullRow(control(name)), name).toBe(false);
         }
     });
 
@@ -87,19 +87,19 @@ describe('SchemaFormComponent layout helpers', () => {
     it('tags a schema default until the field is edited', () => {
         const { view, control } = setup();
         const item = control('notes');
-        expect(view.isDefaultValue(item)).toBeTrue();
+        expect(view.isDefaultValue(item)).toBe(true);
         item.control.markAsTouched();
-        expect(view.isDefaultValue(item)).toBeFalse();
-        expect(view.isDefaultValue(control('name'))).toBeFalse();
+        expect(view.isDefaultValue(item)).toBe(false);
+        expect(view.isDefaultValue(control('name'))).toBe(false);
     });
 
     it('sets a segmented boolean and clears it to undefined', () => {
         const { view, control } = setup();
         const item = control('flag');
         view.setChoice(item, true);
-        expect(item.control.value).toBeTrue();
-        expect(item.control.touched).toBeTrue();
-        expect(item.control.dirty).toBeTrue();
+        expect(item.control.value).toBe(true);
+        expect(item.control.touched).toBe(true);
+        expect(item.control.dirty).toBe(true);
         view.setChoice(item, undefined);
         expect(item.control.value).toBeUndefined();
     });
@@ -158,10 +158,10 @@ describe('SchemaFormComponent lone fields', () => {
         // The check runs from `ngDoCheck`; calling it directly avoids re-rendering a model edited by hand.
         byName('b').visibility = false;
         view.ngDoCheck();
-        expect(view.isLoneField(1)).toBeTrue();
+        expect(view.isLoneField(1)).toBe(true);
         byName('b').visibility = true;
         view.ngDoCheck();
-        expect(view.isLoneField(1)).toBeFalse();
+        expect(view.isLoneField(1)).toBe(false);
     });
 
     it('follows a swapped list of the same length and visibility', () => {
@@ -173,10 +173,10 @@ describe('SchemaFormComponent lone fields', () => {
         const [name, a, b, notes] = model.controls!;
         fixture.componentRef.setInput('renderControls', [name, a, notes]);
         fixture.detectChanges();
-        expect(view.isLoneField(1)).toBeTrue();
+        expect(view.isLoneField(1)).toBe(true);
         fixture.componentRef.setInput('renderControls', [name, a, b]);
         fixture.detectChanges();
-        expect(view.isLoneField(1)).toBeFalse();
+        expect(view.isLoneField(1)).toBe(false);
     });
 
     it('caches the enum mode per values array and recomputes when a new one is assigned', () => {

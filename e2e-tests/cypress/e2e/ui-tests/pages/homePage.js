@@ -1,8 +1,21 @@
 import URL from '../../../support/GuardianUrls';
 import CommonElements from '../../../support/defaultUIElements';
 import { waitForTaskRoundtrip } from '../../../support/importFlow';
+import { waitForLocation, waitForLocationAwayFrom } from '../../../support/pageReadiness';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
-import { dismissStickyToasts } from './configPage';
+import { dismissStickyToasts, completeUserWizard } from './configPage';
+
+// The account the app is signed in as: the username claim of the stored access token, which is
+// what the app itself reads (AuthService.getUsername). Null when there is no token.
+function sessionUsername(win) {
+	const token = win.localStorage.getItem('accessToken');
+	if (!token) {
+		return null;
+	}
+	const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+	const bytes = Uint8Array.from(win.atob(payload), (ch) => ch.charCodeAt(0));
+	return JSON.parse(new TextDecoder().decode(bytes)).username ?? null;
+}
 
 const HomePageLocators = {
 	usernameInput: '[formcontrolname="username"]',
@@ -38,7 +51,7 @@ export class HomePage {
 		// logged-out state; specs that need a session call login() explicitly.
 		cy.visit(URL.Root, {
 			onBeforeLoad(win) {
-				['accessToken', 'refreshToken', 'username'].forEach((key) => win.localStorage.removeItem(key));
+				['accessToken', 'refreshToken'].forEach((key) => win.localStorage.removeItem(key));
 			},
 		});
 		// A fresh browser must pull the whole app module graph through the dev server,
@@ -48,16 +61,29 @@ export class HomePage {
 		cy.get('app-root div.app', { timeout: TIMEOUTS.backend }).should('have.css', 'opacity', '1');
 	}
 
+	// Signs in the way a user does: a fresh login page with no stored session, the form, the Log In
+	// button, then the app signed in as that user. Returns its chain, so a caller inside a .then()
+	// callback can return it instead of leaking a second login into the queue.
 	login(username, password) {
-		cy.fixture('credentials').then(({ goodPassword }) => {
-			cy.get(HomePageLocators.usernameLoginInput, { timeout: TIMEOUTS.backend }).type(username);
-			cy.get(HomePageLocators.passInput).type(password ?? goodPassword);
-			cy.get(HomePageLocators.loginButton).click();
+		cy.visit(URL.Root + '/login', {
+			onBeforeLoad(win) {
+				win.localStorage.removeItem('accessToken');
+				win.localStorage.removeItem('refreshToken');
+			},
 		});
-		// Wait until the app has finished redirecting to the authenticated workspace,
-		// otherwise a cy.visit() issued right after would reload the app while it is
-		// still on the login route and the auth guard would kick back to /login.
-		cy.location('pathname', { timeout: TIMEOUTS.backend }).should('not.eq', '/login');
+		return cy.fixture('credentials').then(({ goodPassword }) => {
+			cy.get(HomePageLocators.usernameLoginInput, { timeout: TIMEOUTS.backend }).should('be.enabled');
+			cy.get(HomePageLocators.usernameLoginInput).clear();
+			cy.get(HomePageLocators.usernameLoginInput).type(username);
+			cy.get(HomePageLocators.passInput).clear();
+			cy.get(HomePageLocators.passInput).type(password ?? goodPassword, { log: false });
+			cy.get(HomePageLocators.loginButton).should('be.enabled');
+			cy.get(HomePageLocators.loginButton).click();
+			waitForLocationAwayFrom('/login', { timeout: TIMEOUTS.backend });
+			return cy.window().should((win) => {
+				expect(sessionUsername(win), 'signed-in user').to.equal(username);
+			});
+		});
 	}
 
 	logOut() {
@@ -77,8 +103,9 @@ export class HomePage {
 			cy.get('app-new-header div.collapse-toggle', { timeout: TIMEOUTS.ui }).click();
 			return cy.get('app-new-header i.logout-icon', { timeout: TIMEOUTS.ui }).first().click();
 		});
-		// Give the auth teardown time to finish before the next login reuses the page
-		cy.location('pathname', { timeout: TIMEOUTS.backend }).should('include', '/login');
+		// The window read polls instead of cy.location, which throws
+		// UrlNotYetAvailableError over a long teardown navigation.
+		waitForLocation('/login', { timeout: TIMEOUTS.backend });
 	}
 
 	createAccount(accType, username, password) {
@@ -158,9 +185,17 @@ export class HomePage {
 		// the onboarding wizard; a duplicate left us on the login page, so log
 		// in there and inspect the onboarding state instead: a run that died
 		// mid-wizard in an earlier attempt must be completed, not re-registered.
-		cy.location('pathname').then((path) => {
-			if (path === '/login') {
-				this.login(username);
+		// The window read branches on the live location instead of cy.location
+		// (which throws UrlNotYetAvailableError over a mid-navigation blank
+		// bar); the settle wait above guarantees the document has reached one
+		// or the other by now.
+		cy.window().then((win) => {
+			if (win.location.pathname === '/login') {
+				// Returned: without it the login chain leaks into the queue
+				// (the callback resolves at once) and this login would run
+				// concurrently with the spec's next commands - two login
+				// chains step on each other's form and tokens.
+				return this.login(username);
 			}
 		});
 		// The profile view re-renders as its first load settles. Until that first
@@ -201,10 +236,10 @@ export class HomePage {
 		cy.get('#operatorKey', { timeout: TIMEOUTS.backend }).should('not.be.empty');
 		this._wizardStepNext();
 		// The default radio generates a new DID document and needs no input.
-		// If a workspace system schema for the USER entity ever appears, an
-		// extra VC step is appended and its form must be filled first, which
-		// would leave the button disabled and fail this wait deliberately.
-		this._wizardStepNext();
+		// An active USER system schema in the workspace appends a VC document
+		// step (the API suite's 011_schemas spec activates one and the product
+		// cannot deactivate it), so the tail is driven shape-agnostically.
+		completeUserWizard();
 		waitForTaskRoundtrip();
 		cy.get('div.user-profile-setup-title').should('not.exist');
 		this.logOut();
@@ -286,12 +321,12 @@ export class HomePage {
 		// A duplicate-name registration fails server-side; the login page does not
 		// surface that error, so the contract is that we end up still on the login
 		// screen rather than in an authenticated app.
-		cy.location('pathname').should('include', '/login');
+		waitForLocation('/login');
 	}
 
 	verifyWeakPasswordAlert() {
 		// Same contract as verifyAlert: a rejected registration leaves us on the login screen.
-		cy.location('pathname').should('include', '/login');
+		waitForLocation('/login');
 	}
 
 	checkCreateDisabledUserNameEmpty() {
@@ -415,7 +450,7 @@ export class HomePage {
 		// })
 	}
 
-	createStandartRegistryAccount(username) {
+	createStandartRegistryAccount() {
 		// cy.contains(HomePageLocators.createLnk).click();
 		// cy.get(HomePageLocators.acceptBtn).click();
 		// cy.contains(HomePageLocators.SRtype).click();
@@ -432,7 +467,7 @@ export class HomePage {
 		// cy.get(HomePageLocators.dialog).find(HomePageLocators.requestAccessBtn).click();
 	}
 
-	createAuditor(username) {
+	createAuditor() {
 		// cy.contains(HomePageLocators.createLnk).click();
 		// cy.contains(HomePageLocators.auditorBtn).click();
 		// const inputName = cy.get(CommonPatterns.formControlNamePattern("username"));
@@ -450,7 +485,7 @@ export class HomePage {
 		// cy.contains(HomePageLocators.trustChainEle).should('not.be.null');
 	}
 
-	createUserAccount(username) {
+	createUserAccount() {
 		// cy.contains(HomePageLocators.createLnk).click();
 		// cy.get(HomePageLocators.acceptBtn).click();
 		// cy.contains(HomePageLocators.userType).click();

@@ -1,6 +1,7 @@
-import { Component, ElementRef, EventEmitter, Inject, Input, OnDestroy, OnInit, Output, SimpleChanges, ViewChild, } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Inject, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild, } from '@angular/core';
 import { WebSocketService } from 'src/app/services/web-socket.service';
-import { forkJoin, Subscription } from 'rxjs';
+import { EMPTY, forkJoin, interval, Subscription } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
 import { IStatus, StatusType, TaskAction, UserRole, LogMessage, } from '@guardian/interfaces';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TasksService } from 'src/app/services/tasks.service';
@@ -9,13 +10,17 @@ import { AuthService } from 'src/app/services/auth.service';
 import { WizardService } from '../../policy-engine/services/wizard.service';
 import { CONFIGURATION_ERRORS } from '../../policy-engine/injectors/configuration.errors.injector';
 
+// How often the task is read again while it has not settled: the first read can land while the
+// gateway still hides the result, and the task-status push is not replayed if it is missed.
+const RESULT_POLL_INTERVAL = 5000;
+
 @Component({
     selector: 'async-progress',
     templateUrl: './async-progress.component.html',
     styleUrls: ['./async-progress.component.scss'],
     standalone: false
 })
-export class AsyncProgressComponent implements OnInit, OnDestroy {
+export class AsyncProgressComponent implements OnInit, OnChanges, OnDestroy {
     public action: TaskAction;
     public progressValue!: number;
     public statusesCount: number = 0;
@@ -41,6 +46,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
     @ViewChild('status') statusRef: ElementRef;
 
     private subscription = new Subscription();
+    private resultPolling?: Subscription;
 
     public isInfo(status: IStatus) {
         return status.type == StatusType.INFO;
@@ -87,11 +93,19 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes.taskId) {
-            this.statusesCount = 0;
-            this.statuses.length = 0;
-            this.progressValue = 0;
-            this.resultHandled = false;
+        const change = changes['inputTaskId'];
+        if (!change || change.firstChange) {
+            return;
+        }
+        this.stopResultPolling();
+        this.statusesCount = 0;
+        this.statuses.length = 0;
+        this.progressValue = 0;
+        this.resultHandled = false;
+        this.taskNotFound = false;
+        if (this.inputTaskId) {
+            this.taskId = this.inputTaskId;
+            this.update();
         }
     }
 
@@ -104,7 +118,33 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 this.taskNotFound = true;
             }
             this.setTask(task);
+            this.pollUntilSettled();
         });
+    }
+
+    private pollUntilSettled() {
+        if (this.resultHandled || this.taskNotFound || this.resultPolling) {
+            return;
+        }
+        const taskId = this.taskId;
+        this.resultPolling = interval(RESULT_POLL_INTERVAL).pipe(
+            // A failed read has already been reported by the HTTP error interceptor; the next tick reads again.
+            switchMap(() => this.taskService.get(taskId).pipe(catchError(() => EMPTY)))
+        ).subscribe((task) => {
+            this.setTask(task);
+            if (this.resultHandled) {
+                this.stopResultPolling();
+            }
+        });
+        this.subscription.add(this.resultPolling);
+    }
+
+    private stopResultPolling() {
+        if (this.resultPolling) {
+            this.resultPolling.unsubscribe();
+            this.subscription.remove(this.resultPolling);
+            this.resultPolling = undefined;
+        }
     }
 
     private initEvents() {
@@ -136,11 +176,13 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             this.progressValue = 100;
             if (!this.resultHandled) {
                 this.resultHandled = true;
+                this.stopResultPolling();
                 this.setResult(result);
             }
         } else if (error) {
             if (!this.resultHandled) {
                 this.resultHandled = true;
+                this.stopResultPolling();
                 this.setError(error);
             }
         }

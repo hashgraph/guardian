@@ -1,5 +1,5 @@
 import URL from '../../../support/GuardianUrls';
-import { waitForPageReady } from '../../../support/pageReadiness';
+import { waitForPageReady, waitForPageSettled, waitForLocation } from '../../../support/pageReadiness';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 const L = {
@@ -7,6 +7,11 @@ const L = {
     searchInput: 'input.search-input',
     userRow: 'tr.guardian-grid-row',
     userName: 'span.user-name',
+    // The page's loading overlay. It is a sibling of the content, which stays
+    // in the DOM underneath it: presence markers for the content pass while
+    // the overlay covers the page, so readiness is gated on the overlay being
+    // gone.
+    loadingOverlay: 'app-user-management div.loading',
     // detail page (route /user-management/:username)
     detailName: 'span.policy-identity-name',
     assignedTab: 'p-tabs.user-tabs p-tab',
@@ -23,7 +28,10 @@ export class UserManagementPage {
 
     openUserManagementTab() {
         cy.visit(URL.Root + URL.UserManagement);
-        waitForPageReady('p-table.guardian-grid-table, div.not-exist', 3);
+        waitForPageReady('p-table.guardian-grid-table, div.not-exist');
+        // The presence gate above cannot see the overlay: the content it
+        // covers is always in the DOM.
+        waitForPageSettled(L.loadingOverlay);
     }
 
     /**
@@ -39,7 +47,10 @@ export class UserManagementPage {
         // row's detail navigation, leaving the test on the list page.
         cy.get(L.searchInput, { timeout: TIMEOUTS.backend }).clear();
         cy.get(L.searchInput).type(userName + '{enter}');
-        cy.location('search', { timeout: TIMEOUTS.ui }).should('include', `username=${encodeURIComponent(userName)}`);
+        // The Enter commits the filter (onFilter -> loadData), which re-raises
+        // the overlay until the refetch settles.
+        waitForPageSettled(L.loadingOverlay);
+        waitForLocation(`username=${encodeURIComponent(userName)}`, { part: 'search', timeout: TIMEOUTS.ui });
         cy.get(L.userRow, { timeout: TIMEOUTS.backend }).filter((_, el) => {
             const cell = el.querySelector(L.userName);
             return cell && cell.textContent.trim() === userName;

@@ -5,15 +5,16 @@ import { KmlCoordinateScanner } from '@guardian/interfaces';
 
 function firstPosition(text: string): GeoCoordinate | null {
     const converted = kml(new DOMParser().parseFromString(text, 'application/xml'));
-    const feature = converted.features.find(item =>
-        item?.geometry && item.geometry.type !== 'GeometryCollection'
-    );
-    if (!feature?.geometry) return null;
+    const feature = converted.features.find(item => item?.geometry && item.geometry.type !== 'GeometryCollection');
+    if (!feature?.geometry)
+        return null;
     let coordinates: any = 'coordinates' in feature.geometry
         ? feature.geometry.coordinates
         : null;
-    while (Array.isArray(coordinates) && Array.isArray(coordinates[0])) coordinates = coordinates[0];
-    if (!Array.isArray(coordinates) || coordinates.length < 2) return null;
+    while (Array.isArray(coordinates) && Array.isArray(coordinates[0]))
+        coordinates = coordinates[0];
+    if (!Array.isArray(coordinates) || coordinates.length < 2)
+        return null;
     return coordinates.length >= 3
         ? [coordinates[0], coordinates[1], coordinates[2]]
         : [coordinates[0], coordinates[1]];
@@ -67,11 +68,7 @@ describe('KmlCoordinateScanner', () => {
         for (const chunkSize of [1, 7, 1024 * 1024]) {
             it(`matches kml() at ${chunkSize} bytes for fixture ${fixtures.indexOf(text)}`, async () => {
                 const expected = firstPosition(text);
-                const actual = await readFirstCoordinate(
-                    new Blob([new TextEncoder().encode(text)]),
-                    new KmlCoordinateScanner(),
-                    chunkSize
-                );
+                const actual = await readFirstCoordinate(new Blob([new TextEncoder().encode(text)]), new KmlCoordinateScanner(), chunkSize);
                 expect(actual).toEqual(expected);
             });
         }
@@ -80,11 +77,7 @@ describe('KmlCoordinateScanner', () => {
     for (const text of noCoordinateFixtures) {
         for (const chunkSize of [1, 7, 1024 * 1024]) {
             it(`returns none at ${chunkSize} bytes for empty fixture ${noCoordinateFixtures.indexOf(text)}`, async () => {
-                const actual = await readFirstCoordinate(
-                    new Blob([new TextEncoder().encode(text)]),
-                    new KmlCoordinateScanner(),
-                    chunkSize
-                );
+                const actual = await readFirstCoordinate(new Blob([new TextEncoder().encode(text)]), new KmlCoordinateScanner(), chunkSize);
                 expect(actual).toBeNull();
             });
         }
@@ -97,10 +90,7 @@ describe('KmlCoordinateScanner', () => {
             const actual = await readFirstCoordinate(new Blob([text]), new KmlCoordinateScanner(allowedTypes));
             expect(actual).toEqual([1, 2]);
         }
-        const empty = await readFirstCoordinate(
-            new Blob(['<?xml version="1.0"?>\n<kml>\n<Document/>\n</kml>\n']),
-            new KmlCoordinateScanner()
-        );
+        const empty = await readFirstCoordinate(new Blob(['<?xml version="1.0"?>\n<kml>\n<Document/>\n</kml>\n']), new KmlCoordinateScanner());
         expect(empty).toBeNull();
     });
 });
@@ -109,14 +99,15 @@ describe('KmlCoordinateScanner allowed types', () => {
     const allTypes = ['Point', 'LineString', 'Polygon', 'MultiPoint', 'MultiLineString', 'MultiPolygon'];
 
     const firstAllowedPosition = (text: string, allowedTypes: string[]): GeoCoordinate | null => {
-        const feature = kml(new DOMParser().parseFromString(text, 'application/xml')).features.find(item =>
-            item?.geometry && item.geometry.type !== 'GeometryCollection' &&
-            allowedTypes.includes(item.geometry.type)
-        );
-        if (!feature?.geometry) return null;
+        const feature = kml(new DOMParser().parseFromString(text, 'application/xml')).features.find(item => item?.geometry && item.geometry.type !== 'GeometryCollection' &&
+            allowedTypes.includes(item.geometry.type));
+        if (!feature?.geometry)
+            return null;
         let coordinates: any = 'coordinates' in feature.geometry ? feature.geometry.coordinates : null;
-        while (Array.isArray(coordinates) && Array.isArray(coordinates[0])) coordinates = coordinates[0];
-        if (!Array.isArray(coordinates) || coordinates.length < 2) return null;
+        while (Array.isArray(coordinates) && Array.isArray(coordinates[0]))
+            coordinates = coordinates[0];
+        if (!Array.isArray(coordinates) || coordinates.length < 2)
+            return null;
         return coordinates.length >= 3
             ? [coordinates[0], coordinates[1], coordinates[2]]
             : [coordinates[0], coordinates[1]];
@@ -125,11 +116,7 @@ describe('KmlCoordinateScanner allowed types', () => {
     [...fixtures, ...noCoordinateFixtures].forEach((text, index) => {
         for (const allowedTypes of [allTypes, ['Point'], ['LineString'], ['Polygon']]) {
             it(`matches the first ${allowedTypes.join(' or ')} shape of kml() for fixture ${index}`, async () => {
-                const actual = await readFirstCoordinate(
-                    new Blob([new TextEncoder().encode(text)]),
-                    new KmlCoordinateScanner(allowedTypes),
-                    7
-                );
+                const actual = await readFirstCoordinate(new Blob([new TextEncoder().encode(text)]), new KmlCoordinateScanner(allowedTypes), 7);
                 expect(actual).toEqual(firstAllowedPosition(text, allowedTypes));
             });
         }
@@ -137,12 +124,10 @@ describe('KmlCoordinateScanner allowed types', () => {
 
     it('stops at the first allowed shape', () => {
         const scanner = new KmlCoordinateScanner(['Polygon']);
-        scanner.write(wrap(
-            '<Placemark><LineString><coordinates>7,8 9,10</coordinates></LineString></Placemark>' +
-            '<Placemark><Polygon><outerBoundaryIs><LinearRing><coordinates>1,2 3,4 5,6 1,2</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark>'
-        ).slice(0, -17));
+        scanner.write(wrap('<Placemark><LineString><coordinates>7,8 9,10</coordinates></LineString></Placemark>' +
+            '<Placemark><Polygon><outerBoundaryIs><LinearRing><coordinates>1,2 3,4 5,6 1,2</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark>').slice(0, -17));
 
-        expect(scanner.settled).toBeTrue();
+        expect(scanner.settled).toBe(true);
         expect(scanner.coordinate).toEqual([1, 2]);
     });
 

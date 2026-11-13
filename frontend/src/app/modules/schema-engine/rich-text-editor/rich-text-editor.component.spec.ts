@@ -1,3 +1,4 @@
+import type { Mock } from "vitest";
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -64,7 +65,7 @@ describe('RichTextEditorComponent', () => {
     });
 
     it('should call onChange when onInput is triggered', () => {
-        const changeSpy = jasmine.createSpy('onChange');
+        const changeSpy = vi.fn();
         component.registerOnChange(changeSpy);
         const editor = fixture.debugElement.query(By.css('.rte-editor'));
         editor.nativeElement.innerHTML = '<b>Test</b>';
@@ -73,7 +74,7 @@ describe('RichTextEditorComponent', () => {
     });
 
     it('should clear an emptied block after a deletion', () => {
-        const changeSpy = jasmine.createSpy('onChange');
+        const changeSpy = vi.fn();
         component.registerOnChange(changeSpy);
         const editor = fixture.debugElement.query(By.css('.rte-editor'));
         editor.nativeElement.innerHTML = '<h1><br></h1>';
@@ -112,7 +113,7 @@ describe('RichTextEditorComponent', () => {
     });
 
     it('should leave the content alone when a deletion leaves text behind', () => {
-        const changeSpy = jasmine.createSpy('onChange');
+        const changeSpy = vi.fn();
         component.registerOnChange(changeSpy);
         const editor = fixture.debugElement.query(By.css('.rte-editor'));
         editor.nativeElement.innerHTML = '<h1>Kept</h1>';
@@ -122,7 +123,7 @@ describe('RichTextEditorComponent', () => {
     });
 
     it('should call onTouched when editor blurs', () => {
-        const touchedSpy = jasmine.createSpy('onTouched');
+        const touchedSpy = vi.fn();
         component.registerOnTouched(touchedSpy);
         const editor = fixture.debugElement.query(By.css('.rte-editor'));
         editor.nativeElement.dispatchEvent(new Event('blur'));
@@ -131,33 +132,33 @@ describe('RichTextEditorComponent', () => {
 
     it('should report isEmpty=true for blank content', () => {
         component.writeValue('');
-        expect(component.isEmpty).toBeTrue();
+        expect(component.isEmpty).toBe(true);
     });
 
     it('should report isEmpty=true for whitespace-only HTML', () => {
         component.writeValue('<p>   </p>');
-        expect(component.isEmpty).toBeTrue();
+        expect(component.isEmpty).toBe(true);
     });
 
     it('should report isEmpty=false for content with text', () => {
         component.writeValue('<p>Hello</p>');
-        expect(component.isEmpty).toBeFalse();
+        expect(component.isEmpty).toBe(false);
     });
 
     it('setDisabledState should update isDisabled flag', () => {
         component.setDisabledState(true);
-        expect(component.isDisabled).toBeTrue();
+        expect(component.isDisabled).toBe(true);
         component.setDisabledState(false);
-        expect(component.isDisabled).toBeFalse();
+        expect(component.isDisabled).toBe(false);
     });
 
     it('should show link dialog when link command is executed', () => {
         component.readonly = false;
         fixture.detectChanges();
         const event = new MouseEvent('mousedown');
-        spyOn(event, 'preventDefault');
+        vi.spyOn(event, 'preventDefault').mockImplementation(() => undefined);
         component.execCommand('link', event);
-        expect(component.showLinkDialog).toBeTrue();
+        expect(component.showLinkDialog).toBe(true);
     });
 
     it('should populate the link dialog when the caret is inside a link', () => {
@@ -165,7 +166,7 @@ describe('RichTextEditorComponent', () => {
         editor.innerHTML = '<a href="https://example.com">Example</a>';
         selectContents(editor.querySelector('a'));
         component.execCommand('link', new MouseEvent('mousedown'));
-        expect(component.isEditingLink).toBeTrue();
+        expect(component.isEditingLink).toBe(true);
         expect(component.linkUrl).toBe('https://example.com');
     });
 
@@ -174,8 +175,8 @@ describe('RichTextEditorComponent', () => {
         editor.innerHTML = '<a href="https://example.com">Example</a>';
         const link = editor.querySelector('a');
         const wrapper = editor.parentElement;
-        spyOn(wrapper, 'getBoundingClientRect').and.returnValue(new DOMRect(20, 10, 500, 300));
-        spyOn(link, 'getBoundingClientRect').and.returnValue(new DOMRect(50, 40, 80, 20));
+        vi.spyOn(wrapper, 'getBoundingClientRect').mockReturnValue(new DOMRect(20, 10, 500, 300));
+        vi.spyOn(link, 'getBoundingClientRect').mockReturnValue(new DOMRect(50, 40, 80, 20));
         selectContents(link);
 
         component.execCommand('link', new MouseEvent('mousedown'));
@@ -197,7 +198,7 @@ describe('RichTextEditorComponent', () => {
         component.showLinkDialog = true;
         component.linkUrl = 'https://example.com';
         component.cancelLink();
-        expect(component.showLinkDialog).toBeFalse();
+        expect(component.showLinkDialog).toBe(false);
         expect(component.linkUrl).toBe('');
     });
 
@@ -205,11 +206,11 @@ describe('RichTextEditorComponent', () => {
         component.showLinkDialog = true;
         component.linkUrl = '';
         component.insertLink();
-        expect(component.showLinkDialog).toBeFalse();
+        expect(component.showLinkDialog).toBe(false);
     });
 
     it('should prepend https:// when URL lacks protocol', () => {
-        const execSpy = spyOn(document, 'execCommand');
+        const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
         component.showLinkDialog = true;
         component.linkUrl = 'example.com';
         component.insertLink();
@@ -220,7 +221,7 @@ describe('RichTextEditorComponent', () => {
         const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
         editor.textContent = 'Example';
         selectContents(editor);
-        spyOn(document, 'execCommand').and.callFake(() => {
+        vi.spyOn(document, 'execCommand').mockImplementation(() => {
             const link = document.createElement('a');
             link.textContent = 'Example';
             editor.replaceChildren(link);
@@ -255,7 +256,7 @@ describe('RichTextEditorComponent', () => {
         component.execCommand('link', new MouseEvent('mousedown'));
         component.removeLink();
         expect(editor.innerHTML).toBe('Example');
-        expect(component.showLinkDialog).toBeFalse();
+        expect(component.showLinkDialog).toBe(false);
     });
 
     it('should render the stored markdown as html in the editor', () => {
@@ -268,7 +269,7 @@ describe('RichTextEditorComponent', () => {
 
     it('should report markdown through onChange', () => {
         const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
-        const onChange = jasmine.createSpy('onChange');
+        const onChange = vi.fn();
         component.registerOnChange(onChange);
 
         editor.innerHTML = '<h1>Title</h1><p>a <b>bold</b> line</p>';
@@ -279,7 +280,7 @@ describe('RichTextEditorComponent', () => {
 
     it('should never report html through onChange', () => {
         const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
-        const onChange = jasmine.createSpy('onChange');
+        const onChange = vi.fn();
         component.registerOnChange(onChange);
 
         editor.innerHTML = '<p>text</p>';
@@ -290,7 +291,7 @@ describe('RichTextEditorComponent', () => {
 
     it('should report an empty value for visually empty markup', () => {
         const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
-        const onChange = jasmine.createSpy('onChange');
+        const onChange = vi.fn();
         component.registerOnChange(onChange);
 
         editor.innerHTML = '<p><br></p>';
@@ -309,25 +310,25 @@ describe('RichTextEditorComponent', () => {
     });
 
     it('should close the link dialog on a mousedown outside the editor', () => {
-        spyOn(document, 'execCommand');
+        vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
         component.execCommand('link', new MouseEvent('mousedown'));
         component.linkUrl = 'https://example.com';
         fixture.detectChanges();
-        expect(component.showLinkDialog).toBeTrue();
+        expect(component.showLinkDialog).toBe(true);
 
         const outside = document.createElement('button');
         document.body.appendChild(outside);
         outside.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
         fixture.detectChanges();
 
-        expect(component.showLinkDialog).toBeFalse();
+        expect(component.showLinkDialog).toBe(false);
         expect(component.linkUrl).toBe('');
         expect(fixture.debugElement.query(By.css('.rte-link-input'))).toBeNull();
         outside.remove();
     });
 
     it('should keep the link dialog open on a mousedown inside the editor', () => {
-        spyOn(document, 'execCommand');
+        vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
         component.execCommand('link', new MouseEvent('mousedown'));
         component.linkUrl = 'https://example.com';
         fixture.detectChanges();
@@ -336,7 +337,7 @@ describe('RichTextEditorComponent', () => {
         input.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
         fixture.detectChanges();
 
-        expect(component.showLinkDialog).toBeTrue();
+        expect(component.showLinkDialog).toBe(true);
         expect(component.linkUrl).toBe('https://example.com');
     });
 
@@ -346,7 +347,7 @@ describe('RichTextEditorComponent', () => {
         outside.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
         fixture.detectChanges();
 
-        expect(component.showLinkDialog).toBeFalse();
+        expect(component.showLinkDialog).toBe(false);
         outside.remove();
     });
 
@@ -358,7 +359,7 @@ describe('RichTextEditorComponent', () => {
         component.linkUrl = '';
         component.insertLink();
         expect(editor.innerHTML).toBe('Example');
-        expect(component.showLinkDialog).toBeFalse();
+        expect(component.showLinkDialog).toBe(false);
     });
 
     it('should remove the link when its URL is left as whitespace', () => {
@@ -369,21 +370,17 @@ describe('RichTextEditorComponent', () => {
         component.linkUrl = '   ';
         component.insertLink();
         expect(editor.innerHTML).toBe('Example');
-        expect(component.showLinkDialog).toBeFalse();
+        expect(component.showLinkDialog).toBe(false);
     });
 
     it('should open a link in a new tab on ctrl-click', () => {
         const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
         editor.innerHTML = '<a href="https://example.com">Example</a>';
-        const openSpy = spyOn(window, 'open');
+        const openSpy = vi.spyOn(window, 'open').mockImplementation(() => undefined as never);
         const event = new MouseEvent('click', { bubbles: true, cancelable: true, ctrlKey: true });
         editor.querySelector('a').dispatchEvent(event);
-        expect(openSpy).toHaveBeenCalledWith(
-            'https://example.com',
-            '_blank',
-            'noopener,noreferrer'
-        );
-        expect(event.defaultPrevented).toBeTrue();
+        expect(openSpy).toHaveBeenCalledWith('https://example.com', '_blank', 'noopener,noreferrer');
+        expect(event.defaultPrevented).toBe(true);
     });
 
     it('should open a link in a new tab on a normal click when readonly', () => {
@@ -391,19 +388,15 @@ describe('RichTextEditorComponent', () => {
         fixture.detectChanges();
         const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
         editor.innerHTML = '<a href="https://example.com">Example</a>';
-        const openSpy = spyOn(window, 'open');
+        const openSpy = vi.spyOn(window, 'open').mockImplementation(() => undefined as never);
         const event = new MouseEvent('click', { bubbles: true, cancelable: true });
         editor.querySelector('a').dispatchEvent(event);
-        expect(openSpy).toHaveBeenCalledWith(
-            'https://example.com',
-            '_blank',
-            'noopener,noreferrer'
-        );
-        expect(event.defaultPrevented).toBeTrue();
+        expect(openSpy).toHaveBeenCalledWith('https://example.com', '_blank', 'noopener,noreferrer');
+        expect(event.defaultPrevented).toBe(true);
     });
 
     it('should not prepend https:// when URL already has protocol', () => {
-        const execSpy = spyOn(document, 'execCommand');
+        const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
         component.showLinkDialog = true;
         component.linkUrl = 'https://example.com';
         component.insertLink();
@@ -432,36 +425,38 @@ describe('RichTextEditorComponent', () => {
     });
 
     it('should apply a heading to a plain block', () => {
-        spyOn(document, 'queryCommandValue').and.returnValue('p');
-        const execSpy = spyOn(document, 'execCommand');
+        vi.spyOn(document, 'queryCommandValue').mockReturnValue('p');
+        const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
         component.execCommand('h1', new MouseEvent('mousedown'));
         expect(execSpy).toHaveBeenCalledWith('formatBlock', false, 'h1');
     });
 
     it('should turn the active heading back into a paragraph', () => {
-        spyOn(document, 'queryCommandValue').and.returnValue('h1');
-        const execSpy = spyOn(document, 'execCommand');
+        vi.spyOn(document, 'queryCommandValue').mockReturnValue('h1');
+        const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
         component.execCommand('h1', new MouseEvent('mousedown'));
         expect(execSpy).toHaveBeenCalledWith('formatBlock', false, 'p');
     });
 
     it('should replace the active heading with a different heading', () => {
-        spyOn(document, 'queryCommandValue').and.returnValue('h1');
-        const execSpy = spyOn(document, 'execCommand');
+        vi.spyOn(document, 'queryCommandValue').mockReturnValue('h1');
+        const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
         component.execCommand('h2', new MouseEvent('mousedown'));
         expect(execSpy).toHaveBeenCalledWith('formatBlock', false, 'h2');
     });
 
     it('should compare the active heading case-insensitively', () => {
-        spyOn(document, 'queryCommandValue').and.returnValue('H1');
-        const execSpy = spyOn(document, 'execCommand');
+        vi.spyOn(document, 'queryCommandValue').mockReturnValue('H1');
+        const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
         component.execCommand('h1', new MouseEvent('mousedown'));
         expect(execSpy).toHaveBeenCalledWith('formatBlock', false, 'p');
     });
 
     it('should apply the heading when the active block cannot be read', () => {
-        spyOn(document, 'queryCommandValue').and.throwError('not supported');
-        const execSpy = spyOn(document, 'execCommand');
+        vi.spyOn(document, 'queryCommandValue').mockImplementation(() => {
+            throw new Error('not supported');
+        });
+        const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
         component.execCommand('h3', new MouseEvent('mousedown'));
         expect(execSpy).toHaveBeenCalledWith('formatBlock', false, 'h3');
     });
@@ -470,7 +465,7 @@ describe('RichTextEditorComponent', () => {
         const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
         editor.innerHTML = '<ul><li>one</li></ul>';
         selectContents(editor.querySelector('li'));
-        const execSpy = spyOn(document, 'execCommand');
+        const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
         component.execCommand('h1', new MouseEvent('mousedown'));
         expect(execSpy).not.toHaveBeenCalled();
     });
@@ -479,8 +474,8 @@ describe('RichTextEditorComponent', () => {
         const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
         editor.innerHTML = '<p>one</p><ul><li>two</li></ul>';
         selectContents(editor.querySelector('p'));
-        spyOn(document, 'queryCommandValue').and.returnValue('p');
-        const execSpy = spyOn(document, 'execCommand');
+        vi.spyOn(document, 'queryCommandValue').mockReturnValue('p');
+        const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
         component.execCommand('h1', new MouseEvent('mousedown'));
         expect(execSpy).toHaveBeenCalledWith('formatBlock', false, 'h1');
     });
@@ -497,7 +492,7 @@ describe('RichTextEditorComponent', () => {
         const disabled = buttons.filter(item => item.disabled).map(item => item.title)
             .filter(title => !title.startsWith('Nothing to'));
 
-        expect(component.headingDisabled).toBeTrue();
+        expect(component.headingDisabled).toBe(true);
         expect(disabled.filter(title => title === 'Headings are not available inside a list').length)
             .toBe(3);
         expect(disabled.filter(title => title === 'This item is already at the top level').length)
@@ -511,21 +506,21 @@ describe('RichTextEditorComponent', () => {
         selectContents(editor.querySelector('li'));
         document.dispatchEvent(new Event('selectionchange'));
         fixture.detectChanges();
-        expect(component.headingDisabled).toBeTrue();
+        expect(component.headingDisabled).toBe(true);
 
         selectContents(editor.querySelector('p'));
         document.dispatchEvent(new Event('selectionchange'));
         fixture.detectChanges();
 
-        expect(component.headingDisabled).toBeFalse();
+        expect(component.headingDisabled).toBe(false);
         expect(fixture.debugElement.queryAll(By.css('.rte-btn'))
             .filter(item => item.nativeElement.disabled)
             .map(item => item.nativeElement.title)
             .filter((title: string) => !title.startsWith('Nothing to')))
             .toEqual([
-                'List levels are only available inside a list',
-                'List levels are only available inside a list'
-            ]);
+            'List levels are only available inside a list',
+            'List levels are only available inside a list'
+        ]);
     });
 
     it('should disable the decrease-level arrow on a top-level list item', () => {
@@ -535,9 +530,9 @@ describe('RichTextEditorComponent', () => {
         document.dispatchEvent(new Event('selectionchange'));
         fixture.detectChanges();
 
-        expect(component.listOutdentDisabled).toBeTrue();
-        expect(component.isCommandDisabled('outdent')).toBeTrue();
-        expect(component.isCommandDisabled('indent')).toBeFalse();
+        expect(component.listOutdentDisabled).toBe(true);
+        expect(component.isCommandDisabled('outdent')).toBe(true);
+        expect(component.isCommandDisabled('indent')).toBe(false);
         expect(component.commandTitle('outdent', 'Decrease list level'))
             .toBe('This item is already at the top level');
     });
@@ -549,8 +544,8 @@ describe('RichTextEditorComponent', () => {
         document.dispatchEvent(new Event('selectionchange'));
         fixture.detectChanges();
 
-        expect(component.listOutdentDisabled).toBeFalse();
-        expect(component.isCommandDisabled('outdent')).toBeFalse();
+        expect(component.listOutdentDisabled).toBe(false);
+        expect(component.isCommandDisabled('outdent')).toBe(false);
         expect(component.commandTitle('outdent', 'Decrease list level')).toBe('Decrease list level');
     });
 
@@ -558,7 +553,7 @@ describe('RichTextEditorComponent', () => {
         const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
         editor.innerHTML = '<ul><li>one</li></ul>';
         selectContents(editor.querySelector('li'));
-        const execSpy = spyOn(document, 'execCommand').and.returnValue(true);
+        const execSpy = vi.spyOn(document, 'execCommand').mockReturnValue(true);
 
         component.execCommand('outdent', new MouseEvent('mousedown'));
 
@@ -571,11 +566,11 @@ describe('RichTextEditorComponent', () => {
         editor.innerHTML = '<ul><li>one<ul><li>two<ul><li>three</li></ul></li></ul></li></ul>';
         const deepest = editor.querySelectorAll('li')[2];
         selectContents(deepest);
-        const execSpy = spyOn(document, 'execCommand').and.returnValue(true);
+        const execSpy = vi.spyOn(document, 'execCommand').mockReturnValue(true);
 
         component.execCommand('insertUnorderedList', new MouseEvent('mousedown'));
 
-        expect(execSpy.calls.allArgs().filter(args => args[0] === 'insertUnorderedList').length)
+        expect(vi.mocked(execSpy).mock.calls.filter(args => args[0] === 'insertUnorderedList').length)
             .toBe(3);
     });
 
@@ -583,11 +578,11 @@ describe('RichTextEditorComponent', () => {
         const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
         editor.innerHTML = '<p>one</p>';
         selectContents(editor.querySelector('p'));
-        const execSpy = spyOn(document, 'execCommand').and.returnValue(true);
+        const execSpy = vi.spyOn(document, 'execCommand').mockReturnValue(true);
 
         component.execCommand('insertUnorderedList', new MouseEvent('mousedown'));
 
-        expect(execSpy.calls.allArgs().filter(args => args[0] === 'insertUnorderedList').length)
+        expect(vi.mocked(execSpy).mock.calls.filter(args => args[0] === 'insertUnorderedList').length)
             .toBe(1);
     });
 
@@ -595,11 +590,11 @@ describe('RichTextEditorComponent', () => {
         const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
         editor.innerHTML = '<ul><li>one<ul><li>two</li></ul></li></ul>';
         selectContents(editor.querySelectorAll('li')[1]);
-        const execSpy = spyOn(document, 'execCommand').and.returnValue(true);
+        const execSpy = vi.spyOn(document, 'execCommand').mockReturnValue(true);
 
         component.execCommand('insertOrderedList', new MouseEvent('mousedown'));
 
-        expect(execSpy.calls.allArgs().filter(args => args[0] === 'insertOrderedList').length)
+        expect(vi.mocked(execSpy).mock.calls.filter(args => args[0] === 'insertOrderedList').length)
             .toBe(1);
     });
 
@@ -609,21 +604,21 @@ describe('RichTextEditorComponent', () => {
         document.dispatchEvent(new Event('selectionchange'));
         fixture.detectChanges();
 
-        expect(component.undoDisabled).toBeFalse();
-        expect(component.redoDisabled).toBeFalse();
-        expect(component.isCommandDisabled('undo')).toBeFalse();
+        expect(component.undoDisabled).toBe(false);
+        expect(component.redoDisabled).toBe(false);
+        expect(component.isCommandDisabled('undo')).toBe(false);
     });
 
     it('should disable undo and redo when the browser has nothing in its history', () => {
         const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
         editor.focus();
-        spyOn(document, 'queryCommandEnabled').and.returnValue(false);
+        vi.spyOn(document, 'queryCommandEnabled').mockReturnValue(false);
 
         document.dispatchEvent(new Event('selectionchange'));
         fixture.detectChanges();
 
-        expect(component.undoDisabled).toBeTrue();
-        expect(component.redoDisabled).toBeTrue();
+        expect(component.undoDisabled).toBe(true);
+        expect(component.redoDisabled).toBe(true);
         expect(component.commandTitle('undo', 'Undo (Ctrl+Z)')).toBe('Nothing to undo');
         expect(component.commandTitle('redo', 'Redo (Ctrl+Shift+Z)')).toBe('Nothing to redo');
     });
@@ -635,32 +630,32 @@ describe('RichTextEditorComponent', () => {
         editor.dispatchEvent(new InputEvent('beforeinput', { inputType: 'deleteContentBackward' }));
         editor.innerHTML = '<h1><br></h1>';
         editor.dispatchEvent(new InputEvent('input', { inputType: 'deleteContentBackward' }));
-        spyOn(document, 'queryCommandEnabled').and.returnValue(false);
+        vi.spyOn(document, 'queryCommandEnabled').mockReturnValue(false);
 
         document.dispatchEvent(new Event('selectionchange'));
         fixture.detectChanges();
 
-        expect(component.undoDisabled).toBeFalse();
-        expect(component.redoDisabled).toBeTrue();
+        expect(component.undoDisabled).toBe(false);
+        expect(component.redoDisabled).toBe(true);
     });
 
     it('should enable both while the browser reports history', () => {
         const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
         editor.focus();
-        spyOn(document, 'queryCommandEnabled').and.returnValue(true);
+        vi.spyOn(document, 'queryCommandEnabled').mockReturnValue(true);
 
         document.dispatchEvent(new Event('selectionchange'));
         fixture.detectChanges();
 
-        expect(component.undoDisabled).toBeFalse();
-        expect(component.redoDisabled).toBeFalse();
+        expect(component.undoDisabled).toBe(false);
+        expect(component.redoDisabled).toBe(false);
     });
 
     it('should merge a list the browser split when changing a list level', () => {
         const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
         editor.innerHTML = '<ul><li>one</li></ul><ul><li>two</li><li>three</li></ul>';
         selectContents(editor.querySelector('li'));
-        spyOn(document, 'execCommand').and.returnValue(true);
+        vi.spyOn(document, 'execCommand').mockReturnValue(true);
 
         component.execCommand('indent', new MouseEvent('mousedown'));
 
@@ -673,7 +668,7 @@ describe('RichTextEditorComponent', () => {
         const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
         editor.innerHTML = '<ol><li>one</li></ol><ol><li>two</li></ol>';
         selectContents(editor.querySelector('li'));
-        spyOn(document, 'execCommand').and.returnValue(true);
+        vi.spyOn(document, 'execCommand').mockReturnValue(true);
 
         component.execCommand('indent', new MouseEvent('mousedown'));
 
@@ -684,7 +679,7 @@ describe('RichTextEditorComponent', () => {
         const editor = fixture.debugElement.query(By.css('.rte-editor')).nativeElement;
         editor.innerHTML = '<ul><li>one</li></ul><ol><li>two</li></ol>';
         selectContents(editor.querySelector('li'));
-        spyOn(document, 'execCommand').and.returnValue(true);
+        vi.spyOn(document, 'execCommand').mockReturnValue(true);
 
         component.execCommand('indent', new MouseEvent('mousedown'));
 
@@ -702,7 +697,7 @@ describe('RichTextEditorComponent', () => {
     });
 
     it('should pass undo and redo straight to the browser', () => {
-        const execSpy = spyOn(document, 'execCommand');
+        const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
 
         component.execCommand('undo', new MouseEvent('mousedown'));
         component.execCommand('redo', new MouseEvent('mousedown'));
@@ -717,14 +712,14 @@ describe('RichTextEditorComponent', () => {
         selectContents(editor.querySelectorAll('li')[1]);
         document.dispatchEvent(new Event('selectionchange'));
         fixture.detectChanges();
-        const execSpy = spyOn(document, 'execCommand');
+        const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
 
         component.execCommand('indent', new MouseEvent('mousedown'));
         component.execCommand('outdent', new MouseEvent('mousedown'));
 
-        expect(component.listLevelDisabled).toBeFalse();
-        expect(component.isCommandDisabled('indent')).toBeFalse();
-        expect(component.isCommandDisabled('outdent')).toBeFalse();
+        expect(component.listLevelDisabled).toBe(false);
+        expect(component.isCommandDisabled('indent')).toBe(false);
+        expect(component.isCommandDisabled('outdent')).toBe(false);
         expect(execSpy).toHaveBeenCalledWith('indent', false, undefined);
         expect(execSpy).toHaveBeenCalledWith('outdent', false, undefined);
     });
@@ -735,12 +730,12 @@ describe('RichTextEditorComponent', () => {
         selectContents(editor.querySelector('p'));
         document.dispatchEvent(new Event('selectionchange'));
         fixture.detectChanges();
-        const execSpy = spyOn(document, 'execCommand');
+        const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
 
         component.execCommand('indent', new MouseEvent('mousedown'));
         component.execCommand('outdent', new MouseEvent('mousedown'));
 
-        expect(component.listLevelDisabled).toBeTrue();
+        expect(component.listLevelDisabled).toBe(true);
         expect(execSpy).not.toHaveBeenCalled();
     });
 
@@ -756,7 +751,7 @@ describe('RichTextEditorComponent', () => {
         expect(editor.innerHTML).toBe('');
         expect(emitted[emitted.length - 1]).toBe('');
 
-        const execSpy = spyOn(document, 'execCommand');
+        const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
         component.execCommand('undo', new MouseEvent('mousedown'));
 
         expect(editor.innerHTML).toBe('<p>one</p>');
@@ -775,23 +770,23 @@ describe('RichTextEditorComponent', () => {
         editor.innerHTML = '<p>two</p>';
         component.onInput(new InputEvent('input', { inputType: 'insertText' }));
 
-        const execSpy = spyOn(document, 'execCommand');
+        const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
         component.execCommand('undo', new MouseEvent('mousedown'));
 
         expect(execSpy).toHaveBeenCalledWith('undo', false, undefined);
     });
 
     it('should refuse a link with an unsupported protocol', () => {
-        const execSpy = spyOn(document, 'execCommand');
+        const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
         component.showLinkDialog = true;
         component.linkUrl = 'javascript:alert(1)';
         component.insertLink();
         expect(execSpy).not.toHaveBeenCalled();
-        expect(component.showLinkDialog).toBeFalse();
+        expect(component.showLinkDialog).toBe(false);
     });
 
     it('should keep a mailto link as typed', () => {
-        const execSpy = spyOn(document, 'execCommand');
+        const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
         component.showLinkDialog = true;
         component.linkUrl = 'mailto:user@example.com';
         component.insertLink();
@@ -799,30 +794,29 @@ describe('RichTextEditorComponent', () => {
     });
 
     it('should report an empty control value for visually empty markup', () => {
-        const changeSpy = jasmine.createSpy('onChange');
+        const changeSpy = vi.fn();
         component.registerOnChange(changeSpy);
         const editor = fixture.debugElement.query(By.css('.rte-editor'));
         editor.nativeElement.innerHTML = '<p><br></p>';
         editor.nativeElement.dispatchEvent(new Event('input'));
         expect(changeSpy).toHaveBeenCalledWith('');
-        expect(component.isEmpty).toBeTrue();
+        expect(component.isEmpty).toBe(true);
     });
 
     it('should insert sanitized markup on paste', () => {
-        const execSpy = spyOn(document, 'execCommand');
+        const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
         const event = new Event('paste') as any;
         event.clipboardData = {
-            getData: (type: string) =>
-                type === 'text/html' ? '<b>Bold</b><img src="x" onerror="steal()">' : ''
+            getData: (type: string) => type === 'text/html' ? '<b>Bold</b><img src="x" onerror="steal()">' : ''
         };
-        spyOn(event, 'preventDefault');
+        vi.spyOn(event, 'preventDefault').mockImplementation(() => undefined);
         component.onPaste(event);
         expect(event.preventDefault).toHaveBeenCalled();
         expect(execSpy).toHaveBeenCalledWith('insertHTML', false, '<b>Bold</b>');
     });
 
     it('should escape plain text pasted without markup', () => {
-        const execSpy = spyOn(document, 'execCommand');
+        const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
         const event = new Event('paste') as any;
         event.clipboardData = {
             getData: (type: string) => (type === 'text/html' ? '' : '5 < 6 & 7')
@@ -832,7 +826,7 @@ describe('RichTextEditorComponent', () => {
     });
 
     it('should keep the line breaks of plain text pasted without markup', () => {
-        const execSpy = spyOn(document, 'execCommand');
+        const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
         const event = new Event('paste') as any;
         event.clipboardData = {
             getData: (type: string) => (type === 'text/html' ? '' : 'one\ntwo\r\nthree\rfour')
@@ -842,7 +836,7 @@ describe('RichTextEditorComponent', () => {
     });
 
     it('should still escape each line of a multi-line plain text paste', () => {
-        const execSpy = spyOn(document, 'execCommand');
+        const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
         const event = new Event('paste') as any;
         event.clipboardData = {
             getData: (type: string) => (type === 'text/html' ? '' : '5 < 6\n<b>not bold</b>')
@@ -853,12 +847,12 @@ describe('RichTextEditorComponent', () => {
     });
 
     it('should not change the value when a paste carries no text', () => {
-        const execSpy = spyOn(document, 'execCommand');
+        const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
         const changes: string[] = [];
         component.registerOnChange((value: string) => changes.push(value));
         const event = new Event('paste') as any;
         event.clipboardData = { getData: () => '' };
-        spyOn(event, 'preventDefault');
+        vi.spyOn(event, 'preventDefault').mockImplementation(() => undefined);
         component.onPaste(event);
         expect(event.preventDefault).toHaveBeenCalled();
         expect(execSpy).not.toHaveBeenCalled();
@@ -876,39 +870,32 @@ describe('RichTextEditorComponent', () => {
     }
 
     it('should sanitize markup dropped into the editor', () => {
-        const execSpy = spyOn(document, 'execCommand');
-        const event = dropEvent(
-            '<table><tr><td><b>Bold</b></td></tr></table><img src="x"><p style="color:red">Red</p>',
-            ''
-        );
-        spyOn(event, 'preventDefault');
+        const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
+        const event = dropEvent('<table><tr><td><b>Bold</b></td></tr></table><img src="x"><p style="color:red">Red</p>', '');
+        vi.spyOn(event, 'preventDefault').mockImplementation(() => undefined);
         component.onDrop(event);
         expect(event.preventDefault).toHaveBeenCalled();
-        expect(execSpy).toHaveBeenCalledWith(
-            'insertHTML',
-            false,
-            '<table><tbody><tr><td><b>Bold</b></td></tr></tbody></table><p>Red</p>'
-        );
+        expect(execSpy).toHaveBeenCalledWith('insertHTML', false, '<table><tbody><tr><td><b>Bold</b></td></tr></tbody></table><p>Red</p>');
     });
 
     it('should escape plain text dropped without markup', () => {
-        const execSpy = spyOn(document, 'execCommand');
+        const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
         component.onDrop(dropEvent('', '5 < 6 & 7'));
         expect(execSpy).toHaveBeenCalledWith('insertHTML', false, '5 &lt; 6 &amp; 7');
     });
 
     it('should keep the line breaks of plain text dropped without markup', () => {
-        const execSpy = spyOn(document, 'execCommand');
+        const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
         component.onDrop(dropEvent('', 'one\ntwo'));
         expect(execSpy).toHaveBeenCalledWith('insertHTML', false, 'one<br>two');
     });
 
     it('should ignore a drop when readonly', () => {
-        const execSpy = spyOn(document, 'execCommand');
+        const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
         fixture.componentRef.setInput('readonly', true);
         fixture.detectChanges();
         const event = dropEvent('<b>Bold</b>', '');
-        spyOn(event, 'preventDefault');
+        vi.spyOn(event, 'preventDefault').mockImplementation(() => undefined);
         component.onDrop(event);
         expect(event.preventDefault).not.toHaveBeenCalled();
         expect(execSpy).not.toHaveBeenCalled();
@@ -916,36 +903,36 @@ describe('RichTextEditorComponent', () => {
 
     it('should accept the editor as a drop target only when editable', () => {
         const first = new Event('dragover') as any;
-        spyOn(first, 'preventDefault');
+        vi.spyOn(first, 'preventDefault').mockImplementation(() => undefined);
         component.onDragOver(first);
         expect(first.preventDefault).toHaveBeenCalled();
 
         fixture.componentRef.setInput('readonly', true);
         fixture.detectChanges();
         const second = new Event('dragover') as any;
-        spyOn(second, 'preventDefault');
+        vi.spyOn(second, 'preventDefault').mockImplementation(() => undefined);
         component.onDragOver(second);
         expect(second.preventDefault).not.toHaveBeenCalled();
     });
 
     it('should let the browser move text dragged inside the editor', () => {
-        const execSpy = spyOn(document, 'execCommand');
+        const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
         component.onDragStart();
 
         const over = new Event('dragover') as any;
-        spyOn(over, 'preventDefault');
+        vi.spyOn(over, 'preventDefault').mockImplementation(() => undefined);
         component.onDragOver(over);
         expect(over.preventDefault).not.toHaveBeenCalled();
 
         const drop = dropEvent('<b>Bold</b>', '');
-        spyOn(drop, 'preventDefault');
+        vi.spyOn(drop, 'preventDefault').mockImplementation(() => undefined);
         component.onDrop(drop);
         expect(drop.preventDefault).not.toHaveBeenCalled();
         expect(execSpy).not.toHaveBeenCalled();
     });
 
     it('should filter an external drop again once the internal drag has ended', () => {
-        const execSpy = spyOn(document, 'execCommand');
+        const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
         component.onDragStart();
         component.onDragEnd();
         component.onDrop(dropEvent('<b>Bold</b><img src="x">', ''));
@@ -953,11 +940,11 @@ describe('RichTextEditorComponent', () => {
     });
 
     it('should not change the value when a drop carries no text', () => {
-        const execSpy = spyOn(document, 'execCommand');
+        const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
         const changes: string[] = [];
         component.registerOnChange((value: string) => changes.push(value));
         const event = dropEvent('', '');
-        spyOn(event, 'preventDefault');
+        vi.spyOn(event, 'preventDefault').mockImplementation(() => undefined);
         component.onDrop(event);
         expect(event.preventDefault).toHaveBeenCalled();
         expect(execSpy).not.toHaveBeenCalled();
@@ -965,7 +952,7 @@ describe('RichTextEditorComponent', () => {
     });
 
     it('should focus the URL field when the link dialog opens', () => {
-        spyOn(document, 'execCommand');
+        vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
         const event = new MouseEvent('mousedown');
         component.execCommand('link', event);
         const input = fixture.debugElement.query(By.css('.rte-link-input'));
@@ -974,17 +961,17 @@ describe('RichTextEditorComponent', () => {
     });
 
     it('should close an open link dialog when a new value is written', () => {
-        spyOn(document, 'execCommand');
+        vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
         component.execCommand('link', new MouseEvent('mousedown'));
         component.linkUrl = 'https://example.com';
-        expect(component.showLinkDialog).toBeTrue();
+        expect(component.showLinkDialog).toBe(true);
 
         component.writeValue('<p>Another preset</p>');
         fixture.detectChanges();
 
-        expect(component.showLinkDialog).toBeFalse();
+        expect(component.showLinkDialog).toBe(false);
         expect(component.linkUrl).toBe('');
-        expect(component.isEditingLink).toBeFalse();
+        expect(component.isEditingLink).toBe(false);
         expect(fixture.debugElement.query(By.css('.rte-link-input'))).toBeNull();
     });
 
@@ -992,7 +979,7 @@ describe('RichTextEditorComponent', () => {
         component.writeValue('Text');
         fixture.detectChanges();
 
-        expect(component.showLinkDialog).toBeFalse();
+        expect(component.showLinkDialog).toBe(false);
         expect(fixture.debugElement.query(By.css('.rte-editor')).nativeElement.innerHTML)
             .toBe('<p>Text</p>');
     });
@@ -1024,36 +1011,36 @@ describe('RichTextEditorComponent', () => {
         }
 
         it('should mark a command the browser reports as on', () => {
-            spyOn(document, 'queryCommandState').and.callFake((c: string) => c === 'bold');
+            vi.spyOn(document, 'queryCommandState').mockImplementation((c: string) => c === 'bold');
             selectInsideEditor('<p>text</p>');
             refresh();
-            expect(component.isCommandActive('bold')).toBeTrue();
-            expect(component.isCommandActive('italic')).toBeFalse();
+            expect(component.isCommandActive('bold')).toBe(true);
+            expect(component.isCommandActive('italic')).toBe(false);
         });
 
         it('should mark only the heading level the caret is in', () => {
-            spyOn(document, 'queryCommandState').and.returnValue(false);
-            spyOn(document, 'queryCommandValue').and.returnValue('h2');
+            vi.spyOn(document, 'queryCommandState').mockReturnValue(false);
+            vi.spyOn(document, 'queryCommandValue').mockReturnValue('h2');
             selectInsideEditor('<h2>title</h2>');
             refresh();
-            expect(component.isCommandActive('h2')).toBeTrue();
-            expect(component.isCommandActive('h1')).toBeFalse();
-            expect(component.isCommandActive('h3')).toBeFalse();
+            expect(component.isCommandActive('h2')).toBe(true);
+            expect(component.isCommandActive('h1')).toBe(false);
+            expect(component.isCommandActive('h3')).toBe(false);
         });
 
         it('should mark the link button only when the caret is inside a link', () => {
-            spyOn(document, 'queryCommandState').and.returnValue(false);
+            vi.spyOn(document, 'queryCommandState').mockReturnValue(false);
             selectInsideEditor('<p><a href="https://example.com">link</a></p>', 'a');
             refresh();
-            expect(component.isCommandActive('link')).toBeTrue();
+            expect(component.isCommandActive('link')).toBe(true);
 
             selectInsideEditor('<p>plain</p>');
             refresh();
-            expect(component.isCommandActive('link')).toBeFalse();
+            expect(component.isCommandActive('link')).toBe(false);
         });
 
         it('should mark nothing when the caret is outside the editor', () => {
-            spyOn(document, 'queryCommandState').and.returnValue(true);
+            vi.spyOn(document, 'queryCommandState').mockReturnValue(true);
             const outside = document.createElement('p');
             outside.textContent = 'elsewhere';
             document.body.appendChild(outside);
@@ -1068,7 +1055,7 @@ describe('RichTextEditorComponent', () => {
         });
 
         it('should not replace the set when nothing changed', () => {
-            spyOn(document, 'queryCommandState').and.callFake((c: string) => c === 'bold');
+            vi.spyOn(document, 'queryCommandState').mockImplementation((c: string) => c === 'bold');
             selectInsideEditor('<p>text</p>');
             refresh();
             const first = component.activeCommands;
@@ -1077,23 +1064,25 @@ describe('RichTextEditorComponent', () => {
         });
 
         it('should survive a browser that throws on queryCommandState', () => {
-            spyOn(document, 'queryCommandState').and.throwError('not supported');
+            vi.spyOn(document, 'queryCommandState').mockImplementation(() => {
+                throw new Error('not supported');
+            });
             selectInsideEditor('<p>text</p>');
             expect(() => refresh()).not.toThrow();
-            expect(component.activeCommands.has('bold')).toBeFalse();
+            expect(component.activeCommands.has('bold')).toBe(false);
         });
 
         it('should never report a disabled heading button as active', () => {
-            spyOn(document, 'queryCommandState').and.returnValue(false);
-            spyOn(document, 'queryCommandValue').and.returnValue('h2');
+            vi.spyOn(document, 'queryCommandState').mockReturnValue(false);
+            vi.spyOn(document, 'queryCommandValue').mockReturnValue('h2');
             selectInsideEditor('<ul><li>item</li></ul>', 'li');
             refresh();
-            expect(component.headingDisabled).toBeTrue();
-            expect(component.isCommandActive('h2')).toBeFalse();
+            expect(component.headingDisabled).toBe(true);
+            expect(component.isCommandActive('h2')).toBe(false);
         });
 
         it('should put the state on the button as a class and aria-pressed', () => {
-            spyOn(document, 'queryCommandState').and.callFake((c: string) => c === 'bold');
+            vi.spyOn(document, 'queryCommandState').mockImplementation((c: string) => c === 'bold');
             selectInsideEditor('<p>text</p>');
             refresh();
             const bold = fixture.debugElement.queryAll(By.css('.rte-btn'))
@@ -1108,14 +1097,16 @@ describe('RichTextEditorComponent', () => {
         function pasteHtml(html: string): void {
             const event: any = new Event('paste');
             event.clipboardData = { getData: (type: string) => (type === 'text/html' ? html : '') };
-            event.preventDefault = () => {};
+            event.preventDefault = () => { };
             component.onPaste(event);
         }
 
         it('should drop the underline and keep its text', () => {
             const inserted: string[] = [];
-            spyOn(document, 'execCommand').and.callFake((command: string, _ui?: boolean, value?: string) => {
-                if (command === 'insertHTML') { inserted.push(value || ''); }
+            vi.spyOn(document, 'execCommand').mockImplementation((command: string, _ui?: boolean, value?: string) => {
+                if (command === 'insertHTML') {
+                    inserted.push(value || '');
+                }
                 return true;
             });
 
@@ -1127,8 +1118,10 @@ describe('RichTextEditorComponent', () => {
 
         it('should keep bold, italic, headings and lists', () => {
             const inserted: string[] = [];
-            spyOn(document, 'execCommand').and.callFake((command: string, _ui?: boolean, value?: string) => {
-                if (command === 'insertHTML') { inserted.push(value || ''); }
+            vi.spyOn(document, 'execCommand').mockImplementation((command: string, _ui?: boolean, value?: string) => {
+                if (command === 'insertHTML') {
+                    inserted.push(value || '');
+                }
                 return true;
             });
 
@@ -1175,7 +1168,7 @@ describe('RichTextEditorComponent', () => {
         });
 
         it('should refuse a file that is not png, jpeg or webp', async () => {
-            const uploader = jasmine.createSpy('uploader').and.resolveTo(reference);
+            const uploader = vi.fn().mockResolvedValue(reference);
             component.imageUploader = uploader;
 
             await selectFile(pngFile('notes.pdf', 'application/pdf'));
@@ -1186,7 +1179,7 @@ describe('RichTextEditorComponent', () => {
         });
 
         it('should refuse a file whose content is not an image even when its name says png', async () => {
-            const uploader = jasmine.createSpy('uploader').and.resolveTo(reference);
+            const uploader = vi.fn().mockResolvedValue(reference);
             component.imageUploader = uploader;
             const pdfBytes = new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d, 0x31, 0x2e, 0x34]);
 
@@ -1195,7 +1188,7 @@ describe('RichTextEditorComponent', () => {
             expect(uploader).not.toHaveBeenCalled();
             expect(component.imageError).toContain('report.png');
             expect(component.imageError).toContain('PNG, JPEG or WebP');
-            expect(component.imageLoading).toBeFalse();
+            expect(component.imageLoading).toBe(false);
         });
 
         it('should still prepare a real picture', async () => {
@@ -1206,20 +1199,16 @@ describe('RichTextEditorComponent', () => {
                 bytes[index] = binary.charCodeAt(index);
             }
 
-            const prepared = await (component as any)._prepareImage(
-                new File([bytes], 'dot.png', { type: 'image/png' })
-            );
+            const prepared = await (component as any)._prepareImage(new File([bytes], 'dot.png', { type: 'image/png' }));
 
             expect(prepared).toBeTruthy();
             expect(prepared.size).toBeGreaterThan(0);
         });
 
         it('should refuse a file still over the limit and report both sizes', async () => {
-            const uploader = jasmine.createSpy('uploader').and.resolveTo(reference);
+            const uploader = vi.fn().mockResolvedValue(reference);
             component.imageUploader = uploader;
-            spyOn<any>(component, '_prepareImage').and.resolveTo(
-                new File([new Uint8Array(900 * 1024)], 'photo.png', { type: 'image/png' })
-            );
+            vi.spyOn(component as any, '_prepareImage').mockResolvedValue(new File([new Uint8Array(900 * 1024)], 'photo.png', { type: 'image/png' }));
 
             await selectFile(pngFile());
 
@@ -1288,9 +1277,9 @@ describe('RichTextEditorComponent', () => {
             let emitted = '';
             component.registerOnChange(value => { emitted = value; });
             component.imageUploader = async () => reference;
-            spyOn<any>(component, '_prepareImage').and.callFake((file: File) => Promise.resolve(file));
-            spyOn<any>(component, '_readAsDataUrl').and.resolveTo('data:image/webp;base64,AAAA');
-            spyOn(document, 'execCommand').and.callFake((command: string, _ui?: boolean, value?: string) => {
+            vi.spyOn(component as any, '_prepareImage').mockImplementation((file: unknown) => Promise.resolve(file));
+            vi.spyOn(component as any, '_readAsDataUrl').mockResolvedValue('data:image/webp;base64,AAAA');
+            vi.spyOn(document, 'execCommand').mockImplementation((command: string, _ui?: boolean, value?: string) => {
                 if (command === 'insertHTML') {
                     component.editorRef.nativeElement.innerHTML = value || '';
                 }
@@ -1317,9 +1306,9 @@ describe('RichTextEditorComponent', () => {
             const editor = hostFixture.debugElement
                 .query(By.directive(RichTextEditorComponent))
                 .componentInstance as RichTextEditorComponent;
-            spyOn<any>(editor, '_prepareImage').and.callFake((file: File) => Promise.resolve(file));
-            spyOn<any>(editor, '_readAsDataUrl').and.resolveTo('data:image/webp;base64,AAAA');
-            spyOn(document, 'execCommand').and.callFake((command: string, _ui?: boolean, value?: string) => {
+            vi.spyOn(editor as any, '_prepareImage').mockImplementation((file: unknown) => Promise.resolve(file));
+            vi.spyOn(editor as any, '_readAsDataUrl').mockResolvedValue('data:image/webp;base64,AAAA');
+            vi.spyOn(document, 'execCommand').mockImplementation((command: string, _ui?: boolean, value?: string) => {
                 if (command === 'insertHTML') {
                     editor.editorRef.nativeElement.innerHTML = value || '';
                 }
@@ -1339,31 +1328,31 @@ describe('RichTextEditorComponent', () => {
             const firstUpload = editor.onImageSelected({ target: firstInput } as any);
             const secondUpload = editor.onImageSelected({ target: secondInput } as any);
 
-            expect(host.control.hasError('imageUploading')).toBeTrue();
-            expect(host.control.invalid).toBeTrue();
+            expect(host.control.hasError('imageUploading')).toBe(true);
+            expect(host.control.invalid).toBe(true);
 
             await Promise.resolve();
             finishUploads[0](reference);
             await firstUpload;
 
-            expect(host.control.hasError('imageUploading')).toBeTrue();
-            expect(host.control.invalid).toBeTrue();
+            expect(host.control.hasError('imageUploading')).toBe(true);
+            expect(host.control.invalid).toBe(true);
 
             finishUploads[1](reference);
             await secondUpload;
 
-            expect(host.control.hasError('imageUploading')).toBeFalse();
-            expect(host.control.valid).toBeTrue();
+            expect(host.control.hasError('imageUploading')).toBe(false);
+            expect(host.control.valid).toBe(true);
             hostFixture.destroy();
         });
 
         it('should report a failed upload and leave the value alone', async () => {
             let emitted: string | null = null;
-            const validatorChange = jasmine.createSpy('validatorChange');
+            const validatorChange = vi.fn();
             component.registerOnChange(value => { emitted = value; });
             component.registerOnValidatorChange(validatorChange);
             component.imageUploader = () => Promise.reject(new Error('gone'));
-            spyOn<any>(component, '_prepareImage').and.callFake((file: File) => Promise.resolve(file));
+            vi.spyOn(component as any, '_prepareImage').mockImplementation((file: unknown) => Promise.resolve(file));
 
             await selectFile(pngFile());
 
@@ -1375,13 +1364,13 @@ describe('RichTextEditorComponent', () => {
 
         it('should disable the image button while an upload is in flight', () => {
             component.imageLoading = true;
-            expect(component.isCommandDisabled('image')).toBeTrue();
+            expect(component.isCommandDisabled('image')).toBe(true);
             component.imageLoading = false;
-            expect(component.isCommandDisabled('image')).toBeFalse();
+            expect(component.isCommandDisabled('image')).toBe(false);
         });
 
         it('should resolve a stored reference once and fill src', async () => {
-            const resolver = jasmine.createSpy('resolver').and.resolveTo('data:image/webp;base64,BBBB');
+            const resolver = vi.fn().mockResolvedValue('data:image/webp;base64,BBBB');
             component.imageResolver = resolver;
 
             component.writeValue(`![One](${reference})\n\n![Two](${reference})`);
@@ -1425,7 +1414,7 @@ describe('RichTextEditorComponent', () => {
 
         function pasteEvent(files: FileList | null, html = '', text = ''): any {
             return {
-                preventDefault: () => {},
+                preventDefault: () => { },
                 clipboardData: {
                     files,
                     getData: (type: string) => (type === 'text/html' ? html : text)
@@ -1435,7 +1424,7 @@ describe('RichTextEditorComponent', () => {
 
         function dropEvent(files: FileList | null, html = '', text = ''): any {
             return {
-                preventDefault: () => {},
+                preventDefault: () => { },
                 clientX: 0,
                 clientY: 0,
                 dataTransfer: {
@@ -1450,7 +1439,7 @@ describe('RichTextEditorComponent', () => {
         }
 
         function captureInsertedHtml(): void {
-            spyOn(document, 'execCommand').and.callFake((command: string, _ui?: boolean, value?: string) => {
+            vi.spyOn(document, 'execCommand').mockImplementation((command: string, _ui?: boolean, value?: string) => {
                 if (command === 'insertHTML') {
                     component.editorRef.nativeElement.innerHTML += value || '';
                 }
@@ -1458,11 +1447,11 @@ describe('RichTextEditorComponent', () => {
             });
         }
 
-        function bindWorkingUploader(): jasmine.Spy {
-            const uploader = jasmine.createSpy('uploader').and.resolveTo(reference);
+        function bindWorkingUploader(): Mock {
+            const uploader = vi.fn().mockResolvedValue(reference);
             component.imageUploader = uploader;
-            spyOn<any>(component, '_prepareImage').and.callFake((file: File) => Promise.resolve(file));
-            spyOn<any>(component, '_readAsDataUrl').and.resolveTo('data:image/webp;base64,AAAA');
+            vi.spyOn(component as any, '_prepareImage').mockImplementation((file: unknown) => Promise.resolve(file));
+            vi.spyOn(component as any, '_readAsDataUrl').mockResolvedValue('data:image/webp;base64,AAAA');
             return uploader;
         }
 
@@ -1574,14 +1563,14 @@ describe('RichTextEditorComponent', () => {
             let emitted: string | null = null;
             component.registerOnChange(value => { emitted = value; });
             component.imageUploader = () => Promise.reject(new Error('gone'));
-            spyOn<any>(component, '_prepareImage').and.callFake((file: File) => Promise.resolve(file));
+            vi.spyOn(component as any, '_prepareImage').mockImplementation((file: unknown) => Promise.resolve(file));
             captureInsertedHtml();
 
             component.onPaste(pasteEvent(fileList(imageFile())));
             await flush();
 
             expect(component.imageError).toContain('could not be uploaded');
-            expect(component.imageLoading).toBeFalse();
+            expect(component.imageLoading).toBe(false);
             expect(emitted).toBeNull();
         });
     });
@@ -1602,8 +1591,7 @@ describe('RichTextEditorComponent', () => {
         }
 
         function rowTexts(): string[][] {
-            return Array.from(editor().querySelectorAll('tr')).map(row =>
-                Array.from(row.children).map(cell => cell.tagName + ':' + (cell.textContent || '').trim()));
+            return Array.from(editor().querySelectorAll('tr')).map(row => Array.from(row.children).map(cell => cell.tagName + ':' + (cell.textContent || '').trim()));
         }
 
         it('should offer the five table commands', () => {
@@ -1633,13 +1621,13 @@ describe('RichTextEditorComponent', () => {
 
             caretInto(editor.querySelector('td'));
 
-            expect(component.showTableToolbar).toBeTrue();
+            expect(component.showTableToolbar).toBe(true);
             expect(tableToolbar()).toBeTruthy();
             expect(tableToolbar().queryAll(By.css('.rte-btn')).length).toBe(4);
 
             caretInto(editor.querySelector('p'));
 
-            expect(component.showTableToolbar).toBeFalse();
+            expect(component.showTableToolbar).toBe(false);
             expect(tableToolbar()).toBeNull();
         });
 
@@ -1652,7 +1640,7 @@ describe('RichTextEditorComponent', () => {
             const buttons = tableToolbar().queryAll(By.css('.rte-btn'))
                 .map((item: any) => item.nativeElement as HTMLButtonElement);
 
-            expect(buttons.every((item: HTMLButtonElement) => !item.disabled)).toBeTrue();
+            expect(buttons.every((item: HTMLButtonElement) => !item.disabled)).toBe(true);
             expect(buttons.map((item: HTMLButtonElement) => item.title)).toEqual([
                 'Add a row below',
                 'Remove this row',
@@ -1666,8 +1654,8 @@ describe('RichTextEditorComponent', () => {
             editor.innerHTML = '<table><tbody><tr><td>one</td></tr></tbody></table>';
             const table = editor.querySelector('table');
             const wrapper = editor.parentElement;
-            spyOn(wrapper, 'getBoundingClientRect').and.returnValue(new DOMRect(20, 10, 500, 300));
-            spyOn(table, 'getBoundingClientRect').and.returnValue(new DOMRect(60, 120, 300, 80));
+            vi.spyOn(wrapper, 'getBoundingClientRect').mockReturnValue(new DOMRect(20, 10, 500, 300));
+            vi.spyOn(table, 'getBoundingClientRect').mockReturnValue(new DOMRect(60, 120, 300, 80));
 
             caretInto(editor.querySelector('td'));
 
@@ -1679,8 +1667,8 @@ describe('RichTextEditorComponent', () => {
             editor.innerHTML = '<table><tbody><tr><td>one</td></tr></tbody></table>';
             const table = editor.querySelector('table');
             const wrapper = editor.parentElement;
-            spyOn(wrapper, 'getBoundingClientRect').and.returnValue(new DOMRect(20, 10, 500, 300));
-            spyOn(table, 'getBoundingClientRect').and.returnValue(new DOMRect(60, 20, 300, 80));
+            vi.spyOn(wrapper, 'getBoundingClientRect').mockReturnValue(new DOMRect(20, 10, 500, 300));
+            vi.spyOn(table, 'getBoundingClientRect').mockReturnValue(new DOMRect(60, 20, 300, 80));
 
             caretInto(editor.querySelector('td'));
 
@@ -1700,45 +1688,45 @@ describe('RichTextEditorComponent', () => {
         });
 
         it('should open the size picker instead of inserting a table straight away', () => {
-            const execSpy = spyOn(document, 'execCommand');
+            const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
 
             component.execCommand('table', new MouseEvent('mousedown'));
             fixture.detectChanges();
 
-            expect(component.showTableSizePicker).toBeTrue();
+            expect(component.showTableSizePicker).toBe(true);
             expect(execSpy).not.toHaveBeenCalled();
             expect(fixture.debugElement.queryAll(By.css('.rte-table-picker-cell')).length).toBe(100);
         });
 
         it('should insert a table of the picked size, with a header row and a paragraph after it', () => {
-            const execSpy = spyOn(document, 'execCommand');
+            const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
 
             component.insertTableOfSize(2, 2, new MouseEvent('mousedown'));
 
-            const html = execSpy.calls.mostRecent().args[2] as string;
+            const html = vi.mocked(execSpy).mock.lastCall![2] as string;
             expect(html).toContain('<thead><tr><th>Header 1</th><th>Header 2</th></tr></thead>');
             expect(html).toContain('<tbody><tr><td><br></td><td><br></td></tr></tbody>');
-            expect(html.endsWith('<p><br></p>')).toBeTrue();
-            expect(component.showTableSizePicker).toBeFalse();
+            expect(html.endsWith('<p><br></p>')).toBe(true);
+            expect(component.showTableSizePicker).toBe(false);
         });
 
         it('should insert as many rows and columns as were picked', () => {
-            const execSpy = spyOn(document, 'execCommand');
+            const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
 
             component.insertTableOfSize(4, 3, new MouseEvent('mousedown'));
 
-            const html = execSpy.calls.mostRecent().args[2] as string;
+            const html = vi.mocked(execSpy).mock.lastCall![2] as string;
             expect(html).toContain('<th>Header 3</th>');
             expect(html).not.toContain('<th>Header 4</th>');
             expect((html.match(/<tr><td>/g) || []).length).toBe(3);
         });
 
         it('should insert a header-only table when one row is picked', () => {
-            const execSpy = spyOn(document, 'execCommand');
+            const execSpy = vi.spyOn(document, 'execCommand').mockImplementation(() => undefined as never);
 
             component.insertTableOfSize(1, 2, new MouseEvent('mousedown'));
 
-            const html = execSpy.calls.mostRecent().args[2] as string;
+            const html = vi.mocked(execSpy).mock.lastCall![2] as string;
             expect(html).toContain('<tbody></tbody>');
         });
 
@@ -1754,7 +1742,7 @@ describe('RichTextEditorComponent', () => {
             document.body.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
             fixture.detectChanges();
 
-            expect(component.showTableSizePicker).toBeFalse();
+            expect(component.showTableSizePicker).toBe(false);
         });
 
         it('should close the picker on a click in the text', () => {
@@ -1765,7 +1753,7 @@ describe('RichTextEditorComponent', () => {
                 .dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
             fixture.detectChanges();
 
-            expect(component.showTableSizePicker).toBeFalse();
+            expect(component.showTableSizePicker).toBe(false);
         });
 
         it('should stay open for the press that opened it', () => {
@@ -1774,7 +1762,7 @@ describe('RichTextEditorComponent', () => {
             document.dispatchEvent(press);
             fixture.detectChanges();
 
-            expect(component.showTableSizePicker).toBeTrue();
+            expect(component.showTableSizePicker).toBe(true);
         });
 
         it('should stay open while the pointer is pressed inside the grid', () => {
@@ -1784,17 +1772,17 @@ describe('RichTextEditorComponent', () => {
             fixture.debugElement.query(By.css('.rte-table-picker')).nativeElement
                 .dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
 
-            expect(component.showTableSizePicker).toBeTrue();
+            expect(component.showTableSizePicker).toBe(true);
         });
 
         it('should disable the list buttons and level arrows inside a cell', () => {
             editor().innerHTML = TABLE;
             caretIn('td');
 
-            expect(component.inTableCell).toBeTrue();
-            expect(component.isCommandDisabled('insertUnorderedList')).toBeTrue();
-            expect(component.isCommandDisabled('insertOrderedList')).toBeTrue();
-            expect(component.isCommandDisabled('indent')).toBeTrue();
+            expect(component.inTableCell).toBe(true);
+            expect(component.isCommandDisabled('insertUnorderedList')).toBe(true);
+            expect(component.isCommandDisabled('insertOrderedList')).toBe(true);
+            expect(component.isCommandDisabled('indent')).toBe(true);
             expect(component.commandTitle('insertUnorderedList', 'Bullet list'))
                 .toBe('Lists are not available inside a table');
         });
@@ -1802,9 +1790,9 @@ describe('RichTextEditorComponent', () => {
         it('should disable the heading buttons inside a cell', () => {
             editor().innerHTML = TABLE;
             caretIn('td');
-            const execSpy = spyOn(document, 'execCommand').and.returnValue(true);
+            const execSpy = vi.spyOn(document, 'execCommand').mockReturnValue(true);
 
-            expect(component.isCommandDisabled('h1')).toBeTrue();
+            expect(component.isCommandDisabled('h1')).toBe(true);
             expect(component.commandTitle('h1', 'Heading 1'))
                 .toBe('Headings are not available inside a table');
 
@@ -1818,8 +1806,8 @@ describe('RichTextEditorComponent', () => {
             editor().innerHTML = TABLE;
             caretIn('td');
 
-            expect(component.isCommandDisabled('image')).toBeTrue();
-            expect(component.isCommandDisabled('table')).toBeTrue();
+            expect(component.isCommandDisabled('image')).toBe(true);
+            expect(component.isCommandDisabled('table')).toBe(true);
             expect(component.commandTitle('image', 'Insert image'))
                 .toBe('Pictures are not available inside a table');
             expect(component.commandTitle('table', 'Insert table'))
@@ -1834,18 +1822,16 @@ describe('RichTextEditorComponent', () => {
             component.execCommand('table', new MouseEvent('mousedown'));
             component.execCommand('image', new MouseEvent('mousedown'));
 
-            expect(component.showTableSizePicker).toBeFalse();
+            expect(component.showTableSizePicker).toBe(false);
         });
 
         it('should refuse a pasted or dropped picture inside a cell', async () => {
             editor().innerHTML = TABLE;
             caretIn('td');
-            const uploader = jasmine.createSpy('uploader').and.resolveTo('ipfs://one');
+            const uploader = vi.fn().mockResolvedValue('ipfs://one');
             component.imageUploader = uploader;
 
-            await (component as any)._uploadAndInsertImage(
-                new File([new Uint8Array([1, 2, 3])], 'photo.png', { type: 'image/png' })
-            );
+            await (component as any)._uploadAndInsertImage(new File([new Uint8Array([1, 2, 3])], 'photo.png', { type: 'image/png' }));
 
             expect(uploader).not.toHaveBeenCalled();
             expect(component.imageError).toBe('Pictures are not available inside a table');
@@ -1854,7 +1840,7 @@ describe('RichTextEditorComponent', () => {
         it('should not make a list inside a cell', () => {
             editor().innerHTML = TABLE;
             caretIn('td');
-            const execSpy = spyOn(document, 'execCommand').and.returnValue(true);
+            const execSpy = vi.spyOn(document, 'execCommand').mockReturnValue(true);
 
             component.execCommand('insertUnorderedList', new MouseEvent('mousedown'));
             component.execCommand('indent', new MouseEvent('mousedown'));
@@ -1867,8 +1853,8 @@ describe('RichTextEditorComponent', () => {
             editor().innerHTML = '<p>outside</p>' + TABLE;
             caretIn('p');
 
-            expect(component.inTableCell).toBeFalse();
-            expect(component.isCommandDisabled('insertUnorderedList')).toBeFalse();
+            expect(component.inTableCell).toBe(false);
+            expect(component.isCommandDisabled('insertUnorderedList')).toBe(false);
         });
 
         it('should put a table after the list rather than inside it', () => {
@@ -1887,12 +1873,12 @@ describe('RichTextEditorComponent', () => {
         it('should insert at the caret when it is not in a list', () => {
             editor().innerHTML = '<p>one</p>';
             caretIn('p');
-            const execSpy = spyOn(document, 'execCommand').and.returnValue(true);
+            const execSpy = vi.spyOn(document, 'execCommand').mockReturnValue(true);
 
             component.insertTableOfSize(2, 2, new MouseEvent('mousedown'));
 
             expect(execSpy).toHaveBeenCalled();
-            expect(execSpy.calls.mostRecent().args[0]).toBe('insertHTML');
+            expect(vi.mocked(execSpy).mock.lastCall![0]).toBe('insertHTML');
         });
 
         it('should delete the table on the first backspace after it', () => {
@@ -1909,17 +1895,17 @@ describe('RichTextEditorComponent', () => {
             editor().dispatchEvent(event);
 
             expect(editor().querySelector('table')).toBeNull();
-            expect(event.defaultPrevented).toBeTrue();
+            expect(event.defaultPrevented).toBe(true);
         });
 
         it('should add a row through the browser so undo can restore the table', () => {
             editor().innerHTML = TABLE;
             caretIn('td');
-            const execSpy = spyOn(document, 'execCommand').and.returnValue(true);
+            const execSpy = vi.spyOn(document, 'execCommand').mockReturnValue(true);
 
             component.execCommand('tableRowAdd', new MouseEvent('mousedown'));
 
-            expect(execSpy.calls.allArgs().some(args => args[0] === 'insertHTML')).toBeTrue();
+            expect(vi.mocked(execSpy).mock.calls.some(args => args[0] === 'insertHTML')).toBe(true);
         });
 
         it('should collapse a whole-table selection after undo', () => {
@@ -1930,21 +1916,19 @@ describe('RichTextEditorComponent', () => {
             const selection = window.getSelection();
             selection?.removeAllRanges();
             selection?.addRange(range);
-            spyOn(document, 'execCommand').and.returnValue(true);
+            vi.spyOn(document, 'execCommand').mockReturnValue(true);
 
             component.execCommand('undo', new MouseEvent('mousedown'));
 
-            expect(window.getSelection()?.isCollapsed).toBeTrue();
-            expect(editor().querySelector('th')?.contains(
-                window.getSelection()?.anchorNode as Node
-            ) || editor().querySelector('th') === window.getSelection()?.anchorNode).toBeTrue();
+            expect(window.getSelection()?.isCollapsed).toBe(true);
+            expect(editor().querySelector('th')?.contains(window.getSelection()?.anchorNode as Node) || editor().querySelector('th') === window.getSelection()?.anchorNode).toBe(true);
         });
 
         it('should keep the view on the edited cell when a row is added', () => {
             editor().innerHTML = TABLE;
             caretIn('td');
             const scrolls: any[] = [];
-            spyOn(Element.prototype, 'scrollIntoView').and.callFake(function (this: Element, options: any) {
+            vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(function (this: Element, options: any) {
                 scrolls.push(options);
             });
 
@@ -1972,7 +1956,7 @@ describe('RichTextEditorComponent', () => {
             const selection = window.getSelection();
             selection?.removeAllRanges();
             selection?.addRange(range);
-            const execSpy = spyOn(document, 'execCommand').and.returnValue(true);
+            const execSpy = vi.spyOn(document, 'execCommand').mockReturnValue(true);
 
             editor().dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace', cancelable: true }));
 
@@ -1988,7 +1972,7 @@ describe('RichTextEditorComponent', () => {
             editor().dispatchEvent(event);
 
             expect(editor().querySelector('table')).toBeTruthy();
-            expect(event.defaultPrevented).toBeFalse();
+            expect(event.defaultPrevented).toBe(false);
         });
 
         it('should leave a backspace in ordinary text to the browser', () => {
@@ -1998,7 +1982,7 @@ describe('RichTextEditorComponent', () => {
             const event = new KeyboardEvent('keydown', { key: 'Backspace', cancelable: true });
             editor().dispatchEvent(event);
 
-            expect(event.defaultPrevented).toBeFalse();
+            expect(event.defaultPrevented).toBe(false);
         });
 
         function caretAt(node: Node, offset: number): void {
@@ -2023,7 +2007,7 @@ describe('RichTextEditorComponent', () => {
             const event = backspace();
 
             expect(editor().querySelector('table')).toBeNull();
-            expect(event.defaultPrevented).toBeTrue();
+            expect(event.defaultPrevented).toBe(true);
         });
 
         it('should delete the table when a wrapper holds both the table and the caret', () => {
@@ -2034,7 +2018,7 @@ describe('RichTextEditorComponent', () => {
 
             expect(editor().querySelector('table')).toBeNull();
             expect(editor().querySelector('ul')).toBeTruthy();
-            expect(event.defaultPrevented).toBeTrue();
+            expect(event.defaultPrevented).toBe(true);
         });
 
         it('should leave a backspace after plain text in the editor root to the browser', () => {
@@ -2044,7 +2028,7 @@ describe('RichTextEditorComponent', () => {
             const event = backspace();
 
             expect(editor().querySelector('table')).toBeTruthy();
-            expect(event.defaultPrevented).toBeFalse();
+            expect(event.defaultPrevented).toBe(false);
         });
 
         it('should leave a backspace at the very start of the editor to the browser', () => {
@@ -2054,20 +2038,20 @@ describe('RichTextEditorComponent', () => {
             const event = backspace();
 
             expect(editor().querySelector('table')).toBeTruthy();
-            expect(event.defaultPrevented).toBeFalse();
+            expect(event.defaultPrevented).toBe(false);
         });
 
         it('should enable the edit commands only inside a cell', () => {
             editor().innerHTML = '<p>outside</p>' + TABLE;
             caretIn('p');
-            expect(component.tableEditDisabled).toBeTrue();
-            expect(component.isCommandDisabled('tableRowAdd')).toBeTrue();
+            expect(component.tableEditDisabled).toBe(true);
+            expect(component.isCommandDisabled('tableRowAdd')).toBe(true);
             expect(component.commandTitle('tableRowAdd', 'Add a row below'))
                 .toBe('Table changes are only available inside a table');
 
             caretIn('td');
-            expect(component.tableEditDisabled).toBeFalse();
-            expect(component.isCommandDisabled('tableRowAdd')).toBeFalse();
+            expect(component.tableEditDisabled).toBe(false);
+            expect(component.isCommandDisabled('tableRowAdd')).toBe(false);
         });
 
         it('should add a row below the current body row', () => {
@@ -2184,7 +2168,7 @@ describe('RichTextEditorComponent', () => {
             editor().innerHTML = '<p>outside</p>';
             caretIn('p');
             const event = new KeyboardEvent('keydown', { key: 'Tab' });
-            spyOn(event, 'preventDefault');
+            vi.spyOn(event, 'preventDefault').mockImplementation(() => undefined);
 
             component.onKeyDown(event);
 
@@ -2195,7 +2179,7 @@ describe('RichTextEditorComponent', () => {
             editor().innerHTML = TABLE;
             caretIn('td', 0);
             const event = new KeyboardEvent('keydown', { key: 'a' });
-            spyOn(event, 'preventDefault');
+            vi.spyOn(event, 'preventDefault').mockImplementation(() => undefined);
 
             component.onKeyDown(event);
 

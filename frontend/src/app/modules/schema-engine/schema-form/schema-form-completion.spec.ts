@@ -174,8 +174,8 @@ describe('countRequired – arrays of rows, excluded fields and Preview', () => 
             const count = (form: FieldForm) => computeCompletion(form.controls, [], requiredWithoutControl(form.controls, required).map(() => -1));
             const before = build({ name: 'a', rows: [{ v: '1' }] }, undefined, required, nested);
             const after = build({ name: 'a', rows: [{ v: '1', inner: {} }] }, undefined, required, nested);
-            expect(count(before)).toEqual(jasmine.objectContaining({ answered: 1, total: 2 }));
-            expect(count(after)).toEqual(jasmine.objectContaining({ answered: 1, total: 2 }));
+            expect(count(before)).toEqual(expect.objectContaining({ answered: 1, total: 2 }));
+            expect(count(after)).toEqual(expect.objectContaining({ answered: 1, total: 2 }));
             before.destroy();
             after.destroy();
         });
@@ -359,10 +359,10 @@ describe('SchemaFormComponent requiredLeft cache', () => {
     it('reuses the count until a child value changes', () => {
         const { view, group } = build();
         const first = view.requiredLeft(group);
-        expect(first).toEqual(jasmine.objectContaining({ left: 2, total: 2 }));
+        expect(first).toEqual(expect.objectContaining({ left: 2, total: 2 }));
         expect(view.requiredLeft(group)).toBe(first);
         group.control.get('one')!.setValue('x');
-        expect(view.requiredLeft(group)).toEqual(jasmine.objectContaining({ left: 1, total: 2 }));
+        expect(view.requiredLeft(group)).toEqual(expect.objectContaining({ left: 1, total: 2 }));
     });
 
     it('updates after a condition hides a required field', () => {
@@ -371,7 +371,7 @@ describe('SchemaFormComponent requiredLeft cache', () => {
         // A condition hides a field with emitEvent: false and announces it on controlsChanged$.
         group.model!.controls!.find((c: IFieldControl<any>) => c.name === 'two')!.visibility = false;
         model.controlsChanged$.next();
-        expect(view.requiredLeft(group)).toEqual(jasmine.objectContaining({ left: 1, total: 1 }));
+        expect(view.requiredLeft(group)).toEqual(expect.objectContaining({ left: 1, total: 1 }));
     });
 
     it('stops listening on destroy', () => {
@@ -403,25 +403,25 @@ describe('SchemaFormComponent requiredLeft cache', () => {
 
         it('counts as left in Preview when the server names it', () => {
             const { view, group } = buildNested(['group.one', 'group.two', 'group.inner.x']);
-            expect(view.requiredLeft(group)).toEqual(jasmine.objectContaining({ left: 1, total: 3 }));
+            expect(view.requiredLeft(group)).toEqual(expect.objectContaining({ left: 1, total: 3 }));
         });
 
         it('is not counted in ordinary mode', () => {
             const { view, group } = buildNested(null);
-            expect(view.requiredLeft(group)).toEqual(jasmine.objectContaining({ left: 0, total: 2 }));
+            expect(view.requiredLeft(group)).toEqual(expect.objectContaining({ left: 0, total: 2 }));
         });
 
         it('updates the chip when a later server answer names it', () => {
             const { model, view, group } = buildNested(['group.one', 'group.two']);
-            expect(view.requiredLeft(group)).toEqual(jasmine.objectContaining({ left: 0, total: 2 }));
+            expect(view.requiredLeft(group)).toEqual(expect.objectContaining({ left: 0, total: 2 }));
             model.updatePreviewRequiredFields(['group.one', 'group.two', 'group.inner.x']);
-            expect(view.requiredLeft(group)).toEqual(jasmine.objectContaining({ left: 1, total: 3 }));
+            expect(view.requiredLeft(group)).toEqual(expect.objectContaining({ left: 1, total: 3 }));
         });
 
         it('signals the chips but not a full recount when a later server answer arrives', () => {
             const { model } = buildNested(['group.one', 'group.two']);
-            const controls = jasmine.createSpy('controls');
-            const requirements = jasmine.createSpy('requirements');
+            const controls = vi.fn();
+            const requirements = vi.fn();
             model.controlsChanged$.subscribe(controls);
             model.requirementsChanged$.subscribe(requirements);
             model.updatePreviewRequiredFields(['group.one', 'group.two', 'group.inner.x']);

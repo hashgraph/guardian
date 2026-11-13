@@ -10,7 +10,6 @@ export class FormTakeoverService {
     private host: ViewContainerRef | null = null;
     private ref: ComponentRef<any> | null = null;
     private closedSub?: Subscription;
-    private kept: ComponentRef<any> | null = null;
 
     public readonly active$ = new BehaviorSubject<boolean>(false);
 
@@ -44,22 +43,12 @@ export class FormTakeoverService {
     }
 
     /**
-     * Marks the open form as owned by itself, so it outlives the block that opened it.
-     * Only a close without `expected` (or a new `open`) closes it from then on.
+     * Closes the open form. A form outlives the block that opened it, so the viewer
+     * closes it when its context changes.
      */
-    public keep(instance: unknown): void {
-        if (this.ref && this.ref.instance === instance) {
-            this.kept = this.ref;
-        }
-    }
-
-    /**
-     * Closes the open form. With `expected`, only closes it if that is still the open one,
-     * so an owner holding a stale reference cannot close somebody else's form.
-     */
-    public close(expected?: ComponentRef<any> | null): void {
+    public close(): void {
         const ref = this.ref;
-        if (!ref || (expected !== undefined && (expected !== ref || this.kept === ref))) {
+        if (!ref) {
             return;
         }
         this.release();
@@ -70,7 +59,6 @@ export class FormTakeoverService {
         this.closedSub?.unsubscribe();
         this.closedSub = undefined;
         this.ref = null;
-        this.kept = null;
         if (this.active$.value) {
             this.active$.next(false);
         }

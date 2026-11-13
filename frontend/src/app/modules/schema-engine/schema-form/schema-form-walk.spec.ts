@@ -5,11 +5,11 @@ import { isIndexSegment, walkFields } from './schema-form-walk';
 
 describe('isIndexSegment', () => {
     it('tells a row index from a field name', () => {
-        expect(isIndexSegment('0')).toBeTrue();
-        expect(isIndexSegment('12')).toBeTrue();
-        expect(isIndexSegment('')).toBeFalse();
-        expect(isIndexSegment('1a')).toBeFalse();
-        expect(isIndexSegment('rows')).toBeFalse();
+        expect(isIndexSegment('0')).toBe(true);
+        expect(isIndexSegment('12')).toBe(true);
+        expect(isIndexSegment('')).toBe(false);
+        expect(isIndexSegment('1a')).toBe(false);
+        expect(isIndexSegment('rows')).toBe(false);
     });
 });
 

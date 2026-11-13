@@ -87,17 +87,47 @@ export class RecordActionStep {
     }
 
     public checkCycle(link: PolicyLink<any>) {
+        RecordActionStep.useLink(this.actionsMap, link);
+    }
+
+    /**
+     * Opens a cycle scope for one branch of a fan-out, for example one chunk of a split.
+     * The scope starts from what has already run, so a loop back to it is still rejected, but what
+     * a sibling branch runs is not seen as a loop. Everything else (the counter, the results, the
+     * errors, the completion callback) is the one of this step.
+     */
+    public scoped(): RecordActionStep {
+        return this.createScope(new Set(this.actionsMap));
+    }
+
+    private createScope(usedNodes: Set<string>): RecordActionStep {
+        return new Proxy(this, {
+            get: (target, property) => {
+                if (property === 'checkCycle') {
+                    return (link: PolicyLink<any>) => RecordActionStep.useLink(usedNodes, link);
+                }
+                if (property === 'scoped') {
+                    return () => target.createScope(new Set(usedNodes));
+                }
+                const value = Reflect.get(target, property, target);
+                return typeof value === 'function' ? value.bind(target) : value;
+            },
+            set: (target, property, value) => Reflect.set(target, property, value, target)
+        });
+    }
+
+    private static useLink(usedNodes: Set<string>, link: PolicyLink<any>): void {
         const targetIdWithType = `${link.target.uuid}-${link.type}`;
         const sourceIdWithType = `${link.source.uuid}-${link.type}`;
 
-        if (this.actionsMap.has(targetIdWithType)) {
+        if (usedNodes.has(targetIdWithType)) {
             throw new Error(
                 `Cycle detected: target "${link.target.tag}" was already used, circular reference is not allowed.`
             );
         }
 
-        this.actionsMap.add(sourceIdWithType);
-        this.actionsMap.add(targetIdWithType);
+        usedNodes.add(sourceIdWithType);
+        usedNodes.add(targetIdWithType);
     }
 
     public saveResult(res: any) {

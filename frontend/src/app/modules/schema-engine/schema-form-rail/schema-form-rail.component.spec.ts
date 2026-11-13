@@ -71,7 +71,7 @@ describe('SchemaFormRailComponent', () => {
         const rows = items();
         expect(rows[2].getAttribute('aria-current')).toBe('step');
         expect(rows[1].getAttribute('aria-current')).toBeNull();
-        expect(rows.every(row => row.getAttribute('tabindex') === '0')).toBeTrue();
+        expect(rows.every(row => row.getAttribute('tabindex') === '0')).toBe(true);
 
         rows[1].dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
         rows[0].click();

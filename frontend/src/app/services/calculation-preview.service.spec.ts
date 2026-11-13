@@ -1,3 +1,4 @@
+import type { MockedObject } from "vitest";
 import { BlockErrorType } from '@guardian/interfaces';
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
@@ -9,22 +10,27 @@ import { ToastService } from './toast.service';
 
 describe('CalculationPreviewService', () => {
     let service: CalculationPreviewService;
-    let policyEngine: jasmine.SpyObj<PolicyEngineService>;
-    let tables: jasmine.SpyObj<TablePersistenceService>;
-    let toast: jasmine.SpyObj<ToastService>;
+    let policyEngine: MockedObject<PolicyEngineService>;
+    let tables: MockedObject<TablePersistenceService>;
+    let toast: MockedObject<ToastService>;
 
-    const result = (fields: string[], missingFields: string[]): ICalculationPreviewResult =>
-        normalizePreviewResult({ fields, missingFields });
+    const result = (fields: string[], missingFields: string[]): ICalculationPreviewResult => normalizePreviewResult({ fields, missingFields });
 
     beforeEach(() => {
-        policyEngine = jasmine.createSpyObj<PolicyEngineService>('PolicyEngineService', ['setBlockDataWithResult']);
-        tables = jasmine.createSpyObj<TablePersistenceService>('TablePersistenceService', ['inlineTablesForPreview']);
-        tables.inlineTablesForPreview.and.callFake(async (root: unknown) => {
+        policyEngine = {
+            setBlockDataWithResult: vi.fn().mockName("PolicyEngineService.setBlockDataWithResult")
+        } as unknown as MockedObject<PolicyEngineService>;
+        tables = {
+            inlineTablesForPreview: vi.fn().mockName("TablePersistenceService.inlineTablesForPreview")
+        } as unknown as MockedObject<TablePersistenceService>;
+        tables.inlineTablesForPreview.mockImplementation(async (root: unknown) => {
             if (root && typeof root === 'object' && 'table' in root) {
                 Reflect.set(root, 'table', 'inline');
             }
         });
-        toast = jasmine.createSpyObj<ToastService>('ToastService', ['error']);
+        toast = {
+            error: vi.fn().mockName("ToastService.error")
+        } as unknown as MockedObject<ToastService>;
         TestBed.configureTestingModule({
             providers: [
                 CalculationPreviewService,
@@ -37,7 +43,7 @@ describe('CalculationPreviewService', () => {
     });
 
     it('sends a cleaned copy of the form with the preview flags', async () => {
-        policyEngine.setBlockDataWithResult.and.returnValue(of({ preview: true, fields: ['amount'], missingFields: [], errors: [] }));
+        policyEngine.setBlockDataWithResult.mockReturnValue(of({ preview: true, fields: ['amount'], missingFields: [], errors: [] }));
         const form = { amount: 5, note: '', table: 'raw' };
 
         const response = await service.run('p-1', 'b-1', form, { id: 'ref-1' }, true);
@@ -55,7 +61,7 @@ describe('CalculationPreviewService', () => {
     });
 
     it('sends selected evidence and relayer in discovery and real Preview', async () => {
-        policyEngine.setBlockDataWithResult.and.returnValue(of({ preview: true }));
+        policyEngine.setBlockDataWithResult.mockReturnValue(of({ preview: true }));
         const metadata = { relayerAccount: '0.0.999', evidence: [{ dataType: 'message', data: 'proof' }] };
         for (const discovery of [true, false]) {
             await service.run('p', 'b', { amount: 3 }, null, discovery, metadata);
@@ -65,34 +71,32 @@ describe('CalculationPreviewService', () => {
         }
     });
 
-    const previewTable = (size: number): string =>
-        JSON.stringify({ type: 'table', fileId: 'preview-key', csv: 'a'.repeat(size), columnNames: ['a'], columnKeys: ['a'] });
+    const previewTable = (size: number): string => JSON.stringify({ type: 'table', fileId: 'preview-key', csv: 'a'.repeat(size), columnNames: ['a'], columnKeys: ['a'] });
 
     it('stops a preview whose tables are larger than 10 MB and shows an error toast', async () => {
-        tables.inlineTablesForPreview.and.callFake(async (root: unknown) => {
+        tables.inlineTablesForPreview.mockImplementation(async (root: unknown) => {
             Reflect.set(Object(root), 'table', previewTable(10 * 1024 * 1024 + 1));
         });
 
-        await expectAsync(service.run('p-1', 'b-1', { table: 'raw' }, null, false))
-            .toBeRejectedWithError('Tables are too large (10.0 MB). The limit is 10 MB.');
-        expect(toast.error).toHaveBeenCalledOnceWith('Tables are too large (10.0 MB). The limit is 10 MB.', 'Calculation preview');
+        await expect(service.run('p-1', 'b-1', { table: 'raw' }, null, false)).rejects.toThrowError('Tables are too large (10.0 MB). The limit is 10 MB.');
+        expect(toast.error).toHaveBeenCalledTimes(1);
+        expect(toast.error).toHaveBeenCalledWith('Tables are too large (10.0 MB). The limit is 10 MB.', 'Calculation preview');
         expect(policyEngine.setBlockDataWithResult).not.toHaveBeenCalled();
     });
 
     it('adds up every table of the form, also inside groups and lists', async () => {
-        tables.inlineTablesForPreview.and.callFake(async (root: unknown) => {
+        tables.inlineTablesForPreview.mockImplementation(async (root: unknown) => {
             Reflect.set(Object(root), 'table', previewTable(6 * 1024 * 1024));
             Reflect.set(Object(root), 'group', { rows: [previewTable(6 * 1024 * 1024)] });
         });
 
-        await expectAsync(service.run('p-1', 'b-1', { table: 'raw' }, null, true))
-            .toBeRejectedWithError('Tables are too large (12.0 MB). The limit is 10 MB.');
+        await expect(service.run('p-1', 'b-1', { table: 'raw' }, null, true)).rejects.toThrowError('Tables are too large (12.0 MB). The limit is 10 MB.');
         expect(policyEngine.setBlockDataWithResult).not.toHaveBeenCalled();
     });
 
     it('sends a preview whose tables are exactly 10 MB', async () => {
-        policyEngine.setBlockDataWithResult.and.returnValue(of({ preview: true, fields: [], missingFields: [], errors: [] }));
-        tables.inlineTablesForPreview.and.callFake(async (root: unknown) => {
+        policyEngine.setBlockDataWithResult.mockReturnValue(of({ preview: true, fields: [], missingFields: [], errors: [] }));
+        tables.inlineTablesForPreview.mockImplementation(async (root: unknown) => {
             Reflect.set(Object(root), 'table', previewTable(10 * 1024 * 1024));
             Reflect.set(Object(root), 'note', '{not json');
         });
@@ -105,11 +109,11 @@ describe('CalculationPreviewService', () => {
 
     it('preserves the HTTP 422 rejection and reads only its calculation field requirements', async () => {
         const failure = new HttpErrorResponse({ status: 422, error: {
-            statusCode: 422, message: 'Missing calculation inputs',
-            data: { preview: true, fields: ['amount', 'bonus'], missingFields: ['bonus'] }
-        } });
-        policyEngine.setBlockDataWithResult.and.returnValue(throwError(() => failure));
-        await expectAsync(service.run('p-1', 'b-1', { amount: 2 }, null, false)).toBeRejectedWith(failure);
+                statusCode: 422, message: 'Missing calculation inputs',
+                data: { preview: true, fields: ['amount', 'bonus'], missingFields: ['bonus'] }
+            } });
+        policyEngine.setBlockDataWithResult.mockReturnValue(throwError(() => failure));
+        await expect(service.run('p-1', 'b-1', { amount: 2 }, null, false)).rejects.toEqual(failure);
         expect(service.getInputValidation(failure)).toEqual({ fields: ['amount', 'bonus'], missingFields: ['bonus'] });
         expect(policyEngine.setBlockDataWithResult).toHaveBeenCalledTimes(1);
     });
@@ -134,15 +138,15 @@ describe('CalculationPreviewService', () => {
     });
 
     it('restores the flag in a new service and scopes it to user, policy and block', () => {
-        expect(service.loadMode('u1', 'p1', 'b1')).toBeFalse();
+        expect(service.loadMode('u1', 'p1', 'b1')).toBe(false);
         service.saveMode('u1', 'p1', 'b1', true);
         const restored = new CalculationPreviewService(policyEngine, tables, toast);
-        expect(restored.loadMode('u1', 'p1', 'b1')).toBeTrue();
-        expect(restored.loadMode('u2', 'p1', 'b1')).toBeFalse();
-        expect(restored.loadMode('u1', 'p2', 'b1')).toBeFalse();
-        expect(restored.loadMode('u1', 'p1', 'b2')).toBeFalse();
+        expect(restored.loadMode('u1', 'p1', 'b1')).toBe(true);
+        expect(restored.loadMode('u2', 'p1', 'b1')).toBe(false);
+        expect(restored.loadMode('u1', 'p2', 'b1')).toBe(false);
+        expect(restored.loadMode('u1', 'p1', 'b2')).toBe(false);
         restored.saveMode('u1', 'p1', 'b1', false);
-        expect(service.loadMode('u1', 'p1', 'b1')).toBeFalse();
+        expect(service.loadMode('u1', 'p1', 'b1')).toBe(false);
         const keys = Object.keys(localStorage).filter((key) => key.startsWith('CALCULATION_PREVIEW:'));
         expect(keys.length).toBe(1);
         expect(localStorage.getItem(keys[0])).toBe('false');
@@ -153,15 +157,19 @@ describe('CalculationPreviewService', () => {
         service.saveMode(undefined, 'p1', 'b1', true);
         service.saveMode('u1', '', 'b1', true);
         service.saveMode('u1', 'p1', '', true);
-        expect(service.loadMode(undefined, 'p1', 'b1')).toBeFalse();
+        expect(service.loadMode(undefined, 'p1', 'b1')).toBe(false);
         expect(Object.keys(localStorage).filter((key) => key.startsWith('CALCULATION_PREVIEW:'))).toEqual([]);
     });
 
     it('keeps default-off behaviour if browser storage is unavailable', () => {
-        spyOn(console, 'error');
-        spyOn(Storage.prototype, 'getItem').and.throwError('blocked');
-        spyOn(Storage.prototype, 'setItem').and.throwError('blocked');
-        expect(service.loadMode('u1', 'p1', 'b1')).toBeFalse();
+        vi.spyOn(console, 'error').mockImplementation(() => undefined);
+        vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+            throw new Error('blocked');
+        });
+        vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+            throw new Error('blocked');
+        });
+        expect(service.loadMode('u1', 'p1', 'b1')).toBe(false);
         expect(() => service.saveMode('u1', 'p1', 'b1', true)).not.toThrow();
         expect(policyEngine.setBlockDataWithResult).not.toHaveBeenCalled();
     });
@@ -327,53 +335,53 @@ describe('CalculationPreviewService', () => {
     it('needs the discovery warning when field discovery stopped on an error', () => {
         expect(service.needsDiscoveryWarning(normalizePreviewResult({
             errors: [{ message: 'Calculation returned a non-finite number', blockType: 'mathBlock', errorData: null }],
-        }))).toBeTrue();
+        }))).toBe(true);
     });
 
     it('needs the discovery warning when field discovery returned an incomplete result', () => {
         expect(service.needsDiscoveryWarning(normalizePreviewResult({
             incomplete: [{ blockType: 'customLogicBlock', reason: 'the operator $elemMatch' }],
-        }))).toBeTrue();
+        }))).toBe(true);
     });
 
     it('does not need the discovery warning when field discovery finished cleanly', () => {
-        expect(service.needsDiscoveryWarning(normalizePreviewResult({ fields: ['amount'], missingFields: ['amount'] }))).toBeFalse();
+        expect(service.needsDiscoveryWarning(normalizePreviewResult({ fields: ['amount'], missingFields: ['amount'] }))).toBe(false);
     });
 
     it('keeps indexed paths in errors and applies schema paths to required flags', () => {
         const error = new HttpErrorResponse({ status: 422, error: { data: {
-            preview: true, fields: ['amount'], missingFields: ['rows.1.bonus','rows.3.rate']
-        } } });
+                    preview: true, fields: ['amount'], missingFields: ['rows.1.bonus', 'rows.3.rate']
+                } } });
         const validation = service.getInputValidation(error)!;
-        expect(validation.missingFields).toEqual(['rows.1.bonus','rows.3.rate']);
-        expect(service.updateRequiredFields(['amount'], validation)).toEqual(['amount','rows.1.bonus','rows.3.rate']);
+        expect(validation.missingFields).toEqual(['rows.1.bonus', 'rows.3.rate']);
+        expect(service.updateRequiredFields(['amount'], validation)).toEqual(['amount', 'rows.1.bonus', 'rows.3.rate']);
     });
 
     it('keeps input, intermediates and every branch regardless of schema match', () => {
         const preview = normalizePreviewResult({ sameSchema: true, input: { document: { id: 'input' } }, documents: [
-            { source: 'input', final: false, document: { document: { id: 'saved-input' } } },
-            { source: 'matching', final: true, sameSchema: true, document: { document: { id: 'matching' } } },
-            { source: 'other', final: true, sameSchema: false, document: { document: { id: 'other' } } },
-        ] });
+                { source: 'input', final: false, document: { document: { id: 'saved-input' } } },
+                { source: 'matching', final: true, sameSchema: true, document: { document: { id: 'matching' } } },
+                { source: 'other', final: true, sameSchema: false, document: { document: { id: 'other' } } },
+            ] });
         const items = service.getTimeline(preview);
         expect(items.map((item) => item.document)).toEqual([{ id: 'input' }, { id: 'saved-input' }, { id: 'matching' }, { id: 'other' }]);
-        expect(items[2].final).toBeTrue();
-        expect(items[2].sameSchema).toBeTrue();
-        expect(items[3].sameSchema).toBeFalse();
+        expect(items[2].final).toBe(true);
+        expect(items[2].sameSchema).toBe(true);
+        expect(items[3].sameSchema).toBe(false);
         expect(preview.documents.length).toBe(3);
     });
 
     it('keeps every matching final document from several branches', () => {
         const preview = normalizePreviewResult({ sameSchema: true, documents: ['a', 'b'].map((id) => ({
-            source: id, final: true, sameSchema: true, document: { document: { id } }
-        })) });
+                source: id, final: true, sameSchema: true, document: { document: { id } }
+            })) });
         expect(service.getTimeline(preview).map((item) => item.document)).toEqual([{ id: 'a' }, { id: 'b' }]);
     });
 
     it('preserves final flags while unwrapping batches for separate-schema results', () => {
         const preview = normalizePreviewResult({ input: { document: { id: 'input' } }, documents: [{
-            source: 'batch', final: true, sameSchema: false, document: [{ document: { id: 'a' } }, { document: { id: 'b' } }]
-        }] });
+                    source: 'batch', final: true, sameSchema: false, document: [{ document: { id: 'a' } }, { document: { id: 'b' } }]
+                }] });
         const items = service.getTimeline(preview);
         expect(items.length).toBe(3);
         expect(items.slice(1).map((item) => item.final)).toEqual([true, true]);
@@ -383,13 +391,13 @@ describe('CalculationPreviewService', () => {
     it('keeps an unsaved branch-end result without promoting it to final', () => {
         const unsaved = { credentialSubject: [{ type: 'Output', total: 6 }] };
         const preview = normalizePreviewResult({ input: { document: { id: 'input' } }, documents: [
-            { source: 'save', final: false, document: { id: 'stored-record', document: { id: 'saved' } } },
-            { source: 'math', final: false, document: { document: unsaved } },
-        ] });
+                { source: 'save', final: false, document: { id: 'stored-record', document: { id: 'saved' } } },
+                { source: 'math', final: false, document: { document: unsaved } },
+            ] });
         const items = service.getTimeline(preview);
         expect(items.map((item) => item.document)).toEqual([{ id: 'input' }, { id: 'saved' }, unsaved]);
         expect(items[2].source).toBe('math');
-        expect(items[2].final).toBeFalse();
+        expect(items[2].final).toBe(false);
     });
 
 });

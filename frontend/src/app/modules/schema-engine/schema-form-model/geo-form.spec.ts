@@ -103,7 +103,7 @@ describe('GeoForm original file link', () => {
         const control = new UntypedFormControl({ type: 'Point', coordinates: [1, 2], geoFile: browserLink });
         const form = new GeoForm(control);
         form.build();
-        const check = jasmine.createSpy('check').and.resolveTo(false);
+        const check = vi.fn().mockResolvedValue(false);
 
         form.setOriginalFileCheck(check);
         await Promise.resolve();
@@ -111,7 +111,7 @@ describe('GeoForm original file link', () => {
         await Promise.resolve();
 
         expect(check).toHaveBeenCalledWith('geo-key');
-        expect(control.invalid).toBeTrue();
+        expect(control.invalid).toBe(true);
         expect(form.getErrors()[ORIGINAL_FILE_ERRORS_KEY]).toEqual([MISSING_ORIGINAL_FILE_ERROR]);
         expect(form.getErrors()[0]).toBeUndefined();
     });
@@ -126,14 +126,14 @@ describe('GeoForm original file link', () => {
         await Promise.resolve();
         await Promise.resolve();
 
-        expect(control.valid).toBeTrue();
+        expect(control.valid).toBe(true);
     });
 
     it('does not check a stored file', () => {
         const control = new UntypedFormControl({});
         const form = new GeoForm(control);
         form.build();
-        const check = jasmine.createSpy('check').and.resolveTo(false);
+        const check = vi.fn().mockResolvedValue(false);
         form.setOriginalFileCheck(check);
 
         control.setValue({
@@ -142,7 +142,7 @@ describe('GeoForm original file link', () => {
         });
 
         expect(check).not.toHaveBeenCalled();
-        expect(control.valid).toBeTrue();
+        expect(control.valid).toBe(true);
     });
 });
 
@@ -159,9 +159,10 @@ describe('GeoForm shared GeoJSON checks', () => {
             [{ type: 'Polygon', coordinates: [[[0, 0], [4, 0], [4, 4], [0, 4]]] }, 'Polygon ring at $.coordinates[0] is not closed.'],
             [{ type: 'Feature', geometry: { type: 'Point', coordinates: [1, 2] } }, 'Properties must be an object or null at $.properties.'],
             [{ type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [1, 2] }, coordinates: [] }, 'Member "coordinates" is not allowed on Feature at $.']
-        ]) expect(validate(value).errors?.geoJsonFieldErrors.standard).toEqual([
-            `The value is not valid GeoJSON (RFC 7946). ${reason}`
-        ]);
+        ])
+            expect(validate(value).errors?.geoJsonFieldErrors.standard).toEqual([
+                `The value is not valid GeoJSON (RFC 7946). ${reason}`
+            ]);
     });
     it('uses the same selected-polygon wording as the API helper', () => {
         const bow = [[0, 0], [4, 4], [0, 4], [4, 0], [0, 0]];
@@ -174,8 +175,8 @@ describe('GeoForm shared GeoJSON checks', () => {
             }
         }
     });
-    it('accepts form-closed polygons and preserves the empty-value message' , () => {
-        expect(validate({ type: 'Polygon', coordinates: [square] }).valid).toBeTrue();
+    it('accepts form-closed polygons and preserves the empty-value message', () => {
+        expect(validate({ type: 'Polygon', coordinates: [square] }).valid).toBe(true);
         expect(validate({}).errors?.geoJsonFieldErrors.standard).toBeUndefined();
     });
 });

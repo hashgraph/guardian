@@ -13,7 +13,7 @@ describe('SchemaFormPreferencesService', () => {
     afterEach(clear);
 
     it('is off by default', () => {
-        expect(new SchemaFormPreferencesService().showFieldMetadata).toBeFalse();
+        expect(new SchemaFormPreferencesService().showFieldMetadata).toBe(false);
     });
 
     it('stores the flag under the last signed-in user', () => {
@@ -21,17 +21,17 @@ describe('SchemaFormPreferencesService', () => {
         const service = new SchemaFormPreferencesService();
         service.setShowFieldMetadata(true);
         expect(localStorage.getItem('SCHEMA_FORM_FIELD_METADATA:alice')).toBe('true');
-        expect(new SchemaFormPreferencesService().showFieldMetadata).toBeTrue();
+        expect(new SchemaFormPreferencesService().showFieldMetadata).toBe(true);
         localStorage.setItem(LAST_USER_STORAGE_KEY, 'bob');
-        expect(new SchemaFormPreferencesService().showFieldMetadata).toBeFalse();
+        expect(new SchemaFormPreferencesService().showFieldMetadata).toBe(false);
     });
 
     it('follows a user who signed in after the service was created', () => {
         localStorage.setItem('SCHEMA_FORM_FIELD_METADATA:bob', 'true');
         const service = new SchemaFormPreferencesService();
-        expect(service.showFieldMetadata).toBeFalse();
+        expect(service.showFieldMetadata).toBe(false);
         localStorage.setItem(LAST_USER_STORAGE_KEY, 'bob');
         service.reload();
-        expect(service.showFieldMetadata).toBeTrue();
+        expect(service.showFieldMetadata).toBe(true);
     });
 });

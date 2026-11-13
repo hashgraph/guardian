@@ -38,7 +38,11 @@ export const deleteTag = (getRow, tagName) => {
     getRow().find(L.chip).contains(tagName).click();
     cy.get(L.listDialog, { timeout: TIMEOUTS.ui }).should('be.visible');
     cy.get(L.chipInListDialog).contains(tagName).click();
+    cy.intercept('DELETE', '**/tags/*').as('deleteTagRequest');
     cy.get(L.detailDelete, { timeout: TIMEOUTS.ui }).first().click();
+    // The dialog ignores Escape while the deletion runs, and its loading overlay can appear after a
+    // check for it: wait for the deletion itself.
+    cy.wait('@deleteTagRequest', { timeout: TIMEOUTS.backend });
     Checks.waitForLoading();
     // The last tag leaves no chip at all, so assert on the dialog rather than chaining find().
     cy.get(L.listDialog).should(($dialog) => {

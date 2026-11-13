@@ -7,19 +7,22 @@ const GATEWAY = process.env.UI_GATEWAY_ORIGIN || 'http://host.docker.internal:30
 // The Angular dev server does not log proxied requests even at logLevel "debug", which
 // makes it impossible to tell from its output whether the browser even issued a request
 // (a dead WebSocket or a swallowed 401 look identical). Log every proxied request to
-// stderr instead (opt-in with UI_PROXY_LOG=true), with the auth header's presence so tokenless calls stand out.
+// stderr instead (opt-in with UI_PROXY_LOG=true), with the auth header's presence so tokenless
+// calls stand out, and an ISO timestamp so the unpaired-request analysis can be done
+// against the timestamped gateway log (a request that fires but never answers is the
+// signature of the no-reply hang class - see e2e-tests pending-issues).
 function proxyRequestLogger() {
     return function configure(proxyServer) {
         proxyServer.on('proxyReq', (proxyReq, req) => {
             const auth = req.headers.authorization ? 'auth' : 'NO-AUTH';
-            console.error(`[proxy] ${req.method} ${req.url} (${auth})`);
+            console.error(`[proxy] ${new Date().toISOString()} ${req.method} ${req.url} (${auth})`);
         });
         proxyServer.on('proxyReqWs', (proxyReq, req) => {
             const auth = req.headers.authorization ? 'auth' : 'NO-AUTH';
-            console.error(`[proxy] WS-UPGRADE ${req.url} (${auth})`);
+            console.error(`[proxy] ${new Date().toISOString()} WS-UPGRADE ${req.url} (${auth})`);
         });
         proxyServer.on('proxyRes', (proxyRes, req) => {
-            console.error(`[proxy] ${req.method} ${req.url} <- ${proxyRes.statusCode}`);
+            console.error(`[proxy] ${new Date().toISOString()} ${req.method} ${req.url} <- ${proxyRes.statusCode}`);
         });
     };
 }

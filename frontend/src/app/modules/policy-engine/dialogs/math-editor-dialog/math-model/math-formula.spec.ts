@@ -6,7 +6,7 @@ describe('MathFormula._updateName — variable path', () => {
     it('accepts a simple identifier as variable', () => {
         const f = new MathFormula('myVar');
         f.updateName();
-        expect(f.validName).toBeTrue();
+        expect(f.validName).toBe(true);
         expect(f.type).toBe(MathItemType.VARIABLE);
         expect(f.functionName).toBe('myVar');
     });
@@ -14,7 +14,7 @@ describe('MathFormula._updateName — variable path', () => {
     it('accepts comma-subscript notation and normalises for CE', () => {
         const f = new MathFormula('fNRB_y,i');
         f.updateName();
-        expect(f.validName).toBeTrue();
+        expect(f.validName).toBe(true);
         expect(f.type).toBe(MathItemType.VARIABLE);
         expect(f.functionName).toBe('fNRB_y_i');
     });
@@ -29,31 +29,31 @@ describe('MathFormula._updateName — variable path', () => {
     it('rejects name starting with digit', () => {
         const f = new MathFormula('1foo');
         f.updateName();
-        expect(f.validName).toBeFalse();
+        expect(f.validName).toBe(false);
     });
 
     it('rejects name with space', () => {
         const f = new MathFormula('foo bar');
         f.updateName();
-        expect(f.validName).toBeFalse();
+        expect(f.validName).toBe(false);
     });
 
     it('rejects empty name', () => {
         const f = new MathFormula('');
         f.updateName();
-        expect(f.validName).toBeFalse();
+        expect(f.validName).toBe(false);
     });
 
     it('rejects trailing comma', () => {
         const f = new MathFormula('x,');
         f.updateName();
-        expect(f.validName).toBeFalse();
+        expect(f.validName).toBe(false);
     });
 
     it('rejects leading comma', () => {
         const f = new MathFormula(',x');
         f.updateName();
-        expect(f.validName).toBeFalse();
+        expect(f.validName).toBe(false);
     });
 });
 
@@ -62,7 +62,7 @@ describe('MathFormula._updateName — function path', () => {
     it('accepts a function with one parameter', () => {
         const f = new MathFormula('myFn(x)');
         f.updateName();
-        expect(f.validName).toBeTrue();
+        expect(f.validName).toBe(true);
         expect(f.type).toBe(MathItemType.FUNCTION);
         expect(f.functionName).toBe('myFn');
         expect(f.functionParams).toEqual(['x']);
@@ -71,20 +71,20 @@ describe('MathFormula._updateName — function path', () => {
     it('accepts a function with multiple parameters', () => {
         const f = new MathFormula('calc(a, b, c)');
         f.updateName();
-        expect(f.validName).toBeTrue();
+        expect(f.validName).toBe(true);
         expect(f.functionParams).toEqual(['a', 'b', 'c']);
     });
 
     it('rejects function with missing closing paren', () => {
         const f = new MathFormula('myFn(x');
         f.updateName();
-        expect(f.validName).toBeFalse();
+        expect(f.validName).toBe(false);
     });
 
     it('rejects function name starting with digit', () => {
         const f = new MathFormula('1fn(x)');
         f.updateName();
-        expect(f.validName).toBeFalse();
+        expect(f.validName).toBe(false);
     });
 });
 
@@ -121,7 +121,7 @@ describe('MathFormula.from — round-trip', () => {
         restored.updateName();
         expect(restored.functionNameText).toBe('fNRB_y,i');
         expect(restored.functionName).toBe('fNRB_y_i');
-        expect(restored.validName).toBeTrue();
+        expect(restored.validName).toBe(true);
         expect(restored.type).toBe(MathItemType.VARIABLE);
     });
 
@@ -162,9 +162,7 @@ describe('splitNameGroups', () => {
     });
 
     it('repairs the whole body the editor produces for a typed call', () => {
-        expect(splitNameGroups(
-            '\\mathrm{Lookup}\\left(\\operatorname{\\mathrm{area},}\\operatorname{\\mathrm{year}},2021\\right)'
-        )).toBe('\\mathrm{Lookup}\\left(\\mathrm{area},\\mathrm{year},2021\\right)');
+        expect(splitNameGroups('\\mathrm{Lookup}\\left(\\operatorname{\\mathrm{area},}\\operatorname{\\mathrm{year}},2021\\right)')).toBe('\\mathrm{Lookup}\\left(\\mathrm{area},\\mathrm{year},2021\\right)');
     });
 
     it('splits every name group in the same formula', () => {
@@ -183,7 +181,7 @@ describe('MathFormula._updateBody — typed function name', () => {
         const f = new MathFormula('y', body);
         f.updateBody();
 
-        expect(f.validBody).toBeTrue();
+        expect(f.validBody).toBe(true);
         expect(f.functionBody).toBe(body);
         expect(f.functionBodyText).toBe(body);
     });
@@ -192,7 +190,7 @@ describe('MathFormula._updateBody — typed function name', () => {
         const f = new MathFormula('y', '\\mathrm{Lookup}\\left(\\operatorname{\\mathrm{area},}\\operatorname{\\mathrm{year}},2021\\right)');
         f.updateBody();
 
-        expect(f.validBody).toBeTrue();
+        expect(f.validBody).toBe(true);
         expect(f.functionBody).toBe('\\mathrm{Lookup}\\left(\\mathrm{area},\\mathrm{year},2021\\right)');
     });
 });

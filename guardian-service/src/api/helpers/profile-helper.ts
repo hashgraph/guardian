@@ -741,6 +741,30 @@ export async function createRemoteUserProfile({
  * @param user
  * @param logger
  */
+/**
+ * Links a DID that onboarding has just written to its user. An update that fails or whose reply is
+ * lost may still have landed, so the user is read back: if it points at the DID, onboarding goes on;
+ * otherwise the DID is marked failed, so it is not left looking valid with no user pointing at it,
+ * and the original error fails the task.
+ */
+async function linkDidToUser(users: Users, username: string, did: string, item: any, logId: string | null): Promise<void> {
+    try {
+        await users.updateCurrentUser(username, item, logId);
+    } catch (error) {
+        const user = await users.getUser(username, logId);
+        if (user?.did === did) {
+            return;
+        }
+        const dataBaseServer = new DatabaseServer();
+        const didRow = await dataBaseServer.getDidDocument(did);
+        if (didRow) {
+            didRow.status = DidDocumentStatus.FAILED;
+            await dataBaseServer.update(DidDocumentCollection, null, didRow);
+        }
+        throw error;
+    }
+}
+
 export async function saveUserProfile({
     username,
     did,
@@ -763,7 +787,7 @@ export async function saveUserProfile({
 
     notifier.startStep(STEP_SAVE);
     const users = new Users();
-    await users.updateCurrentUser(username, {
+    await linkDidToUser(users, username, did, {
         did,
         parent: profile.parent,
         hederaAccountId: profile.hederaAccountId,

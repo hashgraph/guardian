@@ -32,8 +32,8 @@ describe('geo file submit call sites', () => {
 
     it('persists geo files before a new-version request and rolls back an error', async () => {
         const order: string[] = [];
-        const rollback = jasmine.createSpy('rollback').and.resolveTo();
-        const tableRollback = jasmine.createSpy('tableRollback').and.resolveTo();
+        const rollback = vi.fn().mockResolvedValue(undefined);
+        const tableRollback = vi.fn().mockResolvedValue(undefined);
         const closed = new Subject<boolean>();
         const component = Object.create(VCFullscreenDialog.prototype) as any;
         component.dialog = { open: () => ({ onClose: closed }) };
@@ -58,7 +58,8 @@ describe('geo file submit call sites', () => {
 
         component.onUpdatableBtnEvent();
         closed.next(true);
-        for (let index = 0; index < 5; index++) await Promise.resolve();
+        for (let index = 0; index < 5; index++)
+            await Promise.resolve();
 
         expect(order).toEqual(['tables', 'geo', 'request']);
         expect(tableRollback).toHaveBeenCalled();
@@ -66,8 +67,8 @@ describe('geo file submit call sites', () => {
     });
 
     it('rolls back tables and geo files when the dialog request fails', async () => {
-        const tableRollback = jasmine.createSpy('tableRollback').and.resolveTo();
-        const geoRollback = jasmine.createSpy('geoRollback').and.resolveTo();
+        const tableRollback = vi.fn().mockResolvedValue(undefined);
+        const geoRollback = vi.fn().mockResolvedValue(undefined);
         const component = Object.create(RequestDocumentFormComponent.prototype) as any;
         component.showSubmitted = () => undefined; // its 1s timer would otherwise fire after the spec ends
         component.parent = {
@@ -89,14 +90,15 @@ describe('geo file submit call sites', () => {
         };
         component.policyTest = { state: { captureNextFormSubmit: false } };
         component.enableAdditionalData = false;
-        spyOn(console, 'error');
+        vi.spyOn(console, 'error').mockImplementation(() => undefined);
 
         await component.onSubmit(false);
-        for (let index = 0; index < 5; index++) await Promise.resolve();
+        for (let index = 0; index < 5; index++)
+            await Promise.resolve();
 
         expect(tableRollback).toHaveBeenCalled();
         expect(geoRollback).toHaveBeenCalled();
-        expect(component.loading).toBeFalse();
+        expect(component.loading).toBe(false);
     });
 
     describe('when a file upload fails before the request', () => {
@@ -106,20 +108,20 @@ describe('geo file submit call sites', () => {
         beforeEach(() => {
             tablePersist = {
                 persistTablesInDocument: async () => undefined,
-                rollbackIpfsUploads: jasmine.createSpy('rollbackIpfsUploads').and.resolveTo()
+                rollbackIpfsUploads: vi.fn().mockResolvedValue(undefined)
             };
             geoFilePersist = {
                 persistGeoFilesInDocument: async () => {
                     throw new Error('ipfs failed');
                 },
-                rollbackGridFsUploads: jasmine.createSpy('rollbackGridFsUploads').and.resolveTo()
+                rollbackGridFsUploads: vi.fn().mockResolvedValue(undefined)
             };
-            spyOn(console, 'error');
+            vi.spyOn(console, 'error').mockImplementation(() => undefined);
         });
 
         it('rolls back the dialog uploads and sends nothing', async () => {
-            const request = jasmine.createSpy('request');
-            const deleteAutosave = jasmine.createSpy('delete');
+            const request = vi.fn();
+            const deleteAutosave = vi.fn();
             const component = Object.create(RequestDocumentFormComponent.prototype) as any;
             component.showSubmitted = () => undefined; // its 1s timer would otherwise fire after the spec ends
             component.parent = {
@@ -138,11 +140,11 @@ describe('geo file submit call sites', () => {
             expect(geoFilePersist.rollbackGridFsUploads).toHaveBeenCalled();
             expect(request).not.toHaveBeenCalled();
             expect(deleteAutosave).not.toHaveBeenCalled();
-            expect(component.loading).toBeFalse();
+            expect(component.loading).toBe(false);
         });
 
         it('rolls back the new-version uploads and sends nothing', async () => {
-            const request = jasmine.createSpy('request');
+            const request = vi.fn();
             const closed = new Subject<boolean>();
             const component = Object.create(VCFullscreenDialog.prototype) as any;
             component.dialog = { open: () => ({ onClose: closed }) };
@@ -156,12 +158,13 @@ describe('geo file submit call sites', () => {
 
             component.onUpdatableBtnEvent();
             closed.next(true);
-            for (let index = 0; index < 5; index++) await Promise.resolve();
+            for (let index = 0; index < 5; index++)
+                await Promise.resolve();
 
             expect(tablePersist.rollbackIpfsUploads).toHaveBeenCalled();
             expect(geoFilePersist.rollbackGridFsUploads).toHaveBeenCalled();
             expect(request).not.toHaveBeenCalled();
-            expect(component.loading).toBeFalse();
+            expect(component.loading).toBe(false);
         });
     });
 
@@ -174,13 +177,13 @@ describe('geo file submit call sites', () => {
                 persistTablesInDocument: async () => {
                     throw new Error('table failed');
                 },
-                rollbackIpfsUploads: jasmine.createSpy('rollbackIpfsUploads').and.resolveTo()
+                rollbackIpfsUploads: vi.fn().mockResolvedValue(undefined)
             };
             geoFilePersist = {
-                persistGeoFilesInDocument: jasmine.createSpy('persistGeoFilesInDocument').and.resolveTo(),
-                rollbackGridFsUploads: jasmine.createSpy('rollbackGridFsUploads').and.resolveTo()
+                persistGeoFilesInDocument: vi.fn().mockResolvedValue(undefined),
+                rollbackGridFsUploads: vi.fn().mockResolvedValue(undefined)
             };
-            spyOn(console, 'error');
+            vi.spyOn(console, 'error').mockImplementation(() => undefined);
         });
 
         it('does not roll back geo files in the dialog', async () => {
@@ -194,13 +197,13 @@ describe('geo file submit call sites', () => {
             component.storage = { delete: () => undefined };
             component.tablePersist = tablePersist;
             component.geoFilePersist = geoFilePersist;
-            component.policyEngineService = { setBlockDataWithResult: jasmine.createSpy('request') };
+            component.policyEngineService = { setBlockDataWithResult: vi.fn() };
 
             await component.onSubmit(false);
 
             expect(tablePersist.rollbackIpfsUploads).toHaveBeenCalled();
             expect(geoFilePersist.rollbackGridFsUploads).not.toHaveBeenCalled();
-            expect(component.loading).toBeFalse();
+            expect(component.loading).toBe(false);
         });
 
         it('does not roll back geo files for a new version', async () => {
@@ -210,18 +213,19 @@ describe('geo file submit call sites', () => {
             component.dataForm = { valid: true, getRawValue: () => ({ place: {} }) };
             component.tablePersist = tablePersist;
             component.geoFilePersist = geoFilePersist;
-            component.policyEngineService = { createNewVersionVcDocument: jasmine.createSpy('request') };
+            component.policyEngineService = { createNewVersionVcDocument: vi.fn() };
             component.policyId = 'policy-1';
             component.documentId = 'doc-1';
             component.allVcDocs = [{}];
 
             component.onUpdatableBtnEvent();
             closed.next(true);
-            for (let index = 0; index < 5; index++) await Promise.resolve();
+            for (let index = 0; index < 5; index++)
+                await Promise.resolve();
 
             expect(tablePersist.rollbackIpfsUploads).toHaveBeenCalled();
             expect(geoFilePersist.rollbackGridFsUploads).not.toHaveBeenCalled();
-            expect(component.loading).toBeFalse();
+            expect(component.loading).toBe(false);
         });
     });
 });

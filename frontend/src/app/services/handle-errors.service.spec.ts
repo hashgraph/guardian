@@ -1,3 +1,4 @@
+import type { MockedObject } from "vitest";
 import { HttpRequest } from '@angular/common/http';
 import { Injector } from '@angular/core';
 import { fakeAsync, flushMicrotasks } from '@angular/core/testing';
@@ -8,20 +9,24 @@ import { ToastService } from './toast.service';
 import { MessageTranslationService } from './message-translation-service/message-translation-service';
 
 describe('HandleErrorsService', () => {
-    let toast: jasmine.SpyObj<ToastService>;
+    let toast: MockedObject<ToastService>;
     let service: HandleErrorsService;
 
     beforeEach(() => {
-        toast = jasmine.createSpyObj<ToastService>('ToastService', ['error', 'warn']);
-        const translator = jasmine.createSpyObj<MessageTranslationService>('MessageTranslationService', ['translateMessage']);
-        translator.translateMessage.and.callFake((text: string) => ({ wasTranslated: false, text, message: text }));
-        service = new HandleErrorsService(
-            jasmine.createSpyObj<Router>('Router', ['navigate']),
-            toast,
-            translator,
-            jasmine.createSpyObj<Injector>('Injector', ['get'])
-        );
-        spyOn(console, 'error');
+        toast = {
+            error: vi.fn().mockName("ToastService.error"),
+            warn: vi.fn().mockName("ToastService.warn")
+        } as unknown as MockedObject<ToastService>;
+        const translator = {
+            translateMessage: vi.fn().mockName("MessageTranslationService.translateMessage")
+        } as unknown as MockedObject<MessageTranslationService>;
+        translator.translateMessage.mockImplementation((text: string) => ({ wasTranslated: false, text, message: text }));
+        service = new HandleErrorsService({
+            navigate: vi.fn().mockName("Router.navigate")
+        } as any, toast, translator, {
+            get: vi.fn().mockName("Injector.get")
+        } as any);
+        vi.spyOn(console, 'error').mockImplementation(() => undefined);
     });
 
     function failWith(data: unknown): void {
@@ -35,13 +40,13 @@ describe('HandleErrorsService', () => {
         failWith({ code: 'SOME_ERROR' });
 
         expect(toast.error).toHaveBeenCalledTimes(1);
-        expect(toast.error.calls.mostRecent().args[2]).toEqual(jasmine.objectContaining({ sticky: true }));
+        expect(vi.mocked(toast.error).mock.lastCall![2]).toEqual(expect.objectContaining({ sticky: true }));
     }));
 
     it('shows a server error as a temporary toast when the server sends sticky false', fakeAsync(() => {
         failWith({ preview: true, notLogged: true, sticky: false, fields: ['field0'], missingFields: ['field0'] });
 
         expect(toast.error).toHaveBeenCalledTimes(1);
-        expect(toast.error.calls.mostRecent().args[2]).toEqual(jasmine.objectContaining({ sticky: false, logMessage: undefined }));
+        expect(vi.mocked(toast.error).mock.lastCall![2]).toEqual(expect.objectContaining({ sticky: false, logMessage: undefined }));
     }));
 });

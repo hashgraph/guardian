@@ -225,33 +225,21 @@ export const findWipeBoundToken = (authorization, wipeContractId) =>
     });
 
 /**
- * Sets a single-token pool on a retire contract.
- *
- * Guardian records the pool by reading the token back from the Hedera mirror node, and the mirror
- * node needs a few seconds to index a token that was just created: called too early the endpoint
- * answers 500, with a 404 from the mirror node behind it. The call is therefore repeated until it
- * is accepted, which is also what a client would have to do.
- *
- * Repeating it is safe - the on-chain call is idempotent, a second `requestWiper` for a token that
- * already has a request outstanding reverts inside the retire contract's `try/catch` - but it does
- * cost gas, hence the interval well above the poll default.
+ * Sets a single-token pool on a retire contract and expects it to be accepted at once.
  */
-export const setRetirePool = (authorization, { contractId, tokenId, count = 1, immediately = false, timeout = TIMEOUTS.backend }) =>
-    pollUntil({
-        interval: 2000,
-        request: {
-            method: METHOD.POST,
-            url: `${API.ApiServer}${API.RetireContract}${contractId}/${API.PoolContract}`,
-            headers: { authorization },
-            body: {
-                tokens: [{ token: tokenId, count }],
-                immediately,
-            },
-            timeout: TIMEOUTS.backend,
+export const setRetirePool = (authorization, { contractId, tokenId, count = 1, immediately = false }) =>
+    cy.request({
+        method: METHOD.POST,
+        url: `${API.ApiServer}${API.RetireContract}${contractId}/${API.PoolContract}`,
+        headers: { authorization },
+        body: {
+            tokens: [{ token: tokenId, count }],
+            immediately,
         },
-        predicate: (response) => response.status === STATUS_CODE.OK,
-        description: `token ${tokenId} to be accepted into a pool of contract ${contractId}`,
-        timeout,
+        timeout: TIMEOUTS.backend,
+        failOnStatusCode: false,
+    }).then((response) => {
+        expect(response.status, `setting a pool on contract ${contractId}: ${JSON.stringify(response.body)}`).to.eql(STATUS_CODE.OK);
     });
 
 export const getWipeRequests = (authorization, qs = {}) =>

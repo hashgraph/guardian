@@ -242,7 +242,7 @@ describe('CodeEditorDialogComponent', () => {
 
     describe('onSave', () => {
         it('should block save when validation fails', () => {
-            const closeSpy = jasmine.createSpy('close');
+            const closeSpy = vi.fn();
             const ref = { close: closeSpy } as any;
             const config = { data: { validate: true, helpContext: { availableFields: ['f1'] } } } as DynamicDialogConfig;
             const c = new CodeEditorDialogComponent(ref, config);
@@ -256,7 +256,7 @@ describe('CodeEditorDialogComponent', () => {
         });
 
         it('should allow save when validation passes', () => {
-            const closeSpy = jasmine.createSpy('close');
+            const closeSpy = vi.fn();
             const ref = { close: closeSpy } as any;
             const config = { data: { validate: true, helpContext: { availableFields: ['f1'] } } } as DynamicDialogConfig;
             const c = new CodeEditorDialogComponent(ref, config);
@@ -269,7 +269,7 @@ describe('CodeEditorDialogComponent', () => {
         });
 
         it('should skip validation when validate is false', () => {
-            const closeSpy = jasmine.createSpy('close');
+            const closeSpy = vi.fn();
             const ref = { close: closeSpy } as any;
             const config = { data: { validate: false } } as DynamicDialogConfig;
             const c = new CodeEditorDialogComponent(ref, config);
@@ -284,7 +284,7 @@ describe('CodeEditorDialogComponent', () => {
 
     describe('forceSave', () => {
         it('should save regardless of validation errors', () => {
-            const closeSpy = jasmine.createSpy('close');
+            const closeSpy = vi.fn();
             const ref = { close: closeSpy } as any;
             const config = { data: { validate: true, helpContext: { availableFields: ['f1'] } } } as DynamicDialogConfig;
             const c = new CodeEditorDialogComponent(ref, config);

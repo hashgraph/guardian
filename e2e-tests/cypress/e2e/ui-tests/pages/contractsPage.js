@@ -32,12 +32,6 @@ const L = {
     toastClose: 'button.p-toast-close-button',
 };
 
-// A contract can only be imported about 100 s after it was deployed: before that the node answers
-// INVALID_CONTRACT_ID. A deployment should be usable within seconds, see
-// pending-issues/contract-import-right-after-deployment-fails.md before lowering or removing this.
-const IMPORT_ACCEPTED_WITHIN = 100000;
-const IMPORT_RETRY_PAUSE = 5000;
-
 const hasDescription = (row, name) => row.querySelector(L.descCell)?.textContent.trim() === name;
 
 export class ContractsPage {
@@ -94,36 +88,19 @@ export class ContractsPage {
         this.removeContract(name);
     }
 
-    // Imports the contract and waits for its row, repeating the import while the network still
-    // rejects the contract id (see IMPORT_ACCEPTED_WITHIN); any other outcome fails at once.
+    // Imports the contract and waits for its row; an error toast fails at once with its text.
     importContract(contractId, name) {
-        cy.then(() => {
-            const deadline = Date.now() + IMPORT_ACCEPTED_WITHIN;
-            const attempt = () => {
-                cy.get(L.importButton, { timeout: TIMEOUTS.ui }).click();
-                cy.get(L.dialog, { timeout: TIMEOUTS.ui }).should('be.visible');
-                // the dialog drops keystrokes while it re-renders: set the whole value at once
-                cy.get(L.dialogInput('contractId')).invoke('val', contractId).trigger('input');
-                cy.get(L.dialogInput('contractId')).should('have.value', contractId);
-                this._confirmDialog(name);
-                cy.get('body', { timeout: TIMEOUTS.backend }).should(($body) => {
-                    const imported = $body.find(L.row).filter((_, row) => hasDescription(row, name)).length > 0;
-                    expect(imported || $body.find(L.errorToast).length > 0, 'a new row or an error toast').to.eq(true);
-                }).then(($body) => {
-                    if ($body.find(L.row).filter((_, row) => hasDescription(row, name)).length > 0) {
-                        return;
-                    }
-                    const reason = $body.find(L.errorToast).text().trim();
-                    if (!reason.includes('contract id is invalid') || Date.now() >= deadline) {
-                        throw new Error(`Importing contract ${contractId} failed: ${reason}`);
-                    }
-                    cy.get(L.toastClose).click({ multiple: true });
-                    // eslint-disable-next-line cypress/no-unnecessary-waiting -- the network rejects the id until the deployment is usable, there is nothing to wait for in the page
-                    cy.wait(IMPORT_RETRY_PAUSE, { log: false });
-                    attempt();
-                });
-            };
-            attempt();
+        cy.get(L.importButton, { timeout: TIMEOUTS.ui }).click();
+        cy.get(L.dialog, { timeout: TIMEOUTS.ui }).should('be.visible');
+        // the dialog drops keystrokes while it re-renders: set the whole value at once
+        cy.get(L.dialogInput('contractId')).invoke('val', contractId).trigger('input');
+        cy.get(L.dialogInput('contractId')).should('have.value', contractId);
+        this._confirmDialog(name);
+        cy.get('body', { timeout: TIMEOUTS.backend }).should(($body) => {
+            const imported = $body.find(L.row).filter((_, row) => hasDescription(row, name)).length > 0;
+            const failure = $body.find(L.errorToast).text().trim();
+            expect(failure, `error toast while importing contract ${contractId}`).to.eq('');
+            expect(imported, 'the imported contract row').to.eq(true);
         });
     }
 

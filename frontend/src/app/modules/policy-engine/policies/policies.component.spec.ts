@@ -7,21 +7,13 @@ describe('PoliciesComponent', () => {
 
     beforeEach(() => {
         dialogService = {
-            open: jasmine.createSpy('open').and.returnValue({
-                onClose: { pipe: () => ({ subscribe: jasmine.createSpy('subscribe') }) },
+            open: vi.fn().mockReturnValue({
+                onClose: { pipe: () => ({ subscribe: vi.fn() }) },
             }),
         };
-        const indexedDb = { registerStore: jasmine.createSpy('registerStore') };
+        const indexedDb = { registerStore: vi.fn() };
 
-        component = new PoliciesComponent(
-            {} as any, {} as any, {} as any, {} as any, {} as any,
-            { queryParams: { subscribe: jasmine.createSpy('subscribe') } } as any,
-            dialogService as any,
-            {} as any, {} as any, {} as any, {} as any, {} as any, {} as any,
-            new Map<string, any>(),
-            {} as any,
-            indexedDb as any
-        );
+        component = new PoliciesComponent({} as any, {} as any, {} as any, {} as any, {} as any, { queryParams: { subscribe: vi.fn() } } as any, dialogService as any, {} as any, {} as any, {} as any, {} as any, {} as any, {} as any, new Map<string, any>(), {} as any, indexedDb as any);
     });
 
     describe('setVersion previousVersion seeding', () => {
@@ -62,7 +54,7 @@ describe('PoliciesComponent', () => {
         it('cancels the previous request so a late response cannot overwrite a newer one', () => {
             const requests: Subject<any>[] = [];
             (component as any).policyEngineService = {
-                page: jasmine.createSpy('page').and.callFake(() => {
+                page: vi.fn().mockImplementation(() => {
                     const request = new Subject<any>();
                     requests.push(request);
                     return request;
@@ -73,8 +65,8 @@ describe('PoliciesComponent', () => {
             (component as any).loadAllPolicy();
 
             expect(requests.length).toBe(2);
-            expect(requests[0].observed).toBeFalse();
-            expect(requests[1].observed).toBeTrue();
+            expect(requests[0].observed).toBe(false);
+            expect(requests[1].observed).toBe(true);
         });
     });
 
@@ -85,7 +77,7 @@ describe('PoliciesComponent', () => {
             localStorage.clear();
             component.owner = 'did:1';
             component.tab = 'local';
-            spyOn<any>(component, 'loadAllPolicy');
+            vi.spyOn(component as any, 'loadAllPolicy').mockImplementation(() => undefined);
         });
 
         afterEach(() => localStorage.clear());
@@ -119,7 +111,7 @@ describe('PoliciesComponent', () => {
         it('keeps the filter bar visible when a status is set and nothing matches', () => {
             component.policies = [];
             component.statusFilter = ['PUBLISH_ERROR'];
-            expect(component.showFilterBar).toBeTrue();
+            expect(component.showFilterBar).toBe(true);
         });
     });
 });

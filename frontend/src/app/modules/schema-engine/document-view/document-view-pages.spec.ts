@@ -13,10 +13,7 @@ describe('document view pages', () => {
         });
 
         it('splits into sections and keeps "hidden" fields that have a value', () => {
-            const view = buildSubjectView(
-                schemaOf([text('a'), text('secret', { hidden: true }), ref('part', [text('x')]), text('tail')]),
-                { secret: 'yes', part: {} }, {}
-            );
+            const view = buildSubjectView(schemaOf([text('a'), text('secret', { hidden: true }), ref('part', [text('x')]), text('tail')]), { secret: 'yes', part: {} }, {});
             expect(view.sections.map(item => item.title)).toEqual(['part', 'Other details']);
             expect(view.sections[0].fields.map(item => item.name)).toEqual(['a', 'secret', 'part']);
             const empty = buildSubjectView(schemaOf([text('secret', { hidden: true }), ref('part', [])]), {}, {});
@@ -24,15 +21,12 @@ describe('document view pages', () => {
         });
 
         it('applies the top-level conditions and does not leak them to another subject', () => {
-            const schema = schemaOf(
-                [text('kind'), text('extra'), ref('part', [text('x')])],
-                [{ ifCondition: { field: { name: 'kind' }, fieldValue: 'a' }, thenFields: [{ name: 'extra' }], elseFields: [] }]
-            );
+            const schema = schemaOf([text('kind'), text('extra'), ref('part', [text('x')])], [{ ifCondition: { field: { name: 'kind' }, fieldValue: 'a' }, thenFields: [{ name: 'extra' }], elseFields: [] }]);
             const names = (subject: any) => buildSubjectView(schema, subject, {}).sections[0].fields.map(item => item.name);
             expect(names({ kind: 'a' })).toEqual(['kind', 'extra', 'part']);
             expect(names({ kind: 'b' })).toEqual(['kind', 'part']);
             expect(names({ kind: 'a' })).toEqual(['kind', 'extra', 'part']);
-            expect(schema.fields.some((item: any) => item.notCorrespondCondition !== undefined)).toBeFalse();
+            expect(schema.fields.some((item: any) => item.notCorrespondCondition !== undefined)).toBe(false);
         });
 
         it('promotes a single root: its fields are the sections, read from the root value', () => {
@@ -77,7 +71,7 @@ describe('document view pages', () => {
             const fields = [text('a'), text('note', { type: 'null' }), text('h'), sub];
             const stats = fieldStats(fields, { a: 1, sub: { p: 'no' } }, context({ hide: { h: true } }));
             expect(stats.total).toBe(2);
-            expect(sub.fields.some((item: any) => item.notCorrespondCondition !== undefined)).toBeFalse();
+            expect(sub.fields.some((item: any) => item.notCorrespondCondition !== undefined)).toBe(false);
         });
 
         it('counts failed rule checks and comments by path', () => {

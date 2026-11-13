@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { IUser } from '@guardian/interfaces';
-import { Observable, of, throwError, TimeoutError } from 'rxjs';
+import { defer, Observable, of, throwError, TimeoutError } from 'rxjs';
 import { catchError, timeout } from 'rxjs/operators';
 import { API_BASE_URL } from './api';
 import { AuthService } from './auth.service';
@@ -51,19 +51,19 @@ export class ProfileService {
     }
 
     public getProfile(): Observable<IUser> {
-        return this.http.get<any>(`${this.url}/${encodeURIComponent(this.auth.getUsername())}`);
+        return defer(() => this.http.get<any>(`${this.url}/${this.username()}`));
     }
 
     public setProfile(profile: IUser): Observable<void> {
-        return this.http.put<void>(`${this.url}/${encodeURIComponent(this.auth.getUsername())}`, profile);
+        return defer(() => this.http.put<void>(`${this.url}/${this.username()}`, profile));
     }
 
     public pushSetProfile(profile: IUser): Observable<{ taskId: string, expectation: number }> {
-        return this.failOnSilence(this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${encodeURIComponent(this.auth.getUsername())}`, profile));
+        return this.failOnSilence(defer(() => this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${this.username()}`, profile)));
     }
 
     public restoreProfile(profile: IUser): Observable<{ taskId: string, expectation: number }> {
-        return this.failOnSilence(this.http.put<{ taskId: string, expectation: number }>(`${this.url}/restore/${encodeURIComponent(this.auth.getUsername())}`, profile));
+        return this.failOnSilence(defer(() => this.http.put<{ taskId: string, expectation: number }>(`${this.url}/restore/${this.username()}`, profile)));
     }
 
     // A request that never answers produces no HTTP error, so the error interceptor shows nothing:
@@ -81,15 +81,19 @@ export class ProfileService {
     }
 
     public getAllUserTopics(profile: IUser): Observable<{ taskId: string, expectation: number }> {
-        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/restore/topics/${encodeURIComponent(this.auth.getUsername())}`, profile);
+        return defer(() => this.http.put<{ taskId: string, expectation: number }>(`${this.url}/restore/topics/${this.username()}`, profile));
     }
 
     public exportRemoteUser(): Observable<any> {
-        return this.http.get<any>(`${this.url}/${encodeURIComponent(this.auth.getUsername())}/remote-user`);
+        return defer(() => this.http.get<any>(`${this.url}/${this.username()}/remote-user`));
     }
 
     public getBalance(): Observable<string | null> {
-        return this.http.get<string | null>(`${this.url}/${encodeURIComponent(this.auth.getUsername())}/balance`);
+        return defer(() => this.http.get<string | null>(`${this.url}/${this.username()}/balance`));
+    }
+
+    private username(): string {
+        return encodeURIComponent(this.auth.requireUsername());
     }
 
     public validateDID(document: any): Observable<any> {

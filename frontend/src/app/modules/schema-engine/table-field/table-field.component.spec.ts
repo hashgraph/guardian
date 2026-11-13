@@ -39,7 +39,7 @@ describe('TableFieldComponent', () => {
         const component = build();
         component.item = { name: 'field4', field: { tableColumns: declared } } as any;
 
-        expect(component.hasDeclaredColumns).toBeTrue();
+        expect(component.hasDeclaredColumns).toBe(true);
         expect(component.previewHeaderNameFor('co2_tonnes', 1)).toBe('CO2 (tonnes)');
     });
 
@@ -47,14 +47,14 @@ describe('TableFieldComponent', () => {
         const component = build();
         component.item = { name: 'field4', tableColumns: declared, field: {} } as any;
 
-        expect(component.hasDeclaredColumns).toBeTrue();
+        expect(component.hasDeclaredColumns).toBe(true);
     });
 
     it('has none for an array element handed in without an owner field', () => {
         const component = build();
         component.item = { name: 'field4', index: '0' } as any;
 
-        expect(component.hasDeclaredColumns).toBeFalse();
+        expect(component.hasDeclaredColumns).toBe(false);
     });
 
     it('takes them from ownerField for an array element', () => {
@@ -62,7 +62,7 @@ describe('TableFieldComponent', () => {
         component.item = { name: 'field4', index: '0' } as any;
         component.ownerField = { tableColumns: declared } as any;
 
-        expect(component.hasDeclaredColumns).toBeTrue();
+        expect(component.hasDeclaredColumns).toBe(true);
         expect(component.previewHeaderNameFor('year', 0)).toBe('Year');
     });
 
@@ -70,7 +70,7 @@ describe('TableFieldComponent', () => {
         const component = build();
         component.item = { name: 'field4', field: {} } as any;
 
-        expect(component.hasDeclaredColumns).toBeFalse();
+        expect(component.hasDeclaredColumns).toBe(false);
         expect(component.previewHeaderNameFor('C1', 0)).toBe('A');
     });
 
@@ -171,7 +171,7 @@ describe('TableFieldComponent', () => {
 
         const component = TestBed.createComponent(TableFieldComponent).componentInstance;
         component.item = { name: 'field4', field: {} } as any;
-        spyOn(component as any, 'readTable').and.returnValue({
+        vi.spyOn(component as any, 'readTable').mockReturnValue({
             type: 'table',
             columnKeys: [],
             rows: [],

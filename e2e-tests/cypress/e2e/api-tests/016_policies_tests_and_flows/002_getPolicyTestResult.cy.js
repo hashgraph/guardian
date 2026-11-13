@@ -6,7 +6,7 @@ import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Get policy test result', { tags: ['policies', 'secondPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 	const SRUsername = Cypress.env('SRUser');
-	let policyId; let testId;
+	let policyId;
 
 	before('Get test id', () => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
@@ -33,7 +33,7 @@ context('Get policy test result', { tags: ['policies', 'secondPool', 'api-all', 
 				}).then((response) => {
 					expect(response.status).to.eq(STATUS_CODE.OK)
 					expect(response.body.id).to.equal(policyId)
-					testId = response.body.tests.at(0).id
+					expect(response.body.tests).to.have.length.greaterThan(0)
 				})
 			})
 		})

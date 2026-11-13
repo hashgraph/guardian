@@ -28,6 +28,10 @@ on:
         type: string
         default: ""
         description: Solo release that deploys the local Hiero network (empty uses the workflow default)
+      ui_request_trace:
+        type: boolean
+        default: false
+        description: Log every request the Angular dev server proxies to the gateway (UI_PROXY_LOG, frontend/proxy.hostdocker.js) into frontend-1.log of the guardian-logs artifact. It makes the log large; it is for diagnosing a UI failure
       timeout_minutes:
         type: number
         default: 120
@@ -51,7 +55,7 @@ jobs:
       NODE_VERSION: "24.22.1"
       # Solo release for scheduled and push runs; workflow_dispatch can override it. Keep it in
       # step with SOLO_VERSION in e2e-tests/scripts/solo-network.mjs.
-      SOLO_VERSION: "0.96.0"
+      SOLO_VERSION: "0.97.0"
       # How many worker-service processes to run; the readiness gate expects exactly
       # this many WORKERS_SERVICE connections on NATS.
       WORKER_COUNT: 5
@@ -326,11 +330,11 @@ jobs:
       - name: Load contracts cache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
+          # No node_modules: `npm ci` below deletes it before installing.
           path: |
-            contracts/node_modules
             contracts/artifacts
             contracts/cache
-          key: ${{ runner.os }}-contracts-${{ env.NODE_VERSION }}-${{ hashFiles('contracts/package.json', 'contracts/hardhat.config.ts', 'contracts/src/**') }}
+          key: ${{ runner.os }}-contracts-${{ env.NODE_VERSION }}-${{ hashFiles('contracts/package-lock.json', 'contracts/hardhat.config.ts', 'contracts/src/**') }}
 
       - name: Compile contracts
         working-directory: contracts
@@ -338,7 +342,7 @@ jobs:
           # hardhat.config.ts reads it at load time, `compile` never connects to it.
           RPC_URL: http://localhost:7546
         run: |
-          npm install --no-audit --fund=false
+          npm ci --prefer-offline --no-audit --fund=false
           npx hardhat compile
 
       - name: Upload contract bytecode
@@ -433,6 +437,7 @@ jobs:
         env:
           GUARDIAN_LOG_DIR: ${{ runner.temp }}/guardian-logs
           UI_GATEWAY_ORIGIN: http://127.0.0.1:3002/
+          UI_PROXY_LOG: ${{ inputs.ui_request_trace }}
           NG_CLI_ANALYTICS: "false"
           CI: true
         run: |

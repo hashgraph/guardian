@@ -18,44 +18,48 @@ describe('IPFSService', () => {
 
     describe('getImageWithDryRunFallback', () => {
         it('reads from IPFS only when the view is not a dry run', async () => {
-            const byLink = spyOn(service, 'getImageByLink').and.resolveTo('data:ipfs');
-            const dryRun = spyOn(service, 'getImageFromDryRunStorage').and.resolveTo('data:dry-run');
+            const byLink = vi.spyOn(service, 'getImageByLink').mockResolvedValue('data:ipfs');
+            const dryRun = vi.spyOn(service, 'getImageFromDryRunStorage').mockResolvedValue('data:dry-run');
 
             const result = await service.getImageWithDryRunFallback(reference, false);
 
             expect(result).toBe('data:ipfs');
-            expect(byLink).toHaveBeenCalledOnceWith(reference);
+            expect(byLink).toHaveBeenCalledTimes(1);
+            expect(byLink).toHaveBeenCalledWith(reference);
             expect(dryRun).not.toHaveBeenCalled();
         });
 
         it('reads from the dry-run storage first in a dry run', async () => {
-            const byLink = spyOn(service, 'getImageByLink').and.resolveTo('data:ipfs');
-            const dryRun = spyOn(service, 'getImageFromDryRunStorage').and.resolveTo('data:dry-run');
+            const byLink = vi.spyOn(service, 'getImageByLink').mockResolvedValue('data:ipfs');
+            const dryRun = vi.spyOn(service, 'getImageFromDryRunStorage').mockResolvedValue('data:dry-run');
 
             const result = await service.getImageWithDryRunFallback(reference, true);
 
             expect(result).toBe('data:dry-run');
-            expect(dryRun).toHaveBeenCalledOnceWith(reference);
+            expect(dryRun).toHaveBeenCalledTimes(1);
+            expect(dryRun).toHaveBeenCalledWith(reference);
             expect(byLink).not.toHaveBeenCalled();
         });
 
         it('falls back to IPFS when the dry-run storage fails', async () => {
-            const byLink = spyOn(service, 'getImageByLink').and.resolveTo('data:ipfs');
-            const dryRun = spyOn(service, 'getImageFromDryRunStorage').and.rejectWith(new Error('not found'));
+            const byLink = vi.spyOn(service, 'getImageByLink').mockResolvedValue('data:ipfs');
+            const dryRun = vi.spyOn(service, 'getImageFromDryRunStorage').mockRejectedValue(new Error('not found'));
 
             const result = await service.getImageWithDryRunFallback(reference, true);
 
             expect(result).toBe('data:ipfs');
-            expect(dryRun).toHaveBeenCalledOnceWith(reference);
-            expect(byLink).toHaveBeenCalledOnceWith(reference);
+            expect(dryRun).toHaveBeenCalledTimes(1);
+            expect(dryRun).toHaveBeenCalledWith(reference);
+            expect(byLink).toHaveBeenCalledTimes(1);
+            expect(byLink).toHaveBeenCalledWith(reference);
         });
 
         it('rejects with the IPFS error when both sources fail', async () => {
             const failure = new Error('ipfs unavailable');
-            spyOn(service, 'getImageByLink').and.rejectWith(failure);
-            spyOn(service, 'getImageFromDryRunStorage').and.rejectWith(new Error('not found'));
+            vi.spyOn(service, 'getImageByLink').mockRejectedValue(failure);
+            vi.spyOn(service, 'getImageFromDryRunStorage').mockRejectedValue(new Error('not found'));
 
-            await expectAsync(service.getImageWithDryRunFallback(reference, true)).toBeRejectedWith(failure);
+            await expect(service.getImageWithDryRunFallback(reference, true)).rejects.toEqual(failure);
         });
     });
 });
