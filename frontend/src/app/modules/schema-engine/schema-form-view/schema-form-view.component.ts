@@ -14,7 +14,7 @@ import {
     UnitSystem
 } from '@guardian/interfaces';
 import { IPFSService } from 'src/app/services/ipfs.service';
-import { isSafeHref, withNewTabLinks } from '../rich-text-editor/rich-text-sanitizer';
+import { ALLOWED_TAGS, isSafeHref, sanitizeRichText, withNewTabLinks } from '../rich-text-editor/rich-text-sanitizer';
 import { collectImageReferences, markdownToHtml, markdownToPlainText } from '../rich-text-editor/markdown';
 import { SchemaFormPreferencesService } from 'src/app/services/schema-form-preferences.service';
 import { baseMetaTags, IMetaTag, metaType } from '../schema-form/schema-form-metadata';
@@ -23,6 +23,8 @@ import { geoRecordSummary } from '../geo-file/geo-value-summary';
 import { applyNestedConditions, applyViewConditions } from './schema-form-view-conditions';
 
 const PREVIEW_RENDER_CHUNK = 10;
+
+const HTML_TAG = new RegExp(`</?(?:${Array.from(ALLOWED_TAGS).join('|')})(?:\\s[^<>]*)?/?>`, 'i');
 
 interface IFieldControl extends SchemaField {
     fullPath: string;
@@ -47,6 +49,10 @@ interface IFieldControl extends SchemaField {
 interface IRichTextEntry {
     description?: string;
     value: any;
+}
+
+interface IHtmlTextValue {
+    html: string;
 }
 
 interface IFieldIndexControl {
@@ -85,6 +91,7 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
     @Input() pathPrefix: string = '';
     /** Set on the view of a record card: rich text there keeps the popover and the dialog. */
     @Input() inRecord: boolean = false;
+    @Input() hideNotProvided: boolean = false;
 
     @Output('discussion-action') discussionActionEvent = new EventEmitter<any>();
     @Output('onAccordionSelect') onAccordionSelect = new EventEmitter<{path: string, isOpen: boolean}>();
@@ -97,10 +104,12 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
     /** Rendered rich text per markdown value; dropped whenever an image resolves, since that changes the HTML. */
     private richHtmlCache = new Map<string, string>();
     private rowSummaryCache = new WeakMap<object, { title: string; sub: string }>();
+    private htmlTextCache = new Map<string, IHtmlTextValue | ''>();
     private imgRequests = new Map<string, Promise<string | null>>();
     private previewFrames = new Map<IFieldControl, number>();
     public previewRenderLimit: number = Infinity;
     private previewRenderFrame: number | null = null;
+    private linkedField: string | undefined;
 
     constructor(
         private ipfs: IPFSService,
@@ -597,6 +606,24 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
         return html;
     }
 
+    public htmlText(item: IFieldControl, value: unknown): IHtmlTextValue | '' {
+        if (
+            item.type !== 'string' ||
+            this.isPrefix(item) ||
+            this.isPostfix(item) ||
+            typeof value !== 'string' ||
+            !value.includes('<')
+        ) {
+            return '';
+        }
+        let html = this.htmlTextCache.get(value);
+        if (html === undefined) {
+            html = HTML_TAG.test(value) ? { html: sanitizeRichText(value) } : '';
+            this.htmlTextCache.set(value, html);
+        }
+        return html;
+    }
+
     public onRichTextLinkClick(event: MouseEvent): void {
         const target = event.target;
         if (!(target instanceof Element)) {
@@ -830,7 +857,22 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     public ifFieldVisible(item: IFieldControl): boolean {
-        return !item.hide && !item.notCorrespondCondition;
+        return !item.hide && !item.notCorrespondCondition && !this.isHiddenAsEmpty(item);
+    }
+
+    public hasVisibleFields(): boolean {
+        return (this.fields || []).some((item) => this.ifFieldVisible(item));
+    }
+
+    private isHiddenAsEmpty(item: IFieldControl): boolean {
+        return this.hideNotProvided
+            && !this.isDiscussionCount(item)
+            && !this.isLinkedField(item)
+            && this.isEmptyField(item);
+    }
+
+    private isLinkedField(item: IFieldControl): boolean {
+        return !!this.linkedField && (item.fullPath === this.linkedField || item.name === this.linkedField);
     }
 
     public ifSimpleField(item: IFieldControl): boolean {
@@ -933,6 +975,7 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
             _rootLink = undefined;
             _subLink = undefined;
         }
+        this.linkedField = _rootLink;
 
         if (_rootLink && this.fields) {
             for (const field of this.fields) {

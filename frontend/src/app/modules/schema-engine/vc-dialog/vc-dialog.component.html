@@ -59,6 +59,10 @@
               }
               Field metadata
             </button>
+            <app-hide-not-provided-toggle
+              [pressed]="hideNotProvided"
+              (toggled)="hideNotProvided = $event"
+            ></app-hide-not-provided-toggle>
           }
           @if (barShown && messageId && !dryRun && canExport) {
             <button
@@ -99,6 +103,7 @@
             [getByUser]="getByUser"
             [schema]="schema"
             [type]="type"
+            [hideNotProvided]="hideNotProvided"
           [dialogContext]="'viewer'"></app-document-view>
         </div>
       }
