@@ -970,8 +970,13 @@ $sc-accent: var(--guardian-schema-accent, var(--color-primary, #4169E2));
     background: var(--guardian-background, #fff);
 
     &:hover,
-    &:active {
+    &:active,
+    &:focus-visible {
         background: var(--color-primary, #4169E2);
+    }
+
+    &:focus-visible {
+        outline: none;
     }
 }
 
@@ -1125,6 +1130,7 @@ $sc-accent: var(--guardian-schema-accent, var(--color-primary, #4169E2));
     background: var(--guardian-background, #fff);
     margin-bottom: 5px;
     cursor: pointer;
+    user-select: none;
     transition: border-color 0.15s;
 
     &:hover { border-color: color-mix(in srgb, $sc-accent 35%, var(--guardian-border-color, #E1E7EF)); }
@@ -1145,6 +1151,35 @@ $sc-accent: var(--guardian-schema-accent, var(--color-primary, #4169E2));
             background: $sc-accent;
             i { color: #fff; }
         }
+    }
+}
+
+::ng-deep .sc-row-tooltip {
+    max-width: 90vw;
+
+    .p-tooltip-text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+.sc-row-tooltip-name {
+    font-weight: 600;
+}
+
+.sc-row-tooltip-separator {
+    margin: 0 6px;
+    opacity: 0.75;
+}
+
+.sc-row-tooltip-message {
+    opacity: 0.85;
+
+    i {
+        margin-right: 4px;
+        font-size: 11px;
+        color: var(--color-accent-yellow-1, #DA9B22);
     }
 }
 

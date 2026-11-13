@@ -1,4 +1,5 @@
-import { AfterViewInit, ChangeDetectorRef, Directive, ElementRef, HostBinding, HostListener, Input, NgZone, OnChanges, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Directive, ElementRef, HostBinding, HostListener, Input, NgZone, OnChanges, OnDestroy, OnInit, Optional, Self, SkipSelf } from '@angular/core';
+import { Tooltip } from 'primeng/tooltip';
 import { LAST_USER_STORAGE_KEY } from '../../services/app-theme.service';
 
 @Directive({
@@ -74,6 +75,32 @@ export class SchemaListResizeDirective implements OnInit, OnDestroy {
         if (!this.drag || event.pointerId !== this.drag.pointerId) { return; }
         this.move(event);
         this.cancel();
+        this.save();
+    }
+
+    public get roundedWidth(): number {
+        return Math.round(this.widthPercent);
+    }
+
+    public key(event: KeyboardEvent): void {
+        const width = this.keyWidth(event.key);
+        if (width === null) { return; }
+        event.preventDefault();
+        this.widthPercent = width;
+        this.save();
+    }
+
+    private keyWidth(key: string): number | null {
+        switch (key) {
+            case 'Home': return this.minWidthPercent;
+            case 'End': return this.maxWidthPercent;
+            case 'ArrowLeft': return this.clamp(Math.ceil(this.widthPercent) - 1);
+            case 'ArrowRight': return this.clamp(Math.floor(this.widthPercent) + 1);
+            default: return null;
+        }
+    }
+
+    private save(): void {
         try {
             if (this.storageKey) {
                 localStorage.setItem(this.storageKey, String(this.widthPercent));
@@ -103,14 +130,20 @@ export class SchemaListResizeDirective implements OnInit, OnDestroy {
 
 @Directive({
     selector: '[appSchemaNameTooltip]',
+    exportAs: 'schemaNameTooltip',
     standalone: true
 })
 export class SchemaNameTooltipDirective implements AfterViewInit, OnChanges, OnDestroy {
     @Input('appSchemaNameTooltip') public name = '';
+    public truncated = false;
     private static observer: ResizeObserver | null = null;
     private static readonly updates = new Map<Element, () => void>();
 
-    constructor(private readonly element: ElementRef<HTMLElement>) {}
+    constructor(
+        private readonly element: ElementRef<HTMLElement>,
+        private readonly zone: NgZone,
+        private readonly changeDetector: ChangeDetectorRef
+    ) {}
 
     public ngAfterViewInit(): void {
         if (!SchemaNameTooltipDirective.observer) {
@@ -130,13 +163,27 @@ export class SchemaNameTooltipDirective implements AfterViewInit, OnChanges, OnD
         this.update();
     }
 
+    public rowTooltip<T>(message: string, content: T): T | '' {
+        return this.hasRowTooltip(message) ? content : '';
+    }
+
+    public rowTooltipClass(message: string): string {
+        return this.hasRowTooltip(message) ? 'sc-row-tooltip' : '';
+    }
+
+    private hasRowTooltip(message: string): boolean {
+        return this.truncated || !!message;
+    }
+
     @HostListener('mouseenter')
     public update(): void {
         const element = this.element.nativeElement;
-        if (this.name && element.scrollWidth > element.clientWidth) {
-            element.setAttribute('title', this.name);
-        } else {
-            element.removeAttribute('title');
+        const truncated = !!this.name && element.scrollWidth > element.clientWidth;
+        if (truncated !== this.truncated) {
+            this.zone.run(() => Promise.resolve().then(() => {
+                this.truncated = truncated;
+                this.changeDetector.markForCheck();
+            }));
         }
     }
 
@@ -149,5 +196,75 @@ export class SchemaNameTooltipDirective implements AfterViewInit, OnChanges, OnD
             SchemaNameTooltipDirective.observer?.disconnect();
             SchemaNameTooltipDirective.observer = null;
         }
+    }
+}
+
+@Directive({
+    selector: '[appSchemaRowInnerTooltip]',
+    standalone: true
+})
+export class SchemaRowInnerTooltipDirective implements OnInit, OnDestroy {
+    private readonly events = new AbortController();
+
+    constructor(
+        private readonly element: ElementRef<HTMLElement>,
+        private readonly zone: NgZone,
+        @Optional() @SkipSelf() private readonly rowTooltip: Tooltip | null
+    ) {}
+
+    public ngOnInit(): void {
+        const rowTooltip = this.rowTooltip;
+        if (!rowTooltip) { return; }
+        const element = this.element.nativeElement;
+        const { signal } = this.events;
+        this.zone.runOutsideAngular(() => {
+            element.addEventListener('mouseenter', () => rowTooltip.deactivate(), { signal });
+            element.addEventListener('mouseleave', (event: MouseEvent) => {
+                const target = event.relatedTarget;
+                if (target instanceof Node && rowTooltip.el.nativeElement.contains(target)) {
+                    rowTooltip.activate();
+                }
+            }, { signal });
+        });
+    }
+
+    public ngOnDestroy(): void {
+        this.events.abort();
+    }
+}
+
+@Directive({
+    selector: '[appSchemaRowTooltip]',
+    standalone: true
+})
+export class SchemaRowTooltipDirective implements OnInit, OnDestroy {
+    private readonly events = new AbortController();
+    private pointerInside = false;
+
+    constructor(
+        private readonly element: ElementRef<HTMLElement>,
+        private readonly zone: NgZone,
+        @Optional() @Self() private readonly tooltip: Tooltip | null
+    ) {}
+
+    public ngOnInit(): void {
+        const tooltip = this.tooltip;
+        if (!tooltip) { return; }
+        const element = this.element.nativeElement;
+        const { signal } = this.events;
+        this.zone.runOutsideAngular(() => {
+            element.addEventListener('mouseenter', () => { this.pointerInside = true; }, { signal });
+            element.addEventListener('mouseleave', () => { this.pointerInside = false; }, { signal });
+            element.addEventListener('click', (event: MouseEvent) => {
+                if (event.target instanceof Element && event.target.closest('[appSchemaRowInnerTooltip]')) { return; }
+                setTimeout(() => {
+                    if (this.pointerInside && !signal.aborted) { tooltip.activate(); }
+                });
+            }, { signal });
+        });
+    }
+
+    public ngOnDestroy(): void {
+        this.events.abort();
     }
 }

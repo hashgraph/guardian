@@ -1,7 +1,9 @@
-import { Component, ElementRef, NgZone, provideZoneChangeDetection } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, NgZone, provideZoneChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { Tooltip } from 'primeng/tooltip';
 import { LAST_USER_STORAGE_KEY } from '../../services/app-theme.service';
-import { SchemaListResizeDirective, SchemaNameTooltipDirective } from './schema-list-layout.directive';
+import { SchemaListResizeDirective, SchemaNameTooltipDirective, SchemaRowInnerTooltipDirective, SchemaRowTooltipDirective } from './schema-list-layout.directive';
 
 @Component({
     imports: [SchemaListResizeDirective, SchemaNameTooltipDirective],
@@ -13,10 +15,14 @@ import { SchemaListResizeDirective, SchemaNameTooltipDirective } from './schema-
                     <button class="sc-btn-new-schema">+</button>
                 </div>
                 @for (copy of copies; track copy) {
-                    <span class="name" [appSchemaNameTooltip]="name">{{ name }}</span>
+                    <div class="name-row" [attr.data-row-tooltip]="nameTooltip.rowTooltip(message, 'styled')" [attr.data-name-shown]="nameTooltip.truncated">
+                        <span class="name"
+                              [appSchemaNameTooltip]="name"
+                              #nameTooltip="schemaNameTooltip">{{ name }}</span>
+                    </div>
                 }
             </aside>
-            <div class="handle sc-sidebar-resizer" (pointerdown)="panel.start($event)"></div>
+            <div class="handle sc-sidebar-resizer" tabindex="0" (keydown)="panel.key($event)" (pointerdown)="panel.start($event)"></div>
         </div>
     `,
     styleUrls: ['./schemas-configuration.component.scss'],
@@ -25,6 +31,7 @@ import { SchemaListResizeDirective, SchemaNameTooltipDirective } from './schema-
 class HostComponent {
     public name = 'A long schema name '.repeat(30);
     public copies = [0];
+    public message = '';
 }
 
 describe('Schema list resize behavior', () => {
@@ -175,6 +182,58 @@ describe('Schema list resize behavior', () => {
         getItem.and.callThrough();
     });
 
+    function keyEvent(name: string): KeyboardEvent {
+        return new KeyboardEvent('keydown', { key: name, cancelable: true });
+    }
+
+    it('resizes with the arrow keys in whole percent steps and saves at once', () => {
+        localStorage.setItem(key, '27.4');
+        const panel = open();
+        const right = keyEvent('ArrowRight');
+        panel.key(right);
+        expect(right.defaultPrevented).toBeTrue();
+        expect(panel.widthPercent).toBe(28);
+        expect(localStorage.getItem(key)).toBe('28');
+        panel.key(keyEvent('ArrowLeft'));
+        panel.key(keyEvent('ArrowLeft'));
+        expect(panel.widthPercent).toBe(26);
+        expect(localStorage.getItem(key)).toBe('26');
+    });
+
+    it('moves a fractional width to the next whole percent with the left arrow', () => {
+        localStorage.setItem(key, '27.4');
+        const left = open();
+        left.key(keyEvent('ArrowLeft'));
+        expect(left.widthPercent).toBe(27);
+    });
+
+    it('jumps to the limits with Home and End and stays inside them', () => {
+        const panel = open();
+        panel.key(keyEvent('End'));
+        expect(panel.widthPercent).toBe(30);
+        panel.key(keyEvent('ArrowRight'));
+        expect(panel.widthPercent).toBe(30);
+        panel.key(keyEvent('Home'));
+        expect(panel.widthPercent).toBe(20);
+        panel.key(keyEvent('ArrowLeft'));
+        expect(panel.widthPercent).toBe(20);
+        expect(localStorage.getItem(key)).toBe('20');
+    });
+
+    it('ignores other keys', () => {
+        const panel = open();
+        const enter = keyEvent('Enter');
+        panel.key(enter);
+        expect(enter.defaultPrevented).toBeFalse();
+        expect(panel.widthPercent).toBe(25);
+        expect(localStorage.getItem(key)).toBeNull();
+    });
+
+    it('reports a whole-number width to assistive technology', () => {
+        localStorage.setItem(key, '27.4');
+        expect(open().roundedWidth).toBe(27);
+    });
+
     it('remains usable when writing localStorage is forbidden', () => {
         const panel = open();
         const setItem = spyOn(Storage.prototype, 'setItem').and.throwError('Storage unavailable');
@@ -198,41 +257,70 @@ describe('Schema name tooltip behavior', () => {
 
     beforeEach(() => {
         element = document.createElement('span');
-        tooltip = new SchemaNameTooltipDirective(new ElementRef(element));
+        const changeDetector = jasmine.createSpyObj<ChangeDetectorRef>('changeDetector', ['markForCheck', 'detach', 'detectChanges', 'checkNoChanges', 'reattach']);
+        tooltip = new SchemaNameTooltipDirective(new ElementRef(element), TestBed.inject(NgZone), changeDetector);
         tooltip.name = 'The full schema name';
     });
 
-    it('exposes the complete name when the rendered content is clipped', () => {
-        dimensions(300, 100);
+    async function measure(): Promise<void> {
         tooltip.update();
-        expect(element.getAttribute('title')).toBe('The full schema name');
+        await Promise.resolve();
+    }
+
+    it('offers the complete name when the rendered content is clipped', async () => {
+        dimensions(300, 100);
+        await measure();
+        expect(tooltip.truncated).toBeTrue();
+        expect(tooltip.rowTooltip('', 'styled')).toBe('styled');
+        expect(tooltip.rowTooltipClass('')).toBe('sc-row-tooltip');
     });
 
-    it('omits the tooltip when the content fits, even with literal dots', () => {
+    it('offers nothing when the content fits, even with literal dots', async () => {
         dimensions(100, 100);
         tooltip.name = 'A...';
-        tooltip.update();
-        expect(element.hasAttribute('title')).toBeFalse();
+        await measure();
+        expect(tooltip.rowTooltip('', 'styled')).toBe('');
+        expect(tooltip.rowTooltipClass('')).toBe('');
     });
 
-    it('removes and restores the full-name tooltip as clipping changes', () => {
+    it('follows clipping as it changes', async () => {
         dimensions(300, 100);
-        tooltip.update();
-        expect(element.hasAttribute('title')).toBeTrue();
+        await measure();
+        expect(tooltip.truncated).toBeTrue();
         dimensions(300, 500);
-        tooltip.update();
-        expect(element.hasAttribute('title')).toBeFalse();
+        await measure();
+        expect(tooltip.truncated).toBeFalse();
         dimensions(300, 100);
-        tooltip.update();
-        expect(element.getAttribute('title')).toBe('The full schema name');
+        await measure();
+        expect(tooltip.truncated).toBeTrue();
     });
 
-    it('updates the full name when the schema name changes', () => {
+    it('treats an empty name as not clipped', async () => {
         dimensions(300, 100);
-        tooltip.update();
-        tooltip.name = 'Another full schema name';
+        tooltip.name = '';
         tooltip.ngOnChanges();
-        expect(element.getAttribute('title')).toBe('Another full schema name');
+        await Promise.resolve();
+        expect(tooltip.truncated).toBeFalse();
+    });
+
+    it('puts the name in front of the row message when the name is clipped', async () => {
+        dimensions(300, 100);
+        await measure();
+        expect(tooltip.rowTooltip('Would create a circular dependency', 'styled')).toBe('styled');
+    });
+
+    it('uses the same styled tooltip for the row message when the name fits', async () => {
+        dimensions(100, 100);
+        await measure();
+        expect(tooltip.truncated).toBeFalse();
+        expect(tooltip.rowTooltip('Would create a circular dependency', 'styled')).toBe('styled');
+        expect(tooltip.rowTooltipClass('Would create a circular dependency')).toBe('sc-row-tooltip');
+    });
+
+    it('does not use a native browser tooltip', async () => {
+        dimensions(300, 100);
+        await measure();
+        expect(element.hasAttribute('title')).toBeFalse();
     });
 });
 
@@ -254,6 +342,19 @@ describe('Schema list layout', () => {
     function panel(): HTMLElement { return fixture.nativeElement.querySelector('aside'); }
     function handle(): HTMLElement { return fixture.nativeElement.querySelector('.handle'); }
     function name(): HTMLElement { return fixture.nativeElement.querySelector('.name'); }
+    function rowTooltip(): string | null { return fixture.nativeElement.querySelector('.name-row').getAttribute('data-row-tooltip'); }
+    function nameShown(): string | null { return fixture.nativeElement.querySelector('.name-row').getAttribute('data-name-shown'); }
+    function setRow(nameText: string, message: string): void {
+        fixture.componentInstance.name = nameText;
+        fixture.componentInstance.message = message;
+        fixture.changeDetectorRef.markForCheck();
+        fixture.detectChanges();
+    }
+    async function settle(): Promise<void> {
+        await observeResize();
+        await fixture.whenStable();
+        fixture.detectChanges();
+    }
     function pointer(target: EventTarget, type: string, x: number, pointerId = 1, button = 0): void {
         target.dispatchEvent(new PointerEvent(type, { clientX: x, pointerId, button, bubbles: true, cancelable: true }));
         fixture.detectChanges();
@@ -354,15 +455,15 @@ describe('Schema list layout', () => {
             expect(created).toBe(1);
             expect(active).toBe(1);
             name().style.width = '10px';
-            await observeResize();
-            expect(name().getAttribute('title')).toBe(fixture.componentInstance.name);
+            await settle();
+            expect(rowTooltip()).toBe('styled');
             fixture.componentInstance.copies = [0];
             fixture.changeDetectorRef.markForCheck();
             fixture.detectChanges();
             expect(active).toBe(1);
             name().style.width = '10000px';
-            await observeResize();
-            expect(name().hasAttribute('title')).toBeFalse();
+            await settle();
+            expect(rowTooltip()).toBe('');
             fixture.destroy();
             expect(active).toBe(0);
             open();
@@ -456,6 +557,16 @@ describe('Schema list layout', () => {
         expect(width()).toBeCloseTo(27, 1);
     });
 
+    it('resizes from the keyboard on the focusable boundary', () => {
+        open();
+        expect(handle().tabIndex).toBe(0);
+        handle().focus();
+        handle().dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true, cancelable: true }));
+        fixture.detectChanges();
+        expect(width()).toBeCloseTo(30, 1);
+        expect(Number(localStorage.getItem(userKey))).toBe(30);
+    });
+
     it('prevents selection and bubbling when the resize boundary is pressed', () => {
         open();
         const bubbled = jasmine.createSpy('pointerdown');
@@ -501,36 +612,346 @@ describe('Schema list layout', () => {
         getItem.and.callThrough();
     });
 
-    it('shows the full name on hover only when the rendered name is truncated', () => {
+    it('offers the full name on hover only when the rendered name is truncated', async () => {
         open();
         name().dispatchEvent(new MouseEvent('mouseenter'));
-        expect(name().getAttribute('title')).toBe(fixture.componentInstance.name);
-        fixture.componentInstance.name = 'Appendix X';
-        fixture.changeDetectorRef.markForCheck();
-        fixture.detectChanges();
+        await settle();
+        expect(rowTooltip()).toBe('styled');
+        setRow('Appendix X', '');
         name().dispatchEvent(new MouseEvent('mouseenter'));
-        expect(name().hasAttribute('title')).toBeFalse();
+        await settle();
+        expect(rowTooltip()).toBe('');
     });
 
-    it('does not treat literal dots in a fully visible name as truncation', () => {
+    it('does not treat literal dots in a fully visible name as truncation', async () => {
         open();
-        fixture.componentInstance.name = 'A...';
-        fixture.changeDetectorRef.markForCheck();
-        fixture.detectChanges();
+        setRow('A...', '');
         name().dispatchEvent(new MouseEvent('mouseenter'));
-        expect(name().hasAttribute('title')).toBeFalse();
+        await settle();
+        expect(rowTooltip()).toBe('');
     });
 
     it('updates tooltip eligibility after the rendered width changes', async () => {
         open();
-        fixture.componentInstance.name = 'Appendix X';
+        setRow('Appendix X', '');
+        name().style.width = '10px';
+        await settle();
+        expect(rowTooltip()).toBe('styled');
+        name().style.width = '500px';
+        await settle();
+        expect(rowTooltip()).toBe('');
+    });
+
+    it('shows one combined tooltip for a clipped name in a row with its own message', async () => {
+        open();
+        setRow(fixture.componentInstance.name, 'Cannot use the current schema as a sub-schema');
+        await settle();
+        expect(rowTooltip()).toBe('styled');
+        expect(name().hasAttribute('title')).toBeFalse();
+    });
+
+    it('shows the row message without the name when the name fits', async () => {
+        open();
+        setRow('Appendix X', 'Cannot use the current schema as a sub-schema');
+        await settle();
+        expect(rowTooltip()).toBe('styled');
+        expect(nameShown()).toBe('false');
+    });
+
+    it('adds and removes the name in the row tooltip as the rendered width changes', async () => {
+        open();
+        setRow('Appendix X', 'Would create a circular dependency');
+        await settle();
+        expect(nameShown()).toBe('false');
+        name().style.width = '10px';
+        await settle();
+        expect(nameShown()).toBe('true');
+        expect(rowTooltip()).toBe('styled');
+        name().style.width = '500px';
+        await settle();
+        expect(nameShown()).toBe('false');
+        expect(rowTooltip()).toBe('styled');
+    });
+});
+
+@Component({
+    imports: [Tooltip, SchemaRowInnerTooltipDirective, SchemaRowTooltipDirective],
+    template: `
+        <div class="row" pTooltip="Cannot use the current schema as a sub-schema" appSchemaRowTooltip>
+            <span class="plain">Name</span>
+            <span class="lock" pTooltip="Schema settings are locked" appSchemaRowInnerTooltip>L</span>
+            <span class="bare" appSchemaRowInnerTooltip>B</span>
+        </div>
+    `
+})
+class RowTooltipHostComponent {}
+
+describe('Schema row inner tooltips', () => {
+    let fixture: ComponentFixture<RowTooltipHostComponent>;
+    let row: Tooltip;
+    let activate: jasmine.Spy;
+
+    function element(selector: string): HTMLElement { return fixture.nativeElement.querySelector(selector); }
+    function hover(target: HTMLElement, type: 'mouseenter' | 'mouseleave', relatedTarget: EventTarget | null = null): void {
+        target.dispatchEvent(new MouseEvent(type, { relatedTarget }));
+    }
+
+    beforeEach(() => {
+        TestBed.configureTestingModule({ imports: [RowTooltipHostComponent], providers: [provideZoneChangeDetection()] });
+        fixture = TestBed.createComponent(RowTooltipHostComponent);
+        fixture.detectChanges();
+        row = fixture.debugElement.query(By.css('.row')).injector.get(Tooltip);
+        activate = spyOn(row, 'activate');
+        spyOn(row, 'deactivate');
+    });
+
+    afterEach(() => {
+        fixture?.destroy();
+    });
+
+    it('hides the row tooltip while an element with its own tooltip is hovered', () => {
+        hover(element('.lock'), 'mouseenter');
+        expect(row.deactivate).toHaveBeenCalledTimes(1);
+        expect(row.activate).not.toHaveBeenCalled();
+    });
+
+    it('shows the row tooltip again when the pointer moves back onto the row', () => {
+        hover(element('.lock'), 'mouseenter');
+        hover(element('.lock'), 'mouseleave', element('.plain'));
+        expect(row.activate).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not show the row tooltip when the pointer leaves the row', () => {
+        hover(element('.lock'), 'mouseenter');
+        hover(element('.lock'), 'mouseleave', document.body);
+        expect(row.activate).not.toHaveBeenCalled();
+    });
+
+    it('does not enter Angular while inner elements are hovered', () => {
+        const zone = TestBed.inject(NgZone);
+        let entries = 0;
+        const subscription = zone.onUnstable.subscribe(() => { entries++; });
+        zone.runOutsideAngular(() => {
+            hover(element('.bare'), 'mouseenter');
+            hover(element('.bare'), 'mouseleave', element('.plain'));
+        });
+        subscription.unsubscribe();
+        expect(entries).toBe(0);
+        expect(row.deactivate).toHaveBeenCalledTimes(1);
+        expect(row.activate).toHaveBeenCalledTimes(1);
+    });
+
+    it('stops listening when the row is destroyed', () => {
+        const lock = element('.lock');
+        fixture.destroy();
+        hover(lock, 'mouseenter');
+        hover(lock, 'mouseleave', document.body);
+        expect(row.deactivate).not.toHaveBeenCalled();
+        expect(row.activate).not.toHaveBeenCalled();
+    });
+
+    async function afterClick(): Promise<void> {
+        await new Promise(resolve => setTimeout(resolve));
+    }
+
+    function enterRow(): void {
+        hover(element('.row'), 'mouseenter');
+        activate.calls.reset();
+    }
+
+    it('shows the row tooltip again right after the row is clicked', async () => {
+        enterRow();
+        element('.plain').click();
+        await afterClick();
+        expect(row.activate).toHaveBeenCalledTimes(1);
+    });
+
+    it('keeps the row tooltip hidden after a click on an element with its own tooltip', async () => {
+        enterRow();
+        element('.lock').click();
+        await afterClick();
+        expect(row.activate).not.toHaveBeenCalled();
+    });
+
+    it('does not show the row tooltip after a click when the pointer has already left', async () => {
+        enterRow();
+        element('.plain').click();
+        hover(element('.row'), 'mouseleave', document.body);
+        await afterClick();
+        expect(row.activate).not.toHaveBeenCalled();
+    });
+
+    it('does not enter Angular for row hovering and clicks', async () => {
+        const zone = TestBed.inject(NgZone);
+        let entries = 0;
+        const subscription = zone.onUnstable.subscribe(() => { entries++; });
+        enterRow();
+        zone.runOutsideAngular(() => {
+            element('.plain').click();
+        });
+        await afterClick();
+        subscription.unsubscribe();
+        expect(entries).toBe(0);
+        expect(row.activate).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not show the row tooltip after a click once the row is destroyed', async () => {
+        enterRow();
+        element('.plain').click();
+        fixture.destroy();
+        await afterClick();
+        expect(row.activate).not.toHaveBeenCalled();
+    });
+});
+
+@Component({
+    imports: [Tooltip, SchemaNameTooltipDirective],
+    template: `
+        <div class="row" [pTooltip]="nameTooltip.rowTooltip(message, content)" [tooltipStyleClass]="nameTooltip.rowTooltipClass(message)">
+            <ng-template #content>
+                @if (nameTooltip.truncated) {<span class="sc-row-tooltip-name">{{ name }}</span>}@if (message) {@if (nameTooltip.truncated) {<span class="sc-row-tooltip-separator">·</span>}<span class="sc-row-tooltip-message">{{ message }}</span>}
+            </ng-template>
+            <span class="name"
+                  [appSchemaNameTooltip]="name"
+                  #nameTooltip="schemaNameTooltip">{{ name }}</span>
+        </div>
+    `,
+    styleUrls: ['./schemas-configuration.component.scss'],
+    styles: [`.row { width: 120px; } .name { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }`]
+})
+class RowTooltipContentHostComponent {
+    public name = '<b>Monitored Parameters by Project Instance</b>';
+    public message = 'Cannot use the current schema as a sub-schema';
+}
+
+describe('Schema row tooltip content', () => {
+    let fixture: ComponentFixture<RowTooltipContentHostComponent>;
+
+    beforeEach(() => {
+        TestBed.configureTestingModule({ imports: [RowTooltipContentHostComponent], providers: [provideZoneChangeDetection()] });
+        fixture = TestBed.createComponent(RowTooltipContentHostComponent);
+        fixture.detectChanges();
+    });
+
+    afterEach(() => {
+        fixture?.destroy();
+    });
+
+    async function showRowTooltip(): Promise<Element | null> {
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        await fixture.whenStable();
+        fixture.detectChanges();
+        fixture.debugElement.query(By.css('.row')).injector.get(Tooltip).activate();
+        return document.querySelector('.p-tooltip .p-tooltip-text');
+    }
+
+    it('shows the clipped name and the message as separate parts on one line, with the name as plain text', async () => {
+        const text = await showRowTooltip();
+        const name = text?.querySelector('.sc-row-tooltip-name');
+        const message = text?.querySelector('.sc-row-tooltip-message');
+        expect(name?.textContent).toBe('<b>Monitored Parameters by Project Instance</b>');
+        expect(text?.querySelector('.sc-row-tooltip-name b')).toBeNull();
+        expect(message?.textContent).toBe('Cannot use the current schema as a sub-schema');
+        expect(document.querySelector('.p-tooltip')?.classList.contains('sc-row-tooltip')).toBeTrue();
+        expect(name?.getClientRects().length).toBe(1);
+        expect(message?.getClientRects().length).toBe(1);
+        expect(name?.getBoundingClientRect().top).toBeCloseTo(message?.getBoundingClientRect().top ?? -1, 0);
+    });
+
+    it('shows the clipped name alone, in the same tooltip style, when the row has no message', async () => {
+        fixture.componentInstance.message = '';
         fixture.changeDetectorRef.markForCheck();
         fixture.detectChanges();
-        name().style.width = '10px';
-        await observeResize();
-        expect(name().getAttribute('title')).toBe('Appendix X');
-        name().style.width = '500px';
-        await observeResize();
-        expect(name().hasAttribute('title')).toBeFalse();
+        const text = await showRowTooltip();
+        expect(text?.querySelector('.sc-row-tooltip-name')?.textContent).toBe('<b>Monitored Parameters by Project Instance</b>');
+        expect(text?.querySelector('.sc-row-tooltip-separator')).toBeNull();
+        expect(text?.querySelector('.sc-row-tooltip-message')).toBeNull();
+        expect(document.querySelector('.p-tooltip')?.classList.contains('sc-row-tooltip')).toBeTrue();
+    });
+
+    it('shows the message alone, in the same tooltip style, when the name fits', async () => {
+        fixture.componentInstance.name = 'X';
+        fixture.changeDetectorRef.markForCheck();
+        fixture.detectChanges();
+        const text = await showRowTooltip();
+        expect(text?.querySelector('.sc-row-tooltip-name')).toBeNull();
+        expect(text?.querySelector('.sc-row-tooltip-separator')).toBeNull();
+        expect(text?.querySelector('.sc-row-tooltip-message')?.textContent).toBe('Cannot use the current schema as a sub-schema');
+        expect(document.querySelector('.p-tooltip')?.classList.contains('sc-row-tooltip')).toBeTrue();
+    });
+
+    it('shows no tooltip when the name fits and the row has no message', async () => {
+        fixture.componentInstance.name = 'X';
+        fixture.componentInstance.message = '';
+        fixture.changeDetectorRef.markForCheck();
+        fixture.detectChanges();
+        const text = await showRowTooltip();
+        expect(text).toBeNull();
+    });
+});
+
+@Component({
+    imports: [Tooltip, SchemaNameTooltipDirective, SchemaRowTooltipDirective, SchemaRowInnerTooltipDirective],
+    template: `
+        @for (copy of [0]; track copy) {
+            @let rowMessage = message;
+            <div class="row" [style.width.px]="rowWidth" style="display: flex"
+                 [pTooltip]="nameTooltip.rowTooltip(rowMessage, content)"
+                 [tooltipStyleClass]="nameTooltip.rowTooltipClass(rowMessage)"
+                 appSchemaRowTooltip
+                 tooltipPosition="right"
+                 (mouseenter)="hovered = true"
+                 (mouseleave)="hovered = false">
+                <ng-template #content>@if (nameTooltip.truncated) {<span class="sc-row-tooltip-name">{{ name }}</span>}@if (rowMessage) {<span class="sc-row-tooltip-message">{{ rowMessage }}</span>}</ng-template>
+                <span class="name"
+                      [appSchemaNameTooltip]="name"
+                      #nameTooltip="schemaNameTooltip">{{ name }}</span>
+                @if (hovered) {
+                    <button class="delete" pTooltip="Delete" tooltipPosition="right" appSchemaRowInnerTooltip>Delete</button>
+                }
+            </div>
+        }
+    `,
+    styles: [`.name { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; } .delete { width: 60px; flex-shrink: 0; }`]
+})
+class HoverButtonHostComponent {
+    public name = 'Value applied for CODinflow,i,y';
+    public message = '';
+    public hovered = false;
+    public rowWidth = 1000;
+}
+
+describe('Schema row tooltip when hovering makes the name clipped', () => {
+    let fixture: ComponentFixture<HoverButtonHostComponent>;
+
+    beforeEach(async () => {
+        TestBed.configureTestingModule({ imports: [HoverButtonHostComponent], providers: [provideZoneChangeDetection()] });
+        fixture = TestBed.createComponent(HoverButtonHostComponent);
+        fixture.autoDetectChanges();
+        await fixture.whenStable();
+        const text = document.createRange();
+        text.selectNodeContents(fixture.nativeElement.querySelector('.name'));
+        fixture.componentInstance.rowWidth = Math.ceil(text.getBoundingClientRect().width) + 10;
+        fixture.changeDetectorRef.markForCheck();
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        await fixture.whenStable();
+    });
+
+    afterEach(() => {
+        fixture?.destroy();
+    });
+
+    it('shows the name tooltip once a button that appears on hover clips the name', async () => {
+        const row: HTMLElement = fixture.nativeElement.querySelector('.row');
+        const name: HTMLElement = fixture.nativeElement.querySelector('.name');
+        expect(name.scrollWidth).toBeLessThanOrEqual(name.clientWidth);
+        expect(document.querySelector('.p-tooltip')).toBeNull();
+        row.dispatchEvent(new MouseEvent('mouseenter'));
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        await fixture.whenStable();
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        expect(fixture.nativeElement.querySelector('.delete')).not.toBeNull();
+        expect(name.scrollWidth).toBeGreaterThan(name.clientWidth);
+        expect(document.querySelector('.p-tooltip .sc-row-tooltip-name')?.textContent).toBe('Value applied for CODinflow,i,y');
     });
 });
