@@ -1,0 +1,33 @@
+id: gold-standard-smec-v4
+name: Gold Standard SMEC v4.0 - Simplified Methodology for Clean and Efficient Cookstoves
+version: "1.0.0"
+description: >
+  Guardian implementation of Gold Standard SMEC v4.0 (GS4GG, PAA M400-07), the
+  Simplified Methodology for Clean and Efficient Cookstoves: baseline and project
+  emission calculations (Eq. 1-18) with Options A/B baseline fuel accounting,
+  the 90/10 precision rule, consumption caps, leakage and Hawthorne adjustment,
+  plus end-user notification, IAP assessment, and usage-survey monitoring workflows.
+policy_type: standard-implementation
+status: candidate
+license: Apache-2.0
+category: carbon-credits
+authors:
+  - name: Jeremy Cai
+    github: jjeremycai
+tags:
+  - gold-standard
+  - cookstoves
+  - suppressed-demand
+  - mrv
+  - monitoring
+  - global
+  - bounty
+  - carbon-credit
+standard_body: Gold Standard
+methodology_id: SMEC
+methodology_version: "4.0"
+sector: energy
+roles:
+  - Project Proponent
+  - VVB
+homepage: https://globalgoals.goldstandard.org/standards/408_V4.0_PAA-M400-07_SMEC.pdf
