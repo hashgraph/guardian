@@ -10,9 +10,10 @@
 #   cypress          the whole Cypress suite through scripts/local-guardian.sh, against the running stack
 #
 # It expects the README Quickstart to be done (`npm ci`, `npm run guardian:build`, `npm run solo:up`,
-# `npm run guardian:up`) and does not touch the stack. Before the first group it prepares, once, what
-# the Quickstart does not: the frontend dependencies and the Playwright browser, when the frontend
-# group runs.
+# `npm run guardian:up`) and does not touch the stack. Before the first group it checks the stack with
+# `npm run guardian:status` when the cypress group runs, and stops there if it is not ready; then it
+# prepares, once, what the Quickstart does not: the frontend dependencies and the Playwright browser,
+# when the frontend group runs.
 #
 # A group that fails does not stop the others; the summary at the end lists each one and the exit code
 # is non-zero when any failed.
@@ -41,6 +42,18 @@ for group in "${groups[@]}"; do
     *) echo "Unknown group '$group'. Groups: ${ALL_GROUPS[*]}" >&2; exit 2 ;;
   esac
 done
+
+if [[ " ${groups[*]} " == *" cypress "* ]]; then
+  echo "::group::check the stack"
+  (cd "$E2E_DIR" && npm run guardian:status)
+  stack_status=$?
+  echo "::endgroup::"
+  if [[ $stack_status -ne 0 ]]; then
+    echo "error: the stack is not ready, see the checks above: start it with \`npm run guardian:up\`," \
+      "or run the other groups only (npm run test:everything -- lint scripts frontend)" >&2
+    exit 1
+  fi
+fi
 
 frontend_preparation_status=0
 if [[ " ${groups[*]} " == *" frontend "* ]]; then

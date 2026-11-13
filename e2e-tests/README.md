@@ -55,7 +55,7 @@ npm run test:everything                       # lint, scripts, frontend, cypress
 npm run test:everything -- lint scripts       # only the linter and the helper-script tests
 ```
 
-It expects the [Quickstart](#quickstart) to be done and does not touch the stack: the `cypress` group runs against the services already running, so after changing the Guardian sources rebuild and restart them first, as the Quickstart says. Before the first group it prepares, once, what the Quickstart does not: `npm ci` in `frontend` and `npx playwright install chromium`, when the `frontend` group runs. If that fails, the `frontend` group is reported as failed and the others still run.
+It expects the [Quickstart](#quickstart) to be done and does not touch the stack: the `cypress` group runs against the services already running, so after changing the Guardian sources rebuild and restart them first, as the Quickstart says. When the `cypress` group runs, it first checks the stack with `npm run guardian:status` and stops before any group if a check fails. Then it prepares, once, what the Quickstart does not: `npm ci` in `frontend` and `npx playwright install chromium`, when the `frontend` group runs. If that fails, the `frontend` group is reported as failed and the others still run.
 
 | Group | What it runs |
 |---|---|

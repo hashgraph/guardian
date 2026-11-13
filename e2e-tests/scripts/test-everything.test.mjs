@@ -25,4 +25,18 @@ describe('test-everything.sh', () => {
         assert.match(stdout, /FAIL {2}frontend/);
         assert.equal(positionOf(commands, 'npx ng test'), -1, commands.join('\n'));
     });
+
+    it('checks the stack before the first group when the cypress group runs', () => {
+        const { status, stderr, commands } = sandbox.run(['lint', 'cypress']);
+        assert.equal(status, 0, stderr);
+        const check = positionOf(commands, 'run guardian:status');
+        assert.ok(check >= 0 && check < positionOf(commands, 'npx eslint cypress'), commands.join('\n'));
+    });
+
+    it('stops before the first group when the stack is not ready, and says what to do', () => {
+        const { status, stderr, commands } = sandbox.run(['lint', 'cypress'], { failingCommand: 'run guardian:status' });
+        assert.notEqual(status, 0);
+        assert.match(stderr, /the stack is not ready.*npm run guardian:up/);
+        assert.equal(positionOf(commands, 'npx eslint cypress'), -1, commands.join('\n'));
+    });
 });
