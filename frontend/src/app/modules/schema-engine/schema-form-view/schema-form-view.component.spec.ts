@@ -573,6 +573,80 @@ describe('SchemaFormViewComponent', () => {
         });
     });
 
+    describe('hide not provided', () => {
+        const sub = () => field('sub', { isRef: true, fields: [field('inner', {}, 'sub'), field('note', {}, 'sub')] });
+        const rows = () => field('rows', { isArray: true, isRef: true, fields: [field('name', {}, 'rows'), field('size', { type: 'number' }, 'rows')] });
+
+        it('changes nothing while it is off', () => {
+            const fixture = render([field('a'), field('b', { isArray: true }), sub(), rows()], {});
+            expect(texts(fixture, '.sf-ro-lt')).toEqual(['A', 'B', 'Rows']);
+            expect(texts(fixture, '.sf-sub-head')).toEqual(['SubNot added']);
+            expect(texts(fixture, '.sf-empty')).toEqual(['Not provided', 'Not provided', 'Not provided']);
+        });
+
+        it('leaves out every field that would say "Not provided" or "Not added"', () => {
+            const fixture = render(
+                [field('a'), field('b', { isArray: true }), sub(), rows(), field('kept')],
+                { kept: 'x' },
+                { hideNotProvided: true }
+            );
+            expect(texts(fixture, '.sf-ro-lt')).toEqual(['Kept']);
+            expect(fixture.nativeElement.querySelector('.sf-sub-head')).toBeNull();
+            expect(fixture.nativeElement.querySelector('.sf-empty')).toBeNull();
+        });
+
+        it('keeps false, 0 and a value of the wrong type', () => {
+            const fixture = render(
+                [field('count', { type: 'number' }), field('flag', { type: 'boolean' }), field('tags', { isArray: true })],
+                { count: 0, flag: false, tags: 'solo' },
+                { hideNotProvided: true }
+            );
+            expect(texts(fixture, '.sf-ro-lt')).toEqual(['Count', 'Flag', 'Tags']);
+            expect(texts(fixture, '.sf-ro-raw')).toEqual(['solo']);
+        });
+
+        it('hides the empty fields of a sub-schema and keeps its heading', () => {
+            const fixture = render([sub()], { sub: { inner: '', note: 'n' } }, { hideNotProvided: true });
+            const child = fixture.debugElement.query(By.directive(SchemaFormViewComponent));
+            expect(child.componentInstance.hideNotProvided).toBeTrue();
+            expect(texts(fixture, '.sf-sub-head')).toEqual(['Sub']);
+            expect(texts(fixture, '.sf-ro-lt')).toEqual(['Note']);
+        });
+
+        it('keeps the heading of a sub-schema whose fields are all empty', () => {
+            const fixture = render([sub()], { sub: { inner: '', note: '' } }, { hideNotProvided: true });
+            expect(texts(fixture, '.sf-sub-head')).toEqual(['Sub']);
+            expect(fixture.nativeElement.querySelector('.sf-ro-lt')).toBeNull();
+        });
+
+        it('hides the empty fields inside an opened record card and keeps the card', () => {
+            const fixture = render([rows()], { rows: [{ name: 'North' }] }, { hideNotProvided: true });
+            (fixture.nativeElement.querySelector('.sf-record-toggle') as HTMLElement).click();
+            fixture.detectChanges();
+            expect(fixture.nativeElement.querySelectorAll('.sf-record').length).toBe(1);
+            expect(texts(fixture, '.sf-record-body .sf-ro-lt')).toEqual(['Name']);
+        });
+
+        it('keeps the empty field a link points to', () => {
+            const fixture = render([field('a'), field('b')], {}, { hideNotProvided: true, link: 'b' });
+            expect(texts(fixture, '.sf-ro-lt')).toEqual(['B']);
+            expect(texts(fixture, '.sf-empty')).toEqual(['Not provided']);
+        });
+
+        it('keeps the group and the empty field a nested link points to', () => {
+            const fixture = render([sub(), field('other')], { sub: { inner: '', note: 'n' } }, { hideNotProvided: true, link: 'sub.inner' });
+            expect(texts(fixture, '.sf-sub-head')).toEqual(['Sub']);
+            expect(texts(fixture, '.sf-ro-lt')).toEqual(['Inner', 'Note']);
+        });
+
+        it('works out the lone cell without the hidden fields', () => {
+            const fields = [field('a', { isArray: true }), field('b', { type: 'number' }), field('c', { type: 'number' }), field('d', { isArray: true })];
+            const values = { a: ['x'], b: 1, d: ['y'] };
+            expect(render(fields, values).componentInstance.isLoneField(1)).toBeFalse();
+            expect(render(fields, values, { hideNotProvided: true }).componentInstance.isLoneField(1)).toBeTrue();
+        });
+    });
+
     describe('sections in a calculation preview', () => {
         const sectionFields = (array: boolean) => [{
             name: 'section', fullPath: 'section', description: 'Section', type: '#Section',

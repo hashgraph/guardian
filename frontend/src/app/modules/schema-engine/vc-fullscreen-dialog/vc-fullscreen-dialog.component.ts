@@ -87,6 +87,7 @@ export class VCFullscreenDialog implements OnDestroy {
     public type: 'VP' | 'VC' | 'JSON' | 'TEXT' = 'JSON';
     public toggle: boolean = false;
     public currentTab: number = 1;
+    public hideNotProvided: boolean = false;
 
     public row?: any;
     public messageId?: string;

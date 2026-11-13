@@ -1,5 +1,6 @@
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { of } from 'rxjs';
@@ -99,6 +100,23 @@ describe('VCViewerDialog', () => {
             fixture.detectChanges();
             expect(fixture.componentInstance.viewDocument).toBeFalse();
             expect(toggleButtons(fixture).map((b) => b.getAttribute('aria-pressed'))).toEqual(['false', 'true']);
+        }));
+
+        it('offers "Hide not provided" next to "Field metadata", off, and hands it to the document', fakeAsync(() => {
+            const fixture = render({ type: 'VC', viewDocument: true, document: { id: 'vc-1' } });
+            const toggle = () => fixture.debugElement.query(By.css('app-hide-not-provided-toggle'));
+            expect(fixture.nativeElement.querySelector('.field-metadata-toggle')).not.toBeNull();
+            expect(toggle().nativeElement.pressed).toBeFalse();
+            expect(view(fixture).hideNotProvided).toBeFalse();
+
+            toggle().triggerEventHandler('toggled', true);
+            fixture.componentRef.changeDetectorRef.markForCheck();
+            fixture.detectChanges();
+            expect(toggle().nativeElement.pressed).toBeTrue();
+            expect(view(fixture).hideNotProvided).toBeTrue();
+
+            show(fixture, false);
+            expect(toggle()).toBeNull();
         }));
 
         it('adds no preview overlay to the document dialog', fakeAsync(() => {

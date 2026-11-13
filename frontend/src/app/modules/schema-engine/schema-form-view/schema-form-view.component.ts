@@ -85,6 +85,7 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
     @Input() pathPrefix: string = '';
     /** Set on the view of a record card: rich text there keeps the popover and the dialog. */
     @Input() inRecord: boolean = false;
+    @Input() hideNotProvided: boolean = false;
 
     @Output('discussion-action') discussionActionEvent = new EventEmitter<any>();
     @Output('onAccordionSelect') onAccordionSelect = new EventEmitter<{path: string, isOpen: boolean}>();
@@ -101,6 +102,7 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
     private previewFrames = new Map<IFieldControl, number>();
     public previewRenderLimit: number = Infinity;
     private previewRenderFrame: number | null = null;
+    private linkedField: string | undefined;
 
     constructor(
         private ipfs: IPFSService,
@@ -830,7 +832,15 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     public ifFieldVisible(item: IFieldControl): boolean {
-        return !item.hide && !item.notCorrespondCondition;
+        return !item.hide && !item.notCorrespondCondition && !this.isHiddenAsEmpty(item);
+    }
+
+    private isHiddenAsEmpty(item: IFieldControl): boolean {
+        return this.hideNotProvided && !this.isLinkedField(item) && this.isEmptyField(item);
+    }
+
+    private isLinkedField(item: IFieldControl): boolean {
+        return !!this.linkedField && (item.fullPath === this.linkedField || item.name === this.linkedField);
     }
 
     public ifSimpleField(item: IFieldControl): boolean {
@@ -933,6 +943,7 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
             _rootLink = undefined;
             _subLink = undefined;
         }
+        this.linkedField = _rootLink;
 
         if (_rootLink && this.fields) {
             for (const field of this.fields) {

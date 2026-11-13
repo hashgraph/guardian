@@ -64,6 +64,7 @@ import { RichTextEditorComponent } from './rich-text-editor/rich-text-editor.com
 import { RichTextClipDirective } from './rich-text-editor/rich-text-clip.directive';
 
 import { CopyButtonComponent } from './copy-button/copy-button.component';
+import { HideNotProvidedToggleComponent } from './hide-not-provided-toggle/hide-not-provided-toggle.component';
 
 @NgModule({
     declarations: [
@@ -101,7 +102,8 @@ import { CopyButtonComponent } from './copy-button/copy-button.component';
         SchemaFormRingComponent,
         RichTextEditorComponent,
         RichTextClipDirective,
-        CopyButtonComponent
+        CopyButtonComponent,
+        HideNotProvidedToggleComponent
     ],
     imports: [
         CommonModule,

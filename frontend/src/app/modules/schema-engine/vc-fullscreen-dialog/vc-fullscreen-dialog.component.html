@@ -89,6 +89,10 @@
           }
           Field metadata
         </button>
+        <app-hide-not-provided-toggle
+          [pressed]="hideNotProvided"
+          (toggled)="hideNotProvided = $event"
+        ></app-hide-not-provided-toggle>
       }
       @if (isCompare) {
         <app-compare-btn
@@ -141,6 +145,7 @@
                   [discussion-view]="true"
                   [discussion-action]="discussionAction"
                   (discussion-action)="onDiscussionAction($event)"
+                  [hideNotProvided]="hideNotProvided"
                 ></app-document-view>
               }
             </div>

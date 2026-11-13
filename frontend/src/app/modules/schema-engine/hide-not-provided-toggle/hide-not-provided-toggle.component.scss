@@ -1,0 +1,9 @@
+@use '../doc-chrome' as chrome;
+
+:host {
+    display: contents;
+}
+
+.hide-not-provided-toggle {
+    @include chrome.ghost-toggle;
+}

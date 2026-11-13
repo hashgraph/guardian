@@ -326,6 +326,18 @@ describe('DocumentViewComponent pages', () => {
         expect(q(fixture, '.sf-section-title')!.textContent).toBe('Alpha');
     }));
 
+    it('hands "Hide not provided" to the form of a section, off by default', fakeAsync(() => {
+        const off = render(sectioned(), credential(subject()));
+        off.componentInstance.openPage(1);
+        off.detectChanges();
+        expect((q(off, 'app-schema-form-view') as any).hideNotProvided).toBeFalse();
+
+        const on = render(sectioned(), credential(subject()), 'VC', { hideNotProvided: true });
+        on.componentInstance.openPage(1);
+        on.detectChanges();
+        expect((q(on, 'app-schema-form-view') as any).hideNotProvided).toBeTrue();
+    }));
+
     it('has one page, with the details on top, and no navigation for a flat document', fakeAsync(() => {
         const fixture = render(flat(), credential(subject({ other: 'y' })));
         const view = fixture.componentInstance;

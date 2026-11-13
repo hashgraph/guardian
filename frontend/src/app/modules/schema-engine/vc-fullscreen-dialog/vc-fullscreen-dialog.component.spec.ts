@@ -1,6 +1,7 @@
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { UntypedFormBuilder, Validators } from '@angular/forms';
+import { By } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { Subject, Subscription, of, takeUntil } from 'rxjs';
@@ -256,6 +257,51 @@ describe('VCFullscreenDialog', () => {
             buttons()[0].click();
             refresh(fixture);
             expect(fixture.componentInstance.currentTab).toBe(0);
+        }));
+
+        it('offers "Hide not provided" next to "Field metadata", off, and hands it to the document', fakeAsync(() => {
+            const fixture = render({});
+            const toggle = () => fixture.debugElement.query(By.css('app-hide-not-provided-toggle'));
+            const view = () => el(fixture, 'app-document-view') as any;
+            expect(el(fixture, '.field-metadata-toggle')).not.toBeNull();
+            expect(toggle().nativeElement.pressed).toBeFalse();
+            expect(view().hideNotProvided).toBeFalse();
+
+            toggle().triggerEventHandler('toggled', true);
+            refresh(fixture);
+            expect(toggle().nativeElement.pressed).toBeTrue();
+            expect(view().hideNotProvided).toBeTrue();
+
+            fixture.componentInstance.onToggle(1);
+            refresh(fixture);
+            expect(toggle()).toBeNull();
+        }));
+
+        it('opens every new window with "Hide not provided" off', fakeAsync(() => {
+            const first = render({});
+            first.debugElement.query(By.css('app-hide-not-provided-toggle')).triggerEventHandler('toggled', true);
+            refresh(first);
+            expect(first.componentInstance.hideNotProvided).toBeTrue();
+
+            const second = render({});
+            expect(second.componentInstance.hideNotProvided).toBeFalse();
+            expect((el(second, 'app-document-view') as any).hideNotProvided).toBeFalse();
+        }));
+
+        it('keeps "Field metadata" and "Hide not provided" independent', fakeAsync(() => {
+            const fixture = render({});
+            const preferences = TestBed.inject(SchemaFormPreferencesService);
+            const setMetadata = spyOn(preferences, 'setShowFieldMetadata');
+
+            (el(fixture, '.field-metadata-toggle') as HTMLButtonElement).click();
+            refresh(fixture);
+            expect(setMetadata).toHaveBeenCalledOnceWith(true);
+            expect(fixture.componentInstance.hideNotProvided).toBeFalse();
+
+            fixture.debugElement.query(By.css('app-hide-not-provided-toggle')).triggerEventHandler('toggled', true);
+            refresh(fixture);
+            expect(setMetadata).toHaveBeenCalledTimes(1);
+            expect(fixture.componentInstance.hideNotProvided).toBeTrue();
         }));
 
         it('hides the discussions in the JSON view without removing them', fakeAsync(() => {
