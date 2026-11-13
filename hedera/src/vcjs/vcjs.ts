@@ -830,7 +830,7 @@ export class VCJS {
         this.prepareSchema(schema);
         this.coerceConditionConsts(schema);
 
-        const schemaObject = Schema.fromVc(schema);
+        const schemaObject = Schema.fromDocument(schema);
 
         const validate = await ajv.compileAsync(schema);
         const valid = validate(subject);
