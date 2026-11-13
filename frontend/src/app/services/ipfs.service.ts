@@ -1,8 +1,9 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { map, Observable, throwError } from 'rxjs';
 import { API_BASE_URL } from './api';
-import { ipfsCid } from '../utils/ipfs-file';
+import { ipfsCid, ipfsDryRunId, ipfsFileType } from '../utils/ipfs-file';
+import { SILENT_HTTP_ERRORS } from '../constants/http-context-tokens';
 
 /**
  * Services for working from user profile.
@@ -46,6 +47,17 @@ export class IPFSService {
         return this.http.get(`${this.url}/file/${cid}/dry-run`, {
             responseType: 'arraybuffer',
         });
+    }
+
+    public getDryRunFile(value: string): Observable<Blob> {
+        const id = ipfsDryRunId(value);
+        if (!id) {
+            return throwError(() => new Error('File not found'));
+        }
+        return this.http.get(`${this.url}/file/${encodeURIComponent(id)}/dry-run`, {
+            responseType: 'arraybuffer',
+            context: new HttpContext().set(SILENT_HTTP_ERRORS, true),
+        }).pipe(map((bytes) => new Blob([bytes], { type: ipfsFileType(bytes) })));
     }
 
     public getJsonFile(cid: string): Observable<any> {

@@ -1,6 +1,6 @@
 @if (url) {
     <div class="sf-ro-file-links">
-        <a class="sf-ro-open" [href]="link" target="_blank" rel="noopener noreferrer">
+        <a class="sf-ro-open" [href]="link" (click)="openFile($event)" target="_blank" rel="noopener noreferrer">
             <i class="pi pi-external-link" aria-hidden="true"></i>
             Open
         </a>

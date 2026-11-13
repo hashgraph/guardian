@@ -50,7 +50,7 @@
             <div class="sf-ro-fn">
                 <span class="sf-ro-url">{{ entry.value }}</span>
             </div>
-            <ipfs-link [url]="entry.value"></ipfs-link>
+            <ipfs-link [url]="entry.value" [dryRun]="!!dryRun"></ipfs-link>
         </div>
     } @else if (isBoolean(item)) {
         <span class="sf-ro-text">{{ isBooleanView(entry.value) }}</span>

@@ -335,7 +335,16 @@ describe('SchemaFormViewComponent', () => {
             expect(copies.map((node) => node.getAttribute('tip'))).toEqual(['Copy link', 'Copy CID']);
         });
 
-        it('lists files without bullets', () => {
+        it('passes dry-run mode to the shared IPFS actions', () => {
+            const fixture = render(
+                [field('file', { pattern: '^ipfs://.+', customType: 'file' })],
+                { file: 'ipfs://6af6e8ec63af3cd1188591c0' },
+                { dryRun: true }
+            );
+            expect(fixture.debugElement.query(By.directive(IPFSLinkComponent)).componentInstance.dryRun).toBeTrue();
+        });
+
+        it('lists files without bullets' , () => {
             const fixture = render(
                 [field('files', { isArray: true, pattern: '^ipfs://.+', customType: 'file' })],
                 { files: ['ipfs://QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG'] }
