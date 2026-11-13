@@ -11,10 +11,10 @@ describe('request document block autosave offer', () => {
         block.id = 'block-1';
         block.user = { id: 'user-1' };
         block.storage = {
-            loadRecord: jasmine.createSpy('loadRecord').and.resolveTo(record),
-            delete: jasmine.createSpy('delete').and.resolveTo(undefined),
+            loadRecord: vi.fn().mockResolvedValue(record),
+            delete: vi.fn().mockResolvedValue(undefined),
         };
-        return block as { loadFreshAutosave(): Promise<unknown>; storage: { delete: jasmine.Spy } };
+        return block as { loadFreshAutosave(): Promise<unknown>; storage: { delete: ReturnType<typeof vi.fn> } };
     };
 
     it('offers the autosave of an opened draft that is newer than the saved record', async () => {

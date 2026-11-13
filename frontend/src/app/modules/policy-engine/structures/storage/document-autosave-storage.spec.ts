@@ -4,9 +4,9 @@ describe('DocumentAutosaveStorage', () => {
     const create = (record: unknown) => {
         const registry = {
             registerStore: () => undefined,
-            get: jasmine.createSpy('get').and.resolveTo(record),
-            put: jasmine.createSpy('put').and.resolveTo(undefined),
-            delete: jasmine.createSpy('delete').and.resolveTo(undefined),
+            get: vi.fn().mockResolvedValue(record),
+            put: vi.fn().mockResolvedValue(undefined),
+            delete: vi.fn().mockResolvedValue(undefined),
         };
         return { registry, storage: new DocumentAutosaveStorage(registry as any) };
     };
@@ -26,17 +26,17 @@ describe('DocumentAutosaveStorage', () => {
         const saved = Date.parse('2026-11-12T10:00:00.000Z');
 
         it('is stale when the server record was updated after the autosave', () => {
-            expect(isAutosaveStale(saved, '2026-11-12T10:05:00.000Z')).toBeTrue();
+            expect(isAutosaveStale(saved, '2026-11-12T10:05:00.000Z')).toBe(true);
         });
 
         it('is fresh when the autosave is newer than the server record', () => {
-            expect(isAutosaveStale(saved, '2026-11-12T09:55:00.000Z')).toBeFalse();
+            expect(isAutosaveStale(saved, '2026-11-12T09:55:00.000Z')).toBe(false);
         });
 
         it('is fresh when either time is missing or unreadable', () => {
-            expect(isAutosaveStale(undefined, '2026-11-12T10:05:00.000Z')).toBeFalse();
-            expect(isAutosaveStale(saved, undefined)).toBeFalse();
-            expect(isAutosaveStale(saved, 'not a date')).toBeFalse();
+            expect(isAutosaveStale(undefined, '2026-11-12T10:05:00.000Z')).toBe(false);
+            expect(isAutosaveStale(saved, undefined)).toBe(false);
+            expect(isAutosaveStale(saved, 'not a date')).toBe(false);
         });
     });
 });

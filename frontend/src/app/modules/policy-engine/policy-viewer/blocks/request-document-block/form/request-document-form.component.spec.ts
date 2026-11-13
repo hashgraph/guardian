@@ -444,14 +444,14 @@ describe('RequestDocumentFormComponent', () => {
         const prepare = (component: RequestDocumentFormComponent) => {
             const target = component as any;
             target.storage = {
-                load: jasmine.createSpy('load').and.resolveTo(null),
-                save: jasmine.createSpy('save').and.resolveTo(undefined),
-                delete: jasmine.createSpy('delete').and.resolveTo(undefined),
+                load: vi.fn().mockResolvedValue(null),
+                save: vi.fn().mockResolvedValue(undefined),
+                delete: vi.fn().mockResolvedValue(undefined),
             };
             target.tablePersist = { persistTablesInDocument: async () => undefined, rollbackIpfsUploads: async () => undefined };
             target.geoFilePersist = { persistGeoFilesInDocument: async () => undefined, rollbackGridFsUploads: async () => undefined };
             component.dataForm.addControl('title', new FormControl('Blue carbon'));
-            return target.storage as { load: jasmine.Spy; save: jasmine.Spy; delete: jasmine.Spy };
+            return target.storage as { load: ReturnType<typeof vi.fn>; save: ReturnType<typeof vi.fn>; delete: ReturnType<typeof vi.fn> };
         };
         const settle = () => new Promise<void>((resolve) => setTimeout(resolve));
 
@@ -462,17 +462,17 @@ describe('RequestDocumentFormComponent', () => {
             expect(apiCall).not.toHaveBeenCalled();
             expect(storage.save).toHaveBeenCalledWith('autosave', { title: 'Blue carbon' });
             expect(storage.delete).not.toHaveBeenCalled();
-            expect(component.dataSaved).toBeTrue();
+            expect(component.dataSaved).toBe(true);
             fixture.destroy();
         });
 
         it('sends the draft to the server when the policy stores drafts', async () => {
             const { fixture, component } = create({ draftEnabled: true });
             const storage = prepare(component);
-            apiCall.and.returnValue(of({ response: {} }));
+            apiCall.mockReturnValue(of({ response: {} }));
             await component.onStep(true);
             expect(apiCall).toHaveBeenCalledTimes(1);
-            expect(apiCall.calls.mostRecent().args[2].draft).toBeTrue();
+            expect(apiCall.mock.lastCall![2].draft).toBe(true);
             expect(storage.save).not.toHaveBeenCalled();
             fixture.destroy();
         });
@@ -496,8 +496,8 @@ describe('RequestDocumentFormComponent', () => {
         it('keeps the autosave when the server rejects the request', async () => {
             const { fixture, component } = create();
             const storage = prepare(component);
-            apiCall.and.returnValue(throwError(() => ({ error: 'rejected' })));
-            spyOn(console, 'error');
+            apiCall.mockReturnValue(throwError(() => ({ error: 'rejected' })));
+            vi.spyOn(console, 'error').mockImplementation(() => undefined);
             await (component as any).onSubmit(true);
             await settle();
             expect(apiCall).toHaveBeenCalled();
@@ -508,7 +508,7 @@ describe('RequestDocumentFormComponent', () => {
         it('deletes the autosave once the server accepts the request', async () => {
             const { fixture, component } = create();
             const storage = prepare(component);
-            apiCall.and.returnValue(of({ response: {} }));
+            apiCall.mockReturnValue(of({ response: {} }));
             await (component as any).onSubmit(true);
             await settle();
             expect(storage.delete).toHaveBeenCalledWith('autosave');
@@ -519,30 +519,30 @@ describe('RequestDocumentFormComponent', () => {
             it('updates the record created by the first Save Draft instead of creating another one', async () => {
                 const { fixture, component } = create();
                 prepare(component);
-                apiCall.and.returnValues(of({ response: { _id: 'draft-1' } }), of({ response: {} }));
+                apiCall.mockReturnValueOnce(of({ response: { _id: 'draft-1' } })).mockReturnValueOnce(of({ response: {} }));
                 await (component as any).onSubmit(true);
                 await settle();
                 await (component as any).onSubmit(true);
                 await settle();
-                expect(apiCall.calls.argsFor(0)[2].draftId).toBeNull();
-                expect(apiCall.calls.argsFor(1)[2].draftId).toBe('draft-1');
+                expect(apiCall.mock.calls[0][2].draftId).toBeNull();
+                expect(apiCall.mock.calls[1][2].draftId).toBe('draft-1');
                 fixture.destroy();
             });
 
             it('keeps the id of the opened draft when it is saved again', async () => {
                 const { fixture, component } = create({ draftId: 'opened-1' });
                 prepare(component);
-                apiCall.and.returnValue(of({ response: {} }));
+                apiCall.mockReturnValue(of({ response: {} }));
                 await (component as any).onSubmit(true);
                 await settle();
-                expect(apiCall.calls.mostRecent().args[2].draftId).toBe('opened-1');
+                expect(apiCall.mock.lastCall![2].draftId).toBe('opened-1');
                 fixture.destroy();
             });
 
             it('moves the autosave to the draft id after the first save', async () => {
                 const { fixture, component } = create();
                 const storage = prepare(component);
-                apiCall.and.returnValue(of({ response: { _id: 'draft-1' } }));
+                apiCall.mockReturnValue(of({ response: { _id: 'draft-1' } }));
                 await (component as any).onSubmit(true);
                 await settle();
                 expect(storage.delete).toHaveBeenCalledWith('autosave');
@@ -553,24 +553,24 @@ describe('RequestDocumentFormComponent', () => {
             it('turns the connected draft into the final document on submit', async () => {
                 const { fixture, component } = create();
                 prepare(component);
-                apiCall.and.returnValues(of({ response: { _id: 'draft-1' } }), of({ response: {} }));
+                apiCall.mockReturnValueOnce(of({ response: { _id: 'draft-1' } })).mockReturnValueOnce(of({ response: {} }));
                 await (component as any).onSubmit(true);
                 await settle();
                 await (component as any).onSubmit(false);
-                expect(apiCall.calls.mostRecent().args[2].draftId).toBe('draft-1');
-                expect(apiCall.calls.mostRecent().args[2].draft).toBeFalsy();
+                expect(apiCall.mock.lastCall![2].draftId).toBe('draft-1');
+                expect(apiCall.mock.lastCall![2].draft).toBeFalsy();
                 fixture.destroy();
             });
 
             it('keeps creating records and the shared autosave when the response has no id', async () => {
                 const { fixture, component } = create();
                 prepare(component);
-                apiCall.and.returnValue(of({ response: {} }));
+                apiCall.mockReturnValue(of({ response: {} }));
                 await (component as any).onSubmit(true);
                 await settle();
                 await (component as any).onSubmit(true);
                 await settle();
-                expect(apiCall.calls.argsFor(1)[2].draftId).toBeNull();
+                expect(apiCall.mock.calls[1][2].draftId).toBeNull();
                 expect(component.autosaveId).toBe('autosave');
                 fixture.destroy();
             });
