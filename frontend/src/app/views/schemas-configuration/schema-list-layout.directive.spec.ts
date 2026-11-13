@@ -1,3 +1,4 @@
+import type { MockInstance } from 'vitest';
 import { ChangeDetectorRef, Component, ElementRef, NgZone, provideZoneChangeDetection } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
@@ -118,7 +119,7 @@ describe('Schema list resize behavior', () => {
     it('validates stored values and clamps finite values to the contract limits', () => {
         for (const invalid of ['', 'NaN', 'Infinity', 'not-a-number']) {
             localStorage.setItem(key, invalid);
-            expect(open().width).withContext(invalid).toBe('25%');
+            expect(open().width, invalid).toBe('25%');
         }
         localStorage.setItem(key, '5');
         expect(open().width).toBe('20%');
@@ -133,7 +134,7 @@ describe('Schema list resize behavior', () => {
         expect(panel.width).toBe('25%');
         const start = event(100);
         panel.start(start);
-        expect(start.defaultPrevented).toBeTrue();
+        expect(start.defaultPrevented).toBe(true);
         panel.move(event(10000, 2));
         panel.finish(event(10000, 2));
         expect(panel.width).toBe('25%');
@@ -174,12 +175,12 @@ describe('Schema list resize behavior', () => {
     });
 
     it('remains usable when reading localStorage is forbidden', () => {
-        const getItem = spyOn(Storage.prototype, 'getItem').and.throwError('Storage unavailable');
+        const getItem = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('Storage unavailable'); });
         const panel = open();
         panel.start(event(100));
         expect(() => panel.finish(event(10000))).not.toThrow();
         expect(panel.width).toBe('30%');
-        getItem.and.callThrough();
+        getItem.mockRestore();
     });
 
     function keyEvent(name: string): KeyboardEvent {
@@ -191,7 +192,7 @@ describe('Schema list resize behavior', () => {
         const panel = open();
         const right = keyEvent('ArrowRight');
         panel.key(right);
-        expect(right.defaultPrevented).toBeTrue();
+        expect(right.defaultPrevented).toBe(true);
         expect(panel.widthPercent).toBe(28);
         expect(localStorage.getItem(key)).toBe('28');
         panel.key(keyEvent('ArrowLeft'));
@@ -224,7 +225,7 @@ describe('Schema list resize behavior', () => {
         const panel = open();
         const enter = keyEvent('Enter');
         panel.key(enter);
-        expect(enter.defaultPrevented).toBeFalse();
+        expect(enter.defaultPrevented).toBe(false);
         expect(panel.widthPercent).toBe(25);
         expect(localStorage.getItem(key)).toBeNull();
     });
@@ -236,11 +237,11 @@ describe('Schema list resize behavior', () => {
 
     it('remains usable when writing localStorage is forbidden', () => {
         const panel = open();
-        const setItem = spyOn(Storage.prototype, 'setItem').and.throwError('Storage unavailable');
+        const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('Storage unavailable'); });
         panel.start(event(100));
         expect(() => panel.finish(event(10000))).not.toThrow();
         expect(panel.width).toBe('30%');
-        setItem.and.callThrough();
+        setItem.mockRestore();
     });
 });
 
@@ -257,7 +258,9 @@ describe('Schema name tooltip behavior', () => {
 
     beforeEach(() => {
         element = document.createElement('span');
-        const changeDetector = jasmine.createSpyObj<ChangeDetectorRef>('changeDetector', ['markForCheck', 'detach', 'detectChanges', 'checkNoChanges', 'reattach']);
+        const changeDetector = {
+            markForCheck: vi.fn(), detach: vi.fn(), detectChanges: vi.fn(), checkNoChanges: vi.fn(), reattach: vi.fn()
+        } as unknown as ChangeDetectorRef;
         tooltip = new SchemaNameTooltipDirective(new ElementRef(element), TestBed.inject(NgZone), changeDetector);
         tooltip.name = 'The full schema name';
     });
@@ -270,7 +273,7 @@ describe('Schema name tooltip behavior', () => {
     it('offers the complete name when the rendered content is clipped', async () => {
         dimensions(300, 100);
         await measure();
-        expect(tooltip.truncated).toBeTrue();
+        expect(tooltip.truncated).toBe(true);
         expect(tooltip.rowTooltip('', 'styled')).toBe('styled');
         expect(tooltip.rowTooltipClass('')).toBe('sc-row-tooltip');
     });
@@ -286,13 +289,13 @@ describe('Schema name tooltip behavior', () => {
     it('follows clipping as it changes', async () => {
         dimensions(300, 100);
         await measure();
-        expect(tooltip.truncated).toBeTrue();
+        expect(tooltip.truncated).toBe(true);
         dimensions(300, 500);
         await measure();
-        expect(tooltip.truncated).toBeFalse();
+        expect(tooltip.truncated).toBe(false);
         dimensions(300, 100);
         await measure();
-        expect(tooltip.truncated).toBeTrue();
+        expect(tooltip.truncated).toBe(true);
     });
 
     it('treats an empty name as not clipped', async () => {
@@ -300,7 +303,7 @@ describe('Schema name tooltip behavior', () => {
         tooltip.name = '';
         tooltip.ngOnChanges();
         await Promise.resolve();
-        expect(tooltip.truncated).toBeFalse();
+        expect(tooltip.truncated).toBe(false);
     });
 
     it('puts the name in front of the row message when the name is clipped', async () => {
@@ -312,7 +315,7 @@ describe('Schema name tooltip behavior', () => {
     it('uses the same styled tooltip for the row message when the name fits', async () => {
         dimensions(100, 100);
         await measure();
-        expect(tooltip.truncated).toBeFalse();
+        expect(tooltip.truncated).toBe(false);
         expect(tooltip.rowTooltip('Would create a circular dependency', 'styled')).toBe('styled');
         expect(tooltip.rowTooltipClass('Would create a circular dependency')).toBe('sc-row-tooltip');
     });
@@ -320,7 +323,7 @@ describe('Schema name tooltip behavior', () => {
     it('does not use a native browser tooltip', async () => {
         dimensions(300, 100);
         await measure();
-        expect(element.hasAttribute('title')).toBeFalse();
+        expect(element.hasAttribute('title')).toBe(false);
     });
 });
 
@@ -336,7 +339,7 @@ describe('Schema list layout', () => {
         fixture = TestBed.createComponent(HostComponent);
         fixture.componentInstance.copies = Array.from({ length: copies }, (_, index) => index);
         fixture.detectChanges();
-        spyOn(handle(), 'setPointerCapture').and.stub();
+        vi.spyOn(handle(), 'setPointerCapture').mockImplementation(() => {});
     }
 
     function panel(): HTMLElement { return fixture.nativeElement.querySelector('aside'); }
@@ -569,11 +572,11 @@ describe('Schema list layout', () => {
 
     it('prevents selection and bubbling when the resize boundary is pressed', () => {
         open();
-        const bubbled = jasmine.createSpy('pointerdown');
+        const bubbled = vi.fn();
         fixture.nativeElement.addEventListener('pointerdown', bubbled);
         const event = new PointerEvent('pointerdown', { button: 0, pointerId: 1, clientX: 100, bubbles: true, cancelable: true });
         handle().dispatchEvent(event);
-        expect(event.defaultPrevented).toBeTrue();
+        expect(event.defaultPrevented).toBe(true);
         expect(bubbled).not.toHaveBeenCalled();
     });
 
@@ -603,13 +606,13 @@ describe('Schema list layout', () => {
     }
 
     it('continues resizing when browser storage is unavailable', () => {
-        const getItem = spyOn(Storage.prototype, 'getItem').and.throwError('Storage unavailable');
+        const getItem = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('Storage unavailable'); });
         open();
         expect(width()).toBeCloseTo(25, 1);
         pointer(handle(), 'pointerdown', 100);
         pointer(window, 'pointerup', 100 + editor().getBoundingClientRect().width / 40);
         expect(width()).toBeCloseTo(27.5, 1);
-        getItem.and.callThrough();
+        getItem.mockRestore();
     });
 
     it('offers the full name on hover only when the rendered name is truncated', async () => {
@@ -647,7 +650,7 @@ describe('Schema list layout', () => {
         setRow(fixture.componentInstance.name, 'Cannot use the current schema as a sub-schema');
         await settle();
         expect(rowTooltip()).toBe('styled');
-        expect(name().hasAttribute('title')).toBeFalse();
+        expect(name().hasAttribute('title')).toBe(false);
     });
 
     it('shows the row message without the name when the name fits', async () => {
@@ -689,7 +692,7 @@ class RowTooltipHostComponent {}
 describe('Schema row inner tooltips', () => {
     let fixture: ComponentFixture<RowTooltipHostComponent>;
     let row: Tooltip;
-    let activate: jasmine.Spy;
+    let activate: MockInstance<Tooltip['activate']>;
 
     function element(selector: string): HTMLElement { return fixture.nativeElement.querySelector(selector); }
     function hover(target: HTMLElement, type: 'mouseenter' | 'mouseleave', relatedTarget: EventTarget | null = null): void {
@@ -701,8 +704,8 @@ describe('Schema row inner tooltips', () => {
         fixture = TestBed.createComponent(RowTooltipHostComponent);
         fixture.detectChanges();
         row = fixture.debugElement.query(By.css('.row')).injector.get(Tooltip);
-        activate = spyOn(row, 'activate');
-        spyOn(row, 'deactivate');
+        activate = vi.spyOn(row, 'activate').mockImplementation(() => {});
+        vi.spyOn(row, 'deactivate').mockImplementation(() => {});
     });
 
     afterEach(() => {
@@ -756,7 +759,7 @@ describe('Schema row inner tooltips', () => {
 
     function enterRow(): void {
         hover(element('.row'), 'mouseenter');
-        activate.calls.reset();
+        activate.mockClear();
     }
 
     it('shows the row tooltip again right after the row is clicked', async () => {
@@ -861,8 +864,8 @@ describe('Schema row tooltip content', () => {
         expect(name?.textContent).toBe('<b>Monitored Parameters by Project Instance</b>');
         expect(text?.querySelector('.sc-row-tooltip-name b')).toBeNull();
         expect(message?.textContent).toBe('Cannot use the current schema as a sub-schema');
-        expect(document.querySelector('.p-tooltip')?.classList.contains('sc-row-tooltip')).toBeTrue();
-        expect(message?.classList.contains('sc-row-tooltip-message--separated')).toBeTrue();
+        expect(document.querySelector('.p-tooltip')?.classList.contains('sc-row-tooltip')).toBe(true);
+        expect(message?.classList.contains('sc-row-tooltip-message--separated')).toBe(true);
         expect(message?.getBoundingClientRect().top).toBeGreaterThan(name?.getBoundingClientRect().bottom ?? Infinity);
         expect(message?.querySelector('i.pi-exclamation-triangle')).not.toBeNull();
     });
@@ -875,7 +878,7 @@ describe('Schema row tooltip content', () => {
         expect(text?.querySelector('.sc-row-tooltip-name')?.textContent).toBe('<b>Monitored Parameters by Project Instance</b>');
         expect(text?.querySelector('.sc-row-tooltip-separator')).toBeNull();
         expect(text?.querySelector('.sc-row-tooltip-message')).toBeNull();
-        expect(document.querySelector('.p-tooltip')?.classList.contains('sc-row-tooltip')).toBeTrue();
+        expect(document.querySelector('.p-tooltip')?.classList.contains('sc-row-tooltip')).toBe(true);
     });
 
     it('shows the message alone, in the same tooltip style, when the name fits', async () => {
@@ -886,7 +889,7 @@ describe('Schema row tooltip content', () => {
         expect(text?.querySelector('.sc-row-tooltip-name')).toBeNull();
         expect(text?.querySelector('.sc-row-tooltip-separator')).toBeNull();
         expect(text?.querySelector('.sc-row-tooltip-message')?.textContent).toBe('Cannot use the current schema as a sub-schema');
-        expect(document.querySelector('.p-tooltip')?.classList.contains('sc-row-tooltip')).toBeTrue();
+        expect(document.querySelector('.p-tooltip')?.classList.contains('sc-row-tooltip')).toBe(true);
     });
 
     function expectEndingVisible(element: Element, clippingArea: HTMLElement): void {
@@ -895,7 +898,7 @@ describe('Schema row tooltip content', () => {
         for (let text = walker.nextNode(); text; text = walker.nextNode()) {
             if (text.textContent?.length) { lastText = text; }
         }
-        if (!lastText) { fail('Expected tooltip text'); return; }
+        if (!lastText) { expect.fail('Expected tooltip text'); }
         const range = document.createRange();
         const length = lastText.textContent?.length ?? 0;
         range.setStart(lastText, length - 1);
@@ -913,14 +916,14 @@ describe('Schema row tooltip content', () => {
         fixture.changeDetectorRef.markForCheck();
         fixture.detectChanges();
         const text = await showRowTooltip();
-        if (!(text instanceof HTMLElement)) { fail('Expected a full-name tooltip'); return; }
+        if (!(text instanceof HTMLElement)) { expect.fail('Expected a full-name tooltip'); }
         expect(text.scrollWidth).toBeLessThanOrEqual(text.clientWidth + 1);
         expect(text.scrollHeight).toBeLessThanOrEqual(text.clientHeight + 1);
         expect(text.querySelector('.sc-row-tooltip-name')?.textContent).toContain('END-OF-NAME');
         expect(text.querySelector('.sc-row-tooltip-message')?.textContent).toBe(fixture.componentInstance.message);
         const name = text.querySelector('.sc-row-tooltip-name');
         const warning = text.querySelector('.sc-row-tooltip-message');
-        if (!name || !warning) { fail('Expected both full name and warning'); return; }
+        if (!name || !warning) { expect.fail('Expected both full name and warning'); }
         expectEndingVisible(name, text);
         expectEndingVisible(warning, text);
         const overlay = document.querySelector('.p-tooltip')?.getBoundingClientRect();
@@ -934,11 +937,11 @@ describe('Schema row tooltip content', () => {
         fixture.changeDetectorRef.markForCheck();
         fixture.detectChanges();
         const text = await showRowTooltip();
-        if (!(text instanceof HTMLElement)) { fail('Expected a full-name tooltip'); return; }
+        if (!(text instanceof HTMLElement)) { expect.fail('Expected a full-name tooltip'); }
         expect(text.scrollWidth).toBeLessThanOrEqual(text.clientWidth + 1);
         expect(text.querySelector('.sc-row-tooltip-name')?.textContent).toBe('X'.repeat(300));
         const name = text.querySelector('.sc-row-tooltip-name');
-        if (!name) { fail('Expected the unbroken name'); return; }
+        if (!name) { expect.fail('Expected the unbroken name'); }
         expectEndingVisible(name, text);
         expect(text.querySelector('.sc-row-tooltip-message')).toBeNull();
     });
@@ -947,7 +950,7 @@ describe('Schema row tooltip content', () => {
         await showRowTooltip();
         const overlay = document.querySelector('.p-tooltip');
         const name = fixture.nativeElement.querySelector('.name').getBoundingClientRect();
-        expect(overlay?.classList.contains('p-tooltip-top')).toBeTrue();
+        expect(overlay?.classList.contains('p-tooltip-top')).toBe(true);
         expect(overlay?.getBoundingClientRect().bottom).toBeLessThanOrEqual(name.top + 1);
     });
 
@@ -958,7 +961,7 @@ describe('Schema row tooltip content', () => {
         fixture.detectChanges();
         await showRowTooltip();
         const overlay = document.querySelector('.p-tooltip');
-        expect(overlay?.classList.contains('p-tooltip-top')).toBeTrue();
+        expect(overlay?.classList.contains('p-tooltip-top')).toBe(true);
         expect(overlay?.getBoundingClientRect().left).toBeGreaterThanOrEqual(0);
         expect(overlay?.getBoundingClientRect().right).toBeLessThanOrEqual(window.innerWidth);
     });
@@ -1121,8 +1124,8 @@ describe('Schema nested tooltip ownership', () => {
         attach(star, fullName, tooltip(star, 'Featured'), parent);
         star.dispatchEvent(new MouseEvent('mouseenter'));
         star.dispatchEvent(new MouseEvent('mouseleave', { relatedTarget: name }));
-        expect(fullName.active).toBeTrue();
-        expect(warning.active).toBeFalse();
+        expect(fullName.active).toBe(true);
+        expect(warning.active).toBe(false);
     });
 
     it('restores only the warning when leaving an icon for a fitting name', () => {
@@ -1137,8 +1140,8 @@ describe('Schema nested tooltip ownership', () => {
         attach(star, fullName, tooltip(star, 'Featured'), parent);
         star.dispatchEvent(new MouseEvent('mouseenter'));
         star.dispatchEvent(new MouseEvent('mouseleave', { relatedTarget: name }));
-        expect(warning.active).toBeTrue();
-        expect(fullName.active).toBeFalse();
+        expect(warning.active).toBe(true);
+        expect(fullName.active).toBe(false);
     });
 
     it('keeps ancestors hidden when leaving a nested icon for outside the card', () => {
@@ -1153,8 +1156,8 @@ describe('Schema nested tooltip ownership', () => {
         attach(star, fullName, tooltip(star, 'Featured'), parent);
         star.dispatchEvent(new MouseEvent('mouseenter'));
         star.dispatchEvent(new MouseEvent('mouseleave', { relatedTarget: document.createElement('div') }));
-        expect(fullName.active).toBeFalse();
-        expect(warning.active).toBeFalse();
+        expect(fullName.active).toBe(false);
+        expect(warning.active).toBe(false);
     });
 
     it('switches to the warning when the hovered name stops being truncated', () => {
@@ -1168,8 +1171,8 @@ describe('Schema nested tooltip ownership', () => {
         fullName.content = '';
         directive.enabled = false;
         directive.ngOnChanges();
-        expect(fullName.active).toBeFalse();
-        expect(warning.active).toBeTrue();
+        expect(fullName.active).toBe(false);
+        expect(warning.active).toBe(true);
     });
 
     it('switches to the full name when the hovered name becomes truncated', async () => {
@@ -1184,8 +1187,8 @@ describe('Schema nested tooltip ownership', () => {
         directive.enabled = true;
         directive.ngOnChanges();
         await new Promise(resolve => setTimeout(resolve));
-        expect(fullName.active).toBeTrue();
-        expect(warning.active).toBeFalse();
+        expect(fullName.active).toBe(true);
+        expect(warning.active).toBe(false);
     });
 
     it('does not reveal ancestors while truncation changes under a hovered icon', () => {
@@ -1203,8 +1206,8 @@ describe('Schema nested tooltip ownership', () => {
         fullName.content = '';
         parent.enabled = false;
         parent.ngOnChanges();
-        expect(fullName.active).toBeFalse();
-        expect(warning.active).toBeFalse();
+        expect(fullName.active).toBe(false);
+        expect(warning.active).toBe(false);
     });
 
     it('restores the warning after clicking a fitting name', async () => {
@@ -1217,7 +1220,7 @@ describe('Schema nested tooltip ownership', () => {
         warning.active = false;
         name.dispatchEvent(new MouseEvent('click'));
         await new Promise(resolve => setTimeout(resolve));
-        expect(warning.active).toBeTrue();
+        expect(warning.active).toBe(true);
     });
 
     it('does not restore a clicked name after it is destroyed', async () => {
@@ -1231,7 +1234,7 @@ describe('Schema nested tooltip ownership', () => {
         name.dispatchEvent(new MouseEvent('click'));
         directive.ngOnDestroy();
         await new Promise(resolve => setTimeout(resolve));
-        expect(fullName.active).toBeFalse();
+        expect(fullName.active).toBe(false);
     });
 
     it('does not restore a clicked name after the pointer leaves', async () => {
@@ -1245,7 +1248,7 @@ describe('Schema nested tooltip ownership', () => {
         name.dispatchEvent(new MouseEvent('click'));
         name.dispatchEvent(new MouseEvent('mouseleave', { relatedTarget: row }));
         await new Promise(resolve => setTimeout(resolve));
-        expect(fullName.active).toBeFalse();
+        expect(fullName.active).toBe(false);
     });
 
     it('keeps the card warning visible when a fitting name has no tooltip', () => {
@@ -1255,7 +1258,7 @@ describe('Schema nested tooltip ownership', () => {
         const warning = tooltip(row);
         attach(name, warning, tooltip(name, ''));
         name.dispatchEvent(new MouseEvent('mouseenter'));
-        expect(warning.active).toBeTrue();
+        expect(warning.active).toBe(true);
     });
 
     it('hides both ancestor tooltips when a featured icon inside the name is hovered', () => {
@@ -1269,8 +1272,8 @@ describe('Schema nested tooltip ownership', () => {
         const parent = attach(name, warning, fullName);
         attach(star, fullName, tooltip(star, 'Featured'), parent);
         star.dispatchEvent(new MouseEvent('mouseenter'));
-        expect(fullName.active).toBeFalse();
-        expect(warning.active).toBeFalse();
+        expect(fullName.active).toBe(false);
+        expect(warning.active).toBe(false);
     });
 
     it('restores only the card warning when leaving a nested icon directly for the card', () => {
@@ -1288,8 +1291,8 @@ describe('Schema nested tooltip ownership', () => {
         warning.active = false;
         star.dispatchEvent(new MouseEvent('mouseenter'));
         star.dispatchEvent(new MouseEvent('mouseleave', { relatedTarget: metadata }));
-        expect(warning.active).toBeTrue();
-        expect(fullName.active).toBeFalse();
+        expect(warning.active).toBe(true);
+        expect(fullName.active).toBe(false);
     });
 
     it('restores the full-name tooltip after clicking the name without restoring the card warning', async () => {
@@ -1303,7 +1306,7 @@ describe('Schema nested tooltip ownership', () => {
         fullName.active = false;
         name.dispatchEvent(new MouseEvent('click'));
         await new Promise(resolve => setTimeout(resolve));
-        expect(fullName.active).toBeTrue();
-        expect(warning.active).toBeFalse();
+        expect(fullName.active).toBe(true);
+        expect(warning.active).toBe(false);
     });
 });
