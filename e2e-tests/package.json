@@ -12,6 +12,7 @@
         "guardian:infra:up": "scripts/local-guardian.sh infra-up",
         "guardian:services:down": "scripts/local-guardian.sh services-down",
         "guardian:services:up": "scripts/local-guardian.sh services-up",
+        "guardian:status": "scripts/local-guardian.sh status",
         "guardian:test": "scripts/local-guardian.sh test",
         "guardian:test:smoke": "scripts/local-guardian.sh smoke",
         "guardian:up": "scripts/local-guardian.sh up",

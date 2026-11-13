@@ -12,8 +12,11 @@ npm ci                       # the test dependencies
 npm run guardian:build       # installs the Guardian workspace and builds the packages the stack runs
 npm run solo:up              # the network, once
 npm run guardian:up          # MongoDB, NATS, Valkey and Kubo containers, then every Guardian service
+npm run guardian:status      # checks the network, the infra and every service, one line each
 npm run guardian:test:smoke  # only the tests tagged smoke
 ```
+
+`guardian:status` prints `OK` or `FAIL` for the Solo network, each infra container and each service (process running, connected to NATS, gateway answering), with the log of every service, and exits non-zero when a check fails. `guardian:test` and `guardian:test:smoke` run the same checks first and stop when one fails. `guardian:services:up` stops with the log of a service that exits at startup, and refuses to start while something already listens on the gateway port `3002`.
 
 The services run the built `dist/` folders: after changing the Guardian sources, run `npm run guardian:build` again and restart them with `npm run guardian:services:down` and `npm run guardian:services:up`.
 
@@ -734,6 +737,7 @@ npm ci                       # the test dependencies
 npm run guardian:build       # the Guardian workspace and the packages the stack runs
 npm run solo:up              # the network, once
 npm run guardian:up          # MongoDB, NATS, Valkey and Kubo containers, then every Guardian service
+npm run guardian:status      # checks the network, the infra and every service
 npm run guardian:test        # the whole suite
 npm run guardian:test:smoke  # only the tests tagged smoke
 npm run guardian:test -- cypress/e2e/api-tests/001_demo/getRandomKey.cy.js   # a single spec
@@ -745,7 +749,7 @@ npm run guardian:down        # stops the services and removes the containers
 
 `guardian:test` always filters on the `all` tag, also when it is given specs: a spec without that tag (`009_policies/VM033.cy.js`, the `017_indexer` specs) is left out, and a run of only such specs ends with "Can't run because no spec files were found". Run those with `npx cypress run --spec <file>`, or with `entrypoint.sh` and `CYPRESS_grepTags` set to one of their tags.
 
-`scripts/local-guardian.sh` loads `.solo/solo.env` for you and takes the JWT keys from `configs/.env.quickstart.guardian.system`, so nothing has to be configured. Service logs are in `e2e-tests/.local/logs`. The infra containers are recreated on every `guardian:up`, because the ledger is empty after each `solo:up` and an older database would point at accounts that no longer exist. Stop a running `guardian-quickstart` first: they use the same ports.
+`scripts/local-guardian.sh` loads `.solo/solo.env` for you and takes the JWT keys from `configs/.env.quickstart.guardian.system`, so nothing has to be configured. Service logs and the pids of the services it started are in `e2e-tests/.local/logs`. The infra containers are recreated on every `guardian:up`, because the ledger is empty after each `solo:up` and an older database would point at accounts that no longer exist. Stop a running `guardian-quickstart` first: they use the same ports.
 
 To start the services yourself instead, load the variables in every shell that starts one, and in the one that runs the suite:
 

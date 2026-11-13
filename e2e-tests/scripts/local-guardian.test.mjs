@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import path from 'node:path';
 import { afterEach, describe, it } from 'node:test';
 
@@ -41,5 +42,29 @@ describe('local-guardian.sh build', () => {
         assert.notEqual(status, 0);
         assert.match(stderr, /no yarnPath/);
         assert.deepEqual(commands, []);
+    });
+});
+
+describe('local-guardian.sh status', () => {
+    let sandbox;
+    afterEach(() => { sandbox.remove(); });
+
+    it('fails and says what to run when the network was never created', () => {
+        sandbox = createSandbox('local-guardian.sh');
+        const { status, stdout, stderr } = sandbox.run(['status']);
+        assert.notEqual(status, 0);
+        assert.match(stdout, /^FAIL {2}solo +network settings in \.solo\/solo\.env \(npm run solo:up\)$/m);
+        assert.match(stderr, /some checks failed/);
+    });
+
+    it('names a recorded service that is no longer running, with its log', () => {
+        sandbox = createSandbox('local-guardian.sh');
+        const logDir = path.join(sandbox.root, 'e2e-tests', '.local', 'logs');
+        fs.mkdirSync(logDir, { recursive: true });
+        fs.writeFileSync(path.join(logDir, 'pids'), `${process.pid} logger-service#1\n999999 queue-service#1\n`);
+        const { status, stdout } = sandbox.run(['status']);
+        assert.notEqual(status, 0);
+        assert.match(stdout, new RegExp(`^OK {4}services +logger-service#1 \\(pid ${process.pid}\\) running`, 'm'));
+        assert.match(stdout, /^FAIL {2}services +queue-service#1 \(pid 999999\) running; log \.local\/logs\/queue-service-1\.log$/m);
     });
 });
