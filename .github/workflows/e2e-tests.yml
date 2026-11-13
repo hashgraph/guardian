@@ -18,6 +18,10 @@ on:
         type: string
         description: Solo release that deploys the local Hiero network (empty uses the workflow default)
         default: ""
+      ui_request_trace:
+        type: boolean
+        description: Log every request the dev server proxies to the gateway (frontend-1.log in the guardian-logs artifact; large). Only has an effect when the tags select UI tests
+        default: false
 
 permissions:
   contents: read
@@ -37,3 +41,4 @@ jobs:
       suite: api
       grep_tags: ${{ github.event_name == 'schedule' && 'api-all policy-all' || inputs.tags || 'smoke' }}
       solo_version: ${{ inputs.solo_version }}
+      ui_request_trace: ${{ inputs.ui_request_trace || false }}

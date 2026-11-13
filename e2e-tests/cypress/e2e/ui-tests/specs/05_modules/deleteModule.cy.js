@@ -1,4 +1,3 @@
-import { randomInt } from '../../../../support/random';
 import { ModulesPage } from '../../pages/modulesPage';
 const modulesPage = new ModulesPage();
 

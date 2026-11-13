@@ -109,7 +109,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     private navHiddenProp = new BooleanProperty('POLICY_VIEWER_NAV_HIDDEN');
     public navHidden: boolean = this.navHiddenProp.load();
     public activeStep: ActiveStep | null = null;
-    public permissions: UserPermissions;
+    // The template reads it from the first change detection, before the viewer profile arrives.
+    public permissions: UserPermissions = new UserPermissions();
     public newRequestsExist: boolean = false;
     public newActionsExist: boolean = false;
     public timer: any;

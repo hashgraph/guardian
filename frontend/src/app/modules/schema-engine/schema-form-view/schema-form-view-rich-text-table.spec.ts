@@ -22,24 +22,24 @@ describe('SchemaFormViewComponent Rich Text in a record row', () => {
             schemas: [NO_ERRORS_SCHEMA],
         });
         const schema = new Schema({ iri: '#notes&1.0.0', document: {
-            $id: '#notes&1.0.0',
-            $comment: JSON.stringify({ '@id': 'ctx:#notes&1.0.0', term: 'notes&1.0.0' }),
-            type: SchemaDataTypes.object,
-            properties: { rows: { type: SchemaDataTypes.array, items: { $ref: '#row' } } },
-            $defs: { '#row': {
-                $id: '#row', type: SchemaDataTypes.object,
-                properties: {
-                    outcome: {
-                        type: SchemaDataTypes.string, title: 'Outcome', description: 'Outcome',
-                        $comment: JSON.stringify({ term: 'outcome', '@id': 'https://www.schema.org/text', customType: 'richText', orderPosition: 0 }),
-                    },
-                    comment: {
-                        type: SchemaDataTypes.string, title: 'Comment', description: 'Comment',
-                        $comment: JSON.stringify({ term: 'comment', '@id': 'https://www.schema.org/text', orderPosition: 1 }),
-                    },
-                },
-            } },
-        } } as any);
+                $id: '#notes&1.0.0',
+                $comment: JSON.stringify({ '@id': 'ctx:#notes&1.0.0', term: 'notes&1.0.0' }),
+                type: SchemaDataTypes.object,
+                properties: { rows: { type: SchemaDataTypes.array, items: { $ref: '#row' } } },
+                $defs: { '#row': {
+                        $id: '#row', type: SchemaDataTypes.object,
+                        properties: {
+                            outcome: {
+                                type: SchemaDataTypes.string, title: 'Outcome', description: 'Outcome',
+                                $comment: JSON.stringify({ term: 'outcome', '@id': 'https://www.schema.org/text', customType: 'richText', orderPosition: 0 }),
+                            },
+                            comment: {
+                                type: SchemaDataTypes.string, title: 'Comment', description: 'Comment',
+                                $comment: JSON.stringify({ term: 'comment', '@id': 'https://www.schema.org/text', orderPosition: 1 }),
+                            },
+                        },
+                    } },
+            } } as any);
         const fixture = TestBed.createComponent(SchemaFormViewComponent);
         fixture.componentRef.setInput('schema', schema);
         fixture.componentRef.setInput('values', { rows });
@@ -53,7 +53,12 @@ describe('SchemaFormViewComponent Rich Text in a record row', () => {
         return { fixture, component: fixture.componentInstance, rich };
     };
 
-    const popoverSpy = (overlayVisible = false) => jasmine.createSpyObj('popover', ['show', 'hide', 'align'], { overlayVisible });
+    const popoverSpy = (overlayVisible = false) => ({
+        show: vi.fn().mockName("popover.show"),
+        hide: vi.fn().mockName("popover.hide"),
+        align: vi.fn().mockName("popover.align"),
+        overlayVisible
+    });
 
     it('renders the formatted text clamped, with a Show more control', () => {
         const { rich, fixture } = render([{ outcome: '## Local community\n\nMet with the **council**' }]);
@@ -99,15 +104,15 @@ describe('SchemaFormViewComponent Rich Text in a record row', () => {
 
     it('resolves an IPFS image in the record row', async () => {
         const ipfs = {
-            getImageWithDryRunFallback: jasmine.createSpy('getImageWithDryRunFallback').and.resolveTo('blob:resolved-image'),
-            getImageFromDryRunStorage: jasmine.createSpy('getImageFromDryRunStorage').and.resolveTo('blob:resolved-image'),
+            getImageWithDryRunFallback: vi.fn().mockResolvedValue('blob:resolved-image'),
+            getImageFromDryRunStorage: vi.fn().mockResolvedValue('blob:resolved-image'),
         };
         const { fixture, rich } = render([{ outcome: 'Photo ![site](ipfs://bafyimage)' }], ipfs);
         await new Promise((resolve) => setTimeout(resolve));
         fixture.detectChanges();
         const image = rich()!.querySelector('img') as HTMLImageElement;
         expect(image.getAttribute('src')).toBe('blob:resolved-image');
-        const calls = ipfs.getImageWithDryRunFallback.calls.count() + ipfs.getImageFromDryRunStorage.calls.count();
+        const calls = vi.mocked(ipfs.getImageWithDryRunFallback).mock.calls.length + vi.mocked(ipfs.getImageFromDryRunStorage).mock.calls.length;
         expect(calls).toBe(1);
     });
 

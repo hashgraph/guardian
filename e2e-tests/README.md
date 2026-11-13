@@ -4,12 +4,21 @@ The `/e2e-tests` folder comprises the Guardian Cypress test automation framework
 
 ## Quickstart
 
+You need Node.js 24, Docker, `kind` and `kubectl`. From a fresh clone:
+
 ```bash
 cd e2e-tests
+npm ci                       # the test dependencies
+npm run guardian:build       # installs the Guardian workspace and builds the packages the stack runs
 npm run solo:up              # the network, once
 npm run guardian:up          # MongoDB, NATS, Valkey and Kubo containers, then every Guardian service
+npm run guardian:status      # checks the network, the infra and every service, one line each
 npm run guardian:test:smoke  # only the tests tagged smoke
 ```
+
+`guardian:status` prints `OK` or `FAIL` for the Solo network, each infra container and each service (process running, connected to NATS, gateway answering), with the log of every service, and exits non-zero when a check fails. `guardian:test` and `guardian:test:smoke` run the same checks first and stop when one fails. `guardian:services:up` stops with the log of a service that exits at startup, and refuses to start while something already listens on the gateway port `3002`.
+
+The services run the built `dist/` folders: after changing the Guardian sources, run `npm run guardian:build` again and restart them with `npm run guardian:services:down` and `npm run guardian:services:up`.
 
 **NOTE: Behind a TLS-intercepting proxy (for example Zscaler) image pulls inside the kind node fail with `x509: certificate signed by unknown authority`**. Set `SOLO_EXTRA_CA_CERT` to the PEM bundle of the proxy CA and `solo:up` installs it in the node before Solo creates any pod:
 
@@ -29,12 +38,33 @@ The two halves can run in different places, for example when the tests are drive
 
 ```bash
 npm run guardian:infra:up        # on the host: MongoDB, NATS, Valkey and Kubo containers
+npm run guardian:build           # in the dev container: installs and builds Guardian for the container's platform
 npm run guardian:services:up     # in the dev container: every Guardian service, gateway on http://127.0.0.1:3002
 npm run guardian:services:down   # restart the services without touching the infra or the database
 npm run guardian:infra:down      # on the host: removes the containers
 ```
 
 `INFRA_HOST` is where the services reach the infra and the Hedera network: `127.0.0.1` by default, `host.docker.internal` when `/.dockerenv` exists. Export it to override the detection. The dev container has its own network namespace, so point Cypress at `http://127.0.0.1:3002` there (`--env apiServer=http://127.0.0.1:3002`).
+
+## Running every test
+
+`npm run test:everything` runs, one group after the other, everything the repository tests outside the service unit tests of `main.yml`: the linter on the specs, the tests of the helper scripts, the frontend unit specs and the whole Cypress suite. A group that fails does not stop the others; the summary at the end lists each one and the exit code is non-zero when any failed. Name the groups to run only those:
+
+```bash
+npm run test:everything                       # lint, scripts, frontend, cypress
+npm run test:everything -- lint scripts       # only the linter and the helper-script tests
+```
+
+It expects the [Quickstart](#quickstart) to be done and does not touch the stack: the `cypress` group runs against the services already running, so after changing the Guardian sources rebuild and restart them first, as the Quickstart says. When the `cypress` group runs, it first checks the stack with `npm run guardian:status` and stops before any group if a check fails. Then it prepares, once, what the Quickstart does not: `npm ci` in `frontend` and `npx playwright install chromium`, when the `frontend` group runs. If that fails, the `frontend` group is reported as failed and the others still run.
+
+| Group | What it runs |
+|---|---|
+| `lint` | `npx eslint cypress` |
+| `scripts` | `npm run test:scripts` and `.github/scripts/report-test-summary.test.mjs` |
+| `frontend` | `npx ng test --watch=false` in `frontend` (Vitest, headless Chromium) |
+| `cypress` | `npm run guardian:test` |
+
+In the dev container, prefix the command with `NODE_OPTIONS=--use-system-ca` when you run the `frontend` group: the Playwright download goes through the container's TLS proxy, whose certificate is only in the system store.
 
 ## Running tests manually
 
@@ -55,7 +85,12 @@ Run the linter on the specs and helpers (the folders Cypress generates, such as 
 npx eslint cypress
 ```
 
-The findings that are still open, with the fix for each rule, are listed in [`pending-issues/eslint-findings-in-the-cypress-suites.md`](pending-issues/eslint-findings-in-the-cypress-suites.md).
+The linter reports no finding, and CI keeps it that way. Rules worth knowing:
+
+- `cypress/unsafe-to-chain-command`: a command that changes the subject (`click`, `clear`, `type`, `blur`, `invoke`) must not be followed by another chained command; re-query instead (`cy.get(selector).clear(); cy.get(selector).type(value);`).
+- `cypress/no-assigning-return-values`: a Cypress command returns a chainable, not a value; use `.then()` or an alias (`.as()` and `cy.get('@name')`).
+- `cypress/no-unnecessary-waiting`: wait for the condition, never for a fixed time. Take budgets from `support/CustomHelpers/timeouts.js` (`TIMEOUTS.ui`, `TIMEOUTS.backend`, `TIMEOUTS.longOperation`), poll backend state with `pollUntil` (`support/checkingMethods.js`), wait for a policy block with `waitForBlockAvailable`, and for UI state use a retrying `cy.get(..., { timeout }).should(...)`. Polling loops pause `POLL_INTERVAL` between two reads; the only fixed pause left is the 1 s in `waitForTaskComplete`, silenced with a reason.
+- `max-len` (360): build a long document as an object and `JSON.stringify` it (as `support/CustomHelpers/systemSchemas.js` does), or split the string.
 
 To check that a change adds no finding, compare with the findings of the last commit. Extract it with `git archive HEAD e2e-tests/cypress/e2e e2e-tests/cypress/support e2e-tests/eslint.config.mjs e2e-tests/package.json | tar -x -C <dir>`, symlink `node_modules` into it and run `npx eslint cypress` there. ESLint pads its columns to the longest message of each file, so squeeze repeated spaces before diffing the two outputs.
 
@@ -161,10 +196,10 @@ UI_GATEWAY_HOST=host.docker.internal UI_GATEWAY_PORT=3002 docker compose run --r
 
 #### Manual Setup
 
-From the `/e2e-tests` folder, run the following command to install Cypress:
+From the `/e2e-tests` folder, install Cypress and the other test dependencies from the lockfile:
 
 ```bash
-npm install cypress
+npm ci
 ```
 
 ### Configuration
@@ -194,12 +229,12 @@ npx cypress open
 
 #### Local Command Line Execution
 
-The project pins Cypress 14.x (`package.json`). If you use **Cypress 15+**, `--env` requires **JSON** (see [Cypress 15 and --env](#cypress-15-and---env) below).
+The project pins Cypress 15 (`package.json`). `--env` takes either `key=value` pairs separated by commas or a JSON object, so separate several tags with spaces, not commas (see [--env and "Cannot parse as valid JSON"](#--env-and-cannot-parse-as-valid-json) below).
 
 ##### Run all API tests (most basic)
 
 ```bash
-npx cypress run --browser chrome --env "grepTags=all,grepFilterSpecs=true"
+npx cypress run --browser chrome --env "grepTags=api-all,grepFilterSpecs=true"
 ```
 
 ##### Run with specific tags (sanity testing with user preparation)
@@ -208,7 +243,7 @@ npx cypress run --browser chrome --env "grepTags=all,grepFilterSpecs=true"
 npx cypress run --browser chrome --headed --env "grepTags=preparing policies,grepFilterSpecs=true"
 ```
 
-**Cypress 15+ only** (if you see "Cannot parse as valid JSON"):
+The same with a JSON object:
 
 ```bash
 npx cypress run --browser chrome --headed --env '{"grepTags":"preparing policies","grepFilterSpecs":true}'
@@ -245,7 +280,7 @@ UI_GATEWAY_ORIGIN=http://host.docker.internal:3002/ \
 
 `ui`-tagged specs drive the real frontend in a persistent browser profile, and the backend state they create (users, tools, policies, tokens) survives the run. Suites 00–02 are idempotent — every spec passes on repeated runs against the same workspace; suite 03 uses the same per-run naming isolation; 04 and later are not converted yet. The patterns they share, worth knowing before extending a UI suite, live in `cypress/support/` and `ui-tests/pages/`:
 
-- **Clean boot** (`homePage.js` → `visit()`): the profile persists `accessToken`, `refreshToken` and `username` in `localStorage`, so a failed run would auto-log the next one in and skip the login page the Sign Up / login flows depend on. `visit()` wipes those keys in `onBeforeLoad`, then waits for the app shell's loader to release before the first assertion.
+- **Clean boot** (`homePage.js` → `visit()`): the profile persists `accessToken` and `refreshToken` in `localStorage` (the app reads the username from the access token), so a failed run would auto-log the next one in and skip the login page the Sign Up / login flows depend on. `visit()` wipes those keys in `onBeforeLoad`, then waits for the app shell's loader to release before the first assertion.
 - **Settled-phase waits** (`homePage.js` → `_settledUserProfilePhase()`): the user-profile view flashes through several render states as its first load settles, so a one-shot read mis-branches. The helper polls with a real timer until a terminal state (`wizard` or `ready`) has *held* for a short while, resolves with the settled phase, and rejects with the last phase seen on the deadline, so a stuck load fails loudly instead of hanging. The same idiom backs the Sign Up settle wait in `ensureAccount`, which always ends logged out on a known state.
 - **Task round trips** (`importFlow.js` → `waitForTaskRoundtrip()`): import, create, publish and dry-run actions run as backend tasks — the app navigates to `/task/:id` and redirects back on completion, and lists do not refresh on their own. Flows wait for the full round trip, then re-land with a fresh `cy.visit`.
 - **Import-preview tool checks** (`importFlow.js` → `settleToolRowChecks()` / `replaceInaccessibleTools()`): a preview row settles to valid/invalid when its per-row check request answers, but that request has no client-side timeout — one check the gateway never answers pins its row at `load`, which keeps the Import button disabled forever. The helper waits with a deadline, re-issues the checks for rows still loading (the row's change handler re-runs them), and after the last attempt fails the test with the stuck `messageIds`. Rows pointing at tool messages this gateway cannot resolve are re-pointed at the same-named workspace tool through the row's search picker — and the picker only lists *published* tools, which is why `toolsPage.js` → `ensureToolPublished()` imports the Methodology Library tools and publishes them on demand first (published ones are left alone, drafts are published, missing ones imported).
@@ -275,7 +310,7 @@ Tests are tagged on the Mocha context object: `context('...', { tags: ['ui', 'sm
 **All API tests (basic run):**
 
 ```bash
-npx cypress run --browser chrome --env "grepTags=all,grepFilterSpecs=true"
+npx cypress run --browser chrome --env "grepTags=api-all,grepFilterSpecs=true"
 ```
 
 **Sanity run (preparing + specific feature, e.g. policies):**
@@ -284,23 +319,25 @@ npx cypress run --browser chrome --env "grepTags=all,grepFilterSpecs=true"
 npx cypress run --browser chrome --headed --env "grepTags=preparing policies,grepFilterSpecs=true"
 ```
 
-**Cypress 15+:** use JSON for `--env`, e.g. `--env '{"grepTags":"preparing policies","grepFilterSpecs":true}'`
-
 ##### Single Tag
 
 ```bash
 npx cypress run --browser chrome --env "grepTags=accounts,grepFilterSpecs=true"
 ```
 
-##### Multiple Tags (AND operation)
+##### Multiple Tags (OR operation)
+
+Tags separated by spaces select the specs that have **any** of them:
 
 ```bash
 npx cypress run --browser chrome --env "grepTags=preparing policies,grepFilterSpecs=true"
 ```
 
+To select only the specs that have **every** tag, join them with `+` (`grepTags=policies+smoke`).
+
 **Important**:
 
-- **Local CLI (`--env "..."`)**: use spaces, e.g. `preparing policies`
+- **Local CLI (`--env "..."`)**: use spaces, e.g. `preparing policies`. A comma separates two `--env` entries, so `grepTags=preparing,policies` is not a tag list
 - **Docker (`CYPRESS_grepTags=...`)**: spaces or commas are accepted, e.g. `preparing policies` or `preparing,policies`
 
 ##### Available Tags
@@ -335,7 +372,7 @@ npx cypress run --browser chrome --env "grepTags=preparing policies,grepFilterSp
 
 **General Tags:**
 
-- `all` - every test: API, policy, UI and disaster recovery. It needs the frontend, so the CI starts it whenever the tags select a UI test
+- `all` - every test: API, policy, UI and disaster recovery, except the specs that do not carry it (`009_policies/VM033.cy.js`, tagged `VM0033`, and the `017_indexer` specs). It needs the frontend, so the CI starts it whenever the tags select a UI test
 - `api-all` - all API tests
 - `policy-all` - all policy tests (CDM and iREC; `policyAT` selects the same specs)
 - `ui-all` - all UI tests
@@ -668,7 +705,7 @@ cd e2e-tests
 npm run solo:up
 ```
 
-`solo:up` runs `solo one-shot single deploy --minimal-setup` (a single consensus node and a mirror node; Solo 0.94 still deploys its explorer and relay with that flag), waits until the consensus node and the mirror REST API answer, and creates the operator: an ED25519 account with 50,000,000 HBAR, funded by the genesis account, since one-shot only predefines ECDSA accounts. It then compiles `contracts/`, uploads their bytecode, and writes everything Guardian needs to `e2e-tests/.solo/solo.env`. Solo is pinned (see `SOLO_VERSION` in `scripts/solo-network.mjs`) and runs through `npx`, with its state in `e2e-tests/.solo/home`, so a globally installed Solo and `~/.solo` are never touched.
+`solo:up` runs `solo one-shot single deploy --minimal-setup`, waits until the consensus node and the mirror REST API answer, and creates the operator: an ED25519 account with 50,000,000 HBAR, funded by the genesis account, since one-shot only predefines ECDSA accounts. It then compiles `contracts/`, uploads their bytecode, and writes everything Guardian needs to `e2e-tests/.solo/solo.env`. Solo is pinned (see `SOLO_VERSION` in `scripts/solo-network.mjs`) and runs through `npx`, with its state in `e2e-tests/.solo/home`, so a globally installed Solo and `~/.solo` are never touched.
 
 Behind a TLS-intercepting proxy (for example Zscaler) image pulls inside the kind node fail with `x509: certificate signed by unknown authority`. Set `SOLO_EXTRA_CA_CERT` to the PEM bundle of the proxy CA and `solo:up` installs it in the node before Solo creates any pod:
 
@@ -692,21 +729,15 @@ The network is published on `127.0.0.1:35211` (consensus node, account `0.0.3`) 
 
 #### Pointing Guardian at it
 
-To run Guardian natively and the suite against it, the way the workflow does, install and build Guardian once from the repository root (this is the workflow's build step), then use the `e2e-tests` scripts:
-
-```bash
-yarn install --immutable
-yarn workspaces foreach -A --topological-dev --parallel --jobs 4 \
-  --include '@guardian/interfaces' --include '@guardian/common' --include '@guardian/hedera' \
-  --include notification-service --include logger-service --include auth-service \
-  --include queue-service --include topic-listener-service --include guardian-service \
-  --include policy-service --include worker-service --include api-gateway run build
-```
+To run Guardian natively and the suite against it, the way the workflow does, use the `e2e-tests` scripts. `guardian:build` installs the Guardian workspace with the Yarn release vendored in `.yarn/releases` and runs the workflow's build step; pass package names (`npm run guardian:build -- @guardian/interfaces`) to build only those. Run it before `solo:up`, which uploads the contract bytecode with the workspace's Hedera SDK:
 
 ```bash
 cd e2e-tests
+npm ci                       # the test dependencies
+npm run guardian:build       # the Guardian workspace and the packages the stack runs
 npm run solo:up              # the network, once
 npm run guardian:up          # MongoDB, NATS, Valkey and Kubo containers, then every Guardian service
+npm run guardian:status      # checks the network, the infra and every service
 npm run guardian:test        # the whole suite
 npm run guardian:test:smoke  # only the tests tagged smoke
 npm run guardian:test -- cypress/e2e/api-tests/001_demo/getRandomKey.cy.js   # a single spec
@@ -716,7 +747,9 @@ npm run guardian:down        # stops the services and removes the containers
 
 `guardian:test` accepts any number of specs after `--`, each a file or a glob (`*` and `**` work, as in the default pattern `cypress/e2e/api-tests/**/*.cy.js`), or one comma-separated list. Quote the globs, so that Cypress expands them rather than your shell. Specs that need users or seeded artefacts rely on `000_accounts_creating/create_accounts.cy.js` and, on a local network, `000_accounts_creating/seedHederaArtefacts.cy.js`, which run first in a full run; include them when you run a spec on a freshly started stack.
 
-`scripts/local-guardian.sh` loads `.solo/solo.env` for you and takes the JWT keys from `configs/.env.quickstart.guardian.system`, so nothing has to be configured. Service logs are in `e2e-tests/.local/logs`. The infra containers are recreated on every `guardian:up`, because the ledger is empty after each `solo:up` and an older database would point at accounts that no longer exist. Stop a running `guardian-quickstart` first: they use the same ports.
+`guardian:test` always filters on the `all` tag, also when it is given specs: a spec without that tag (`009_policies/VM033.cy.js`, the `017_indexer` specs) is left out, and a run of only such specs ends with "Can't run because no spec files were found". Run those with `npx cypress run --spec <file>`, or with `entrypoint.sh` and `CYPRESS_grepTags` set to one of their tags.
+
+`scripts/local-guardian.sh` loads `.solo/solo.env` for you and takes the JWT keys from `configs/.env.quickstart.guardian.system`, so nothing has to be configured. Service logs and the pids of the services it started are in `e2e-tests/.local/logs`. The infra containers are recreated on every `guardian:up`, because the ledger is empty after each `solo:up` and an older database would point at accounts that no longer exist. Stop a running `guardian-quickstart` first: they use the same ports.
 
 To start the services yourself instead, load the variables in every shell that starts one, and in the one that runs the suite:
 
@@ -773,6 +806,7 @@ Scheduled runs happen nightly at 03:00 UTC: E2E Tests runs `api-all policy-all`,
 - Starts MongoDB, NATS, Valkey and Kubo as service containers, and the Guardian services natively
 - For UI runs, installs the frontend and serves it with `ng serve` on `127.0.0.1:4200`, proxied to the gateway (`frontend/proxy.hostdocker.js`), the same way as the local recipe in "Preparing the app for UI tests"
 - Runs Cypress natively on the runner against that stack
+- With the `ui_request_trace` input of a manual run (`UI Tests`, or `E2E Tests` with UI tags), the dev server logs every request it proxies to the gateway (`UI_PROXY_LOG`), into `frontend-1.log` of the Guardian logs artifact. It is for diagnosing a UI failure, and the log is large
 - Publishes test results (one check per suite: `Test results · api`, `· policy`, `· ui`)
 - Uploads HTML and JSON reports as artifacts, plus the Guardian (frontend included) and Solo logs when a run fails
 - Deletes the Solo kind cluster at the end of the run
@@ -833,7 +867,7 @@ The HTML report includes:
 #### Pattern 1: Basic API Test Run
 
 ```bash
-npm install
+npm ci
 npx cypress run --browser chrome --env "grepTags=all,grepFilterSpecs=true"
 ```
 
@@ -862,25 +896,18 @@ npx cypress run --browser chrome --env "grepTags=preparing policies schemas arti
 
 ### Troubleshooting
 
-#### Cypress 15 and --env
+#### --env and "Cannot parse as valid JSON"
 
-If you see **"Cannot parse as valid JSON"** when using `--env`, you are on Cypress 15+, which requires `--env` to be a JSON object.
+Cypress reads `--env` as `key=value` pairs separated by commas, and falls back to JSON when a part is not a pair. A comma between two tags makes such a part (in `--env "grepTags=all,policies,grepFilterSpecs=true"`, `policies` is not a pair), so Cypress stops with **"Cannot parse as valid JSON"**. Separate the tags with spaces, or pass a JSON object:
 
-- **Option A (recommended):** Use the project’s Cypress 14 from `e2e-tests`: run `npm install` in `e2e-tests` and use `npx cypress run` from that directory so the pinned version (14.x) is used.
-- **Option B:** Use JSON for `--env`:
+```bash
+npx cypress run --browser chrome --env "grepTags=preparing policies,grepFilterSpecs=true"
+npx cypress run --browser chrome --env '{"grepTags":"preparing policies","grepFilterSpecs":true}'
+```
 
-  ```bash
-  npx cypress run --browser chrome --env '{"grepTags":"preparing policies","grepFilterSpecs":true}'
-  ```
-
-  For all API tests: `--env '{"grepTags":"all","grepFilterSpecs":true}'`
+`CYPRESS_grepTags` (Docker, `entrypoint.sh`) is not parsed that way: there, commas and spaces both separate tags.
 
 #### Common Issues
-
-##### Tag Syntax Errors
-
-- **Wrong**: `grepTags=all, policies` (space before comma)
-- **Correct**: `grepTags=all,policies` or `grepTags=all, policies` (space only after comma)
 
 ##### No Tests Found
 
@@ -899,7 +926,7 @@ Start the app with the `proxy.hostdocker.js` logger (see [Preparing the app for 
 ```
 
 - `(auth)` / `(NO-AUTH)` is the presence of the `Authorization` header, so a tokenless call stands out.
-- A request that is logged as sent but **never gets a `<- <status>` line** was accepted by the gateway and is hanging — the typical cause is the gateway auth guard waiting forever on a NATS reply from the auth service (see `pending-issues/gateway-auth-guard-hangs-*.md`). In the UI this shows as a page stuck on a spinner; a page reload is the workaround the UI tests apply.
+- A request that is logged as sent but **never gets a `<- <status>` line** was accepted by the gateway and is still open. In the UI this shows as a page stuck on a spinner.
 - `WS-UPGRADE` lines without a follow-up indicate the WebSocket was accepted but never used by the app.
 
 ##### The services run old code after a pull

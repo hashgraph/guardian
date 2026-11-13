@@ -44,3 +44,7 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+
+# Vitest browser mode: screenshots and attachments of failed tests
+__screenshots__/
+.vitest-attachments/

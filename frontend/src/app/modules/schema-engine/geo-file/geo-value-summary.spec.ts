@@ -11,7 +11,7 @@ describe('geo value summary', () => {
     it('counts the polygons of a MultiPolygon as the shape count of one shape', () => {
         const summary = summarizeGeoValue({ type: 'MultiPolygon', coordinates: [square(0), square(5), square(9)] });
 
-        expect(summary).toEqual(jasmine.objectContaining({ type: 'MultiPolygon', shapes: 1, polygons: 3, points: 12 }));
+        expect(summary).toEqual(expect.objectContaining({ type: 'MultiPolygon', shapes: 1, polygons: 3, points: 12 }));
         expect(describeGeoValue(summary)).toBe('3 polygons · 12 points');
     });
 

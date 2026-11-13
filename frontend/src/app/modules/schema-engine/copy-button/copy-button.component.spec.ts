@@ -6,7 +6,7 @@ import { CopyButtonComponent } from './copy-button.component';
 
 describe('CopyButtonComponent', () => {
     const build = (value: string, copyResult = true) => {
-        const clipboard = { copy: jasmine.createSpy('copy').and.returnValue(copyResult) };
+        const clipboard = { copy: vi.fn().mockReturnValue(copyResult) };
         TestBed.configureTestingModule({
             declarations: [CopyButtonComponent],
             imports: [CommonModule],

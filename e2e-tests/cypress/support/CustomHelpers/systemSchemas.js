@@ -4,8 +4,8 @@ import * as Authorization from '../authorization';
 import { randomInt } from '../random';
 
 /**
- * Creates a draft system schema through the API: the schema editor offers no Standard Registry or
- * User entity, so it cannot create one (see pending-issues/system-schema-editor-cannot-create-a-system-schema.md).
+ * Creates a draft system schema through the API, for the specs that drive the system list rather than
+ * the schema editor.
  *
  * Yields the name of the schema.
  */

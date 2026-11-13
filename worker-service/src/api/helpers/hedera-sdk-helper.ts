@@ -1234,7 +1234,7 @@ export class HederaSDKHelper {
                     messageMap.set(messageId, items);
                 }
                 if (res.data.links?.next) {
-                    url = `${res.request.protocol}//${res.request.host}${res.data.links?.next}`;
+                    url = HederaSDKHelper.resolveNextPage(url, res.data.links.next);
                 } else {
                     goNext = false;
                 }
@@ -2015,8 +2015,10 @@ export class HederaSDKHelper {
                     }
                 }
             }
-            url = `${res.request.protocol}//${res.request.host}${res.data.links?.next}`;
             hasNext = !!res.data.links?.next;
+            if (hasNext) {
+                url = HederaSDKHelper.resolveNextPage(url, res.data.links.next);
+            }
         }
 
         return result;
@@ -2138,6 +2140,17 @@ export class HederaSDKHelper {
                 type: 'nfts',
             }
         );
+    }
+
+    /**
+     * Resolves the `links.next` of a mirror node page against the request that returned it,
+     * so the port of a mirror node that is not served on the default one is kept
+     * @param requestUrl Address of the request that returned the page
+     * @param next `links.next` of the page
+     * @returns Address of the next page
+     */
+    private static resolveNextPage(requestUrl: string, next: string): string {
+        return new URL(next, requestUrl).toString();
     }
 
     /**
@@ -2545,7 +2558,7 @@ export class HederaSDKHelper {
             result.lastTimestamp = item.consensus_timestamp;
         }
         if (response.data.links?.next) {
-            result.next = `${response.request.protocol}//${response.request.host}${response.data.links?.next}`;
+            result.next = HederaSDKHelper.resolveNextPage(url, response.data.links.next);
         }
         return result;
     }

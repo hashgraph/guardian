@@ -15,9 +15,9 @@ import { SchemaFormComponent } from './schema-form.component';
     providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => RichTextInputStub), multi: true }],
 })
 class RichTextInputStub implements ControlValueAccessor {
-    writeValue(): void {}
-    registerOnChange(): void {}
-    registerOnTouched(): void {}
+    writeValue(): void { }
+    registerOnChange(): void { }
+    registerOnTouched(): void { }
 }
 
 function field(extra: any = {}): any {
@@ -51,7 +51,7 @@ describe('Schema form advisory text', () => {
         expect(hints(element).length).toBe(1);
         expect(hints(element)[0].textContent).toBe('First line\n<b>plain text</b>');
         expect(hints(element)[0].querySelector('b')).toBeNull();
-        expect(hints(element)[0].previousElementSibling?.classList.contains('sf-label')).toBeTrue();
+        expect(hints(element)[0].previousElementSibling?.classList.contains('sf-label')).toBe(true);
         expect(hints(element)[0].compareDocumentPosition(element.querySelector('.form-field-value')!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
         model.form.get('project')!.setValue('Project Hub');
         expect(model.form.value).toEqual({ project: 'Project Hub' });
@@ -73,7 +73,7 @@ describe('Schema form advisory text', () => {
         expect(element.querySelectorAll('.form-field-array-item-container').length).toBe(0);
         expect(hints(element).length).toBe(1);
         expect(hints(element)[0].textContent).toBe('First line\n<b>plain text</b>');
-        expect(hints(element)[0].previousElementSibling?.classList.contains('sf-label')).toBeTrue();
+        expect(hints(element)[0].previousElementSibling?.classList.contains('sf-label')).toBe(true);
         const item = model.controls![0];
         model.addItem(item);
         model.addItem(item);

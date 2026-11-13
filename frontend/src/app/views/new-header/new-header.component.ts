@@ -260,7 +260,6 @@ export class NewHeaderComponent implements OnInit, OnDestroy, AfterViewChecked {
     public logOut() {
         this.resetBalance();
         this.auth.removeAccessToken();
-        this.auth.removeUsername();
         this.authState.updateState(false);
         this.router.navigate(['/login']);
     }

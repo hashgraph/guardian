@@ -20,7 +20,7 @@ describe('getDeleteDialogData', () => {
         expect(data.header).toBe('Delete variable?');
         expect(data.text).toBe('Other items depend on this variable. If you delete it, it will also be removed from their Relationships:');
         expect(data.typedItems.map((e: any) => [e.name, e.type])).toEqual([['Main', 'formula'], ['Note', 'text']]);
-        expect(data.typedItems.every((e: any) => !!e.icon)).toBeTrue();
+        expect(data.typedItems.every((e: any) => !!e.icon)).toBe(true);
         expect(data.buttons.map((e: any) => e.name)).toEqual(['Cancel', 'Delete anyway']);
     });
 

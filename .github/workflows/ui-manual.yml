@@ -17,6 +17,10 @@ on:
         type: string
         description: Solo release that deploys the local Hiero network (empty uses the workflow default)
         default: ""
+      ui_request_trace:
+        type: boolean
+        description: Log every request the dev server proxies to the gateway (frontend-1.log in the guardian-logs artifact; large)
+        default: false
 
 permissions:
   contents: read
@@ -37,4 +41,5 @@ jobs:
       grep_tags: ${{ inputs.tags || 'ui-all dr-all' }}
       spec: ${{ inputs.spec }}
       solo_version: ${{ inputs.solo_version }}
+      ui_request_trace: ${{ inputs.ui_request_trace || false }}
       timeout_minutes: 180

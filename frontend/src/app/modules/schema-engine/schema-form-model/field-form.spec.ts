@@ -61,21 +61,11 @@ const buildForm = (document: any, preset?: any): FieldForm => {
     return form;
 };
 
-const controlOf = (form: FieldForm, name: string): IFieldControl<any> =>
-    (form.controls || []).find((item) => item.name === name) as IFieldControl<any>;
+const controlOf = (form: FieldForm, name: string): IFieldControl<any> => (form.controls || []).find((item) => item.name === name) as IFieldControl<any>;
 
-const entryValue = (
-    item: IFieldControl<any>,
-    index: number,
-    path: string
-): any => item.list?.[index]?.control?.get(path)?.value;
+const entryValue = (item: IFieldControl<any>, index: number, path: string): any => item.list?.[index]?.control?.get(path)?.value;
 
-const setEntryValue = (
-    item: IFieldControl<any>,
-    index: number,
-    path: string,
-    value: string
-): void => {
+const setEntryValue = (item: IFieldControl<any>, index: number, path: string, value: string): void => {
     item.list?.[index]?.control?.get(path)?.setValue(value);
 };
 
@@ -283,12 +273,7 @@ const plainField = (name: string, extra: any = {}): any => ({
     ...extra,
 });
 
-const ifEquals = (
-    fieldName: string,
-    fieldValue: string,
-    thenFields: any[],
-    elseFields: any[] = []
-): any => ({
+const ifEquals = (fieldName: string, fieldValue: string, thenFields: any[], elseFields: any[] = []): any => ({
     ifCondition: { field: plainField(fieldName), fieldValue },
     thenFields,
     elseFields,
@@ -301,11 +286,9 @@ const buildFieldsForm = (fields: any[], conditions: any[]): FieldForm => {
     return form;
 };
 
-const orderedNames = (form: FieldForm): string[] =>
-    (form.controls || []).map((item) => item.name);
+const orderedNames = (form: FieldForm): string[] => (form.controls || []).map((item) => item.name);
 
-const visibleNames = (form: FieldForm): string[] =>
-    (form.controls || []).filter((item) => item.visibility).map((item) => item.name);
+const visibleNames = (form: FieldForm): string[] => (form.controls || []).filter((item) => item.visibility).map((item) => item.name);
 
 const answer = (form: FieldForm, name: string, value: string): void => {
     form.form.get(name)?.setValue(value);
@@ -317,56 +300,42 @@ describe('FieldForm — order of the fields a condition reveals', () => {
     afterEach(() => form?.destroy());
 
     it('keeps the fields of one condition in declaration order', () => {
-        form = buildFieldsForm(
-            [plainField('country')],
-            [ifEquals('country', 'US', [plainField('state'), plainField('zip')])]
-        );
+        form = buildFieldsForm([plainField('country')], [ifEquals('country', 'US', [plainField('state'), plainField('zip')])]);
         answer(form, 'country', 'US');
         expect(visibleNames(form)).toEqual(['country', 'state', 'zip']);
     });
 
     it('attaches a nested condition to the field it reads, after the fields it is declared alongside', () => {
-        form = buildFieldsForm(
-            [plainField('country')],
-            [
-                ifEquals('country', 'US', [plainField('state'), plainField('zip')]),
-                ifEquals('state', 'CA', [plainField('county')]),
-            ]
-        );
+        form = buildFieldsForm([plainField('country')], [
+            ifEquals('country', 'US', [plainField('state'), plainField('zip')]),
+            ifEquals('state', 'CA', [plainField('county')]),
+        ]);
         answer(form, 'country', 'US');
         answer(form, 'state', 'CA');
         expect(visibleNames(form)).toEqual(['country', 'state', 'zip', 'county']);
     });
 
     it('keeps a whole reveal group together before descending into a nested condition, alongside unrelated root fields', () => {
-        form = buildFieldsForm(
-            [plainField('A'), plainField('F'), plainField('G'), plainField('H')],
-            [
-                ifEquals('A', '2', [plainField('B'), plainField('C'), plainField('D')]),
-                ifEquals('B', '3', [plainField('E')]),
-            ]
-        );
+        form = buildFieldsForm([plainField('A'), plainField('F'), plainField('G'), plainField('H')], [
+            ifEquals('A', '2', [plainField('B'), plainField('C'), plainField('D')]),
+            ifEquals('B', '3', [plainField('E')]),
+        ]);
         answer(form, 'A', '2');
         answer(form, 'B', '3');
         expect(visibleNames(form)).toEqual(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']);
     });
 
     it('renders two conditions on the same field in declaration order', () => {
-        form = buildFieldsForm(
-            [plainField('type')],
-            [
-                ifEquals('type', 'A', [plainField('aThen')], [plainField('aElse')]),
-                ifEquals('type', 'B', [plainField('bThen')], [plainField('bElse')]),
-            ]
-        );
+        form = buildFieldsForm([plainField('type')], [
+            ifEquals('type', 'A', [plainField('aThen')], [plainField('aElse')]),
+            ifEquals('type', 'B', [plainField('bThen')], [plainField('bElse')]),
+        ]);
         answer(form, 'type', 'A');
         expect(visibleNames(form)).toEqual(['type', 'aThen', 'bElse']);
     });
 
     it('anchors a revealed field after the last field its condition reads', () => {
-        form = buildFieldsForm(
-            [plainField('x'), plainField('y'), plainField('z')],
-            [{
+        form = buildFieldsForm([plainField('x'), plainField('y'), plainField('z')], [{
                 ifCondition: {
                     AND: [
                         { field: plainField('x'), fieldValue: '1' },
@@ -375,21 +344,17 @@ describe('FieldForm — order of the fields a condition reveals', () => {
                 },
                 thenFields: [plainField('revealed')],
                 elseFields: [],
-            }]
-        );
+            }]);
         answer(form, 'x', '1');
         answer(form, 'y', '2');
         expect(visibleNames(form)).toEqual(['x', 'y', 'revealed', 'z']);
     });
 
     it('does not move a field while the form is being filled', () => {
-        form = buildFieldsForm(
-            [plainField('country'), plainField('city')],
-            [
-                ifEquals('country', 'US', [plainField('state')]),
-                ifEquals('state', 'CA', [plainField('county')], [plainField('province')]),
-            ]
-        );
+        form = buildFieldsForm([plainField('country'), plainField('city')], [
+            ifEquals('country', 'US', [plainField('state')]),
+            ifEquals('state', 'CA', [plainField('county')], [plainField('province')]),
+        ]);
         const before = orderedNames(form);
         answer(form, 'country', 'US');
         answer(form, 'state', 'CA');
@@ -398,10 +363,7 @@ describe('FieldForm — order of the fields a condition reveals', () => {
     });
 
     it('keeps a field whose condition reads a field outside the form', () => {
-        form = buildFieldsForm(
-            [plainField('a')],
-            [ifEquals('nowhere', '1', [plainField('orphan')])]
-        );
+        form = buildFieldsForm([plainField('a')], [ifEquals('nowhere', '1', [plainField('orphan')])]);
         expect(orderedNames(form)).toEqual(['a', 'orphan']);
     });
 });
@@ -410,14 +372,11 @@ describe('FieldForm — conditions that cannot be reached', () => {
     let form: FieldForm;
 
     // if A == 1 then B / if B == 2 then C / if C == 3 then D else E
-    const chain = (): FieldForm => buildFieldsForm(
-        [plainField('A')],
-        [
-            ifEquals('A', '1', [plainField('B')]),
-            ifEquals('B', '2', [plainField('C')]),
-            ifEquals('C', '3', [plainField('D')], [plainField('E')]),
-        ]
-    );
+    const chain = (): FieldForm => buildFieldsForm([plainField('A')], [
+        ifEquals('A', '1', [plainField('B')]),
+        ifEquals('B', '2', [plainField('C')]),
+        ifEquals('C', '3', [plainField('D')], [plainField('E')]),
+    ]);
 
     afterEach(() => form?.destroy());
 
@@ -465,10 +424,7 @@ describe('FieldForm — conditions that cannot be reached', () => {
     });
 
     it('shows the else branch of a condition on an ordinary field left empty', () => {
-        form = buildFieldsForm(
-            [plainField('A')],
-            [ifEquals('A', '1', [plainField('B')], [plainField('C')])]
-        );
+        form = buildFieldsForm([plainField('A')], [ifEquals('A', '1', [plainField('B')], [plainField('C')])]);
         expect(visibleNames(form)).toEqual(['A', 'C']);
         answer(form, 'A', '9');
         expect(visibleNames(form)).toEqual(['A', 'C']);
@@ -477,22 +433,19 @@ describe('FieldForm — conditions that cannot be reached', () => {
     });
 
     it('treats an OR as reachable while any field it reads is shown', () => {
-        form = buildFieldsForm(
-            [plainField('A')],
-            [
-                ifEquals('A', '1', [plainField('B')]),
-                {
-                    ifCondition: {
-                        OR: [
-                            { field: plainField('A'), fieldValue: '7' },
-                            { field: plainField('B'), fieldValue: '2' },
-                        ],
-                    },
-                    thenFields: [plainField('X')],
-                    elseFields: [plainField('Y')],
+        form = buildFieldsForm([plainField('A')], [
+            ifEquals('A', '1', [plainField('B')]),
+            {
+                ifCondition: {
+                    OR: [
+                        { field: plainField('A'), fieldValue: '7' },
+                        { field: plainField('B'), fieldValue: '2' },
+                    ],
                 },
-            ]
-        );
+                thenFields: [plainField('X')],
+                elseFields: [plainField('Y')],
+            },
+        ]);
         // A is always shown, so the OR stays answerable and its else branch applies.
         expect(visibleNames(form)).toEqual(['A', 'Y']);
         answer(form, 'A', '7');
@@ -540,43 +493,43 @@ describe('FieldForm — required fields from a list', () => {
 
     it('keeps the schema rule without a list', () => {
         const form = buildCalcForm();
-        expect(controlOf(form, 'amount').required).toBeTrue();
-        expect(controlOf(form, 'rate').required).toBeTrue();
-        expect(controlOf(form, 'note').required).toBeTrue();
-        expect(isRequiredEmpty(controlOf(form, 'note'))).toBeTrue();
+        expect(controlOf(form, 'amount').required).toBe(true);
+        expect(controlOf(form, 'rate').required).toBe(true);
+        expect(controlOf(form, 'note').required).toBe(true);
+        expect(isRequiredEmpty(controlOf(form, 'note'))).toBe(true);
     });
 
     it('keeps the schema rule when the list is null', () => {
         const form = buildCalcForm(null);
-        expect(controlOf(form, 'rate').required).toBeTrue();
+        expect(controlOf(form, 'rate').required).toBe(true);
     });
 
     it('requires only the listed fields', () => {
         const form = buildCalcForm(['amount']);
-        expect(controlOf(form, 'amount').required).toBeTrue();
-        expect(isRequiredEmpty(controlOf(form, 'amount'))).toBeTrue();
-        expect(controlOf(form, 'rate').required).toBeFalse();
-        expect(isRequiredEmpty(controlOf(form, 'rate'))).toBeFalse();
-        expect(controlOf(form, 'note').required).toBeFalse();
-        expect(isRequiredEmpty(controlOf(form, 'note'))).toBeFalse();
+        expect(controlOf(form, 'amount').required).toBe(true);
+        expect(isRequiredEmpty(controlOf(form, 'amount'))).toBe(true);
+        expect(controlOf(form, 'rate').required).toBe(false);
+        expect(isRequiredEmpty(controlOf(form, 'rate'))).toBe(false);
+        expect(controlOf(form, 'note').required).toBe(false);
+        expect(isRequiredEmpty(controlOf(form, 'note'))).toBe(false);
     });
 
     it('opens a sub-schema that holds a listed field and requires only that field inside it', () => {
         const form = buildCalcForm(['location.lat']);
         const location = controlOf(form, 'location');
-        expect(location.required).toBeTrue();
-        expect(location.displayRequired).toBeTrue();
+        expect(location.required).toBe(true);
+        expect(location.displayRequired).toBe(true);
         const inner: FieldForm = location.model;
-        expect(controlOf(inner, 'lat').required).toBeTrue();
-        expect(isRequiredEmpty(controlOf(inner, 'lat'))).toBeTrue();
-        expect(controlOf(inner, 'lon').required).toBeFalse();
+        expect(controlOf(inner, 'lat').required).toBe(true);
+        expect(isRequiredEmpty(controlOf(inner, 'lat'))).toBe(true);
+        expect(controlOf(inner, 'lon').required).toBe(false);
     });
 
     it('keeps a sub-schema that holds no listed field optional but creates it as an ordinary form does', () => {
         const form = buildCalcForm(['amount']);
         const location = controlOf(form, 'location');
-        expect(location.required).toBeFalse();
-        expect(location.displayRequired).toBeFalse();
+        expect(location.required).toBe(false);
+        expect(location.displayRequired).toBe(false);
         expect(location.model).not.toBeNull();
     });
 
@@ -589,14 +542,15 @@ describe('FieldForm — required fields from a list', () => {
             const schema = new Schema({ iri: '#calc&1.0.0', document });
             const location = schema.fields.find(field => field.name === 'location');
             const lat = location?.fields?.find(field => field.name === 'lat');
-            if (!lat) throw new Error('Missing fixture field');
+            if (!lat)
+                throw new Error('Missing fixture field');
             lat.hidden = true;
             const form = new FieldForm(new UntypedFormGroup({}));
             form.setData({ schema, requiredFields: ['location.lat'] });
             form.build();
-            expect(controlOf(form, 'location').required).toBeFalse();
+            expect(controlOf(form, 'location').required).toBe(false);
             expect(controlOf(form, 'location').displayRequired).toBeFalsy();
-            expect(form.form.valid).toBeTrue();
+            expect(form.form.valid).toBe(true);
             form.destroy();
         });
     }
@@ -604,20 +558,20 @@ describe('FieldForm — required fields from a list', () => {
     it('makes the form valid once the listed fields are filled', () => {
         const form = buildCalcForm(['amount']);
         form.form.updateValueAndValidity();
-        expect(form.form.valid).toBeFalse();
+        expect(form.form.valid).toBe(false);
         controlOf(form, 'amount').control.setValue(3);
         form.form.updateValueAndValidity();
-        expect(form.form.valid).toBeTrue();
+        expect(form.form.valid).toBe(true);
     });
 });
 
 describe('indexed Preview requirements', () => {
     const make = (requiredFields: string[] | null) => {
         const document: any = { $id: '#rows', type: 'object', properties: {
-            rows: { type: 'array', items: { $ref: '#row' } }
-        }, $defs: { '#row': { $id: '#row', type: 'object', properties: {
-            amount: { type: 'number' }, note: { type: 'string' }
-        }, required: ['amount'] } } };
+                rows: { type: 'array', items: { $ref: '#row' } }
+            }, $defs: { '#row': { $id: '#row', type: 'object', properties: {
+                        amount: { type: 'number' }, note: { type: 'string' }
+                    }, required: ['amount'] } } };
         const form = new FieldForm(new UntypedFormGroup({}));
         form.setData({ schema: new Schema({ iri: '#rows', document }), requiredFields,
             preset: { rows: [{ note: 'first' }, { note: 'second' }, { note: 'third' }] } });
@@ -629,36 +583,38 @@ describe('indexed Preview requirements', () => {
         const amounts = [0, 1, 2].map(index => form.form.get(`rows.${index}.amount`));
         expect(amounts.map(control => !!control?.errors?.['required'])).toEqual([false, true, false]);
         amounts[1]?.setValue(0);
-        expect(form.form.valid).toBeTrue();
+        expect(form.form.valid).toBe(true);
         form.destroy();
     });
     it('updates row requirements after removing an earlier row without losing values', () => {
         const form = make(['rows.1.amount']);
         const rows = form.controls?.find(item => item.name === 'rows');
-        if (!rows?.list?.length) throw new Error('Missing rows');
+        if (!rows?.list?.length)
+            throw new Error('Missing rows');
         form.form.get('rows.1.amount')?.setValue(0);
         form.removeItem(rows, rows.list[0]);
         expect(form.form.get('rows.0.amount')?.value).toBe(0);
-        expect(!!form.form.get('rows.0.amount')?.errors?.['required']).toBeFalse();
-        expect(!!form.form.get('rows.1.amount')?.errors?.['required']).toBeFalse();
-        expect(form.form.valid).toBeTrue();
+        expect(!!form.form.get('rows.0.amount')?.errors?.['required']).toBe(false);
+        expect(!!form.form.get('rows.1.amount')?.errors?.['required']).toBe(false);
+        expect(form.form.valid).toBe(true);
         const gate = { dataForm: form.form, loading: false, isRemoteWarning: false,
             ifRelayerAccountDisabled: () => false };
-        expect(Reflect.apply(RequestDocumentFormComponent.prototype.ifDisabledBtn, gate, [{ id: 'submit' }])).toBeFalse();
+        expect(Reflect.apply(RequestDocumentFormComponent.prototype.ifDisabledBtn, gate, [{ id: 'submit' }])).toBe(false);
         form.form.get('rows.0.amount')?.setValue(null);
-        expect(!!form.form.get('rows.0.amount')?.errors?.['required']).toBeTrue();
-        expect(!!form.form.get('rows.1.amount')?.errors?.['required']).toBeFalse();
+        expect(!!form.form.get('rows.0.amount')?.errors?.['required']).toBe(true);
+        expect(!!form.form.get('rows.1.amount')?.errors?.['required']).toBe(false);
         form.destroy();
     });
     it('drops a removed row requirement and shifts a still-missing cell with its row', () => {
         const form = make(['rows.1.amount']);
         const rows = form.controls?.find(item => item.name === 'rows');
-        if (!rows?.list?.length) throw new Error('Missing rows');
+        if (!rows?.list?.length)
+            throw new Error('Missing rows');
         form.removeItem(rows, rows.list[0]);
-        expect(!!form.form.get('rows.0.amount')?.errors?.['required']).toBeTrue();
-        expect(!!form.form.get('rows.1.amount')?.errors?.['required']).toBeFalse();
+        expect(!!form.form.get('rows.0.amount')?.errors?.['required']).toBe(true);
+        expect(!!form.form.get('rows.1.amount')?.errors?.['required']).toBe(false);
         form.removeItem(rows, rows.list[0]);
-        expect(form.form.valid).toBeTrue();
+        expect(form.form.valid).toBe(true);
         form.destroy();
     });
     it('retains explicit whole-column requirements and ordinary schema rules', () => {
@@ -717,7 +673,9 @@ describe('FieldForm links declared in a non-repeatable sub-schema', () => {
         };
         form = buildForm(document);
         const section = controlOf(form, 'section').model;
-        if (!(section instanceof FieldForm)) { throw new Error('Expected a sub-schema form'); }
+        if (!(section instanceof FieldForm)) {
+            throw new Error('Expected a sub-schema form');
+        }
         const regions = controlOf(form, 'regions');
         form.addItem(regions);
         expect(controlOf(section, 'locations').list?.length).toBe(1);
@@ -738,7 +696,9 @@ describe('FieldForm links declared in a non-repeatable sub-schema', () => {
         };
         form = buildForm(document);
         const section = controlOf(form, 'section').model;
-        if (!(section instanceof FieldForm)) { throw new Error('Expected a sub-schema form'); }
+        if (!(section instanceof FieldForm)) {
+            throw new Error('Expected a sub-schema form');
+        }
         const source = controlOf(section, 'locations');
         const middle = controlOf(section, 'instances');
         const end = controlOf(form, 'reports');
@@ -754,9 +714,11 @@ describe('FieldForm links declared in a non-repeatable sub-schema', () => {
 
     it('copies a root chain the same way whichever order its links are declared in', () => {
         const chain = [link, { on: ['instances'], field: ['reports'], kind: 'array',
-            valueMappings: [{ source: ['copiedName'], target: ['reportName'] }] }];
+                valueMappings: [{ source: ['copiedName'], target: ['reportName'] }] }];
         for (const [index, declared] of [chain, [...chain].reverse()].entries()) {
-            if (index > 0) { form.destroy(); }
+            if (index > 0) {
+                form.destroy();
+            }
             form = buildForm(documentOf(declared, true));
             const source = controlOf(form, 'locations');
             form.addItem(source);
@@ -775,22 +737,26 @@ describe('FieldForm links declared in a non-repeatable sub-schema', () => {
         const item = controlOf(form, 'first');
         form.addGroup(item);
         let section = item.model;
-        if (!(section instanceof FieldForm)) { throw new Error('Expected section'); }
-        const subscribe = spyOn<any>(form, 'syncArrayDependencyValues').and.callThrough();
+        if (!(section instanceof FieldForm)) {
+            throw new Error('Expected section');
+        }
+        const subscribe = vi.spyOn(form as any, 'syncArrayDependencyValues');
         form.addGroup(controlOf(form, 'second'));
         let source = controlOf(section, 'locations');
         let target = controlOf(section, 'instances');
         section.addItem(source);
-        subscribe.calls.reset();
+        subscribe.mockClear();
         setEntryValue(source, 0, 'instanceName', 'Almaty');
         expect(entryValue(target, 0, 'copiedName')).toBe('Almaty');
-        expect(subscribe.calls.count()).toBe(1);
+        expect(vi.mocked(subscribe).mock.calls.length).toBe(1);
         setEntryValue(source, 0, 'instanceName', 'Updated');
         expect(entryValue(target, 0, 'copiedName')).toBe('Updated');
         form.removeGroup(item);
         form.addGroup(item);
         section = item.model;
-        if (!(section instanceof FieldForm)) { throw new Error('Expected reopened section'); }
+        if (!(section instanceof FieldForm)) {
+            throw new Error('Expected reopened section');
+        }
         source = controlOf(section, 'locations');
         target = controlOf(section, 'instances');
         section.addItem(source);
@@ -811,7 +777,9 @@ describe('FieldForm links declared in a non-repeatable sub-schema', () => {
         const sectionControl = controlOf(form, 'section');
         form.addGroup(sectionControl);
         const section = sectionControl.model;
-        if (!(section instanceof FieldForm)) { throw new Error('Expected section'); }
+        if (!(section instanceof FieldForm)) {
+            throw new Error('Expected section');
+        }
         const target = controlOf(section, 'instances');
         expect(entryValue(target, 0, 'copiedName')).toBe('Before opening');
         setEntryValue(source, 0, 'instanceName', 'After opening');
@@ -821,7 +789,9 @@ describe('FieldForm links declared in a non-repeatable sub-schema', () => {
     it('aligns existing source records when the parent form is opened', () => {
         form = buildForm(parentDocument(), { first: { locations: [{ instanceName: 'East' }] } });
         const first = controlOf(form, 'first').model;
-        if (!(first instanceof FieldForm)) { throw new Error('Expected a sub-schema form'); }
+        if (!(first instanceof FieldForm)) {
+            throw new Error('Expected a sub-schema form');
+        }
         const target = controlOf(first, 'instances');
         expect(target.list?.length).toBe(1);
         expect(entryValue(target, 0, 'copiedName')).toBe('East');
@@ -851,7 +821,7 @@ describe('FieldForm — revealed errors', () => {
     };
     it('starts without revealed errors', () => {
         const form = build();
-        expect(form.errorsRevealed).toBeFalse();
+        expect(form.errorsRevealed).toBe(false);
         form.destroy();
     });
 });

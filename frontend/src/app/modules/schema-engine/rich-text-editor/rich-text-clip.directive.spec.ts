@@ -38,49 +38,49 @@ describe('RichTextClipDirective', () => {
         fixture.componentInstance.value = '<p>one</p>';
         fixture.detectChanges();
         directive().update();
-        expect(element().hasAttribute('data-clipped')).toBeFalse();
-        expect(element().hasAttribute('data-clipped-x')).toBeFalse();
+        expect(element().hasAttribute('data-clipped')).toBe(false);
+        expect(element().hasAttribute('data-clipped-x')).toBe(false);
     });
 
     it('should mark a value wider than the box', () => {
         fixture.componentInstance.value = wideValue;
         fixture.detectChanges();
         directive().update();
-        expect(element().hasAttribute('data-clipped-x')).toBeTrue();
+        expect(element().hasAttribute('data-clipped-x')).toBe(true);
     });
 
     it('should clear the width mark when the value becomes narrow again', () => {
         fixture.componentInstance.value = wideValue;
         fixture.detectChanges();
         directive().update();
-        expect(element().hasAttribute('data-clipped-x')).toBeTrue();
+        expect(element().hasAttribute('data-clipped-x')).toBe(true);
 
         fixture.componentInstance.value = '<p>one</p>';
         fixture.changeDetectorRef.markForCheck();
         fixture.detectChanges();
         directive().update();
-        expect(element().hasAttribute('data-clipped-x')).toBeFalse();
+        expect(element().hasAttribute('data-clipped-x')).toBe(false);
     });
 
     it('should mark a value taller than the box', () => {
         fixture.componentInstance.value = longValue;
         fixture.detectChanges();
         directive().update();
-        expect(element().hasAttribute('data-clipped')).toBeTrue();
-        expect(element().hasAttribute('data-clipped-x')).toBeFalse();
+        expect(element().hasAttribute('data-clipped')).toBe(true);
+        expect(element().hasAttribute('data-clipped-x')).toBe(false);
     });
 
     it('should clear the mark when the value becomes short again', () => {
         fixture.componentInstance.value = longValue;
         fixture.detectChanges();
         directive().update();
-        expect(element().hasAttribute('data-clipped')).toBeTrue();
+        expect(element().hasAttribute('data-clipped')).toBe(true);
 
         fixture.componentInstance.value = '<p>one</p>';
         fixture.changeDetectorRef.markForCheck();
         fixture.detectChanges();
         directive().update();
-        expect(element().hasAttribute('data-clipped')).toBeFalse();
+        expect(element().hasAttribute('data-clipped')).toBe(false);
     });
 
     it('should mark a changed value without an explicit update call', async () => {
@@ -89,7 +89,7 @@ describe('RichTextClipDirective', () => {
         fixture.changeDetectorRef.markForCheck();
         fixture.detectChanges();
         await new Promise(resolve => setTimeout(resolve));
-        expect(element().hasAttribute('data-clipped')).toBeTrue();
+        expect(element().hasAttribute('data-clipped')).toBe(true);
     });
 
     it('should stop observing when the directive is destroyed', () => {

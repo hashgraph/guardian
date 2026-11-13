@@ -37,7 +37,7 @@ describe('AppThemeService', () => {
         service.applyForUser('user-b');
 
         expect(service.getCurrentTheme()).toBe('light');
-        expect(document.documentElement.classList.contains(DARK_CLASS)).toBeFalse();
+        expect(document.documentElement.classList.contains(DARK_CLASS)).toBe(false);
     });
 
     it('restores a user\'s own theme when they sign back in', () => {
@@ -48,7 +48,7 @@ describe('AppThemeService', () => {
         service.applyForUser('user-a');
 
         expect(service.getCurrentTheme()).toBe('dark');
-        expect(document.documentElement.classList.contains(DARK_CLASS)).toBeTrue();
+        expect(document.documentElement.classList.contains(DARK_CLASS)).toBe(true);
     });
 
     it('drops back to the default on sign-out without discarding the preference', () => {

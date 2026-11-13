@@ -1235,6 +1235,7 @@ export class SchemaApi {
     ): Promise<SchemaDTO[]> {
         try {
             SchemaUtils.fromOld(newSchema);
+            SchemaUtils.rejectSystemCategory(newSchema);
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
             newSchema.topicId = topicId;
@@ -1371,6 +1372,7 @@ export class SchemaApi {
         @Body() newSchema: SchemaDTO,
         @Req() req
     ): Promise<TaskDTO> {
+        SchemaUtils.rejectSystemCategory(newSchema);
         const owner = new EntityOwner(user);
         const guardians = new Guardians();
         const taskManager = new TaskManager();
@@ -1570,7 +1572,7 @@ export class SchemaApi {
         if (!schema) {
             throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
         }
-        const permissionError = SchemaUtils.checkPermission(schema, owner, SchemaCategory.POLICY);
+        const permissionError = SchemaUtils.checkDeletePermission(schema, owner);
         if (permissionError) {
             throw new HttpException(permissionError, HttpStatus.FORBIDDEN)
         }
@@ -3846,7 +3848,7 @@ export class SchemaApi {
                 if (!schema) {
                     throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
                 }
-                const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.POLICY);
+                const error = SchemaUtils.checkDeletePermission(schema, owner);
                 if (error) {
                     throw new HttpException(error, HttpStatus.FORBIDDEN)
                 }

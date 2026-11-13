@@ -15,7 +15,6 @@ import { IPFSService } from 'src/app/services/ipfs.service';
 import { PolicyTestAutomationService } from '../../../policy-test-automation/policy-test-automation.service';
 import { FormulasService } from 'src/app/services/formulas.service';
 import { CalculationPreviewService } from 'src/app/services/calculation-preview.service';
-import { FormTakeoverService } from '../../../form-takeover/form-takeover.service';
 import { PolicyProgressService } from '../../../../services/policy-progress.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { SchemaService } from 'src/app/services/schema.service';
@@ -26,8 +25,7 @@ describe('RequestDocumentFormComponent', () => {
         getCurrentRole: () => 'Project Proponent',
         getHasNavigation: () => true,
     };
-    const takeover = { keep: jasmine.createSpy('keep') };
-    const apiCall = jasmine.createSpy('setBlockDataWithResult');
+    const apiCall = vi.fn();
 
     const create = (parentOverrides: Record<string, unknown> = {}, formOverrides: Record<string, unknown> = {}) => {
         const fixture = TestBed.createComponent(RequestDocumentFormComponent);
@@ -42,8 +40,8 @@ describe('RequestDocumentFormComponent', () => {
             isDestroyed: false,
             getRef: () => null,
             getAutosaveId: () => 'autosave',
-            duplicateSubmitted: jasmine.createSpy('duplicateSubmitted'),
-            onDialogOpen: jasmine.createSpy('onDialogOpen'),
+            duplicateSubmitted: vi.fn(),
+            onDialogOpen: vi.fn(),
             ...parentOverrides,
         } as any;
         Object.assign(component, formOverrides);
@@ -53,8 +51,7 @@ describe('RequestDocumentFormComponent', () => {
     };
 
     beforeEach(async () => {
-        takeover.keep.calls.reset();
-        apiCall.calls.reset();
+        apiCall.mockClear();
         await TestBed.configureTestingModule({
             declarations: [RequestDocumentFormComponent],
             imports: [DatePipe],
@@ -73,8 +70,7 @@ describe('RequestDocumentFormComponent', () => {
                 { provide: CalculationPreviewService, useValue: {} },
                 { provide: SchemaService, useValue: { getSchemasByType: () => of(null) } },
                 { provide: PolicyProgressService, useValue: progress },
-                { provide: FormTakeoverService, useValue: takeover },
-                { provide: ToastService, useValue: { success: jasmine.createSpy('success') } },
+                { provide: ToastService, useValue: { success: vi.fn() } },
             ],
             schemas: [NO_ERRORS_SCHEMA],
         }).compileComponents();
@@ -85,15 +81,15 @@ describe('RequestDocumentFormComponent', () => {
         const element: HTMLElement = fixture.nativeElement;
         element.querySelector<HTMLButtonElement>('.form-menu-toggle')!.click();
         fixture.detectChanges();
-        expect(component.menuOpen).toBeTrue();
+        expect(component.menuOpen).toBe(true);
 
         const click = new MouseEvent('click', { bubbles: true, cancelable: true });
         element.querySelector('request-draft-file-actions')!.dispatchEvent(click);
         fixture.detectChanges();
 
-        expect(click.defaultPrevented).toBeFalse();
-        expect(component.menuOpen).toBeFalse();
-        expect(element.querySelector<HTMLElement>('.form-menu-pop')!.hidden).toBeTrue();
+        expect(click.defaultPrevented).toBe(false);
+        expect(component.menuOpen).toBe(false);
+        expect(element.querySelector<HTMLElement>('.form-menu-pop')!.hidden).toBe(true);
         fixture.destroy();
     });
 
@@ -108,9 +104,9 @@ describe('RequestDocumentFormComponent', () => {
             const form = new UntypedFormGroup({ name: new FormControl('', Validators.required) });
             component.dataForm = form;
             const root = {
-                revealErrors: jasmine.createSpy('revealErrors'),
+                revealErrors: vi.fn(),
                 getIssues: () => [{ path: 'name', label: 'Name', message: 'Required' }],
-                focusField: jasmine.createSpy('focusField'),
+                focusField: vi.fn(),
             };
             // The spec renders no schema, so there is no real form root. A fixed accessor keeps the
             // stand-in when change detection refreshes the @ViewChild query after a template change.
@@ -141,8 +137,8 @@ describe('RequestDocumentFormComponent', () => {
 
             expect(component.screen).toBe('form');
             const state = component.stepState('results');
-            expect(state.bad).toBeTrue();
-            expect(state.clickable).toBeTrue();
+            expect(state.bad).toBe(true);
+            expect(state.clickable).toBe(true);
             expect(fixture.nativeElement.querySelector('.form-step-count').textContent).toBe('1');
             fixture.destroy();
         });
@@ -191,7 +187,7 @@ describe('RequestDocumentFormComponent', () => {
             fixture.detectChanges();
             expect(buttons.map((button) => button.classList.contains('on'))).toEqual([false, true]);
             expect(element.querySelector('app-document-view')).not.toBeNull();
-            expect(element.querySelector<HTMLElement>('pre.form-submitted-json')!.hidden).toBeFalse();
+            expect(element.querySelector<HTMLElement>('pre.form-submitted-json')!.hidden).toBe(false);
             fixture.destroy();
         });
 
@@ -230,7 +226,7 @@ describe('RequestDocumentFormComponent', () => {
             fixture.detectChanges();
 
             expect(component.screen).toBe('submitted');
-            expect(component.submitted).toEqual(jasmine.objectContaining({
+            expect(component.submitted).toEqual(expect.objectContaining({
                 document,
                 vcId: 'urn:uuid:1',
                 issuedAt: '2026-11-01T10:42:00.000Z',
@@ -242,7 +238,7 @@ describe('RequestDocumentFormComponent', () => {
                 edit: false,
                 payload: { name: 'x' },
             }));
-            expect(autosave.closed).toBeTrue();
+            expect(autosave.closed).toBe(true);
             expect(fixture.nativeElement.querySelector('.form-submitted-banner')).not.toBeNull();
             expect(component.backLabel).toBe('Back to Project submittal');
             fixture.destroy();
@@ -286,7 +282,7 @@ describe('RequestDocumentFormComponent', () => {
             const { fixture, component } = create({ edit: true });
             (component as any).showSubmitted({ response: { document } }, {});
             fixture.detectChanges();
-            expect(component.canDuplicate).toBeFalse();
+            expect(component.canDuplicate).toBe(false);
             const labels = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.form-footer button'))
                 .map((button) => button.textContent!.trim());
             expect(labels).toEqual(['Back to Project submittal']);
@@ -298,7 +294,7 @@ describe('RequestDocumentFormComponent', () => {
             (component as any).showSubmitted({ response: { document } }, {});
             (component.parent as any).isDestroyed = true;
             fixture.detectChanges();
-            expect(component.canDuplicate).toBeFalse();
+            expect(component.canDuplicate).toBe(false);
             expect(fixture.nativeElement.querySelectorAll('.form-footer button').length).toBe(1);
             fixture.destroy();
         });
@@ -321,28 +317,27 @@ describe('RequestDocumentFormComponent', () => {
             target.storage = { delete: async () => undefined };
             target.tablePersist = { persistTablesInDocument: async () => undefined, rollbackIpfsUploads: async () => undefined };
             target.geoFilePersist = { persistGeoFilesInDocument: async () => undefined, rollbackGridFsUploads: async () => undefined };
-            apiCall.and.returnValue(of({ response: { document: { id: 'urn:uuid:1' } } }));
+            apiCall.mockReturnValue(of({ response: { document: { id: 'urn:uuid:1' } } }));
             return target.onSubmit(draft) as Promise<void>;
         };
 
-        it('keeps the takeover as soon as the request returns, before the 1 s delay', fakeAsync(() => {
+        it('shows the Submitted screen 1 s after the request returns', fakeAsync(() => {
             const { fixture, component } = create();
             submit(component, false);
             tick(0);
             expect(apiCall).toHaveBeenCalled();
-            expect(takeover.keep).toHaveBeenCalledWith(component);
             expect(component.screen).not.toBe('submitted');
             tick(1000);
             expect(component.screen).toBe('submitted');
             fixture.destroy();
         }));
 
-        it('does not keep the takeover for a draft', fakeAsync(() => {
+        it('marks a draft as saved instead of showing the Submitted screen', fakeAsync(() => {
             const { fixture, component } = create();
             submit(component, true);
             tick(1000);
-            expect(takeover.keep).not.toHaveBeenCalled();
-            expect(component.dataSaved).toBeTrue();
+            expect(component.screen).not.toBe('submitted');
+            expect(component.dataSaved).toBe(true);
             fixture.destroy();
         }));
 

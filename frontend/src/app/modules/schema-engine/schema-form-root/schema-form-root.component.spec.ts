@@ -22,7 +22,10 @@ describe('SchemaFormRootComponent — required fields', () => {
     };
 
     const createRoot = (): SchemaFormRootComponent => {
-        const changeDetector = jasmine.createSpyObj<ChangeDetectorRef>('ChangeDetectorRef', ['detectChanges', 'markForCheck']);
+        const changeDetector = {
+            detectChanges: vi.fn().mockName("ChangeDetectorRef.detectChanges"),
+            markForCheck: vi.fn().mockName("ChangeDetectorRef.markForCheck")
+        } as any;
         const root = new SchemaFormRootComponent(new UntypedFormBuilder(), changeDetector);
         root.schema = new Schema({ iri: '#calc&1.0.0', document: calcDocument });
         root.ngOnChanges({ schema: new SimpleChange(null, root.schema, true) });
@@ -45,8 +48,11 @@ describe('SchemaFormRootComponent — required fields', () => {
         root.ngOnChanges({ requiredFields: new SimpleChange(previous, requiredFields, false) });
     };
 
-    const createRootWith =(document: ISchemaDocument, preset: unknown = null): SchemaFormRootComponent => {
-        const changeDetector = jasmine.createSpyObj<ChangeDetectorRef>('ChangeDetectorRef', ['detectChanges', 'markForCheck']);
+    const createRootWith = (document: ISchemaDocument, preset: unknown = null): SchemaFormRootComponent => {
+        const changeDetector = {
+            detectChanges: vi.fn().mockName("ChangeDetectorRef.detectChanges"),
+            markForCheck: vi.fn().mockName("ChangeDetectorRef.markForCheck")
+        } as any;
         const root = new SchemaFormRootComponent(new UntypedFormBuilder(), changeDetector);
         root.schema = new Schema({ iri: '#calc&1.0.0', document });
         root.presetDocument = preset;
@@ -95,9 +101,9 @@ describe('SchemaFormRootComponent — required fields', () => {
         const amount = () => root.model?.controls?.find(field => field.name === 'amount');
         expect(amount()?.isPreset).toBeFalsy();
         setRequired(root, ['amount']);
-        expect(amount()?.isPreset).toBeFalse();
+        expect(amount()?.isPreset).toBe(false);
         setRequired(root, null);
-        expect(amount()?.isPreset).toBeFalse();
+        expect(amount()?.isPreset).toBe(false);
         expect(root.group.get('amount')?.value).toBe(3);
     }));
 
@@ -107,12 +113,12 @@ describe('SchemaFormRootComponent — required fields', () => {
             root.group.get('amount')?.setValue(value);
             root.group.get('amount')?.markAsDirty();
             setRequired(root, ['amount']);
-            expect(root.group.get('amount')?.dirty).toBeTrue();
+            expect(root.group.get('amount')?.dirty).toBe(true);
             expect(root.group.get('amount')?.value).toBe(value);
-            expect(root.group.get('rate')?.pristine).toBeTrue();
+            expect(root.group.get('rate')?.pristine).toBe(true);
             setRequired(root, null);
             const amount = root.model?.controls?.find(field => field.name === 'amount');
-            expect(!!(amount?.default && !amount.isPreset && !amount.control.dirty)).toBeFalse();
+            expect(!!(amount?.default && !amount.isPreset && !amount.control.dirty)).toBe(false);
             expect(root.group.get('amount')?.value).toBe(value);
         }));
     }
@@ -120,7 +126,7 @@ describe('SchemaFormRootComponent — required fields', () => {
     it('still marks values loaded from a document as preset after a rebuild', fakeAsync(() => {
         const root = createRootWith(defaultDocument, { amount: 5 });
         setRequired(root, ['amount']);
-        expect(root.model?.controls?.find(field => field.name === 'amount')?.isPreset).toBeTrue();
+        expect(root.model?.controls?.find(field => field.name === 'amount')?.isPreset).toBe(true);
         expect(root.group.get('amount')?.value).toBe(5);
     }));
 
@@ -158,29 +164,29 @@ describe('SchemaFormRootComponent — required fields', () => {
         amount.open = false;
         amount.control.setValue(7);
         amount.control.markAsDirty();
-        const destroy = spyOn(model, 'destroy').and.callThrough();
-        const values = jasmine.createSpy('values');
+        const destroy = vi.spyOn(model, 'destroy');
+        const values = vi.fn();
         group.valueChanges.subscribe(values);
-        const forms = jasmine.createSpy('forms');
+        const forms = vi.fn();
         root.form.subscribe(forms);
         setRequired(root, ['rate']);
         expect(root.model).toBe(model);
         expect(root.group).toBe(group);
         expect(root.model!.controls!.find(field => field.name === 'amount')).toBe(amount);
-        expect(amount.open).toBeFalse();
+        expect(amount.open).toBe(false);
         expect(amount.control.value).toBe(7);
-        expect(amount.control.dirty).toBeTrue();
-        expect(amount.isPreset).toBeFalse();
+        expect(amount.control.dirty).toBe(true);
+        expect(amount.isPreset).toBe(false);
         expect(amount.control.errors).toBeNull();
-        expect(group.get('rate')?.errors?.['required']).toBeTrue();
+        expect(group.get('rate')?.errors?.['required']).toBe(true);
         expect(destroy).not.toHaveBeenCalled();
         expect(values).not.toHaveBeenCalled();
         expect(forms).not.toHaveBeenCalled();
         setRequired(root, null);
         expect(root.model).not.toBe(model);
         expect(root.group.get('amount')?.value).toBe(7);
-        expect(root.group.get('amount')?.dirty).toBeTrue();
-        expect(root.group.get('rate')?.errors?.['required']).toBeTrue();
+        expect(root.group.get('amount')?.dirty).toBe(true);
+        expect(root.group.get('rate')?.errors?.['required']).toBe(true);
     }));
 
     it('updates existing scalar list validators and keeps empty rows during Preview', fakeAsync(() => {
@@ -191,16 +197,16 @@ describe('SchemaFormRootComponent — required fields', () => {
         setRequired(root, ['rows']);
         expect(root.model!.controls!.find(field => field.name === 'rows')).toBe(rows);
         expect(rows.list).toBe(list);
-        expect(rows.control.get('0')?.errors?.['required']).toBeTrue();
+        expect(rows.control.get('0')?.errors?.['required']).toBe(true);
         expect(rows.control.get('1')?.errors).toBeNull();
-        expect(root.group.invalid).toBeTrue();
+        expect(root.group.invalid).toBe(true);
         setRequired(root, []);
         expect(rows.control.get('0')?.errors).toBeNull();
-        expect(root.group.valid).toBeTrue();
+        expect(root.group.valid).toBe(true);
         expect(rows.list?.length).toBe(2);
         setRequired(root, null);
         expect(root.group.getRawValue().rows).toEqual([null, 0]);
-        expect(root.group.get('amount')?.errors?.['required']).toBeTrue();
+        expect(root.group.get('amount')?.errors?.['required']).toBe(true);
     }));
 
     it('updates indexed cells and parent marks without replacing table rows', fakeAsync(() => {
@@ -209,9 +215,9 @@ describe('SchemaFormRootComponent — required fields', () => {
             properties: { rows: { type: SchemaDataTypes.array, items: { $ref: '#row' } } },
             required: [],
             $defs: { '#row': { $id: '#row', type: SchemaDataTypes.object,
-                properties: { amount: numberField('amount'), rate: numberField('rate') },
-                required: ['amount', 'rate'],
-            } },
+                    properties: { amount: numberField('amount'), rate: numberField('rate') },
+                    required: ['amount', 'rate'],
+                } },
         };
         const root = createRootWith(document, { rows: [{ amount: 0 }, {}] });
         setRequired(root, ['rows.0.amount']);
@@ -225,17 +231,17 @@ describe('SchemaFormRootComponent — required fields', () => {
         expect(root.model!.controls![0]).toBe(rows);
         expect(rows.list![0]).toBe(first);
         expect(rows.list![1]).toBe(second);
-        expect(rows.open).toBeFalse();
-        expect(second.open).toBeTrue();
+        expect(rows.open).toBe(false);
+        expect(second.open).toBe(true);
         expect(first.control.get('amount')?.value).toBe(0);
-        expect(first.control.get('rate')?.disabled).toBeTrue();
+        expect(first.control.get('rate')?.disabled).toBe(true);
         expect(second.control.get('amount')?.errors).toBeNull();
-        expect(second.control.get('rate')?.errors?.['required']).toBeTrue();
-        expect(root.group.invalid).toBeTrue();
+        expect(second.control.get('rate')?.errors?.['required']).toBe(true);
+        expect(root.group.invalid).toBe(true);
         second.control.get('rate')?.setValue(2);
-        expect(root.group.valid).toBeTrue();
+        expect(root.group.valid).toBe(true);
         setRequired(root, []);
-        expect(rows.required).toBeFalse();
+        expect(rows.required).toBe(false);
     }));
 
     it('rebuilds for a changed schema even when Preview requirements also change', fakeAsync(() => {
@@ -244,8 +250,8 @@ describe('SchemaFormRootComponent — required fields', () => {
         const model = root.model;
         const previous = root.schema;
         root.schema = new Schema({ iri: '#calc&1.0.0', document: {
-            ...calcDocument, properties: { amount: numberField('amount'), extra: numberField('extra') },
-        } });
+                ...calcDocument, properties: { amount: numberField('amount'), extra: numberField('extra') },
+            } });
         root.requiredFields = ['extra'];
         root.ngOnChanges({
             schema: new SimpleChange(previous, root.schema, false),
@@ -254,7 +260,7 @@ describe('SchemaFormRootComponent — required fields', () => {
         tick(64);
         flush(100);
         expect(root.model).not.toBe(model);
-        expect(root.group.get('extra')?.errors?.['required']).toBeTrue();
+        expect(root.group.get('extra')?.errors?.['required']).toBe(true);
         expect(root.group.get('rate')).toBeNull();
     }));
 
@@ -262,25 +268,27 @@ describe('SchemaFormRootComponent — required fields', () => {
         const root = createRoot();
         const model = root.model!;
         const amount = root.group.get('amount')!;
-        expect(model.updatePreviewRequiredFields([])).toBeFalse();
-        expect(amount.errors?.['required']).toBeTrue();
-        expect(root.group.get('rate')?.errors?.['required']).toBeTrue();
-        const update = spyOn(model, 'updatePreviewRequiredFields').and.callThrough();
+        expect(model.updatePreviewRequiredFields([])).toBe(false);
+        expect(amount.errors?.['required']).toBe(true);
+        expect(root.group.get('rate')?.errors?.['required']).toBe(true);
+        const update = vi.spyOn(model, 'updatePreviewRequiredFields');
         setRequired(root, ['rate']);
         expect(root.model).not.toBe(model);
-        expect(update).toHaveBeenCalledOnceWith(['rate']);
+        expect(update).toHaveBeenCalledTimes(1);
+        expect(update).toHaveBeenCalledWith(['rate']);
         expect(root.group.get('amount')?.errors).toBeNull();
-        expect(root.group.get('rate')?.errors?.['required']).toBeTrue();
+        expect(root.group.get('rate')?.errors?.['required']).toBe(true);
     }));
 
     for (const preview of [false, true]) {
         it(`rebuilds and applies loaded values when requirements also arrive with Preview ${preview}`, fakeAsync(() => {
             const root = createRoot();
-            if (preview) setRequired(root, ['amount']);
+            if (preview)
+                setRequired(root, ['amount']);
             const model = root.model!;
-            const update = spyOn(model, 'updatePreviewRequiredFields').and.callThrough();
-            const forms = jasmine.createSpy('forms');
-            const presets = jasmine.createSpy('presets');
+            const update = vi.spyOn(model, 'updatePreviewRequiredFields');
+            const forms = vi.fn();
+            const presets = vi.fn();
             root.form.subscribe(forms);
             root.presetApplied.subscribe(presets);
             const previous = root.requiredFields;
@@ -294,11 +302,13 @@ describe('SchemaFormRootComponent — required fields', () => {
             flush(100);
             expect(update).not.toHaveBeenCalled();
             expect(root.model).not.toBe(model);
-            expect(forms).toHaveBeenCalledOnceWith(root.group);
-            expect(presets).toHaveBeenCalledOnceWith(root.group);
+            expect(forms).toHaveBeenCalledTimes(1);
+            expect(forms).toHaveBeenCalledWith(root.group);
+            expect(presets).toHaveBeenCalledTimes(1);
+            expect(presets).toHaveBeenCalledWith(root.group);
             expect(root.group.get('amount')?.value).toBe(7);
-            expect(root.model!.controls![0].isPreset).toBeTrue();
-            expect(root.group.get('rate')?.errors?.['required']).toBeTrue();
+            expect(root.model!.controls![0].isPreset).toBe(true);
+            expect(root.group.get('rate')?.errors?.['required']).toBe(true);
         }));
     }
 
@@ -312,20 +322,21 @@ describe('SchemaFormRootComponent — required fields', () => {
         const root = createRoot();
         setRequired(root, ['rate']);
         const model = root.model;
-        const applied = spyOn(root.presetApplied, 'emit');
+        const applied = vi.spyOn(root.presetApplied, 'emit').mockImplementation(() => undefined);
         root.presetDocument = { amount: 7, rate: 2 };
         root.ngOnChanges({ presetDocument: new SimpleChange(null, root.presetDocument, false) });
-        expect(root.loading).toBeTrue();
+        expect(root.loading).toBe(true);
         expect(root.model).toBe(model);
         tick(16);
         expect(root.model).toBe(model);
         tick(16);
         expect(root.model).not.toBe(model);
         expect(root.group.get('amount')?.value).toBe(7);
-        expect(applied).toHaveBeenCalledOnceWith(root.group);
-        expect(root.loading).toBeTrue();
+        expect(applied).toHaveBeenCalledTimes(1);
+        expect(applied).toHaveBeenCalledWith(root.group);
+        expect(root.loading).toBe(true);
         tick(16);
-        expect(root.loading).toBeFalse();
+        expect(root.loading).toBe(false);
     }));
 
     for (const change of ['previewActionsDisabled', 'requiredFields']) {
@@ -337,12 +348,13 @@ describe('SchemaFormRootComponent — required fields', () => {
             if (change === 'previewActionsDisabled') {
                 root.previewActionsDisabled = true;
                 root.ngOnChanges({ previewActionsDisabled: new SimpleChange(false, true, false) });
-            } else {
+            }
+            else {
                 setRequiredWithoutWaiting(root, ['amount']);
             }
-            expect(root.loading).toBeTrue();
+            expect(root.loading).toBe(true);
             tick(48);
-            expect(root.loading).toBeFalse();
+            expect(root.loading).toBe(false);
             expect(root.group.get('amount')?.value).toBe(7);
         }));
     }
@@ -352,7 +364,7 @@ describe('SchemaFormRootComponent — required fields', () => {
         setRequired(root, []);
         const container = document.createElement('div');
         Object.assign(root, { contentContainerRef: new ElementRef(container) });
-        spyOnProperty(container, 'offsetHeight').and.returnValue(640);
+        vi.spyOn(container, 'offsetHeight', 'get').mockReturnValue(640);
         root.previewActionsDisabled = true;
         root.ngAfterViewChecked();
         expect(container.style.minHeight).toBe('640px');
@@ -365,7 +377,7 @@ describe('SchemaFormRootComponent — required fields', () => {
         const root = createRoot();
         const container = document.createElement('div');
         Object.assign(root, { contentContainerRef: new ElementRef(container) });
-        spyOnProperty(container, 'offsetHeight').and.returnValue(480);
+        vi.spyOn(container, 'offsetHeight', 'get').mockReturnValue(480);
         root.previewActionsDisabled = true;
         root.ngAfterViewChecked();
         expect(container.style.minHeight).toBe('480px');
@@ -384,7 +396,7 @@ describe('SchemaFormRootComponent — required fields', () => {
         const root = createRoot();
         setRequired(root, []);
         const model = root.model;
-        const applied = spyOn(root.presetApplied, 'emit');
+        const applied = vi.spyOn(root.presetApplied, 'emit').mockImplementation(() => undefined);
         for (const amount of [7, 9]) {
             root.presetDocument = { amount };
             root.ngOnChanges({ presetDocument: new SimpleChange(null, root.presetDocument, false) });
@@ -462,8 +474,8 @@ describe('SchemaFormRootComponent — required fields', () => {
         setRequired(root, ['amount', 'rate']);
         root.group.get('amount')?.setValue(5);
         expect(root.group.get('rate')?.errors?.['required']).toBeUndefined();
-        expect(root.model?.controls?.find(field => field.name === 'rate')?.required).toBeFalse();
-        expect(root.group.valid).toBeTrue();
+        expect(root.model?.controls?.find(field => field.name === 'rate')?.required).toBe(false);
+        expect(root.group.valid).toBe(true);
         setRequired(root, null);
         expect(root.group.get('rate')?.errors?.['required']).toBeTruthy();
     }));
@@ -510,7 +522,7 @@ describe('SchemaFormRootComponent — required fields', () => {
         container.appendChild(target);
         document.body.appendChild(container);
         Object.assign(root, { contentContainerRef: new ElementRef(container) });
-        const scroll = spyOn(target, 'scrollIntoView');
+        const scroll = vi.spyOn(target, 'scrollIntoView').mockImplementation(() => undefined);
         root.focusField('rate');
         expect(scroll).toHaveBeenCalledWith({ behavior: 'smooth', block: 'center' });
         expect(document.activeElement).toBe(input);
@@ -533,7 +545,7 @@ describe('SchemaFormRootComponent — required fields', () => {
         container.appendChild(field);
         document.body.appendChild(container);
         Object.assign(root, { contentContainerRef: new ElementRef(container) });
-        spyOn(label, 'scrollIntoView');
+        vi.spyOn(label, 'scrollIntoView').mockImplementation(() => undefined);
         root.focusField('rate');
         expect(document.activeElement).toBe(input);
         tick(64);
@@ -557,7 +569,7 @@ describe('SchemaFormRootComponent — required fields', () => {
         container.appendChild(field);
         document.body.appendChild(container);
         Object.assign(root, { contentContainerRef: new ElementRef(container) });
-        spyOn(secondRow, 'scrollIntoView');
+        vi.spyOn(secondRow, 'scrollIntoView').mockImplementation(() => undefined);
         root.focusField('rate');
         expect(document.activeElement).toBe(secondInput);
         tick(64);
@@ -574,13 +586,14 @@ describe('SchemaFormRootComponent — required fields', () => {
         target.appendChild(input);
         document.body.appendChild(container);
         Object.assign(root, { contentContainerRef: new ElementRef(container) });
-        const scroll = spyOn(target, 'scrollIntoView');
+        const scroll = vi.spyOn(target, 'scrollIntoView').mockImplementation(() => undefined);
         root.focusField('rate');
         expect(scroll).not.toHaveBeenCalled();
         tick(100);
         container.appendChild(target);
         tick(50);
-        expect(scroll).toHaveBeenCalledOnceWith({ behavior: 'smooth', block: 'center' });
+        expect(scroll).toHaveBeenCalledTimes(1);
+        expect(scroll).toHaveBeenCalledWith({ behavior: 'smooth', block: 'center' });
         expect(document.activeElement).toBe(input);
         tick(64);
         flush(100);
@@ -595,10 +608,11 @@ describe('SchemaFormRootComponent — required fields', () => {
         container.appendChild(target);
         document.body.appendChild(container);
         Object.assign(root, { contentContainerRef: new ElementRef(container) });
-        const scroll = spyOn(target, 'scrollIntoView');
-        spyOn(target, 'getBoundingClientRect').and.returnValue(new DOMRect(0, window.innerHeight + 500, 10, 10));
+        const scroll = vi.spyOn(target, 'scrollIntoView').mockImplementation(() => undefined);
+        vi.spyOn(target, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, window.innerHeight + 500, 10, 10));
         root.focusField('rate');
-        expect(scroll).toHaveBeenCalledOnceWith({ behavior: 'smooth', block: 'center' });
+        expect(scroll).toHaveBeenCalledTimes(1);
+        expect(scroll).toHaveBeenCalledWith({ behavior: 'smooth', block: 'center' });
         tick(300);
         expect(scroll).toHaveBeenCalledWith({ block: 'center' });
         tick(1500);
@@ -615,7 +629,7 @@ describe('SchemaFormRootComponent — required fields', () => {
         target.setAttribute('data-field-id', root.model!.controls![1].id);
         document.body.appendChild(container);
         Object.assign(root, { contentContainerRef: new ElementRef(container) });
-        const scroll = spyOn(target, 'scrollIntoView');
+        const scroll = vi.spyOn(target, 'scrollIntoView').mockImplementation(() => undefined);
         root.onPreviewLoadingChange(true);
         root.focusField('rate');
         tick(5000);
@@ -624,7 +638,8 @@ describe('SchemaFormRootComponent — required fields', () => {
         expect(scroll).not.toHaveBeenCalled();
         root.onPreviewLoadingChange(false);
         tick(50);
-        expect(scroll).toHaveBeenCalledOnceWith({ behavior: 'smooth', block: 'center' });
+        expect(scroll).toHaveBeenCalledTimes(1);
+        expect(scroll).toHaveBeenCalledWith({ behavior: 'smooth', block: 'center' });
         tick(2000);
         flush(100);
         container.remove();
@@ -650,7 +665,7 @@ describe('SchemaFormRootComponent — required fields', () => {
         container.appendChild(target);
         document.body.appendChild(container);
         Object.assign(root, { contentContainerRef: new ElementRef(container) });
-        const scroll = spyOn(target, 'scrollIntoView');
+        const scroll = vi.spyOn(target, 'scrollIntoView').mockImplementation(() => undefined);
         root.onPreviewLoadingChange(true);
         root.focusField('rate');
         tick(50);
@@ -658,7 +673,8 @@ describe('SchemaFormRootComponent — required fields', () => {
         expect(document.activeElement).not.toBe(input);
         root.onPreviewLoadingChange(false);
         tick(50);
-        expect(scroll).toHaveBeenCalledOnceWith({ behavior: 'smooth', block: 'center' });
+        expect(scroll).toHaveBeenCalledTimes(1);
+        expect(scroll).toHaveBeenCalledWith({ behavior: 'smooth', block: 'center' });
         expect(document.activeElement).toBe(input);
         tick(2000);
         container.remove();
@@ -666,16 +682,17 @@ describe('SchemaFormRootComponent — required fields', () => {
 
     it('focuses the first missing field after rebuilding requirements', fakeAsync(() => {
         const root = createRoot();
-        const focus = spyOn(root, 'focusField');
-        root.previewMissingFields = ['rate','amount'];
-        root.requiredFields = ['rate','amount'];
+        const focus = vi.spyOn(root, 'focusField').mockImplementation(() => undefined);
+        root.previewMissingFields = ['rate', 'amount'];
+        root.requiredFields = ['rate', 'amount'];
         root.ngOnChanges({
             requiredFields: new SimpleChange(null, root.requiredFields, false),
             previewMissingFields: new SimpleChange([], root.previewMissingFields, false)
         });
         tick(64);
         flush(100);
-        expect(focus).toHaveBeenCalledOnceWith('rate');
+        expect(focus).toHaveBeenCalledTimes(1);
+        expect(focus).toHaveBeenCalledWith('rate');
     }));
 
     it('maps an indexed missing path to only that table cell and clears it with preview', fakeAsync(() => {
@@ -687,20 +704,22 @@ describe('SchemaFormRootComponent — required fields', () => {
             required: ['PEt', 'PBt']
         };
         root.schema = new Schema({ iri: '#calc&1.0.0', document: {
-            ...calcDocument,
-            properties: { rows: { type: SchemaDataTypes.array, items: { $ref: '#row' } } },
-            $defs: { '#row': { ...rowField, $id: '#row' } },
-            required: ['rows']
-        } });
+                ...calcDocument,
+                properties: { rows: { type: SchemaDataTypes.array, items: { $ref: '#row' } } },
+                $defs: { '#row': { ...rowField, $id: '#row' } },
+                required: ['rows']
+            } });
         root.presetDocument = { rows: [{ PEt: 4, PBt: 1 }, { PBt: 2 }] };
         root.requiredFields = ['rows.PEt', 'rows.PBt'];
         root.previewMissingFields = ['rows.1.PEt'];
-        const focus = spyOn(root, 'focusField');
+        const focus = vi.spyOn(root, 'focusField').mockImplementation(() => undefined);
         root.ngOnChanges({ schema: new SimpleChange(null, root.schema, false) });
         tick(64);
         flush(100);
         const rows = root.model!.controls![0].list!;
-        const target = rows[1].model.controls.find((field: { name: string }) => field.name === 'PEt');
+        const target = rows[1].model.controls.find((field: {
+            name: string;
+        }) => field.name === 'PEt');
         expect(root.previewMissingFieldIds).toEqual([target.id]);
         expect(focus).toHaveBeenCalledWith('rows.1.PEt');
         expect(root.group.getRawValue().rows).toEqual([{ PEt: 4, PBt: 1 }, { PEt: null, PBt: 2 }]);
@@ -714,10 +733,10 @@ describe('SchemaFormRootComponent — required fields', () => {
     it('lists the Preview missing fields as issues, including a table cell, and drops each one once it has a value', fakeAsync(() => {
         const root = createRoot();
         root.schema = new Schema({ iri: '#calc&1.0.0', document: {
-            ...calcDocument,
-            properties: { ...calcDocument.properties, rows: { type: SchemaDataTypes.array, title: 'Rows', description: 'Rows', items: { $ref: '#row' } } },
-            $defs: { '#row': { type: SchemaDataTypes.object, $id: '#row', properties: { PEt: numberField('PEt') } } },
-        } });
+                ...calcDocument,
+                properties: { ...calcDocument.properties, rows: { type: SchemaDataTypes.array, title: 'Rows', description: 'Rows', items: { $ref: '#row' } } },
+                $defs: { '#row': { type: SchemaDataTypes.object, $id: '#row', properties: { PEt: numberField('PEt') } } },
+            } });
         root.presetDocument = { rows: [{ PEt: 4 }, {}] };
         root.requiredFields = ['amount', 'rows.PEt'];
         root.previewMissingFields = ['amount', 'rows.1.PEt', 'missing.path'];
@@ -762,18 +781,19 @@ describe('SchemaFormRootComponent — required fields', () => {
         expect(paths).toContain('places.0');
         expect(paths).toContain('place');
         expect(paths).not.toContain('places');
-        expect(root.group.invalid).toBeTrue();
+        expect(root.group.invalid).toBe(true);
         const missing = walkFields(root.model?.controls).filter(target => target.requiredUnit && !target.row);
         expect(missing.map(target => target.path).sort()).toEqual(['place', 'places']);
     }));
 
     it('reveals errors on the model and focuses the first issue', fakeAsync(() => {
         const root = createRoot();
-        const focus = spyOn(root, 'focusField');
+        const focus = vi.spyOn(root, 'focusField').mockImplementation(() => undefined);
         root.revealErrors();
-        expect(root.model?.errorsRevealed).toBeTrue();
-        expect(focus).toHaveBeenCalledOnceWith('amount');
-        focus.calls.reset();
+        expect(root.model?.errorsRevealed).toBe(true);
+        expect(focus).toHaveBeenCalledTimes(1);
+        expect(focus).toHaveBeenCalledWith('amount');
+        focus.mockClear();
         root.revealErrors(false);
         expect(focus).not.toHaveBeenCalled();
     }));
@@ -783,19 +803,19 @@ describe('SchemaFormRootComponent — required fields', () => {
         root.group.get('amount')?.markAsTouched();
         root.revealErrors(false);
         setRequired(root, ['amount', 'rate']);
-        expect(root.group.get('amount')?.touched).toBeTrue();
-        expect(root.group.get('rate')?.touched).toBeFalse();
-        expect(root.model?.errorsRevealed).toBeTrue();
+        expect(root.group.get('amount')?.touched).toBe(true);
+        expect(root.group.get('rate')?.touched).toBe(false);
+        expect(root.model?.errorsRevealed).toBe(true);
     }));
 
     describe('missing table cells after a row is deleted', () => {
         const createAreaRoot = (missing: string[]): SchemaFormRootComponent => {
             const root = createRoot();
             root.schema = new Schema({ iri: '#calc&1.0.0', document: {
-                ...calcDocument,
-                properties: { rows: { type: SchemaDataTypes.array, title: 'Rows', description: 'Rows', items: { $ref: '#row' } } },
-                $defs: { '#row': { type: SchemaDataTypes.object, $id: '#row', properties: { PEt: numberField('PEt'), PBt: numberField('PBt') } } },
-            } });
+                    ...calcDocument,
+                    properties: { rows: { type: SchemaDataTypes.array, title: 'Rows', description: 'Rows', items: { $ref: '#row' } } },
+                    $defs: { '#row': { type: SchemaDataTypes.object, $id: '#row', properties: { PEt: numberField('PEt'), PBt: numberField('PBt') } } },
+                } });
             root.presetDocument = { rows: [{ PEt: 4, PBt: 0 }, { PEt: 5 }, { PEt: 6 }] };
             root.requiredFields = ['rows.PEt', 'rows.PBt'];
             root.previewMissingFields = missing;
@@ -819,12 +839,12 @@ describe('SchemaFormRootComponent — required fields', () => {
             rows.list![0].open = false;
             rows.list![1].open = false;
             rows.list![2].open = false;
-            const interaction = spyOn(root.previewInteraction, 'emit');
+            const interaction = vi.spyOn(root.previewInteraction, 'emit').mockImplementation(() => undefined);
             root.expandPreviewIssues(['rows.0.PBt', 'rows.1.PBt', 'rows.3.PBt']);
-            expect(rows.open).toBeTrue();
-            expect(rows.list![0].open).toBeTrue();
-            expect(rows.list![1].open).toBeTrue();
-            expect(rows.list![2].open).toBeFalse();
+            expect(rows.open).toBe(true);
+            expect(rows.list![0].open).toBe(true);
+            expect(rows.list![1].open).toBe(true);
+            expect(rows.list![2].open).toBe(false);
             expect(rows.list!.length).toBe(3);
             expect(interaction).not.toHaveBeenCalled();
         }));
@@ -834,10 +854,10 @@ describe('SchemaFormRootComponent — required fields', () => {
             expect(issuePaths(root)).toEqual(['rows.1.PBt', 'rows.2.PBt']);
             removeRow(root, 0);
             expect(issuePaths(root)).toEqual(['rows.0.PBt', 'rows.1.PBt']);
-            const focus = spyOn(root, 'focusField').and.callThrough();
+            const focus = vi.spyOn(root, 'focusField');
             root.focusField(root.getIssues()[0].path);
             expect(focus).toHaveBeenCalledWith('rows.0.PBt');
-            expect(root.model!.controls![0].list![0].open).toBeTrue();
+            expect(root.model!.controls![0].list![0].open).toBe(true);
         }));
 
         it('keeps the issue after another cell of the moved row changes, until the cell is filled', fakeAsync(() => {
@@ -854,7 +874,9 @@ describe('SchemaFormRootComponent — required fields', () => {
             expect(issuePaths(root)).toEqual(['rows.1.PBt', 'rows.2.PBt']);
             removeRow(root, 1);
             expect(issuePaths(root)).toEqual(['rows.1.PBt']);
-            const cell = root.model!.controls![0].list![1].model.controls.find((field: { name: string }) => field.name === 'PBt');
+            const cell = root.model!.controls![0].list![1].model.controls.find((field: {
+                name: string;
+            }) => field.name === 'PBt');
             expect(root.previewMissingFieldIds).toContain(cell.id);
         }));
 
@@ -876,14 +898,14 @@ describe('SchemaFormRootComponent — required fields', () => {
     const createRootWithOptionalParts = (): SchemaFormRootComponent => {
         const root = createRoot();
         root.schema = new Schema({ iri: '#calc&1.0.0', document: {
-            ...calcDocument,
-            properties: {
-                ...calcDocument.properties,
-                rows: { type: SchemaDataTypes.array, items: { $ref: '#row' } },
-                details: { $ref: '#row' }
-            },
-            $defs: { '#row': rowDocument }
-        } });
+                ...calcDocument,
+                properties: {
+                    ...calcDocument.properties,
+                    rows: { type: SchemaDataTypes.array, items: { $ref: '#row' } },
+                    details: { $ref: '#row' }
+                },
+                $defs: { '#row': rowDocument }
+            } });
         root.ngOnChanges({ schema: new SimpleChange(null, root.schema, false) });
         tick(64);
         flush(100);
@@ -900,7 +922,7 @@ describe('SchemaFormRootComponent — required fields', () => {
         setRequired(root, null);
         expect(root.group.getRawValue().rows).toEqual([]);
         expect(root.group.getRawValue().details).toBeUndefined();
-        expect(root.group.valid).toBeTrue();
+        expect(root.group.valid).toBe(true);
     }));
 
     it('keeps rows with values, including zero, and their positions when preview is switched off', fakeAsync(() => {
@@ -921,9 +943,9 @@ describe('SchemaFormRootComponent — required fields', () => {
         root.group.get('amount')?.setValue(5);
         root.group.get('amount')?.markAsDirty();
         setRequired(root, ['rate']);
-        expect(root.group.dirty).toBeTrue();
+        expect(root.group.dirty).toBe(true);
         setRequired(root, null);
-        expect(root.group.dirty).toBeTrue();
+        expect(root.group.dirty).toBe(true);
         expect(root.group.get('amount')?.value).toBe(5);
     }));
 
@@ -940,20 +962,20 @@ describe('SchemaFormRootComponent — required fields', () => {
         tick(2000);
         expect(root.group).toBe(group);
         expect(root.previewMissingFieldIds.length).toBe(1);
-        expect(root.loading).toBeFalse();
+        expect(root.loading).toBe(false);
         root.previewMissingFields = [];
         setRequired(root, ['amount']);
         expect(root.group).toBe(group);
-        expect(root.group.get('amount')?.errors?.['required']).toBeTrue();
+        expect(root.group.get('amount')?.errors?.['required']).toBe(true);
         expect(root.group.get('rate')?.errors).toBeNull();
     }));
 
     it('keeps an untouched form clean after the requirements change', fakeAsync(() => {
         const root = createRoot();
         setRequired(root, ['rate']);
-        expect(root.group.pristine).toBeTrue();
+        expect(root.group.pristine).toBe(true);
         setRequired(root, null);
-        expect(root.group.pristine).toBeTrue();
+        expect(root.group.pristine).toBe(true);
     }));
 
 });
@@ -980,7 +1002,10 @@ describe('SchemaFormRootComponent — sections', () => {
     };
 
     const create = (preset: unknown = null, layout: 'sections' | 'single' = 'sections'): SchemaFormRootComponent => {
-        const changeDetector = jasmine.createSpyObj<ChangeDetectorRef>('ChangeDetectorRef', ['detectChanges', 'markForCheck']);
+        const changeDetector = {
+            detectChanges: vi.fn().mockName("ChangeDetectorRef.detectChanges"),
+            markForCheck: vi.fn().mockName("ChangeDetectorRef.markForCheck")
+        } as any;
         const root = new SchemaFormRootComponent(new UntypedFormBuilder(), changeDetector);
         root.schema = new Schema({ iri: '#secs&1.0.0', document });
         root.presetDocument = preset;
@@ -996,17 +1021,17 @@ describe('SchemaFormRootComponent — sections', () => {
 
     it('opens on the overview with one section per sub-schema and the first one counted', fakeAsync(() => {
         const root = create();
-        expect(root.hasSections).toBeTrue();
+        expect(root.hasSections).toBe(true);
         expect(root.screen).toBe('overview');
         expect(root.sections.map(section => section.title)).toEqual(['Alpha', 'Beta']);
-        expect(root.completion).toEqual(jasmine.objectContaining({ answered: 0, total: 3 }));
+        expect(root.completion).toEqual(expect.objectContaining({ answered: 0, total: 3 }));
         expect(root.completion!.sections.map(section => section.total)).toEqual([2, 1]);
     }));
 
     it('reports opening a section as navigation only in preview mode', fakeAsync(() => {
         const root = create();
-        const navigation = spyOn(root.previewNavigation, 'emit');
-        const interaction = spyOn(root.previewInteraction, 'emit');
+        const navigation = vi.spyOn(root.previewNavigation, 'emit').mockImplementation(() => undefined);
+        const interaction = vi.spyOn(root.previewInteraction, 'emit').mockImplementation(() => undefined);
         root.openSection(1);
         flush(100);
         expect(navigation).not.toHaveBeenCalled();
@@ -1019,9 +1044,9 @@ describe('SchemaFormRootComponent — sections', () => {
 
     it('is a single page with the single layout', fakeAsync(() => {
         const root = create(null, 'single');
-        expect(root.hasSections).toBeFalse();
+        expect(root.hasSections).toBe(false);
         expect(root.sections).toEqual([]);
-        expect(root.completion).toEqual(jasmine.objectContaining({ answered: 0, total: 3 }));
+        expect(root.completion).toEqual(expect.objectContaining({ answered: 0, total: 3 }));
     }));
 
     it('switches to the section that owns the field when it is focused', fakeAsync(() => {
@@ -1037,27 +1062,28 @@ describe('SchemaFormRootComponent — sections', () => {
 
     it('ignores text selection events when navigating sections', fakeAsync(() => {
         const root = create();
-        const openSection = spyOn(root, 'openSection');
-        const openOverview = spyOn(root, 'openOverview');
+        const openSection = vi.spyOn(root, 'openSection').mockImplementation(() => undefined);
+        const openOverview = vi.spyOn(root, 'openOverview').mockImplementation(() => undefined);
         Reflect.apply(root.onRailSelect, root, [new Event('select', { bubbles: true })]);
         expect(openSection).not.toHaveBeenCalled();
         expect(openOverview).not.toHaveBeenCalled();
         root.onRailSelect(1);
-        expect(openSection).toHaveBeenCalledOnceWith(1);
+        expect(openSection).toHaveBeenCalledTimes(1);
+        expect(openSection).toHaveBeenCalledWith(1);
         root.onRailSelect('overview');
         expect(openOverview).toHaveBeenCalled();
     }));
 
     it('moves to the first missing answer from the current section and wraps', fakeAsync(() => {
         const root = create({ a: { one: '1' }, b: { two: '2' } });
-        expect(root.completion).toEqual(jasmine.objectContaining({ answered: 2, total: 3 }));
+        expect(root.completion).toEqual(expect.objectContaining({ answered: 2, total: 3 }));
         root.openSection(1);
-        expect(root.focusNextMissing()).toBeTrue();
+        expect(root.focusNextMissing()).toBe(true);
         flush(100);
         expect(root.activeIndex).toBe(0);
 
         const filled = create({ name: 'x', a: { one: '1' }, b: { two: '2' } });
-        expect(filled.focusNextMissing()).toBeFalse();
+        expect(filled.focusNextMissing()).toBe(false);
     }));
 
     it('prefers a missing answer in a later section over one before it', fakeAsync(() => {
@@ -1089,11 +1115,11 @@ describe('SchemaFormRootComponent — sections', () => {
     it('says nothing is required and offers Start when the form has no required fields', fakeAsync(() => {
         const root = create();
         root.completion = { answered: 0, total: 0, sections: [] } as any;
-        expect(root.overviewNothingRequired).toBeTrue();
+        expect(root.overviewNothingRequired).toBe(true);
         expect(root.overviewTitle).toBe('Nothing is required');
-        expect(root.overviewComplete).toBeFalse();
+        expect(root.overviewComplete).toBe(false);
         const none = create();
-        expect(none.overviewNothingRequired).toBeFalse();
+        expect(none.overviewNothingRequired).toBe(false);
     }));
 
     it('renders Start and no ring on the overview of a form with no required fields', fakeAsync(() => {
@@ -1126,9 +1152,9 @@ describe('SchemaFormRootComponent — sections', () => {
         root.isEditMode = true;
         root.showButtons = true;
         root.updatableBtnEvent.subscribe(() => undefined);
-        expect(root.overviewSubmit?.disabled).toBeTrue();
+        expect(root.overviewSubmit?.disabled).toBe(true);
         root.group.markAsDirty();
-        expect(root.overviewSubmit?.disabled).toBeFalse();
+        expect(root.overviewSubmit?.disabled).toBe(false);
     }));
 
     it('builds its own footer list: previous and next follow the section screen', fakeAsync(() => {
@@ -1141,15 +1167,15 @@ describe('SchemaFormRootComponent — sections', () => {
         const byId = (id: string) => buttons.find(item => item.id === id);
         expect(buttons.map(item => item.id)).toEqual(['cancel', 'prev', 'next', 'save', 'submit']);
         expect(byId('submit').text).toBe('Go');
-        expect(byId('prev').visible()).toBeFalse();
-        expect(byId('next').visible()).toBeFalse();
+        expect(byId('prev').visible()).toBe(false);
+        expect(byId('next').visible()).toBe(false);
         root.openSection(0);
-        expect(byId('prev').visible()).toBeFalse();
-        expect(byId('next').visible()).toBeTrue();
+        expect(byId('prev').visible()).toBe(false);
+        expect(byId('next').visible()).toBe(true);
         byId('next').fn();
         expect(root.activeIndex).toBe(1);
-        expect(byId('prev').visible()).toBeTrue();
-        expect(byId('next').visible()).toBeFalse();
+        expect(byId('prev').visible()).toBe(true);
+        expect(byId('next').visible()).toBe(false);
     }));
 
     it('emits the completion when answers change', fakeAsync(() => {
@@ -1187,7 +1213,10 @@ describe('SchemaFormRootComponent — expand and collapse all', () => {
                 '#y': sub('#y', 'Y', { yy: text('yy') }),
             } as any,
         };
-        const changeDetector = jasmine.createSpyObj<ChangeDetectorRef>('ChangeDetectorRef', ['detectChanges', 'markForCheck']);
+        const changeDetector = {
+            detectChanges: vi.fn().mockName("ChangeDetectorRef.detectChanges"),
+            markForCheck: vi.fn().mockName("ChangeDetectorRef.markForCheck")
+        } as any;
         const root = new SchemaFormRootComponent(new UntypedFormBuilder(), changeDetector);
         root.schema = new Schema({ iri: '#exp&1.0.0', document });
         root.presetDocument = { a: nested ? { x: {}, y: {} } : {}, b: {} };
@@ -1206,9 +1235,9 @@ describe('SchemaFormRootComponent — expand and collapse all', () => {
         root.openSection(0);
         expect(root.nestedCards.length).toBe(2);
         root.setAllOpen(true);
-        expect(root.nestedCards.every(card => card.open)).toBeTrue();
+        expect(root.nestedCards.every(card => card.open)).toBe(true);
         root.setAllOpen(false);
-        expect(root.nestedCards.some(card => card.open)).toBeFalse();
+        expect(root.nestedCards.some(card => card.open)).toBe(false);
     }));
 
     it('opens the section sub-schema that holds a card chosen in the rail', fakeAsync(() => {
@@ -1218,8 +1247,8 @@ describe('SchemaFormRootComponent — expand and collapse all', () => {
         parent.open = false;
         const card = root.activeCards[0];
         root.onRailCard(card);
-        expect(parent.open).toBeTrue();
-        expect(card.open).toBeTrue();
+        expect(parent.open).toBe(true);
+        expect(card.open).toBe(true);
         flush(100);
     }));
 

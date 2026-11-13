@@ -373,6 +373,8 @@
             @if (activeSideTab === 'schemas') {
                 <div class="sc-schemas-pane">
                     <div class="sc-schemas-toolbar">
+                        <!-- The system schema list has no search -->
+                        @if (type !== 'system') {
                         <div class="sc-search-wrap">
                             <i class="pi pi-search sc-search-icon"></i>
                             <input
@@ -382,6 +384,7 @@
                                 [ngModel]="schemaSearch"
                                 (ngModelChange)="schemaSearch$.next($event)" />
                         </div>
+                        }
                         @if (!isTemplatePreviewMode) {
                         <button class="sc-btn-new-schema" [disabled]="isTemplateReadonly" (click)="onNewSchema()" title="New schema">
                             <i class="pi pi-plus"></i>
@@ -654,7 +657,7 @@
                                         <label class="sc-schema-props-label">Entity type</label>
                                         <p-select class="guardian-dropdown sc-schema-props-select"
                                                   panelStyleClass="guardian-dropdown-panel"
-                                                  [options]="entityOptions"
+                                                  [options]="schemaEntityOptions"
                                                   [disabled]="selectedSchemaSettingsLocked"
                                                   optionLabel="label"
                                                   optionValue="value"

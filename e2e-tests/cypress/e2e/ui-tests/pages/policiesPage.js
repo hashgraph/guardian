@@ -1,8 +1,8 @@
 import URL from '../../../support/GuardianUrls';
 import * as Checks from '../../../support/checkingMethods';
 import CommonElements from '../../../support/defaultUIElements';
-import { waitForPageReady } from '../../../support/pageReadiness';
-import { dropFile, waitForTaskRoundtrip, replaceInaccessibleTools } from '../../../support/importFlow';
+import { waitForPageReady, waitForPageSettled } from '../../../support/pageReadiness';
+import { dropFile, replaceInaccessibleTools, waitForTaskRoundtrip } from '../../../support/importFlow';
 import { clickButtonInWizardSteps, clickWizardTab } from '../../../support/wizardSteps';
 import { addGeoJsonPoint, openOverviewSection } from './userPoliciesPage';
 import { TIMEOUTS, POLL_INTERVAL } from '../../../support/CustomHelpers/timeouts';
@@ -106,14 +106,11 @@ const L = {
     ipfsInput: 'div.ipfs-url textarea',
     ipfsError: "small.p-error:contains('Invalid IPFS')",
     addLocationButton: 'button.add-feature-button',
-    addGeometryButton: "button.add-feature-button:contains('Add Geometry')",
-    includeAllButton: "button.add-feature-button:contains('Include all')",
+    addGeometryButton: "button.add-feature-button:contains('Add geometry')",
     geoClearButton: "button.add-feature-button:contains('Clear')",
     geoTypeDropdown: 'p-select#typeDropdown',
     coordinatesInput: 'textarea#coordinatesInput',
     geoError: 'small.p-error',
-    geoLocationPanel: 'div.location-control',
-    geoFileSwitch: 'div.switch-btn label.guardian-switch-button',
     actionDropdown: 'div.content-dropdown p-select',
     revokeButton: "button.btn-option:contains('Revoke')",
 
@@ -131,7 +128,16 @@ export class PoliciesPage {
 
     openPoliciesTab() {
         cy.visit(URL.Root + URL.Policies);
-        waitForPageReady(L.searchInput, 3);
+        // Gate on the toolbar, not on the search input: the app renders the
+        // filter bar (and with it the search input) only when the list is
+        // non-empty (showFilterBar = hasPolicies || hasStatusFilter), so on a
+        // fresh workspace the input never exists. The toolbar renders as soon
+        // as the list fetch settles in either state. Presence alone is not a
+        // gate on this app base: the route content is in the DOM under the
+        // loading overlay while the workspace bootstrap runs, and a click on
+        // the toolbar would land on the cover.
+        waitForPageReady('div.actions-container');
+        waitForPageSettled('div.loading');
     }
 
     createPolicy() {
@@ -150,17 +156,19 @@ export class PoliciesPage {
         // editor from the freshly created row instead.
         this.backToPoliciesList();
         this._row(name).find(L.editIcon, { timeout: TIMEOUTS.backend }).click();
-        waitForPageReady(L.editorViews, 4);
+        waitForPageReady(L.editorViews);
     }
 
     backToPoliciesList() {
         cy.visit(URL.Root + URL.Policies);
-        waitForPageReady(L.searchInput, 3);
+        waitForPageReady(L.searchInput);
+        waitForPageSettled('div.loading');
     }
 
     backToPoliciesListBtn() {
         cy.visit(URL.Root + URL.Policies);
-        waitForPageReady(L.searchInput, 3);
+        waitForPageReady(L.searchInput);
+        waitForPageSettled('div.loading');
     }
 
     /**
@@ -197,6 +205,11 @@ export class PoliciesPage {
         // every list interaction: fail on the mask itself so the screenshot
         // shows the culprit.
         cy.get(L.dialogMask, { timeout: TIMEOUTS.ui }).should('not.exist');
+        // The app reloads itself on every permission update, and the reload
+        // lands in the middle of a workspace bootstrap: the route content is
+        // back in the DOM under its loading overlay, which a presence gate
+        // would pass straight through, so wait for the overlay to go.
+        waitForPageSettled('div.loading');
         // separate commands: the framework re-renders the input on each
         // keystroke, so a .clear().type() chain can detach mid-command
         cy.get(L.searchInput).clear();
@@ -291,7 +304,7 @@ export class PoliciesPage {
         this._choosePreviewImport();
         // Heavy policies (CDM: four tools, a couple dozen schemas) take a while
         // to render in the editor, so allow extra readiness attempts.
-        waitForPageReady(L.editorViews, 4);
+        waitForPageReady(L.editorViews);
     }
 
     importPolicyFromIPFS(messageId) {
@@ -302,7 +315,7 @@ export class PoliciesPage {
         cy.get(L.dialog).find(CommonElements.Button, 'Import').should('not.be.disabled');
         cy.get(L.dialog).find(CommonElements.Button, 'Import').last().click();
         this._choosePreviewImport();
-        waitForPageReady(L.editorViews, 3);
+        waitForPageReady(L.editorViews);
     }
 
     /**
@@ -339,12 +352,12 @@ export class PoliciesPage {
 
     openPolicy(name) {
         this._row(name).find(L.instanceButton, { timeout: TIMEOUTS.backend }).click();
-        waitForPageReady(L.viewerIdentity, 3);
+        waitForPageReady(L.viewerIdentity);
     }
 
     openEditingPolicy(name) {
         this._row(name).find(L.editIcon, { timeout: TIMEOUTS.backend }).click();
-        waitForPageReady(L.editorViews, 4);
+        waitForPageReady(L.editorViews);
     }
 
     // ---- Viewer approvals (wizard steps) ----
@@ -793,7 +806,7 @@ export class PoliciesPage {
     // An optional GeoJSON field starts without an entry; a geometry needs a type and its coordinates.
     _fillGeoJsonPoint() {
         cy.get(L.requestForm).then(($form) => {
-            if (!$form.find('app-geojson-type button:contains("Add Geometry")').length) {
+            if (!$form.find('app-geojson-type button:contains("Add geometry")').length) {
                 cy.contains(`${L.requestForm} button`, 'Add geojson').click();
             }
         });

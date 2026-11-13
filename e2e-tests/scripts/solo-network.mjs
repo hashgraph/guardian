@@ -23,7 +23,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { AccountCreateTransaction, AccountId, Client, Hbar, PrivateKey } from '@hiero-ledger/sdk';
 
-export const SOLO_VERSION = '0.96.0';
+export const SOLO_VERSION = '0.97.0';
 export const KIND_CLUSTER_NAME = 'solo-cluster';
 const SOLO_DEPLOYMENT_NAME = 'one-shot';
 const MIN_NODE_MAJOR = 22;
@@ -252,7 +252,7 @@ async function createOperatorAccount(genesis) {
 
 function compileContracts() {
     const contractsDir = path.join(repoRoot, 'contracts');
-    run('npm', ['install'], { cwd: contractsDir });
+    run('npm', ['ci', '--no-audit', '--no-fund'], { cwd: contractsDir });
     // hardhat.config reads RPC_URL at load time, but `compile` never connects to it.
     run('npx', ['hardhat', 'compile'], { cwd: contractsDir, env: { ...process.env, RPC_URL: 'http://localhost:7546' } });
 }

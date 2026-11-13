@@ -18,12 +18,7 @@ import { VCFullscreenDialog } from './vc-fullscreen-dialog.component';
 
 describe('VCFullscreenDialog', () => {
     function build(): any {
-        return new VCFullscreenDialog(
-            {} as any, { data: {} } as any, {} as any, {} as any, {} as any,
-            {} as any, {} as any, {} as any, {} as any, {} as any, {} as any,
-            {} as any, new UntypedFormBuilder(), {} as any, {} as any, {} as any,
-            {} as any, {} as any, {} as any,
-        );
+        return new VCFullscreenDialog({} as any, { data: {} } as any, {} as any, {} as any, {} as any, {} as any, {} as any, {} as any, {} as any, {} as any, {} as any, {} as any, new UntypedFormBuilder(), {} as any, {} as any, {} as any, {} as any, {} as any, {} as any);
     }
 
     // Seven takeUntil sites guarded on a subject nothing ever fired, so every
@@ -56,7 +51,7 @@ describe('VCFullscreenDialog', () => {
         component.ngOnDestroy();
         callerOwned.next();
 
-        expect(completed).toBeFalse();
+        expect(completed).toBe(false);
         expect(received).toEqual(['signal']);
     });
 
@@ -67,21 +62,21 @@ describe('VCFullscreenDialog', () => {
 
         component.ngOnDestroy();
 
-        expect(subscription.closed).toBeTrue();
+        expect(subscription.closed).toBe(true);
     });
 
     describe('leaving edit mode with invalid changes', () => {
         const open = (result: unknown) => {
             const component = build();
-            const dialog = { open: jasmine.createSpy('open').and.returnValue({ onClose: of(result) }) };
+            const dialog = { open: vi.fn().mockReturnValue({ onClose: of(result) }) };
             component.dialog = dialog;
             component.dataForm = new UntypedFormBuilder().group({
                 name: ['', Validators.required],
             });
             component.dataForm.markAsDirty();
             component.isEditMode = true;
-            component.loadProfile = jasmine.createSpy('loadProfile');
-            component.formRoots = { forEach: jasmine.createSpy('forEach') };
+            component.loadProfile = vi.fn();
+            component.formRoots = { forEach: vi.fn() };
             return { component, dialog };
         };
 
@@ -89,19 +84,19 @@ describe('VCFullscreenDialog', () => {
             const { component, dialog } = open(true);
             component.onEditMode();
             expect(dialog.open).toHaveBeenCalledTimes(1);
-            const config = dialog.open.calls.mostRecent().args[1];
+            const config = vi.mocked(dialog.open).mock.lastCall![1];
             expect(config.header).toBe('Unsaved changes');
             expect(config.data.okBtnName).toBe('Discard changes');
             expect(config.data.closeBtnName).toBe('Keep editing');
             expect(component.loadProfile).toHaveBeenCalled();
-            expect(component.isEditMode).toBeFalse();
+            expect(component.isEditMode).toBe(false);
         });
 
         it('stays in edit mode when the user keeps editing', () => {
             const { component } = open(false);
             component.onEditMode();
             expect(component.loadProfile).not.toHaveBeenCalled();
-            expect(component.isEditMode).toBeTrue();
+            expect(component.isEditMode).toBe(true);
         });
 
         it('reveals errors instead of asking when it is not a mode switch', () => {
@@ -154,8 +149,7 @@ describe('VCFullscreenDialog', () => {
             fixture.componentRef.changeDetectorRef.markForCheck();
             fixture.detectChanges();
         };
-        const el = (fixture: ComponentFixture<VCFullscreenDialog>, selector: string): HTMLElement | null =>
-            fixture.nativeElement.querySelector(selector);
+        const el = (fixture: ComponentFixture<VCFullscreenDialog>, selector: string): HTMLElement | null => fixture.nativeElement.querySelector(selector);
 
         it('shows the context line when passed and omits it when empty', fakeAsync(() => {
             expect(el(render({ subtitle: 'Policy · Step' }), '.header-eyebrow')?.textContent).toContain('Policy · Step');
@@ -182,10 +176,10 @@ describe('VCFullscreenDialog', () => {
             fixture.componentInstance.onToggle(1);
             refresh(fixture);
             expect(el(fixture, '.document-view')).not.toBeNull();
-            expect(el(fixture, '.document-view')?.hidden).toBeTrue();
+            expect(el(fixture, '.document-view')?.hidden).toBe(true);
             fixture.componentInstance.onToggle(0);
             refresh(fixture);
-            expect(el(fixture, '.document-view')?.hidden).toBeFalse();
+            expect(el(fixture, '.document-view')?.hidden).toBe(false);
         }));
 
         it('works as a takeover with its options as an input and no dialog ref', fakeAsync(() => {
@@ -260,12 +254,12 @@ describe('VCFullscreenDialog', () => {
 
         it('hides the discussions in the JSON view without removing them', fakeAsync(() => {
             const fixture = render({ comments: true });
-            expect(el(fixture, '.comments-content')?.hidden).toBeFalse();
+            expect(el(fixture, '.comments-content')?.hidden).toBe(false);
 
             fixture.componentInstance.onToggle(1);
             refresh(fixture);
             expect(el(fixture, '.comments-content')).not.toBeNull();
-            expect(el(fixture, '.comments-content')?.hidden).toBeTrue();
+            expect(el(fixture, '.comments-content')?.hidden).toBe(true);
         }));
     });
 });

@@ -54,8 +54,7 @@ describe('SchemaFormComponent field metadata', () => {
         return { fixture, view: fixture.componentInstance, model, control };
     };
 
-    const strips = (fixture: any): HTMLElement[] =>
-        Array.from(fixture.nativeElement.querySelectorAll('.sf-meta'));
+    const strips = (fixture: any): HTMLElement[] => Array.from(fixture.nativeElement.querySelectorAll('.sf-meta'));
 
     it('hides the strip by default', () => {
         const { fixture } = setup();
@@ -85,10 +84,10 @@ describe('SchemaFormComponent field metadata', () => {
         model.addGroup(group);
         const child = group.model as FieldForm;
         expect(child.rootForm).toBe(model);
-        expect(view.showMetadata).toBeFalse();
+        expect(view.showMetadata).toBe(false);
         model.showMetadata = true;
-        expect(view.showMetadata).toBeTrue();
-        expect(child.rootForm.showMetadata).toBeTrue();
+        expect(view.showMetadata).toBe(true);
+        expect(child.rootForm.showMetadata).toBe(true);
     });
 
     it('puts the row index into the path of a field inside an array', () => {
@@ -113,8 +112,8 @@ describe('SchemaFormComponent field metadata', () => {
             conditions: [{ ifCondition: { field: field('a'), fieldValue: '1' }, thenFields: [field('b')], elseFields: [] }],
         });
         form.build();
-        expect(form.isConditional({ name: 'b' } as any)).toBeTrue();
-        expect(form.isConditional({ name: 'c' } as any)).toBeFalse();
+        expect(form.isConditional({ name: 'b' } as any)).toBe(true);
+        expect(form.isConditional({ name: 'c' } as any)).toBe(false);
     });
 
     it('flags a user-ordered field revealed by a condition', () => {
@@ -126,13 +125,13 @@ describe('SchemaFormComponent field metadata', () => {
         form.setData({
             fields: [field('a'), field('b', { conditionUserOrdered: true })],
             conditions: [{
-                ifCondition: { field: field('a'), fieldValue: '1' },
-                thenFields: [field('b', { conditionUserOrdered: true })],
-                elseFields: [],
-            }],
+                    ifCondition: { field: field('a'), fieldValue: '1' },
+                    thenFields: [field('b', { conditionUserOrdered: true })],
+                    elseFields: [],
+                }],
         });
         form.build();
-        expect(form.isConditional({ name: 'b' } as any)).toBeTrue();
+        expect(form.isConditional({ name: 'b' } as any)).toBe(true);
     });
 
     it('caches the static tags and adds the formula count live', () => {

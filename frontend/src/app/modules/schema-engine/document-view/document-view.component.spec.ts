@@ -26,7 +26,8 @@ describe('DocumentViewComponent Preview rendering', () => {
         fixture.componentRef.setInput('document', presentation ? { verifiableCredential: [credential] } : credential);
         fixture.componentRef.setInput('type', presentation ? 'VP' : 'VC');
         fixture.componentRef.setInput('preview', preview);
-        if (loading) fixture.componentInstance.previewLoadingChange.subscribe(loading);
+        if (loading)
+            fixture.componentInstance.previewLoadingChange.subscribe(loading);
         fixture.detectChanges();
         return fixture;
     };
@@ -43,18 +44,18 @@ describe('DocumentViewComponent Preview rendering', () => {
         expect(fixture.nativeElement.querySelector('app-schema-form-nav')).toBeNull();
         tick(500);
         fixture.detectChanges();
-        expect(view.loading).toBeFalse();
-        expect(view.previewRendering).toBeTrue();
-        expect(view.previewReady).toBeFalse();
+        expect(view.loading).toBe(false);
+        expect(view.previewRendering).toBe(true);
+        expect(view.previewReady).toBe(false);
         tick(16);
-        expect(view.previewReady).toBeFalse();
+        expect(view.previewReady).toBe(false);
         tick(16);
         fixture.detectChanges();
         expect(fixture.nativeElement.querySelector('.form-body')).not.toBeNull();
         expect(events).toEqual([true]);
         tick(16);
         fixture.detectChanges();
-        expect(view.previewRendering).toBeFalse();
+        expect(view.previewRendering).toBe(false);
         expect(events).toEqual([true, false]);
         expect(fixture.nativeElement.querySelector('.guardian-loading')).toBeNull();
         expect(fixture.nativeElement.querySelector('.preview-loading')).toBeNull();
@@ -67,8 +68,8 @@ describe('DocumentViewComponent Preview rendering', () => {
         tick(600);
         fixture.detectChanges();
         expect(fixture.nativeElement.querySelector('.guardian-loading')).toBeNull();
-        expect(fixture.componentInstance.previewRendering).toBeFalse();
-        expect(fixture.componentInstance.previewReady).toBeFalse();
+        expect(fixture.componentInstance.previewRendering).toBe(false);
+        expect(fixture.componentInstance.previewReady).toBe(false);
         expect(Reflect.get(fixture.componentInstance, 'previewFrame')).toBeNull();
         expect(Reflect.get(fixture.componentInstance, 'previewRenderTimer')).toBeNull();
     }));
@@ -82,7 +83,7 @@ describe('DocumentViewComponent Preview rendering', () => {
             fixture.destroy();
             tick(1000);
             expect(view.previewReady).toBe(ready);
-            expect(view.previewRendering).toBeTrue();
+            expect(view.previewRendering).toBe(true);
         }));
     }
 
@@ -90,8 +91,8 @@ describe('DocumentViewComponent Preview rendering', () => {
         const fixture = render(true, true);
         tick(64);
         fixture.detectChanges();
-        expect(fixture.componentInstance.previewReady).toBeTrue();
-        expect(fixture.componentInstance.previewRendering).toBeFalse();
+        expect(fixture.componentInstance.previewReady).toBe(true);
+        expect(fixture.componentInstance.previewRendering).toBe(false);
         expect(fixture.nativeElement.querySelector('.guardian-loading')).toBeNull();
         expect(fixture.nativeElement.querySelector('.form-body')).not.toBeNull();
     }));
@@ -100,39 +101,41 @@ describe('DocumentViewComponent Preview rendering', () => {
         const fixture = render(true);
         tick(548);
         fixture.detectChanges();
-        const changes = spyOn(fixture.componentInstance.previewLoadingChange, 'emit');
+        const changes = vi.spyOn(fixture.componentInstance.previewLoadingChange, 'emit').mockImplementation(() => undefined);
         const child = fixture.debugElement.query(By.css('app-schema-form-view'));
         child.triggerEventHandler('previewLoadingChange', true);
         child.triggerEventHandler('previewLoadingChange', false);
-        expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+        expect(vi.mocked(changes).mock.calls).toEqual([[true], [false]]);
         fixture.componentRef.setInput('preview', false);
         fixture.detectChanges();
         child.triggerEventHandler('previewLoadingChange', true);
-        expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+        expect(vi.mocked(changes).mock.calls).toEqual([[true], [false]]);
     }));
 
     it('renders a Preview presentation with no root requests and forwards nested loading', fakeAsync(() => {
         const fixture = render(true, false, true);
         tick(600);
         fixture.detectChanges();
-        expect(fixture.componentInstance.previewReady).toBeTrue();
-        expect(fixture.componentInstance.previewRendering).toBeFalse();
+        expect(fixture.componentInstance.previewReady).toBe(true);
+        expect(fixture.componentInstance.previewRendering).toBe(false);
         fixture.componentInstance.openCredential(1);
         fixture.detectChanges();
         tick(600);
         fixture.detectChanges();
-        const changes = spyOn(fixture.componentInstance.previewLoadingChange, 'emit');
+        const changes = vi.spyOn(fixture.componentInstance.previewLoadingChange, 'emit').mockImplementation(() => undefined);
         const child = fixture.debugElement.query(By.directive(DocumentViewComponent));
         expect(child).not.toBeNull();
         child.componentInstance.previewLoadingChange.emit(true);
         child.componentInstance.previewLoadingChange.emit(false);
         tick(0);
-        expect(changes.calls.allArgs()).toEqual([[true], [false]]);
+        expect(vi.mocked(changes).mock.calls).toEqual([[true], [false]]);
     }));
 });
 
 describe('DocumentViewComponent Document details', () => {
-    const render = (document: any, inputs: { [name: string]: any } = {}) => {
+    const render = (document: any, inputs: {
+        [name: string]: any;
+    } = {}) => {
         TestBed.resetTestingModule();
         TestBed.configureTestingModule({
             declarations: [DocumentViewComponent],
@@ -163,8 +166,12 @@ describe('DocumentViewComponent Document details', () => {
         credentialSubject: [{ type: 'report' }],
     });
 
-    const cells = (fixture: any): { [label: string]: string } => {
-        const result: { [label: string]: string } = {};
+    const cells = (fixture: any): {
+        [label: string]: string;
+    } => {
+        const result: {
+            [label: string]: string;
+        } = {};
         for (const cell of Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.sf-ro-cell'))) {
             result[cell.querySelector('.sf-ro-label')!.textContent!.trim()] = cell.querySelector('.sf-ro-value')!.textContent!.replace(/\s+/g, ' ').trim();
         }
@@ -241,7 +248,9 @@ describe('DocumentViewComponent pages', () => {
     });
     const flat = () => schemaJson({ title: text('Project title'), other: text('Other') });
 
-    const render = (schema: any, document: any, type: 'VC' | 'VP' = 'VC', inputs: { [name: string]: any } = {}) => {
+    const render = (schema: any, document: any, type: 'VC' | 'VP' = 'VC', inputs: {
+        [name: string]: any;
+    } = {}) => {
         TestBed.resetTestingModule();
         TestBed.configureTestingModule({
             declarations: [DocumentViewComponent],
@@ -272,7 +281,7 @@ describe('DocumentViewComponent pages', () => {
         const fixture = render(sectioned(), credential(subject()));
         const view = fixture.componentInstance;
         expect(view.screen).toBe('overview');
-        expect(view.hasSections).toBeTrue();
+        expect(view.hasSections).toBe(true);
         expect(view.overviewTitle).toBe('Kasigau');
         expect(view.overviewEyebrow).toContain('Overview');
         expect(view.overviewTiles.map(item => item.label)).toEqual(['Sections', 'Fields provided']);
@@ -329,7 +338,7 @@ describe('DocumentViewComponent pages', () => {
     it('has one page, with the details on top, and no navigation for a flat document', fakeAsync(() => {
         const fixture = render(flat(), credential(subject({ other: 'y' })));
         const view = fixture.componentInstance;
-        expect(view.hasSections).toBeFalse();
+        expect(view.hasSections).toBe(false);
         expect(view.railSections).toEqual([]);
         expect(q(fixture, 'app-schema-form-overview')).toBeNull();
         expect(q(fixture, '.sf-dd-card')).not.toBeNull();
@@ -448,7 +457,7 @@ describe('DocumentViewComponent pages', () => {
         view.onVpCard({ id: 'details' });
         fixture.detectChanges();
         const nested = fixture.debugElement.query(By.directive(DocumentViewComponent)).componentInstance as DocumentViewComponent;
-        expect(nested.navHidden).toBeTrue();
+        expect(nested.navHidden).toBe(true);
         expect(nested.screen).toBe('section');
         expect(nested.activeIndex).toBe(0);
     }));

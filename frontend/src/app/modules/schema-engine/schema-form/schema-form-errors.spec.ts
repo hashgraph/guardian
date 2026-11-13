@@ -40,11 +40,11 @@ describe('schema form errors', () => {
     it('shows an error after blur or once revealed', () => {
         const control = required();
         const field = item({}, control);
-        expect(showError(field, false)).toBeFalse();
+        expect(showError(field, false)).toBe(false);
         control.markAsTouched();
-        expect(showError(field, false)).toBeTrue();
+        expect(showError(field, false)).toBe(true);
         const untouched = item({}, required());
-        expect(showError(untouched, true)).toBeTrue();
+        expect(showError(untouched, true)).toBe(true);
     });
 
     it('keeps a group or array quiet when only a child was touched', () => {
@@ -52,18 +52,18 @@ describe('schema form errors', () => {
         group.setErrors({ required: true });
         group.markAsTouched();
         const sub = item({ isRef: true }, group);
-        expect(showError(sub, false)).toBeFalse();
-        expect(showError(item({ isArray: true }, group), false)).toBeFalse();
-        expect(showError(sub, true)).toBeTrue();
-        expect(showError(sub, false, item({}, group))).toBeTrue();
+        expect(showError(sub, false)).toBe(false);
+        expect(showError(item({ isArray: true }, group), false)).toBe(false);
+        expect(showError(sub, true)).toBe(true);
+        expect(showError(sub, false, item({}, group))).toBe(true);
     });
 
     it('never shows an error for a valid or disabled control', () => {
         const valid = new UntypedFormControl('x', Validators.required);
         valid.markAsTouched();
-        expect(showError(item({}, valid), true)).toBeFalse();
+        expect(showError(item({}, valid), true)).toBe(false);
         const disabled = required();
         disabled.disable();
-        expect(showError(item({}, disabled), true)).toBeFalse();
+        expect(showError(item({}, disabled), true)).toBe(false);
     });
 });

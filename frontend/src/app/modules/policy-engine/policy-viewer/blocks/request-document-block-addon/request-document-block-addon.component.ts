@@ -3,7 +3,6 @@ import {
     Component,
     Input,
     OnInit,
-    ComponentRef,
     inject,
 } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
@@ -81,7 +80,6 @@ export class RequestDocumentBlockAddonComponent
     // Drafts are always allowed here: `edit` and `draft` are never set for the addon
     public readonly allowDraft: boolean = true;
     private formTakeover = inject(FormTakeoverService, { optional: true });
-    private takeoverRef: ComponentRef<RequestDocumentFormComponent> | null = null;
     private destroyed = false;
     public edit: boolean;
     public draft: boolean;
@@ -135,11 +133,9 @@ export class RequestDocumentBlockAddonComponent
         return this.destroyed;
     }
 
+    // An open form outlives the block, as in RequestDocumentBlockComponent
     ngOnDestroy(): void {
         this.destroyed = true;
-        if (this.takeoverRef) {
-            this.formTakeover?.close(this.takeoverRef);
-        }
         this.destroy();
     }
 
@@ -265,16 +261,10 @@ export class RequestDocumentBlockAddonComponent
 
     private showDocumentDialog(duplicatedFrom: string | null = null) {
         if (this.formTakeover) {
-            const ref = this.formTakeover.open(RequestDocumentFormComponent, {
+            this.formTakeover.open(RequestDocumentFormComponent, {
                 parent: this,
                 allowDraft: this.allowDraft,
                 duplicatedFrom
-            });
-            this.takeoverRef = ref;
-            ref.instance.closed.subscribe(() => {
-                if (this.takeoverRef === ref) {
-                    this.takeoverRef = null;
-                }
             });
             return;
         }

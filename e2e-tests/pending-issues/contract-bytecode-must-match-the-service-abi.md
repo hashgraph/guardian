@@ -1,33 +1,8 @@
 # Contract bytecode and the guardian-service ABI have to be of the same generation
 
-**Status:** environment constraint, quickstart config fixed
+**Status:** environment constraint, quickstart config fixed. The service now fails loudly on a mismatch (below); what remains is keeping the bytecode file ids of every configuration in step with the ABI.
 **Component:** `guardian-service` (contract event ABIs), `configs/*.guardian.system` (bytecode file ids)
-**Supersedes:** `wipe-requests-cannot-be-raised-in-tests.md`
 **Affects:** `e2e-tests/cypress/e2e/api-tests/013_contracts/` — `008`, `010`, `012`, `013`, `014`
-
-## What the parked note was asking
-
-The previous note asked what the minimal, repeatable way is to make a retire contract raise a
-wipe request, having watched pools, syncs and direct wiper calls all fail to produce one.
-
-The answer is that **the request was being raised all along**. `Retire.setPool` calls
-`requestWiper` on the wipe contract for every token of the pool
-(`contracts/src/retire/Retire.sol:114-124`), and the wipe contract emits `WipeRequestAdded`.
-That event was on-chain for every run of the folder — it was Guardian that never stored it.
-
-Setting a pool is all it takes. No policy publish and no mint workflow are involved:
-
-```
-POST /contracts/{retireId}/pools   { tokens: [{ token, count: 1 }] }
-   -> Retire.setPool -> Wipe.requestWiper(token) -> event WipeRequestAdded(retire, token)
-   -> the wipe-sync task stores a WiperRequest within a minute
-```
-
-The one rule that governs how many requests a run can have is per **token**, not per contract:
-`requestWiper` reverts with `AlreadyWiper` for a token the caller can already wipe, and
-`Retire.setPool` swallows that revert in a `try/catch`. A step that needs a request of its own
-therefore creates a wipe-bound token of its own — which is what `010` now does for its reject
-and clear cases, instead of competing for the single request an earlier spec left behind.
 
 ## Why the events were dropped
 
@@ -51,27 +26,12 @@ from pre-`78d1301b3` bytecode: version detection fails silently and every wipe r
 contract is lost. The quickstart configs now carry the post-rename file ids, matching what
 `guardian-service/configs/.env.guardian*` has used since February 2026.
 
-## Second defect, still open
+## What the service does about a mismatch
 
-`syncWipeContracts` and `syncRetireContracts` iterate their contracts in a plain `for` loop with
-no per-contract error handling, so the throw above does not just lose that contract's events —
-**it aborts the whole synchronization pass**, every minute, for every contract of that type:
+- `getContractVersion` no longer claims `1.0.0` for a version event it cannot decode: creating the contract fails with `Cannot identify the version of the contract … probably not of the same generation as this service`. A contract that announced no version at all is still read as `1.0.0`.
+- `syncWipeContracts` and `syncRetireContracts` try every contract; one that cannot be decoded no longer stops the others. The pass reports all failures together (`Synchronization of N wipe contract(s) failed: <id>: <reason>; …`).
 
-```
-2026-09-04T22:15:00 [GUARDIAN_SERVICE]: TypeError: no matching event
-  (argument="key", value="0xe08a5a5a5961d44a76...", code=INVALID_ARGUMENT)
-    at syncWipeContract ... at Object.syncWipeContracts ... at CronJob.taskExecution
-```
-
-A single legacy contract left in the database is enough to stop wipe requests from being
-ingested for contracts that are perfectly current. On this local instance that was visible
-directly: a freshly created 1.0.1 pair raised its request on-chain and still saw nothing in
-`GET /contracts/wipe/requests` until the four legacy records were removed.
-
-Worth fixing on two counts: wrap each contract in its own `try/catch` so one bad contract cannot
-starve the rest, and let `getContractVersion` report that it could not identify a contract
-instead of quietly claiming 1.0.0 — the silent fallback is what turns a configuration mismatch
-into a feature that just does not work.
+A contract already stored with `version: '1.0.0'` from the old behaviour is still wrong, and its sync still fails (now only for itself).
 
 ## Upgrading an instance that has legacy contracts
 

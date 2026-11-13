@@ -294,7 +294,8 @@ export class SplitBlock {
             };
 
             // actionStatus.saveResult(state);
-            await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
+            // Every chunk is an independent branch: it runs the same downstream links as the others.
+            await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus?.scoped());
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Chunk, ref, user, {
                 documents: ExternalDocuments(state.data)
             }));

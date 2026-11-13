@@ -4,7 +4,7 @@ import { ISession, IStandardRegistryResponse, IUser, UserCategory, UserRole } fr
 import { Observable, of, Subject, Subscription, throwError } from 'rxjs';
 import { API_BASE_URL } from './api';
 import { SILENT_HTTP_ERRORS, SKIP_AUTH_REFRESH } from '../constants';
-import { catchError, finalize, map, shareReplay, switchMap } from 'rxjs/operators';
+import { catchError, finalize, map, shareReplay, switchMap, timeout } from 'rxjs/operators';
 
 /**
  * Services for working from accounts.
@@ -96,34 +96,13 @@ export class AuthService {
         this.accessTokenSubject.next(null);
     }
 
-    public setUsername(username: string) {
-        localStorage.setItem('username', username);
-    }
-
-    public removeUsername() {
-        localStorage.removeItem('username');
-    }
-
-    public getUsername(): string {
-        return localStorage.getItem('username') as string;
-    }
-
     /**
-     * The user id carried by the access token, or null when there is no usable
-     * session.
+     * The username carried by the access token, or null when there is no usable session.
      *
-     * Used only to scope preferences stored in this browser to the account that
-     * chose them - never as an access decision. The token is not verified here,
-     * and a forged one would only let its bearer read their own local settings.
+     * Read from the token rather than stored on its own, so it always names the account the requests
+     * are made as. The token is not verified here: never use it as an access decision.
      */
-    /**
-     * Identifies the signed-in account for per-user client storage.
-     *
-     * `username`, not an id: generateAccessToken signs { username, did, role,
-     * expireAt } and nothing else, so reading any id claim yields null for every
-     * real session.
-     */
-    public getUserKey(): string | null {
+    public getUsername(): string | null {
         const token = localStorage.getItem('accessToken');
         if (!token) {
             return null;
@@ -141,6 +120,18 @@ export class AuthService {
         } catch {
             return null;
         }
+    }
+
+    /**
+     * The signed-in username, for requests addressed to the user's own resources. Throws when there is
+     * no session, so such a request is never sent as `/null`.
+     */
+    public requireUsername(): string {
+        const username = this.getUsername();
+        if (!username) {
+            throw new Error('There is no signed-in user');
+        }
+        return username;
     }
 
     public getAccessToken() {
@@ -184,6 +175,12 @@ export class AuthService {
     }
 }
 
+/**
+ * How long the requests that failed with 401 wait for the shared token refresh. The gateway gives
+ * the auth service 30 s to answer it; past this the refresh counts as failed.
+ */
+export const REFRESH_TIMEOUT_MS = 40 * 1000;
+
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
     // Shared in-flight refresh, so several requests failing with 401 at once
@@ -200,7 +197,7 @@ export class AuthInterceptor implements HttpInterceptor {
         return next.handle(this.addToken(req)).pipe(
             catchError((error: any) => {
                 if (this.shouldAttemptRefresh(error, req)) {
-                    return this.refreshAndRetry(req, next);
+                    return this.refreshAndRetry(req, next, error);
                 }
                 return throwError(() => error);
             })
@@ -239,8 +236,13 @@ export class AuthInterceptor implements HttpInterceptor {
         );
     }
 
-    private refreshAndRetry(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    /**
+     * A refresh that fails or never answers hands the request its original 401, which the error
+     * interceptor turns into the end of the session and the login page, instead of leaving it pending.
+     */
+    private refreshAndRetry(req: HttpRequest<any>, next: HttpHandler, unauthorized: any): Observable<HttpEvent<any>> {
         return this.refreshToken().pipe(
+            catchError(() => throwError(() => unauthorized)),
             switchMap((accessToken: string) => next.handle(this.withBearer(req, accessToken)))
         );
     }
@@ -249,6 +251,7 @@ export class AuthInterceptor implements HttpInterceptor {
         if (!this.refresh$) {
             const auth = this.injector.get(AuthService);
             this.refresh$ = auth.updateAccessToken().pipe(
+                timeout(REFRESH_TIMEOUT_MS),
                 shareReplay(1),
                 finalize(() => { this.refresh$ = null; })
             );

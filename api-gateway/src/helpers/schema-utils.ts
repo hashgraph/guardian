@@ -1,4 +1,5 @@
 import { IOwner, ISchema, SchemaCategory } from '@guardian/interfaces';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
 /**
  * API Schema Utils
@@ -62,6 +63,36 @@ export class SchemaUtils {
         delete schema.topicId;
         delete schema._id;
         return schema;
+    }
+
+    /**
+     * Rejects a new schema with the SYSTEM category: a system schema is created only through
+     * POST /schemas/system/:username, the generic routes would store a draft no system list shows.
+     * @param {ISchema} schema
+     */
+    public static rejectSystemCategory(schema: ISchema): void {
+        if (schema?.category === SchemaCategory.SYSTEM) {
+            throw new HttpException(
+                'System schemas are created through POST /schemas/system/:username.',
+                HttpStatus.UNPROCESSABLE_ENTITY
+            );
+        }
+    }
+
+    /**
+     * Check the permission to delete a schema through the generic routes. Besides the policy
+     * schemas, they delete the SYSTEM-category drafts the schema editor stored before it used
+     * the system schema routes: those are not system schemas, so the system routes refuse them.
+     * @param {ISchema} schema
+     * @param {IOwner} user
+     *
+     * @returns {string} error
+     */
+    public static checkDeletePermission(schema: ISchema, user: IOwner): string | null {
+        if (schema && !schema.system && schema.category === SchemaCategory.SYSTEM) {
+            return schema.owner === user.owner ? null : 'Invalid creator.';
+        }
+        return SchemaUtils.checkPermission(schema, user, SchemaCategory.POLICY);
     }
 
     /**
