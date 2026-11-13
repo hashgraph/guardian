@@ -573,6 +573,96 @@ describe('SchemaFormViewComponent', () => {
         });
     });
 
+    describe('HTML in plain string fields', () => {
+        const shown = (fixture: ComponentFixture<SchemaFormViewComponent>): HTMLElement | null =>
+            fixture.nativeElement.querySelector('.sf-ro-value .sf-ro-rt');
+
+        it('shows pasted HTML as formatted text, without the tags', () => {
+            const fixture = render([field('risks')], { risks: '<p>First</p>\n<br>\n<p><b>Risks identified[5]</b></p>' });
+            const html = shown(fixture)!;
+            expect(html.querySelectorAll('p').length).toBe(2);
+            expect(html.querySelector('b')!.textContent).toBe('Risks identified[5]');
+            expect(html.querySelector('br')).not.toBeNull();
+            expect(html.textContent).not.toContain('<p>');
+            expect(fixture.nativeElement.querySelector('.sf-ro-text')).toBeNull();
+        });
+
+        it('finds a tag after ordinary text and keeps that text', () => {
+            const fixture = render([field('note')], { note: 'Intro <p>Body</p>' });
+            expect(shown(fixture)!.textContent).toBe('Intro Body');
+            expect(shown(fixture)!.querySelector('p')).not.toBeNull();
+        });
+
+        it('keeps text with no allowed tag as it is', () => {
+            const fixture = render(
+                [field('a'), field('b'), field('c')],
+                { a: 'a < b', b: '<5 tonnes', c: 'x<y>z' }
+            );
+            expect(shown(fixture)).toBeNull();
+            expect(texts(fixture, '.sf-ro-text')).toEqual(['a < b', '<5 tonnes', 'x<y>z']);
+        });
+
+        it('drops scripts, event attributes and unsafe links', () => {
+            const fixture = render([field('bad')], {
+                bad: '<p onclick="alert(1)">ok</p><script>window.__html = 1</script><img src="x" onerror="alert(1)"><a href="javascript:alert(1)">bad</a><a href="https://example.com">good</a>',
+            });
+            const html = shown(fixture)!;
+            expect(html.querySelector('script')).toBeNull();
+            expect(html.querySelector('img')).toBeNull();
+            expect(html.querySelector('[onclick]')).toBeNull();
+            const links = Array.from<HTMLAnchorElement>(html.querySelectorAll('a'));
+            expect(links.map((link) => link.getAttribute('href'))).toEqual([null, 'https://example.com']);
+            expect((window as any).__html).toBeUndefined();
+        });
+
+        it('shows the whole value at once, with no "Show more"', () => {
+            const fixture = render([field('long')], { long: '<p>One</p><p>Two</p>' });
+            expect(shown(fixture)!.classList).toContain('open');
+            expect(shown(fixture)!.hasAttribute('appRichTextClip')).toBeFalse();
+            expect(fixture.nativeElement.querySelector('.sf-ro-value .sf-ro-rt-actions')).toBeNull();
+        });
+
+        it('has no actions inside a record card either', () => {
+            const rows = field('rows', { isArray: true, isRef: true, fields: [field('note', {}, 'rows')] });
+            const fixture = render([rows], { rows: [{ note: '<p>Card</p>' }] });
+            (fixture.nativeElement.querySelector('.sf-record-toggle') as HTMLElement).click();
+            fixture.detectChanges();
+            const body = fixture.nativeElement.querySelector('.sf-record-body');
+            expect(body.querySelector('.sf-ro-rt p')!.textContent).toBe('Card');
+            expect(body.querySelector('.sf-ro-rt-actions')).toBeNull();
+        });
+
+        it('leaves rich text, numbers, units, URLs and emails as they were', () => {
+            const fixture = render(
+                [
+                    field('rich', { customType: 'richText' }),
+                    field('site', { format: 'url' }),
+                    field('mail', { format: 'email' }),
+                    field('code', { unit: '<b>', unitSystem: UnitSystem.Prefix }),
+                ],
+                { rich: '<p>md</p>', site: 'https://e.com/<p>', mail: '<p>@b.com', code: '<p>x</p>' }
+            );
+            expect(fixture.nativeElement.querySelector('.sf-ro-rt')!.textContent).toContain('<p>md</p>');
+            expect(fixture.nativeElement.querySelectorAll('.sf-ro-rt').length).toBe(1);
+            expect(texts(fixture, '.sf-ro-a')).toEqual(['https://e.com/<p>', '<p>@b.com']);
+            expect(texts(fixture, '.sf-ro-text')).toEqual(['<p>x</p>']);
+        });
+
+        it('sanitizes each value once and serves later renders from the cache', () => {
+            const item: any = field('note');
+            const first = component.htmlText(item, '<p>Same</p>');
+            const second = component.htmlText(item, '<p>Same</p>');
+            expect(second).toBe(first);
+            expect((component as any).htmlTextCache.size).toBe(1);
+            expect(component.htmlText(item, 'plain')).toBe('');
+            expect((component as any).htmlTextCache.size).toBe(1);
+            expect(component.htmlText(item, 'a < b')).toBe('');
+            expect(component.htmlText(item, 'a < b')).toBe('');
+            expect((component as any).htmlTextCache.get('a < b')).toBe('');
+            expect((component as any).htmlTextCache.size).toBe(2);
+        });
+    });
+
     describe('hide not provided', () => {
         const sub = () => field('sub', { isRef: true, fields: [field('inner', {}, 'sub'), field('note', {}, 'sub')] });
         const rows = () => field('rows', { isArray: true, isRef: true, fields: [field('name', {}, 'rows'), field('size', { type: 'number' }, 'rows')] });

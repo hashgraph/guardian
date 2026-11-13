@@ -74,6 +74,14 @@
         <span class="sf-ro-line">
             <a class="sf-ro-a" [href]="'mailto:' + entry.value">{{ entry.value }}</a>
         </span>
+    } @else if (htmlText(item, entry.value); as html) {
+        <div class="sf-ro-rich">
+            <div
+                class="sf-ro-rt rte-view-content open"
+                [innerHTML]="html"
+                (click)="onRichTextLinkClick($event)"
+            ></div>
+        </div>
     } @else {
         <span class="sf-ro-line">
             @if (isPrefix(item)) {

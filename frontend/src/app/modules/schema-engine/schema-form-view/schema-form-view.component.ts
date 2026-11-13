@@ -14,7 +14,7 @@ import {
     UnitSystem
 } from '@guardian/interfaces';
 import { IPFSService } from 'src/app/services/ipfs.service';
-import { isSafeHref, withNewTabLinks } from '../rich-text-editor/rich-text-sanitizer';
+import { ALLOWED_TAGS, isSafeHref, sanitizeRichText, withNewTabLinks } from '../rich-text-editor/rich-text-sanitizer';
 import { collectImageReferences, markdownToHtml, markdownToPlainText } from '../rich-text-editor/markdown';
 import { SchemaFormPreferencesService } from 'src/app/services/schema-form-preferences.service';
 import { baseMetaTags, IMetaTag, metaType } from '../schema-form/schema-form-metadata';
@@ -23,6 +23,8 @@ import { geoRecordSummary } from '../geo-file/geo-value-summary';
 import { applyNestedConditions, applyViewConditions } from './schema-form-view-conditions';
 
 const PREVIEW_RENDER_CHUNK = 10;
+
+const HTML_TAG = new RegExp(`</?(?:${Array.from(ALLOWED_TAGS).join('|')})(?:\\s[^<>]*)?/?>`, 'i');
 
 interface IFieldControl extends SchemaField {
     fullPath: string;
@@ -98,6 +100,7 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
     /** Rendered rich text per markdown value; dropped whenever an image resolves, since that changes the HTML. */
     private richHtmlCache = new Map<string, string>();
     private rowSummaryCache = new WeakMap<object, { title: string; sub: string }>();
+    private htmlTextCache = new Map<string, string>();
     private imgRequests = new Map<string, Promise<string | null>>();
     private previewFrames = new Map<IFieldControl, number>();
     public previewRenderLimit: number = Infinity;
@@ -596,6 +599,24 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
         }
         const html = withNewTabLinks(markdownToHtml(markdown, resolved));
         this.richHtmlCache.set(markdown, html);
+        return html;
+    }
+
+    public htmlText(item: IFieldControl, value: unknown): string {
+        if (
+            item.type !== 'string' ||
+            this.isPrefix(item) ||
+            this.isPostfix(item) ||
+            typeof value !== 'string' ||
+            !value.includes('<')
+        ) {
+            return '';
+        }
+        let html = this.htmlTextCache.get(value);
+        if (html === undefined) {
+            html = HTML_TAG.test(value) ? sanitizeRichText(value) : '';
+            this.htmlTextCache.set(value, html);
+        }
         return html;
     }
 

@@ -1,4 +1,4 @@
-const ALLOWED_TAGS = new Set([
+export const ALLOWED_TAGS = new Set([
     'P', 'BR', 'DIV', 'SPAN',
     'B', 'STRONG', 'I', 'EM',
     'H1', 'H2', 'H3',
