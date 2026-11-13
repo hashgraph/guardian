@@ -1,6 +1,7 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { newestPolicyCopy } from '../../../support/cdmTools';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Start policy test', { tags: ['policies', 'secondPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
@@ -18,9 +19,8 @@ context('Start policy test', { tags: ['policies', 'secondPool', 'api-all', 'all'
 				timeout: TIMEOUTS.backend
 			}).then((response) => {
 				expect(response.status).to.eq(STATUS_CODE.OK);
-				//The same copy the import spec works on: iterating and keeping the last match
-				//picks a different one as soon as the instance holds more than one
-				const policy = response.body.find((element) => element.name === 'iRecDRF');
+				//The copy 000_importPolicyTest imported and put in dry run: the newest one
+				const policy = newestPolicyCopy(response.body, 'iRecDRF');
 				expect(policy, 'the iRecDRF policy').to.not.be.undefined;
 				policyId = policy.id;
 				cy.request({
