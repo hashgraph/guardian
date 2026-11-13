@@ -24,31 +24,25 @@ export class IPFSLinkComponent implements OnChanges {
         this.cid = ipfsCid(this.url);
     }
 
-    public openFile(event: MouseEvent): void {
-        if (!this.dryRun || this.cid) {
+    public openFile(): void {
+        const tab = window.open('', '_blank');
+        if (!tab) {
+            this.toast.warn('Allow pop-ups for this site to open the file.');
             return;
         }
-        event.preventDefault();
-        const tab = window.open('', '_blank');
-        if (tab) {
-            tab.opener = null;
-            tab.document.body.textContent = 'Loading file…';
-        }
+        tab.opener = null;
+        tab.document.body.textContent = 'Loading file…';
         this.ipfs.getDryRunFile(this.url || '').subscribe({
             next: (blob) => {
-                if (tab?.closed) {
+                if (tab.closed) {
                     return;
                 }
                 const objectUrl = URL.createObjectURL(blob);
-                if (tab) {
-                    tab.location.href = objectUrl;
-                } else {
-                    window.open(objectUrl, '_blank', 'noopener,noreferrer');
-                }
+                tab.location.href = objectUrl;
                 setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
             },
             error: () => {
-                tab?.close();
+                tab.close();
                 this.toast.error('File not found');
             },
         });

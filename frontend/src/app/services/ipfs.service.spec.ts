@@ -97,6 +97,26 @@ describe('IPFSService dry-run file reader', () => {
         }
     });
 
+    it('keeps the global error handling for existing dry-run storage callers', () => {
+        const { service, http } = build();
+        http.get.and.returnValue(of(new ArrayBuffer(0)));
+        service.getFileFromDryRunStorage('6af6e8ec63af3cd1188591c0');
+        service.getFileFromDryRunStorage('6af6e8ec63af3cd1188591c0', true);
+        const [[defaultUrl, defaultOptions], [silentUrl, silentOptions]] = http.get.calls.allArgs();
+        expect(defaultUrl).toBe('/api/v1/ipfs/file/6af6e8ec63af3cd1188591c0/dry-run');
+        expect(silentUrl).toBe(defaultUrl);
+        expect(defaultOptions?.context?.get(SILENT_HTTP_ERRORS)).toBeFalse();
+        expect(silentOptions?.context?.get(SILENT_HTTP_ERRORS)).toBeTrue();
+    });
+
+    it('reads the dry-run file through the existing dry-run storage request', async () => {
+        const { service } = build();
+        const storage = spyOn(service, 'getFileFromDryRunStorage').and.returnValue(of(new TextEncoder().encode('%PDF-test').buffer));
+        const blob = await firstValueFrom(service.getDryRunFile('ipfs://6af6e8ec63af3cd1188591c0?fileName=test.pdf'));
+        expect(storage).toHaveBeenCalledOnceWith('6af6e8ec63af3cd1188591c0', true);
+        expect(blob.type).toBe('application/pdf');
+    });
+
     it('does not request a URL that has no dry-run id', async () => {
         const { service, http } = build();
         await expectAsync(firstValueFrom(service.getDryRunFile('https://example.com/doc.pdf'))).toBeRejectedWithError('File not found');

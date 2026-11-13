@@ -10,7 +10,7 @@ import { IPFSLinkComponent } from './ipfs-link.component';
 
 describe('IPFSLinkComponent', () => {
     const cid = 'bafybeiavprz5ld3ktizv4gsqos3dg7nbexcrhvtswzvoatgmea5ncvr3di';
-    const build = (url: string | undefined) => {
+    const build = (url: string | undefined, dryRun = false) => {
         const clipboard = { copy: jasmine.createSpy('copy').and.returnValue(true) };
         TestBed.configureTestingModule({
             declarations: [IPFSLinkComponent, CopyButtonComponent],
@@ -24,9 +24,31 @@ describe('IPFSLinkComponent', () => {
         });
         const fixture = TestBed.createComponent(IPFSLinkComponent);
         fixture.componentRef.setInput('url', url);
+        fixture.componentRef.setInput('dryRun', dryRun);
         fixture.detectChanges();
         return { fixture, clipboard };
     };
+
+    it('renders dry-run Open without a CID as a button with no gateway address', () => {
+        const { fixture } = build('ipfs://6af6e8ec63af3cd1188591c0', true);
+        const open: HTMLButtonElement = fixture.nativeElement.querySelector('button.sf-ro-open');
+        expect(open.textContent).toContain('Open');
+        expect(open.type).toBe('button');
+        expect(fixture.nativeElement.querySelector('a')).toBeNull();
+        expect(fixture.nativeElement.querySelector('[href]')).toBeNull();
+    });
+
+    it('keeps a real CID on the gateway link even in dry run', () => {
+        const { fixture } = build(`ipfs://${cid}`, true);
+        expect(fixture.nativeElement.querySelector('button.sf-ro-open')).toBeNull();
+        expect(fixture.nativeElement.querySelector('a.sf-ro-open').getAttribute('href')).toBe(`https://ipfs.io/ipfs/${cid}`);
+    });
+
+    it('keeps the plain link for a value without a CID outside dry run', () => {
+        const { fixture } = build('ipfs://6af6e8ec63af3cd1188591c0');
+        expect(fixture.nativeElement.querySelector('button.sf-ro-open')).toBeNull();
+        expect(fixture.nativeElement.querySelector('a.sf-ro-open').getAttribute('href')).toBe('https://ipfs.io/ipfs/6af6e8ec63af3cd1188591c0');
+    });
 
     it('opens a CID through the gateway in a separate tab', () => {
         const { fixture } = build(`ipfs://${cid}?fileName=test.pdf`);
@@ -78,35 +100,32 @@ describe('IPFSLinkComponent', () => {
 });
 
 describe('IPFSLinkComponent dry-run opening', () => {
-    const cid = 'bafybeiavprz5ld3ktizv4gsqos3dg7nbexcrhvtswzvoatgmea5ncvr3di';
     const build = (url = 'ipfs://6af6e8ec63af3cd1188591c0', dryRun = true) => {
         const result = new Subject<Blob>();
         const ipfs = jasmine.createSpyObj<IPFSService>('IPFSService', ['getDryRunFile']);
         ipfs.getDryRunFile.and.returnValue(result);
-        const toast = jasmine.createSpyObj<ToastService>('ToastService', ['error']);
+        const toast = jasmine.createSpyObj<ToastService>('ToastService', ['error', 'warn']);
         const component: IPFSLinkComponent = Reflect.construct(IPFSLinkComponent, [ipfs, toast]);
         Object.assign(component, { url, dryRun });
         component.ngOnChanges();
         const tab = jasmine.createSpyObj<Window>('Window', ['close']);
         Object.assign(tab, { opener: window, document: { body: { textContent: '' } }, location: { href: '' }, closed: false });
         const open = spyOn(window, 'open').and.returnValue(tab);
-        const event = jasmine.createSpyObj<MouseEvent>('MouseEvent', ['preventDefault']);
-        return { component, result, ipfs, toast, tab, open, event };
+        return { component, result, ipfs, toast, tab, open };
     };
 
     beforeEach(() => jasmine.clock().install());
     afterEach(() => jasmine.clock().uninstall());
 
     it('opens the tab before reading and navigates to the typed Blob', () => {
-        const { component, result, ipfs, tab, open, event, toast } = build();
+        const { component, result, ipfs, tab, open, toast } = build();
         const create = spyOn(URL, 'createObjectURL').and.returnValue('blob:document');
         const revoke = spyOn(URL, 'revokeObjectURL');
         ipfs.getDryRunFile.and.callFake(() => {
             expect(open).toHaveBeenCalledOnceWith('', '_blank');
             return result;
         });
-        component.openFile(event);
-        expect(event.preventDefault).toHaveBeenCalled();
+        component.openFile();
         expect(tab.opener).toBeNull();
         expect(tab.document.body.textContent).toBe('Loading file…');
         const blob = new Blob(['%PDF-test'], { type: 'application/pdf' });
@@ -121,48 +140,27 @@ describe('IPFSLinkComponent dry-run opening', () => {
     });
 
     it('closes the pending tab and reports File not found on a miss', () => {
-        const { component, result, tab, event, toast } = build();
-        component.openFile(event);
+        const { component, result, tab, toast } = build();
+        component.openFile();
         result.error(new Error('404'));
         expect(tab.close).toHaveBeenCalledOnceWith();
         expect(toast.error).toHaveBeenCalledOnceWith('File not found');
     });
 
-    it('keeps a real CID on the plain gateway path even in dry run', () => {
-        const { component, event, ipfs, open } = build(`ipfs://${cid}`);
-        component.openFile(event);
-        expect(component.link).toBe(`https://ipfs.io/ipfs/${cid}`);
-        expect(event.preventDefault).not.toHaveBeenCalled();
-        expect(ipfs.getDryRunFile).not.toHaveBeenCalled();
-        expect(open).not.toHaveBeenCalled();
-    });
-
-    it('keeps the existing plain-link path outside dry run', () => {
-        const { component, event, ipfs, open } = build('https://example.com/doc.pdf', false);
-        component.openFile(event);
-        expect(component.link).toBe('https://example.com/doc.pdf');
-        expect(event.preventDefault).not.toHaveBeenCalled();
-        expect(ipfs.getDryRunFile).not.toHaveBeenCalled();
-        expect(open).not.toHaveBeenCalled();
-    });
-
-    it('tries the object URL when the initial popup was blocked', () => {
-        const { component, result, event, open } = build();
+    it('asks to allow pop-ups and reads nothing when the tab was blocked', () => {
+        const { component, open, ipfs, toast } = build();
         open.and.returnValue(null);
-        spyOn(URL, 'createObjectURL').and.returnValue('blob:document');
-        const revoke = spyOn(URL, 'revokeObjectURL');
-        component.openFile(event);
-        result.next(new Blob(['data']));
-        result.complete();
-        expect(open).toHaveBeenCalledWith('blob:document', '_blank', 'noopener,noreferrer');
-        jasmine.clock().tick(60000);
-        expect(revoke).toHaveBeenCalledWith('blob:document');
+        component.openFile();
+        expect(toast.warn).toHaveBeenCalledOnceWith('Allow pop-ups for this site to open the file.');
+        expect(toast.error).not.toHaveBeenCalled();
+        expect(ipfs.getDryRunFile).not.toHaveBeenCalled();
+        expect(open).toHaveBeenCalledTimes(1);
     });
 
     it('does not reopen a tab that the user closed while waiting', () => {
-        const { component, result, event, tab, open } = build();
+        const { component, result, tab, open } = build();
         const create = spyOn(URL, 'createObjectURL');
-        component.openFile(event);
+        component.openFile();
         Object.assign(tab, { closed: true });
         result.next(new Blob(['data']));
         result.complete();

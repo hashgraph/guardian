@@ -149,8 +149,9 @@ describe('SchemaFormComponent IPFS actions', () => {
             expect(actions().length).toBe(1);
             expect(actions()[0].componentInstance.url).toBe(value);
             expect(actions()[0].componentInstance.dryRun).toBeTrue();
-            expect(row.querySelector('a')?.textContent).toContain('Open');
-            expect(Array.from(row.querySelectorAll('button')).map((button) => button.getAttribute('aria-label'))).toEqual(['Copy link', 'Copy CID']);
+            expect(row.querySelector('a')).toBeNull();
+            expect(row.querySelector('button.sf-ro-open')?.textContent).toContain('Open');
+            expect(Array.from(row.querySelectorAll('button[aria-label]')).map((button) => button.getAttribute('aria-label'))).toEqual(['Copy link', 'Copy CID']);
             expect(row.querySelector<HTMLButtonElement>('button[aria-label="Copy CID"]')?.disabled).toBeTrue();
         }));
 
