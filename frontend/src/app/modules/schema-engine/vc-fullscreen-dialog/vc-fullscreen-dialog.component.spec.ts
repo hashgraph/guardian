@@ -258,13 +258,13 @@ describe('VCFullscreenDialog', () => {
             const toggle = () => fixture.debugElement.query(By.css('app-hide-not-provided-toggle'));
             const view = () => el(fixture, 'app-document-view') as any;
             expect(el(fixture, '.field-metadata-toggle')).not.toBeNull();
-            expect(toggle().nativeElement.pressed).toBeFalse();
-            expect(view().hideNotProvided).toBeFalse();
+            expect(toggle().nativeElement.pressed).toBe(false);
+            expect(view().hideNotProvided).toBe(false);
 
             toggle().triggerEventHandler('toggled', true);
             refresh(fixture);
-            expect(toggle().nativeElement.pressed).toBeTrue();
-            expect(view().hideNotProvided).toBeTrue();
+            expect(toggle().nativeElement.pressed).toBe(true);
+            expect(view().hideNotProvided).toBe(true);
 
             fixture.componentInstance.onToggle(1);
             refresh(fixture);
@@ -275,27 +275,27 @@ describe('VCFullscreenDialog', () => {
             const first = render({});
             first.debugElement.query(By.css('app-hide-not-provided-toggle')).triggerEventHandler('toggled', true);
             refresh(first);
-            expect(first.componentInstance.hideNotProvided).toBeTrue();
+            expect(first.componentInstance.hideNotProvided).toBe(true);
 
             const second = render({});
-            expect(second.componentInstance.hideNotProvided).toBeFalse();
-            expect((el(second, 'app-document-view') as any).hideNotProvided).toBeFalse();
+            expect(second.componentInstance.hideNotProvided).toBe(false);
+            expect((el(second, 'app-document-view') as any).hideNotProvided).toBe(false);
         }));
 
         it('keeps "Field metadata" and "Hide not provided" independent', fakeAsync(() => {
             const fixture = render({});
             const preferences = TestBed.inject(SchemaFormPreferencesService);
-            const setMetadata = spyOn(preferences, 'setShowFieldMetadata');
+            const setMetadata = vi.spyOn(preferences, 'setShowFieldMetadata').mockImplementation(() => undefined);
 
             (el(fixture, '.field-metadata-toggle') as HTMLButtonElement).click();
             refresh(fixture);
-            expect(setMetadata).toHaveBeenCalledOnceWith(true);
-            expect(fixture.componentInstance.hideNotProvided).toBeFalse();
+            expect(setMetadata).toHaveBeenCalledExactlyOnceWith(true);
+            expect(fixture.componentInstance.hideNotProvided).toBe(false);
 
             fixture.debugElement.query(By.css('app-hide-not-provided-toggle')).triggerEventHandler('toggled', true);
             refresh(fixture);
             expect(setMetadata).toHaveBeenCalledTimes(1);
-            expect(fixture.componentInstance.hideNotProvided).toBeTrue();
+            expect(fixture.componentInstance.hideNotProvided).toBe(true);
         }));
 
         it('hides the discussions in the JSON view without removing them', fakeAsync(() => {

@@ -339,12 +339,12 @@ describe('DocumentViewComponent pages', () => {
         const off = render(sectioned(), credential(subject()));
         off.componentInstance.openPage(1);
         off.detectChanges();
-        expect((q(off, 'app-schema-form-view') as any).hideNotProvided).toBeFalse();
+        expect((q(off, 'app-schema-form-view') as any).hideNotProvided).toBe(false);
 
         const on = render(sectioned(), credential(subject()), 'VC', { hideNotProvided: true });
         on.componentInstance.openPage(1);
         on.detectChanges();
-        expect((q(on, 'app-schema-form-view') as any).hideNotProvided).toBeTrue();
+        expect((q(on, 'app-schema-form-view') as any).hideNotProvided).toBe(true);
     }));
 
     it('has one page, with the details on top, and no navigation for a flat document', fakeAsync(() => {

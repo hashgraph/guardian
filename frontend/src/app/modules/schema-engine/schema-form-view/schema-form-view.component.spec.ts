@@ -531,17 +531,17 @@ describe('SchemaFormViewComponent', () => {
 
     describe('HTML detection results', () => {
         it('preserves a recognized closing tag as an empty HTML result', () => {
-            expect(component.htmlText(field('note'), '</b>')).toEqual(jasmine.objectContaining({ html: '' }));
+            expect(component.htmlText(field('note'), '</b>')).toEqual(expect.objectContaining({ html: '' }));
         });
 
         it('preserves an empty HTML result when all recognized content is removed', () => {
-            expect(component.htmlText(field('note'), '<script>"<p>"</script>')).toEqual(jasmine.objectContaining({ html: '' }));
+            expect(component.htmlText(field('note'), '<script>"<p>"</script>')).toEqual(expect.objectContaining({ html: '' }));
         });
 
         it('sanitizes an empty HTML result only once across repeated reads', () => {
-            const createDocument = spyOn(document.implementation, 'createHTMLDocument').and.callThrough();
-            expect(component.htmlText(field('note'), '</b>')).toEqual(jasmine.objectContaining({ html: '' }));
-            expect(component.htmlText(field('note'), '</b>')).toEqual(jasmine.objectContaining({ html: '' }));
+            const createDocument = vi.spyOn(document.implementation, 'createHTMLDocument');
+            expect(component.htmlText(field('note'), '</b>')).toEqual(expect.objectContaining({ html: '' }));
+            expect(component.htmlText(field('note'), '</b>')).toEqual(expect.objectContaining({ html: '' }));
             expect(createDocument).toHaveBeenCalledTimes(1);
         });
     });
@@ -605,7 +605,7 @@ describe('SchemaFormViewComponent', () => {
         it('shows the whole value at once, with no "Show more"', () => {
             const fixture = render([field('long')], { long: '<p>One</p><p>Two</p>' });
             expect(shown(fixture)!.classList).toContain('open');
-            expect(shown(fixture)!.hasAttribute('appRichTextClip')).toBeFalse();
+            expect(shown(fixture)!.hasAttribute('appRichTextClip')).toBe(false);
             expect(fixture.nativeElement.querySelector('.sf-ro-value .sf-ro-rt-actions')).toBeNull();
         });
 
@@ -772,7 +772,7 @@ describe('SchemaFormViewComponent', () => {
         it('hides the empty fields of a sub-schema and keeps its heading', () => {
             const fixture = render([sub()], { sub: { inner: '', note: 'n' } }, { hideNotProvided: true });
             const child = fixture.debugElement.query(By.directive(SchemaFormViewComponent));
-            expect(child.componentInstance.hideNotProvided).toBeTrue();
+            expect(child.componentInstance.hideNotProvided).toBe(true);
             expect(texts(fixture, '.sf-sub-head')).toEqual(['Sub']);
             expect(texts(fixture, '.sf-ro-lt')).toEqual(['Note']);
         });
@@ -806,8 +806,8 @@ describe('SchemaFormViewComponent', () => {
         it('works out the lone cell without the hidden fields', () => {
             const fields = [field('a', { isArray: true }), field('b', { type: 'number' }), field('c', { type: 'number' }), field('d', { isArray: true })];
             const values = { a: ['x'], b: 1, d: ['y'] };
-            expect(render(fields, values).componentInstance.isLoneField(1)).toBeFalse();
-            expect(render(fields, values, { hideNotProvided: true }).componentInstance.isLoneField(1)).toBeTrue();
+            expect(render(fields, values).componentInstance.isLoneField(1)).toBe(false);
+            expect(render(fields, values, { hideNotProvided: true }).componentInstance.isLoneField(1)).toBe(true);
         });
 
         it('says there is nothing to show when every field of the form is hidden', () => {

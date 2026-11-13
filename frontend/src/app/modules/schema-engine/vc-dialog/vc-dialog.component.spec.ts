@@ -105,14 +105,14 @@ describe('VCViewerDialog', () => {
             const fixture = render({ type: 'VC', viewDocument: true, document: { id: 'vc-1' } });
             const toggle = () => fixture.debugElement.query(By.css('app-hide-not-provided-toggle'));
             expect(fixture.nativeElement.querySelector('.field-metadata-toggle')).not.toBeNull();
-            expect(toggle().nativeElement.pressed).toBeFalse();
-            expect(view(fixture).hideNotProvided).toBeFalse();
+            expect(toggle().nativeElement.pressed).toBe(false);
+            expect(view(fixture).hideNotProvided).toBe(false);
 
             toggle().triggerEventHandler('toggled', true);
             fixture.componentRef.changeDetectorRef.markForCheck();
             fixture.detectChanges();
-            expect(toggle().nativeElement.pressed).toBeTrue();
-            expect(view(fixture).hideNotProvided).toBeTrue();
+            expect(toggle().nativeElement.pressed).toBe(true);
+            expect(view(fixture).hideNotProvided).toBe(true);
 
             show(fixture, false);
             expect(toggle()).toBeNull();
