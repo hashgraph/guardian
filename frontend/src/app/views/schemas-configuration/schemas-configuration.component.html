@@ -317,10 +317,10 @@
         </div>
     }
 
-    <div class="sc-main">
+    <div class="sc-main" #schemaLayout>
 
         <!-- ── Sidebar ──────────────────────────────────────────── -->
-        <aside class="sc-sidebar">
+        <aside class="sc-sidebar" [appSchemaListResize]="schemaLayout" #sidebarResize="schemaListResize">
 
             <div class="sc-sidebar-tabs">
                 @if (!isTemplateConfigMode) {
@@ -401,25 +401,43 @@
                             </div>
                         } @else {
                             @for (schema of filteredSchemas; track (schema._id || schema.id || schema.uuid)) {
+                                @let rowMessage = getSchemaRowTooltip(schema);
                                 <div
                                     class="sc-schema-row"
                                     [class.active]="(schema._id && selectedSchema?._id === schema._id) || (schema.id && selectedSchema?.id === schema.id)"
                                     [class.sc-schema-row--no-drop]="!canDragSchema(schema)"
                                     [draggable]="canDragSchema(schema)"
-                                    [pTooltip]="getSchemaRowTooltip(schema)"
-                                    tooltipPosition="right"
+                                    [pTooltip]="rowMessage ? schemaWarningTooltip : ''"
+                                    tooltipStyleClass="sc-row-tooltip"
+                                    appSchemaRowTooltip
+                                    tooltipPosition="top"
                                     (mouseenter)="hoveredSchemaId = schema.id || schema._id"
                                     (mouseleave)="hoveredSchemaId = null"
                                     (dragstart)="onSchemaDragStart($event, schema)"
                                     (dragend)="onDragEnd()"
                                     (click)="switchSchema(schema)">
+                                    <ng-template #schemaWarningTooltip>
+                                        <span class="sc-row-tooltip-message"><i class="pi pi-exclamation-triangle"></i><span>{{ rowMessage }}</span></span>
+                                    </ng-template>
+                                    <ng-template #schemaNameContent>
+                                        <span class="sc-row-tooltip-name">{{ schema.name }}</span>
+                                        @if (rowMessage) {
+                                            <span class="sc-row-tooltip-message sc-row-tooltip-message--separated"><i class="pi pi-exclamation-triangle"></i><span>{{ rowMessage }}</span></span>
+                                        }
+                                    </ng-template>
                                     <div class="sc-schema-icon">
                                         <i class="pi pi-file"></i>
                                     </div>
                                     <div class="sc-schema-info">
-                                        <span class="sc-schema-name">
+                                        <span class="sc-schema-name"
+                                              [appSchemaNameTooltip]="schema.name || ''"
+                                              #schemaNameTooltip="schemaNameTooltip"
+                                              [pTooltip]="schemaNameTooltip.rowTooltip('', schemaNameContent)"
+                                              tooltipStyleClass="sc-row-tooltip"
+                                              tooltipPosition="top"
+                                              [appSchemaRowInnerTooltip]="schemaNameTooltip.truncated">
                                             @if (isSchemaFeatured(schema)) {
-                                                <i class="pi pi-star-fill schema-featured-icon" pTooltip="Featured" tooltipPosition="right"></i>
+                                                <i class="pi pi-star-fill schema-featured-icon" pTooltip="Featured" tooltipPosition="right" appSchemaRowInnerTooltip></i>
                                             }
                                             {{ schema.name }}
                                         </span>
@@ -433,17 +451,17 @@
                                         </div>
                                     </div>
                                     @if (isTemplateSchemaLocked(schema)) {
-                                        <span class="st-schema-lock" [pTooltip]="getTemplateSchemaLockTooltip(schema)" tooltipPosition="right">
+                                        <span class="st-schema-lock" [pTooltip]="getTemplateSchemaLockTooltip(schema)" tooltipPosition="right" appSchemaRowInnerTooltip>
                                             <i class="pi pi-lock"></i>
                                         </span>
                                     }
                                     @if (isTemplateConfigMode) {
-                                <button class="sc-schema-delete-btn" (click)="$event.stopPropagation(); openTemplateSchemaEditor({ schema })" [pTooltip]="isTemplateReadonly ? 'View' : 'Edit'" tooltipPosition="right">
+                                <button class="sc-schema-delete-btn" (click)="$event.stopPropagation(); openTemplateSchemaEditor({ schema })" [pTooltip]="isTemplateReadonly ? 'View' : 'Edit'" tooltipPosition="right" appSchemaRowInnerTooltip>
                                             <i class="pi pi-pencil"></i>
                                         </button>
                                     } @else if (hoveredSchemaId === (schema.id || schema._id)) {
                                         @if (!isTemplateSchemaDeleteLocked(schema)) {
-                                        <button class="sc-schema-delete-btn" (click)="$event.stopPropagation(); onDeleteSchema(schema)" pTooltip="Delete" tooltipPosition="right">
+                                        <button class="sc-schema-delete-btn" (click)="$event.stopPropagation(); onDeleteSchema(schema)" pTooltip="Delete" tooltipPosition="right" appSchemaRowInnerTooltip>
                                             <i class="pi pi-trash"></i>
                                         </button>
                                         }
@@ -461,6 +479,16 @@
             }
 
         </aside>
+        <div class="sc-sidebar-resizer"
+             role="separator"
+             aria-label="Resize schema list"
+             aria-orientation="vertical"
+             [attr.aria-valuemin]="sidebarResize.minWidthPercent"
+             [attr.aria-valuemax]="sidebarResize.maxWidthPercent"
+             [attr.aria-valuenow]="sidebarResize.roundedWidth"
+             tabindex="0"
+             (keydown)="sidebarResize.key($event)"
+             (pointerdown)="sidebarResize.start($event)"></div>
 
         <!-- ═══════════════════════════════════════════════════════ CANVAS -->
         <div class="sc-canvas">

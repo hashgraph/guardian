@@ -69,6 +69,7 @@ import { DetailsLogDialog } from './views/admin/details-log-dialog/details-log-d
 import { ServiceStatusComponent } from './views/admin/service-status/service-status.component';
 import { SchemaConfigComponent } from './views/schemas/schemas.component';
 import { SchemasConfigurationComponent } from './views/schemas-configuration/schemas-configuration.component';
+import { SchemaListResizeDirective, SchemaNameTooltipDirective, SchemaRowInnerTooltipDirective, SchemaRowTooltipDirective } from './views/schemas-configuration/schema-list-layout.directive';
 import { SchemaTemplatesComponent } from './views/schema-templates/schema-templates.component';
 import { NotificationsComponent } from './views/notifications/notifications.component';
 import { RolesViewComponent } from './views/roles/roles-view.component';
@@ -261,6 +262,10 @@ const GuardianPreset = definePreset(Aura, {
     exports: [],
     bootstrap: [AppComponent],
     imports: [BrowserModule,
+        SchemaListResizeDirective,
+        SchemaNameTooltipDirective,
+        SchemaRowInnerTooltipDirective,
+        SchemaRowTooltipDirective,
         CommonModule,
         CommonComponentsModule,
         MaterialModule,
