@@ -77,7 +77,7 @@ jobs:
           yarn run build
           popd
           pushd frontend
-          npm install
+          npm ci
           npm run build
           npm run build:prod
           npm run build:demo
