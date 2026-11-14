@@ -1,7 +1,7 @@
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { TestBed, fakeAsync, flushMicrotasks, tick } from '@angular/core/testing';
 import { FormControl, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { of, Subscription } from 'rxjs';
+import { of, Subscription, throwError } from 'rxjs';
 import { DatePipe } from '@angular/common';
 import { DialogService } from 'primeng/dynamicdialog';
 import { RequestDocumentFormComponent } from './request-document-form.component';
@@ -437,6 +437,201 @@ describe('RequestDocumentFormComponent', () => {
             expect(element.textContent).toContain('Preview again');
             expect(element.textContent).not.toContain('Go to field');
             fixture.destroy();
+        });
+    });
+
+    describe('draft and autosave', () => {
+        const prepare = (component: RequestDocumentFormComponent) => {
+            const target = component as any;
+            target.storage = {
+                load: vi.fn().mockResolvedValue(null),
+                save: vi.fn().mockResolvedValue(undefined),
+                delete: vi.fn().mockResolvedValue(undefined),
+            };
+            target.tablePersist = { persistTablesInDocument: async () => undefined, rollbackIpfsUploads: async () => undefined };
+            target.geoFilePersist = { persistGeoFilesInDocument: async () => undefined, rollbackGridFsUploads: async () => undefined };
+            component.dataForm.addControl('title', new FormControl('Blue carbon'));
+            return target.storage as { load: ReturnType<typeof vi.fn>; save: ReturnType<typeof vi.fn>; delete: ReturnType<typeof vi.fn> };
+        };
+        const settle = () => new Promise<void>((resolve) => setTimeout(resolve));
+
+        it('saves a draft only in the browser when the policy does not store drafts', async () => {
+            const { fixture, component } = create({ draftEnabled: false });
+            const storage = prepare(component);
+            await component.onStep(true);
+            expect(apiCall).not.toHaveBeenCalled();
+            expect(storage.save).toHaveBeenCalledWith('autosave', { title: 'Blue carbon' }, undefined);
+            expect(storage.delete).not.toHaveBeenCalled();
+            expect(component.dataSaved).toBe(true);
+            fixture.destroy();
+        });
+
+        it('sends the draft to the server when the policy stores drafts', async () => {
+            const { fixture, component } = create({ draftEnabled: true });
+            const storage = prepare(component);
+            apiCall.mockReturnValue(of({ response: {} }));
+            await component.onStep(true);
+            expect(apiCall).toHaveBeenCalledTimes(1);
+            expect(apiCall.mock.lastCall![2].draft).toBe(true);
+            expect(storage.save).not.toHaveBeenCalled();
+            fixture.destroy();
+        });
+
+        it('does not write the autosave on the timer right after a draft was saved', fakeAsync(() => {
+            const { fixture, component } = create();
+            const storage = prepare(component);
+            // Adding the control above counts as an edit, so let it settle first
+            tick(2000);
+            component.dataSaved = true;
+            tick(118000);
+            flushMicrotasks();
+            expect(storage.save).not.toHaveBeenCalled();
+            component.dataSaved = false;
+            tick(120000);
+            flushMicrotasks();
+            expect(storage.save).toHaveBeenCalledTimes(1);
+            fixture.destroy();
+        }));
+
+        it('keeps the autosave when the server rejects the request', async () => {
+            const { fixture, component } = create();
+            const storage = prepare(component);
+            apiCall.mockReturnValue(throwError(() => ({ error: 'rejected' })));
+            vi.spyOn(console, 'error').mockImplementation(() => undefined);
+            await (component as any).onSubmit(true);
+            await settle();
+            expect(apiCall).toHaveBeenCalled();
+            expect(storage.delete).not.toHaveBeenCalled();
+            fixture.destroy();
+        });
+
+        it('deletes the autosave once the server accepts the request', async () => {
+            const { fixture, component } = create();
+            const storage = prepare(component);
+            apiCall.mockReturnValue(of({ response: {} }));
+            await (component as any).onSubmit(true);
+            await settle();
+            expect(storage.delete).toHaveBeenCalledWith('autosave');
+            fixture.destroy();
+        });
+
+        describe('connected draft', () => {
+            const T0 = '2026-11-14T09:00:00.000Z';
+            const T1 = '2026-11-14T10:00:00.000Z';
+            const T2 = '2026-11-14T10:05:00.000Z';
+
+            it('updates the record created by the first Save Draft instead of creating another one', async () => {
+                const { fixture, component } = create();
+                prepare(component);
+                apiCall.mockReturnValueOnce(of({ response: { draftRecord: { id: 'draft-1', updateDate: T1 } } })).mockReturnValueOnce(of({ response: {} }));
+                await (component as any).onSubmit(true);
+                await settle();
+                await (component as any).onSubmit(true);
+                await settle();
+                expect(apiCall.mock.calls[0][2].draftId).toBeNull();
+                expect(apiCall.mock.calls[1][2].draftId).toBe('draft-1');
+                fixture.destroy();
+            });
+
+            it('keeps the id of the opened draft when it is saved again', async () => {
+                const { fixture, component } = create({ draftId: 'opened-1' });
+                prepare(component);
+                apiCall.mockReturnValue(of({ response: {} }));
+                await (component as any).onSubmit(true);
+                await settle();
+                expect(apiCall.mock.lastCall![2].draftId).toBe('opened-1');
+                fixture.destroy();
+            });
+
+            it('moves the autosave to the draft id after the first save', async () => {
+                const { fixture, component } = create();
+                const storage = prepare(component);
+                apiCall.mockReturnValue(of({ response: { draftRecord: { id: 'draft-1', updateDate: T1 } } }));
+                await (component as any).onSubmit(true);
+                await settle();
+                expect(storage.delete).toHaveBeenCalledWith('autosave');
+                expect(component.autosaveId).toBe('draft-1');
+                fixture.destroy();
+            });
+
+            it('turns the connected draft into the final document on submit', async () => {
+                const { fixture, component } = create();
+                prepare(component);
+                apiCall.mockReturnValueOnce(of({ response: { draftRecord: { id: 'draft-1', updateDate: T1 } } })).mockReturnValueOnce(of({ response: {} }));
+                await (component as any).onSubmit(true);
+                await settle();
+                await (component as any).onSubmit(false);
+                expect(apiCall.mock.lastCall![2].draftId).toBe('draft-1');
+                expect(apiCall.mock.lastCall![2].draft).toBeFalsy();
+                fixture.destroy();
+            });
+
+            it('does not take the id from a response that only carries _id', async () => {
+                const { fixture, component } = create();
+                prepare(component);
+                apiCall.mockReturnValue(of({ response: { _id: 'draft-1' } }));
+                await (component as any).onSubmit(true);
+                await settle();
+                await (component as any).onSubmit(true);
+                await settle();
+                expect(apiCall.mock.calls[1][2].draftId).toBeNull();
+                fixture.destroy();
+            });
+
+            it('stores the update time of the saved draft with the next autosave', async () => {
+                const { fixture, component } = create();
+                const storage = prepare(component);
+                apiCall.mockReturnValue(of({ response: { draftRecord: { id: 'draft-1', updateDate: T1 } } }));
+                await (component as any).onSubmit(true);
+                await settle();
+                await (component as any).autosave();
+                expect(storage.save).toHaveBeenCalledWith('draft-1', { title: 'Blue carbon' }, T1);
+                fixture.destroy();
+            });
+
+            it('moves the stored update time forward when the draft is saved again', async () => {
+                const { fixture, component } = create();
+                const storage = prepare(component);
+                apiCall
+                    .mockReturnValueOnce(of({ response: { draftRecord: { id: 'draft-1', updateDate: T1 } } }))
+                    .mockReturnValueOnce(of({ response: { draftRecord: { id: 'draft-1', updateDate: T2 } } }));
+                await (component as any).onSubmit(true);
+                await settle();
+                await (component as any).onSubmit(true);
+                await settle();
+                await (component as any).autosave();
+                expect(storage.save).toHaveBeenCalledWith('draft-1', { title: 'Blue carbon' }, T2);
+                fixture.destroy();
+            });
+
+            it('stores the update time the opened draft had when the form was opened', async () => {
+                const { fixture, component } = create({ draft: true, draftId: 'opened-1', ref: { id: 'opened-1', updateDate: T0 } });
+                const storage = prepare(component);
+                await (component as any).autosave();
+                expect(storage.save).toHaveBeenCalledWith('autosave', { title: 'Blue carbon' }, T0);
+                fixture.destroy();
+            });
+
+            it('stores no update time for a new request that was not saved yet', async () => {
+                const { fixture, component } = create();
+                const storage = prepare(component);
+                await (component as any).autosave();
+                expect(storage.save).toHaveBeenCalledWith('autosave', { title: 'Blue carbon' }, undefined);
+                fixture.destroy();
+            });
+
+            it('keeps creating records and the shared autosave when the response has no id', async () => {
+                const { fixture, component } = create();
+                prepare(component);
+                apiCall.mockReturnValue(of({ response: {} }));
+                await (component as any).onSubmit(true);
+                await settle();
+                await (component as any).onSubmit(true);
+                await settle();
+                expect(apiCall.mock.calls[1][2].draftId).toBeNull();
+                expect(component.autosaveId).toBe('autosave');
+                fixture.destroy();
+            });
         });
     });
 

@@ -99,9 +99,12 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     public get policyId() { return this.parent?.policyId; }
     public get disabled() { return this.parent?.disabled; }
     public get docRef() { return this.parent?.getRef(); }
-    public get autosaveId() { return this.parent?.getAutosaveId(); }
+    /** Once the first Save Draft created a record, the autosave belongs to that record */
+    public get autosaveId() { return this.connectedDraftId ?? this.parent?.getAutosaveId(); }
     public get edit() { return this.parent?.edit; }
     public get draft() { return this.parent?.draft; }
+    /** False when the policy has nothing that stores a draft, so "Save Draft" can only save locally */
+    public get draftEnabled() { return this.parent?.draftEnabled !== false; }
     public get relayerAccount() { return this.parent?.relayerAccount; }
     public get user() { return this.parent?.user; }
     public get isLocalUser() { return this.parent?.isLocalUser; }
@@ -117,6 +120,13 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     private sub?: Subscription;
     private readonly AUTOSAVE_INTERVAL = 120000;
     public dataSaved: boolean = false;
+    /**
+     * Id of the draft record created by this form's first Save Draft. It is kept here and not on
+     * the parent block, which resets its own draft id on every refresh. Later saves update this record.
+     */
+    private connectedDraftId: string | null = null;
+    /** Update time, from the server, of the draft record the form is based on. Stored with each autosave. */
+    private baseUpdateDate: string | undefined;
     public step: FormStep = 'fill';
     public screen: FormScreen = 'form';
     public issues: IFormIssue[] = [];
@@ -509,17 +519,29 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
             this.activeStepLabel = step?.label ?? null;
         });
         this.initForm(this.dataForm, false);
-        this.sub = interval(this.AUTOSAVE_INTERVAL).subscribe(async () => {
-            const data = this.dataForm.getRawValue();
-            const savedData = await this.storage.load(this.autosaveId);
-            const saveNeeded = await autosaveValueChanged(data, savedData);
-
-            if (saveNeeded) {
-                this.storage.save(this.autosaveId, data);
-                this.lastSavedAt = new Date();
+        this.baseUpdateDate = this.parent?.draft ? (this.parent as { ref?: { updateDate?: string } }).ref?.updateDate : undefined;
+        this.sub = interval(this.AUTOSAVE_INTERVAL).subscribe(() => {
+            // Nothing changed since the last save, so there is nothing new to keep
+            if (!this.dataSaved) {
+                this.autosave();
             }
         });
         this.buttonNames['submit'] = (this.edit && !this.draft) ? 'Validate & Update' : 'Validate & Create';
+    }
+
+    /**
+     * Writes the current form values to the browser storage (IndexedDB) when they differ
+     * from what is already stored. Used by the timer and by a local "Save Draft".
+     */
+    private async autosave(): Promise<void> {
+        const data = this.dataForm.getRawValue();
+        const savedData = await this.storage.load(this.autosaveId);
+        const saveNeeded = await autosaveValueChanged(data, savedData);
+
+        if (saveNeeded) {
+            await this.storage.save(this.autosaveId, data, this.baseUpdateDate);
+            this.lastSavedAt = new Date();
+        }
     }
 
     ngOnDestroy(): void {
@@ -828,8 +850,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         }
 
         prepareVcData(data);
-        const draftId = this.parent instanceof RequestDocumentBlockComponent ? this.parent.draftId : null;
-        this.storage.delete(this.autosaveId);
+        const draftId = this.connectedDraftId ?? (this.parent as { draftId?: string | null })?.draftId ?? null;
 
         const evidence = this.enableAdditionalData ? this.buildEvidence() : undefined;
 
@@ -847,6 +868,15 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         this.policyEngineService
             .setBlockDataWithResult(this.id, this.policyId, payload)
             .subscribe((result) => {
+                // The autosave is the only copy until the server has accepted the document
+                this.storage.delete(this.autosaveId);
+                // The server answers a draft save with the record it stored. A new record is kept as
+                // the one further saves update, and the autosave moves to its id.
+                const stored = draft ? result?.response?.draftRecord : null;
+                if (stored && typeof stored.id === 'string') {
+                    this.connectedDraftId = stored.id;
+                    this.baseUpdateDate = stored.updateDate;
+                }
                 if (captureOutput) {
                     this.policyTest.captureTestCase({
                         policyId: this.policyId,
@@ -1135,7 +1165,11 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
             return;
         }
         if (draft) {
-            await this.onSubmit(true);
+            if (this.draftEnabled) {
+                await this.onSubmit(true);
+            } else {
+                await this.saveLocally();
+            }
             return;
         }
         const refreshed = this.previewMode && this.previewRequirementsStale;
@@ -1163,6 +1197,15 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         } else {
             await this.onSubmit(false);
         }
+    }
+
+    /**
+     * Save Draft for a policy that stores no drafts: keep the values in this browser,
+     * the same place the timer writes to, so the restore prompt offers them next time.
+     */
+    private async saveLocally(): Promise<void> {
+        await this.autosave();
+        this.dataSaved = true;
     }
 
     private restorePreviewMode(): void {

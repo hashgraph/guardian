@@ -79,6 +79,8 @@ export class RequestDocumentBlockAddonComponent
     public form: RequestDocumentFormComponent | null = null;
     // Drafts are always allowed here: `edit` and `draft` are never set for the addon
     public readonly allowDraft: boolean = true;
+    /** The addon request never stores a draft on the server, so Save Draft stays in this browser */
+    public readonly draftEnabled: boolean = false;
     private formTakeover = inject(FormTakeoverService, { optional: true });
     private destroyed = false;
     public edit: boolean;

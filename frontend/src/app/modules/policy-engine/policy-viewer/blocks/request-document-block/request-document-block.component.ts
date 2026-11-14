@@ -11,7 +11,7 @@ import { FormTakeoverService } from '../../form-takeover/form-takeover.service';
 import { SchemaService } from 'src/app/services/schema.service';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { SavepointFlowService } from 'src/app/services/savepoint-flow.service';
-import { DocumentAutosaveStorage } from '../../../structures';
+import { DocumentAutosaveStorage, isAutosaveStale } from '../../../structures';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { TablePersistenceService } from 'src/app/services/table-persistence.service';
 import { GeoFilePersistenceService } from 'src/app/services/geo-file-persistence.service';
@@ -28,6 +28,7 @@ interface IRequestDocumentData {
     relayerAccount: boolean;
     enableAdditionalData: boolean;
     draft: boolean;
+    draftEnabled?: boolean;
     editType: 'new' | 'edit';
     uiMetaData: {
         type: string;
@@ -85,6 +86,8 @@ export class RequestDocumentBlockComponent
     public restoreData: any;
     public readonly: boolean = false;
     public draft: boolean;
+    /** The server stores a draft only when the policy listens to the draft event */
+    public draftEnabled: boolean = true;
     public relayerAccount: boolean;
     public draftId?: string;
     public form: RequestDocumentFormComponent | null = null;
@@ -179,9 +182,26 @@ export class RequestDocumentBlockComponent
         }, 500);
     }
 
-    async showAutosaveDiag() {
+    /**
+     * The autosave to offer, or null. An opened draft may have been saved again elsewhere
+     * after this autosave was based on it; that autosave is deleted instead of offered, since
+     * restoring it would overwrite the newer data.
+     */
+    private async loadFreshAutosave(): Promise<any> {
         const autosaveId = this.getAutosaveId();
-        const autosaveDocument = await this.storage.load(autosaveId);
+        const record = await this.storage.loadRecord(autosaveId);
+        if (!record) {
+            return null;
+        }
+        if (this.draft && isAutosaveStale(record.baseUpdateDate, this.ref?.updateDate)) {
+            await this.storage.delete(autosaveId);
+            return null;
+        }
+        return record.value;
+    }
+
+    async showAutosaveDiag() {
+        const autosaveDocument = await this.loadFreshAutosave();
 
         if (autosaveDocument) {
             this.showAutosaveDialog(autosaveDocument);
@@ -207,6 +227,7 @@ export class RequestDocumentBlockComponent
             this.relayerAccount = !!data.relayerAccount && !this.dryRun;
             this.enableAdditionalData = !!data.enableAdditionalData && !this.dryRun;
             this.draft = isDraft;
+            this.draftEnabled = data.draftEnabled !== false;
             this.draftId = (isDraft && row) ? row.id : null;
             if (uiMetaData.privateFields) {
                 for (
@@ -331,8 +352,7 @@ export class RequestDocumentBlockComponent
     }
 
     public async onDialogOpen() {
-        const autosaveId = this.getAutosaveId();
-        const autosaveDocument = await this.storage.load(autosaveId);
+        const autosaveDocument = await this.loadFreshAutosave();
 
         if (autosaveDocument) {
             this.showAutosaveDialog(autosaveDocument);
