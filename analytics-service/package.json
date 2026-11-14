@@ -63,7 +63,7 @@
         "dev": "tsc -w",
         "lint": "tslint --config ../tslint.json --project .",
         "start": "node dist/index.js",
-        "test": "mocha 'tests/**/*.test.mjs' --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/analytics-service.xml --timeout 10000 --exit"
+        "test": "mocha --file ../common/tests/helpers/quiet-console.mjs 'tests/**/*.test.mjs' --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/analytics-service.xml --timeout 10000 --exit"
     },
     "type": "module",
     "version": "3.7.1"
