@@ -409,8 +409,26 @@ export class VCJS {
             nestedSchema.required = required.filter((field: any) => !nestedSchema.properties[field] || !nestedSchema.properties[field].readOnly);
         }
 
-        // Strip the root and every $defs entry with its own allOf, deps first,
-        // so a def is fully stripped before it's cloned elsewhere.
+        this.stripConditionalDefs(schema);
+    }
+
+    /**
+     * Strip the conditions of a schema and of every $defs entry with its own allOf, deps
+     * first, so a def is fully stripped before it's cloned elsewhere. An entry that carries
+     * its own $defs is handled the same way first: the VC wrapper holds the subject schema,
+     * and the subject schema holds its sub-schemas.
+     *
+     * @param schema Schema node carrying $defs
+     */
+    private stripConditionalDefs(schema: any) {
+        const defsObj = schema.$defs;
+        if (!defsObj) {
+            return;
+        }
+        for (const nestedSchema of Object.values(defsObj)) {
+            this.stripConditionalDefs(nestedSchema);
+        }
+
         const prepared = new Set<string>();
         const inProgress = new Set<string>();
         const prepareDef = (key: string) => {
@@ -427,7 +445,7 @@ export class VCJS {
             inProgress.delete(key);
             prepared.add(key);
         };
-        for (const key of defsKeys) {
+        for (const key of Object.keys(defsObj)) {
             prepareDef(key);
         }
         this.applyConditionalStrip(schema, defsObj, 'root');
@@ -830,7 +848,7 @@ export class VCJS {
         this.prepareSchema(schema);
         this.coerceConditionConsts(schema);
 
-        const schemaObject = Schema.fromVc(schema);
+        const schemaObject = Schema.fromDocument(schema);
 
         const validate = await ajv.compileAsync(schema);
         const valid = validate(subject);
