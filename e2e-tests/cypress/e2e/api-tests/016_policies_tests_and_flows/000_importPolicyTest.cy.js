@@ -1,6 +1,7 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { newestPolicyCopy, parseImportResponse } from '../../../support/cdmTools';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Import policy test', { tags: ['policies', 'secondPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
@@ -28,58 +29,22 @@ context('Import policy test', { tags: ['policies', 'secondPool', 'api-all', 'all
                 });
             });
 
-    before('Get policy id', () => {
+    // Every run works on a copy of its own, put in dry run here and deleted by 003_deletePolicyTest:
+    // a copy left by an earlier run may have been published or carry its tests.
+    before('Import a copy of the policy and put it in dry run', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            // 1. Import File
-            cy.importPolicyFile(authorization, 'iRecDRF.policy').then(() => {
-                // 2. Get List and find ID
+            cy.importPolicyFile(authorization, 'iRecDRF.policy').then((response) => {
+                // The import answers with every policy of the registry
+                const policy = newestPolicyCopy([].concat(parseImportResponse(response)), 'iRecDRF');
+                expect(policy?.status, 'the copy of iRecDRF just imported').to.eq('DRAFT');
+                policyId = policy.id;
                 cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.Policies,
+                    method: METHOD.PUT,
+                    url: `${API.ApiServer}${API.Policies}${policyId}/${API.DryRun}`,
                     headers: { authorization },
-                    timeout: TIMEOUTS.backend
-                }).then((response) => {
-                    const policy = response.body.find(p => p.name === 'iRecDRF');
-                    expect(policy, 'the imported iRecDRF policy').to.not.be.undefined;
-                    policyId = policy.id;
-
-                    // 3. Set to Dry Run, unless the policy already is in it: asking for the
-                    // transition a second time answers 500
-                    if (policy.status !== 'DRY-RUN') {
-                        cy.request({
-                            method: METHOD.PUT,
-                            url: `${API.ApiServer}${API.Policies}${policyId}/${API.DryRun}`,
-                            headers: { authorization },
-                            timeout: TIMEOUTS.longOperation,
-                        }).then((response) => {
-                            expect(response.status).to.eq(STATUS_CODE.OK);
-                        });
-                    }
-                });
-            });
-        });
-    });
-
-    //Importing a record whose test is already on the policy answers 409, and the test is only
-    //removed by the deletion spec at the end of the folder: a run that stopped earlier leaves one
-    //behind, so the policy is emptied of its tests before importing.
-    before('Remove the tests of earlier runs', () => {
-        Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies + policyId,
-                headers: { authorization },
-                timeout: TIMEOUTS.backend,
-            }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.OK);
-                (response.body.tests ?? []).forEach((test) => {
-                    cy.request({
-                        method: METHOD.DELETE,
-                        url: API.ApiServer + API.Policies + policyId + '/' + API.Test + test.id,
-                        headers: { authorization },
-                        failOnStatusCode: false,
-                        timeout: TIMEOUTS.backend,
-                    });
+                    timeout: TIMEOUTS.longOperation,
+                }).then((dryRunResponse) => {
+                    expect(dryRunResponse.status).to.eq(STATUS_CODE.OK);
                 });
             });
         });

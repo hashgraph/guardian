@@ -32,7 +32,11 @@ npm run guardian:test        # the whole suite
 npm run guardian:test -- cypress/e2e/api-tests/001_demo/getRandomKey.cy.js   # a single spec
 npm run guardian:test -- 'cypress/e2e/api-tests/010_tokens/*.cy.js' cypress/e2e/api-tests/001_demo/getRandomKey.cy.js   # several specs or globs
 npm run guardian:down        # stops the services and removes the containers
+npm run guardian:stop-policies                      # stops the policy processes, keeping the services and the database
+STOP_POLICIES_BETWEEN_SUITES=1 npm run guardian:test   # the same, between suites and at the end
 ```
+
+Every published or dry-run policy runs in its own process (about 280 MB), which stays up until the services stop: a full run leaves about 55 of them, 13 GB. `guardian:stop-policies` sends each one the `DELETE_POLICY` event, so it exits cleanly and is not respawned (a process killed by a signal is respawned by policy-service after 10 s). It removes nothing from the database. A suite is a spec folder (`api-tests/003_ipfs`, `ui-tests/specs/02_policies`, `policy-tests/cdm`); suites do not depend on each other and publish what they need, so a suite does not need the processes of the ones before it. With `STOP_POLICIES_BETWEEN_SUITES=1`, `guardian:test`, `guardian:test:smoke` and `test:everything` stop them before each new suite starts (Cypress `before:spec`) and once Cypress ends, whatever its result, keeping the Cypress exit status.
 
 The two halves can run in different places, for example when the tests are driven from a dev container that has no docker:
 
@@ -742,6 +746,7 @@ npm run guardian:test        # the whole suite
 npm run guardian:test:smoke  # only the tests tagged smoke
 npm run guardian:test -- cypress/e2e/api-tests/001_demo/getRandomKey.cy.js   # a single spec
 npm run guardian:test -- 'cypress/e2e/api-tests/010_tokens/*.cy.js' cypress/e2e/api-tests/001_demo/getRandomKey.cy.js   # several specs or globs
+npm run guardian:stop-policies   # stops the policy processes, see the Quickstart
 npm run guardian:down        # stops the services and removes the containers
 ```
 

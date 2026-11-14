@@ -69,6 +69,29 @@ describe('local-guardian.sh status', () => {
     });
 });
 
+describe('local-guardian.sh stop-policies', () => {
+    let sandbox;
+    afterEach(() => {
+        sandbox.remove();
+        delete process.env.INFRA_HOST;
+    });
+
+    it('stops the policy processes of the services in .local/logs through the NATS of the infra', () => {
+        sandbox = createSandbox('local-guardian.sh');
+        process.env.INFRA_HOST = '10.1.2.3';
+        const { status, stderr, commands } = sandbox.run(['stop-policies']);
+        assert.equal(status, 0, stderr);
+        const e2eDir = path.join(sandbox.root, 'e2e-tests');
+        assert.deepEqual(commands, [`node ${e2eDir}/scripts/stop-policies.mjs ${e2eDir}/.local/logs 10.1.2.3:4222`]);
+    });
+
+    it('fails when a policy process could not be stopped', () => {
+        sandbox = createSandbox('local-guardian.sh');
+        const { status } = sandbox.run(['stop-policies'], { failingCommand: 'stop-policies.mjs' });
+        assert.notEqual(status, 0);
+    });
+});
+
 describe('local-guardian.sh infra-down', () => {
     let sandbox;
     afterEach(() => { sandbox.remove(); });

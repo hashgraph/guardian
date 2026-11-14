@@ -1,6 +1,8 @@
+const path = require('path');
 const { defineConfig } = require('cypress');
 const { verifyDownloadTasks } = require('cy-verify-downloads');
 const { snapshotHbarBalances } = require('./cypress/tasks/hbarBalances');
+const { createSuiteChangeStopper } = require('./cypress/tasks/policyProcesses');
 
 const MIN_SR_USER_HBAR_BALANCE = 10;
 
@@ -153,6 +155,18 @@ module.exports = defineConfig({
                 await afterRunHook(results);
                 await reportHbarSpend(config);
             });
+            if (process.env.STOP_POLICIES_BETWEEN_SUITES === '1') {
+                const natsServer = process.env.STOP_POLICIES_NATS;
+                if (!natsServer) {
+                    throw new Error('STOP_POLICIES_BETWEEN_SUITES=1 needs STOP_POLICIES_NATS (host:port), which scripts/local-guardian.sh sets');
+                }
+                const logDir = path.join(__dirname, '.local', 'logs');
+                const beforeSpec = createSuiteChangeStopper(async () => {
+                    const { stopPolicies } = await import('./scripts/stop-policies.mjs');
+                    await stopPolicies(logDir, natsServer);
+                });
+                on('before:spec', (spec) => beforeSpec(spec.relative));
+            }
             on('task', verifyDownloadTasks);
             on('task', {
                 checkFile(partialName) {
