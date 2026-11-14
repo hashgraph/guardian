@@ -53,6 +53,7 @@ jobs:
         run: yarn install --immutable
 
       - name: Build
+        id: build
         run: |
           pushd interfaces
           yarn run build
@@ -76,7 +77,7 @@ jobs:
           yarn run build
           popd
           pushd frontend
-          npm install
+          npm ci
           npm run build
           npm run build:prod
           npm run build:demo
@@ -164,7 +165,7 @@ jobs:
           CI: true
           NODE_OPTIONS: --openssl-legacy-provider
 
-      - name: Test
+      - name: Unit Tests
         run: |
           pushd interfaces
           npm run test
@@ -215,7 +216,10 @@ jobs:
           OPERATOR_KEY: ${{ secrets.CI_HEDERA_PRIV_KEY }}
 
       # Vitest in headless Chromium; the frontend dependencies were installed by the Build step.
+      # Under GitHub Actions vitest-base.config.ts writes test_results/frontend.xml for the summary table.
+      # Runs after a failed Lint or Test too, so the summary table still has the frontend row.
       - name: Frontend unit tests
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: |
           pushd frontend
           npx playwright install --with-deps chromium
@@ -226,7 +230,9 @@ jobs:
 
       # Tests of the workflow helper scripts and of the e2e helpers, and the linter on the Cypress
       # suites. e2e-tests is not a workspace; the Cypress binary is not needed for any of them.
+      # Runs after a failed Lint or Test too, so their failures do not hide these.
       - name: E2E tooling tests and lint
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: |
           node --test .github/scripts/report-test-summary.test.mjs
           pushd e2e-tests
@@ -239,7 +245,7 @@ jobs:
           CYPRESS_INSTALL_BINARY: '0'
 
       # Local replacement for the step-security publish-unit-test-result-action:
-      # the mocha runs already wrote JUnit XML into test_results/, so render the
+      # the mocha and Vitest runs already wrote JUnit XML into test_results/, so render the
       # breakdown into the job summary instead of opening a check run.
       # always(): the table is most useful right after a failed Test step.
       - name: Report test results
