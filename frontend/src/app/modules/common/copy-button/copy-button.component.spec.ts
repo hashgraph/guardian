@@ -78,8 +78,7 @@ describe('CopyButtonComponent direct copying', () => {
     it('does not copy a value when disabled', () => {
         const clipboard = Object.create(Clipboard.prototype);
         vi.spyOn(clipboard, 'copy').mockReturnValue(true);
-        const detector = Object.create(ChangeDetectorRef.prototype);
-        vi.spyOn(detector, 'markForCheck').mockImplementation(() => undefined);
+        const detector = Object.assign(Object.create(ChangeDetectorRef.prototype), { markForCheck: vi.fn() });
         const button = new CopyButtonComponent(clipboard, detector);
         Object.assign(button, { value: 'abc', disabled: true });
         button.copy();
