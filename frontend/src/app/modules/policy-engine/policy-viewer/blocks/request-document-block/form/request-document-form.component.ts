@@ -125,6 +125,8 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
      * the parent block, which resets its own draft id on every refresh. Later saves update this record.
      */
     private connectedDraftId: string | null = null;
+    /** Update time, from the server, of the draft record the form is based on. Stored with each autosave. */
+    private baseUpdateDate: string | undefined;
     public step: FormStep = 'fill';
     public screen: FormScreen = 'form';
     public issues: IFormIssue[] = [];
@@ -517,6 +519,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
             this.activeStepLabel = step?.label ?? null;
         });
         this.initForm(this.dataForm, false);
+        this.baseUpdateDate = this.parent?.draft ? (this.parent as { ref?: { updateDate?: string } }).ref?.updateDate : undefined;
         this.sub = interval(this.AUTOSAVE_INTERVAL).subscribe(() => {
             // Nothing changed since the last save, so there is nothing new to keep
             if (!this.dataSaved) {
@@ -536,7 +539,7 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
         const saveNeeded = await autosaveValueChanged(data, savedData);
 
         if (saveNeeded) {
-            await this.storage.save(this.autosaveId, data);
+            await this.storage.save(this.autosaveId, data, this.baseUpdateDate);
             this.lastSavedAt = new Date();
         }
     }
@@ -867,10 +870,12 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
             .subscribe((result) => {
                 // The autosave is the only copy until the server has accepted the document
                 this.storage.delete(this.autosaveId);
-                // A new draft record: further saves update it, and the autosave moves to its id
-                const createdId = result?.response?._id;
-                if (draft && !draftId && typeof createdId === 'string') {
-                    this.connectedDraftId = createdId;
+                // The server answers a draft save with the record it stored. A new record is kept as
+                // the one further saves update, and the autosave moves to its id.
+                const stored = draft ? result?.response?.draftRecord : null;
+                if (stored && typeof stored.id === 'string') {
+                    this.connectedDraftId = stored.id;
+                    this.baseUpdateDate = stored.updateDate;
                 }
                 if (captureOutput) {
                     this.policyTest.captureTestCase({

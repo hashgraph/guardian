@@ -1031,6 +1031,11 @@ export interface IPolicyDBDocument<T> {
     draftId?: string;
 
     /**
+     * The draft record a draft save stored, read back from the database
+     */
+    draftRecord?: { id: string; updateDate: Date };
+
+    /**
      * Parent document
      */
     draftRef?: string;

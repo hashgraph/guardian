@@ -184,7 +184,7 @@ export class RequestDocumentBlockComponent
 
     /**
      * The autosave to offer, or null. An opened draft may have been saved again elsewhere
-     * after this autosave was written; that autosave is deleted instead of offered, since
+     * after this autosave was based on it; that autosave is deleted instead of offered, since
      * restoring it would overwrite the newer data.
      */
     private async loadFreshAutosave(): Promise<any> {
@@ -193,7 +193,7 @@ export class RequestDocumentBlockComponent
         if (!record) {
             return null;
         }
-        if (this.draft && isAutosaveStale(record.updatedAt, this.ref?.updateDate)) {
+        if (this.draft && isAutosaveStale(record.baseUpdateDate, this.ref?.updateDate)) {
             await this.storage.delete(autosaveId);
             return null;
         }
