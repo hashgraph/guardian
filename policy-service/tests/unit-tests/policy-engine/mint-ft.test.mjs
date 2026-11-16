@@ -51,7 +51,8 @@ function fixture(step, status = Status.NEW, dryRun = false) {
     if (status === Status.ERROR) transaction.error = 'receipt failed';
     const state = {
         request, transaction, statusKey, transactiontype, action, calls: [], events: [],
-        savedRequests: [], savedTransactions: [], ledger: [],
+        savedRequests: [], savedTransactions: [], ledger: [], history: [], balance: 0,
+        consensusResult: 'SUCCESS', failedResult: isMint ? 'TOKEN_MAX_SUPPLY_REACHED' : 'ACCOUNT_FROZEN_FOR_TOKEN',
         checkpoint: [{ consensus_timestamp: '200.000000001' }],
         found: undefined, checkpointError: null, lookupError: null,
         actionError: null, saveError: null, captureGate: null, saveGate: null
@@ -90,21 +91,30 @@ function fixture(step, status = Status.NEW, dryRun = false) {
         state.calls.push(structuredClone({ task, options }));
         if (task.type === WorkerTaskType.GET_TRANSACTIONS) {
             if (task.data.filter) {
-                if (state.lookupError) throw state.lookupError;
-                return state.found ?? state.ledger.filter(record =>
+                if (state.lookupError && (!state.lookupErrorAt || state.lookups().length === state.lookupErrorAt)) {
+                    throw state.lookupError;
+                }
+                return state.found ?? state.history.filter(record =>
                     record.transactiontype === task.data.transactiontype &&
                     record.memo_base64 === task.data.filter.memo_base64 &&
-                    (!task.data.timestamp || record.consensus_timestamp > task.data.timestamp.slice(3)));
+                    (!task.data.timestamp || timestampValue(record.consensus_timestamp) > timestampValue(task.data.timestamp.slice(3))))
+                    .sort((a, b) => timestampValue(a.consensus_timestamp) < timestampValue(b.consensus_timestamp) ? -1 : 1)
+                    .slice(0, task.data.limit);
             }
             if (state.captureGate) await state.captureGate.promise;
             if (state.checkpointError) throw state.checkpointError;
             return state.checkpoint;
         }
         state.events.push(task.type);
-        state.ledger.push({
+        const entry = {
             transactiontype: task.type === WorkerTaskType.MINT_FT ? 'TOKENMINT' : 'CRYPTOTRANSFER',
-            consensus_timestamp: '300.000000001', memo_base64: btoa(task.data.transactionMemo)
-        });
+            consensus_timestamp: `${300 + state.history.length}.000000001`, memo_base64: btoa(task.data.transactionMemo),
+            result: state.consensusResult
+        };
+        state.history.push(entry);
+        if (entry.result !== 'SUCCESS') throw state.actionError ?? new Error(entry.result);
+        state.ledger.push(entry);
+        if (task.type === action) state.balance += task.data.tokenValue;
         if (state.actionError) throw state.actionError;
         return {};
     };
@@ -118,6 +128,20 @@ function fixture(step, status = Status.NEW, dryRun = false) {
     state.actions = () => state.calls.filter(call => call.task.type === action);
     state.lookups = () => state.calls.filter(call => call.task.data.filter);
     return state;
+}
+
+function timestampValue(timestamp) {
+    const [seconds, nanoseconds] = timestamp.split('.');
+    return BigInt(seconds) * 1000000000n + BigInt(nanoseconds);
+}
+
+function record(fixture, result, timestamp) {
+    return {
+        transactiontype: fixture.transactiontype,
+        memo_base64: btoa(fixture.request.memo),
+        consensus_timestamp: timestamp,
+        result
+    };
 }
 
 describe('@unit fungible mint checkpoint and retry', () => {
@@ -205,7 +229,7 @@ describe('@unit fungible mint checkpoint and retry', () => {
 
             it('recognizes an errored transaction without repeating it or moving its checkpoint', async () => {
                 const f = fixture(step, Status.ERROR);
-                f.found = [{}];
+                f.found = [record(f, 'SUCCESS', '150.000000001')];
                 await f.run();
                 assert.equal(f.transaction[f.statusKey], Status.SUCCESS);
                 assert.equal(f.transaction.error, undefined);
@@ -244,7 +268,7 @@ describe('@unit fungible mint checkpoint and retry', () => {
             for (const found of [true, false]) {
                 it(`resolves pending to ${found ? 'success' : 'new then sends once'} through the public mint flow`, async () => {
                     const f = fixture(step, Status.PENDING);
-                    f.found = found ? [{}] : [];
+                    f.found = found ? [record(f, 'SUCCESS', '150.000000001')] : [];
                     assert.equal(await f.mint.mint({ userId: 'user' }), !found);
                     assert.equal(f.lookups().length, 1);
                     assert.equal(f.lookups()[0].task.data.timestamp, 'gt:100.000000001');
@@ -265,7 +289,7 @@ describe('@unit fungible mint checkpoint and retry', () => {
             it('uses a memo-only retry lookup for a previously empty checkpoint', async () => {
                 const f = fixture(step, Status.ERROR);
                 f.request.startTransaction = undefined;
-                f.found = [{}];
+                f.found = [record(f, 'SUCCESS', '150.000000001')];
                 await f.run();
                 assert.equal(f.lookups()[0].task.data.timestamp, null);
                 assert.equal(f.actions().length, 0);
@@ -279,6 +303,159 @@ describe('@unit fungible mint checkpoint and retry', () => {
                     assert.equal(f.actions().length, 1);
                     assert.equal(f.actions()[0].options.dryRun, 'dry-run');
                     assert.equal(f.request.startTransaction, '100.000000001');
+                });
+            }
+
+            for (const status of [Status.ERROR, Status.PENDING]) {
+                describe(`successful recovery from ${status}`, () => {
+                    it('retries a real failed operation after its cause is corrected', async () => {
+                        const f = fixture(step);
+                        f.consensusResult = f.failedResult;
+                        f.actionError = status === Status.PENDING
+                            ? Object.assign(new Error('receipt timeout'), { isTimeoutError: true }) : null;
+                        await assert.rejects(f.mint.mint({ userId: 'user' }));
+                        assert.equal(f.transaction[f.statusKey], status);
+                        assert.equal(f.ledger.length, 0);
+                        assert.equal(f.balance, 0);
+                        assert.equal(f.history[0].result, f.failedResult);
+
+                        f.consensusResult = 'SUCCESS';
+                        f.actionError = null;
+                        await f.mint.mint({ userId: 'user' });
+
+                        assert.equal(f.actions().length, 2);
+                        assert.deepEqual(f.history.map(record => record.result), [f.failedResult, 'SUCCESS']);
+                        assert.equal(f.ledger.length, 1);
+                        assert.equal(f.balance, f.request.amount);
+                        assert.equal(f.transaction[f.statusKey], Status.SUCCESS);
+                        assert.equal(f.request.isMintNeeded, false);
+                        assert.equal(f.request.isTransferNeeded, false);
+                        assert.equal(f.request.error, undefined);
+                        if (status === Status.PENDING) {
+                            assert.ok(f.savedTransactions.some(value => value[f.statusKey] === Status.NEW));
+                        }
+                    });
+
+                    it('finds success after a failed match without dispatching or replacing the checkpoint', async () => {
+                        const f = fixture(step, status);
+                        f.history.push(record(f, f.failedResult, '150.000000001'), record(f, 'SUCCESS', '160.000000001'));
+                        await f.mint.mint({ userId: 'user' });
+                        assert.equal(f.actions().length, 0);
+                        assert.equal(f.transaction[f.statusKey], Status.SUCCESS);
+                        assert.equal(f.request.isMintNeeded, false);
+                        assert.equal(f.request.isTransferNeeded, false);
+                        assert.equal(f.request.startTransaction, '100.000000001');
+                        assert.ok(f.savedRequests.every(value => value.startTransaction === '100.000000001'));
+                        assert.deepEqual(f.lookups().map(call => call.task.data.timestamp), ['gt:100.000000001', 'gt:150.000000001']);
+                        for (const call of f.lookups()) {
+                            assert.deepEqual(call.task.data.filter, { memo_base64: btoa(f.request.memo) });
+                            assert.equal(call.task.data.limit, 1);
+                            assert.equal(call.task.data.accountId, '0.0.2');
+                            assert.equal(call.task.data.transactiontype, f.transactiontype);
+                            assert.deepEqual(call.options, { priority: 1, attempts: 10, dryRun: null, mockId: null });
+                        }
+                    });
+
+                    it('searches beyond twenty-five failed matches before deciding to dispatch', async () => {
+                        const f = fixture(step, status);
+                        for (let i = 0; i < 30; i++) {
+                            f.history.push(record(f, f.failedResult, `150.${String(i).padStart(9, '0')}`));
+                        }
+                        f.history.push(record(f, 'SUCCESS', '160.000000001'));
+                        await f.mint.mint({ userId: 'user' });
+                        assert.equal(f.actions().length, 0);
+                        assert.equal(f.lookups().length, 31);
+                        assert.equal(f.transaction[f.statusKey], Status.SUCCESS);
+                        assert.equal(f.request.startTransaction, '100.000000001');
+                    });
+
+                    it('exhausts failed matches before one fresh checkpoint and one successful operation', async () => {
+                        const f = fixture(step, status);
+                        f.history.push(record(f, f.failedResult, '150.000000001'), record(f, f.failedResult, '160.000000001'));
+                        await f.mint.mint({ userId: 'user' });
+                        assert.deepEqual(f.lookups().map(call => call.task.data.timestamp), [
+                            'gt:100.000000001', 'gt:150.000000001', 'gt:160.000000001'
+                        ]);
+                        assert.equal(f.calls.length, 5);
+                        assert.equal(f.calls[3].task.data.order, 'desc');
+                        assert.equal(f.calls[4].task.type, f.action);
+                        assert.equal(f.calls.filter(call => call.task.data.order === 'desc').length, 1);
+                        assert.equal(f.ledger.length, 1);
+                        assert.equal(f.balance, f.request.amount);
+                        assert.equal(f.transaction[f.statusKey], Status.SUCCESS);
+                        assert.equal(f.request.startTransaction, '200.000000001');
+                    });
+
+                    it('preserves the operation and saved checkpoint when a later lookup fails', async () => {
+                        const f = fixture(step, status);
+                        f.history.push(record(f, f.failedResult, '150.000000001'));
+                        f.lookupError = new Error('mirror unavailable after first match');
+                        f.lookupErrorAt = 2;
+                        await assert.rejects(f.mint.mint({ userId: 'user' }), error => error === f.lookupError);
+                        assert.equal(f.lookups().length, 2);
+                        assert.equal(f.actions().length, 0);
+                        assert.equal(f.transaction[f.statusKey], status);
+                        assert.equal(f.savedTransactions.length, 0);
+                        assert.equal(f.request.startTransaction, '100.000000001');
+                        assert.ok(f.savedRequests.every(value => value.startTransaction === '100.000000001'));
+                        assert.equal(f.balance, 0);
+                    });
+
+                    it('searches from an empty checkpoint without persisting its local cursor', async () => {
+                        const f = fixture(step, status);
+                        f.request.startTransaction = undefined;
+                        f.history.push(record(f, f.failedResult, '150.000000001'), record(f, 'SUCCESS', '160.000000001'));
+                        await f.mint.mint({ userId: 'user' });
+                        assert.deepEqual(f.lookups().map(call => call.task.data.timestamp), [null, 'gt:150.000000001']);
+                        assert.equal(f.actions().length, 0);
+                        assert.equal(f.request.startTransaction, undefined);
+                        assert.ok(f.savedRequests.every(value => value.startTransaction === undefined));
+                    });
+
+                    for (const [checkpoint, failed, succeeded] of [
+                        ['1794770000.000000001', '1794770000.000000002', '1794770000.000000003'],
+                        ['9.999999999', '10.000000000', '10.000000001']
+                    ]) {
+                        it(`advances precisely from ${checkpoint} to ${failed}`, async () => {
+                            const f = fixture(step, status);
+                            f.request.startTransaction = checkpoint;
+                            f.history.push(record(f, f.failedResult, failed), record(f, 'SUCCESS', succeeded));
+                            await f.mint.mint({ userId: 'user' });
+                            assert.deepEqual(f.lookups().map(call => call.task.data.timestamp), [`gt:${checkpoint}`, `gt:${failed}`]);
+                            assert.equal(f.actions().length, 0);
+                            assert.equal(f.transaction[f.statusKey], Status.SUCCESS);
+                            assert.equal(f.request.startTransaction, checkpoint);
+                        });
+                    }
+
+                    for (const result of ['SUCCESS', 'TOKEN_MAX_SUPPLY_REACHED', 'ACCOUNT_FROZEN_FOR_TOKEN']) {
+                        for (const timestamp of [undefined, '', 'invalid', '150.0000000000', '100.000000001', '99.999999999']) {
+                            it(`rejects a ${result} match with invalid or non-advancing timestamp ${timestamp}`, async () => {
+                                const f = fixture(step, status);
+                                f.found = [record(f, result, timestamp)];
+                                await assert.rejects(f.mint.mint({ userId: 'user' }), /transaction consensus timestamp|did not advance/);
+                                assert.equal(f.lookups().length, 1);
+                                assert.equal(f.actions().length, 0);
+                                assert.equal(f.transaction[f.statusKey], status);
+                                assert.equal(f.savedTransactions.length, 0);
+                                assert.equal(f.request.startTransaction, '100.000000001');
+                                assert.ok(f.savedRequests.every(value => value.startTransaction === '100.000000001'));
+                            });
+                        }
+                    }
+
+                    it('stops a repeated failed timestamp instead of looping or resending', async () => {
+                        const f = fixture(step, status);
+                        f.found = [record(f, f.failedResult, '150.000000001')];
+                        f.lookupError = new Error('unexpected third lookup');
+                        f.lookupErrorAt = 3;
+                        await assert.rejects(f.mint.mint({ userId: 'user' }), /did not advance/);
+                        assert.equal(f.lookups().length, 2);
+                        assert.equal(f.actions().length, 0);
+                        assert.equal(f.transaction[f.statusKey], status);
+                        assert.equal(f.request.startTransaction, '100.000000001');
+                        assert.ok(f.savedRequests.every(value => value.startTransaction === '100.000000001'));
+                    });
                 });
             }
 
@@ -331,7 +508,9 @@ describe('@unit fungible mint checkpoint and retry', () => {
         const f = fixture('mint', Status.ERROR);
         f.request.isTransferNeeded = true;
         f.transaction.transferStatus = Status.NEW;
-        f.ledger.push({ transactiontype: 'TOKENMINT', consensus_timestamp: '150.000000001', memo_base64: btoa(f.request.memo) });
+        const minted = record(f, 'SUCCESS', '150.000000001');
+        f.history.push(minted);
+        f.ledger.push(minted);
         await f.mint.mint({ userId: 'user' });
         assert.equal(f.actions().length, 0);
         assert.equal(f.ledger.length, 2);

@@ -118,30 +118,47 @@ export class MintFT extends TypedMint {
         transactiontype: 'TOKENMINT' | 'CRYPTOTRANSFER',
         userId: string | null
     ): Promise<boolean> {
-        const transactions = await new Workers().addRetryableTask(
-            {
-                type: WorkerTaskType.GET_TRANSACTIONS,
-                data: {
-                    accountId: this._token.treasuryId,
-                    transactiontype,
-                    timestamp: this._mintRequest.startTransaction
-                        ? `gt:${this._mintRequest.startTransaction}`
-                        : null,
-                    filter: {
-                        memo_base64: btoa(this._mintRequest.memo),
+        let cursor = this._mintRequest.startTransaction;
+        while (true) {
+            const transactions = await new Workers().addRetryableTask(
+                {
+                    type: WorkerTaskType.GET_TRANSACTIONS,
+                    data: {
+                        accountId: this._token.treasuryId,
+                        transactiontype,
+                        timestamp: cursor
+                            ? `gt:${cursor}`
+                            : null,
+                        filter: {
+                            memo_base64: btoa(this._mintRequest.memo),
+                        },
+                        limit: 1,
+                        payload: { userId }
                     },
-                    limit: 1,
-                    payload: { userId }
                 },
-            },
-            {
-                priority: 1,
-                attempts: 10,
-                dryRun: null,
-                mockId: null
+                {
+                    priority: 1,
+                    attempts: 10,
+                    dryRun: null,
+                    mockId: null
+                }
+            );
+            const transaction = transactions[0];
+            if (!transaction) {
+                return false;
             }
-        );
-        return transactions.length > 0;
+            const timestamp = transaction.consensus_timestamp;
+            if (typeof timestamp !== 'string' || !/^\d+\.\d{9}$/.test(timestamp)) {
+                throw new Error('Invalid transaction consensus timestamp');
+            }
+            if (cursor && BigInt(timestamp.replace('.', '')) <= BigInt(cursor.replace('.', ''))) {
+                throw new Error('Transaction consensus timestamp did not advance');
+            }
+            if (transaction.result === 'SUCCESS') {
+                return true;
+            }
+            cursor = timestamp;
+        }
     }
 
     private async captureCheckpoint(
