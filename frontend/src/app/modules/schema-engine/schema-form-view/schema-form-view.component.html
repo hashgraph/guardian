@@ -101,7 +101,7 @@
         <span class="sf-ro-lt" [attr.accordiontabid]="item.fullPath">{{ item.description || item.title || item.name }}</span>
         @if (actions) {
             <span class="sf-ro-acts">
-                @if (hasGeneratedFormulas(item); as generated) {
+                @if (hasGeneratedFormulas(item)) {
                     <button
                         type="button"
                         class="sf-ro-act sf-ro-fx"
