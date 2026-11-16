@@ -804,9 +804,7 @@
                                 class="sc-field-metadata-toggle"
                                 [attr.aria-pressed]="!!showMeta"
                                 (click)="formPreferences.setShowFieldMetadata(!formPreferences.showFieldMetadata)">
-                                @if (showMeta) {
-                                    <i class="pi pi-check" aria-hidden="true"></i>
-                                }
+                                <i class="pi" [class.pi-eye]="showMeta" [class.pi-eye-slash]="!showMeta" aria-hidden="true"></i>
                                 Field metadata
                             </button>
                         </div>

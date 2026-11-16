@@ -13,17 +13,19 @@ describe('HideNotProvidedToggleComponent', () => {
     const button = (fixture: ComponentFixture<HideNotProvidedToggleComponent>): HTMLButtonElement =>
         fixture.nativeElement.querySelector('button.hide-not-provided-toggle');
 
-    it('reads "Hide not provided" and shows no check while it is off', () => {
+    it('reads "Fields not provided" and shows a crossed eye while it is off', () => {
         const fixture = build(false);
-        expect(button(fixture).textContent!.trim()).toBe('Hide not provided');
+        expect(button(fixture).textContent!.trim()).toBe('Fields not provided');
         expect(button(fixture).getAttribute('aria-pressed')).toBe('false');
-        expect(button(fixture).querySelector('.pi-check')).toBeNull();
+        expect(button(fixture).querySelector('.pi-eye-slash')).not.toBeNull();
+        expect(button(fixture).querySelector('.pi-eye')).toBeNull();
     });
 
-    it('is pressed and shows a check while it is on', () => {
+    it('is pressed and shows an eye while it is on', () => {
         const fixture = build(true);
         expect(button(fixture).getAttribute('aria-pressed')).toBe('true');
-        expect(button(fixture).querySelector('.pi-check')).not.toBeNull();
+        expect(button(fixture).querySelector('.pi-eye')).not.toBeNull();
+        expect(button(fixture).querySelector('.pi-eye-slash')).toBeNull();
     });
 
     it('asks for the opposite state on click', () => {

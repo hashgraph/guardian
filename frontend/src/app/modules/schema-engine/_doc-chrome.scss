@@ -91,7 +91,7 @@
     }
 }
 
-// "Field metadata": a text button that shows a check while it is on
+// "Field metadata": a text button that shows an eye while it is on and a crossed eye while it is off
 @mixin ghost-toggle {
     @include compact-button;
     display: inline-flex;
@@ -110,7 +110,7 @@
     }
 
     .pi {
-        font-size: 11px;
+        font-size: 12px;
     }
 }
 

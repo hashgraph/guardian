@@ -7,6 +7,7 @@ import { of } from 'rxjs';
 import { SchemaService } from '../../../services/schema.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { SchemaFormPreferencesService } from 'src/app/services/schema-form-preferences.service';
 import { VCViewerDialog } from './vc-dialog.component';
 
 describe('VCViewerDialog', () => {
@@ -101,21 +102,42 @@ describe('VCViewerDialog', () => {
             expect(toggleButtons(fixture).map((b) => b.getAttribute('aria-pressed'))).toEqual(['false', 'true']);
         }));
 
-        it('offers "Hide not provided" next to "Field metadata", off, and hands it to the document', fakeAsync(() => {
+        it('offers "Fields not provided" next to "Field metadata", hiding empty fields until it is pressed', fakeAsync(() => {
             const fixture = render({ type: 'VC', viewDocument: true, document: { id: 'vc-1' } });
             const toggle = () => fixture.debugElement.query(By.css('app-hide-not-provided-toggle'));
             expect(fixture.nativeElement.querySelector('.field-metadata-toggle')).not.toBeNull();
             expect(toggle().nativeElement.pressed).toBe(false);
-            expect(view(fixture).hideNotProvided).toBe(false);
+            expect(view(fixture).hideNotProvided).toBe(true);
 
             toggle().triggerEventHandler('toggled', true);
             fixture.componentRef.changeDetectorRef.markForCheck();
             fixture.detectChanges();
             expect(toggle().nativeElement.pressed).toBe(true);
-            expect(view(fixture).hideNotProvided).toBe(true);
+            expect(view(fixture).hideNotProvided).toBe(false);
 
             show(fixture, false);
             expect(toggle()).toBeNull();
+        }));
+
+        it('shows an eye on "Field metadata" while it is on and a crossed eye while it is off', fakeAsync(() => {
+            const fixture = render({ type: 'VC', viewDocument: true, document: { id: 'vc-1' } });
+            const preferences = TestBed.inject(SchemaFormPreferencesService);
+            const icon = (): HTMLElement => fixture.nativeElement.querySelector('.field-metadata-toggle .pi');
+            const refresh = () => {
+                fixture.componentRef.changeDetectorRef.markForCheck();
+                fixture.detectChanges();
+            };
+
+            preferences.showFieldMetadata$.next(false);
+            refresh();
+            expect(icon().classList).toContain('pi-eye-slash');
+            expect(icon().classList).not.toContain('pi-eye');
+
+            preferences.showFieldMetadata$.next(true);
+            refresh();
+            expect(icon().classList).toContain('pi-eye');
+            expect(icon().classList).not.toContain('pi-eye-slash');
+            expect(fixture.nativeElement.querySelector('.field-metadata-toggle .pi-check')).toBeNull();
         }));
 
         it('adds no preview overlay to the document dialog', fakeAsync(() => {

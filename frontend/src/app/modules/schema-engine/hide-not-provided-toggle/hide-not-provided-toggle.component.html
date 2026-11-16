@@ -3,8 +3,6 @@
     class="hide-not-provided-toggle"
     [attr.aria-pressed]="pressed"
     (click)="toggled.emit(!pressed)">
-    @if (pressed) {
-        <i class="pi pi-check" aria-hidden="true"></i>
-    }
-    Hide not provided
+    <i class="pi" [class.pi-eye]="pressed" [class.pi-eye-slash]="!pressed" aria-hidden="true"></i>
+    Fields not provided
 </button>
