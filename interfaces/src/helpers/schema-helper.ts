@@ -1562,7 +1562,7 @@ export class SchemaHelper {
          * sub-schema is wrapped in `items`: `properties` is only honoured on objects, so without
          * the wrapper the constraint is inert and the condition enforces nothing for any entry.
          */
-        const crossContainer = (root: any, path: string[]): any => {
+        const crossContainer = (root: any, path: string[], wrapItems: boolean = true): any => {
             let node = root;
             let level: SchemaField[] = fields;
             for (let i = 0; i < path.length - 1; i++) {
@@ -1570,7 +1570,7 @@ export class SchemaHelper {
                 if (!node.properties) { node.properties = {}; }
                 if (!node.properties[path[i]]) { node.properties[path[i]] = {}; }
                 node = node.properties[path[i]];
-                if (hop?.isArray) {
+                if (wrapItems && hop?.isArray) {
                     if (!node.items) { node.items = {}; }
                     node = node.items;
                 }
@@ -1579,7 +1579,29 @@ export class SchemaHelper {
             return node;
         };
 
-        const buildCrossRequired = (targets?: { field: SchemaField; fieldPath: string[] }[]): any | undefined => {
+        // An IF read through a list (or an unresolved hop) compiles to a vacuous `if`, so its
+        // targets must not be wrapped in `items`: only the form pairs entries.
+        const triggerCrossesList = (cond: SchemaCondition): boolean => {
+            const ic: any = cond.ifCondition;
+            if (!ic) { return false; }
+            const rows: any[] = Array.isArray(ic.AND) ? ic.AND : Array.isArray(ic.OR) ? ic.OR : [ic];
+            return rows.some(row => {
+                const path = row?.fieldPath;
+                if (!Array.isArray(path) || path.length < 2) { return false; }
+                let level: SchemaField[] = fields;
+                for (let i = 0; i < path.length - 1; i++) {
+                    const hop = level.find(f => f.name === path[i]);
+                    if (!hop || hop.isArray) { return true; }
+                    level = hop.fields || [];
+                }
+                return false;
+            });
+        };
+
+        const buildCrossRequired = (
+            targets?: { field: SchemaField; fieldPath: string[] }[],
+            wrapItems: boolean = true,
+        ): any | undefined => {
             if (!targets?.length) { return undefined; }
             const root: any = {};
             for (const t of targets) {
@@ -1587,7 +1609,7 @@ export class SchemaHelper {
                 if (!t.field.required) { continue; }
                 const path = t.fieldPath;
                 if (!path || path.length < 2) { continue; }
-                const node = crossContainer(root, path);
+                const node = crossContainer(root, path, wrapItems);
                 const fieldName = path[path.length - 1];
                 if (!node.required) { node.required = []; }
                 if (!node.required.includes(fieldName)) { node.required.push(fieldName); }
@@ -1595,13 +1617,16 @@ export class SchemaHelper {
             return Object.keys(root).length ? root : undefined;
         };
 
-        const buildCrossForbidden = (targets?: { fieldPath: string[] }[]): any | undefined => {
+        const buildCrossForbidden = (
+            targets?: { fieldPath: string[] }[],
+            wrapItems: boolean = true,
+        ): any | undefined => {
             if (!targets?.length) { return undefined; }
             const root: any = {};
             for (const t of targets) {
                 const path = t.fieldPath;
                 if (!path || path.length < 2) { continue; }
-                const node = crossContainer(root, path);
+                const node = crossContainer(root, path, wrapItems);
                 if (!node.properties) { node.properties = {}; }
                 node.properties[path[path.length - 1]] = false;
             }
@@ -1639,17 +1664,18 @@ export class SchemaHelper {
                 return Object.keys(props).length ? { properties: props } : undefined;
             };
 
+            const wrapItems = !triggerCrossesList(cond);
             const thenObj = deepMergeSchemaObj(
                 deepMergeSchemaObj(
-                    deepMergeSchemaObj(buildSub(cond.thenFields), buildCrossRequired(cond.thenTargets)),
-                    buildCrossForbidden(cond.elseTargets)
+                    deepMergeSchemaObj(buildSub(cond.thenFields), buildCrossRequired(cond.thenTargets, wrapItems)),
+                    buildCrossForbidden(cond.elseTargets, wrapItems)
                 ),
                 buildForbid(cond.elseFields?.filter(f => !cond.thenFields?.some(t => t.name === f.name)))
             );
             const elseObj = deepMergeSchemaObj(
                 deepMergeSchemaObj(
-                    deepMergeSchemaObj(buildSub(cond.elseFields), buildCrossRequired(cond.elseTargets)),
-                    buildCrossForbidden(cond.thenTargets)
+                    deepMergeSchemaObj(buildSub(cond.elseFields), buildCrossRequired(cond.elseTargets, wrapItems)),
+                    buildCrossForbidden(cond.thenTargets, wrapItems)
                 ),
                 buildForbid(cond.thenFields?.filter(f => !cond.elseFields?.some(t => t.name === f.name)))
             );
