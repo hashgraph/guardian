@@ -1,3 +1,4 @@
+import type { Mock } from 'vitest';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, NO_ERRORS_SCHEMA, Output } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
@@ -13,8 +14,8 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
 import { MessagesReportBlockComponent } from './messages-report-block.component';
 
 describe('MessagesReportBlockComponent document availability', () => {
-    beforeEach(() => jasmine.clock().install());
-    afterEach(() => jasmine.clock().uninstall());
+    beforeEach(() => vi.useFakeTimers());
+    afterEach(() => vi.useRealTimers());
 
     function readMessages(message: any): any[] {
         const component: any = Object.create(MessagesReportBlockComponent.prototype);
@@ -34,7 +35,7 @@ describe('MessagesReportBlockComponent document availability', () => {
 
     it('renders an encrypted dry-run placeholder as a document card with its sender', () => {
         const [message] = readMessages({ type: 'EVC-Document', document: null, documentUnavailable: true });
-        expect(message.__ifVCMessage).toBeTrue();
+        expect(message.__ifVCMessage).toBe(true);
         expect(message.__issuer).toBe('did:example:issuer');
         expect(message.document).toBeNull();
         expect(message.__schema).toBeNull();
@@ -42,13 +43,13 @@ describe('MessagesReportBlockComponent document availability', () => {
 
     it('keeps the sender of a historical VC whose body is unavailable', () => {
         const [message] = readMessages({ type: 'VC-Document', document: null, documentUnavailable: true });
-        expect(message.__ifVCMessage).toBeTrue();
+        expect(message.__ifVCMessage).toBe(true);
         expect(message.__issuer).toBe('did:example:issuer');
     });
 
     it('keeps the existing encrypted-message visibility when no placeholder flag is present', () => {
         const [message] = readMessages({ type: 'EVC-Document', document: null });
-        expect(message.__ifVCMessage).toBeFalse();
+        expect(message.__ifVCMessage).toBe(false);
     });
 });
 
@@ -62,10 +63,10 @@ class SwitchButtonStub {
 
 describe('MessagesReportBlockComponent document cards', () => {
     let fixture: ComponentFixture<MessagesReportBlockComponent>;
-    let openDialog: jasmine.Spy;
+    let openDialog: Mock;
 
     beforeEach(async () => {
-        openDialog = jasmine.createSpy('open').and.returnValue({ onClose: of(null) });
+        openDialog = vi.fn().mockReturnValue({ onClose: of(null) });
         await TestBed.configureTestingModule({
             imports: [CommonModule, ReactiveFormsModule],
             declarations: [MessagesReportBlockComponent, SwitchButtonStub],
@@ -81,13 +82,13 @@ describe('MessagesReportBlockComponent document cards', () => {
             ],
             schemas: [NO_ERRORS_SCHEMA],
         }).compileComponents();
-        jasmine.clock().install();
+        vi.useFakeTimers();
         fixture = TestBed.createComponent(MessagesReportBlockComponent);
     });
 
     afterEach(() => {
         fixture?.destroy();
-        jasmine.clock().uninstall();
+        vi.useRealTimers();
     });
 
     function render(messages: any[], schemas: any[] = []): void {
@@ -149,8 +150,8 @@ describe('MessagesReportBlockComponent document cards', () => {
         expect(links.length).toBe(1);
         links[0].nativeElement.click();
         expect(openDialog).toHaveBeenCalledTimes(1);
-        expect(openDialog.calls.mostRecent().args[1].data.document).toEqual(latestBody);
-        expect(openDialog.calls.mostRecent().args[1].data.schema).toEqual(schema);
+        expect(openDialog.mock.lastCall![1].data.document).toEqual(latestBody);
+        expect(openDialog.mock.lastCall![1].data.schema).toEqual(schema);
     });
 
     it('renders an encrypted placeholder with its sender and no opening action', () => {

@@ -16,7 +16,7 @@
     <div class="preview-container">
       <section class="preview-section">
         <div class="fields-header">Input Fields</div>
-        @if (preview?.length) {
+        @if (preview.length) {
           <div class="fields-container">
             @for (variable of preview; track variable) {
               <div class="field-container">
@@ -40,7 +40,7 @@
       </section>
       <section class="preview-section">
         <div class="fields-header">Scores</div>
-        @if (scores?.length) {
+        @if (scores.length) {
           <div class="fields-container">
             @for (score of scores; track score) {
               <div class="field-container">
@@ -76,7 +76,7 @@
       </section>
       <section class="preview-section">
         <div class="fields-header">Formulas</div>
-        @if (formulas?.length) {
+        @if (formulas.length) {
           <div class="fields-container">
             @for (formula of formulas; track formula) {
               <div class="field-container">

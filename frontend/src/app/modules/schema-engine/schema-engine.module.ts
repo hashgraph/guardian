@@ -63,8 +63,6 @@ import { SchemaFormRingComponent } from './schema-form-nav/schema-form-ring.comp
 import { RichTextEditorComponent } from './rich-text-editor/rich-text-editor.component';
 import { RichTextClipDirective } from './rich-text-editor/rich-text-clip.directive';
 
-import { CopyButtonComponent } from './copy-button/copy-button.component';
-
 @NgModule({
     declarations: [
         SchemaFormComponent,
@@ -100,8 +98,7 @@ import { CopyButtonComponent } from './copy-button/copy-button.component';
         SchemaFormOverviewComponent,
         SchemaFormRingComponent,
         RichTextEditorComponent,
-        RichTextClipDirective,
-        CopyButtonComponent
+        RichTextClipDirective
     ],
     imports: [
         CommonModule,

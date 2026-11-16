@@ -8,6 +8,10 @@ import { SchemaFormViewComponent } from './schema-form-view.component';
 import { SchemaFormPreferencesService } from 'src/app/services/schema-form-preferences.service';
 import { BehaviorSubject } from 'rxjs';
 import { IPFSService } from 'src/app/services/ipfs.service';
+import { IPFSLinkComponent } from '../../common/ipfs-link/ipfs-link.component';
+import { CopyButtonComponent } from '../../common/copy-button/copy-button.component';
+import { Clipboard } from '@angular/cdk/clipboard';
+import { ToastService } from 'src/app/services/toast.service';
 
 describe('SchemaFormViewComponent', () => {
     let component: SchemaFormViewComponent;
@@ -226,10 +230,12 @@ describe('SchemaFormViewComponent', () => {
     } = {}): ComponentFixture<SchemaFormViewComponent> => {
         TestBed.resetTestingModule();
         TestBed.configureTestingModule({
-            declarations: [SchemaFormViewComponent],
+            declarations: [SchemaFormViewComponent, IPFSLinkComponent, CopyButtonComponent],
             imports: [CommonModule],
             providers: [
                 { provide: IPFSService, useValue: ipfs },
+                { provide: Clipboard, useValue: { copy: () => true } },
+                { provide: ToastService, useValue: { error: vi.fn() } },
                 { provide: SchemaFormPreferencesService, useValue: preferences },
             ],
             schemas: [NO_ERRORS_SCHEMA],
@@ -302,6 +308,15 @@ describe('SchemaFormViewComponent', () => {
             expect(fixture.nativeElement.querySelector('a.sf-ro-open').getAttribute('href')).toBe(`https://ipfs.io/ipfs/${cid}`);
             const copies = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.sf-ro-file-links sf-copy'));
             expect(copies.map((node) => node.getAttribute('tip'))).toEqual(['Copy link', 'Copy CID']);
+        });
+
+        it('passes dry-run mode to the shared IPFS actions', () => {
+            const fixture = render(
+                [field('file', { pattern: '^ipfs://.+', customType: 'file' })],
+                { file: 'ipfs://6af6e8ec63af3cd1188591c0' },
+                { dryRun: true }
+            );
+            expect(fixture.debugElement.query(By.directive(IPFSLinkComponent)).componentInstance.dryRun).toBe(true);
         });
 
         it('lists files without bullets', () => {
@@ -540,10 +555,12 @@ describe('SchemaFormViewComponent', () => {
         const prepare = (preview: boolean, array = false) => {
             TestBed.resetTestingModule();
             TestBed.configureTestingModule({
-                declarations: [SchemaFormViewComponent],
+                declarations: [SchemaFormViewComponent, IPFSLinkComponent, CopyButtonComponent],
                 imports: [CommonModule],
                 providers: [
                     { provide: IPFSService, useValue: ipfs },
+                    { provide: Clipboard, useValue: { copy: () => true } },
+                    { provide: ToastService, useValue: { error: vi.fn() } },
                     { provide: SchemaFormPreferencesService, useValue: preferences },
                 ],
                 schemas: [NO_ERRORS_SCHEMA],
@@ -617,10 +634,12 @@ describe('SchemaFormViewComponent', () => {
             const values = Object.fromEntries(fields.map((item, index) => [item.name, index + 1]));
             TestBed.resetTestingModule();
             TestBed.configureTestingModule({
-                declarations: [SchemaFormViewComponent],
+                declarations: [SchemaFormViewComponent, IPFSLinkComponent, CopyButtonComponent],
                 imports: [CommonModule],
                 providers: [
                     { provide: IPFSService, useValue: ipfs },
+                    { provide: Clipboard, useValue: { copy: () => true } },
+                    { provide: ToastService, useValue: { error: vi.fn() } },
                     { provide: SchemaFormPreferencesService, useValue: preferences },
                 ],
                 schemas: [NO_ERRORS_SCHEMA],
@@ -684,10 +703,12 @@ describe('SchemaFormViewComponent', () => {
             }
             TestBed.resetTestingModule();
             TestBed.configureTestingModule({
-                declarations: [SchemaFormViewComponent],
+                declarations: [SchemaFormViewComponent, IPFSLinkComponent, CopyButtonComponent],
                 imports: [CommonModule],
                 providers: [
                     { provide: IPFSService, useValue: ipfs },
+                    { provide: Clipboard, useValue: { copy: () => true } },
+                    { provide: ToastService, useValue: { error: vi.fn() } },
                     { provide: SchemaFormPreferencesService, useValue: preferences },
                 ],
                 schemas: [NO_ERRORS_SCHEMA],

@@ -84,6 +84,37 @@ test('summarizeReport falls back to the parsed count when the root tag is absent
     assert.equal(report.skipped, 1);
 });
 
+// The shape Vitest's junit reporter emits for the frontend: one <testsuite> per
+// spec file, every case written, skipped ones with <skipped/>.
+const VITEST_SAMPLE = `<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="4" failures="1" errors="0" time="0.5">
+    <testsuite name="src/app/a.spec.ts" timestamp="2026-11-13T22:27:44.580Z" hostname="h" tests="2" failures="1" errors="0" skipped="0" time="0.3">
+        <testcase classname="src/app/a.spec.ts" name="A &gt; renders" time="0.1">
+        </testcase>
+        <testcase classname="src/app/a.spec.ts" name="A &gt; fails" time="0.2">
+            <failure message="expected 1 to be 2" type="AssertionError">AssertionError: expected 1 to be 2</failure>
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/b.spec.ts" timestamp="2026-11-13T22:27:44.580Z" hostname="h" tests="2" failures="0" errors="0" skipped="1" time="0.2">
+        <testcase classname="src/app/b.spec.ts" name="B &gt; works" time="0.2">
+        </testcase>
+        <testcase classname="src/app/b.spec.ts" name="B &gt; later" time="0">
+            <skipped/>
+        </testcase>
+    </testsuite>
+</testsuites>`;
+
+test('summarizeReport reads the Vitest junit report of the frontend', () => {
+    const report = summarizeReport('/repo/test_results/frontend.xml', VITEST_SAMPLE);
+    assert.equal(report.workspace, 'frontend');
+    assert.equal(report.tests, 4);
+    assert.equal(report.passed, 2);
+    assert.equal(report.failed, 1);
+    assert.equal(report.skipped, 1);
+    assert.deepEqual(report.failures, [{ name: 'A > fails', message: 'expected 1 to be 2' }]);
+    assert.equal(report.durationMs, 500);
+});
+
 test('renderSummary shows totals, failing workspaces first, slowest next', () => {
     const slow = { workspace: 'slow-pass', tests: 10, passed: 10, failed: 0, skipped: 0, durationMs: 90_000, failures: [] };
     const failing = { workspace: 'w1', tests: 5, passed: 3, failed: 2, skipped: 0, durationMs: 1_000, failures: [

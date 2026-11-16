@@ -6,7 +6,7 @@
         "@digitalbazaar/vc": "7.3.0",
         "@guardian/common": "workspace:*",
         "@guardian/interfaces": "workspace:*",
-        "@hiero-ledger/sdk": "2.90.1",
+        "@hiero-ledger/sdk": "2.91.0",
         "@mattrglobal/jsonld-signatures-bbs": "1.2.0",
         "@noble/curves": "^1.3.0",
         "ajv": "^8.17.1",
@@ -49,7 +49,7 @@
         "dev": "tsc -w",
         "lint": "tslint --config ../tslint.json --project .",
         "prepack": "npm run build:prod",
-        "test": "mocha 'tests/**/*.test.mjs' --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/hedera.xml --exit",
+        "test": "mocha --file ../common/tests/helpers/quiet-console.mjs 'tests/**/*.test.mjs' --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/hedera.xml --exit",
         "test:local": "mocha 'tests/**/*.test.mjs' --exit"
     },
     "type": "module",

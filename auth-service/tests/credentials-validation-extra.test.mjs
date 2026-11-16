@@ -171,6 +171,23 @@ describe('@unit Bitstring.decodeBits — gzip round-trips', () => {
 });
 
 describe('@unit StatusList.decode + getStatus', () => {
+    it('rejects a corrupt list with the decoder error and writes nothing to the console', async () => {
+        const written = [];
+        const original = console.log;
+        console.log = (...args) => written.push(args);
+        let error;
+        try {
+            await StatusList.decode({ encodedList: 'not-a-gzip-list' });
+        } catch (e) {
+            error = e;
+        } finally {
+            console.log = original;
+        }
+        assert.instanceOf(error, Error);
+        assert.match(error.message, /incorrect header check/);
+        assert.deepEqual(written, []);
+    });
+
     it('reconstructs bit length from the decoded buffer', async () => {
         const sl = await StatusList.decode({ encodedList: encode([0x00]) });
         assert.equal(sl.length, 8);

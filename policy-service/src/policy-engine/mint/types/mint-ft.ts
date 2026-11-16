@@ -85,32 +85,10 @@ export class MintFT extends TypedMint {
                 mintStatus: MintTransactionStatus.PENDING,
             });
             if (mintTransaction) {
-                const mintTransactions = await new Workers().addRetryableTask(
-                    {
-                        type: WorkerTaskType.GET_TRANSACTIONS,
-                        data: {
-                            accountId: this._token.treasuryId,
-                            transactiontype: 'TOKENMINT',
-                            timestamp: this._mintRequest.startTransaction
-                                ? `gt:${this._mintRequest.startTransaction}`
-                                : null,
-                            filter: {
-                                memo_base64: btoa(this._mintRequest.memo),
-                            },
-                            limit: 1,
-                            payload: { userId }
-                        },
-                    },
-                    {
-                        priority: 1,
-                        attempts: 10,
-                        dryRun: null,
-                        mockId: null
-                    }
-                );
+                const found = await this.findOwnTransaction('TOKENMINT', userId);
 
                 mintTransaction.mintStatus =
-                    mintTransactions.length > 0
+                    found
                         ? MintTransactionStatus.SUCCESS
                         : MintTransactionStatus.NEW;
                 await this._db.saveMintTransaction(mintTransaction);
@@ -124,38 +102,106 @@ export class MintFT extends TypedMint {
                 transferStatus: MintTransactionStatus.PENDING,
             });
             if (transferTrasaction) {
-                const transferTransactions =
-                    await new Workers().addRetryableTask(
-                        {
-                            type: WorkerTaskType.GET_TRANSACTIONS,
-                            data: {
-                                accountId: this._token.treasuryId,
-                                transactiontype: 'CRYPTOTRANSFER',
-                                timestamp: this._mintRequest.startTransaction
-                                    ? `gt:${this._mintRequest.startTransaction}`
-                                    : null,
-                                filter: {
-                                    memo_base64: btoa(this._mintRequest.memo),
-                                },
-                                limit: 1,
-                                payload: { userId }
-                            },
-                        },
-                        {
-                            priority: 1,
-                            attempts: 10,
-                            dryRun: null,
-                            mockId: null
-                        }
-                    );
+                const found = await this.findOwnTransaction('CRYPTOTRANSFER', userId);
 
                 transferTrasaction.transferStatus =
-                    transferTransactions.length > 0
+                    found
                         ? MintTransactionStatus.SUCCESS
                         : MintTransactionStatus.NEW;
                 await this._db.saveMintTransaction(transferTrasaction);
                 PolicyComponentsUtils.backup(transferTrasaction.policyId);
             }
+        }
+    }
+
+    private async findOwnTransaction(
+        transactiontype: 'TOKENMINT' | 'CRYPTOTRANSFER',
+        userId: string | null
+    ): Promise<boolean> {
+        const entityId = (id: string) => String(id).split('-')[0].split('.').map(Number).join('.');
+        let cursor = this._mintRequest.startTransaction;
+        while (true) {
+            const transactions = await new Workers().addRetryableTask(
+                {
+                    type: WorkerTaskType.GET_TRANSACTIONS,
+                    data: {
+                        accountId: this._token.treasuryId,
+                        transactiontype,
+                        timestamp: cursor
+                            ? `gt:${cursor}`
+                            : null,
+                        filter: {
+                            memo_base64: Buffer.from(this._mintRequest.memo, 'utf8').toString('base64'),
+                        },
+                        limit: 1,
+                        payload: { userId }
+                    },
+                },
+                {
+                    priority: 1,
+                    attempts: 10,
+                    dryRun: null,
+                    mockId: null
+                }
+            );
+            const transaction = transactions[0];
+            if (!transaction) {
+                return false;
+            }
+            const timestamp = transaction.consensus_timestamp;
+            if (typeof timestamp !== 'string' || !/^\d+\.\d{9}$/.test(timestamp)) {
+                throw new Error('Invalid transaction consensus timestamp');
+            }
+            if (cursor && BigInt(timestamp.replace('.', '')) <= BigInt(cursor.replace('.', ''))) {
+                throw new Error('Transaction consensus timestamp did not advance');
+            }
+            if (transaction.result === 'SUCCESS' && (
+                transactiontype === 'TOKENMINT' ||
+                transaction.token_transfers?.some((transfer) =>
+                    entityId(transfer.token_id) === entityId(this._token.tokenId) &&
+                    entityId(transfer.account) === entityId(this._mintRequest.target) &&
+                    transfer.amount === this._mintRequest.amount
+                )
+            )) {
+                return true;
+            }
+            cursor = timestamp;
+        }
+    }
+
+    private async captureCheckpoint(
+        transactiontype: 'TOKENMINT' | 'CRYPTOTRANSFER',
+        options: {
+            interception?: string | boolean;
+            userId?: string;
+        }
+    ): Promise<void> {
+        try {
+            const startTransactions = await new Workers().addRetryableTask(
+                {
+                    type: WorkerTaskType.GET_TRANSACTIONS,
+                    data: {
+                        accountId: this._token.treasuryId,
+                        limit: 1,
+                        order: 'desc',
+                        transactiontype,
+                        payload: { userId: options.userId }
+                    },
+                },
+                {
+                    priority: 1,
+                    attempts: 10,
+                    userId: options.userId,
+                    interception: options.interception,
+                    dryRun: null,
+                    mockId: null
+                }
+            );
+            this._mintRequest.startTransaction = startTransactions[0]?.consensus_timestamp;
+            await this._db.saveMintRequest(this._mintRequest);
+        } catch (error) {
+            this.error(error, options.userId);
+            throw error;
         }
     }
 
@@ -194,38 +240,15 @@ export class MintFT extends TypedMint {
         }
 
         if (!this._ref?.dryRun) {
-            try {
-                workers.addRetryableTask(
-                    {
-                        type: WorkerTaskType.GET_TRANSACTIONS,
-                        data: {
-                            accountId: this._token.treasuryId,
-                            limit: 1,
-                            order: 'desc',
-                            transactiontype: 'TOKENMINT',
-                            payload: { userId: options.userId }
-                        },
-                    },
-                    {
-                        priority: 1,
-                        attempts: 10,
-                        userId: options.userId,
-                        interception: options.interception,
-                        dryRun: null,
-                        mockId: null
-                    }
-                ).then(async startTransactions => {
-                    try {
-                        this._mintRequest.startTransaction =
-                            startTransactions[0]?.consensus_timestamp;
-                        await this._db.saveMintRequest(this._mintRequest);
-                    } catch (error) {
-                        this.error(error, options.userId);
-                    }
-                }).catch(error => this.error(error, options.userId));
-            } catch (error) {
-                this.error(error, options.userId);
+            if (transaction.mintStatus === MintTransactionStatus.ERROR &&
+                await this.findOwnTransaction('TOKENMINT', options.userId)) {
+                transaction.mintStatus = MintTransactionStatus.SUCCESS;
+                transaction.error = undefined;
+                await this._db.saveMintTransaction(transaction);
+                PolicyComponentsUtils.backup(transaction.policyId);
+                return;
             }
+            await this.captureCheckpoint('TOKENMINT', options);
         }
 
         transaction.mintStatus = MintTransactionStatus.PENDING;
@@ -293,38 +316,15 @@ export class MintFT extends TypedMint {
         }
 
         if (!this._ref?.dryRun) {
-            try {
-                workers.addRetryableTask(
-                    {
-                        type: WorkerTaskType.GET_TRANSACTIONS,
-                        data: {
-                            accountId: this._token.treasuryId,
-                            limit: 1,
-                            order: 'desc',
-                            transactiontype: 'CRYPTOTRANSFER',
-                            payload: { userId: options.userId }
-                        },
-                    },
-                    {
-                        priority: 1,
-                        attempts: 10,
-                        userId: options.userId,
-                        interception: options.interception,
-                        dryRun: null,
-                        mockId: null
-                    }
-                ).then(async startTransactions => {
-                    try {
-                        this._mintRequest.startTransaction =
-                            startTransactions[0]?.consensus_timestamp;
-                        await this._db.saveMintRequest(this._mintRequest);
-                    } catch (error) {
-                        this.error(error, options.userId);
-                    }
-                }).catch(error => this.error(error, options.userId));
-            } catch (error) {
-                this.error(error, options.userId);
+            if (transaction.transferStatus === MintTransactionStatus.ERROR &&
+                await this.findOwnTransaction('CRYPTOTRANSFER', options.userId)) {
+                transaction.transferStatus = MintTransactionStatus.SUCCESS;
+                transaction.error = undefined;
+                await this._db.saveMintTransaction(transaction);
+                PolicyComponentsUtils.backup(transaction.policyId);
+                return;
             }
+            await this.captureCheckpoint('CRYPTOTRANSFER', options);
         }
 
         transaction.transferStatus = MintTransactionStatus.PENDING;

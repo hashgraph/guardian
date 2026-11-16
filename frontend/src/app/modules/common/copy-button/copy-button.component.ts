@@ -20,6 +20,8 @@ export class CopyButtonComponent implements OnDestroy {
     /** An optional text next to the icon, e.g. "CID". */
     @Input() label: string = '';
 
+    @Input() disabled = false;
+
     public copied = false;
     private timer: ReturnType<typeof setTimeout> | null = null;
 
@@ -31,7 +33,7 @@ export class CopyButtonComponent implements OnDestroy {
 
     public copy(event?: Event): void {
         event?.stopPropagation();
-        if (!this.value) {
+        if (this.disabled || !this.value) {
             return;
         }
         if (!this.clipboard.copy(this.value)) {

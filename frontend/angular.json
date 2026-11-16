@@ -98,7 +98,22 @@
                             "javascript-natural-sort",
                             "escape-latex",
                             "codemirror/addon/hint/css-hint",
-                            "codemirror/addon/hint/show-hint"
+                            "codemirror/addon/hint/show-hint",
+                            "codemirror/addon/display/placeholder",
+                            "codemirror/mode/meta",
+                            "lerc",
+                            "papaparse",
+                            "tiny-emitter",
+                            "mark.js",
+                            "@xmldom/xmldom",
+                            "textarea-caret",
+                            "to-px",
+                            "rbush",
+                            "ieee754",
+                            "debug",
+                            "earcut",
+                            "xml-utils/get-attribute.js",
+                            "xml-utils/find-tags-by-name.js"
                         ],
                         "assets": [
                             "src/favicon.ico",
@@ -165,6 +180,9 @@
                         "buildTarget": "guardian:build:development,test",
                         "runner": "vitest",
                         "runnerConfig": "vitest-base.config.ts",
+                        "setupFiles": [
+                            "src/test-setup.ts"
+                        ],
                         "tsConfig": "tsconfig.spec.json"
                     }
                 }

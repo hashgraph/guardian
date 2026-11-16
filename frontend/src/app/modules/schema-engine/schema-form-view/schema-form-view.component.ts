@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Inject, Input, LOCALE_ID, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { formatDate } from '@angular/common';
-import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from 'src/app/services/api';
 import { Subscription } from 'rxjs';
 import {
     getAllContinents,
@@ -498,13 +497,6 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
         ).finally(() => this.changeDetector.detectChanges());
     }
 
-    public getCID(link: string): string {
-        let matches = link?.match(
-            /Qm[1-9A-HJ-NP-Za-km-z]{44,}|b[A-Za-z2-7]{58,}|B[A-Z2-7]{58,}|z[1-9A-HJ-NP-Za-km-z]{48,}|F[0-9A-F]{50,}/
-        );
-        return matches ? matches[0] : '';
-    }
-
     public getItemsPage(item: IFieldControl) {
         const pageIndex = item.pageIndex || 0;
         const pageSize = item.pageSize || this.pageSize;
@@ -696,12 +688,6 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
         const values = item.list?.map((entry) => entry.value) ?? [];
         const value = values.length === 1 ? values[0] : values;
         return typeof value === 'object' ? JSON.stringify(value) : String(value);
-    }
-
-    public ipfsLink(link: string): string {
-        return typeof link === 'string' && link.startsWith(IPFS_SCHEMA)
-            ? `${API_IPFS_GATEWAY_URL}${link.substring(IPFS_SCHEMA.length)}`
-            : link;
     }
 
     /** Short scalars of a simple array are shown as chips, anything longer as a list. */
