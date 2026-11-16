@@ -52,6 +52,17 @@ Switch to the **Conditions** tab and add a condition.
 
 Click **Save all**.
 
+**6. Export and import links with Excel (optional)**
+
+When schemas are exported to Excel, every schema sheet gets a last column, **Repeatable Links**, after **IWA Property**. Each cell in it is an Excel reference to the **Key** cell of another row:
+
+* On the row of a dependent array, the cell points to its source array, for example `=A7`.
+* With a display name, the cell also points to the title field, for example `=A7&" | "&A8`.
+* On the row of a field that receives a copied value, the cell points to the source field, for example `=A8`.
+* All other cells in the column stay empty.
+
+You can add or change links in the workbook with the same formulas, then import it. The import preview shows each invalid link cell with its sheet, cell and reason; that link is skipped and the rest of the file is imported. Workbooks without the **Repeatable Links** column import as before, without links.
+
 #### Result
 
 The schema stores the configured links and conditions. When the schema is used in a policy:
