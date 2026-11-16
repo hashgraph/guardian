@@ -539,7 +539,9 @@ describe('VCJS coverage (offline paths)', function () {
                     credentialSubject: { $ref: '#Subject' }
                 },
                 required: ['credentialSubject'],
-                // deliberately no allOf here - it lives one level down, in $defs['#Subject']
+                // deliberately no allOf here - it lives one level down, in $defs['#Subject'].
+                // As LocalVcSchemaDocumentLoader builds it, the wrapper's $defs holds only the
+                // subject schema, which keeps its own sub-schemas in its own $defs.
                 $defs: {
                     '#Subject': {
                         $id: '#Subject',
@@ -553,14 +555,22 @@ describe('VCJS coverage (offline paths)', function () {
                             if: { properties: { trigger: { const: 'yes' } }, required: ['trigger'] },
                             then: { properties: { detail: { required: ['note'] } } },
                             else: { properties: { detail: { properties: { note: false } } } }
-                        }]
-                    },
-                    '#Detail': {
-                        $id: '#Detail',
-                        type: 'object',
-                        properties: { note: { type: 'string' } },
-                        required: ['note'],
-                        additionalProperties: false
+                        }],
+                        $defs: {
+                            '#Detail': {
+                                $id: '#Detail',
+                                type: 'object',
+                                // the system properties every saved schema declares; the
+                                // validator stamps them onto each nested object
+                                properties: {
+                                    '@context': { oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }], readOnly: true },
+                                    type: { oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }], readOnly: true },
+                                    note: { type: 'string' }
+                                },
+                                required: ['note'],
+                                additionalProperties: false
+                            }
+                        }
                     }
                 }
             };
