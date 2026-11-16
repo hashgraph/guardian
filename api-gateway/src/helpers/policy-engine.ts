@@ -692,8 +692,8 @@ export class PolicyEngine extends NatsService {
      * Receive external data
      * @param data
      */
-    public async receiveExternalData(data: any, syncEvents = false, history = false) {
-        return await this.sendMessage(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA, { data, syncEvents, history });
+    public async receiveExternalData(data: any, syncEvents = false, history = false, strict = false) {
+        return await this.sendMessage(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA, { data, syncEvents, history, ...(strict && !syncEvents ? { strict } : {}) });
     }
 
     /**
@@ -702,8 +702,8 @@ export class PolicyEngine extends NatsService {
      * @param policyId
      * @param blockTag
      */
-    public async receiveExternalDataCustom(data: any, policyId: string, blockTag: string, syncEvents = false, history = false): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA_CUSTOM, { data, policyId, blockTag, syncEvents, history });
+    public async receiveExternalDataCustom(data: any, policyId: string, blockTag: string, syncEvents = false, history = false, strict = false): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA_CUSTOM, { data, policyId, blockTag, syncEvents, history, ...(strict && !syncEvents ? { strict } : {}) });
     }
 
     /**
