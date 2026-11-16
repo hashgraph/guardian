@@ -72,28 +72,19 @@
         text-align: right;
     }
 
+    .ff-file-link {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
     .ff-url {
         display: block;
+        flex: 1 1 auto;
+        min-width: 0;
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
-
-        ::ng-deep ipfs-link {
-            display: inline;
-        }
-
-        ::ng-deep ipfs-link .link {
-            display: inline;
-            white-space: nowrap;
-            font: inherit;
-            color: var(--color-primary, #4169E2);
-            text-decoration: none;
-            text-transform: none;
-
-            &:hover {
-                text-decoration: underline;
-            }
-        }
     }
 }
 
