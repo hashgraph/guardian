@@ -515,6 +515,36 @@ describe('RequestDocumentFormComponent', () => {
             fixture.destroy();
         });
 
+        describe('save labels', () => {
+            const savedText = (fixture: { nativeElement: HTMLElement }) =>
+                fixture.nativeElement.querySelector('.form-saved')?.textContent?.trim();
+
+            it('calls the button Save and the top bar Saved just now when the values stay in the browser', async () => {
+                const { fixture, component } = create({ draftEnabled: false });
+                prepare(component);
+                expect(component.saveLabel).toBe('Save');
+                expect(component.getButtonName({ id: 'save', text: 'Save Draft' })).toBe('Save');
+                await component.onStep(true);
+                fixture.detectChanges();
+                expect(savedText(fixture)).toBe('Saved just now');
+                fixture.destroy();
+            });
+
+            it('calls the button Save as Draft and the top bar Draft saved just now when the server stores the draft', async () => {
+                const { fixture, component } = create({ draftEnabled: true });
+                prepare(component);
+                apiCall.mockReturnValue(of({ response: {} }));
+                expect(component.saveLabel).toBe('Save as Draft');
+                expect(component.getButtonName({ id: 'save', text: 'Save' })).toBe('Save as Draft');
+                await component.onStep(true);
+                await settle();
+                await new Promise((resolve) => setTimeout(resolve, 1100));
+                fixture.detectChanges();
+                expect(savedText(fixture)).toBe('Draft saved just now');
+                fixture.destroy();
+            });
+        });
+
         describe('connected draft', () => {
             const T0 = '2026-11-14T09:00:00.000Z';
             const T1 = '2026-11-14T10:00:00.000Z';

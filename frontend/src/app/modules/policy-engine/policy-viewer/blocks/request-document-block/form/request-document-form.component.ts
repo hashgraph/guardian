@@ -105,6 +105,9 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     public get draft() { return this.parent?.draft; }
     /** False when the policy has nothing that stores a draft, so "Save Draft" can only save locally */
     public get draftEnabled() { return this.parent?.draftEnabled !== false; }
+    /** The button that saves the values: a draft record on the server, or only this browser */
+    public get saveLabel() { return this.draftEnabled ? 'Save as Draft' : 'Save'; }
+    public get savedLabel() { return this.draftEnabled ? 'Draft saved just now' : 'Saved just now'; }
     public get relayerAccount() { return this.parent?.relayerAccount; }
     public get user() { return this.parent?.user; }
     public get isLocalUser() { return this.parent?.isLocalUser; }
@@ -460,7 +463,6 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
 
     public minutesAgo$ = getMinutesAgoStream(() => this.lastSavedAt);
     private buttonNames: { [id: string]: string } = {
-        save: 'Save Draft',
         cancel: 'Cancel',
         prev: 'Previous',
         next: 'Next',
@@ -1408,6 +1410,9 @@ export class RequestDocumentFormComponent implements OnInit, OnDestroy {
     }
 
     public getButtonName(item: any) {
+        if (item.id === 'save') {
+            return this.saveLabel;
+        }
         if (item.id === 'submit') {
             if (this.previewSubmitLabel) {
                 return 'Preview';
