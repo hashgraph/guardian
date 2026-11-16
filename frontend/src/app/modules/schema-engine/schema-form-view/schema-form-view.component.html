@@ -101,6 +101,20 @@
         <span class="sf-ro-lt" [attr.accordiontabid]="item.fullPath">{{ item.description || item.title || item.name }}</span>
         @if (actions) {
             <span class="sf-ro-acts">
+                @if (hasGeneratedFormulas(item)) {
+                    <button
+                        type="button"
+                        class="sf-ro-act sf-ro-fx"
+                        aria-label="Show formulas"
+                        pTooltip="Formulas"
+                        tooltipStyleClass="guardian-tooltip small-guardian-tooltip"
+                        (click)="showFormulas(isFormulas(item))"
+                    >
+                        <svg-icon
+                            src="/assets/images/icons/function.svg"
+                            svgClass="icon-color-primary"></svg-icon>
+                    </button>
+                }
                 @if (ruleOf(item); as rule) {
                     @if (!rule.failed) {
                         <span
@@ -220,12 +234,14 @@
                     }
 
                     @if (ifSimpleField(item) && isFormulas(item); as formulas) {
-                        <app-field-formulas
-                            class="sf-ro-formulas"
-                            [items]="formulaItems(formulas)"
-                            [source]="formulas"
-                            [fullPath]="item.fullPath">
-                        </app-field-formulas>
+                        @if (cardItems(formulas).length) {
+                            <app-field-formulas
+                                class="sf-ro-formulas"
+                                [items]="cardItems(formulas)"
+                                [source]="formulas"
+                                [fullPath]="item.fullPath">
+                            </app-field-formulas>
+                        }
                     }
 
                     <div class="sf-ro-value">
