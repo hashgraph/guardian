@@ -108,8 +108,10 @@ function fixture(step, status = Status.NEW, dryRun = false) {
         state.events.push(task.type);
         const entry = {
             transactiontype: task.type === WorkerTaskType.MINT_FT ? 'TOKENMINT' : 'CRYPTOTRANSFER',
-            consensus_timestamp: `${300 + state.history.length}.000000001`, memo_base64: btoa(task.data.transactionMemo),
-            result: state.consensusResult
+            consensus_timestamp: `${300 + state.history.length}.000000001`, memo_base64: utf8Base64(task.data.transactionMemo),
+            result: state.consensusResult,
+            token_transfers: task.type === WorkerTaskType.TRANSFER_FT && state.consensusResult === 'SUCCESS'
+                ? tokenTransfers(task.data.tokenId, mirrorAccount(task.data.targetAccount), task.data.tokenValue) : []
         };
         state.history.push(entry);
         if (entry.result !== 'SUCCESS') throw state.actionError ?? new Error(entry.result);
@@ -130,6 +132,10 @@ function fixture(step, status = Status.NEW, dryRun = false) {
     return state;
 }
 
+function utf8Base64(value) {
+    return Buffer.from(value, 'utf8').toString('base64');
+}
+
 function timestampValue(timestamp) {
     const [seconds, nanoseconds] = timestamp.split('.');
     return BigInt(seconds) * 1000000000n + BigInt(nanoseconds);
@@ -138,10 +144,23 @@ function timestampValue(timestamp) {
 function record(fixture, result, timestamp) {
     return {
         transactiontype: fixture.transactiontype,
-        memo_base64: btoa(fixture.request.memo),
+        memo_base64: utf8Base64(fixture.request.memo),
         consensus_timestamp: timestamp,
-        result
+        result,
+        token_transfers: fixture.transactiontype === 'CRYPTOTRANSFER' && result === 'SUCCESS'
+            ? tokenTransfers('0.0.4', mirrorAccount(fixture.request.target), fixture.request.amount) : []
     };
+}
+
+function mirrorAccount(id) {
+    return id.split('-')[0].split('.').map(Number).join('.');
+}
+
+function tokenTransfers(tokenId, target, amount) {
+    return [
+        { token_id: tokenId, account: target, amount, is_approval: false },
+        { token_id: tokenId, account: '0.0.2', amount: -amount, is_approval: false }
+    ];
 }
 
 describe('@unit fungible mint checkpoint and retry', () => {
@@ -239,7 +258,7 @@ describe('@unit fungible mint checkpoint and retry', () => {
                 assert.equal(f.request.startTransaction, '100.000000001');
                 assert.deepEqual(backups, ['policy']);
                 assert.equal(f.lookups()[0].task.data.timestamp, 'gt:100.000000001');
-                assert.equal(f.lookups()[0].task.data.filter.memo_base64, btoa(f.request.memo));
+                assert.equal(f.lookups()[0].task.data.filter.memo_base64, utf8Base64(f.request.memo));
             });
 
             it('checks an errored transaction before taking a new checkpoint and repeating it', async () => {
@@ -306,6 +325,93 @@ describe('@unit fungible mint checkpoint and retry', () => {
                 });
             }
 
+            if (step === 'transfer') {
+                const impostors = {
+                    'an HBAR transfer': [],
+                    'another token': tokenTransfers('0.0.9', '0.0.3', 17),
+                    'another receiver': tokenTransfers('0.0.4', '0.0.8', 17),
+                    'another amount': tokenTransfers('0.0.4', '0.0.3', 16)
+                };
+                for (const [name, transfers] of Object.entries(impostors)) {
+                    it(`does not accept a successful match with ${name} as the transfer`, async () => {
+                        const f = fixture(step, Status.ERROR);
+                        f.history.push({ ...record(f, 'SUCCESS', '150.000000001'), token_transfers: transfers });
+                        await f.run();
+                        assert.equal(f.lookups().length, 2);
+                        assert.equal(f.lookups()[1].task.data.timestamp, 'gt:150.000000001');
+                        assert.equal(f.actions().length, 1);
+                        assert.equal(f.balance, f.request.amount);
+                        assert.equal(f.transaction[f.statusKey], Status.SUCCESS);
+                    });
+                }
+
+                for (const target of ['0.0.03', '0.0.3-abcde']) {
+                    it(`recognizes its own transfer to ${target} recorded by the mirror node as 0.0.3`, async () => {
+                        const f = fixture(step);
+                        f.request.target = target;
+                        f.actionError = new Error('receipt failed');
+                        await assert.rejects(f.mint.mint({ userId: 'user' }));
+                        assert.equal(f.transaction[f.statusKey], Status.ERROR);
+                        assert.equal(f.history[0].token_transfers[0].account, '0.0.3');
+
+                        f.actionError = null;
+                        await f.mint.mint({ userId: 'user' });
+
+                        assert.equal(f.actions().length, 1);
+                        assert.equal(f.balance, f.request.amount);
+                        assert.equal(f.transaction[f.statusKey], Status.SUCCESS);
+                    });
+                }
+
+                it('finds the real transfer after a successful match that moved other value', async () => {
+                    const f = fixture(step, Status.ERROR);
+                    f.history.push({ ...record(f, 'SUCCESS', '150.000000001'), token_transfers: [] });
+                    f.history.push(record(f, 'SUCCESS', '160.000000001'));
+                    await f.run();
+                    assert.equal(f.actions().length, 0);
+                    assert.equal(f.transaction[f.statusKey], Status.SUCCESS);
+                    assert.equal(f.request.startTransaction, '100.000000001');
+                });
+            }
+
+            for (const memo of ['vp-message Выпуск кредитов', 'vp-message café']) {
+                describe(`memo ${memo}`, () => {
+                    it('retries a real failed operation after its cause is corrected', async () => {
+                        const f = fixture(step);
+                        f.request.memo = memo;
+                        f.consensusResult = f.failedResult;
+                        await assert.rejects(f.mint.mint({ userId: 'user' }));
+                        assert.equal(f.transaction[f.statusKey], Status.ERROR);
+
+                        f.consensusResult = 'SUCCESS';
+                        await f.mint.mint({ userId: 'user' });
+
+                        assert.equal(f.actions().length, 2);
+                        assert.deepEqual(f.history.map(record => record.result), [f.failedResult, 'SUCCESS']);
+                        assert.equal(f.balance, f.request.amount);
+                        assert.equal(f.transaction[f.statusKey], Status.SUCCESS);
+                        assert.equal(f.lookups()[0].task.data.filter.memo_base64, utf8Base64(memo));
+                    });
+
+                    it('finds a successful operation hidden by a receipt failure without sending it again', async () => {
+                        const f = fixture(step);
+                        f.request.memo = memo;
+                        f.actionError = new Error('receipt failed');
+                        await assert.rejects(f.mint.mint({ userId: 'user' }));
+                        assert.equal(f.transaction[f.statusKey], Status.ERROR);
+                        assert.equal(f.balance, f.request.amount);
+
+                        f.actionError = null;
+                        await f.mint.mint({ userId: 'user' });
+
+                        assert.equal(f.actions().length, 1);
+                        assert.equal(f.ledger.length, 1);
+                        assert.equal(f.balance, f.request.amount);
+                        assert.equal(f.transaction[f.statusKey], Status.SUCCESS);
+                    });
+                });
+            }
+
             for (const status of [Status.ERROR, Status.PENDING]) {
                 describe(`successful recovery from ${status}`, () => {
                     it('retries a real failed operation after its cause is corrected', async () => {
@@ -348,7 +454,7 @@ describe('@unit fungible mint checkpoint and retry', () => {
                         assert.ok(f.savedRequests.every(value => value.startTransaction === '100.000000001'));
                         assert.deepEqual(f.lookups().map(call => call.task.data.timestamp), ['gt:100.000000001', 'gt:150.000000001']);
                         for (const call of f.lookups()) {
-                            assert.deepEqual(call.task.data.filter, { memo_base64: btoa(f.request.memo) });
+                            assert.deepEqual(call.task.data.filter, { memo_base64: utf8Base64(f.request.memo) });
                             assert.equal(call.task.data.limit, 1);
                             assert.equal(call.task.data.accountId, '0.0.2');
                             assert.equal(call.task.data.transactiontype, f.transactiontype);

@@ -118,6 +118,7 @@ export class MintFT extends TypedMint {
         transactiontype: 'TOKENMINT' | 'CRYPTOTRANSFER',
         userId: string | null
     ): Promise<boolean> {
+        const entityId = (id: string) => String(id).split('-')[0].split('.').map(Number).join('.');
         let cursor = this._mintRequest.startTransaction;
         while (true) {
             const transactions = await new Workers().addRetryableTask(
@@ -130,7 +131,7 @@ export class MintFT extends TypedMint {
                             ? `gt:${cursor}`
                             : null,
                         filter: {
-                            memo_base64: btoa(this._mintRequest.memo),
+                            memo_base64: Buffer.from(this._mintRequest.memo, 'utf8').toString('base64'),
                         },
                         limit: 1,
                         payload: { userId }
@@ -154,7 +155,14 @@ export class MintFT extends TypedMint {
             if (cursor && BigInt(timestamp.replace('.', '')) <= BigInt(cursor.replace('.', ''))) {
                 throw new Error('Transaction consensus timestamp did not advance');
             }
-            if (transaction.result === 'SUCCESS') {
+            if (transaction.result === 'SUCCESS' && (
+                transactiontype === 'TOKENMINT' ||
+                transaction.token_transfers?.some((transfer) =>
+                    entityId(transfer.token_id) === entityId(this._token.tokenId) &&
+                    entityId(transfer.account) === entityId(this._mintRequest.target) &&
+                    transfer.amount === this._mintRequest.amount
+                )
+            )) {
                 return true;
             }
             cursor = timestamp;
