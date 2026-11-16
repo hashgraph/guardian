@@ -66,7 +66,7 @@
         "dev:docker": "npm run build && nodemon .",
         "lint": "tslint --config ../tslint.json --project .",
         "start": "node dist/index.js",
-        "test": "mocha --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/api-gateway-service.xml --exit",
+        "test": "mocha --file ../common/tests/helpers/quiet-console.mjs --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/api-gateway-service.xml --exit",
         "test:local": "mocha --exit"
     },
     "type": "module",

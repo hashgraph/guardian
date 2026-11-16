@@ -77,6 +77,12 @@ TAG=preparing ./run-test-by-tag.sh
 
 See [Running Tests with Tags](#running-tests-with-tags) below for more details.
 
+### Idempotency is per API folder, not per spec file
+
+For the API suites, the unit that must be idempotent and order-independent is the folder (`api-tests/<NNN_area>/`): run on its own after `000_accounts_creating`, twice in a row, or before or after any other folder, it must pass. The spec files inside a folder may depend on each other and on what earlier specs of the same folder created, in this run or in a previous run of the folder (`013_contracts/004` needs `001`–`003`; `025_policy_labels/08` posts to a label that `00` created and `06` published).
+
+So a single spec file that fails on its own, or reads data left by a previous run of its folder, is not a defect by itself: run the whole folder before judging it. A folder that needs data from another folder is a defect (see [`pending-issues/`](pending-issues/)).
+
 ## Linting the tests
 
 Run the linter on the specs and helpers (the folders Cypress generates, such as `cypress/reports` and `cypress/test_results`, are excluded in `eslint.config.mjs`) and fix what it reports before committing:

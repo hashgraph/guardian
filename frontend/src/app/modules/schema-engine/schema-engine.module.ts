@@ -62,8 +62,6 @@ import { SchemaFormOverviewComponent } from './schema-form-nav/schema-form-overv
 import { SchemaFormRingComponent } from './schema-form-nav/schema-form-ring.component';
 import { RichTextEditorComponent } from './rich-text-editor/rich-text-editor.component';
 import { RichTextClipDirective } from './rich-text-editor/rich-text-clip.directive';
-
-import { CopyButtonComponent } from './copy-button/copy-button.component';
 import { HideNotProvidedToggleComponent } from './hide-not-provided-toggle/hide-not-provided-toggle.component';
 
 @NgModule({
@@ -102,7 +100,6 @@ import { HideNotProvidedToggleComponent } from './hide-not-provided-toggle/hide-
         SchemaFormRingComponent,
         RichTextEditorComponent,
         RichTextClipDirective,
-        CopyButtonComponent,
         HideNotProvidedToggleComponent
     ],
     imports: [
