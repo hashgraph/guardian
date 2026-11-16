@@ -52,6 +52,9 @@ updates:
       nestjs:
         patterns:
           - "@nestjs/*"
+      hiero-ledger:
+        patterns:
+          - "@hiero-ledger/*"
       micro-orm:
         patterns:
           - "@mikro-orm/*"
