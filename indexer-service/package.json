@@ -3,9 +3,9 @@
     "dependencies": {
         "@indexer/common": "workspace:*",
         "@indexer/interfaces": "workspace:*",
-        "@mikro-orm/core": "6.6.17",
-        "@mikro-orm/migrations-mongodb": "6.6.17",
-        "@mikro-orm/mongodb": "6.6.17",
+        "@mikro-orm/core": "6.6.18",
+        "@mikro-orm/migrations-mongodb": "6.6.18",
+        "@mikro-orm/mongodb": "6.6.18",
         "@nestjs/common": "^11.1.24",
         "@nestjs/core": "^11.1.24",
         "@nestjs/microservices": "^11.1.24",
@@ -19,7 +19,7 @@
         "escape-string-regexp": "^5.0.0",
         "imurmurhash": "0.1.4",
         "jszip": "3.10.2",
-        "mongodb": "6.21.0",
+        "mongodb": "6.22.0",
         "reflect-metadata": "0.2.2",
         "rxjs": "7.8.2"
     },
