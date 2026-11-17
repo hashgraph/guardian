@@ -875,6 +875,17 @@ The HTML report includes:
 - Test duration and timing
 - Detailed error messages and stack traces
 
+#### Failure diagnostics
+
+When a test that loaded the app fails, its error message ends with a `Failure diagnostics` block (`cypress/support/failureDiagnostics.js`), so it shows in the console output, the JUnit files and the HTML report of local and CI runs alike:
+
+- the page URL;
+- each loading overlay (`div.loading`) or block placeholder (`.empty-component`) still in the page, with the Angular components it sits in (`policy-viewer > … > button-block`);
+- the HTTP requests of the page that had not been answered, with how long they had been waiting;
+- the last 20 browser console errors and warnings.
+
+API specs load no page, so their failures carry no such block.
+
 ### Common Usage Patterns
 
 #### Pattern 1: Basic API Test Run

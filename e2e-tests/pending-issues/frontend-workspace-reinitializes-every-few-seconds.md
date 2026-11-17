@@ -21,4 +21,4 @@ The bursts of `GET /accounts/session` every 5–7 s in the dev-server request tr
 
 ## How to pin it
 
-In a failing run, find which block component still has `loading === true` (the three `div.loading` of the CDM screenshot) and why: a load path without an error branch, an update push (`BlockUpdateFn`, 2000 ms batch) re-triggering the load, or a request the block waits on that the trace does not show. A run with the browser console (`ELECTRON_ENABLE_LOGGING=1`) and a DOM dump of the `div.loading` parents at the failure would settle it.
+In a failing run, find which block component still has `loading === true` (the three `div.loading` of the CDM screenshot) and why: a load path without an error branch, an update push (`BlockUpdateFn`, 2000 ms batch) re-triggering the load, or a request the block waits on that the trace does not show. Since 17 Nov a failing UI test reports this itself: its message ends with the components that still hold a `div.loading`, the requests without an answer and the browser console errors (README "Failure diagnostics"), so the next failing run, local or CI, should name the block.
