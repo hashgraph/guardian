@@ -1,11 +1,11 @@
 # The indexer tests are not run by any workflow or by `e2e-tests`
 
 **Status:** open — found on 12 Nov 2026 while adding the missing test groups to CI; the indexer part was taken out again on purpose (the indexer tests do not belong in `e2e-tests` or its entry point). Nothing in the repository runs them.
-**Component:** CI (`.github/workflows/main.yml`), `indexer-service`, `indexer-frontend`
+**Component:** CI (`.github/workflows/component-tests.yml`), `indexer-service`, `indexer-frontend`
 
 ## `indexer-service` (7 files in `tests/`, mocha)
 
-`main.yml` builds and tests the backend services only. What was written, run locally and then removed from `main.yml` and from `e2e-tests/scripts/test-everything.sh`:
+`component-tests.yml` builds and tests the backend services only. What was written, run locally and then removed from `component-tests.yml` and from `e2e-tests/scripts/test-everything.sh`:
 
 ```yaml
 - name: Indexer service tests
@@ -27,7 +27,7 @@
 
 The tests import compiled output (`dist/`), so `indexer-interfaces`, `indexer-common` and `indexer-service` must be built first; without that the run dies on `Cannot find module '…/@indexer/common/dist/index.js'` and then `indexer-service/dist/api/artifacts.service.js`. With the three builds the mocha run passes (12 Nov 2026). The test script writes `test_results/indexer-service.xml`, which `.github/scripts/report-test-summary.mjs` picks up with the other services.
 
-To do: decide where the step lives (a step in `main.yml` after `Test`, or its own workflow), add it, and check it on a CI run (the job has a 30 minute timeout; the added build time was not measured there). `indexer-worker-service` declares a `test` script but has no test files.
+To do: decide where the step lives (a step in `component-tests.yml` after `Test`, or its own workflow), add it, and check it on a CI run (the job has a 30 minute timeout; the added build time was not measured there). `indexer-worker-service` declares a `test` script but has no test files.
 
 ## `indexer-frontend` (10 `*.spec.ts`, 120 tests, Karma)
 

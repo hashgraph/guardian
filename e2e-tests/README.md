@@ -52,7 +52,7 @@ npm run guardian:infra:down      # on the host: removes the containers
 
 ## Running every test
 
-`npm run test:everything` runs, one group after the other, everything the repository tests outside the service unit tests of `main.yml`: the linter on the specs, the tests of the helper scripts, the frontend unit specs and the whole Cypress suite. A group that fails does not stop the others; the summary at the end lists each one and the exit code is non-zero when any failed. Name the groups to run only those:
+`npm run test:everything` runs, one group after the other, everything the repository tests outside the service unit tests of `component-tests.yml`: the linter on the specs, the tests of the helper scripts, the frontend unit specs and the whole Cypress suite. A group that fails does not stop the others; the summary at the end lists each one and the exit code is non-zero when any failed. Name the groups to run only those:
 
 ```bash
 npm run test:everything                       # lint, scripts, frontend, cypress
@@ -796,7 +796,7 @@ Three workflows run the suites, all on the same stack definition:
 |---|---|---|
 | **E2E Run** | `.github/workflows/e2e-run.yml` | Reusable (`workflow_call`), never triggered on its own. Starts a local Hiero network with Solo, the infrastructure and the Guardian services, optionally the frontend, runs Cypress, and publishes reports. |
 | **E2E Tests** | `.github/workflows/e2e-tests.yml` | The API and policy suites: `smoke` on every push, `api-all policy-all` nightly. |
-| **UI Tests** | `.github/workflows/ui-manual.yml` | The UI suite plus the disaster-recovery spec (`ui-all dr-all`), nightly and on demand. |
+| **UI Tests** | `.github/workflows/ui-tests.yml` | The UI suite plus the disaster-recovery spec (`ui-all dr-all`), nightly and on demand. |
 
 Both callers pass `suite`, `grep_tags`, and optionally `spec`, `with_frontend`, `solo_version` and `timeout_minutes` to `e2e-run.yml`. Anything about how the stack is started changes in `e2e-run.yml` only.
 

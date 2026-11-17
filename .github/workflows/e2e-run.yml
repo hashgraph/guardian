@@ -1,7 +1,7 @@
 name: E2E Run (Reusable)
 
 # Reusable job that runs a Cypress suite against a throwaway local Hiero network and a
-# natively started Guardian stack. The callers (e2e-tests.yml, ui-manual.yml) decide what to
+# natively started Guardian stack. The callers (e2e-tests.yml, ui-tests.yml) decide what to
 # run; everything about how the stack is started lives here, once.
 #
 # The caller has to grant `contents: read` and `checks: write` (publish-unit-test-result-action).
