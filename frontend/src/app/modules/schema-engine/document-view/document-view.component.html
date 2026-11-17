@@ -117,6 +117,7 @@
               [rules]="rulesResults"
               [formulas]="formulasFor(subject)"
               [preview]="preview"
+              [hideNotProvided]="hideNotProvided"
               (previewLoadingChange)="preview && previewLoadingChange.emit($event)"
               [link]="blockLink(block)"
               [discussion]="discussionData"
