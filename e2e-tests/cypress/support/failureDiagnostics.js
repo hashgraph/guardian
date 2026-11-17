@@ -7,6 +7,7 @@
 const LOADING_SELECTORS = ['div.loading', '.empty-component'];
 const MAX_CONSOLE_ENTRIES = 20;
 const MAX_TEXT_LENGTH = 300;
+const REPORT_HEADING = 'Failure diagnostics';
 // render-block only puts a block's uuid in the DOM (attribute block-uuid), and the uuids are new for
 // every published policy. The policy viewer reads the policy here, with its config: uuids and tags.
 const POLICY_URL = /\/policies\/[^/?]+(\?|$)/;
@@ -155,12 +156,16 @@ function formatDiagnostics({ url, loadingElements, recorder }, now = Date.now())
         lines.push(`Last browser console errors and warnings (${consoleEntries.length}):`);
         consoleEntries.forEach(({ level, at, text }) => lines.push(`  ${new Date(at).toISOString()} ${level}: ${text}`));
     }
-    return lines.length ? `Failure diagnostics:\n${lines.join('\n')}` : null;
+    return lines.length ? `${REPORT_HEADING}:\n${lines.join('\n')}` : null;
 }
 
 // The reporters print the stack, which starts with the message it was created with, so both change.
+// A fail handler can run more than once for the same error, so the report is added only once.
 function appendToError(error, text) {
     const original = error.message;
+    if (original.includes(`\n\n${REPORT_HEADING}`)) {
+        return;
+    }
     error.message = `${original}\n\n${text}`;
     if (typeof error.stack === 'string' && error.stack.includes(original)) {
         error.stack = error.stack.replace(original, error.message);
@@ -186,7 +191,7 @@ function registerFailureDiagnostics(cypress) {
                     appendToError(error, report);
                 }
             } catch (diagnosticsError) {
-                appendToError(error, `Failure diagnostics unavailable: ${diagnosticsError.message}`);
+                appendToError(error, `${REPORT_HEADING} unavailable: ${diagnosticsError.message}`);
             }
         }
         throw error;

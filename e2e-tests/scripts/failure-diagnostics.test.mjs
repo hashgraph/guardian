@@ -199,6 +199,19 @@ describe('registerFailureDiagnostics', () => {
         assert.ok(failure.stack.startsWith(`Error: ${failure.message}\n`), 'the printed stack carries the report too');
     });
 
+    it('appends the page state once when the same failure is handled again', () => {
+        const handlers = register();
+        const win = fakeWindow();
+        win.location = { href: 'http://127.0.0.1:4200/' };
+        win.document = { querySelectorAll: (selector) => (selector === 'div.loading' ? [element('div', element('button-block'))] : []) };
+        handlers['window:before:load'](win);
+
+        const failure = new Error('Timed out');
+        assert.throws(() => handlers.fail(failure));
+        assert.throws(() => handlers.fail(failure));
+        assert.equal(failure.message.split('Failure diagnostics:').length, 2);
+    });
+
     it('leaves the failure of a spec that loaded no page as it is', () => {
         const handlers = register();
         const failure = new Error('expected [] not to be empty');

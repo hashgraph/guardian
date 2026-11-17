@@ -1,6 +1,6 @@
 # `013_contracts/003` fails when the mirror node answers 502 once (flaky)
 
-**Status:** open, flaky test (seen once on 14 Nov 2026 on a local Solo stack; the previous run of the folder on the same stack was 149/149)
+**Status:** open, product robustness (seen once on 14 Nov 2026 on a local Solo stack; the previous run of the folder on the same stack was 149/149). The two mirror failures of the E8 run (a 503 on topic messages, a 404 on a new token) are fixed; `get-contract-info` still reads the mirror once.
 **Component:** `e2e-tests/cypress/e2e/api-tests/013_contracts`, `worker-service` (`get-contract-info` task)
 **Severity:** low — one transient mirror error fails `003` and, through it, `004` and `005` (3 of 14 specs, 42 tests skipped)
 **Found by:** running `000_accounts_creating`, `013_contracts` and `025_policy_labels` in order on an empty database

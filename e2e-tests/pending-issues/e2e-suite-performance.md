@@ -1,6 +1,6 @@
 # E2E suite performance: measurements, experiments, open issues
 
-**Status:** E1, E1b, E2, E3 and E5 adopted on 2026-11-17; parallel runs and the unmeasured items below are still open. Experiments E1–E7 measured on 2026-11-13, E8 (all the viable optimisations together) on 2026-11-17.
+**Status:** E1, E1b, E2, E3 and E5 adopted on 2026-11-17, and green in CI on 2026-11-18 (`E2E Tests` with `all`, `UI Tests` with `ui-all dr-all`, with the workflow changes); parallel runs and the unmeasured items below are still open. Experiments E1–E7 measured on 2026-11-13, E8 (all the viable optimisations together) on 2026-11-17.
 **Component:** `guardian-service`, `queue-service`, `auth-service`, `frontend`, `e2e-tests`
 **Affects:** the duration of a full e2e run (about 93 min sequential) and the possibility of running it in parallel
 
@@ -125,7 +125,9 @@ Running in parallel also needs a policy stop limited to the shard's own processe
 - E2: the 15 s sleeps are removed; the KYC and freeze transactions already resolve on their receipt.
 - E3: the free-worker reply window is `WORKER_FREE_RESPONSE_WINDOW` (default 300 ms, 50 ms in the e2e environment), and a new task starts a dispatch round right away.
 - E5: UI runs serve `ng serve --configuration production` (README "Preparing the app for UI tests", CI).
-- Found by E8: `get-token-info` now waits for the mirror node to index a new token.
+- Found by E8: `get-token-info` now waits for the mirror node to index a new token, and reading topic messages and account tokens retries a transient mirror error (429, 502, 503, 504).
+- CI: the e2e workflow sets the E1 and E3 variables, serves the production frontend and stops the policy processes between suites (`STOP_POLICIES_BETWEEN_SUITES=1`).
+- Found in CI: `025_policy_labels` publishes its own `iRec_4` copy and mints a token in it, instead of reading the copy `013_contracts` minted in.
 
 ## Still to do
 
