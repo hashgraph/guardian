@@ -148,6 +148,10 @@ export class RequestVcDocumentBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
         const sources = await ref.getSources(user);
         const restoreData = this.state[user.id] && this.state[user.id].restoreData;
+        // A draft is stored on the server only when something listens to the DraftEvent
+        const draftEnabled = (ref.sourceLinks || []).some(
+            (link) => link.outputType === PolicyOutputEventType.DraftEvent
+        );
 
         return {
             id: ref.uuid,
@@ -174,6 +178,7 @@ export class RequestVcDocumentBlock {
             hideFields: options.hideFields || [],
             data: sources && sources.length && sources[0] || null,
             restoreData,
+            draftEnabled,
         };
     }
 
@@ -299,8 +304,10 @@ export class RequestVcDocumentBlock {
             }
 
             //Trigger Events
+            let draftRecord: { id: string; updateDate: Date } | null = null;
             if (draft) {
                 await ref.triggerEvents(PolicyOutputEventType.DraftEvent, user, state, actionStatus);
+                draftRecord = await this.getDraftRecord(ref, state.data);
             } else {
                 // actionStatus.saveResult(state);
                 await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
@@ -316,11 +323,36 @@ export class RequestVcDocumentBlock {
 
             //Backup
             ref.backup();
+            if (draftRecord) {
+                item.draftRecord = draftRecord;
+            }
             return item;
         } catch (error) {
             ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
             throw new BlockActionError(error, ref.blockType, ref.uuid, error.data);
         }
+    }
+
+    /**
+     * Id and update time of the draft record stored by the DraftEvent target, or null if none was stored
+     * @param ref Block
+     * @param saved Event data after the DraftEvent was triggered
+     */
+    private async getDraftRecord(
+        ref: AnyBlockType,
+        saved: any
+    ): Promise<{ id: string; updateDate: Date } | null> {
+        const savedId = saved?.id ?? saved?._id;
+        if (!savedId) {
+            return null;
+        }
+        const id = String(savedId);
+        const record = await ref.databaseServer.getVcDocument({
+            id: { $eq: id },
+            policyId: { $eq: ref.policyId },
+            draft: { $eq: true }
+        });
+        return record ? { id, updateDate: record.updateDate } : null;
     }
 
     /**

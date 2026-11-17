@@ -48,6 +48,7 @@ export class DocumentViewComponent implements OnInit {
 
     @Input('disconnected') disconnected: boolean = false;
     @Input() preview: boolean = false;
+    @Input() hideNotProvided: boolean = false;
     /** The host draws the navigation (a presentation); this view shows one page. */
     @Input() navHidden: boolean = false;
     /** The page to show: `overview`, `details` or a section id. */

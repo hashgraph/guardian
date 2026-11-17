@@ -34,6 +34,7 @@ export class VCViewerDialog {
     public isVpDocument!: boolean;
     public isJsonDocument!: boolean;
     public toggle: boolean = true;
+    public hideNotProvided: boolean = true;
     public schema: any;
     public dryRun: boolean = false;
     public getByUser: boolean = false;

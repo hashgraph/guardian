@@ -11,7 +11,7 @@
   </div>
   @if (!isSubmitted) {
     @if (dataSaved) {
-      <span class="form-saved"><span class="form-saved-dot"></span>Draft saved just now</span>
+      <span class="form-saved"><span class="form-saved-dot"></span>{{ savedLabel }}</span>
     } @else if (minutesAgo$ | async; as saved) {
       <span class="form-saved"><span class="form-saved-dot"></span>{{ saved }}</span>
     }
@@ -338,7 +338,7 @@
               [showButtons]="false"
               cancelText = "Cancel"
               [submitText]="submitLabel"
-              saveText = "Save Draft"
+              [saveText]="saveLabel"
               (form)="initForm($event)"
               (presetApplied)="onPresetApplied()"
               (previewBusyChange)="onPreviewRenderingChange($event)"

@@ -395,6 +395,11 @@ export interface IPolicyBlock {
     afterInit(): Promise<void>;
 
     /**
+     * Links of the events this block emits
+     */
+    sourceLinks: { outputType: PolicyOutputEventType }[];
+
+    /**
      * Add source link
      * @param link
      */
@@ -1024,6 +1029,11 @@ export interface IPolicyDBDocument<T> {
      * Draft ID
      */
     draftId?: string;
+
+    /**
+     * The draft record a draft save stored, read back from the database
+     */
+    draftRecord?: { id: string; updateDate: Date };
 
     /**
      * Parent document
