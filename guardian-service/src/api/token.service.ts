@@ -700,8 +700,6 @@ async function dispatchGrantKycWorker(
         registerCallback: true
     });
 
-    await new Promise(resolve => setTimeout(resolve, 15000));
-
     const info = await workers.addNonRetryableTask({
         type: WorkerTaskType.GET_ACCOUNT_INFO,
         data: {
@@ -868,8 +866,6 @@ async function freezeToken(
         interception: user.id.toString(),
         registerCallback: true
     });
-
-    await new Promise(resolve => setTimeout(resolve, 15000));
 
     const info = await workers.addNonRetryableTask({
         type: WorkerTaskType.GET_ACCOUNT_INFO,
