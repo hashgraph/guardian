@@ -56,7 +56,7 @@ On the 240 specs that passed in both runs, the time went from 68.9 to 59.7 min (
 The 7 failing specs. None of them is caused by the patches, as far as the reruns show:
 
 - `009_policies/postPoliciesImportMsgPreview`: mirror node answered 503 once; it passed on rerun.
-- `013_contracts/006_setPools`: the mirror node did not have the new token yet (404, no retry). `007_getPools` and `008_getWipeRequests` then failed with it. The folder passed 149/149 on rerun. Both mirror failures are in `contract-import-fails-on-a-transient-mirror-node-502.md`. Whether E3 makes the 404 more likely is not verified.
+- `013_contracts/006_setPools`: the mirror node did not have the new token yet (404, no retry). `007_getPools` and `008_getWipeRequests` then failed with it. The folder passed 149/149 on rerun. Both mirror failures are in `contract-import-fails-on-a-transient-mirror-node-502.md`; the 404 is fixed since (the worker now waits for the mirror node to index the token).
 - `025_policy_labels/07_getTokensPolicyLabel`, `08_postDocument`: they read what `013_contracts` creates (`policy-labels-specs-depend-on-013-contracts.md`).
 - `ui-tests/specs/02_policies/flow_CDM_0001`: the tool picker stayed open (`cdm-import-tool-picker-stays-open.md`), the same failure as on 14 Nov.
 

@@ -22,9 +22,7 @@ Not verified: what answered 502 so fast. It may be the port-forward or ingress i
 The full run of `e2e-suite-performance.md` (E8, faster queue dispatch included) hit two more mirror requests that failed once and passed when the specs were run again on the same stack:
 
 - `009_policies/postPoliciesImportMsgPreview`: `POST /policies/import/message/preview` answered `500 "Request failed with status code 503"`. The worker's `get-topic-messages` task got the 503 from the mirror 3 ms after it started (`worker-service`, 16:40:22.768Z).
-- `013_contracts/006_setPools`: `500 "Request failed with status code 404"` while setting a retire pool. 330 ms after the `TokenCreateTransaction` for the pool's token completed, `SET_RETIRE_POOLS` read the token from the mirror (`get-token-info`, `guardian-service/src/api/contract.service.ts`, `attempts: 0`) before the mirror had indexed it. `007_getPools` and `008_getWipeRequests` then failed with it, and so did `025_policy_labels/07` and `08`, which read what `013_contracts` creates (`policy-labels-specs-depend-on-013-contracts.md`).
-
-The 404 is a different cause from the 5xx ones: the mirror lags behind consensus, and nothing waits for it. Not verified: whether the faster queue dispatch of E3 makes this more likely by removing the 300 ms each dispatch round used to add.
+- `013_contracts/006_setPools`: `500 "Request failed with status code 404"` while setting a retire pool. 330 ms after the `TokenCreateTransaction` for the pool's token completed, `SET_RETIRE_POOLS` read the token from the mirror (`get-token-info`) before the mirror had indexed it. `007_getPools`, `008_getWipeRequests` and `025_policy_labels/07`, `08` failed with it. Fixed: `get-token-info` now waits for the mirror node to index the token, as reading an account already did (`HederaSDKHelper.getIndexedEntity` in `worker-service`).
 
 ## How to reproduce
 
