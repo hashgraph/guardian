@@ -1,8 +1,7 @@
-const path = require('path');
 const { defineConfig } = require('cypress');
 const { verifyDownloadTasks } = require('cy-verify-downloads');
 const { snapshotHbarBalances } = require('./cypress/tasks/hbarBalances');
-const { createSuiteChangeStopper } = require('./cypress/tasks/policyProcesses');
+const { createSuiteChangeStopper, policyServiceLogDir } = require('./cypress/tasks/policyProcesses');
 
 const MIN_SR_USER_HBAR_BALANCE = 10;
 
@@ -160,7 +159,7 @@ module.exports = defineConfig({
                 if (!natsServer) {
                     throw new Error('STOP_POLICIES_BETWEEN_SUITES=1 needs STOP_POLICIES_NATS (host:port), which scripts/local-guardian.sh sets');
                 }
-                const logDir = path.join(__dirname, '.local', 'logs');
+                const logDir = policyServiceLogDir(process.env);
                 const beforeSpec = createSuiteChangeStopper(async () => {
                     const { stopPolicies } = await import('./scripts/stop-policies.mjs');
                     await stopPolicies(logDir, natsServer);

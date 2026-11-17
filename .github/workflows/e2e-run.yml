@@ -495,6 +495,12 @@ jobs:
           ReportName: ${{ steps.params.outputs.report_name }}
           CYPRESS_minPasswordLength: ${{ env.MIN_PASSWORD_LENGTH }}
           CYPRESS_passwordComplexity: ${{ env.PASSWORD_COMPLEXITY }}
+          # Every published or dry-run policy keeps a process of about 280 MB, about 55 in a full run:
+          # stop the previous suite's ones before each new spec folder (cypress.config.js).
+          STOP_POLICIES_BETWEEN_SUITES: 1
+          STOP_POLICIES_NATS: 127.0.0.1:4222
+          # Where the policy-service logs map each policy process to its policy.
+          GUARDIAN_LOG_DIR: ${{ runner.temp }}/guardian-logs
 
       # Cypress writes straight into the workspace now, so there is nothing to copy
       # out; just make sure the steps below always find the directories.

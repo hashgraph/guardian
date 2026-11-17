@@ -14,4 +14,10 @@ function createSuiteChangeStopper(stopPolicies) {
     };
 }
 
-module.exports = { createSuiteChangeStopper };
+// stop-policies.mjs maps each policy process to its policy through the policy-service logs. CI writes them
+// to GUARDIAN_LOG_DIR; scripts/local-guardian.sh writes them to .local/logs.
+function policyServiceLogDir(env) {
+    return env.GUARDIAN_LOG_DIR || path.join(__dirname, '..', '..', '.local', 'logs');
+}
+
+module.exports = { createSuiteChangeStopper, policyServiceLogDir };

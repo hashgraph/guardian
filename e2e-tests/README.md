@@ -818,7 +818,7 @@ Scheduled runs happen nightly at 03:00 UTC: E2E Tests runs `api-all policy-all`,
 - Builds Guardian services
 - Starts MongoDB, NATS, Valkey and Kubo as service containers, and the Guardian services natively
 - For UI runs, installs the frontend and serves its production build with `ng serve --configuration production` on `127.0.0.1:4200`, proxied to the gateway (`frontend/proxy.hostdocker.js`), the same way as the local recipe in "Preparing the app for UI tests"
-- Runs Cypress natively on the runner against that stack
+- Runs Cypress natively on the runner against that stack, with `STOP_POLICIES_BETWEEN_SUITES=1` so the policy processes of a spec folder are stopped before the next one starts
 - With the `ui_request_trace` input of a manual run (`UI Tests`, or `E2E Tests` with UI tags), the dev server logs every request it proxies to the gateway (`UI_PROXY_LOG`), into `frontend-1.log` of the Guardian logs artifact. It is for diagnosing a UI failure, and the log is large
 - Publishes test results (one check per suite: `Test results · api`, `· policy`, `· ui`)
 - Uploads HTML and JSON reports as artifacts, plus the Guardian (frontend included) and Solo logs when a run fails

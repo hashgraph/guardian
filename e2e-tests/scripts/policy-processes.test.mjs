@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, it } from 'node:test';
 
 const require = createRequire(import.meta.url);
-const { createSuiteChangeStopper } = require('../cypress/tasks/policyProcesses.js');
+const { createSuiteChangeStopper, policyServiceLogDir } = require('../cypress/tasks/policyProcesses.js');
 
 describe('createSuiteChangeStopper', () => {
     it('stops the policy processes when a spec of another folder starts, not between specs of the same folder', async () => {
@@ -31,5 +33,16 @@ describe('createSuiteChangeStopper', () => {
         await beforeSpec('cypress/e2e/api-tests/004_logs/getLogs.cy.js');
         events.push('spec starts');
         assert.deepEqual(events, ['stopped', 'spec starts']);
+    });
+});
+
+describe('policyServiceLogDir', () => {
+    it('reads the policy-service logs where the services write them', () => {
+        assert.equal(policyServiceLogDir({ GUARDIAN_LOG_DIR: '/runner/temp/guardian-logs' }), '/runner/temp/guardian-logs');
+    });
+
+    it('defaults to the log folder of scripts/local-guardian.sh', () => {
+        const e2eDir = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+        assert.equal(policyServiceLogDir({}), path.join(e2eDir, '.local', 'logs'));
     });
 });
