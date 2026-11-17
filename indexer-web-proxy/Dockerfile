@@ -35,7 +35,7 @@ COPY --link ./indexer-frontend/. ./
 RUN npm install indexer-interfaces.tgz && npm install indexer-common.tgz && npm run build
 
 # Stage 5: Create the final image
-FROM nginxinc/nginx-unprivileged:${NGINX_VERSION} AS image
+FROM nginx/nginx-unprivileged:${NGINX_VERSION} AS image
 
 # Copy config and built application from the build stage into the image
 COPY --link ./indexer-web-proxy/configs/default.conf /etc/nginx/conf.d/default.conf
