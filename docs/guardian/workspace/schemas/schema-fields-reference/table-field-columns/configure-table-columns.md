@@ -89,6 +89,17 @@ A cell that holds no number is replaced with `0` by a numeric function; the row 
 
 Only the active **By cells** or **By columns** mode is saved. **By cells** allows up to 1 000 rows in one table or across all tables of a repeated output, and up to 100 tables. **By columns** allows up to 10 000 rows and, for a repeated output, up to 100 tables. A legacy Table with **Define columns** off, or a Table below two or more repeated schema levels, keeps the existing single-value Output.
 
+#### Write Custom Logic results into a Table
+
+1. Make sure the Custom Logic block's output schema has a Table field with **Define columns** on.
+2. In the result the script passes to `done()`, set that field to the rows, one object per row, keyed by the declared column keys. For a Table field `emissions`:
+
+   ```js
+   emissions: { type: 'table', rows: [ { year: 2020, co2: 5 }, { year: 2021, co2: 7 } ] }
+   ```
+
+3. Run the policy. Guardian stores the rows as a file and puts the usual Table value into the document. A Python script works the same way.
+
 #### Read declared keys through the policy documents API
 
 1. Call `GET /policies/{policyId}/documents` with `includeDocument=true` and `expandTables=true`.

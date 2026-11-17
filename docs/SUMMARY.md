@@ -231,6 +231,8 @@
     * [Schema Types](guardian/workspace/schemas/schema-types.md)
     * [Schema Editor](guardian/workspace/schemas/schema-editor.md)
     * [Schema Fields Reference](guardian/workspace/schemas/schema-fields-reference/README.md)
+      * [Advisory Text](guardian/workspace/schemas/schema-fields-reference/advisory-text/README.md)
+        * [Add Advisory Text to a Field](guardian/workspace/schemas/schema-fields-reference/advisory-text/add-advisory-text.md)
       * [Array Element Conditions](guardian/workspace/schemas/schema-fields-reference/array-element-conditions/README.md)
         * [Configure an Array Element Condition](guardian/workspace/schemas/schema-fields-reference/array-element-conditions/configure-array-element-conditions.md)
       * [Cross-Schema Conditions](guardian/workspace/schemas/schema-fields-reference/cross-schema-conditions/README.md)

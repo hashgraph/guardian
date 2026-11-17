@@ -7,7 +7,7 @@ tags:
 
 # GeoJSON Field
 
-A GeoJSON field holds the locations of a document - points, lines and polygons - in the standard GeoJSON format. A schema author adds it by choosing **GeoJSON** as the field type, and a user fills it in the document form by drawing on a map, pasting GeoJSON text, or importing a `.geojson`, `.json`, `.kml` or `.kmz` file.
+A GeoJSON field holds the locations of a document - points, lines and polygons - in the standard GeoJSON format. A schema author adds it by choosing **GeoJSON** as the field type, and a user fills it in the document form by importing a `.geojson`, `.json`, `.kml` or `.kmz` file or by entering shapes manually.
 
 #### The problem it solves
 
@@ -17,15 +17,16 @@ Almost every carbon project is tied to a place: a forest plot, a field, a projec
 
 **The schema author decides which shapes are allowed.** In the field settings the author can pick the GeoJSON types the field accepts, for example only `Polygon`. This is stored in the field property `availableOptions`. With no choice made, every type is allowed.
 
-**The form shows the field in two views.** The **Form** view shows a map with the field's shapes and a panel with the type and coordinates of each shape. The **JSON** view shows the same value as GeoJSON text, and is also where a file is imported. Both views edit the same value.
+**The form shows the value; a dialog edits it.** An empty field shows **Add geometry**. A filled field shows a map, a short summary such as `2 shapes · 1 polygon`, and the buttons **Edit** and **Clear**. **Add geometry** and **Edit** open a dialog with a preview map and two tabs: **Upload file** and **Enter manually**. **Save** writes the shapes into the field, **Cancel** leaves it unchanged. A very large value is not opened for editing: the field shows only its summary and size, and it can be cleared.
 
-**A user can add locations in three ways.**
+**A user can add locations in two ways.**
 
-* **Draw on the map.** Click to place a marker. Double-click to finish a line or a polygon. Right-click removes the temporary points of an unfinished line or polygon. **Add Geometry** adds a shape by typing its type and coordinates; **Delete Geometry** removes one.
-* **Paste GeoJSON.** Text pasted in the **JSON** view replaces the shapes on the map.
-* **Import a file.** A `.geojson`, `.json`, `.kml` or `.kmz` file is read in the browser. Its shapes appear on the map as grey candidates. Clicking a shape selects it - it turns green and its coordinates appear in the panel - and clicking it again deselects it. **Include all** selects every shape, **Clear** returns them all to grey candidates. Only the selected shapes become the field's value.
+* **Import a file.** On the **Upload file** tab, a `.geojson`, `.json`, `.kml` or `.kmz` file is read in the browser. Its shapes appear on the preview map as grey candidates. Clicking a shape picks it - it turns green - and clicking it again unpicks it. **Select all** picks every shape, **Clear selection** unpicks them all, **Choose another file** replaces the file. Only the picked shapes become the field's value.
+* **Enter manually.** On the **Enter manually** tab, each shape is a **Geometry** card with a **Type** and its coordinates. **Add geometry** adds a card, the delete icon removes one. Clicking the preview map adds a point to the shape, right-clicking removes it.
 
-**The value is checked before the document is created.** A shape of a type the field does not allow is rejected. A polygon whose ring crosses or touches itself, a hole outside its polygon, or two holes that cross or touch are shown as a red error under the field. An empty field shows `A GeoJSON object is required`. In each case **Validate & Create** stays disabled until the value is fixed.
+**Files are checked when they are chosen.** Guardian reads the whole file. A GeoJSON file must follow the GeoJSON standard (RFC 7946), and a KML or KMZ file must be readable; otherwise the file is refused with **Unsupported file format**. A KML or KMZ file may link to external content (`NetworkLink`); this content is not imported, and **Linked content won't be imported** lets the user continue with the rest of the file. The server runs the same checks when a document is submitted, including through the API.
+
+**The value is checked before the document is created.** A shape of a type the field does not allow is rejected. A polygon whose ring crosses or touches itself, a hole outside its polygon, or two holes that cross or touch are shown as a red error under the field. An empty field shows `A GeoJSON object is required`. In each case the document is not created until the value is fixed.
 
 **Imported files are checked against size and complexity limits.** A browser cannot draw a very large file without freezing, so every file is compared with five limits before anything is drawn:
 
@@ -57,14 +58,16 @@ The limits are environment variables of the Guardian services. A missing, empty,
 
 The browser reads the current values from `GET /settings/geospatial-limits`, so a change applies to the form after the services restart, with no frontend rebuild.
 
+**Debug log.** When `LOG_LEVEL=debug` is set for policy-service, Guardian writes a log entry for every accepted geospatial file: file name, format, file size (compressed and original), number of shapes and number of points. On the **Logs** page, select the **Debug** type to see these entries.
+
 #### Key distinctions
 
-* **The field value and the original file are two different things.** The value holds the shapes the user selected or drew. The original file holds everything the user uploaded. They can differ, and both can be downloaded.
+* **The field value and the original file are two different things.** The value holds the shapes the user picked or entered. The original file holds everything the user uploaded. They can differ, and both can be downloaded.
 * **A preview limit is not an upload limit.** Above a preview limit the file is still accepted - it is only not drawn. Only the maximum file size refuses a file.
 * **The point of a file without preview is accepted in any field.** Even in a field that allows only `Polygon`, the first point of the file is accepted, because it is taken from a shape of an allowed type and marks where the file lies. Shapes the user adds are checked as usual.
 * **For KMZ, the uncompressed size counts.** A small archive can hold a very large KML. Both the archive and the KML inside it must be under the maximum.
-* **A value that was drawn or pasted has no original file.** Neither does a document saved before original files were stored. Such a value is drawn, checked and downloaded as GeoJSON, with no **Download original file** button.
-* **Browser limits still exist.** The defaults keep the map responsive on a typical computer. Raising them lets larger files be drawn, but how large a file a browser can really draw depends on the computer.
+* **A value that was entered manually has no original file.** Neither does a document saved before original files were stored. Such a value is drawn, checked and downloaded as GeoJSON, with no **Download original file** button.
+* **The drawable file size depends on device resources.** The defaults keep the map responsive on a typical device. Raising them lets larger files be drawn, but the real limit depends on the memory and performance of the user's device.
 
 #### Related
 
