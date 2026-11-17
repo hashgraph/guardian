@@ -180,9 +180,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/client-secrets-manager@npm:3.1168.0":
-  version: 3.1168.0
-  resolution: "@aws-sdk/client-secrets-manager@npm:3.1168.0"
+"@aws-sdk/client-secrets-manager@npm:3.1169.0":
+  version: 3.1169.0
+  resolution: "@aws-sdk/client-secrets-manager@npm:3.1169.0"
   dependencies:
     "@aws-sdk/core": "npm:^3.981.0"
     "@aws-sdk/credential-provider-node": "npm:^3.972.97"
@@ -192,7 +192,7 @@ __metadata:
     "@smithy/node-http-handler": "npm:^4.14.2"
     "@smithy/types": "npm:^4.20.0"
     tslib: "npm:^2.6.2"
-  checksum: 10c0/0d2b7c017759035cb73a6d8944566936e6c8e01ea8ae60c840d017605fed73ebdc31e12a16e9e031df6d6916e753a846ccdfbea3deeb0c046b07c60f60c41927
+  checksum: 10c0/7e6c8647083874c517dd4b540c55663fc9c0641a821a472c7add01579a582d6d739e3c3c1b021b8f3971b895962eaccfd266295f6cc8cd495eee54b095a6d36d
   languageName: node
   linkType: hard
 
@@ -1556,7 +1556,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@guardian/common@workspace:common"
   dependencies:
-    "@aws-sdk/client-secrets-manager": "npm:3.1168.0"
+    "@aws-sdk/client-secrets-manager": "npm:3.1169.0"
     "@azure/identity": "npm:^4.10.0"
     "@azure/keyvault-secrets": "npm:^4.9.0"
     "@digitalbazaar/credentials-context": "npm:3.2.0"
