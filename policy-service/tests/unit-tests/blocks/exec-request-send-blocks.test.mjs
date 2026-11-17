@@ -365,6 +365,167 @@ describe('@unit exec RequestVcDocumentBlockAddon.checkPreset', () => {
         const res = await block.checkPreset(block, { a: 'same' }, { document: { credentialSubject: { a: 'same' } } }, makeUser());
         assert.equal(res.valid, true);
     });
+
+    describe('nested paths, conditions and system keys', () => {
+        const f = (name, over = {}) => ({
+            name, title: name, description: name, type: 'string', required: false,
+            isArray: false, isRef: false, readOnly: false, fields: null, conditions: null, ...over,
+        });
+        const locations = f('projectLocations', { isRef: true, isArray: true, fields: [f('location')] });
+        const conditions = [{
+            ifCondition: { field: f('has'), fieldValue: 'true' },
+            thenFields: [f('projectLocations')],
+            elseFields: [],
+        }];
+        const withSchema = (presetFields, schema) => {
+            const block = mk({ presetSchema: '#P', presetFields });
+            block._schema = schema;
+            return block;
+        };
+        const ref = (subject) => ({ document: { credentialSubject: subject } });
+        const ro = (name, value = name) => ({ name, value, readonly: true });
+        beforeEach(() => {
+            patchUtils({ getCredentialSubject: (d) => d?.document?.credentialSubject || null });
+        });
+
+        it('hidden conditional field is accepted, visible missing or changed one is rejected', async () => {
+            const block = withSchema([ro('projectLocations')], { iri: '#S', fields: [locations], conditions });
+            const preset = ref({ projectLocations: [{ location: 'A' }] });
+            assert.equal((await block.checkPreset(block, { has: 'false' }, preset, makeUser())).valid, true);
+            assert.equal((await block.checkPreset(block, { has: 'true' }, preset, makeUser())).valid, false);
+            assert.equal((await block.checkPreset(block, { has: 'true', projectLocations: [{ location: 'B' }] }, preset, makeUser())).valid, false);
+        });
+
+        it('ignores type and @context stamped on sub-schema objects', async () => {
+            const block = withSchema([ro('projectLocations')], { iri: '#S', fields: [locations], conditions: [] });
+            const preset = ref({ projectLocations: [{ location: 'A', type: 'Other', '@context': ['ctx:other'] }] });
+            const doc = { projectLocations: [{ location: 'A', type: 'Loc', '@context': ['ctx:loc'] }] };
+            assert.equal((await block.checkPreset(block, doc, preset, makeUser())).valid, true);
+        });
+
+        it('nested array path and flattening of a deeper source', async () => {
+            const nested = withSchema(
+                [{ name: 'locs.name', value: 'places.title', readonly: true, nameLevel: 1, valueLevel: 1 }],
+                { iri: '#S', fields: [f('locs', { isRef: true, isArray: true, fields: [f('name')] })], conditions: [] }
+            );
+            const preset = ref({ places: [{ title: 'A' }, { title: 'B' }] });
+            assert.equal((await nested.checkPreset(nested, { locs: [{ name: 'A' }, { name: 'B' }] }, preset, makeUser())).valid, true);
+            assert.equal((await nested.checkPreset(nested, { locs: [{ name: 'A' }, { name: 'X' }] }, preset, makeUser())).valid, false);
+
+            const flat = withSchema(
+                [{ name: 'tags', value: 'groups.items.tag', readonly: true, nameLevel: 1, valueLevel: 2 }],
+                { iri: '#S', fields: [f('tags', { isArray: true })], conditions: [] }
+            );
+            const deep = ref({ groups: [{ items: [{ tag: 'a' }, { tag: 'b' }] }, { items: [{ tag: 'c' }] }] });
+            assert.equal((await flat.checkPreset(flat, { tags: ['a', 'b', 'c'] }, deep, makeUser())).valid, true);
+        });
+    });
+});
+
+describe('@unit exec RequestVcDocumentBlock.checkPreset', () => {
+    afterEach(() => restoreStatics());
+
+    const f = (name, over = {}) => ({
+        name, title: name, description: name, type: 'string', required: false,
+        isArray: false, isRef: false, readOnly: false, fields: null, conditions: null, ...over,
+    });
+    // `has == true` reveals projectLocations
+    const conditions = [{
+        ifCondition: { field: f('has'), fieldValue: 'true' },
+        thenFields: [f('projectLocations')],
+        elseFields: [],
+    }];
+    const locations = f('projectLocations', { isRef: true, isArray: true, fields: [f('location')] });
+    const ro = (name, value = name) => ({ name, value, readonly: true });
+
+    function mk(presetFields, schema = { iri: '#S', fields: [], conditions: [] }) {
+        const { block } = makeBlock(RequestVcDocumentBlock, { options: { presetSchema: '#P', presetFields } });
+        block._schema = schema;
+        return block;
+    }
+    const source = (subject) => ({ document: { credentialSubject: subject } });
+    const check = (block, doc, ref, user = makeUser()) => block.checkPreset(block, doc, ref, user);
+
+    beforeEach(() => {
+        patchUtils({ getCredentialSubject: (d) => d?.document?.credentialSubject || null });
+    });
+
+    it('plain readonly field: valid when unchanged, invalid when changed', async () => {
+        const block = mk([ro('a')]);
+        const ref = source({ a: 'x' });
+        assert.equal((await check(block, { a: 'x' }, ref)).valid, true);
+        const res = await check(block, { a: 'y' }, ref);
+        assert.equal(res.valid, false);
+        assert.match(res.error, /\(a\) can not be modified/);
+    });
+
+    it('hidden conditional field absent from the document is valid', async () => {
+        const block = mk([ro('projectLocations')], { iri: '#S', fields: [locations], conditions });
+        const ref = source({ projectLocations: [{ location: 'A' }] });
+        assert.equal((await check(block, { has: 'false' }, ref)).valid, true);
+    });
+
+    it('visible conditional field that is missing or null is rejected', async () => {
+        const block = mk([ro('projectLocations')], { iri: '#S', fields: [locations], conditions });
+        const ref = source({ projectLocations: [{ location: 'A' }] });
+        assert.equal((await check(block, { has: 'true' }, ref)).valid, false);
+        assert.equal((await check(block, { has: 'true', projectLocations: null }, ref)).valid, false);
+    });
+
+    it('visible conditional field with tampered value is rejected', async () => {
+        const block = mk([ro('projectLocations')], { iri: '#S', fields: [locations], conditions });
+        const ref = source({ projectLocations: [{ location: 'A' }] });
+        const res = await check(block, { has: 'true', projectLocations: [{ location: 'B' }] }, ref);
+        assert.equal(res.valid, false);
+    });
+
+    it('ignores type and @context stamped on sub-schema objects', async () => {
+        const block = mk([ro('projectLocations')], { iri: '#S', fields: [locations], conditions: [] });
+        const ref = source({ projectLocations: [{ location: 'A', type: 'Other', '@context': ['ctx:other'] }] });
+        const doc = { projectLocations: [{ location: 'A', type: 'Loc', '@context': ['ctx:loc'] }] };
+        assert.equal((await check(block, doc, ref)).valid, true);
+    });
+
+    it('nested path with arrays reads one value per entry', async () => {
+        const block = mk([{ name: 'locs.name', value: 'places.title', readonly: true, nameLevel: 1, valueLevel: 1 }], {
+            iri: '#S',
+            fields: [f('locs', { isRef: true, isArray: true, fields: [f('name')] })],
+            conditions: [],
+        });
+        const ref = source({ places: [{ title: 'A' }, { title: 'B' }] });
+        assert.equal((await check(block, { locs: [{ name: 'A' }, { name: 'B' }] }, ref)).valid, true);
+        assert.equal((await check(block, { locs: [{ name: 'A' }, { name: 'X' }] }, ref)).valid, false);
+    });
+
+    it('deeper source is flattened to the target depth', async () => {
+        const block = mk([{ name: 'tags', value: 'groups.items.tag', readonly: true, nameLevel: 1, valueLevel: 2 }], {
+            iri: '#S',
+            fields: [f('tags', { isArray: true })],
+            conditions: [],
+        });
+        const ref = source({ groups: [{ items: [{ tag: 'a' }, { tag: 'b' }] }, { items: [{ tag: 'c' }] }] });
+        assert.equal((await check(block, { tags: ['a', 'b', 'c'] }, ref)).valid, true);
+    });
+
+    it('without ref the server source is used, so the check can not be skipped', async () => {
+        const block = mk([ro('a')]);
+        block.getSources = async () => [source({ a: 'orig' })];
+        const res = await check(block, { a: 'changed' }, null);
+        assert.equal(res.valid, false);
+        assert.match(res.error, /can not be modified/);
+        assert.equal((await check(block, { a: 'orig' }, null)).valid, true);
+    });
+
+    it('without ref and without a server source the check passes as before', async () => {
+        const block = mk([ro('a')]);
+        block.getSources = async () => [];
+        assert.equal((await check(block, { a: 'changed' }, null)).valid, true);
+    });
+
+    it('non readonly mappings are not checked', async () => {
+        const block = mk([{ name: 'a', value: 'a', readonly: false }]);
+        assert.equal((await check(block, { a: 'changed' }, source({ a: 'x' }))).valid, true);
+    });
 });
 
 describe('@unit exec SendToGuardianBlock.mapDocument', () => {
