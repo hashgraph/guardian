@@ -165,9 +165,28 @@ for (const file of readdirSync(schemaDir).filter((f) => f.endsWith('.schema.json
     // Translate author-friendly 'defs' into Guardian's required archive format.
     const authoredDefs = doc.document?.$defs ?? doc.document?.defs;
     if (!authoredDefs || !Object.keys(authoredDefs).length) throw new Error(`missing defs in ${file}`);
-    doc.document.$defs = Object.fromEntries(Object.entries(authoredDefs).map(
-        ([key, value]) => [key.startsWith('#') ? key : `#${key}`, value],
-    ));
+    // The live importer validates each reference against an imported schema IRI.
+    // Embedded $defs are necessary for field parsing, but not sufficient for import.
+    const convertedDefs = Object.entries(authoredDefs).map(([key, value]) => {
+        const subjectIri = key.startsWith('#') ? key : `#${key}`;
+        if (!value || value.type !== 'object' || !value.properties) {
+            throw new Error(`invalid subject definition ${subjectIri} in ${file}`);
+        }
+        const subjectDocument = { ...value, $id: subjectIri, title: value.title || `${doc.name} Subject` };
+        const companion = {
+            name: subjectDocument.title,
+            description: doc.description || '',
+            entity: 'NONE',
+            system: false,
+            sourceVersion: doc.sourceVersion || '1.0.0',
+            iri: subjectIri,
+            contextURL: `schema:${subjectIri.slice(1)}`,
+            document: subjectDocument,
+        };
+        schemaEntries.push({ name: `schemas/${subjectIri}.json`, data: Buffer.from(JSON.stringify(companion), 'utf8') });
+        return [subjectIri, subjectDocument];
+    });
+    doc.document.$defs = Object.fromEntries(convertedDefs);
     delete doc.document.defs;
     function checkRefs(node) {
         if (!node || typeof node !== 'object') return;

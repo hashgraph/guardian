@@ -98,9 +98,9 @@ test('policy.json carries the keys Guardian expects', () => {
     assert.equal(policy.config.blockType, 'interfaceContainerBlock');
 });
 
-test('all four schemas are present and IRI-wired consistently', () => {
+test('four policy schemas and their four subject schemas are IRI-wired consistently', () => {
     const schemaEntries = [...entries.entries()].filter(([n]) => n.startsWith('schemas/'));
-    assert.equal(schemaEntries.length, 4);
+    assert.equal(schemaEntries.length, 8);
     const iris = new Set();
     for (const [name, data] of schemaEntries) {
         const doc = JSON.parse(data.toString('utf8'));
@@ -108,7 +108,7 @@ test('all four schemas are present and IRI-wired consistently', () => {
         assert.equal(doc.iri, expectedIri);
         assert.equal(doc.document.$id, expectedIri);
         assert.equal(doc.system, false);
-        assert.equal(doc.entity, 'VC');
+        assert.equal(doc.entity, doc.document.properties?.credentialSubject ? 'VC' : 'NONE');
         iris.add(expectedIri);
     }
 

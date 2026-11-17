@@ -98,10 +98,11 @@ test('every packaged schema is internally consistent', () => {
     for (const [iri, schema] of schemas) {
         assert.equal(schema.iri, iri, `${iri}: iri must match the packaged filename`);
         assert.equal(schema.document.$id, iri, `${iri}: document $id must match iri`);
-        assert.ok(schema.document.$defs, `${iri}: must declare Guardian $defs`);
+        const isRoot = !!schema.document.properties?.credentialSubject;
+        if (isRoot) assert.ok(schema.document.$defs, `${iri}: must declare Guardian $defs`);
         assert.equal(schema.document.defs, undefined, `${iri}: no legacy defs in ZIP`);
 
-        const def = subjectDefs(schema);
+        const def = isRoot ? subjectDefs(schema) : schema.document;
         for (const key of def.required || []) {
             assert.ok(
                 Object.prototype.hasOwnProperty.call(def.properties, key),
@@ -129,14 +130,25 @@ test('every $ref in every packaged schema resolves', () => {
     }
 });
 
-test('REGRESSION: Guardian SchemaHelper can resolve each credential subject $ref', () => {
+test('REGRESSION: Guardian import validator can resolve every subject ref as a separate schema', () => {
+    let roots = 0;
     for (const [iri, schema] of schemas) {
         const doc = schema.document;
+        if (!doc.properties?.credentialSubject) continue;
+        roots++;
         assert.ok(doc.$defs && !doc.defs, `${iri}: requires Guardian $defs`);
-        const ref = doc.properties?.credentialSubject?.items?.$ref;
+        const ref = doc.properties.credentialSubject.items?.$ref;
         assert.ok(typeof ref === 'string' && ref.startsWith('#'), `${iri}: missing subject $ref`);
         assert.ok(doc.$defs[ref]?.properties, `${iri}: unresolved Guardian $defs[${ref}]`);
+        const companion = schemas.get(ref);
+        assert.ok(companion, `${iri}: SchemaImportExportHelper.validateDefs requires schema IRI ${ref}`);
+        assert.equal(companion.iri, ref);
+        assert.equal(companion.document.$id, ref);
+        assert.equal(companion.entity, 'NONE', `${iri}: companion must not be a VC wrapper`);
+        assert.deepEqual(companion.document, doc.$defs[ref], `${iri}: companion and $defs differ`);
     }
+    assert.equal(roots, 4);
+    assert.equal(schemas.size, 8);
 });
 
 // ---------------------------------------------------------------------------
