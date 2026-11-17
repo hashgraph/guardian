@@ -1239,7 +1239,7 @@ export class HederaSDKHelper {
 
         const messageMap = new Map<string, any[]>();
         while (goNext) {
-            const res = await axios.get(url, params);
+            const res = await axiosGetWithRetry('Mirror node', url, params);
             delete params.params;
 
             if (!res || !res.data || !res.data.messages) {
@@ -2392,7 +2392,7 @@ export class HederaSDKHelper {
     ): AsyncGenerator<any> {
         let next = query;
         while (next !== null) {
-            const res = await axios.get(`${url}${next}`, { responseType: 'json' });
+            const res = await axiosGetWithRetry('Mirror node', `${url}${next}`, { responseType: 'json' });
             if (!res || !res.data) {
                 throw new Error(error);
             }

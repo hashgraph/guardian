@@ -21,7 +21,7 @@ Not verified: what answered 502 so fast. It may be the port-forward or ingress i
 
 The full run of `e2e-suite-performance.md` (E8, faster queue dispatch included) hit two more mirror requests that failed once and passed when the specs were run again on the same stack:
 
-- `009_policies/postPoliciesImportMsgPreview`: `POST /policies/import/message/preview` answered `500 "Request failed with status code 503"`. The worker's `get-topic-messages` task got the 503 from the mirror 3 ms after it started (`worker-service`, 16:40:22.768Z).
+- `009_policies/postPoliciesImportMsgPreview`: `POST /policies/import/message/preview` answered `500 "Request failed with status code 503"`. The worker's `get-topic-messages` task got the 503 from the mirror 3 ms after it started (`worker-service`, 16:40:22.768Z). Fixed: reading topic messages and account tokens now retries a transient mirror error (429, 502, 503, 504) through `axiosGetWithRetry`, as reading a single message already did.
 - `013_contracts/006_setPools`: `500 "Request failed with status code 404"` while setting a retire pool. 330 ms after the `TokenCreateTransaction` for the pool's token completed, `SET_RETIRE_POOLS` read the token from the mirror (`get-token-info`) before the mirror had indexed it. `007_getPools`, `008_getWipeRequests` and `025_policy_labels/07`, `08` failed with it. Fixed: `get-token-info` now waits for the mirror node to index the token, as reading an account already did (`HederaSDKHelper.getIndexedEntity` in `worker-service`).
 
 ## How to reproduce
@@ -30,4 +30,4 @@ It cannot be triggered on demand. Run `013_contracts` on a local Solo stack and 
 
 ## Test impact
 
-`003`, `004` and `005` fail together on a single transient mirror error. Possible fixes, not decided: retry the mirror request on a 5xx in the worker (a product change), or retry the import in `003`.
+`003`, `004` and `005` fail together on a single transient mirror error. Possible fix: read the contract through `axiosGetWithRetry` in the worker, as topic messages and account tokens now do (a product change). Retrying the import in `003` would hide the product problem.
