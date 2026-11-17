@@ -1,6 +1,6 @@
 # E2E suite performance: measurements, experiments, open issues
 
-**Status:** measurement done, no optimisation applied yet. Experiments E1–E7 measured on 2026-11-13; E8 (all the viable optimisations together) not run yet.
+**Status:** measurement done, no optimisation applied yet. Experiments E1–E7 measured on 2026-11-13, E8 (all the viable optimisations together) on 2026-11-17.
 **Component:** `guardian-service`, `queue-service`, `auth-service`, `frontend`, `e2e-tests`
 **Affects:** the duration of a full e2e run (about 93 min sequential) and the possibility of running it in parallel
 
@@ -35,6 +35,30 @@ Each one ran the folders it touches, against the same folders measured just befo
 | E5 | Frontend served with `ng serve --configuration production` | same UI specs | 11:40 | 9:21 | −20 %, almost every spec faster (createToken 1:22 → 0:59, operationsPolicySchema 1:48 → 1:23) |
 | E6 | Fast-forward the policy-test replay (`POST record/:policyId/running/fast-forward` while polling) | `016_policies_tests_and_flows`, `policy-tests/irec/iRec2` | 3:07 | 2:05 | **Not viable**: iRec2 replays wrong (8 documents and 0 tokens instead of 9 and 1). The recorded delays cover asynchronous work of the previous step, which the replay does not wait for otherwise |
 | E7 | 3 parallel Cypress runners (`000_accounts_creating` and `006_settings` first, alone), development frontend | full suite | 93.4 min | 45:07 | 12 of 270 specs fail (below). Each shard ran about 1.4× slower than its sequential share |
+| E8 | E1 + E1b + E2 + E3 + E5 together, full sequential run, fresh database, `STOP_POLICIES_BETWEEN_SUITES=1` | full suite | 93.4 min | 69:03 | 983 passing, 7 failing specs (below); about 74 min once the failures are accounted for |
+
+### E8 in detail
+
+Same command as the baseline (`npm run test:everything -- lint scripts cypress`, with the command logger), with the patches below applied and the services started with the E1 masks.
+
+On the 240 specs that passed in both runs, the time went from 68.9 to 59.7 min (−13 %):
+
+| Group | Specs | Baseline | E8 | Change |
+|---|---|---|---|---|
+| API | 158 | 586 s | 448 s | −24 % |
+| Policy | 33 | 1124 s | 1004 s | −11 % |
+| UI | 48 | 2391 s | 2102 s | −12 % |
+
+- Largest gains per spec: `010_tokens/putGrantRevokeKyc` and `putFreezeUnfreeze` 33 → 2 s each (E2), `009_policies/processFlowiRec3` 67 → 44 s, `policy-tests/irec/iRecNewRegistry` 55 → 33 s, every `02_policies` UI spec 10–20 % faster.
+- `013_contracts` failed in E8; run again right after on the same stack, it passed 149/149 in 1:42 (baseline 9:19).
+- The 69 min understate a passing run: `flow_CDM_0001` failed after 1:10 instead of taking about 9 min, and `013_contracts` stopped early. With those at their passing times, the run takes about 74 min, about 20 min (21 %) less than the baseline.
+
+The 7 failing specs. None of them is caused by the patches, as far as the reruns show:
+
+- `009_policies/postPoliciesImportMsgPreview`: mirror node answered 503 once; it passed on rerun.
+- `013_contracts/006_setPools`: the mirror node did not have the new token yet (404, no retry). `007_getPools` and `008_getWipeRequests` then failed with it. The folder passed 149/149 on rerun. Both mirror failures are in `contract-import-fails-on-a-transient-mirror-node-502.md`. Whether E3 makes the 404 more likely is not verified.
+- `025_policy_labels/07_getTokensPolicyLabel`, `08_postDocument`: they read what `013_contracts` creates (`policy-labels-specs-depend-on-013-contracts.md`).
+- `ui-tests/specs/02_policies/flow_CDM_0001`: the tool picker stayed open (`cdm-import-tool-picker-stays-open.md`), the same failure as on 14 Nov.
 
 ### Patches used
 
@@ -97,11 +121,10 @@ Running in parallel also needs a policy stop limited to the shard's own processe
 
 ## Still to do
 
-1. **E8**: E1 + E1b + E2 + E3 + E5 together on a full sequential run, fresh database, `STOP_POLICIES_BETWEEN_SUITES=1`, to get the realistic gain of the viable optimisations (from the single experiments: roughly −6 min contracts, −3 min KYC sleeps, −10 % on task-heavy specs, −20 % on UI specs).
-2. Decide which optimisations to adopt and where:
+1. Decide which optimisations to adopt and where:
    - E1: set the two sync masks in the e2e service environment (`scripts/local-guardian.sh`, `export_service_environment`) and in CI; then shorten the `expectNoWipeRequest` window to match.
    - E2: check on testnet whether the account info is up to date right after the KYC/freeze receipt; if so remove the sleep (product change, with a unit test).
    - E3: product change to the queue dispatch, with unit tests in `queue-service`.
    - E5: serve the production build for UI runs (README "Preparing the app for UI tests", CI).
-3. Parallel runs (E7 gives 45 min instead of 93): check that the auth fix removes the 401s, make the specs above independent of global lists and counters, keep `006_settings` alone, and stop only the shard's own policy processes.
-4. Not measured yet: the queue pickup in a full run with E3 (about 12 min of waits in the baseline), tool import/publish cost in `policy-tests/cdm` (803 s), the double publish in `processFlowiRec3` (about 17 s each), and the 162 s of app bootstrap after `cy.visit` (logging in through the API instead of the UI form).
+2. Parallel runs (E7 gives 45 min instead of 93): check that the auth fix removes the 401s, make the specs above independent of global lists and counters, keep `006_settings` alone, and stop only the shard's own policy processes.
+3. Not measured yet: the queue pickup in a full run with E3 (about 12 min of waits in the baseline; the E8 task snapshots are in `.local/e8-tasks.jsonl`), tool import/publish cost in `policy-tests/cdm` (803 s), the double publish in `processFlowiRec3` (about 17 s each), and the 162 s of app bootstrap after `cy.visit` (logging in through the API instead of the UI form).
