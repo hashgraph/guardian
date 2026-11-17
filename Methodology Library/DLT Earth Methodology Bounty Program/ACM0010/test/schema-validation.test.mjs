@@ -35,7 +35,7 @@ const LOGIC_FILES = ['logic/calculate-baseline-ch4.js'];
 
 function subjectDefs(schema) {
     const doc = schema.document;
-    return Object.values(doc.defs)[0];
+    return Object.values(doc.$defs)[0];
 }
 
 function vc(subject) {
@@ -98,7 +98,8 @@ test('every packaged schema is internally consistent', () => {
     for (const [iri, schema] of schemas) {
         assert.equal(schema.iri, iri, `${iri}: iri must match the packaged filename`);
         assert.equal(schema.document.$id, iri, `${iri}: document $id must match iri`);
-        assert.ok(schema.document.defs, `${iri}: must declare defs`);
+        assert.ok(schema.document.$defs, `${iri}: must declare Guardian $defs`);
+        assert.equal(schema.document.defs, undefined, `${iri}: no legacy defs in ZIP`);
 
         const def = subjectDefs(schema);
         for (const key of def.required || []) {
@@ -121,10 +122,20 @@ test('every $ref in every packaged schema resolves', () => {
         for (const ref of refs) {
             assert.ok(ref.startsWith('#'), `${iri}: only local refs expected, got ${ref}`);
             assert.ok(
-                Object.prototype.hasOwnProperty.call(schema.document.defs, ref.slice(1)),
+                Object.prototype.hasOwnProperty.call(schema.document.$defs, ref),
                 `${iri}: unresolvable $ref ${ref}`,
             );
         }
+    }
+});
+
+test('REGRESSION: Guardian SchemaHelper can resolve each credential subject $ref', () => {
+    for (const [iri, schema] of schemas) {
+        const doc = schema.document;
+        assert.ok(doc.$defs && !doc.defs, `${iri}: requires Guardian $defs`);
+        const ref = doc.properties?.credentialSubject?.items?.$ref;
+        assert.ok(typeof ref === 'string' && ref.startsWith('#'), `${iri}: missing subject $ref`);
+        assert.ok(doc.$defs[ref]?.properties, `${iri}: unresolved Guardian $defs[${ref}]`);
     }
 });
 

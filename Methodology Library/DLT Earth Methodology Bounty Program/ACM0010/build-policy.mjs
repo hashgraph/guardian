@@ -161,6 +161,22 @@ for (const file of readdirSync(schemaDir).filter((f) => f.endsWith('.schema.json
     const name = file.replace(/\.schema\.json$/, '');
     const iri = `#${name}`;
     const doc = JSON.parse(readFileSync(join(schemaDir, file), 'utf8'));
+    // Guardian SchemaHelper.parseFields resolves the full $ref via document.$defs[ref].
+    // Translate author-friendly 'defs' into Guardian's required archive format.
+    const authoredDefs = doc.document?.$defs ?? doc.document?.defs;
+    if (!authoredDefs || !Object.keys(authoredDefs).length) throw new Error(`missing defs in ${file}`);
+    doc.document.$defs = Object.fromEntries(Object.entries(authoredDefs).map(
+        ([key, value]) => [key.startsWith('#') ? key : `#${key}`, value],
+    ));
+    delete doc.document.defs;
+    function checkRefs(node) {
+        if (!node || typeof node !== 'object') return;
+        if (typeof node.$ref === 'string' && !Object.prototype.hasOwnProperty.call(doc.document.$defs, node.$ref)) {
+            throw new Error(`unresolved Guardian $ref ${node.$ref} in ${file}`);
+        }
+        for (const child of Object.values(node)) checkRefs(child);
+    }
+    checkRefs(doc.document);
     doc.iri = iri;
     doc.system = false;
     doc.entity = 'VC';
