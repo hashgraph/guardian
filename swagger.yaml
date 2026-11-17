@@ -61543,8 +61543,7 @@ components:
         did:
           type: string
           description: User DID
-          example: >-
-            did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+          example: did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
         hederaAccountId:
           type: string
           description: User Hedera account, the payer of the join request
