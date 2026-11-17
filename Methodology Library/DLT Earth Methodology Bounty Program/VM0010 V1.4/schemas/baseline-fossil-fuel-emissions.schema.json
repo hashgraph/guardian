@@ -1,0 +1,68 @@
+{
+    "name": "VM0010 Baseline Fossil Fuel Emissions",
+    "description": "Slice-scoped output of the customLogicBlock in logic/calculate-c-fuel.js. Carries C_FUEL per Section 8.1.4 Equation 12, in its C&C-corrected form (tCO2e, no 44/12 conversion).",
+    "entity": "VC",
+    "system": false,
+    "sourceVersion": "1.0.0",
+    "document": {
+        "$id": "#baseline-fossil-fuel-emissions",
+        "title": "VM0010 Baseline Fossil Fuel Emissions",
+        "type": "object",
+        "required": ["@context", "type", "credentialSubject"],
+        "properties": {
+            "@context": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "type": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "credentialSubject": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "$ref": "#vm0010-fossil-fuel-subject" }
+            }
+        },
+        "defs": {
+            "vm0010-fossil-fuel-subject": {
+                "type": "object",
+                "required": [
+                    "ref",
+                    "year",
+                    "emissionSources",
+                    "emissionSourceDetail",
+                    "sumEmissionsTco2e",
+                    "cFuelTco2e"
+                ],
+                "properties": {
+                    "ref": { "type": "string", "title": "Project ID" },
+                    "year": { "type": "integer", "title": "Monitoring Year" },
+                    "emissionSources": {
+                        "type": "object",
+                        "title": "Emissions by Source (tCO2e)",
+                        "required": ["E_HARVEST", "E_HAULING", "E_TRANSPORT", "E_PROCESSING"],
+                        "properties": {
+                            "E_HARVEST": {
+                                "type": "number",
+                                "title": "Harvesting Operations (felling, snigging)"
+                            },
+                            "E_HAULING": { "type": "number", "title": "Log Hauling" },
+                            "E_TRANSPORT": {
+                                "type": "number",
+                                "title": "Log Transport, Depot to Processing Plant"
+                            },
+                            "E_PROCESSING": { "type": "number", "title": "Sawmill Electricity Consumption" }
+                        }
+                    },
+                    "emissionSourceDetail": {
+                        "type": "object",
+                        "title": "Per-Fuel Breakdown by Source"
+                    },
+                    "sumEmissionsTco2e": {
+                        "type": "number",
+                        "title": "Sum of Emissions (tCO2e)"
+                    },
+                    "cFuelTco2e": {
+                        "type": "number",
+                        "title": "C_FUEL (tCO2e)"
+                    }
+                }
+            }
+        }
+    }
+}

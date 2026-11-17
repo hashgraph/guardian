@@ -1,0 +1,77 @@
+{
+    "name": "VM0010 Transport Fuel Emissions",
+    "description": "Slice-scoped output of logic/calculate-transport-fuel-814.js. Carries Eqs (17)-(19) N_TRUCKS-TRANSPORT, KM_TRANSPORT-TOTAL, E_TRANSPORT.",
+    "entity": "VC",
+    "system": false,
+    "sourceVersion": "1.0.0",
+    "document": {
+        "$id": "#transport-fuel-814",
+        "title": "VM0010 Transport Fuel Emissions",
+        "type": "object",
+        "required": ["@context", "type", "credentialSubject"],
+        "properties": {
+            "@context": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "type": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "credentialSubject": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "$ref": "#transport-fuel-814-subject" }
+            }
+        },
+        "defs": {
+            "transport-fuel-814-subject": {
+                "type": "object",
+                "required": ["ref", "year", "nTrucksTransport", "kmTransportTotal", "eTransportTco2e", "transportDetails"],
+                "properties": {
+                    "ref": { "type": "string", "title": "Project ID" },
+                    "year": { "type": "integer", "title": "Monitoring Year" },
+                    "nTrucksTransport": {
+                        "type": "integer",
+                        "title": "N_TRUCKS-TRANSPORT (number of truck trips)",
+                        "minimum": 0
+                    },
+                    "kmTransportTotal": {
+                        "type": "number",
+                        "title": "KM_TRANSPORT-TOTAL (km)",
+                        "minimum": 0
+                    },
+                    "eTransportTco2e": {
+                        "type": "number",
+                        "title": "Total Transport Emissions E_TRANSPORT (tCO2e)",
+                        "minimum": 0
+                    },
+                    "transportDetails": {
+                        "type": "array",
+                        "title": "Per-Journey Transport Details",
+                        "minItems": 1,
+                        "items": {
+                            "type": "object",
+                            "required": ["journeyId", "distanceKm", "fuelPerKm", "emissionsTco2e"],
+                            "properties": {
+                                "journeyId": {
+                                    "type": "string",
+                                    "title": "Journey Identifier"
+                                },
+                                "distanceKm": {
+                                    "type": "number",
+                                    "title": "Distance (km)",
+                                    "minimum": 0
+                                },
+                                "fuelPerKm": {
+                                    "type": "number",
+                                    "title": "Fuel per km (L/km)",
+                                    "minimum": 0
+                                },
+                                "emissionsTco2e": {
+                                    "type": "number",
+                    "title": "Journey Emissions (tCO2e)",
+                                    "minimum": 0
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

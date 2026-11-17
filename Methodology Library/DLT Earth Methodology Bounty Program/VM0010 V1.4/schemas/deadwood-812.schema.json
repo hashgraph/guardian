@@ -1,0 +1,99 @@
+{
+    "name": "VM0010 Section 8.1.2 Dead Wood Change",
+    "description": "Slice-scoped output of logic/calculate-deadwood-812.js. Carries Equation (5) dC_DWSLASH,i,p|BSL only, in tC per hectare, with F_D = 1 and no decay applied.",
+    "entity": "VC",
+    "system": false,
+    "sourceVersion": "1.0.0",
+    "document": {
+        "$id": "#deadwood-812",
+        "title": "VM0010 Section 8.1.2 Dead Wood Change",
+        "type": "object",
+        "required": ["@context", "type", "credentialSubject"],
+        "properties": {
+            "@context": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "type": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "credentialSubject": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "$ref": "#deadwood-812-subject" }
+            }
+        },
+        "defs": {
+            "deadwood-812-subject": {
+                "type": "object",
+                "required": ["ref", "year", "fD", "rows", "totalDCDwslashTCo2eHa"],
+                "properties": {
+                    "ref": { "type": "string", "title": "Project ID" },
+                    "year": { "type": "integer", "title": "Monitoring Year" },
+                    "fD": {
+                        "type": "number",
+                        "title": "F_D (dimensionless)",
+                        "description": "Fixed at 1. The ten-year linear decay of logging slash is applied in Equations 10 and 11, not Equation (5)."
+                    },
+                    "rows": {
+                        "type": "array",
+                        "title": "Per Species, Stratum and Parcel Results",
+                        "minItems": 1,
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "species",
+                                "stratum",
+                                "parcel",
+                                "cHbJiBsl",
+                                "cExJiBsl",
+                                "cRsdJiBsl",
+                                "cRsdDerivedFrom",
+                                "cNotHbInfJiBsl",
+                                "slashFromHarvestTCo2eHa",
+                                "totalBeforeDecayTCo2eHa",
+                                "dCDwslashJiPBsl"
+                            ],
+                            "properties": {
+                                "species": { "type": "integer", "title": "j (Tree Species)", "minimum": 1, "maximum": 3 },
+                                "stratum": { "type": "integer", "title": "i (Stratum)", "minimum": 1, "maximum": 3 },
+                                "parcel": { "type": "integer", "title": "p (Land Parcel)", "minimum": 1 },
+                                "cHbJiBsl": { "type": "number", "title": "C_HB,j,i|BSL (tC/ha)", "minimum": 0 },
+                                "cExJiBsl": { "type": "number", "title": "C_EX,j,i|BSL (tC/ha)", "minimum": 0 },
+                                "cRsdJiBsl": {
+                    "type": "number",
+                    "title": "C_RSD,j,i|BSL (tC/ha)",
+                    "description": "Supply exactly one of cRsdJiBsl or fRsdBsl. When fRsdBsl is given, C_RSD is derived via Section 8.1.2 Equation (6).",
+                    "minimum": 0
+                },
+                                "fRsdBsl": {
+                                    "type": "number",
+                                    "title": "F_RSD|BSL",
+                                    "description": "Alternative to cRsdJiBsl. Derives C_RSD via Equation (6). Not capped at 1: every Section 9.1 p.56 default exceeds 1.",
+                                    "minimum": 0
+                                },
+                                "cRsdDerivedFrom": {
+                                    "type": ["string", "null"],
+                                    "title": "C_RSD Provenance",
+                                    "description": "'E6' when C_RSD was derived from F_RSD|BSL via Equation (6); null when supplied directly."
+                                },
+                                "cNotHbInfJiBsl": { "type": "number", "title": "C_notHB,INF,j,i|BSL (tC/ha)", "minimum": 0 },
+                                "slashFromHarvestTCo2eHa": {
+                                    "type": "number",
+                                    "title": "C_HB,j,i|BSL - C_EX,j,i|BSL (tC/ha)"
+                                },
+                                "totalBeforeDecayTCo2eHa": {
+                                    "type": "number",
+                                    "title": "Sum of the three terms (tC/ha)"
+                                },
+                                "dCDwslashJiPBsl": {
+                                    "type": "number",
+                                    "title": "dC_DWSLASH,i,p|BSL (tC/ha) - Equation 5"
+                                }
+                            }
+                        }
+                    },
+                    "totalDCDwslashTCo2eHa": {
+                        "type": "number",
+                        "title": "Sum of dC_DWSLASH,i,p|BSL across all rows (tC/ha)"
+                    }
+                }
+            }
+        }
+    }
+}

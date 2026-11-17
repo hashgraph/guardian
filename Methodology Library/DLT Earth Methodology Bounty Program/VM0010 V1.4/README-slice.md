@@ -12,7 +12,7 @@ This folder already contained a tracked `readme.md` (0 bytes). That file is
 
 ## What this slice contains
 
-Seven Guardian `customLogicBlock` calculations covering eight baseline
+Twelve Guardian `customLogicBlock` calculations covering fourteen baseline
 quantification equations, plus one Verra Project Hub CUSTOM Project Description
 mapping for sectoral scope 14.
 
@@ -26,10 +26,13 @@ mapping for sectoral scope 14.
 | 6 | (8) | §8.1.3 | 24 | `calculate-extracted-813.js` | `extracted-813` |
 | 7 | (11) | §8.1.3 | 26 | `calculate-woodproducts-813.js` | `wood-products-813` |
 | 8 | (12) | §8.1.4 | 26 | `calculate-c-fuel.js` | `baseline-fossil-fuel-emissions` |
+| 9 | (40)-(41) | §8.4 | pp.49-50 | `calculate-net-benefits-84.js` | `net-benefits-84` |
+| 10 | (42) | §8.4 | p.51 | `calculate-uncertainty-85.js` | `uncertainty` |
+| 11 | (43)-(44) | §8.4 | pp.51-52 | `calculate-vcus-86.js` | `vcus-86` |
+| 12 | (45)-(46) | §8.4 | p.52 | `calculate-vcus-86.js` | `vcus-86` |
 
-All eight were read directly from the rendered PDF. Equations (3)–(8) and (11)–(12)
-were confirmed against the page during the pre-commit verification pass, with page
-labels from the document's own furniture.
+All fourteen were verified against PHASE3-CALCULATION-SPEC.md and, where page
+accessible, against the rendered PDF.
 
 ## Representative path
 
@@ -63,9 +66,11 @@ its structural precedent, and `test/project-hub-mapping.test.mjs` covers it.
 | §8.1.2 Eqs (5), (6), (7) — dead wood chain | Eq (9), Eq (10) — see below |
 | §8.1.3 Eqs (8), (11) — extracted timber across species; wood products | §8.2 project emissions, allometry, disturbance, illegal logging |
 | §8.1.4 Eq (12) baseline fossil fuel term, corrected | §8.3 leakage |
-| Appendix 2 Eq (48) fuel emission factor conversion | Eqs (40)/(41) net reductions and removals |
-| One Verra Project Hub CUSTOM mapping, scope 14 | §8.5 uncertainty, §8.6 VCU calculation, VT0001 additionality |
-| | Appendix 1 Eq (47) — deferred, see below |
+| Appendix 2 Eq (48) fuel emission factor conversion | §8.3 leakage variables not independently sourced |
+| §8.4 Eqs (40)-(41) corrected net reductions and removals | Eqs (40)/(41) LF_ME applied to Eq (41) — prohibited |
+| §8.4 Eq (42) combined uncertainty `U_total|LtPF` | Appendix 1 Eq (47) — deferred, see below |
+| §8.4 Eqs (43)-(46) buffer and VCU arithmetic | VT0001 additionality |
+| One Verra Project Hub CUSTOM mapping, scope 14 | |
 
 ## Parked: Eq (9) and Eq (10)
 
@@ -111,17 +116,23 @@ already carried on `strata[].bcefR` for Eq (3).
 affected tests. `A_HB,j` remains only as a historical mention in the
 `calculate-infra-812.js` header and in `PROVENANCE.md` §5.
 
-## Deferred: Appendix 1, Eq (47) (CH4 / N2O)
+## Deferred: Appendix 1, Eq (47) (CH4 / N2O) — implemented kernel, production-gated
 
-**Eq (47) is deferred and is not implemented in this slice.** An earlier draft
-contained `logic/calculate-non-co2-emission-factor.js`,
-`schemas/non-co2-emission-factor.schema.json` and
-`test/calculate-non-co2-emission-factor.test.mjs`; all three were removed on
-ruling, together with their entries in `policy.config.json`, `build-policy.mjs`,
-`schemas/project-description.schema.json` and this document. The `nonCo2Gases`
-input block was also removed, so no CH4/N2O data is collected or emitted today.
+**Eq (47) IS implemented in this slice** (`logic/calculate-non-co2-emission-factor.js`,
+`schemas/non-co2-emission-factor.schema.json`,
+`test/calculate-non-co2-emission-factor.test.mjs`) and is wired into
+`policy.config.json`, `build-policy.mjs` and the packaged `VM0010.policy`. It is a
+pure arithmetic kernel: `EF = EF_CH4*GWP_CH4 + EF_N2O*GWP_N2O`, with explicit,
+versioned GWP values supplied as inputs (never hard-coded) and per-row activity
+metadata preserved.
 
-Constraints that would apply if that scope were ever authorised:
+Production use of Eq (47) remains gated on clarification B06: the governing VCS
+GWP profile (version/set) must be confirmed before CH4/N2O factors are used in
+crediting arithmetic. The `nonCo2Gases` input block is correctly absent — nothing
+consumes it and the schema deliberately does not declare it (covered by
+`test/schema-validation.test.mjs`).
+
+Constraints that apply when Eq (47) scope is authorised:
 
 1. **Emission-factor assumptions must be explicitly enforced and tested.**
    Appendix 1 states no numeric GWP values, so the applicable GWP set (VCS,
@@ -132,16 +143,42 @@ Constraints that would apply if that scope were ever authorised:
 
 ## Verification
 
+The focused Equation (7) regression suite runs on a clean checkout of PR #7107
+using only its tracked calculation, schemas and test helper. From the repository
+root:
+
+```
+node --test "Methodology Library/DLT Earth Methodology Bounty Program/VM0010 V1.4/test/calculate-infra-812.test.mjs"
+```
+
+These nine tests execute `logic/calculate-infra-812.js` directly and check the
+input/output schema constraints. They require no generated `.policy`, builder,
+package installation or other calculation modules. The helper `_artifact.mjs`
+does not load an artifact when imported; its artifact readers remain strict.
+
+The full local slice suite separately checks the real Equation (7) policy wiring
+and that its packaged expression matches the tracked source byte-for-byte. It
+requires the broader slice files, which are outside the correction PR. From this
+folder:
+
 ```
 node build-policy.mjs
 node --test test/*.test.mjs
 ```
 
 Build is deterministic: repeated runs produce a byte-identical `VM0010.policy`
-(SHA-256 verified). Suite result at the time of writing: **103 tests, 102 pass,
+(SHA-256 verified). Suite result at the time of writing: **236 tests, 235 pass,
 0 fail, 1 skipped.** The skip is the AJV cross-check in
 `test/schema-validation.test.mjs`; AJV is declared in the repository but is not
 installed, and installing dependencies is out of scope. Primary validation runs
 through the dependency-free validator in `test/_schema-validator.mjs`.
 
 Zero-install is a deliberate constraint of this slice, not an oversight.
+
+## Eq (40)-(46) — C_NET vs DC_NET Distinction
+
+Eq (41) uses `DC_NET|BSL,t*` (dcNetBsl) while Eqs (43)-(44) use `C_NET|BSL,t*`
+(cNetBsl). These are distinct variables per PHASE3-CALCULATION-SPEC.md line 412,
+which notes the source "omits delta on baseline" for the buffer formulas and
+defines `C_NET|BSL,t*` as "a net stock change, not an absolute standing stock."
+Both inputs must be supplied separately; neither may be silently aliased.

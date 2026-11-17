@@ -1,0 +1,163 @@
+{
+    "name": "VM0010 Section 8.1.3-8.1.4 Project Stocks and Disturbance",
+    "description": "Slice-scoped output of logic/calculate-project-stocks-821.js. Carries Eqs 29-33: project plot carbon, mean stock density, annual stock gain, and fire methane emissions.",
+    "entity": "VC",
+    "system": false,
+    "sourceVersion": "1.0.0",
+    "document": {
+        "$id": "#project-stocks-821",
+        "title": "VM0010 Project Stocks and Disturbance",
+        "type": "object",
+        "required": ["@context", "type", "credentialSubject"],
+        "properties": {
+            "@context": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "type": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "credentialSubject": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "$ref": "#project-stocks-821-subject" }
+            }
+        },
+        "defs": {
+            "project-stocks-821-subject": {
+                "type": "object",
+                "required": [
+                    "ref",
+                    "year",
+                    "plotCarbon",
+                    "meanStockDensity",
+                    "monitoringInterval",
+                    "annualStockGainTco2e",
+                    "annualStockGainDetails",
+                    "bAbsentLookup",
+                    "fireMethaneEmissions",
+                    "fireDetails"
+                ],
+                "properties": {
+                    "ref": { "type": "string", "title": "Project ID" },
+                    "year": { "type": "integer", "title": "Monitoring Year" },
+                    "plotCarbon": {
+                        "type": "array",
+                        "title": "Per Species and Stratum Plot Carbon (Eq 30)",
+                        "minItems": 1,
+                        "items": {
+                            "type": "object",
+                            "required": ["species", "stratum", "carbontPerHectare"],
+                            "properties": {
+                                "species": {
+                                    "type": "integer",
+                                    "title": "Species j",
+                                    "minimum": 1,
+                                    "maximum": 3
+                                },
+                                "stratum": {
+                                    "type": "integer",
+                                    "title": "Stratum i",
+                                    "minimum": 1,
+                                    "maximum": 3
+                                },
+                                "carbontPerHectare": {
+                                    "type": "number",
+                                    "title": "C_AB,j,i,t,sp|PRJ (tC)",
+                                    "minimum": 0
+                                }
+                            }
+                        }
+                    },
+                    "meanStockDensity": {
+                        "type": "array",
+                        "title": "Mean Stock Density (Eq 31)",
+                        "minItems": 1,
+                        "items": {
+                            "type": "object",
+                            "required": ["species", "stratum", "carbontPerHectare"],
+                            "properties": {
+                                "species": {
+                                    "type": "integer",
+                                    "title": "Species j",
+                                    "minimum": 1,
+                                    "maximum": 3
+                                },
+                                "stratum": {
+                                    "type": "integer",
+                                    "title": "Stratum i",
+                                    "minimum": 1,
+                                    "maximum": 3
+                                },
+                                "carbontPerHectare": {
+                                    "type": "number",
+                                    "title": "C_AB,i,t|PRJ (tC/ha)",
+                                    "minimum": 0
+                                }
+                            }
+                        }
+                    },
+                    "annualStockGainTco2e": {
+                        "type": "number",
+                        "title": "Annual Project Stock Gain DC_AB,t|PRJ (tCO2e/year)",
+                        "minimum": 0
+                    },
+                    "monitoringInterval": {
+                        "type": "object",
+                        "title": "Monitoring Interval (Eq 32)"
+                    },
+                    "annualStockGainDetails": {
+                        "type": "array",
+                        "title": "Annual Stock Gain Details (Eq 32)"
+                    },
+                    "bAbsentLookup": {
+                        "type": "object",
+                        "title": "Baseline Biomass Absent Lookup (Eq 34)"
+                    },
+                    "fireMethaneEmissions": {
+        "type": "number",
+        "title": "Fire Methane Emissions DC_DIST-FR,t|PRJ (tCO2e)",
+        "minimum": 0
+    },
+                    "fireDetails": {
+                        "type": "array",
+                        "title": "Per-Fire Details (Eq 33)",
+                        "minItems": 1,
+                        "items": {
+                            "type": "object",
+                            "required": ["areaHa", "baselineBiomass", "combustionFraction", "methaneEf", "gwPCh4", "emissionsTco2e"],
+                            "properties": {
+                                "areaHa": {
+                                    "type": "number",
+                                    "title": "Burned Area (ha)",
+                                    "minimum": 0
+                                },
+                                "baselineBiomass": {
+                                    "type": "number",
+                                    "title": "Baseline Biomass B_i,t|PRJ (t dry matter/ha)",
+                                    "minimum": 0
+                                },
+                                "combustionFraction": {
+                                    "type": "number",
+                                    "title": "Combustion Fraction COMF_i",
+                                    "minimum": 0,
+                                    "maximum": 1
+                                },
+                                "methaneEf": {
+                                    "type": "number",
+                                    "title": "Methane Emission Factor G_CH4,i (g/kg dry matter)",
+                                    "minimum": 0
+                                },
+                                "gwPCh4": {
+                                    "type": "number",
+                                    "title": "GWP_CH4 (legacy default 21)",
+                                    "minimum": 0
+                                },
+                                "emissionsTco2e": {
+                                    "type": "number",
+                                    "title": "Emissions tCO2e from fire",
+                                    "minimum": 0
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

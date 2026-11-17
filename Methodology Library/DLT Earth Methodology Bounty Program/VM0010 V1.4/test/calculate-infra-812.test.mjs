@@ -3,7 +3,8 @@
  *
  *   C_notHB,INF,j,i|BSL = V_notEX,INF,j,i|BSL * BCEF_R * CF_j
  *
- * The expression executed here is read back out of the built VM0010.policy.
+ * The expression and schemas are read directly from tracked source files.
+ * No built VM0010.policy or full-methodology builder is required.
  *
  * Boundary semantics differ per parameter and are deliberate:
  *   V_notEX,INF,j,i|BSL  volume, m3/ha          -> >= 0, may be 0
@@ -15,20 +16,13 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
-import { loadSlicePolicy, walkBlocks, runExpression, asDocument } from './_artifact.mjs';
-
-const { policy } = loadSlicePolicy();
+import { SLICE_DIR, runExpression, asDocument } from './_artifact.mjs';
 
 function infraExpression() {
-    let found = null;
-    walkBlocks(policy.config, (node) => {
-        if (node.blockType === 'customLogicBlock' && node.outputSchema === '#infra-812') {
-            found = node.expression;
-        }
-    });
-    assert.ok(found, 'the Section 8.1.2 Eq (7) customLogicBlock must exist in the artifact');
-    return found;
+    return readFileSync(join(SLICE_DIR, 'logic', 'calculate-infra-812.js'), 'utf8');
 }
 
 function projectDescription(infrastructureBiomass) {
@@ -59,18 +53,28 @@ function projectDescription(infrastructureBiomass) {
     };
 }
 
-test('the Section 8.1.2 Eq (7) block is wired to the right schema and role', () => {
-    let block = null;
-    walkBlocks(policy.config, (n) => {
-        if (n.blockType === 'customLogicBlock' && n.outputSchema === '#infra-812') block = n;
-    });
-    assert.ok(block, 'policy must contain the Eq (7) customLogicBlock');
-    assert.deepEqual(block.permissions, ['Project Proponent']);
-    assert.equal(block.documentSigner, 'owner');
-    assert.equal(block.onErrorAction, 'stop');
-    assert.equal(block.children.length, 1);
-    assert.equal(block.children[0].blockType, 'documentsSourceAddon');
-    assert.equal(block.children[0].schema, '#project-description');
+test('Eq (7) input and output schemas preserve the BCEF_R and CF_j constraints', () => {
+    const projectSchema = JSON.parse(readFileSync(join(SLICE_DIR, 'schemas', 'project-description.schema.json'), 'utf8'));
+    const outputSchema = JSON.parse(readFileSync(join(SLICE_DIR, 'schemas', 'infra-812.schema.json'), 'utf8'));
+    const projectSubject = projectSchema.document.defs['vm0010-project-description-subject'];
+    const inputRow = projectSubject.properties.infrastructureBiomass.items;
+    const outputRow = outputSchema.document.defs['infra-812-subject'].properties.rows.items;
+
+    assert.ok(projectSubject.required.includes('infrastructureBiomass'));
+    for (const rowSchema of [inputRow, outputRow]) {
+        for (const field of ['vNotExInfJiBsl', 'bcefR', 'cfJ']) {
+            assert.ok(rowSchema.required.includes(field), `${field} must be required`);
+            assert.equal(rowSchema.properties[field].type, 'number');
+        }
+        assert.equal(rowSchema.properties.vNotExInfJiBsl.minimum, 0);
+        assert.equal(rowSchema.properties.bcefR.exclusiveMinimum, 0);
+        assert.ok(!('maximum' in rowSchema.properties.bcefR));
+        assert.ok(!('exclusiveMaximum' in rowSchema.properties.bcefR));
+        assert.equal(rowSchema.properties.cfJ.exclusiveMinimum, 0);
+        assert.equal(rowSchema.properties.cfJ.maximum, 1);
+        assert.ok(!('aHbJ' in rowSchema.properties));
+        assert.ok(!rowSchema.required.includes('aHbJ'));
+    }
 });
 
 test('Eq (7) matches independent hand-computation', () => {

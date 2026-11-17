@@ -1,0 +1,97 @@
+{
+    "name": "VM0010 Processing Energy Emissions",
+    "description": "Slice-scoped output of logic/calculate-processing-energy-814.js. Carries Eqs (14)-(15) Q_PROCESSING (kWh) and E_HARVEST (tCO2e).",
+    "entity": "VC",
+    "system": false,
+    "sourceVersion": "1.0.0",
+    "document": {
+        "$id": "#processing-energy-814",
+        "title": "VM0010 Processing Energy Emissions",
+        "type": "object",
+        "required": ["@context", "type", "credentialSubject"],
+        "properties": {
+            "@context": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "type": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "credentialSubject": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "$ref": "#processing-energy-814-subject" }
+            }
+        },
+        "defs": {
+            "processing-energy-814-subject": {
+                "type": "object",
+                "required": ["ref", "year", "qProcessingKwh", "eHarvestTco2e", "processingDetails"],
+                "properties": {
+                    "ref": { "type": "string", "title": "Project ID" },
+                    "year": { "type": "integer", "title": "Monitoring Year" },
+                    "qProcessingKwh": {
+                        "type": "number",
+                        "title": "Q_PROCESSING (kWh)",
+                        "minimum": 0
+                    },
+                    "eHarvestTco2e": {
+                        "type": "number",
+                        "title": "E_HARVEST (tCO2e)",
+                        "minimum": 0
+                    },
+                    "processingDetails": {
+                        "type": "array",
+                        "title": "Per-Plot Processing Details",
+                        "minItems": 1,
+                        "items": {
+                            "type": "object",
+                            "required": ["plotId", "areaHa", "qProcessingKwh", "eHarvestTco2e"],
+                            "properties": {
+                                "plotId": {
+                                    "type": "string",
+                                    "title": "Plot Identifier"
+                                },
+                                "areaHa": {
+                                    "type": "number",
+                                    "title": "Plot Area (ha)",
+                                    "minimum": 0
+                                },
+                                "qProcessingKwh": {
+                                    "type": "number",
+                                    "title": "Plot Processing Energy Q_PROCESSING (kWh)",
+                                    "minimum": 0
+                                },
+                                "eHarvestTco2e": {
+                                    "type": "number",
+                                    "title": "Plot Harvest Emissions E_HARVEST (tCO2e)",
+                                    "minimum": 0
+                                }
+                            }
+                        }
+                    },
+                    "qProcessingKwhEq18": {
+                        "type": "number",
+                        "title": "Q_PROCESSING Eq (18) (kWh)",
+                        "minimum": 0
+                    },
+                    "eProcessingGridTco2e": {
+                        "type": "number",
+                        "title": "E_PROCESSING Grid Eq (19) (tCO2e)",
+                        "minimum": 0
+                    },
+                    "prGeneratorKw": {
+                        "type": "number",
+                        "title": "PR_GENERATOR Eq (20) (kW)",
+                        "minimum": 0
+                    },
+                    "eProcessingGeneratorTco2e": {
+                        "type": "number",
+                        "title": "E_PROCESSING Generator Eq (21) (tCO2e)",
+                        "minimum": 0
+                    },
+                    "energySource": {
+                        "type": "string",
+                        "title": "Energy Source",
+                        "enum": ["grid", "generator"]
+                    }
+                }
+            }
+        }
+    }
+}
