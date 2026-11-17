@@ -1,6 +1,5 @@
 name: Generate API Documentation
 on:
-  workflow_dispatch:
   push:
     branches-ignore:
       - 'dependabot/**'
@@ -9,6 +8,7 @@ on:
       - '.github/**'
       - 'docs/**'
       - '**/*.md'
+  workflow_dispatch:
 
 jobs:
   runService:
@@ -18,11 +18,11 @@ jobs:
       YARN_ENABLE_GLOBAL_CACHE: 'false'
     strategy:
       matrix:
-        node-version: [ 24.21.0 ]
+        node-version: [ 24.22.3 ]
         mongodb-version: [ 7.0.41 ]
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
         with:
           egress-policy: audit
 
@@ -30,7 +30,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ matrix.node-version }}
 
@@ -73,6 +73,9 @@ jobs:
           yarn run build
           popd
           pushd common
+          yarn run build
+          popd
+          pushd hedera
           yarn run build
           popd
           pushd indexer-common

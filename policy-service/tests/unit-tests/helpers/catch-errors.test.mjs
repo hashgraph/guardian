@@ -12,7 +12,9 @@ const fakePolicyComponentsUtils = {
 const { CatchErrors } = await esmock.strict(
     '../../../dist/policy-engine/helpers/decorators/catch-errors.js',
     {
-        '@guardian/common': { PinoLogger: class { async error() {} async warn() {} async info() {} } },
+        '@guardian/common/helpers/pino-logger': {
+            PinoLogger: class { async error() {} async warn() {} async info() {} }
+        },
         '../../../dist/policy-engine/policy-components-utils.js': fakePolicyComponentsUtils,
     }
 );

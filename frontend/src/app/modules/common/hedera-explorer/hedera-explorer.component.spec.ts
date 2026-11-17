@@ -37,7 +37,7 @@ describe('HederaExplorer', () => {
         net = of('testnet');
         const fixture = build();
         expect(href(fixture)).toBe('https://hashscan.io/testnet/token/0.0.10004069');
-        expect(inactive(fixture)).toBeFalse();
+        expect(inactive(fixture)).toBe(false);
     });
 
     it('links to hashscan when the network arrives after render', () => {
@@ -55,7 +55,7 @@ describe('HederaExplorer', () => {
         net = throwError(() => new Error('401'));
         const fixture = build();
         expect(href(fixture)).toBeNull();
-        expect(inactive(fixture)).toBeTrue();
+        expect(inactive(fixture)).toBe(true);
     });
 
     it('renders no link for an unknown network', () => {

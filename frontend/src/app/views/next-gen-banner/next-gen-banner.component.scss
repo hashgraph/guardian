@@ -1,7 +1,7 @@
 .next-gen-banner {
     position: fixed;
     top: var(--topbar-height);
-    right: 0;
+    right: var(--first-steps-offset);
     /* Inset by the vertical rail, like the page content. */
     left: var(--header-width, var(--header-width-expand));
     transition: left 0.125s ease-in-out;

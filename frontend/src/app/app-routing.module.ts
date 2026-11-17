@@ -63,6 +63,7 @@ import { PolicyRequestsComponent } from './modules/policy-engine/requests/reques
 import { PolicyRepositoryComponent } from './modules/policy-engine/policy-repository/policy-repository.component';
 import { RelayerAccountsComponent } from './views/relayer-accounts/relayer-accounts.component';
 import { SchemasConfigurationComponent } from './views/schemas-configuration/schemas-configuration.component';
+import { schemasConfigurationLeaveGuard } from './views/schemas-configuration/schemas-configuration.guard';
 import { SchemaTemplatesComponent } from './views/schema-templates/schema-templates.component';
 
 @Injectable({
@@ -239,6 +240,7 @@ const routes: Routes = [
         path: 'schema-configuration',
         component: SchemasConfigurationComponent,
         canActivate: [PermissionsGuard],
+        canDeactivate: [schemasConfigurationLeaveGuard],
         data: {
             roles: [
                 UserRole.STANDARD_REGISTRY,
@@ -253,6 +255,7 @@ const routes: Routes = [
         path: 'schema-template-configuration',
         component: SchemasConfigurationComponent,
         canActivate: [PermissionsGuard],
+        canDeactivate: [schemasConfigurationLeaveGuard],
         data: {
             roles: [
                 UserRole.STANDARD_REGISTRY,
@@ -267,6 +270,7 @@ const routes: Routes = [
         path: 'schema-template-preview',
         component: SchemasConfigurationComponent,
         canActivate: [PermissionsGuard],
+        canDeactivate: [schemasConfigurationLeaveGuard],
         data: {
             roles: [
                 UserRole.STANDARD_REGISTRY,

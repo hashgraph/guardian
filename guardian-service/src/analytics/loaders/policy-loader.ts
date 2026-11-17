@@ -1,4 +1,10 @@
-import { DatabaseServer, ImportExportUtils, MessageServer, MessageType, PolicyImportExport, PolicyMessage, Users } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { ImportExportUtils } from '@guardian/common/import-export/utils';
+import { PolicyImportExport } from '@guardian/common/import-export/policy';
+import { Users } from '@guardian/common/helpers/users';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { MessageType } from '@guardian/hedera/message/message-type';
+import { PolicyMessage } from '@guardian/hedera/message/policy-message';
 import { IOwner } from '@guardian/interfaces';
 import { CompareOptions, IArtifactRawData, IPolicyData } from '../compare/interfaces/index.js';
 import { FileModel, PolicyModel, SchemaModel, TokenModel } from '../compare/index.js';

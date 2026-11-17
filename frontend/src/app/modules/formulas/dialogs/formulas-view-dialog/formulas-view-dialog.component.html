@@ -12,10 +12,10 @@
 <div class="dialog-body">
 
   <div class="view-bar">
-    <p-tabs class="guardian-tabs action-tabs" [(value)]="tabIndex" (valueChange)="setTab($event)">
+    <p-tabs class="guardian-tabs action-tabs" [value]="activeTab" (valueChange)="setTab($event)">
       <p-tablist>
-        @for (tab of viewDocumentOptions; track tab; let i = $index) {
-          <p-tab [value]="i"><div class="tabview-label">{{ tab.label }}</div></p-tab>
+        @for (tab of viewDocumentOptions; track tab.key) {
+          <p-tab [value]="tab.key"><div class="tabview-label">{{ tab.label }}</div></p-tab>
         }
       </p-tablist>
     </p-tabs>
@@ -88,13 +88,15 @@
             </div>
             @if (current.hasLink) {
               <div class="guardian-input-container">
-                <label class="form-label">Link (Input)</label>
-                <div class="formula-link" (click)="onLink(current)">
-                  <div class="formula-link-value">
-                    <div class="formula-link-value__entity">{{current.linkEntityName}}:</div>
-                    <div class="formula-link-value__item">{{current.linkItemName}}</div>
+                <label class="form-label">Link{{ current.links.length > 1 ? 's' : '' }} (Input)</label>
+                @for (link of current.links; track $index) {
+                  <div class="formula-link" (click)="onLink(link)">
+                    <div class="formula-link-value">
+                      <div class="formula-link-value__entity">{{link.linkEntityName}}:</div>
+                      <div class="formula-link-value__item">{{link.linkItemName}}</div>
+                    </div>
                   </div>
-                </div>
+                }
               </div>
             }
             <div class="guardian-textarea-container">
@@ -119,13 +121,15 @@
             </div>
             @if (current.hasLink) {
               <div class="guardian-input-container">
-                <label class="form-label">Link (Output)</label>
-                <div class="formula-link" (click)="onLink(current)">
-                  <div class="formula-link-value">
-                    <div class="formula-link-value__entity">{{current.linkEntityName}}:</div>
-                    <div class="formula-link-value__item">{{current.linkItemName}}</div>
+                <label class="form-label">Link{{ current.links.length > 1 ? 's' : '' }} (Output)</label>
+                @for (link of current.links; track $index) {
+                  <div class="formula-link" (click)="onLink(link)">
+                    <div class="formula-link-value">
+                      <div class="formula-link-value__entity">{{link.linkEntityName}}:</div>
+                      <div class="formula-link-value__item">{{link.linkItemName}}</div>
+                    </div>
                   </div>
-                </div>
+                }
               </div>
             }
             <div class="guardian-textarea-container">
@@ -159,13 +163,15 @@
             </div>
             @if (current.hasLink) {
               <div class="guardian-input-container">
-                <label class="form-label">Link (Output)</label>
-                <div class="formula-link" (click)="onLink(current)">
-                  <div class="formula-link-value">
-                    <div class="formula-link-value__entity">{{current.linkEntityName}}:</div>
-                    <div class="formula-link-value__item">{{current.linkItemName}}</div>
+                <label class="form-label">Link{{ current.links.length > 1 ? 's' : '' }} (Output)</label>
+                @for (link of current.links; track $index) {
+                  <div class="formula-link" (click)="onLink(link)">
+                    <div class="formula-link-value">
+                      <div class="formula-link-value__entity">{{link.linkEntityName}}:</div>
+                      <div class="formula-link-value__item">{{link.linkItemName}}</div>
+                    </div>
                   </div>
-                </div>
+                }
               </div>
             }
             <div class="guardian-textarea-container">
@@ -214,9 +220,7 @@
   @if (activeTab === 'diagram') {
     <div class="view-body">
       <formulas-graph-tab
-        [tree]="tree"
-        [schema]="schema"
-        [path]="path">
+        [items]="items">
       </formulas-graph-tab>
     </div>
   }
@@ -233,13 +237,43 @@
             </div>
             <div class="guardian-input-container">
               <label class="form-label">URL</label>
-              <ipfs-link [url]="file.url" class="guardian-input"></ipfs-link>
+              <div class="file-link guardian-input">
+                <span class="file-url" [title]="file.url">{{ file.url }}</span>
+                <ipfs-link [url]="file.url"></ipfs-link>
+              </div>
             </div>
           </div>
         }
         @if (!files.length) {
           <div class="no-files">
             <div>There were no files attached.</div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  @if (activeTab === 'info') {
+    <div class="view-body info-body">
+      <div class="info-container">
+        <div class="info-title">Where this formula comes from</div>
+        @for (block of sourceBlocks; track $index) {
+          <div class="info-block">
+            @if (sourceBlocks.length > 1) {
+              <div class="info-subtitle">{{ block.name }}</div>
+            }
+            @if (block.rows.length) {
+              <div class="info-table">
+                @for (row of block.rows; track row.label) {
+                  <div class="info-row">
+                    <div class="info-label">{{ row.label }}</div>
+                    <div class="info-value">{{ row.value }}</div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="info-empty">No source information.</div>
+            }
           </div>
         }
       </div>

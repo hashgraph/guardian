@@ -1,6 +1,7 @@
 import JSZip from 'jszip';
-import { Schema, SchemaTemplate } from '../entity/index.js';
-import { DatabaseServer } from '../database-modules/index.js';
+import { Schema } from '../entity/schema.js';
+import { SchemaTemplate } from '../entity/schema-template.js';
+import { DatabaseServer } from '../database-modules/database-server.js';
 import { ImportExportUtils } from './utils.js';
 import { SchemaCategory } from '@guardian/interfaces';
 

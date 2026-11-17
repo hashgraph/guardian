@@ -6,11 +6,18 @@ import {
 import {
     FormulasTree,
     FormulaItem,
+    FormulaItemLink,
     SchemaItem,
 } from '../../../models/formula-tree';
+import { MISSING_LINK_TEXT } from '../../../models/formulas';
 import {TreeGraphComponent} from 'src/app/modules/common/tree-graph/tree-graph.component';
 import {TreeNode} from 'src/app/modules/common/tree-graph/tree-node';
 import {TreeSource} from 'src/app/modules/common/tree-graph/tree-source';
+import {fitToContainer, initialView} from 'src/app/modules/common/tree-graph/tree-zoom';
+
+const ZOOM_STEP = 1.25;
+const FIT_PADDING = 24;
+const INITIAL_MIN_ZOOM = 0.6;
 
 type ValueStatus = 'Missing' | 'Default' | 'Suggested' | 'Not null';
 
@@ -18,6 +25,21 @@ interface GraphNodeData {
     title: string;
     payload: FormulaItem | SchemaItem | any;
     valueStatus: ValueStatus | null;
+}
+
+interface LinkRow {
+    kind: 'field' | 'formula' | 'missing';
+    label: string | null;
+    schema: string | null;
+    parents: string[];
+    path: string | null;
+    description: string | null;
+    value: any;
+    type: string | null;
+    status: ValueStatus | null;
+    hasValue: boolean;
+    jsonExpanded: boolean;
+    technical: boolean;
 }
 
 class GraphNode extends TreeNode<GraphNodeData> {
@@ -38,36 +60,97 @@ class GraphNode extends TreeNode<GraphNodeData> {
 })
 export class FormulasGraphTabComponent implements OnChanges {
     @Input()
-    public tree!: FormulasTree;
-    @Input()
-    public schema!: string;
-    @Input()
-    public path!: string;
+    public items: FormulaItem[] = [];
 
     public source: TreeSource<GraphNode> | null = null;
     private treeGraph: TreeGraphComponent | null = null;
     public selectedNode: GraphNode | null = null;
     public title: string | null = null
-    public nodeDocument: string | null = null;
-    public parentDocuments: string[] = [];
-    public fieldDescription: string | null = null;
-    public fieldPath: string | null = null;
-    public fieldValue: any = null;
+    public readonly missingLinkText = MISSING_LINK_TEXT;
+    public linkRows: LinkRow[] = [];
     public itemType: string | null = null;
     public itemValue: any = null;
-    public valueStatus: ValueStatus | null = null;
-    public fieldType: string | null = null;
-    public showTechnicalDetails = false;
-    public isJsonExpanded = false;
     public nodeDescription: string | null = null;
 
     public ngOnChanges(): void {
-        this.source = this.buildGraph(this.tree, this.schema, this.path);
+        this.source = this.buildGraph(this.items);
 
         if (this.treeGraph && this.source) {
             this.treeGraph.setData(this.source);
-            this.treeGraph.move(18, 46);
+            this.scheduleFit();
         }
+    }
+
+    public get zoom(): number {
+        return this.treeGraph ? Math.round(this.treeGraph.zoom * 100) : 100;
+    }
+
+    public onZoomIn(): void {
+        this.zoomByStep(ZOOM_STEP);
+    }
+
+    public onZoomOut(): void {
+        this.zoomByStep(1 / ZOOM_STEP);
+    }
+
+    public onFit(): void {
+        this.fit(false);
+    }
+
+    private zoomByStep(factor: number): void {
+        const container = this.treeGraph?.movedEl?.nativeElement;
+        if (!this.treeGraph || !container) {
+            return;
+        }
+        const rect = container.getBoundingClientRect();
+        this.treeGraph.zoomAt(this.treeGraph.zoom * factor, rect.width / 2, rect.height / 2);
+    }
+
+    private scheduleFit(attempt: number = 0): void {
+        setTimeout(() => {
+            if (!this.fit(true) && attempt < 20) {
+                this.scheduleFit(attempt + 1);
+            }
+        }, attempt === 0 ? 0 : 50);
+    }
+
+    private fit(initial: boolean): boolean {
+        const graph = this.treeGraph;
+        const container = graph?.movedEl?.nativeElement;
+        const grid = graph?.gridEl?.nativeElement.querySelector('.tree-grid') as HTMLElement | null;
+        if (!graph || !container || !grid) {
+            return false;
+        }
+        const rect = container.getBoundingClientRect();
+        // offset sizes are unscaled, so the result does not depend on the current zoom
+        const rootEl = initial ? grid.querySelector('.tree-node') as HTMLElement | null : null;
+        let view;
+        if (rootEl) {
+            // root node centre/top in unscaled grid coordinates (offsets ignore the CSS scale)
+            let left = 0;
+            let top = 0;
+            for (let el: HTMLElement | null = rootEl; el && el !== grid; el = el.offsetParent as HTMLElement | null) {
+                left += el.offsetLeft;
+                top += el.offsetTop;
+            }
+            view = initialView(
+                rect.width,
+                rect.height,
+                grid.offsetWidth,
+                grid.offsetHeight,
+                left + rootEl.offsetWidth / 2,
+                top,
+                FIT_PADDING,
+                INITIAL_MIN_ZOOM
+            );
+        } else {
+            view = fitToContainer(rect.width, rect.height, grid.offsetWidth, grid.offsetHeight, FIT_PADDING);
+        }
+        if (!view) {
+            return false;
+        }
+        graph.setView(view.zoom, view.x, view.y);
+        return true;
     }
 
     private buildTitle(node: any): string {
@@ -80,8 +163,7 @@ export class FormulasGraphTabComponent implements OnChanges {
         return name || type;
     }
 
-    private buildGraph(tree: FormulasTree, schema: string, path: string): TreeSource<GraphNode> | null {
-        const items = tree.get(schema, path);
+    private buildGraph(items: FormulaItem[]): TreeSource<GraphNode> | null {
         if (!items?.length) {
             return null;
         }
@@ -123,6 +205,7 @@ export class FormulasGraphTabComponent implements OnChanges {
 
         if (this.source) {
             this.treeGraph.setData(this.source);
+            this.scheduleFit();
         }
     }
 
@@ -220,17 +303,9 @@ export class FormulasGraphTabComponent implements OnChanges {
     public clearSelection(): void {
         this.selectedNode = null;
         this.title = null;
-        this.nodeDocument = null;
-        this.parentDocuments = [];
-        this.fieldDescription = null;
-        this.fieldPath = null;
-        this.fieldValue = null;
+        this.linkRows = [];
         this.itemType = null;
         this.itemValue = null;
-        this.valueStatus = null;
-        this.fieldType = null;
-        this.showTechnicalDetails = false;
-        this.isJsonExpanded = false;
         this.nodeDescription = null
     }
 
@@ -246,63 +321,70 @@ export class FormulasGraphTabComponent implements OnChanges {
         this.title = node.data.title;
 
         const payload = node.data.payload;
-        const linkItem = payload._linkItem;
-
         this.itemType = payload.type ?? null;
         this.itemValue = payload.value ?? (payload as any)._value ?? null;
         this.nodeDescription = payload.description ?? null;
 
-        if (linkItem) {
-            this.fieldValue = linkItem.value;
-            this.fieldPath = linkItem._path;
-            this.fieldDescription = linkItem._field.description ?? null;
-
-            const schemaDefault = linkItem._field.default;
-            const schemaSuggested = linkItem._field.suggest;
-
-            this.valueStatus = this.calcValueStatus(
-                linkItem.value,
-                schemaDefault,
-                schemaSuggested,
-            );
-
-            this.fieldType = this.parseJSON(linkItem.value);
-
-            const schemaNamesChain = this.buildSchemaNamesChain(linkItem._schema, linkItem._path);
-            this.nodeDocument = schemaNamesChain.at(-1) ?? null;
-            schemaNamesChain.pop();
-            this.parentDocuments = schemaNamesChain;
-        } else {
-            this.fieldValue = null;
-            this.fieldPath = null;
-            this.fieldDescription = null;
-            this.fieldType = null;
-            this.valueStatus = null;
-            this.nodeDocument = null;
-            this.parentDocuments = [];
-            this.showTechnicalDetails = false;
-        }
+        this.linkRows = this.buildLinkRows(payload);
     }
 
-    public getNodeStatusClass(rawNode: GraphNode): string {
-        const payload = rawNode.data.payload;
-        const itemType = payload.type;
-
-        if (itemType === 'constant') {
-            return 'status-none';
+    private linkKind(link: FormulaItemLink): LinkRow['kind'] {
+        const linkItem: any = link.linkItem;
+        if (link.formulaLink) {
+            return linkItem ? 'formula' : 'missing';
         }
+        return linkItem?._field ? 'field' : 'missing';
+    }
 
-        const linkItem = payload._linkItem;
-        if (!linkItem) {
-            return 'status-none';
+    private linkStatus(link: FormulaItemLink): ValueStatus | null {
+        const linkItem: any = link.linkItem;
+        if (this.linkKind(link) !== 'field') {
+            return null;
         }
+        return this.calcValueStatus(linkItem.value, linkItem._field.default, linkItem._field.suggest);
+    }
 
-        const value = linkItem.value;
-        const def = linkItem._field?.default;
-        const suggest = linkItem._field?.suggest;
+    private buildLinkRows(payload: any): LinkRow[] {
+        const links: FormulaItemLink[] = payload?.links ?? [];
+        return links.map((link) => {
+            const linkItem: any = link.linkItem;
+            const kind = this.linkKind(link);
+            if (kind !== 'field') {
+                return {
+                    kind,
+                    label: kind === 'formula' ? `${link.linkEntityName ?? ''}: ${link.linkItemName ?? ''}` : null,
+                    schema: null,
+                    parents: [],
+                    path: null,
+                    description: null,
+                    value: null,
+                    type: null,
+                    status: null,
+                    hasValue: false,
+                    jsonExpanded: false,
+                    technical: false
+                };
+            }
+            const chain = this.buildSchemaNamesChain(linkItem._schema, linkItem._path);
+            const schema = chain.pop() ?? null;
+            return {
+                kind,
+                label: null,
+                schema,
+                parents: chain,
+                path: linkItem._path ?? null,
+                description: linkItem._field.description ?? null,
+                value: linkItem.value,
+                type: this.parseJSON(linkItem.value),
+                status: this.calcValueStatus(linkItem.value, linkItem._field.default, linkItem._field.suggest),
+                hasValue: linkItem.value !== undefined,
+                jsonExpanded: false,
+                technical: false
+            };
+        });
+    }
 
-        const status = this.calcValueStatus(value, def, suggest);
-
+    public statusClass(status: ValueStatus | null): string {
         switch (status) {
             case 'Missing':
                 return 'status-missing';
@@ -317,8 +399,18 @@ export class FormulasGraphTabComponent implements OnChanges {
         }
     }
 
-    public toggleTechnicalDetails(): void {
-        this.showTechnicalDetails = !this.showTechnicalDetails;
+    public getNodeStatusClass(rawNode: GraphNode): string {
+        const payload = rawNode.data.payload;
+        const itemType = payload.type;
+
+        if (itemType === 'constant') {
+            return 'status-none';
+        }
+
+        const links: FormulaItemLink[] = payload.links ?? [];
+        const link = links.find((e) => this.linkKind(e) === 'field' && (e.linkItem as any).value !== undefined)
+            ?? links.find((e) => this.linkKind(e) === 'field');
+        return this.statusClass(link ? this.linkStatus(link) : null);
     }
 
     public formatValueForJson(value: any): any {
@@ -331,9 +423,5 @@ export class FormulasGraphTabComponent implements OnChanges {
         } catch {
             return value;
         }
-    }
-
-    public toggleJsonExpanded(): void {
-        this.isJsonExpanded = !this.isJsonExpanded;
     }
 }

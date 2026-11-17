@@ -12,8 +12,8 @@ import { ButtonModule } from 'primeng/button';
 import { TabsModule } from 'primeng/tabs';
 import { CheckboxModule } from 'primeng/checkbox';
 import { RadioButtonModule } from 'primeng/radiobutton';
-import { MultiSelectModule } from 'primeng/multiselect';
 import { PopoverModule } from 'primeng/popover';
+import { Textarea as InputTextareaModule } from 'primeng/textarea';
 import { DragDropModule } from 'primeng/dragdrop';
 import { TreeModule } from 'primeng/tree';
 import { TreeDragDropService } from 'primeng/api';
@@ -27,6 +27,10 @@ import { FormulaConfigurationComponent } from './formula-configuration/formula-c
 import { NewFormulaDialog } from './dialogs/new-formula-dialog/new-formula-dialog.component';
 import { FormulasViewDialog } from './dialogs/formulas-view-dialog/formulas-view-dialog.component';
 import { UploadFormulaFileDialog } from './dialogs/upload-formula-file-dialog/upload-formula-file-dialog.component';
+import { FormulaFilesDialog } from './dialogs/formula-files-dialog/formula-files-dialog.component';
+import { FieldFormulasComponent } from './field-formulas/field-formulas.component';
+import { LatexMarkupDirective } from './latex-markup.directive';
+import { TruncateTooltipDirective } from './truncate-tooltip.directive';
 import { FormulasGraphTabComponent } from "./dialogs/formulas-view-dialog/formulas-graph-tab/formulas-graph-tab.component";
 
 @NgModule({
@@ -37,7 +41,11 @@ import { FormulasGraphTabComponent } from "./dialogs/formulas-view-dialog/formul
         LinkDialog,
         FormulasViewDialog,
         UploadFormulaFileDialog,
+        FormulaFilesDialog,
         FormulasGraphTabComponent,
+        FieldFormulasComponent,
+        LatexMarkupDirective,
+        TruncateTooltipDirective,
     ],
     imports: [
         CommonModule,
@@ -49,12 +57,12 @@ import { FormulasGraphTabComponent } from "./dialogs/formulas-view-dialog/formul
         TableModule,
         TooltipModule,
         InputTextModule,
+        InputTextareaModule,
         SelectModule,
         ButtonModule,
         TabsModule,
         CheckboxModule,
         RadioButtonModule,
-        MultiSelectModule,
         PopoverModule,
         DragDropModule,
         TreeModule,
@@ -62,7 +70,10 @@ import { FormulasGraphTabComponent } from "./dialogs/formulas-view-dialog/formul
         AngularSvgIconModule.forRoot(),
     ],
     exports: [
-        FormulasViewDialog
+        FormulasViewDialog,
+        FieldFormulasComponent,
+        LatexMarkupDirective,
+        TruncateTooltipDirective
     ],
     providers: [
         { provide: DialogService, useClass: GuardianDialogService },

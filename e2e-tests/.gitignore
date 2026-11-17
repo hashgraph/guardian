@@ -12,3 +12,9 @@ cypress/fixtures/StandardRegistryData.json
 cypress/fixtures/seededMessages.json
 cypress/fixtures/testJsonCid
 cypress/fixtures/testJsonDRCid
+.solo/
+.certs/
+.local/
+
+# downloaded artifacts produced by UI tests (e.g. "save logs")
+cypress/downloads/

@@ -73,6 +73,20 @@ describe('FormulaImportExport.getSchemaIds', () => {
         assert.deepEqual(Array.from(ids).sort(), ['#s1', '#s2']);
     });
 
+    it('collects the schemas of all links of an item', () => {
+        const ids = FormulaImportExport.getSchemaIds({
+            formulas: [{
+                link: { type: 'schema', entityId: '#s1' },
+                links: [
+                    { type: 'schema', entityId: '#s1' },
+                    { type: 'schema', entityId: '#s3' },
+                    { type: 'formula', entityId: '#f' }
+                ]
+            }]
+        });
+        assert.deepEqual(Array.from(ids).sort(), ['#s1', '#s3']);
+    });
+
     it('returns an empty set for missing config or formulas', () => {
         assert.equal(FormulaImportExport.getSchemaIds(undefined).size, 0);
         assert.equal(FormulaImportExport.getSchemaIds({ formulas: 'bad' }).size, 0);
@@ -90,6 +104,22 @@ describe('FormulaImportExport.replaceIds', () => {
         const result = FormulaImportExport.replaceIds(data, 'old', 'new');
         assert.equal(result.formulas[0].link.entityId, 'new');
         assert.equal(result.formulas[1].link.entityId, 'other');
+    });
+
+    it('replaces the entity id in every link of an item', () => {
+        const data = {
+            formulas: [{
+                link: { type: 'schema', entityId: 'old' },
+                links: [
+                    { type: 'schema', entityId: 'old' },
+                    { type: 'schema', entityId: 'other' },
+                    { type: 'schema', entityId: 'old' }
+                ]
+            }]
+        };
+        const result = FormulaImportExport.replaceIds(data, 'old', 'new');
+        assert.equal(result.formulas[0].link.entityId, 'new');
+        assert.deepEqual(result.formulas[0].links.map((e) => e.entityId), ['new', 'other', 'new']);
     });
 
     it('passes through null data and non-array formulas', () => {
@@ -190,5 +220,61 @@ describe('FormulaImportExport.generateByPolicy', () => {
         const formula = FormulaImportExport.generateByPolicy(policy);
         assert.equal(formula.config.formulas.length, 1);
         assert.equal(formula.config.formulas[0].name, 'g1');
+    });
+});
+
+describe('FormulaImportExport links array', () => {
+    it('replaces ids in link and links', () => {
+        const data = {
+            formulas: [{
+                link: { type: 'schema', entityId: 'old' },
+                links: [{ type: 'schema', entityId: 'old' }, { type: 'schema', entityId: 'other' }]
+            }]
+        };
+        FormulaImportExport.replaceIds(data, 'old', 'new');
+        assert.equal(data.formulas[0].link.entityId, 'new');
+        assert.deepEqual(data.formulas[0].links.map((l) => l.entityId), ['new', 'other']);
+    });
+
+    it('collects schema ids from links', () => {
+        const ids = FormulaImportExport.getSchemaIds({
+            formulas: [{ links: [{ type: 'schema', entityId: '#a' }, { type: 'formula', entityId: '#f' }] }]
+        });
+        assert.deepEqual(Array.from(ids), ['#a']);
+    });
+});
+const config = () => ({
+    formulas: [
+        { uuid: 'a', type: 'variable', name: 'A', value: '' },
+        { uuid: 'b', type: 'variable', name: 'B', value: '' },
+        { uuid: 'm', type: 'formula', name: 'Main', value: 'a+b', relationships: ['a', 'gone', 'b'] },
+        { uuid: 't', type: 'text', name: 'Note', value: '', relationships: ['gone'] },
+    ],
+    files: []
+});
+
+describe('FormulaImportExport.validateConfig relationships', () => {
+    it('drops relationships that match no item and keeps the order of the rest', () => {
+        const result = FormulaImportExport.validateConfig(config());
+        assert.deepEqual(result.formulas.find((e) => e.uuid === 'm').relationships, ['a', 'b']);
+        assert.deepEqual(result.formulas.find((e) => e.uuid === 't').relationships, []);
+    });
+
+    it('does not add relationships to items that have none', () => {
+        const result = FormulaImportExport.validateConfig(config());
+        assert.equal('relationships' in result.formulas.find((e) => e.uuid === 'a'), false);
+    });
+
+    it('tolerates a missing config', () => {
+        assert.equal(FormulaImportExport.validateConfig(undefined), undefined);
+        assert.deepEqual(FormulaImportExport.validateConfig({}), {});
+    });
+});
+
+describe('FormulaImportExport.generateZipFile', () => {
+    it('does not write dangling relationships to formula.json', async () => {
+        const zip = await FormulaImportExport.generateZipFile({ formula: { name: 'F', config: config() }, schemas: [] });
+        const parsed = JSON.parse(await zip.files['formula.json'].async('string'));
+        assert.deepEqual(parsed.config.formulas.find((e) => e.uuid === 'm').relationships, ['a', 'b']);
     });
 });

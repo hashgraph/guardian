@@ -1,5 +1,6 @@
 import { FindCursor } from 'mongodb';
-import { DeleteCache, RestoreEntity } from '@guardian/common';
+import { DeleteCache } from '@guardian/common/entity/delete-cache';
+import { RestoreEntity } from '@guardian/common/models/restore-entity';
 import { DiffActionType, ICollectionDiff, IDiffAction } from '../index.js';
 import crypto from 'node:crypto';
 

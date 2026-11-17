@@ -3,18 +3,11 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
-context('Get session', { tags: ['accounts', 'firstPool', 'all', 'all-no-mgs'] }, () => {
+context('Get session', { tags: ['accounts', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
     const sessionUrl = `${API.ApiServer}${API.AccountSession}`;
-
-    const getSessionWithAuth = (authorization) =>
-        cy.request({
-            method: METHOD.GET,
-            url: sessionUrl,
-            headers: { authorization },
-        });
 
     const getSessionWithoutAuth = (headers = {}) =>
         cy.request({

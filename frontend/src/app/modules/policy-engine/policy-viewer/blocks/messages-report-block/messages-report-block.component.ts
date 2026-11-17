@@ -467,7 +467,8 @@ export class MessagesReportBlockComponent implements OnInit {
             message.__issuer = this.getIssuer(message);
             message.__documents = this.getVPDocuments(message);
         }
-        if (message.type === 'VC-Document') {
+        if (message.type === 'VC-Document' ||
+            (message.type === 'EVC-Document' && message.documentUnavailable === true)) {
             message.__schema = this.searchSchema(message);
             message.__issuer = this.getIssuer(message);
         }
@@ -637,6 +638,9 @@ export class MessagesReportBlockComponent implements OnInit {
     }
 
     private getIssuer(message: any): any {
+        if (message.documentUnavailable === true) {
+            return message.issuer || null;
+        }
         if (message.document && message.document.issuer) {
             return message.issuer;
         }
@@ -721,7 +725,8 @@ export class MessagesReportBlockComponent implements OnInit {
     }
 
     private ifVCMessage(message: any): boolean {
-        return message.type === 'VC-Document' && message.__schemaName !== 'MintToken';
+        return (message.type === 'VC-Document' && message.__schemaName !== 'MintToken') ||
+            (message.type === 'EVC-Document' && message.documentUnavailable === true);
     }
 
     private ifMintMessage(message: any): boolean {

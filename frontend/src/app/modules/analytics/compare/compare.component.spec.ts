@@ -1,3 +1,4 @@
+import type { Mock } from "vitest";
 import { of, throwError } from 'rxjs';
 import { CompareComponent } from './compare.component';
 
@@ -30,12 +31,12 @@ describe('CompareComponent', () => {
     beforeEach(() => {
         snapshot = { queryParams: {} };
         analyticsService = {
-            compareDocuments: jasmine.createSpy('compareDocuments').and.returnValue(of({ total: 1 })),
-            compareSchema: jasmine.createSpy('compareSchema').and.returnValue(of({ total: 1 })),
-            compareModule: jasmine.createSpy('compareModule').and.returnValue(of({ total: 1 })),
-            comparePolicy: jasmine.createSpy('comparePolicy').and.returnValue(of({ total: 1 })),
-            compareTools: jasmine.createSpy('compareTools').and.returnValue(of({ total: 1 })),
-            comparePolicyOriginal: jasmine.createSpy('comparePolicyOriginal').and.returnValue(of({ total: 1 })),
+            compareDocuments: vi.fn().mockReturnValue(of({ total: 1 })),
+            compareSchema: vi.fn().mockReturnValue(of({ total: 1 })),
+            compareModule: vi.fn().mockReturnValue(of({ total: 1 })),
+            comparePolicy: vi.fn().mockReturnValue(of({ total: 1 })),
+            compareTools: vi.fn().mockReturnValue(of({ total: 1 })),
+            comparePolicyOriginal: vi.fn().mockReturnValue(of({ total: 1 })),
         };
     });
 
@@ -43,12 +44,12 @@ describe('CompareComponent', () => {
     // template's `@if (error)` banner was reachable only from the local "Invalid params"
     // pre-check. A timeout, a 500 or an oversized diff left a blank page with no message.
     describe('a failed comparison explains itself', () => {
-        function expectBanner(type: string, spy: jasmine.Spy) {
-            spyOn(console, 'error');
+        function expectBanner(type: string, spy: Mock) {
+            vi.spyOn(console, 'error').mockImplementation(() => undefined);
             const component = create();
             snapshot.queryParams.type = type;
             twoItems(component);
-            spy.and.returnValue(throwError(() => ({ message: `${type} load failed` })));
+            spy.mockReturnValue(throwError(() => ({ message: `${type} load failed` })));
 
             component.loadData();
 
@@ -78,11 +79,11 @@ describe('CompareComponent', () => {
         });
 
         it('falls back to a generic banner when the failure carries no message', () => {
-            spyOn(console, 'error');
+            vi.spyOn(console, 'error').mockImplementation(() => undefined);
             const component = create();
             snapshot.queryParams.type = 'document';
             twoItems(component);
-            analyticsService.compareDocuments.and.returnValue(throwError(() => ({})));
+            analyticsService.compareDocuments.mockReturnValue(throwError(() => ({})));
 
             component.loadData();
 

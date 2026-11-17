@@ -1,3 +1,4 @@
+import type { Mock } from "vitest";
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { TablePersistenceService } from './table-persistence.service';
@@ -29,15 +30,13 @@ describe('TablePersistenceService', () => {
     };
 
     it('keeps the column keys and names in the compact value', async () => {
-        const result = await persist(
-            JSON.stringify({
-                type: 'table',
-                fileId: 'f1',
-                cid: 'c1',
-                columnKeys: ['year', 'co2_tonnes'],
-                columnNames: ['Year', 'CO2 (tonnes)'],
-            })
-        );
+        const result = await persist(JSON.stringify({
+            type: 'table',
+            fileId: 'f1',
+            cid: 'c1',
+            columnKeys: ['year', 'co2_tonnes'],
+            columnNames: ['Year', 'CO2 (tonnes)'],
+        }));
 
         expect(JSON.parse(result)).toEqual({
             type: 'table',
@@ -55,25 +54,21 @@ describe('TablePersistenceService', () => {
     });
 
     it('writes neither list for empty arrays', async () => {
-        const result = await persist(
-            JSON.stringify({ type: 'table', fileId: 'f1', cid: 'c1', columnKeys: [], columnNames: [] })
-        );
+        const result = await persist(JSON.stringify({ type: 'table', fileId: 'f1', cid: 'c1', columnKeys: [], columnNames: [] }));
 
         const parsed = JSON.parse(result);
 
-        expect('columnKeys' in parsed).toBeFalse();
-        expect('columnNames' in parsed).toBeFalse();
+        expect('columnKeys' in parsed).toBe(false);
+        expect('columnNames' in parsed).toBe(false);
     });
 
     it('writes neither list when the value carries keys but no names', async () => {
-        const result = await persist(
-            JSON.stringify({ type: 'table', fileId: 'f1', cid: 'c1', columnKeys: ['C1', 'C2'] })
-        );
+        const result = await persist(JSON.stringify({ type: 'table', fileId: 'f1', cid: 'c1', columnKeys: ['C1', 'C2'] }));
 
         const parsed = JSON.parse(result);
 
-        expect('columnKeys' in parsed).toBeFalse();
-        expect('columnNames' in parsed).toBeFalse();
+        expect('columnKeys' in parsed).toBe(false);
+        expect('columnNames' in parsed).toBe(false);
     });
 
     it('leaves a value that is not a table alone', async () => {
@@ -86,9 +81,9 @@ describe('TablePersistenceService', () => {
 describe('TablePersistenceService rollback of a failed submit', () => {
     it('restores the GridFS file for a resubmit and keeps the IPFS content pinned', async () => {
         const blob = new Blob(['x'], { type: 'application/gzip' });
-        const deleteCid = jasmine.createSpy('deleteCid').and.returnValue(of(undefined));
-        const deleteFile = jasmine.createSpy('deleteFile').and.returnValue(of(true));
-        const put = jasmine.createSpy('put').and.resolveTo(undefined);
+        const deleteCid = vi.fn().mockReturnValue(of(undefined));
+        const deleteFile = vi.fn().mockReturnValue(of(true));
+        const put = vi.fn().mockResolvedValue(undefined);
         TestBed.configureTestingModule({
             providers: [
                 TablePersistenceService,
@@ -121,7 +116,72 @@ describe('TablePersistenceService rollback of a failed submit', () => {
         await service.rollbackIpfsUploads();
 
         expect(deleteCid).not.toHaveBeenCalled();
-        expect(put).toHaveBeenCalledWith(jasmine.any(String), jasmine.any(String), jasmine.objectContaining({ id: 'k1', blob }));
+        expect(put).toHaveBeenCalledWith(expect.any(String), expect.any(String), expect.objectContaining({ id: 'k1', blob }));
         expect(deleteFile).toHaveBeenCalledWith('f1');
+    });
+});
+
+describe('TablePersistenceService — tables inline for a preview', () => {
+    const blob = new Blob(['zipped']);
+    let service: TablePersistenceService;
+    let upsertFile: Mock;
+    let addFileDirect: Mock;
+
+    beforeEach(() => {
+        upsertFile = vi.fn();
+        addFileDirect = vi.fn();
+        TestBed.configureTestingModule({
+            providers: [
+                TablePersistenceService,
+                { provide: ArtifactService, useValue: { upsertFile } },
+                { provide: IPFSService, useValue: { addFileDirect } },
+                {
+                    provide: IndexedDbRegistryService,
+                    useValue: {
+                        get: async (_db: string, _store: string, key: string) => key === 'k1' ? { blob, originalName: 'table.csv.gz' } : null,
+                    },
+                },
+                { provide: GzipService, useValue: { gunzipToText: async () => 'Year\r\n2020' } },
+            ],
+        });
+        service = TestBed.inject(TablePersistenceService);
+    });
+
+    it('replaces a local table with its CSV and uploads nothing', async () => {
+        const document: Record<string, unknown> = {
+            field0: JSON.stringify({
+                type: 'table',
+                idbKey: 'k1',
+                columnKeys: ['year'],
+                columnNames: ['Year'],
+            }),
+            nested: { list: [JSON.stringify({ type: 'table', idbKey: 'k1' })] },
+        };
+
+        await service.inlineTablesForPreview(document);
+
+        expect(JSON.parse(String(document['field0']))).toEqual({
+            type: 'table',
+            fileId: 'preview-k1',
+            csv: 'Year\r\n2020',
+            columnNames: ['Year'],
+            columnKeys: ['year'],
+        });
+        const nested = document['nested'] as {
+            list: string[];
+        };
+        expect(JSON.parse(nested.list[0])).toEqual({ type: 'table', fileId: 'preview-k1', csv: 'Year\r\n2020' });
+        expect(upsertFile).not.toHaveBeenCalled();
+        expect(addFileDirect).not.toHaveBeenCalled();
+    });
+
+    it('leaves a stored table, a missing local file and plain text as they are', async () => {
+        const stored = JSON.stringify({ type: 'table', fileId: 'f1' });
+        const missing = JSON.stringify({ type: 'table', idbKey: 'gone' });
+        const document: Record<string, unknown> = { stored, missing, text: 'hello' };
+
+        await service.inlineTablesForPreview(document);
+
+        expect(document).toEqual({ stored, missing, text: 'hello' });
     });
 });

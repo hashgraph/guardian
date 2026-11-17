@@ -1,10 +1,14 @@
+import { findPreviewScriptFields } from '../helpers/preview-script-fields.js';
+import { PolicyCredential } from '../helpers/policy-credential.js';
 import { ArtifactType, LocationType, Schema, SchemaHelper } from '@guardian/interfaces';
 import { ActionCallback, CalculateBlock } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { BlockActionError } from '../errors/index.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
-import { ContextHelper, DatabaseServer, IPFS, VcDocumentDefinition, VcHelper } from '@guardian/common';
+import { ContextHelper } from '@guardian/hedera/vcjs/context-helper';
+import { VcDocument as VcDocumentDefinition } from '@guardian/hedera/vcjs/vc-document';
+import { VcHelper } from '@guardian/hedera/vc-helper';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyUtils } from '../helpers/utils.js';
@@ -25,12 +29,28 @@ import {
     hydrateTablesInObject,
     loadFileTextById
 } from '../helpers/table-field.js';
+import { isTableOutputValue } from '../helpers/table-output.js';
+import { convertTableValues, deleteTableOutputFiles, IStoredTable, storeTableOutputFile } from '../helpers/table-output-store.js';
 import {
-    buildCompactTableJson,
-    buildTableOutputCsv,
-    gzipTableCsv,
-    isTableOutputValue
-} from '../helpers/table-output.js';
+    buildMathPreviewCalculation,
+    getMathPreviewOutputPaths,
+    getMathPreviewReads,
+    assertPreviewCalculationResult,
+    getPreviewChangedPaths,
+    getPreviewComputed,
+    getPreviewDocumentSchema,
+    isPreviewComputedRead,
+    isPreviewOutputRead,
+    getPreviewCopyTargets,
+    keepPreviewDocumentOrigins,
+    recoverPreviewCopiedFields,
+    resolvePreviewDocumentRead,
+    PreviewScope,
+    setPreviewComputed,
+    setPreviewDocumentSchema
+} from '../helpers/preview.js';
+import { IPreviewReadRecord, IPreviewReadSite, IPreviewWriteRecord } from '../helpers/workers/preview-read-tracker.js';
+import { collectPreviewNonFiniteNames, IPreviewCopyDiagnosis, IPreviewCopyTarget, isPreviewFieldFailure, isPreviewFiniteResult } from '../helpers/workers/preview-copy-diagnosis.js';
 
 const filename = fileURLToPath(import.meta.url);
 
@@ -47,11 +67,14 @@ interface IMetadata {
 interface IMathWorkerResult {
     result: IPolicyDocument;
     warnings: string[];
-}
-
-interface IStoredTable {
-    fileId: string;
-    cid: string | null;
+    scope?: Record<string, unknown>;
+    body?: string;
+    sites?: IPreviewReadSite[];
+    unexecuted?: [number, number][];
+    writes?: IPreviewReadRecord[];
+    enumerated?: IPreviewWriteRecord[];
+    error?: string;
+    errorName?: string | null;
 }
 
 /**
@@ -110,7 +133,9 @@ export class MathBlock {
         documents: any,
         schema: Schema,
         tablesPack: Record<string, { rows: any[]; columnKeys: string[] }>,
-        copy: boolean
+        copy: boolean,
+        withScope: boolean,
+        trackReads: boolean
     }): Promise<IMathWorkerResult> {
         return new Promise<IMathWorkerResult>(async (resolve, reject) => {
             const workerFile = path.join(path.dirname(filename), '..', 'helpers', 'workers', 'math-worker.js');
@@ -138,7 +163,25 @@ export class MathBlock {
                         cleanup();
                         resolve({
                             result: data.result,
-                            warnings: Array.isArray(data.warnings) ? data.warnings : []
+                            warnings: Array.isArray(data.warnings) ? data.warnings : [],
+                            scope: data.scope,
+                            body: data.body,
+                            sites: data.sites,
+                            unexecuted: data.unexecuted,
+                            enumerated: data.enumerated,
+                            writes: Array.isArray(data.writes) ? data.writes : undefined
+                        })
+                    } else if (data?.type === 'error') {
+                        cleanup();
+                        resolve({
+                            result: null,
+                            warnings: [],
+                            body: data.body,
+                            sites: data.sites,
+                            unexecuted: data.unexecuted,
+                            enumerated: data.enumerated,
+                            error: String(data.error),
+                            errorName: data.errorName ?? null
                         })
                     }
                 } catch (error) {
@@ -146,6 +189,28 @@ export class MathBlock {
                     reject(error);
                 }
             });
+        });
+    }
+
+    private diagnose(workerData: Record<string, unknown>, targets: IPreviewCopyTarget[]): Promise<IPreviewCopyDiagnosis | null> {
+        return new Promise<IPreviewCopyDiagnosis | null>((resolve) => {
+            const worker = new Worker(
+                path.join(path.dirname(filename), '..', 'helpers', 'workers', 'math-worker.js'),
+                { workerData: { ...workerData, diagnose: targets } }
+            );
+            const finish = (value: IPreviewCopyDiagnosis | null) => {
+                clearTimeout(timer);
+                worker.terminate().catch(() => undefined);
+                resolve(value);
+            };
+            const timer = setTimeout(() => finish(null), 30000);
+            worker.on('message', (message) => {
+                if (message?.type === 'diagnosis') {
+                    finish(message.diagnosis);
+                }
+            });
+            worker.on('error', () => finish(null));
+            worker.on('exit', () => finish(null));
         });
     }
 
@@ -159,10 +224,13 @@ export class MathBlock {
     private async calculate(
         ref: IPolicyCalculateBlock,
         documents: DocumentMap,
-        user: PolicyUser
+        user: PolicyUser,
+        currentSchema: string | null = null,
+        source: IPolicyDocument | null = null,
+        relationships: IPolicyDocument[] = []
     ): Promise<any> {
         const options = await ref.getOptions(user);
-        const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema);
+        const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema || options.inputSchema);
         const schema = new Schema(outputSchema);
 
         // Artifacts
@@ -184,18 +252,71 @@ export class MathBlock {
         const tablesPack = collectTablesPack(tableDocuments);
 
         // Run
-        const workerResult = await this.createWorker({
+        const copy = !options.outputSchema || options.outputSchema === options.inputSchema;
+        const actionStatus = PreviewScope.current();
+        if (actionStatus) {
+            for (const read of getMathPreviewReads(options.expression, currentSchema)) {
+                const selected = !read.link || documents.getDocument(read.link) === documents.getCurrent()
+                    ? source
+                    : relationships.filter((item) => item.schema === read.link).pop();
+                const origin = selected
+                    ? resolvePreviewDocumentRead(selected, read.path)
+                    : !isPreviewComputedRead(source, read.schema, read.path) ? read : null;
+                if (origin) {
+                    actionStatus.addPreviewRead(origin.schema, origin.path);
+                }
+            }
+        }
+        const workerData = {
             expression: options.expression,
             documents: workerDocuments,
             artifacts,
             user,
             schema,
             tablesPack,
-            copy: !options.outputSchema || options.outputSchema === options.inputSchema
-        })
+            copy,
+            withScope: !!actionStatus,
+            trackReads: !!actionStatus
+        };
+        const workerResult = await this.createWorker(workerData);
 
         for (const warning of workerResult.warnings) {
             ref.warn(warning);
+        }
+
+        if (actionStatus) {
+            const previewSource = actionStatus.getPreviewSource();
+            const outputPaths = copy ? getMathPreviewOutputPaths(options.expression) : [];
+            const paths = previewSource && previewSource.schema === currentSchema ? previewSource.paths : [];
+            const fields = workerResult.body && workerResult.sites
+                ? findPreviewScriptFields(workerResult.body, workerResult.sites, workerResult.unexecuted ?? [], currentSchema, paths, false, '', ['document', 'result'])
+                : [];
+            for (const read of fields) {
+                const readSchema = read.schema ?? currentSchema;
+                const origin = source
+                    ? resolvePreviewDocumentRead(source, read.fullPath ?? read.path)
+                    : !isPreviewComputedRead(source, readSchema, read.path) ? { schema: readSchema, path: read.fullPath ?? read.path } : null;
+                if (!isPreviewOutputRead(read.path, outputPaths) && origin) {
+                    actionStatus.addPreviewRead(origin.schema, origin.path);
+                }
+            }
+            const failed = workerResult.error
+                ? isPreviewFieldFailure(workerResult.errorName, workerResult.error)
+                : !previewSource?.discovery && !isPreviewFiniteResult(workerResult.result);
+            if (failed && workerResult.body) {
+                const targets = getPreviewCopyTargets(actionStatus, workerResult.enumerated ?? [],
+                    () => source);
+                await recoverPreviewCopiedFields(actionStatus, targets, workerResult.body, (copyTargets) => this.diagnose(workerData, copyTargets), ['document', 'result'], workerResult.error ?? null, collectPreviewNonFiniteNames(workerResult.result));
+            }
+            if (workerResult.error) {
+                throw new Error(workerResult.error);
+            }
+            if (!previewSource?.discovery) {
+                assertPreviewCalculationResult(workerResult.result);
+            }
+            const calculation = buildMathPreviewCalculation(ref.tag, options.expression, workerResult.scope ?? {}, workerResult.result);
+            actionStatus.addPreviewCalculation(calculation);
+            setPreviewComputed(workerResult.result, (workerResult.writes ?? []).map((write) => write.path));
         }
 
         return workerResult.result;
@@ -208,6 +329,7 @@ export class MathBlock {
      * @param userId
      * @param storedTables
      * @param user
+     * @param preview
      * @private
      */
     private async storeResultTables(
@@ -215,7 +337,8 @@ export class MathBlock {
         json: any,
         userId: string | null,
         storedTables: IStoredTable[],
-        user?: PolicyUser
+        user?: PolicyUser,
+        preview: boolean = false
     ): Promise<void> {
         const options = await ref.getOptions(user);
         const engine = MathEngine.from(options.expression);
@@ -249,14 +372,12 @@ export class MathBlock {
                 );
             }
 
-            const values: unknown[] = [];
-            for (const table of tables) {
-                if (isTableOutputValue(table)) {
-                    values.push(await this.storeResultTable(ref, table.rows, columns, userId, storedTables));
-                } else {
-                    values.push(table);
-                }
-            }
+            const values = await convertTableValues(
+                tables,
+                columns,
+                preview,
+                (rows) => this.storeResultTable(ref, rows, columns, userId, storedTables)
+            );
             setDocumentValueByPath(schema, json, link.path, link.isTableList ? values : values[0]);
         }
     }
@@ -277,21 +398,7 @@ export class MathBlock {
         userId: string | null,
         storedTables: IStoredTable[]
     ): Promise<string> {
-        const buffer = await gzipTableCsv(buildTableOutputCsv(columns, rows));
-        const { fileId } = await DatabaseServer.upsertGridFile({
-            buffer,
-            filename: 'table.csv.gz',
-            contentType: 'application/gzip'
-        });
-        const stored: IStoredTable = { fileId, cid: null };
-        storedTables.push(stored);
-
-        if (!ref.dryRun) {
-            const { cid } = await IPFS.addFile(buffer, { userId, interception: null });
-            stored.cid = cid;
-        }
-
-        return buildCompactTableJson(stored.fileId, stored.cid, columns);
+        return await storeTableOutputFile(ref, rows, columns, userId, storedTables);
     }
 
     /**
@@ -304,13 +411,7 @@ export class MathBlock {
         ref: IPolicyCalculateBlock,
         storedTables: IStoredTable[]
     ): Promise<void> {
-        for (const stored of storedTables) {
-            try {
-                await DatabaseServer.deleteGridFile(stored.fileId);
-            } catch (error) {
-                ref.warn(`Failed to delete result table ${stored.fileId}: ${PolicyUtils.getErrorMessage(error)}`);
-            }
-        }
+        await deleteTableOutputFiles(ref, storedTables);
     }
 
     private getCredentialSubject(document: IPolicyDocument): IMathDocument {
@@ -338,7 +439,8 @@ export class MathBlock {
         userId: string | null,
         recordActionId: string | null = null,
         user?: PolicyUser,
-        storedTables: IStoredTable[] = []
+        storedTables: IStoredTable[] = [],
+        preview: boolean = false
     ): Promise<IPolicyDocument> {
         if (!documents) {
             throw new BlockActionError('Invalid VC', ref.blockType, ref.uuid);
@@ -358,14 +460,32 @@ export class MathBlock {
         map.addDocument(this.getCredentialSubject(contextDocument));
         map.addRelationships(contextRelationships.map((d) => this.getCredentialSubject(d)));
 
-        const newJson = await this.calculate(ref, map, docOwner);
-        await this.storeResultTables(ref, newJson, userId, storedTables, user);
+        const currentSchema = getPreviewDocumentSchema(contextDocument);
+        const newJson = await this.calculate(ref, map, docOwner, currentSchema, contextDocument, contextRelationships);
+        await this.storeResultTables(ref, newJson, userId, storedTables, user, preview);
+        let item: IPolicyDocument;
         if (options.unsigned) {
-            return await this.createUnsignedDocument(newJson, ref, recordActionId);
+            item = await this.createUnsignedDocument(newJson, ref, recordActionId);
         } else {
             const metadata = await this.aggregateMetadata(contextDocument, ref, userId);
-            return await this.createDocument(newJson, metadata, ref, userId, recordActionId, user);
+            item = await this.createDocument(newJson, metadata, ref, userId, recordActionId, user);
         }
+        if (preview) {
+            const copy = !options.outputSchema || options.outputSchema === options.inputSchema;
+            if (copy) {
+                keepPreviewDocumentOrigins(contextDocument, item);
+            }
+            setPreviewComputed(item, [
+                ...(copy ? getPreviewComputed(contextDocument) : []),
+                ...getMathPreviewOutputPaths(options.expression),
+                ...getPreviewComputed(newJson),
+                ...getPreviewChangedPaths(copy ? map.getCurrent() : {}, newJson)
+            ]);
+            if (options.unsigned) {
+                setPreviewDocumentSchema(item, copy ? currentSchema : options.outputSchema);
+            }
+        }
+        return item;
     }
 
     /**
@@ -458,7 +578,7 @@ export class MathBlock {
 
         const options = await ref.getOptions(user);
 
-        const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema);
+        const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema || options.inputSchema);
 
         const vcSubject: any = {
             ...SchemaHelper.getContext(outputSchema),
@@ -483,7 +603,8 @@ export class MathBlock {
         const uuid = await ref.components.generateUUID();
         const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, userId);
         const didDocument = await policyOwnerCred.loadDidDocument(ref, userId);
-        const newVC = await VCHelper.createVerifiableCredential(
+        const newVC = await PolicyCredential.createVC(
+            VCHelper,
             vcSubject,
             didDocument,
             null,
@@ -538,12 +659,12 @@ export class MathBlock {
             if (Array.isArray(event.data.data)) {
                 const result: IPolicyDocument[] = [];
                 for (const doc of event.data.data) {
-                    const newVC = await this.process(doc, ref, event?.user?.userId, event.actionStatus?.id ?? null, event.user, storedTables);
+                    const newVC = await this.process(doc, ref, event?.user?.userId, event.actionStatus?.id ?? null, event.user, storedTables, !!event.actionStatus?.preview);
                     result.push(newVC)
                 }
                 event.data.data = result;
             } else {
-                event.data.data = await this.process(event.data.data, ref, event?.user?.userId, event.actionStatus?.id ?? null, event.user, storedTables);
+                event.data.data = await this.process(event.data.data, ref, event?.user?.userId, event.actionStatus?.id ?? null, event.user, storedTables, !!event.actionStatus?.preview);
             }
         } catch (error) {
             await this.deleteResultTables(ref, storedTables);

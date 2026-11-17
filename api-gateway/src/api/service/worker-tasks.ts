@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query
 import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Auth, AuthUser } from '#auth';
 import { Examples, InternalServerErrorDTO, pageHeader, WorkersTasksDTO } from '#middlewares';
-import { IAuthUser } from '@guardian/common';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
 import { Permissions } from '@guardian/interfaces';
 import { Guardians, parseInteger } from '#helpers';
 

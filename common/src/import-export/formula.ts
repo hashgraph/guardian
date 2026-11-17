@@ -1,7 +1,8 @@
 import JSZip from 'jszip';
-import { Formula, Policy } from '../entity/index.js';
+import { Formula } from '../entity/formula.js';
+import { Policy } from '../entity/policy.js';
 import { EntityStatus, GenerateUUIDv4, IFormulaConfig } from '@guardian/interfaces';
-import { DatabaseServer } from '../database-modules/index.js';
+import { DatabaseServer } from '../database-modules/database-server.js';
 import { ImportExportUtils } from './utils.js';
 import { findBlocks } from '../helpers/utils.js';
 
@@ -85,6 +86,7 @@ export class FormulaImportExport {
      */
     public static async generateZipFile(components: IFormulaComponents): Promise<JSZip> {
         const formulas = { ...components.formula };
+        formulas.config = FormulaImportExport.validateConfig(formulas.config);
         delete formulas.id;
         delete formulas._id;
         delete formulas.owner;
@@ -125,12 +127,41 @@ export class FormulaImportExport {
     }
 
     /**
-     * Validate Config
+     * Validate Config: drops relationships that match no item. The config is changed in place.
      *
      * @param data config
      */
     public static validateConfig(data?: IFormulaConfig): IFormulaConfig {
+        const items = data?.formulas;
+        if (!Array.isArray(items)) {
+            return data;
+        }
+        const uuids = new Set<string>(items.map((item: any) => item?.uuid));
+        for (const item of items as any[]) {
+            if (Array.isArray(item?.relationships)) {
+                item.relationships = item.relationships.filter((uuid: string) => uuids.has(uuid));
+            }
+        }
         return data;
+    }
+
+    /**
+     * Distinct link objects of an item: `links` and the mirrored `link`.
+     * Items saved before `links` existed have `link` only.
+     */
+    private static getLinkObjects(item: any): any[] {
+        const result = new Set<any>();
+        if (item?.link) {
+            result.add(item.link);
+        }
+        if (Array.isArray(item?.links)) {
+            for (const link of item.links) {
+                if (link) {
+                    result.add(link);
+                }
+            }
+        }
+        return Array.from(result);
     }
 
     /**
@@ -143,8 +174,10 @@ export class FormulaImportExport {
             const formulas = data.formulas;
             if (Array.isArray(formulas)) {
                 for (const component of formulas) {
-                    if (component.link && component.link.entityId === oldId) {
-                        component.link.entityId = newId;
+                    for (const link of FormulaImportExport.getLinkObjects(component)) {
+                        if (link.entityId === oldId) {
+                            link.entityId = newId;
+                        }
                     }
                 }
             }
@@ -158,9 +191,10 @@ export class FormulaImportExport {
             const formulas = data.formulas;
             if (Array.isArray(formulas)) {
                 for (const component of formulas) {
-                    const link = component.link;
-                    if (link && link.type === 'schema') {
-                        ids.add(link.entityId)
+                    for (const link of FormulaImportExport.getLinkObjects(component)) {
+                        if (link.type === 'schema') {
+                            ids.add(link.entityId)
+                        }
                     }
                 }
             }
@@ -190,9 +224,9 @@ export class FormulaImportExport {
             const formulas = config.formulas;
             if (Array.isArray(formulas)) {
                 for (const component of formulas) {
-                    if (component.link && component.link.type === 'schema') {
-                        if (idMap.has(component.link.entityId)) {
-                            component.link.entityId = idMap.get(component.link.entityId);
+                    for (const link of FormulaImportExport.getLinkObjects(component)) {
+                        if (link.type === 'schema' && idMap.has(link.entityId)) {
+                            link.entityId = idMap.get(link.entityId);
                         }
                     }
                 }

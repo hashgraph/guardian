@@ -1,4 +1,5 @@
-import { Message, MessageServer } from '@guardian/common';
+import { Message } from '@guardian/hedera/message/message';
+import { MessageServer } from '@guardian/hedera/message/message-server';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyEventState, IPolicyInterfaceBlock } from '../policy-engine.interface.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
@@ -9,6 +10,7 @@ import { ActionCallback, EventBlock } from '../helpers/decorators/index.js';
 import { LocationType } from '@guardian/interfaces';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
 import { PolicyUtils } from '../helpers/utils.js';
+import { getPreviewMessages } from '../helpers/preview.js';
 
 export const RevokedStatus = 'Revoked';
 
@@ -133,7 +135,7 @@ export class RevokeBlock {
                 dryRun: ref.dryRun,
                 mockId: ref.mockId
             });
-            policyTopicsMessages.push(...topicMessages);
+            policyTopicsMessages.push(...topicMessages, ...getPreviewMessages(event.actionStatus, topic.topicId));
         }
 
         const messagesToFind = policyTopicsMessages

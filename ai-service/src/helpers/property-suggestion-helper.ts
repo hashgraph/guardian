@@ -4,7 +4,7 @@ import {
     IPropertySuggestionFieldInput,
     IPropertySuggestionResult
 } from '@guardian/interfaces';
-import { PinoLogger } from '@guardian/common';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
 
 const promptTemplate = `You are assisting with tagging schema fields to standardized IWA glossary properties. Your responses always JSON only (see "example of response"). No additional text, no explanation of the reasoning.
 

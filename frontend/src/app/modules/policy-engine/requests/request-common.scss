@@ -1,0 +1,184 @@
+// Shared by the Incoming Requests page and its dialogs.
+// Colors come from the theme tokens, so the light and the dark theme both work.
+
+:host {
+    // text and borders on a primary tinted background: readable in both themes
+    --request-accent: var(--formula-constant-color, #4169E2);
+}
+
+.request-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 24px;
+    padding: 0 10px;
+    border-radius: 12px;
+    font-family: Inter, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 16px;
+    white-space: nowrap;
+
+    i {
+        font-size: 11px;
+    }
+
+    &--wait {
+        color: var(--guardian-warning-color, #DA9B22);
+        background: var(--guardian-warning-background, #FFF6E3);
+    }
+
+    &--progress {
+        color: var(--request-accent);
+        background: var(--guardian-primary-background, #E1E7FA);
+    }
+
+    &--ok {
+        color: var(--guardian-success-color, #19BE47);
+        background: var(--guardian-success-background, #CAFDD9);
+    }
+
+    &--bad {
+        color: var(--guardian-failure-color, #FF432A);
+        background: var(--guardian-failure-background, #FFEAEA);
+    }
+
+    &--mute {
+        color: var(--guardian-disabled-color, #848FA9);
+        background: var(--guardian-disabled-background, #EFF3F7);
+    }
+}
+
+.dialog-body.request-dialog-body {
+    // the dialog is at most 95% of the window: header, footer and paddings take the rest,
+    // so the body is the only thing that scrolls
+    max-height: calc(95vh - 200px) !important;
+    position: relative;
+    min-height: 100px;
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--guardian-font-color, #23252E);
+}
+
+.request-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    min-width: 0;
+
+    .request-meta-text {
+        min-width: 0;
+        color: var(--guardian-disabled-color, #848FA9);
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+}
+
+.request-note {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--guardian-disabled-color, #848FA9);
+    background: var(--guardian-hover, #F0F3FC);
+
+    &--warning {
+        color: var(--guardian-warning-color, #DA9B22);
+        background: var(--guardian-warning-background, #FFF6E3);
+    }
+}
+
+.request-confirm-text {
+    margin: 0 0 20px;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+    color: var(--guardian-font-color, #23252E);
+}
+
+.request-kv {
+    display: grid;
+    grid-template-columns: 160px minmax(0, 1fr);
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
+    border-radius: 8px;
+    overflow: hidden;
+
+    .request-kv-name,
+    .request-kv-value {
+        padding: 10px 14px;
+        border-top: 1px solid var(--guardian-border-color, #E1E7EF);
+        word-break: break-word;
+    }
+
+    .request-kv-name {
+        color: var(--guardian-disabled-color, #848FA9);
+        background: var(--guardian-hover, #F0F3FC);
+    }
+
+    .request-kv-name:first-child,
+    .request-kv-name:first-child + .request-kv-value {
+        border-top: none;
+    }
+}
+
+// the dialog body scrolls, the blocks inside do not
+.request-json {
+    padding: 12px 14px;
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
+    border-radius: 8px;
+    background: var(--guardian-grey-background, #F9FAFC);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 13px;
+    line-height: 20px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    cursor: text;
+}
+
+.request-kv + .request-json,
+.request-kv + .request-list {
+    margin-top: 16px;
+}
+
+.request-list {
+    margin: 0;
+    padding: 12px 14px 12px 36px;
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
+    border-radius: 8px;
+
+    li {
+        padding: 2px 0;
+    }
+}
+
+.request-dialog-actions {
+    align-items: center;
+    justify-content: space-between !important;
+
+    .request-dialog-actions-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .dialog-button {
+        margin: 0;
+
+        button {
+            min-width: 100px;
+            height: 40px;
+            padding: 0 20px;
+        }
+
+        .guardian-button-secondary {
+            border-color: var(--request-accent);
+            color: var(--request-accent);
+        }
+    }
+}

@@ -3,162 +3,10 @@
     padding: 0px;
     user-select: none;
 
-    .header-container {
-        padding: 0px 48px 0px 48px;
-        background: var(--guardian-primary-color, #4169E2);
-        min-height: 132px;
-        height: 132px;
-
-        .guardian-user-page-header {
-            font-size: 32px;
-            font-weight: 600;
-            height: 40px;
-            padding: 0;
-            position: relative;
-            color: var(--guardian-header-color, #000);
-            margin-bottom: 32px;
-
-            span {
-                line-height: 40px;
-            }
-        }
-
-        .guardian-user-page-path {
-            font-family: Inter;
-            font-size: 12px;
-            font-weight: 400;
-            line-height: 12px;
-            text-align: left;
-            color: var(--guardian-background, #FFFFFF);
-            margin-top: 36px;
-            margin-bottom: 8px;
-            height: 16px;
-
-            span {
-                padding-right: 8px;
-            }
-
-            .path-link {
-                cursor: pointer;
-
-                &:hover {
-                    text-decoration: underline;
-                }
-            }
-        }
-
-        .guardian-user-page-header {
-            color: var(--guardian-background, #FFFFFF);
-        }
-
-        .policy-name {
-            color: var(--guardian-background, #FFFFFF);
-            font-size: 14px;
-            font-weight: 500;
-            line-height: 16px;
-            position: absolute;
-            top: 12px;
-            right: 0;
-
-            .policy-version {
-                padding-left: 16px;
-            }
-        }
-    }
-
-    .tab-container {
-        height: 40px;
-        min-height: 40px;
-        width: 100%;
-        background: var(--guardian-grey-background, #E1E7EF);
-        border-bottom: 1px solid #C4D0E1;
-        padding: 0px 12px;
-
-        .guardian-step {
-            margin-right: 8px;
-            margin-bottom: 0px;
-            background: #EFF3F7;
-            border: 1px solid #C4D0E1;
-            border-bottom-left-radius: 0;
-            border-bottom-right-radius: 0;
-            border-bottom-width: 0;
-
-            .guardian-step-name {
-                color: #848FA9;
-            }
-
-            &:hover,
-            &[action="true"]:hover {
-                background: #f8f9fb !important;
-            }
-
-            &[action="true"] {
-                background: var(--guardian-background, #fff) !important;
-
-                .guardian-step-name {
-                    color: var(--guardian-primary-color, #4169E2) !important;
-                }
-            }
-        }
-    }
-
-    .actions-container {
-        min-height: 64px;
-        height: 64px;
-        width: 100%;
-        display: flex;
-        justify-content: flex-end;
-        padding: 12px 48px;
-        background: var(--guardian-background, #FFFFFF);
-        border-top: 1px solid var(--guardian-border-color, #E1E7EF);
-        position: relative;
-        overflow: hidden;
-
-        button {
-            height: 40px;
-            width: 135px;
-            margin-left: 16px;
-        }
-
-        .guardian-step-container {
-            height: 40px;
-            width: 620px;
-        }
-    }
-
-    .step-container {
-        min-height: 40px;
-        height: 40px;
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        padding: 0px;
-        background: var(--guardian-background, #FFFFFF);
-        border-bottom: 1px solid var(--guardian-border-color, #E1E7EF);
-        position: relative;
-        box-shadow: 0px 4px 8px 0px var(--guardian-shadow, #00000014);
-    }
-
     .body-container {
         width: 100%;
-        height: 100%;
         user-select: none;
         position: relative;
-
-        .overview-viewer {
-            padding: 24px 48px;
-
-            form {
-                box-shadow: 0px 4px 8px 0px var(--guardian-shadow, #00000014);
-                background: var(--guardian-background, #FFFFFF);
-                padding: 24px 24px 2px 24px;
-                border-radius: 8px;
-
-                .guardian-input-container {
-                    margin-bottom: 24px;
-                }
-            }
-        }
 
         .schema-viewer {
             position: absolute;
@@ -286,7 +134,7 @@
                     line-height: 14px;
                     text-align: left;
                     color: var(--guardian-font-color, #23252E);
-                    border: 1px solid #C4D0E1;
+                    border: 1px solid var(--guardian-tree-tab-border, #C4D0E1);
                     border-radius: 6px;
                     border-top-width: 0;
                     border-top-left-radius: 0;
@@ -302,7 +150,7 @@
                     &.selected-type-sub {
                         color: var(--guardian-primary-color, #4169E2);
                         border-color: var(--guardian-primary-color, #4169E2);
-                        background: #4169E214;
+                        background: color-mix(in srgb, var(--guardian-primary-color, #4169E2) 8%, transparent);
                     }
 
                     .tree-tab-name {
@@ -447,6 +295,26 @@
                         width: 100%;
                         height: 100%;
                         padding: 0px 24px 24px 24px;
+
+                        // PrimeNG puts .guardian-tabs on the p-tabs host itself,
+                        // so the theme's ".guardian-tabs .p-tabs" height never applies
+                        ::ng-deep .guardian-tabs.p-tabs {
+                            height: 100%;
+
+                            .p-tabpanels {
+                                flex: 1;
+                                min-height: 0;
+                            }
+
+                            // three tabs have to fit the panel without scrolling
+                            .p-tab {
+                                flex: 1 1 auto;
+                                justify-content: center;
+                                padding: 14px 8px;
+                                font-size: 14px;
+                                white-space: nowrap;
+                            }
+                        }
                     }
 
                     .field-list {
@@ -507,6 +375,10 @@
                                         min-width: 24px;
                                         height: 24px;
                                         overflow: hidden;
+
+                                        p-checkbox {
+                                            pointer-events: none;
+                                        }
                                     }
 
                                     .field-name {
@@ -753,6 +625,40 @@
                         .guardian-input:focus+.cell-focus {
                             display: block;
                         }
+
+                        &.cell-editable {
+                            // the row adds 8px on the left, so 4px + 8px = 12px on both sides
+                            padding: 6px 12px 6px 4px;
+
+                            input {
+                                height: 28px;
+                                padding: 0 20px 0 8px;
+                                border: 1px solid var(--guardian-border-color, #E1E7EF);
+                                border-radius: 6px;
+                                background: var(--guardian-grey-background, #F6F7FA);
+                                cursor: text;
+                            }
+
+                            &:hover input {
+                                border-color: var(--guardian-primary-color, #4169E2);
+                            }
+
+                            input:focus {
+                                background: var(--guardian-background, #FFFFFF);
+                            }
+
+                            .cell-edit-icon {
+                                position: absolute;
+                                right: 20px;
+                                font-size: 11px;
+                                color: var(--guardian-disabled-color, #848FA9);
+                                pointer-events: none;
+                            }
+
+                            input:focus ~ .cell-edit-icon {
+                                display: none;
+                            }
+                        }
                     }
 
                     .variables-grid-row {
@@ -848,15 +754,26 @@
     }
 }
 
-.guardian-multiselect {
-    height: 100%;
+.guardian-multiselect,
+.guardian-multiselect.p-multiselect {
+    width: 100%;
+    height: auto !important;
+    min-height: 40px;
 
-    &::ng-deep .p-multiselect {
-        width: 100%;
-        height: 100%;
+    &::ng-deep {
+        .p-multiselect-label-container {
+            overflow: visible;
+        }
 
         .p-multiselect-label {
             padding: 6px 16px 6px 8px;
+            // show every selected item, one per line
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            white-space: normal;
+            overflow: visible;
+            text-overflow: clip;
         }
     }
 }
@@ -866,7 +783,7 @@
 
     .tree-node {
         background: var(--guardian-background, #FFFFFF);
-        border: 1px solid #bac0ce;
+        border: 1px solid var(--guardian-tree-node-border, #bac0ce);
         box-shadow: 0px 4px 4px 0px var(--guardian-shadow, #00000014);
         border-radius: 6px;
         width: 150px;
@@ -876,7 +793,7 @@
 
         &.root-node {
             .node-header {
-                background: #CAFDD9;
+                background: var(--guardian-success-background, #CAFDD9);
             }
         }
 
@@ -941,6 +858,17 @@
                 overflow: hidden;
                 text-overflow: ellipsis;
                 font-weight: 400;
+
+                &[nested="true"] {
+                    color: var(--guardian-disabled-color, #848FA9);
+                    padding-left: 28px;
+
+                    &::before {
+                        content: '\21B3';
+                        margin-left: -12px;
+                        margin-right: 4px;
+                    }
+                }
             }
 
             .node-not-fields {

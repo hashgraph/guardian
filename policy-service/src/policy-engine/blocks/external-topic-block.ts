@@ -8,21 +8,19 @@ import { AnyBlockType, IPolicyAddonBlock, IPolicyDocument, IPolicyEventState, IP
 import { BlockActionError } from '../errors/index.js';
 import { IHederaCredentials, PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
-import {
-    VcDocument as VcDocumentCollection,
-    MessageServer,
-    MessageAction,
-    SchemaMessage,
-    UrlType,
-    PolicyMessage,
-    TopicMessage,
-    ExternalDocument,
-    MessageType,
-    VCMessage,
-    VcHelper,
-    IPFS,
-    SchemaPackageMessage,
-} from '@guardian/common';
+import { VcDocument as VcDocumentCollection } from '@guardian/common/entity/vc-document';
+import { ExternalDocument } from '@guardian/common/entity/external-document';
+import { IPFS } from '@guardian/common/helpers/ipfs';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { SchemaMessage } from '@guardian/hedera/message/schema-message';
+import { UrlType } from '@guardian/hedera/message/url.interface';
+import { PolicyMessage } from '@guardian/hedera/message/policy-message';
+import { TopicMessage } from '@guardian/hedera/message/topic-message';
+import { MessageType } from '@guardian/hedera/message/message-type';
+import { VCMessage } from '@guardian/hedera/message/vc-message';
+import { VcHelper } from '@guardian/hedera/vc-helper';
+import { SchemaPackageMessage } from '@guardian/hedera/message/schema-package-message';
 import {
     ExternalDocuments,
     ExternalEvent,

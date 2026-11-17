@@ -1,4 +1,4 @@
-import { collectImageReferences, escapeHtml, htmlToMarkdown, markdownToHtml, splitTableRow } from './markdown';
+import { collectImageReferences, escapeHtml, htmlToMarkdown, markdownToHtml, markdownToPlainText, splitTableRow } from './markdown';
 
 describe('markdown converters', () => {
     describe('markdownToHtml', () => {
@@ -561,6 +561,22 @@ describe('markdown converters', () => {
         it('should not read a table row starting with a dash as a list item', () => {
             expect(markdownToHtml('| - one | b |\n| --- | --- |'))
                 .toBe('<table><thead><tr><th>- one</th><th>b</th></tr></thead></table>');
+        });
+    });
+
+    describe('markdownToPlainText', () => {
+        it('drops headings, emphasis and links markup', () => {
+            expect(markdownToPlainText('# Title\n\nSome **bold** and *italic* [link](https://a.b)')).toBe('Title Some bold and italic link');
+        });
+
+        it('reads a table as its cell text and an image as its alt', () => {
+            expect(markdownToPlainText('| A | B |\n| --- | --- |\n| 1 | 2 |')).toBe('A B 1 2');
+            expect(markdownToPlainText('Photo ![site](ipfs://x)')).toBe('Photo site');
+        });
+
+        it('returns an empty string for an empty value', () => {
+            expect(markdownToPlainText('')).toBe('');
+            expect(markdownToPlainText(null)).toBe('');
         });
     });
 });

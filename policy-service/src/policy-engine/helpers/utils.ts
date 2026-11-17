@@ -1,25 +1,21 @@
-import {
-    HederaDidDocument,
-    IAuthUser,
-    KeyType,
-    NotificationHelper,
-    Schema as SchemaCollection,
-    Token,
-    Topic,
-    TopicConfig,
-    TopicHelper,
-    Users,
-    VcDocument as VcDocumentCollection,
-    VcDocumentDefinition as VcDocument,
-    VcDocumentDefinition as HVcDocument,
-    VcSubject,
-    VpDocumentDefinition as VpDocument,
-    Wallet,
-    Workers,
-    EncryptVcHelper,
-    SchemaConverterUtils,
-    Tag
-} from '@guardian/common';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { KeyType, Wallet } from '@guardian/common/helpers/wallet';
+import { NotificationHelper } from '@guardian/common/notification/notification-helper';
+import { Schema as SchemaCollection } from '@guardian/common/entity/schema';
+import { Token } from '@guardian/common/entity/token';
+import { Topic } from '@guardian/common/entity/topic';
+import { Users } from '@guardian/common/helpers/users';
+import { VcDocument as VcDocumentCollection } from '@guardian/common/entity/vc-document';
+import { Workers } from '@guardian/common/helpers/workers';
+import { EncryptVcHelper } from '@guardian/common/helpers/encrypt-vc-helper';
+import { SchemaConverterUtils } from '@guardian/common/helpers/schema-converter-utils';
+import { Tag } from '@guardian/common/entity/tag';
+import { HederaDidDocument } from '@guardian/hedera/vcjs/did/hedera-did-document';
+import { TopicConfig } from '@guardian/hedera/topic';
+import { TopicHelper } from '@guardian/hedera/topic-helper';
+import { VcDocument, VcDocument as HVcDocument } from '@guardian/hedera/vcjs/vc-document';
+import { VcSubject } from '@guardian/hedera/vcjs/vc-subject';
+import { VpDocument } from '@guardian/hedera/vcjs/vp-document';
 import { DidDocumentStatus, DocumentSignature, DocumentStatus, ISchema, Schema, SchemaEntity, SchemaField, SignatureType, TagType, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { TokenId, TopicId } from '@hiero-ledger/sdk';
 import { FilterQuery } from '@mikro-orm/core';
@@ -30,6 +26,7 @@ import { AnyBlockType, IPolicyDocument } from '../policy-engine.interface.js';
 import { IHederaCredentials, IRelayerAccount, PolicyUser, UserCredentials } from '../policy-user.js';
 import { guardianVersion } from '../../version.js';
 import { buildTableHelper } from '../helpers/table-field-core.js';
+import { assertPreviewFiniteResult, evaluatePreviewFormula, isPreviewRelayerAccount, keepPreviewDocumentOrigins } from './preview.js';
 
 export enum QueryType {
     eq = 'equal',
@@ -163,9 +160,10 @@ export class PolicyUtils {
         let amount = 0;
         for (const element of vcs) {
             const scope = PolicyUtils.getVCScope(element);
-            const value = parseFloat(PolicyUtils.evaluateFormula(rule, scope));
+            const value = parseFloat(evaluatePreviewFormula(rule, scope, element));
             amount += value;
         }
+        assertPreviewFiniteResult(amount);
         return amount;
     }
 
@@ -1301,6 +1299,9 @@ export class PolicyUtils {
             const userFull = await ref.components.getVirtualUser(did);
             return userFull?.hederaAccountId;
         } else {
+            if (relayerAccount && isPreviewRelayerAccount(did, relayerAccount)) {
+                return relayerAccount;
+            }
             const config = await PolicyUtils.users.getUserRelayerAccount(did, relayerAccount, userId);
             return config?.account;
         }
@@ -1723,6 +1724,7 @@ export class PolicyUtils {
         if (document.document) {
             clone.document = JSON.parse(JSON.stringify(document.document));
         }
+        keepPreviewDocumentOrigins(document, clone);
         return clone as VcDocumentCollection;
     }
 
@@ -2081,9 +2083,9 @@ export class PolicyUtils {
         }
     }
 
-    private static autoCalculateField(field: SchemaField, document: any): any {
+    public static autoCalculateField(field: SchemaField, document: any, compile: (name: string, body: string) => Function = Function): any {
         try {
-            const func = Function('table', `with (this) { return ${field.expression} }`);
+            const func = compile('table', `with (this) { return ${field.expression} }`);
 
             const table = buildTableHelper();
 

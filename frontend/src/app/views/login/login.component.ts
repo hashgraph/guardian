@@ -170,7 +170,6 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
                 }
                 else {
                     this.auth.setRefreshToken(result.refreshToken);
-                    this.auth.setUsername(login);
                     this.auth.updateAccessToken().subscribe(_result => {
                         this.authState.updateState(true);
                         const home = this.auth.home(result.role);

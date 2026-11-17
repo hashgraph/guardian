@@ -38,7 +38,6 @@ export class StatusList {
             const buffer = await Bitstring.decodeBits({ encoded: encodedList });
             return new StatusList({ buffer });
         } catch (e) {
-            console.log('e', e);
             if (e instanceof Error) {
                 throw e;
             }

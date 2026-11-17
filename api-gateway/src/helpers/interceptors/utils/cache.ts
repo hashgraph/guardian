@@ -2,7 +2,7 @@
 import { getHash } from './hash.js';
 
 //types and interfaces
-import { IAuthUser } from '@guardian/common';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
 
 //constants
 import { CACHE_PREFIXES } from '../../../constants/index.js';

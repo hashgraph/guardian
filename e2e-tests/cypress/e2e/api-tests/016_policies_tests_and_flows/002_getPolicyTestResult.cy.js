@@ -2,10 +2,11 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import * as Checks from '../../../support/checkingMethods';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('Get policy test result', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, () => {
+context('Get policy test result', { tags: ['policies', 'secondPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 	const SRUsername = Cypress.env('SRUser');
-	let policyId; let testId;
+	let policyId;
 
 	before('Get test id', () => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
@@ -15,7 +16,7 @@ context('Get policy test result', { tags: ['policies', 'secondPool', 'all', 'all
 				headers: {
 					authorization,
 				},
-				timeout: 180000
+				timeout: TIMEOUTS.backend
 			}).then((response) => {
 				expect(response.status).to.eq(STATUS_CODE.OK);
 				//The same copy the import spec works on: iterating and keeping the last match
@@ -32,7 +33,7 @@ context('Get policy test result', { tags: ['policies', 'secondPool', 'all', 'all
 				}).then((response) => {
 					expect(response.status).to.eq(STATUS_CODE.OK)
 					expect(response.body.id).to.equal(policyId)
-					testId = response.body.tests.at(0).id
+					expect(response.body.tests).to.have.length.greaterThan(0)
 				})
 			})
 		})

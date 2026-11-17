@@ -284,6 +284,7 @@ export class TableFieldComponent implements OnInit, OnDestroy {
 
         if (markDirty && !this.isFormArrayContainer(this.item?.control)) {
             this.item?.control?.markAsDirty();
+            this.item?.control?.markAsTouched();
         }
     }
 

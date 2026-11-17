@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
-context('Settings', { tags: ['settings', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
+context('Settings', { tags: ['settings', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     it('Get current environment name', () => {

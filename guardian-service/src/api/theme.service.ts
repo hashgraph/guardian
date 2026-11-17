@@ -1,13 +1,9 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import {
-    BinaryMessageResponse,
-    DatabaseServer,
-    MessageError,
-    MessageResponse,
-    PinoLogger,
-    Theme,
-    ThemeImportExport,
-} from '@guardian/common';
+import { BinaryMessageResponse, MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { Theme } from '@guardian/common/entity/theme';
+import { ThemeImportExport } from '@guardian/common/import-export/theme';
 import { GenerateUUIDv4, IOwner, MessageAPI } from '@guardian/interfaces';
 
 /**

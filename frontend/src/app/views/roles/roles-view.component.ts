@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { PermissionsService } from '../../services/permissions.service';
 import { ProfileService } from '../../services/profile.service';
 import { UserPermissions } from '@guardian/interfaces';
-import { forkJoin } from 'rxjs';
+import { Subscription, forkJoin } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { PermissionsGroup } from 'src/app/utils/index';
@@ -13,7 +13,7 @@ import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-conf
 @Component({
     selector: 'app-roles-view',
     templateUrl: './roles-view.component.html',
-    styleUrls: ['./roles-view.component.scss'],
+    styleUrls: ['../../modules/policy-engine/styles/top-toolbar.scss', './roles-view.component.scss'],
     standalone: false
 })
 export class RolesViewComponent implements OnInit, OnDestroy {
@@ -29,7 +29,19 @@ export class RolesViewComponent implements OnInit, OnDestroy {
     public controls: Map<string, any>;
     public group: PermissionsGroup;
     public selectedCategory: ICategory | null = null;
-    public lastCategory: boolean = false;
+    public editingRow: any | null = null;
+    public dirty: boolean = false;
+    public categoryCount: number = 0;
+    public defaultRoleName: string = '';
+    public coverage: { category: ICategory, count: number, total: number }[] = [];
+    public coverageTotal: number = 0;
+    public emptyCategories: ICategory[] = [];
+    public generalCategories: ICategory[] = [];
+    public permissionCategories: ICategory[] = [];
+    public accessCategories: ICategory[] = [];
+
+    private snapshot: string = '';
+    private formSubscription?: Subscription;
 
     constructor(
         private permissionsService: PermissionsService,
@@ -46,6 +58,7 @@ export class RolesViewComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy() {
+        this.formSubscription?.unsubscribe();
     }
 
     private loadProfile() {
@@ -56,6 +69,8 @@ export class RolesViewComponent implements OnInit, OnDestroy {
         ]).subscribe(([profile, permissions]) => {
             this.user = new UserPermissions(profile);
             this.permissions = permissions || [];
+            this.categoryCount = PermissionsGroup.from(this.permissions).categories.length;
+            this.loadDefaultRole();
             this.loadData();
         }, (e) => {
             this.loadError(e);
@@ -168,7 +183,7 @@ export class RolesViewComponent implements OnInit, OnDestroy {
             } else {
                 this.saveRole(role);
             }
-            this.newRole = null;
+            this.goToPage();
         }
     }
 
@@ -202,53 +217,108 @@ export class RolesViewComponent implements OnInit, OnDestroy {
     }
 
     public goToPage() {
+        this.formSubscription?.unsubscribe();
         this.newRole = null;
+        this.editingRow = null;
+    }
+
+    private loadDefaultRole() {
+        this.permissionsService.getRoles().subscribe((response) => {
+            this.defaultRoleName = (response.body || []).find((role: any) => role.default)?.name || '';
+        }, (e) => {
+            console.error(e);
+        });
+    }
+
+    public get isNew(): boolean {
+        return !this.newRole?.value.id;
+    }
+
+    public get canSave(): boolean {
+        return !!this.newRole && this.newRole.valid && (this.isNew || this.dirty);
+    }
+
+    public getCount(category: ICategory): number {
+        if (category.type === 'Access') {
+            return category.entities.filter((entity) => entity.control?.value).length;
+        }
+        return category.count;
+    }
+
+    public getTotal(category: ICategory): number {
+        if (category.type === 'Access') {
+            return category.entities.length;
+        }
+        let total = 0;
+        for (const entity of category.entities) {
+            total += entity.actions.filter((action) => !!action).length;
+        }
+        return total;
+    }
+
+    private updateStats() {
+        const coverage = [];
+        const empty: ICategory[] = [];
+        for (const category of [...this.permissionCategories, ...this.accessCategories]) {
+            const count = this.getCount(category);
+            if (count > 0) {
+                coverage.push({ category, count, total: this.getTotal(category) });
+            } else {
+                empty.push(category);
+            }
+        }
+        this.coverage = coverage.sort((a, b) => b.count - a.count);
+        this.coverageTotal = coverage.reduce((sum, item) => sum + item.count, 0);
+        this.emptyCategories = empty;
+    }
+
+    public onSelectEmpty() {
+        const category = this.emptyCategories[0];
+        if (category) {
+            this.onSelectCategory(category);
+        }
     }
 
     private openEditView(row?: any) {
         this.group = PermissionsGroup.from(this.permissions);
         this.newRole = this.fb.group({
             id: [row?.id],
-            name: [row?.name || 'Role name', Validators.required],
-            description: [row?.description || 'Role description'],
+            name: [row?.name || '', Validators.required],
+            description: [row?.description || ''],
             permissions: this.group.form
         });
         this.group.addRole();
         this.group.setValue(row?.permissions);
         this.group.checkCount();
+        this.editingRow = row || null;
+        this.generalCategories = this.group.categories.filter((c) => c.type === 'Role');
+        this.permissionCategories = this.group.categories.filter((c) => c.type === 'Permissions');
+        this.accessCategories = this.group.categories.filter((c) => c.type === 'Access');
         this.selectedCategory = this.group.first;
-        this.lastCategory = false;
+        this.updateStats();
+        this.dirty = false;
+        this.snapshot = JSON.stringify(this.newRole.getRawValue());
+        this.formSubscription?.unsubscribe();
+        this.formSubscription = this.newRole.valueChanges.subscribe(() => {
+            this.updateStats();
+            this.dirty = JSON.stringify(this.newRole?.getRawValue()) !== this.snapshot;
+        });
     }
 
     public onSelectCategory(category: ICategory) {
         this.selectedCategory = category;
-        this.lastCategory = this.group.last === category;
     }
 
     public onAll(entity: IEntity) {
         entity.selectAll();
-        this.selectedCategory?.checkCount();
+        this.group.checkCount();
+        this.updateStats();
     }
 
     public onCheckAll(entity: IEntity) {
         entity.checkAll();
-        this.selectedCategory?.checkCount();
-    }
-
-    public onNextLabel(): string {
-        if (!this.lastCategory) {
-            return 'Next';
-        }
-        return this.newRole?.value.id ? 'Save' : 'Create';
-    }
-
-    public onNext() {
-        if (this.lastCategory) {
-            this.onSave()
-        } else {
-            this.selectedCategory = this.group.next(this.selectedCategory);
-            this.lastCategory = this.group.last === this.selectedCategory;
-        }
+        this.group.checkCount();
+        this.updateStats();
     }
 
     public setDefault(row: any) {
@@ -257,6 +327,8 @@ export class RolesViewComponent implements OnInit, OnDestroy {
         }
         this.loading = true;
         this.permissionsService.setDefaultRole(row.id).subscribe((response) => {
+            row.default = true;
+            this.loadDefaultRole();
             this.loadData();
         }, (e) => {
             this.loadError(e);

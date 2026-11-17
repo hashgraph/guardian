@@ -1,0 +1,253 @@
+name: Component tests
+on:
+  push:
+    paths-ignore:
+      - '.github/**'
+      - 'docs/**'
+      - '**/*.md'
+  schedule:
+    - cron: '0 3 * * *' # Run at 03:00 UTC every day (nightly)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: component-tests-${{ github.event_name }}-${{ github.ref }}
+  # Superseded pushes are pointless; a nightly or a hand-triggered run is not.
+  cancel-in-progress: ${{ github.event_name == 'push' }}
+
+jobs:
+  buildAndTest:
+    name: Build and Test
+    runs-on: hg-guard-lin-md
+    timeout-minutes: 30
+    env:
+      YARN_ENABLE_GLOBAL_CACHE: 'false'
+      NODE_VERSION: "24.22.3"
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Cache yarn
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .yarn/cache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build
+        id: build
+        run: |
+          pushd interfaces
+          yarn run build
+          popd
+          pushd common
+          yarn run build
+          popd
+          pushd hedera
+          yarn run build
+          popd
+          pushd ai-service
+          yarn run build
+          popd
+          pushd analytics-service
+          yarn run build
+          popd
+          pushd logger-service
+          yarn run build
+          popd
+          pushd notification-service
+          yarn run build
+          popd
+          pushd frontend
+          npm ci
+          npm run build
+          npm run build:prod
+          npm run build:demo
+          popd
+          pushd auth-service
+          yarn run build
+          popd
+          pushd policy-service
+          yarn run build
+          popd
+          pushd guardian-service
+          yarn run build
+          popd
+          pushd worker-service
+          yarn run build
+          popd
+          pushd queue-service
+          yarn run build
+          popd
+          pushd topic-listener-service
+          yarn run build
+          popd
+          pushd api-gateway
+          yarn run build
+          popd
+        env:
+          CI: true
+          NODE_OPTIONS: --openssl-legacy-provider
+
+      # Fails when a built workspace imports a package that its production
+      # install does not provide. tsc cannot see this, because in CI every
+      # package is hoisted to the root node_modules.
+      - name: Check production dependencies
+        run: node .github/scripts/dep-closure-check.mjs
+
+      - name: Detect secrets
+        run: |
+          yarn run detect-secrets
+        env:
+          CI: true
+          NODE_OPTIONS: --openssl-legacy-provider
+
+      - name: Lint
+        run: |
+          pushd interfaces
+          npm run lint
+          popd
+          pushd common
+          npm run lint
+          popd
+          pushd hedera
+          npm run lint
+          popd
+          pushd ai-service
+          npm run lint
+          popd
+          pushd logger-service
+          npm run lint
+          popd
+          pushd notification-service
+          npm run lint
+          popd
+          pushd auth-service
+          npm run lint
+          popd
+          pushd policy-service
+          npm run lint
+          popd
+          pushd guardian-service
+          npm run lint
+          popd
+          pushd worker-service
+          npm run lint
+          popd
+          pushd queue-service
+          npm run lint
+          popd
+          pushd topic-listener-service
+          npm run lint
+          popd
+          pushd api-gateway
+          npm run lint
+          popd
+        env:
+          CI: true
+          NODE_OPTIONS: --openssl-legacy-provider
+
+      - name: Unit Tests
+        run: |
+          pushd interfaces
+          npm run test
+          popd
+          pushd common
+          npm run test
+          popd
+          pushd hedera
+          npm run test
+          popd
+          pushd ai-service
+          npm run test
+          popd
+          pushd analytics-service
+          npm run test
+          popd
+          pushd api-gateway
+          npm run test
+          popd
+          pushd auth-service
+          npm run test
+          popd
+          pushd guardian-service
+          npm run test
+          popd
+          pushd logger-service
+          npm run test
+          popd
+          pushd notification-service
+          npm run test
+          popd
+          pushd policy-service
+          npm run test
+          popd
+          pushd queue-service
+          npm run test
+          popd
+          pushd topic-listener-service
+          npm run test
+          popd
+          pushd worker-service
+          npm run test
+          popd
+        env:
+          CI: true
+          NODE_OPTIONS: --openssl-legacy-provider
+          OPERATOR_ID: ${{ secrets.CI_HEDERA_ACCOUNT }}
+          OPERATOR_KEY: ${{ secrets.CI_HEDERA_PRIV_KEY }}
+
+      # Vitest in headless Chromium; the frontend dependencies were installed by the Build step.
+      # Under GitHub Actions vitest-base.config.ts writes test_results/frontend.xml for the summary table.
+      # Runs after a failed Lint or Test too, so the summary table still has the frontend row.
+      - name: Frontend unit tests
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: |
+          pushd frontend
+          npx playwright install --with-deps chromium
+          npx ng test --watch=false
+          popd
+        env:
+          CI: true
+
+      # Tests of the workflow helper scripts and of the e2e helpers, and the linter on the Cypress
+      # suites. e2e-tests is not a workspace; the Cypress binary is not needed for any of them.
+      # Runs after a failed Lint or Test too, so their failures do not hide these.
+      - name: E2E tooling tests and lint
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: |
+          node --test .github/scripts/report-test-summary.test.mjs
+          pushd e2e-tests
+          npm ci
+          npm run test:scripts
+          npx eslint cypress
+          popd
+        env:
+          CI: true
+          CYPRESS_INSTALL_BINARY: '0'
+
+      # Local replacement for the step-security publish-unit-test-result-action:
+      # the mocha and Vitest runs already wrote JUnit XML into test_results/, so render the
+      # breakdown into the job summary instead of opening a check run.
+      # always(): the table is most useful right after a failed Test step.
+      - name: Report test results
+        if: always()
+        run: node .github/scripts/report-test-summary.mjs

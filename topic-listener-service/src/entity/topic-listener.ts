@@ -1,5 +1,5 @@
 import { Entity, Index, Property } from '@mikro-orm/core';
-import { BaseEntity } from '@guardian/common';
+import { BaseEntity } from '@guardian/common/models/base-entity';
 
 /**
  * Listener collection
@@ -32,4 +32,10 @@ export class TopicListener extends BaseEntity {
      */
     @Property()
     sendIndex: number;
+
+    /**
+     * Poll on the short idle cap
+     */
+    @Property({ nullable: true })
+    latencySensitive?: boolean;
 }

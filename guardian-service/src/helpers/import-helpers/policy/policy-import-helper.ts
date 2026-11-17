@@ -1,22 +1,15 @@
-import { BlockType, IFormula, IRootConfig, ModuleStatus, SchemaEntity } from '@guardian/interfaces';
-import {
-    DatabaseServer,
-    IPolicyComponents,
-    PinoLogger,
-    Policy,
-    regenerateIds,
-    replaceAllEntities,
-    replaceAllVariables,
-    replaceArtifactProperties,
-    Schema,
-    SchemaFields,
-    FormulaImportExport,
-    PolicyImportExport,
-    MessageType,
-    PolicyMessage,
-    MessageServer,
-    INotificationStep
-} from '@guardian/common';
+import { BlockType, IFormula, IRootConfig, LogMessage, ModuleStatus, SchemaEntity } from '@guardian/interfaces';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { IPolicyComponents, PolicyImportExport } from '@guardian/common/import-export/policy';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { Policy } from '@guardian/common/entity/policy';
+import { regenerateIds, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, SchemaFields } from '@guardian/common/helpers/utils';
+import { Schema } from '@guardian/common/entity/schema';
+import { FormulaImportExport } from '@guardian/common/import-export/formula';
+import { INotificationStep } from '@guardian/common/notification/notification-step.interface';
+import { MessageType } from '@guardian/hedera/message/message-type';
+import { PolicyMessage } from '@guardian/hedera/message/policy-message';
+import { MessageServer } from '@guardian/hedera/message/message-server';
 import { ImportMode } from '../common/import.interface.js';
 import { ImportPolicyError, ImportPolicyOptions, ImportPolicyResult } from './policy-import.interface.js';
 import { PolicyImport } from './policy-import.js';
@@ -24,11 +17,54 @@ import { ImportSchemaMap } from '../schema/schema-import.interface.js';
 import { PolicyConverterUtils } from './policy-converter-utils.js';
 import { HashComparator, PolicyLoader } from '../../../analytics/index.js';
 import { importPolicyTags } from '../tag/tag-import-helper.js';
+import type { PolicyEngine } from '../../../policy-engine/policy-engine.js';
 
 /**
  * Policy import export helper
  */
 export class PolicyImportExportHelper {
+    /**
+     * Validate policy after import and log failures
+     *
+     * @param policyEngine Policy engine
+     * @param policyId Policy id
+     * @param logger Logger
+     * @param userId User id
+     *
+     * @returns Validation result or null if validation could not run
+     */
+    public static async validatePolicyAfterImport(
+        policyEngine: PolicyEngine,
+        policyId: string,
+        logger: PinoLogger,
+        userId?: string
+    ): Promise<{ isValid: boolean, errors: any } | null> {
+        try {
+            const policyValidation = await policyEngine.validateModel(policyId);
+            const validation = {
+                isValid: !policyValidation.blocks.some((block) => !block.isValid),
+                errors: policyValidation
+            };
+            if (!validation.isValid) {
+                const details = policyValidation.blocks
+                    .filter((block) => !block.isValid)
+                    .flatMap((block) => (block.errors || [])
+                        .filter((error) => !!error)
+                        .map((error) => block.id ? `${block.id}: ${error}` : String(error)))
+                    .join('\n');
+                await logger.warn(
+                    `${LogMessage.POLICY_IMPORT_VALIDATION_FAILED} (policy ${policyId})\n${details}`,
+                    ['GUARDIAN_SERVICE'],
+                    userId
+                );
+            }
+            return validation;
+        } catch (error) {
+            await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+            return null;
+        }
+    }
+
     /**
      * Get system schemas
      *

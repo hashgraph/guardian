@@ -17,18 +17,17 @@ import { EventBlock } from '../helpers/decorators/event-block.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyUser } from '../policy-user.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
-import {
-    insertVariables,
-    MessageAction,
-    MessageServer,
-    TokenMessage,
-} from '@guardian/common';
+import { insertVariables } from '@guardian/common/helpers/insert-variables';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { TokenMessage } from '@guardian/hedera/message/token-message';
 import {
     ExternalEvent,
     ExternalEventType,
 } from '../interfaces/external-event.js';
 import { LocationType } from '@guardian/interfaces';
 import { RecordActionStep } from '../record-action-step.js';
+import { createPreviewEntityId, getPreviewBlockState, registerPreviewMessage } from '../helpers/preview.js';
 
 /**
  * Create Token block
@@ -179,12 +178,20 @@ export class CreateTokenBlock {
 
         // #region Create new token
 
-        const createdToken = await PolicyUtils.createTokenByTemplate(
-            ref,
-            template,
-            policyOwnerCred,
-            userId
-        );
+        const createdToken = actionStatus?.preview
+            ? await ref.databaseServer.createToken({
+                ...template,
+                tokenId: createPreviewEntityId(),
+                owner: policyOwnerCred.did,
+                policyId: ref.policyId,
+                adminId: policyOwnerCred.hederaAccountId
+            })
+            : await PolicyUtils.createTokenByTemplate(
+                ref,
+                template,
+                policyOwnerCred,
+                userId
+            );
         // #endregion
 
         // #region Send new token to hedera
@@ -200,14 +207,18 @@ export class CreateTokenBlock {
         }).setTopicObject(rootTopic);
         const tokenMessage = new TokenMessage(MessageAction.CreateToken);
         tokenMessage.setDocument(createdToken);
-        await messageServer.sendMessage(tokenMessage, {
-            sendToIPFS: true,
-            memo: null,
-            userId,
-            interception: null,
-            dryRun: ref.dryRun,
-            mockId: ref.mockId
-        });
+        if (actionStatus?.preview) {
+            registerPreviewMessage(actionStatus, tokenMessage, rootTopic?.topicId);
+        } else {
+            await messageServer.sendMessage(tokenMessage, {
+                sendToIPFS: true,
+                memo: null,
+                userId,
+                interception: null,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
+            });
+        }
         // #endregion
 
         // #region Set token in document
@@ -225,8 +236,10 @@ export class CreateTokenBlock {
             docs.tokens[options.template] = createdToken.tokenId;
         }
 
-        delete this.state[user.id];
-        await ref.saveState();
+        if (!actionStatus?.preview) {
+            delete this.state[user.id];
+            await ref.saveState();
+        }
         // #endregion
 
         const state = { data: docs };
@@ -333,11 +346,15 @@ export class CreateTokenBlock {
 
         const options = await ref.getOptions(user);
 
-        if (!this.state.tokenNumber) {
-            this.state.tokenNumber = 0;
+        const state = event.actionStatus?.preview
+            ? getPreviewBlockState(event.actionStatus, ref.uuid, () => ({ tokenNumber: this.state.tokenNumber }))
+            : this.state;
+
+        if (!state.tokenNumber) {
+            state.tokenNumber = 0;
         }
 
-        this.state.tokenNumber++;
+        state.tokenNumber++;
         await ref.saveState();
 
         if (options.autorun) {
@@ -348,7 +365,7 @@ export class CreateTokenBlock {
                     ref,
                     PolicyUtils.getTokenTemplate(ref, options.template),
                     Object.assign({}, eventData.data, {
-                        index: this.state.tokenNumber,
+                        index: state.tokenNumber,
                     })
                 ),
                 eventData.data,
@@ -356,6 +373,8 @@ export class CreateTokenBlock {
                 event.actionStatus,
                 true,
             );
+        } else if (event.actionStatus?.preview) {
+            event.actionStatus.addPreviewDocument(ref.tag, ref, eventData);
         } else {
             if (!this.state.hasOwnProperty(user.id)) {
                 this.state[user.id] = {

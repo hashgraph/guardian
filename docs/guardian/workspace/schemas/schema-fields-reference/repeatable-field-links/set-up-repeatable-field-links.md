@@ -21,7 +21,7 @@ Switch to the **Repeatable links** tab in the schema editor. The tab shows the e
 
 **2. Add a link**
 
-Fill in the link form and click **Add link**:
+Fill in the link form and click **Save link**:
 
 * **Source array** — the repeatable field that drives the group (for example, _Project Location_).
 * **Dependent array** — the repeatable field that should follow the source (for example, _Baseline Emissions_). It can live in a different schema of the same document.
@@ -33,7 +33,7 @@ Repeat to add more links. One source can drive several dependents, and a depende
 
 **3. Copy values between entries (optional)**
 
-Before clicking **Add link**, use **Add value** to map a field from the source entry to a field in the dependent entry. The value is copied automatically and shown as read-only. Add as many pairs as needed — they appear under **Copied values** in the link form.
+Before clicking **Save link**, use **Add value** to map a field from the source entry to a field in the dependent entry. The value is copied automatically and shown as read-only. Add as many pairs as needed — they appear under **Copied values** in the link form.
 
 
 **4. Save the schema**
@@ -51,6 +51,17 @@ Switch to the **Conditions** tab and add a condition.
 
 
 Click **Save all**.
+
+**6. Export and import links with Excel (optional)**
+
+When schemas are exported to Excel, every schema sheet gets a last column, **Repeatable Links**, after **IWA Property**. Each cell in it is an Excel reference to the **Key** cell of another row:
+
+* On the row of a dependent array, the cell points to its source array, for example `=A7`.
+* With a display name, the cell also points to the title field, for example `=A7&" | "&A8`.
+* On the row of a field that receives a copied value, the cell points to the source field, for example `=A8`.
+* All other cells in the column stay empty.
+
+You can add or change links in the workbook with the same formulas, then import it. The import preview shows each invalid link cell with its sheet, cell and reason; that link is skipped and the rest of the file is imported. Workbooks without the **Repeatable Links** column import as before, without links.
 
 #### Result
 

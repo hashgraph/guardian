@@ -28,7 +28,7 @@ describe('AuthService', () => {
 
     afterEach(() => localStorage.removeItem('accessToken'));
 
-    describe('getUserKey', () => {
+    describe('getUsername', () => {
         it('reads the username from a real access token', () => {
             localStorage.setItem('accessToken', signedLikeTheServer({
                 username: 'standard_registry',
@@ -37,7 +37,7 @@ describe('AuthService', () => {
                 expireAt: 1893456000000,
             }));
 
-            expect(service.getUserKey()).toBe('standard_registry');
+            expect(service.getUsername()).toBe('standard_registry');
         });
 
         it('survives a non-ASCII username', () => {
@@ -48,17 +48,34 @@ describe('AuthService', () => {
                 expireAt: 1893456000000,
             }));
 
-            expect(service.getUserKey()).toBe('Ünïcødé');
+            expect(service.getUsername()).toBe('Ünïcødé');
         });
 
         it('returns null with no token', () => {
-            expect(service.getUserKey()).toBeNull();
+            expect(service.getUsername()).toBeNull();
         });
 
         it('returns null for a malformed token instead of throwing', () => {
             localStorage.setItem('accessToken', 'not.a.jwt');
 
-            expect(service.getUserKey()).toBeNull();
+            expect(service.getUsername()).toBeNull();
+        });
+    });
+
+    describe('requireUsername', () => {
+        it('returns the username of the access token', () => {
+            localStorage.setItem('accessToken', signedLikeTheServer({
+                username: 'standard_registry',
+                did: 'did:hedera:testnet:abc',
+                role: 'STANDARD_REGISTRY',
+                expireAt: 1893456000000,
+            }));
+
+            expect(service.requireUsername()).toBe('standard_registry');
+        });
+
+        it('throws when there is no session', () => {
+            expect(() => service.requireUsername()).toThrowError('There is no signed-in user');
         });
     });
 });

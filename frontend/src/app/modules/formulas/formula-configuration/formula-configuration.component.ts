@@ -1,28 +1,38 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IFormulaItem, FormulaItemType, IFormulaLink, Schema, UserPermissions, EntityStatus } from '@guardian/interfaces';
-import { forkJoin, Subscription } from 'rxjs';
+import { IFormulaItem, IFormulaSource, FormulaItemType, IFormulaLink, Schema, SchemaField, UserPermissions, EntityStatus, PolicyStatus } from '@guardian/interfaces';
+import { debounceTime, forkJoin, Observable, of, Subject, Subscription, switchMap } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { FormulasService } from 'src/app/services/formulas.service';
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { DialogService } from 'primeng/dynamicdialog';
+import { getDeleteDialogData } from '../models/formula-delete-dialog';
+import { Select } from 'primeng/select';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MathLiveComponent } from '../../common/mathlive/mathlive.component';
 import { LinkDialog } from '../dialogs/link-dialog/link-dialog.component';
-import { Formulas } from '../models/formulas';
-import { CdkDragDrop } from '@angular/cdk/drag-drop';
-import { UploadFormulaFileDialog } from '../dialogs/upload-formula-file-dialog/upload-formula-file-dialog.component';
+import { Formulas, IFormulaSegment, MISSING_LINK_TEXT, highlightSegments } from '../models/formulas';
+import { FORMULA_TYPES, SOURCE_FIELDS, formulaTypeIcon, formulaTypeName } from '../models/formula-meta';
+import { getItemLinks, moveLink, setItemLinks } from '../models/field-bindings';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { ConditionFieldGroup } from '../../common/condition-if-editor/condition-if-editor.component';
+import { FormulaFilesDialog } from '../dialogs/formula-files-dialog/formula-files-dialog.component';
+
+type SourceKey = keyof IFormulaSource;
+const SOURCE_KEYS: SourceKey[] = SOURCE_FIELDS.map((f) => f.key);
 
 @Component({
     selector: 'app-formula-configuration',
     templateUrl: './formula-configuration.component.html',
-    styleUrls: ['./formula-configuration.component.scss'],
+    styleUrls: ['../../policy-engine/styles/top-toolbar.scss', './formula-configuration.component.scss'],
     standalone: false
 })
 export class FormulaConfigurationComponent implements OnInit {
     public readonly title: string = 'Configuration';
 
-    @ViewChild('body', { static: true }) body: ElementRef;
+    @ViewChild('editor') editor: ElementRef<HTMLElement>;
+    @ViewChild('rows') rows: ElementRef<HTMLElement>;
+    @ViewChild('nameInput') nameInput: ElementRef<HTMLInputElement>;
 
     public loading: boolean = true;
     public isConfirmed: boolean = false;
@@ -39,42 +49,57 @@ export class FormulaConfigurationComponent implements OnInit {
     public readonly: boolean = false;
     public keyboard: boolean = false;
 
-    public config: Formulas = new Formulas();
-    public readonly options = [
-        {
-            id: 'constant',
-            text: 'Add New Constant',
-            icon: 'const',
-            color: 'icon-color-primary'
-        },
-        {
-            id: 'variable',
-            text: 'Add New Variable',
-            icon: 'variable',
-            color: 'icon-color-primary'
-        },
-        {
-            id: 'formula',
-            text: 'Add New Formula',
-            icon: 'function',
-            color: 'icon-color-primary'
-        },
-        {
-            id: 'text',
-            text: 'Add New Text',
-            icon: 'text',
-            color: 'icon-color-primary'
-        }
-    ];
+    public readonly EntityStatus = EntityStatus;
 
-    public readonly filters = {
+    /** formulas can be published only when their policy is published */
+    public get canPublish(): boolean {
+        return this.policy?.status === PolicyStatus.PUBLISH;
+    }
+
+    public get showPolicyVersion(): boolean {
+        const status = this.policy?.status;
+        return !!this.policy?.version && (status === PolicyStatus.PUBLISH || status === PolicyStatus.DISCONTINUED);
+    }
+
+    public config: Formulas = new Formulas();
+    public readonly options = FORMULA_TYPES;
+    public readonly typeNames = formulaTypeName;
+    public readonly typeIcons = formulaTypeIcon;
+
+    public selected: IFormulaItem | null = null;
+    public relationshipsEdit = false;
+    /** the search text of the open relationship dropdown, for highlighting the matches */
+    public relationshipFilter = '';
+    /** the selected item as a list (the editor is re-mounted for every item) */
+    public selectedList: IFormulaItem[] = [];
+    public typePosition: number = 0;
+    public typeTotal: number = 0;
+    public selectedVisible: boolean = true;
+    public searchText: string = '';
+    /** the applied (debounced) search text */
+    public get query(): string {
+        return this.config.searchQuery;
+    }
+    public get isFiltering(): boolean {
+        return this.config.isFiltering;
+    }
+    public get allHidden(): boolean {
+        return !Object.values(this.filters).some((e) => e);
+    }
+    public get canDrag(): boolean {
+        return !this.readonly && !this.isFiltering;
+    }
+    private search$ = new Subject<string>();
+
+    public readonly filters: { [type: string]: boolean } = {
         constant: true,
         variable: true,
         formula: true,
         text: true
     }
 
-    public stepper = [true, false];
+    public dirty: boolean = false;
+    public readonly missingLinkText = MISSING_LINK_TEXT;
 
     public overviewForm = new FormGroup({
         name: new FormControl<string>('', Validators.required),
@@ -84,6 +109,7 @@ export class FormulaConfigurationComponent implements OnInit {
 
     private schemasMap: Map<string, string> = new Map<string, string>();
     private schemasFieldMap: Map<string, string> = new Map<string, string>();
+    private schemaPaths: Map<string, Set<string>> = new Map<string, Set<string>>();
     private formulasMap: Map<string, string> = new Map<string, string>();
     private formulasFieldMap: Map<string, string> = new Map<string, string>();
 
@@ -97,6 +123,23 @@ export class FormulaConfigurationComponent implements OnInit {
     }
 
     ngOnInit() {
+        this.config.labelFn = (link: IFormulaLink) => ({
+            entity: this.getEntityName(link),
+            field: this.getFieldName(link),
+            missing: this.isLinkMissing(link)
+        });
+        this.subscription.add(
+            this.search$.pipe(debounceTime(150)).subscribe((value) => {
+                this.applyQuery(value);
+            })
+        );
+        this.subscription.add(
+            this.overviewForm.valueChanges.subscribe(() => {
+                if (this.overviewForm.dirty) {
+                    this.dirty = true;
+                }
+            })
+        );
         this.subscription.add(
             this.route.queryParams.subscribe((queryParams) => {
                 this.loadProfile();
@@ -146,11 +189,13 @@ export class FormulaConfigurationComponent implements OnInit {
                 description: item.description || '',
                 policy: this.policy?.name || '',
             });
+            const selectedId = this.selected?.uuid || this.route.snapshot.queryParams['item'];
             this.config.fromData(item?.config);
-
-            setTimeout(() => {
-                this.loading = false;
-            }, 1000);
+            this.selected = (selectedId && this.config.getItem(selectedId)) || this.config.all[0] || null;
+            this.refreshSelection();
+            this.dirty = false;
+            this.overviewForm.markAsPristine();
+            this.loading = false;
         }, (e) => {
             this.loading = false;
         });
@@ -171,12 +216,19 @@ export class FormulaConfigurationComponent implements OnInit {
             }
         }
 
+        this.linkGroupsCache.clear();
+        this.linkResolversCache.clear();
+        this.linkFirstEntryCache.clear();
         this.schemasMap.clear();
         this.schemasFieldMap.clear();
+        this.schemaPaths.clear();
         for (const schema of this.schemas) {
             this.schemasMap.set(String(schema.iri), String(schema.name));
             const fields = schema.getFields();
+            const paths = new Set<string>();
+            this.schemaPaths.set(String(schema.iri), paths);
             for (const field of fields) {
+                paths.add(String(field.path));
                 this.schemasFieldMap.set(`${schema.iri}.${field.path}`, String(field.description));
             }
         }
@@ -202,24 +254,82 @@ export class FormulaConfigurationComponent implements OnInit {
         this.router.navigate(['/formulas']);
     }
 
-    public onSave() {
-        this.loading = true;
-        const config = this.config.getJson();
+    private getSaveItem(): any {
         const value = this.overviewForm.value;
-        const item = {
+        return {
             ...this.item,
             name: value.name,
             description: value.description,
-            config
+            config: this.config.getJson()
         };
+    }
+
+    public onSave() {
+        if (!this.dirty || this.loading) {
+            return;
+        }
+        this.relationshipsEdit = false;
+        this.loading = true;
         this.formulasService
-            .updateFormula(item)
+            .updateFormula(this.getSaveItem())
             .subscribe((data) => {
                 this.item = data;
                 this.formulasMap.set(String(this.item.uuid), String(this.item.name));
-                setTimeout(() => {
-                    this.loading = false;
-                }, 1000);
+                this.dirty = false;
+                this.overviewForm.markAsPristine();
+                this.refreshList();
+                this.loading = false;
+            }, (e) => {
+                this.loading = false;
+            });
+    }
+
+    public onChangeStatus(status: EntityStatus) {
+        if (status !== EntityStatus.PUBLISHED) {
+            this.changeStatus(status);
+            return;
+        }
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Publish Formula',
+                text: `Are you sure want to publish formula (${this.item?.name})?`,
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Publish',
+                    class: 'primary'
+                }]
+            },
+        })!;
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Publish') {
+                this.changeStatus(status);
+            }
+        });
+    }
+
+    /**
+     * Saves unsaved changes first: the status requests do not send the configuration.
+     */
+    private changeStatus(status: EntityStatus) {
+        let request: (item: any) => Observable<any>;
+        if (status === EntityStatus.DRAFT) {
+            request = (item) => this.formulasService.draft(item);
+        } else if (status === EntityStatus.DRY_RUN) {
+            request = (item) => this.formulasService.dryRun(item);
+        } else {
+            request = (item) => this.formulasService.publish(item);
+        }
+        this.loading = true;
+        const save$ = this.dirty ? this.formulasService.updateFormula(this.getSaveItem()) : of(this.item);
+        save$
+            .pipe(switchMap((item) => request(item || this.item)))
+            .subscribe(() => {
+                this.loadData();
             }, (e) => {
                 this.loading = false;
             });
@@ -227,73 +337,188 @@ export class FormulaConfigurationComponent implements OnInit {
 
     public addItem(option: any) {
         const type: FormulaItemType = option.id;
-        this.config.add(type);
+        const item = this.config.add(type);
+        this.selected = item;
+        this.dirty = true;
+        this.refreshSelection();
+        if (!this.selectedVisible) {
+            this.clearSearch();
+            this.showAllTypes();
+        }
+        setTimeout(() => {
+            this.scrollToRow(item);
+            this.nameInput?.nativeElement.focus();
+        });
     }
 
-    public deleteItem(item: any) {
+    public hasSource(item: IFormulaItem): boolean {
+        return !!item.source && SOURCE_KEYS.some((key) => !!item.source?.[key]);
+    }
+
+    public getSource(item: IFormulaItem, key: SourceKey): string {
+        return item.source?.[key] || '';
+    }
+
+    /**
+     * Creates `source` lazily on the first non-empty value and removes it when all fields are empty.
+     */
+    public setSource(item: IFormulaItem, key: SourceKey, value: string | null) {
+        const text = value || '';
+        if (!text && !item.source) {
+            return;
+        }
+        const source: IFormulaSource = { ...(item.source || {}) };
+        if (text) {
+            source[key] = text;
+        } else {
+            delete source[key];
+        }
+        if (SOURCE_KEYS.some((k) => !!source[k]?.trim())) {
+            item.source = source;
+        } else {
+            delete item.source;
+        }
+        this.markDirty();
+    }
+
+    public applyMethodologyToAll(item: IFormulaItem) {
+        const value = this.getSource(item, 'methodology');
+        if (!value) {
+            return;
+        }
+        const all = this.config.all;
         const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
             showHeader: false,
             width: '640px',
             styleClass: 'guardian-dialog',
             data: {
-                header: 'Delete item',
-                text: 'Are you sure want to delete item?',
+                header: 'Apply methodology to all items',
+                text: `Set methodology "${value}" on all ${all.length} items? Items that already have a different methodology will be overwritten.`,
+                regularText: true,
                 buttons: [{
                     name: 'Close',
                     class: 'secondary'
                 }, {
-                    name: 'Delete',
-                    class: 'delete'
+                    name: 'Apply',
+                    class: 'primary'
                 }]
             },
         })!;
         dialogRef.onClose.subscribe((result: string) => {
-            if (result === 'Delete') {
-                this.config.delete(item);
+            if (result === 'Apply') {
+                for (const e of all) {
+                    e.source = { ...(e.source || {}), methodology: value };
+                }
+                this.markDirty();
             }
         });
     }
 
-    public deleteFile(file: any) {
+    public deleteItem(item: any) {
+        const data = getDeleteDialogData(item, this.config.getReferrers(item.uuid));
         const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
             showHeader: false,
             width: '640px',
             styleClass: 'guardian-dialog',
-            data: {
-                header: 'Delete file',
-                text: 'Are you sure want to delete file?',
-                buttons: [{
-                    name: 'Close',
-                    class: 'secondary'
-                }, {
-                    name: 'Delete',
-                    class: 'delete'
-                }]
-            },
+            data,
         })!;
         dialogRef.onClose.subscribe((result: string) => {
-            if (result === 'Delete') {
-                this.config.deleteFile(file);
+            if (result === data.confirm) {
+                const index = this.config.indexOf(item);
+                this.config.delete(item);
+                if (this.selected?.uuid === item.uuid) {
+                    const all = this.config.all;
+                    this.selected = all[index] || all[index - 1] || null;
+                }
+                this.dirty = true;
+                this.refreshSelection();
+                setTimeout(() => this.scrollToRow(this.selected));
             }
         });
     }
 
     public onFilter() {
         this.config.setFilters(this.filters);
+        this.refreshSelection();
     }
 
-    public onStep(index: number) {
-        this.loading = true;
-        for (let i = 0; i < this.stepper.length; i++) {
-            this.stepper[i] = false;
+    public toggleFilter(type: string) {
+        this.filters[type] = !this.filters[type];
+        this.onFilter();
+    }
+
+    public showAllTypes() {
+        this.filters.constant = true;
+        this.filters.variable = true;
+        this.filters.formula = true;
+        this.filters.text = true;
+        this.onFilter();
+    }
+
+    public onSearch(value: string) {
+        this.searchText = value;
+        this.search$.next(value);
+    }
+
+    public clearSearch() {
+        this.searchText = '';
+        this.applyQuery('');
+    }
+
+    private applyQuery(value: string) {
+        this.config.setQuery(value);
+        this.refreshSelection();
+    }
+
+    public select(item: IFormulaItem) {
+        if (this.selected === item) {
+            return;
         }
-        this.stepper[index] = true;
-        this.loading = false;
+        this.selected = item;
+        this.relationshipsEdit = false;
         this.keyboard = false;
+        this.refreshSelection();
     }
 
-    public isActionStep(index: number): boolean {
-        return this.stepper[index];
+    public duplicateItem(item: IFormulaItem) {
+        if (this.readonly) {
+            return;
+        }
+        const copy = this.config.duplicate(item);
+        if (copy) {
+            this.selected = copy;
+            this.dirty = true;
+            this.refreshSelection();
+            setTimeout(() => this.scrollToRow(copy));
+        }
+    }
+
+    /**
+     * Rebuilds the list rows and the counters, then the state of the editor.
+     */
+    private refreshList() {
+        this.config.update();
+        this.refreshSelection();
+    }
+
+    /**
+     * Updates the state of the list and the editor that depends on the selected item.
+     */
+    private refreshSelection() {
+        const selected = this.selected;
+        this.selectedList = selected ? [selected] : [];
+        const sameType = selected ? this.config.all.filter((e) => e.type === selected.type) : [];
+        this.typeTotal = sameType.length;
+        this.typePosition = selected ? sameType.indexOf(selected) + 1 : 0;
+        this.selectedVisible = !selected || this.config.data.includes(selected);
+    }
+
+    private scrollToRow(item: IFormulaItem | null) {
+        if (!item) {
+            return;
+        }
+        const row = this.rows?.nativeElement.querySelector(`[data-uuid="${item.uuid}"]`);
+        row?.scrollIntoView({ block: 'nearest' });
     }
 
     public onKeyboard($event: boolean) {
@@ -304,7 +529,10 @@ export class FormulaConfigurationComponent implements OnInit {
         setTimeout(() => {
             if (this.keyboard) {
                 const focus = $event.getElement();
-                const scroll = this.body;
+                const scroll = this.editor;
+                if (!scroll) {
+                    return;
+                }
                 const targetRect = focus.nativeElement.getBoundingClientRect();
                 const scrollRect = scroll.nativeElement.getBoundingClientRect();
                 const y = targetRect.y - scrollRect.y;
@@ -317,16 +545,36 @@ export class FormulaConfigurationComponent implements OnInit {
         });
     }
 
-    public onLink(item: IFormulaItem) {
+    public getLinks(item: IFormulaItem): IFormulaLink[] {
+        return getItemLinks(item);
+    }
+
+    private replaceLink(item: IFormulaItem, index: number, link: IFormulaLink | null) {
+        const links = [...getItemLinks(item)];
+        if (link) {
+            links[index] = link;
+        } else {
+            links.splice(index, 1);
+        }
+        setItemLinks(item, links);
+    }
+
+    /**
+     * Opens the Set Link dialog: for the link at `index`, or for a new link when `index` is not set.
+     */
+    public onLink(item: IFormulaItem, index?: number) {
         if (this.readonly) {
             return;
         }
+        const isNew = index === undefined;
+        const current = isNew ? null : getItemLinks(item)[index];
         const dialogRef = this.dialogService.open(LinkDialog, {
             showHeader: false,
             width: '90%',
             styleClass: 'guardian-dialog',
+            focusOnShow: false,
             data: {
-                link: item.link,
+                link: current,
                 schemas: this.schemas,
                 formulas: [
                     this.item,
@@ -335,10 +583,205 @@ export class FormulaConfigurationComponent implements OnInit {
             },
         })!;
         dialogRef.onClose.subscribe((result: IFormulaLink | null) => {
-            if (result) {
-                item.link = result
+            if (!result) {
+                return;
             }
+            let link: IFormulaLink;
+            if (result.type === 'schema') {
+                // keeps the display condition only when the link still points at the same schema
+                link = moveLink(current, { schemaIri: result.entityId, fieldPath: result.item });
+            } else {
+                delete result.condition;
+                link = result;
+            }
+            const links = getItemLinks(item);
+            const position = isNew ? links.length : index;
+            this.replaceLink(item, position, link);
+            this.linkOpen.set(this.linkKey(item, position), true);
+            this.markDirty();
         });
+    }
+
+    // ── Rows of the links ────────────────────────────────────────────────────
+
+    /** rows opened or closed by the user, the others follow `isLinkOpen` defaults */
+    private linkOpen = new Map<string, boolean>();
+
+    private linkKey(item: IFormulaItem, index: number): string {
+        return `${item.uuid}:${index}`;
+    }
+
+    /**
+     * The first link and the links that need attention are open by default.
+     */
+    public isLinkOpen(item: IFormulaItem, index: number): boolean {
+        const value = this.linkOpen.get(this.linkKey(item, index));
+        if (value !== undefined) {
+            return value;
+        }
+        const link = getItemLinks(item)[index];
+        return index === 0 || (!!link && this.isLinkMissing(link));
+    }
+
+    public toggleLinkOpen(item: IFormulaItem, index: number) {
+        this.linkOpen.set(this.linkKey(item, index), !this.isLinkOpen(item, index));
+    }
+
+    public hasLinkCondition(link: IFormulaLink): boolean {
+        return link.type === 'schema' && !!link.condition;
+    }
+
+    // ── Display condition of a schema link ───────────────────────────────────
+
+    private linkGroupsCache = new Map<string, ConditionFieldGroup[]>();
+    private linkResolversCache = new Map<string, (pathStr: string) => SchemaField | null>();
+    private linkFirstEntryCache = new Map<string, () => { field: SchemaField; fieldPath: string[] } | null>();
+
+    private findSchema(entityId: string): Schema | undefined {
+        return this.schemas?.find((s) => s.iri === entityId);
+    }
+
+    public getLinkFieldGroups(link: IFormulaLink): ConditionFieldGroup[] {
+        const entityId = link.entityId;
+        let groups = this.linkGroupsCache.get(entityId);
+        if (!groups) {
+            groups = this.buildLinkFieldGroups(this.findSchema(entityId));
+            this.linkGroupsCache.set(entityId, groups);
+        }
+        return groups;
+    }
+
+    private buildLinkFieldGroups(schema?: Schema): ConditionFieldGroup[] {
+        const result: ConditionFieldGroup[] = [];
+        if (!schema) {
+            return result;
+        }
+        const nestLabel = (name: string, depth: number) =>
+            depth <= 1 ? name : ' '.repeat((depth - 1) * 3) + '› ' + name;
+        const addGroups = (fields: SchemaField[], groupName: string, depth: number) => {
+            const items: { pathStr: string; label: string }[] = [];
+            for (const f of fields) {
+                if (f.readOnly || f.isRef) { continue; }
+                items.push({ pathStr: f.path || f.name, label: f.description || f.title || f.name });
+            }
+            if (items.length) {
+                result.push({ label: nestLabel(groupName, depth), items });
+            }
+            for (const f of fields) {
+                if (f.readOnly || !f.isRef || !Array.isArray(f.fields) || !f.fields.length) { continue; }
+                addGroups(f.fields, f.description || f.title || f.name, depth + 1);
+            }
+        };
+        addGroups(schema.fields || [], `This schema – ${schema.name}`, 0);
+        return result;
+    }
+
+    private snapshotField(field: SchemaField): SchemaField {
+        return {
+            name: field.name,
+            title: field.title,
+            description: field.description,
+            type: field.type,
+            isArray: field.isArray,
+            isRef: field.isRef,
+            ...(field.enum ? { enum: field.enum } : {})
+        } as SchemaField;
+    }
+
+    public getLinkResolveField(link: IFormulaLink): (pathStr: string) => SchemaField | null {
+        const entityId = link.entityId;
+        let resolver = this.linkResolversCache.get(entityId);
+        if (!resolver) {
+            resolver = (pathStr: string) => {
+                const field = this.findSchema(entityId)?.getField(pathStr);
+                return field ? this.snapshotField(field) : null;
+            };
+            this.linkResolversCache.set(entityId, resolver);
+        }
+        return resolver;
+    }
+
+    public getLinkFirstEntry(link: IFormulaLink): () => { field: SchemaField; fieldPath: string[] } | null {
+        let first = this.linkFirstEntryCache.get(link.entityId);
+        if (!first) {
+            first = () => this.findFirstEntry(link);
+            this.linkFirstEntryCache.set(link.entityId, first);
+        }
+        return first;
+    }
+
+    private findFirstEntry(link: IFormulaLink): { field: SchemaField; fieldPath: string[] } | null {
+        const resolve = this.getLinkResolveField(link);
+        for (const group of this.getLinkFieldGroups(link)) {
+            for (const option of group.items) {
+                const field = resolve(option.pathStr);
+                if (field) {
+                    return { field, fieldPath: option.pathStr.split('.') };
+                }
+            }
+        }
+        return null;
+    }
+
+    public toggleLinkCondition(item: IFormulaItem, index: number, on: boolean): void {
+        const link = getItemLinks(item)[index];
+        if (this.readonly || !link) {
+            return;
+        }
+        if (!on) {
+            delete link.condition;
+            this.markDirty();
+            return;
+        }
+        const first = this.getLinkFirstEntry(link)();
+        if (!first) {
+            return;
+        }
+        link.condition = {
+            field: first.field,
+            fieldValue: '',
+            ...(first.fieldPath.length > 1 ? { fieldPath: first.fieldPath } : {})
+        };
+        this.markDirty();
+    }
+
+    public setLinkCondition(item: IFormulaItem, index: number, condition: any): void {
+        const link = getItemLinks(item)[index];
+        if (link) {
+            link.condition = condition;
+            this.markDirty();
+        }
+    }
+
+    public hasLinkSchema(link: IFormulaLink): boolean {
+        return this.schemasMap.has(link.entityId);
+    }
+
+    public getLinkPaths(link: IFormulaLink): Set<string> | null {
+        return this.schemaPaths.get(link.entityId) || null;
+    }
+
+    /**
+     * The display condition is cleared, its paths belong to the previous schema.
+     */
+    public onLinkSchemaChange(item: IFormulaItem, index: number, schemaIri: string) {
+        if (this.readonly) {
+            return;
+        }
+        this.replaceLink(item, index, moveLink(getItemLinks(item)[index], { schemaIri, fieldPath: '' }));
+        this.markDirty();
+    }
+
+    /**
+     * The display condition is kept, the schema is the same.
+     */
+    public onLinkPathChange(item: IFormulaItem, index: number, path: string) {
+        const link = getItemLinks(item)[index];
+        if (this.readonly || link?.type !== 'schema') {
+            return;
+        }
+        this.replaceLink(item, index, moveLink(link, { schemaIri: link.entityId, fieldPath: path }));
+        this.markDirty();
     }
 
     public getEntityName(link: IFormulaLink): string {
@@ -349,6 +792,20 @@ export class FormulaConfigurationComponent implements OnInit {
             return this.formulasMap.get(link.entityId) || '';
         }
         return '';
+    }
+
+    /**
+     * A schema link whose schema or field is not among the policy schemas.
+     */
+    public isLinkMissing(link: IFormulaLink): boolean {
+        if (link?.type !== 'schema') {
+            return false;
+        }
+        return !this.schemasMap.has(link.entityId) || !this.schemasFieldMap.has(`${link.entityId}.${link.item}`);
+    }
+
+    public getMissingSchemaText(link: IFormulaLink): string {
+        return `Schema “${link.entityId}” was not found in this policy`;
     }
 
     public getFieldName(link: IFormulaLink): string {
@@ -365,30 +822,102 @@ export class FormulaConfigurationComponent implements OnInit {
         return '';
     }
 
-    public deleteLink(item: IFormulaItem, $event: any) {
+    public deleteLink(item: IFormulaItem, index: number, $event: any) {
         if (this.readonly) {
             return;
         }
         $event.preventDefault();
         $event.stopPropagation();
-        item.link = null;
+        this.replaceLink(item, index, null);
+        for (const key of Array.from(this.linkOpen.keys())) {
+            if (key.startsWith(`${item.uuid}:`)) {
+                this.linkOpen.delete(key);
+            }
+        }
+        this.markDirty();
+    }
+
+    public relationshipName(uuid: string): string {
+        return this.config.getItem(uuid)?.name || 'N/A';
+    }
+
+    /**
+     * Items that can still be added; the item at `keep` stays in the list so it can be shown as selected.
+     */
+    public relationshipOptions(item: IFormulaItem, keep?: string): IFormulaItem[] {
+        const used = item.relationships || [];
+        return this.config.all.filter((e) => e.uuid !== item.uuid && (e.uuid === keep || !used.includes(e.uuid)));
+    }
+
+    public relationshipSegments(text: string): IFormulaSegment[] {
+        const term = this.relationshipFilter.trim().toLowerCase();
+        return highlightSegments(text, term ? [term] : []);
+    }
+
+    public replaceRelationship(item: IFormulaItem, index: number, uuid: string) {
+        if (this.readonly || !uuid || !item.relationships || item.relationships[index] === uuid) {
+            return;
+        }
+        item.relationships = item.relationships.map((e, i) => i === index ? uuid : e);
+        this.markDirty();
+    }
+
+    public addRelationship(item: IFormulaItem, uuid: string, select?: Select) {
+        if (this.readonly || !uuid || item.relationships?.includes(uuid)) {
+            return;
+        }
+        item.relationships = [...(item.relationships || []), uuid];
+        // the dropdown keeps the picked value and ignores picking it again after a removal
+        select?.clear();
+        this.markDirty();
+    }
+
+    public removeRelationship(item: IFormulaItem, index: number) {
+        if (this.readonly || !item.relationships) {
+            return;
+        }
+        item.relationships = item.relationships.filter((_, i) => i !== index);
+        this.markDirty();
+    }
+
+    public moveRelationship(item: IFormulaItem, from: number, to: number) {
+        if (this.readonly || !item.relationships || to < 0 || to >= item.relationships.length) {
+            return;
+        }
+        const list = [...item.relationships];
+        moveItemInArray(list, from, to);
+        item.relationships = list;
+        this.markDirty();
+    }
+
+    public dropRelationship(item: IFormulaItem, event: CdkDragDrop<string[]>) {
+        this.moveRelationship(item, event.previousIndex, event.currentIndex);
     }
 
     public drop(event: CdkDragDrop<any[]>) {
         this.config.reorder(event.previousIndex, event.currentIndex);
+        this.dirty = true;
+        this.refreshSelection();
     }
 
-    public uploadFile() {
-        const dialogRef = this.dialogService.open(UploadFormulaFileDialog, {
+    public openFiles() {
+        this.dialogService.open(FormulaFilesDialog, {
             showHeader: false,
-            width: '640px',
+            width: '800px',
             styleClass: 'guardian-dialog',
-            data: {},
-        })!;
-        dialogRef.onClose.subscribe((result: any) => {
-            if(result) {
-                this.config.addFile(result);
-            }
+            data: {
+                config: this.config,
+                readonly: this.readonly,
+                onChange: () => this.dirty = true
+            },
         });
+    }
+
+    /**
+     * An item was edited: its row (name, value, link, source) and the search counters are rebuilt.
+     */
+    public markDirty() {
+        this.dirty = true;
+        this.refreshList();
     }
 }

@@ -1,4 +1,5 @@
-import CommonElements from '../../../support/defaultUIElements';
+import URL from '../../../support/GuardianUrls';
+import { waitForPageReady } from '../../../support/pageReadiness';
 
 const SettingsPageLocators = {
     settingsProp: (prop) => `input[id=${prop}]`,
@@ -8,15 +9,15 @@ const SettingsPageLocators = {
 export class SettingsPage {
 
     openSettingsTab() {
-        cy.get(CommonElements.navBar).contains(CommonElements.administrationTab).click();
-        cy.get(CommonElements.navBar).contains(CommonElements.settingsTab).click();
+        cy.visit(URL.Root + URL.Settings);
+        waitForPageReady(SettingsPageLocators.settingsProp('operatorId'));
     }
 
     verifyIfFieldHasValidation() {
-        cy.get(SettingsPageLocators.settingsProp('operatorId')).clear().type('1');
+        cy.get(SettingsPageLocators.settingsProp('operatorId')).clear();
+        cy.get(SettingsPageLocators.settingsProp('operatorId')).type('1');
         cy.get(SettingsPageLocators.settingsProp('opKey')).type('2');
         cy.get(SettingsPageLocators.settingsProp('ipfsKey')).type('3');
-        cy.get(SettingsPageLocators.settingsProp('ipfsProof')).type('4');
         cy.contains(SettingsPageLocators.saveChangeButton).should('be.disabled');
     }
 

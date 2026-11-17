@@ -3,8 +3,9 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import { randomInt } from '../../../support/random';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('Modules', { tags: ['modules', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
+context('Modules', { tags: ['modules', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     // Published modules cannot be deleted, so the name must be unique per run
@@ -41,7 +42,7 @@ context('Modules', { tags: ['modules', 'thirdPool', 'all', 'all-no-mgs'] }, () =
             method: METHOD.PUT,
             url: publishUrl(uuid),
             headers: { authorization },
-            timeout: 180000,
+            timeout: TIMEOUTS.longOperation,
         });
 
     const postPreviewWithAuth = (authorization, body) =>
@@ -50,7 +51,7 @@ context('Modules', { tags: ['modules', 'thirdPool', 'all', 'all-no-mgs'] }, () =
             url: previewUrl,
             headers: { authorization },
             body,
-            timeout: 180000,
+            timeout: TIMEOUTS.backend,
         });
 
     const postPreviewWithoutAuth = (headers = {}) =>

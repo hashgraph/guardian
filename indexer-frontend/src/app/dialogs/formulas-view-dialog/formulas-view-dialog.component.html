@@ -79,13 +79,15 @@
                             </div>
                             @if (current.hasLink) {
                                 <div class="guardian-input-container">
-                                    <label class="form-label">Link (Input)</label>
-                                    <div class="formula-link" (click)="onLink(current)">
-                                        <div class="formula-link-value">
-                                            <div class="formula-link-value__entity">{{current.linkEntityName}}:</div>
-                                            <div class="formula-link-value__item">{{current.linkItemName}}</div>
-                                        </div>
-                                    </div>
+                                    <label class="form-label">Link{{ current.links.length > 1 ? 's' : '' }} (Input)</label>
+                                    @for (link of current.links; track $index) {
+                                      <div class="formula-link" (click)="onLink(link)">
+                                          <div class="formula-link-value">
+                                              <div class="formula-link-value__entity">{{link.linkEntityName}}:</div>
+                                              <div class="formula-link-value__item">{{link.linkItemName}}</div>
+                                          </div>
+                                      </div>
+                                    }
                                 </div>
                             }
                             <div class="guardian-textarea-container">
@@ -111,13 +113,15 @@
                             </div>
                             @if (current.hasLink) {
                                 <div class="guardian-input-container">
-                                    <label class="form-label">Link (Output)</label>
-                                    <div class="formula-link" (click)="onLink(current)">
-                                        <div class="formula-link-value">
-                                            <div class="formula-link-value__entity">{{current.linkEntityName}}:</div>
-                                            <div class="formula-link-value__item">{{current.linkItemName}}</div>
-                                        </div>
-                                    </div>
+                                    <label class="form-label">Link{{ current.links.length > 1 ? 's' : '' }} (Output)</label>
+                                    @for (link of current.links; track $index) {
+                                      <div class="formula-link" (click)="onLink(link)">
+                                          <div class="formula-link-value">
+                                              <div class="formula-link-value__entity">{{link.linkEntityName}}:</div>
+                                              <div class="formula-link-value__item">{{link.linkItemName}}</div>
+                                          </div>
+                                      </div>
+                                    }
                                 </div>
                             }
                             <div class="guardian-textarea-container">
@@ -151,13 +155,15 @@
                             </div>
                             @if (current.hasLink) {
                                 <div class="guardian-input-container">
-                                    <label class="form-label">Link (Output)</label>
-                                    <div class="formula-link" (click)="onLink(current)">
-                                        <div class="formula-link-value">
-                                            <div class="formula-link-value__entity">{{current.linkEntityName}}:</div>
-                                            <div class="formula-link-value__item">{{current.linkItemName}}</div>
-                                        </div>
-                                    </div>
+                                    <label class="form-label">Link{{ current.links.length > 1 ? 's' : '' }} (Output)</label>
+                                    @for (link of current.links; track $index) {
+                                      <div class="formula-link" (click)="onLink(link)">
+                                          <div class="formula-link-value">
+                                              <div class="formula-link-value__entity">{{link.linkEntityName}}:</div>
+                                              <div class="formula-link-value__item">{{link.linkItemName}}</div>
+                                          </div>
+                                      </div>
+                                    }
                                 </div>
                             }
                             <div class="guardian-textarea-container">

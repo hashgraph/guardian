@@ -4,5 +4,6 @@ export { EntityAccess, EntityGroup } from "./permissions-entity";
 export { PermissionsGroup } from "./permissions";
 export { MergeUtils } from "./merge-utils";
 export { getUserInitials } from "./user-initials";
+export { shortDid } from "./short-did";
 export { formatBalance } from "./balance";
 export { formatSchemaTemplateBindingLabel } from "./schema-template-label";

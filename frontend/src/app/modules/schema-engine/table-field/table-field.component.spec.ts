@@ -1,6 +1,8 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { DialogService } from 'primeng/dynamicdialog';
+import { Tooltip, TooltipModule } from 'primeng/tooltip';
 import { TableFieldComponent } from './table-field.component';
 import { CsvService } from '../../../services/csv.service';
 import { ArtifactService } from '../../../services/artifact.service';
@@ -14,9 +16,10 @@ describe('TableFieldComponent', () => {
         { name: 'CO2 (tonnes)', key: 'co2_tonnes' },
     ];
 
-    const build = (): TableFieldComponent => {
+    const build = (imports: any[] = []): TableFieldComponent => {
         TestBed.resetTestingModule();
         TestBed.configureTestingModule({
+            imports,
             declarations: [TableFieldComponent],
             providers: [
                 { provide: DialogService, useValue: {} },
@@ -36,7 +39,7 @@ describe('TableFieldComponent', () => {
         const component = build();
         component.item = { name: 'field4', field: { tableColumns: declared } } as any;
 
-        expect(component.hasDeclaredColumns).toBeTrue();
+        expect(component.hasDeclaredColumns).toBe(true);
         expect(component.previewHeaderNameFor('co2_tonnes', 1)).toBe('CO2 (tonnes)');
     });
 
@@ -44,14 +47,14 @@ describe('TableFieldComponent', () => {
         const component = build();
         component.item = { name: 'field4', tableColumns: declared, field: {} } as any;
 
-        expect(component.hasDeclaredColumns).toBeTrue();
+        expect(component.hasDeclaredColumns).toBe(true);
     });
 
     it('has none for an array element handed in without an owner field', () => {
         const component = build();
         component.item = { name: 'field4', index: '0' } as any;
 
-        expect(component.hasDeclaredColumns).toBeFalse();
+        expect(component.hasDeclaredColumns).toBe(false);
     });
 
     it('takes them from ownerField for an array element', () => {
@@ -59,7 +62,7 @@ describe('TableFieldComponent', () => {
         component.item = { name: 'field4', index: '0' } as any;
         component.ownerField = { tableColumns: declared } as any;
 
-        expect(component.hasDeclaredColumns).toBeTrue();
+        expect(component.hasDeclaredColumns).toBe(true);
         expect(component.previewHeaderNameFor('year', 0)).toBe('Year');
     });
 
@@ -67,7 +70,7 @@ describe('TableFieldComponent', () => {
         const component = build();
         component.item = { name: 'field4', field: {} } as any;
 
-        expect(component.hasDeclaredColumns).toBeFalse();
+        expect(component.hasDeclaredColumns).toBe(false);
         expect(component.previewHeaderNameFor('C1', 0)).toBe('A');
     });
 
@@ -125,6 +128,22 @@ describe('TableFieldComponent', () => {
         expect(without.previewRowsLimited).toEqual([]);
     });
 
+    it('puts the full column name on the preview header as a tooltip', () => {
+        const longName = 'Estimated net reductions and removals (tCO2e)';
+        build([TooltipModule]);
+        const fixture = TestBed.createComponent(TableFieldComponent);
+        fixture.componentInstance.item = {
+            name: 'field4',
+            field: { tableColumns: [{ name: longName, key: 'net' }] },
+        } as any;
+        fixture.detectChanges();
+
+        const header = fixture.debugElement.query(By.css('.table-field__cell--head'));
+
+        expect(header.injector.get(Tooltip).content).toBe(longName);
+        expect(header.nativeElement.querySelector('.table-field__head-text')?.textContent?.trim()).toBe(longName);
+    });
+
     it('keeps the uploaded file in the browser when the field is destroyed', () => {
         const deleted: string[] = [];
         TestBed.resetTestingModule();
@@ -152,7 +171,7 @@ describe('TableFieldComponent', () => {
 
         const component = TestBed.createComponent(TableFieldComponent).componentInstance;
         component.item = { name: 'field4', field: {} } as any;
-        spyOn(component as any, 'readTable').and.returnValue({
+        vi.spyOn(component as any, 'readTable').mockReturnValue({
             type: 'table',
             columnKeys: [],
             rows: [],

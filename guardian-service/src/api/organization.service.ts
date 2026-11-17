@@ -1,10 +1,7 @@
 import { ApiResponse } from './helpers/api-response.js';
-import {
-    MessageError,
-    MessageResponse,
-    NewNotifier,
-    PinoLogger,
-} from '@guardian/common';
+import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { NewNotifier } from '@guardian/common/notification/notifier';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
 import { IOwner, MessageAPI } from '@guardian/interfaces';
 import {
     enrollOrganizationMember,

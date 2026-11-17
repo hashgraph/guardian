@@ -6,14 +6,14 @@ describe('FieldLink._update — name validation', () => {
     it('accepts a simple identifier', () => {
         const link = new FieldLink('myVar', 'doc.field');
         link.update();
-        expect(link.validName).toBeTrue();
+        expect(link.validName).toBe(true);
         expect(link.variableName).toBe('myVar');
     });
 
     it('accepts comma-subscript notation and normalises to underscore', () => {
         const link = new FieldLink('fNRB_y,i', 'doc.field');
         link.update();
-        expect(link.validName).toBeTrue();
+        expect(link.validName).toBe(true);
         expect(link.variableName).toBe('fNRB_y_i');
     });
 
@@ -27,25 +27,25 @@ describe('FieldLink._update — name validation', () => {
     it('rejects name starting with a digit', () => {
         const link = new FieldLink('1foo', 'doc.field');
         link.update();
-        expect(link.validName).toBeFalse();
+        expect(link.validName).toBe(false);
     });
 
     it('rejects empty name', () => {
         const link = new FieldLink('', 'doc.field');
         link.update();
-        expect(link.validName).toBeFalse();
+        expect(link.validName).toBe(false);
     });
 
     it('rejects name with leading comma', () => {
         const link = new FieldLink(',x', 'doc.field');
         link.update();
-        expect(link.validName).toBeFalse();
+        expect(link.validName).toBe(false);
     });
 
     it('rejects name with trailing comma', () => {
         const link = new FieldLink('x,', 'doc.field');
         link.update();
-        expect(link.validName).toBeFalse();
+        expect(link.validName).toBe(false);
     });
 });
 
@@ -82,7 +82,7 @@ describe('FieldLink.from — round-trip', () => {
         restored.update();
         expect(restored.variableNameText).toBe('fNRB_y,i');
         expect(restored.variableName).toBe('fNRB_y_i');
-        expect(restored.validName).toBeTrue();
+        expect(restored.validName).toBe(true);
     });
 
     it('returns null for non-object input', () => {
@@ -105,8 +105,8 @@ describe('FieldLink table output', () => {
     }
 
     it('is a table only when it carries rows', () => {
-        expect(new FieldLink('a', 'b').isTable).toBeFalse();
-        expect(tableLink([]).isTable).toBeTrue();
+        expect(new FieldLink('a', 'b').isTable).toBe(false);
+        expect(tableLink([]).isTable).toBe(true);
     });
 
     it('keeps the rows through toJson and from', () => {
@@ -117,19 +117,19 @@ describe('FieldLink table output', () => {
     });
 
     it('leaves rows out of the JSON of an ordinary output', () => {
-        expect('rows' in new FieldLink('a', 'b').toJson()).toBeFalse();
+        expect('rows' in new FieldLink('a', 'b').toJson()).toBe(false);
     });
 
     it('is valid with an empty name when every filled cell is a variable name', () => {
         const link = tableLink([{ a: 'r1', b: '' }, { a: 'x,i', b: ' ' }]);
         link.update();
-        expect(link.valid).toBeTrue();
+        expect(link.valid).toBe(true);
     });
 
     it('is invalid when a filled cell is not a variable name', () => {
         const link = tableLink([{ a: '1bad' }]);
         link.update();
-        expect(link.validName).toBeFalse();
+        expect(link.validName).toBe(false);
         expect(link.error).toBe('Invalid name');
     });
 
@@ -143,14 +143,14 @@ describe('FieldLink table output', () => {
             "rows": [{ "a": 123 }]
         }`))!;
         link.update();
-        expect(link.validName).toBeFalse();
+        expect(link.validName).toBe(false);
         expect(link.error).toBe('Invalid name');
     });
 
     it('rejects more than 1000 rows', () => {
         const link = tableLink(Array.from({ length: 1001 }, () => ({ a: '' })));
         link.update();
-        expect(link.validName).toBeFalse();
+        expect(link.validName).toBe(false);
         expect(link.error).toBe('Too many rows');
     });
 
@@ -175,8 +175,8 @@ describe('FieldLink table list output', () => {
 
     it('is a table and a table list when it carries tables', () => {
         const link = tableListLink([[{ a: 'r1' }]]);
-        expect(link.isTable).toBeTrue();
-        expect(link.isTableList).toBeTrue();
+        expect(link.isTable).toBe(true);
+        expect(link.isTableList).toBe(true);
         expect(link.rows).toBeNull();
     });
 
@@ -184,14 +184,14 @@ describe('FieldLink table list output', () => {
         const tables = [[{ a: 'r1' }], [{ a: '' }, { a: 'r2' }]];
         const json = tableListLink(tables).toJson();
         expect(json.tables).toEqual(tables);
-        expect('rows' in json).toBeFalse();
+        expect('rows' in json).toBe(false);
         expect(FieldLink.from(json)!.tables).toEqual(tables);
     });
 
     it('checks the cells of every table', () => {
         const link = tableListLink([[{ a: 'r1' }], [{ a: '1bad' }]]);
         link.update();
-        expect(link.validName).toBeFalse();
+        expect(link.validName).toBe(false);
         expect(link.error).toBe('Invalid name');
     });
 
@@ -207,7 +207,7 @@ describe('FieldLink table list output', () => {
     it('rejects more than 100 tables', () => {
         const link = tableListLink(Array.from({ length: 101 }, () => []));
         link.update();
-        expect(link.validName).toBeFalse();
+        expect(link.validName).toBe(false);
         expect(link.error).toBe('Too many tables');
     });
 
@@ -232,19 +232,19 @@ describe('FieldLink column table output', () => {
 
     it('is a single table and keeps the columns through toJson and from', () => {
         const link = columnLink({ year: 'y', co2: '' });
-        expect(link.isTable).toBeTrue();
-        expect(link.isTableList).toBeFalse();
+        expect(link.isTable).toBe(true);
+        expect(link.isTableList).toBe(false);
         const json = link.toJson();
         expect(json.columns).toEqual({ year: 'y', co2: '' });
-        expect('rows' in json).toBeFalse();
-        expect('tables' in json).toBeFalse();
+        expect('rows' in json).toBe(false);
+        expect('tables' in json).toBe(false);
         expect(FieldLink.from(json)!.columns).toEqual({ year: 'y', co2: '' });
     });
 
     it('accepts variable names and empty columns, and names the bound variables', () => {
         const link = columnLink({ year: 'y', co2: '', area: 'x,i' });
         link.update();
-        expect(link.validName).toBeTrue();
+        expect(link.validName).toBe(true);
         expect(link.error).toBe('');
         expect(link.getCellNames()).toEqual(['y', 'x_i']);
     });
@@ -252,11 +252,11 @@ describe('FieldLink column table output', () => {
     it('rejects a column that is not a variable name or not a string', () => {
         const bad = columnLink({ year: '1bad' });
         bad.update();
-        expect(bad.validName).toBeFalse();
+        expect(bad.validName).toBe(false);
         expect(bad.error).toBe('Invalid name');
         const number = columnLink({ year: 5 });
         number.update();
-        expect(number.validName).toBeFalse();
+        expect(number.validName).toBe(false);
     });
 
     it('puts element N of every list into row N and fills shorter lists with empty cells', () => {
@@ -295,7 +295,7 @@ describe('FieldLink column table output', () => {
     it('is not limited to 1000 rows by the grid limit', () => {
         const link = columnLink({ year: 'y' });
         link.update();
-        expect(link.validName).toBeTrue();
+        expect(link.validName).toBe(true);
         expect(link.getTableRows({ y: new Array(1500).fill(1) }).length).toBe(1500);
     });
 
@@ -330,14 +330,14 @@ describe('FieldLink column table list output', () => {
 
     it('is a table list and keeps the tableList flag through toJson and from', () => {
         const link = columnListLink({ year: 'y' });
-        expect(link.isTable).toBeTrue();
-        expect(link.isTableList).toBeTrue();
+        expect(link.isTable).toBe(true);
+        expect(link.isTableList).toBe(true);
         const json = link.toJson();
-        expect(json.tableList).toBeTrue();
-        expect(FieldLink.from(json)!.isTableList).toBeTrue();
+        expect(json.tableList).toBe(true);
+        expect(FieldLink.from(json)!.isTableList).toBe(true);
         const single = FieldLink.from({ ...json, tableList: undefined })!;
-        expect(single.isTableList).toBeFalse();
-        expect('tableList' in single.toJson()).toBeFalse();
+        expect(single.isTableList).toBe(false);
+        expect('tableList' in single.toJson()).toBe(false);
     });
 
     it('puts element N of the outer list into table N and element M inside it into row M', () => {

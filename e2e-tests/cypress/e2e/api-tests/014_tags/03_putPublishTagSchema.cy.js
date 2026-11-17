@@ -1,8 +1,9 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('Tags', { tags: ['tags', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
+context('Tags', { tags: ['tags', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     let schemaId;
 
@@ -20,7 +21,7 @@ context('Tags', { tags: ['tags', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
             url: `${API.ApiServer}${API.Tags}schemas/${schemaId}/publish`,
             headers,
             failOnStatusCode: false,
-            timeout: 200000,
+            timeout: TIMEOUTS.longOperation,
         });
 
     before(() => {

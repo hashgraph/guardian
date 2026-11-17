@@ -1,3 +1,4 @@
+import { getPreviewBlockState, recordPreviewWait } from '../helpers/preview.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
@@ -5,7 +6,7 @@ import { ActionCallback, EventBlock, StateField } from '../helpers/decorators/in
 import { ActionType, IPolicyBlock, IPolicyEventState, IPolicyGetData } from '../policy-engine.interface.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { PolicyUtils } from '../helpers/utils.js';
-import { Token as TokenCollection } from '@guardian/common';
+import { Token as TokenCollection } from '@guardian/common/entity/token';
 import { BlockActionError } from '../errors/index.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
@@ -296,7 +297,10 @@ export class TokenConfirmationBlock {
                 relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, doc, userId);
             }
 
-            this.state[id] = {
+            const state = event.actionStatus?.preview
+                ? getPreviewBlockState(event.actionStatus, ref.uuid, () => this.state)
+                : this.state;
+            state[id] = {
                 accountId: relayerAccount,
                 data: event.data,
                 user: event.user,
@@ -307,6 +311,7 @@ export class TokenConfirmationBlock {
 
         ref.backup();
 
+        recordPreviewWait(event, ref);
         return event.data;
     }
 }

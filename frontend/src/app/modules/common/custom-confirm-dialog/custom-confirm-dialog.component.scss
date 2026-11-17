@@ -1,3 +1,5 @@
+@import '../../formulas/formula-type';
+
 .loading {
     background: var(--guardian-background, #fff);
     position: absolute;
@@ -65,6 +67,11 @@
     line-height: 18px;
     margin-top: 25px;
     white-space: pre-line;
+}
+
+.confirmation-text--regular {
+    font-weight: 400;
+    line-height: 22px;
 }
 
 .confirmation-texts {
@@ -197,5 +204,56 @@
         .option-value-select {
             margin-top: 8px;
         }
+    }
+}
+
+.confirmation-details {
+    max-height: 240px;
+    overflow-y: auto;
+}
+
+// Same rendering as the JSON view of the "View document" dialog
+.confirmation-document {
+    word-break: keep-all;
+    white-space: pre;
+    font-family: monospace;
+    cursor: text;
+    width: 100%;
+    max-height: 320px;
+    overflow: auto;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    padding: 10px;
+    box-sizing: border-box;
+    margin-bottom: 24px;
+}
+
+.confirmation-typed-items {
+    margin-top: 16px;
+    margin-bottom: 32px;
+    max-height: 220px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .typed-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: Inter, sans-serif;
+        font-size: 14px;
+        line-height: 18px;
+        min-width: 0;
+    }
+
+    .typed-item-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .f-type-icon {
+        @include formula-type-icon;
     }
 }

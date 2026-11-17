@@ -1,8 +1,9 @@
 import { METHOD } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('Prepare accounts for future tests', { tags: ['preparing', 'smoke', 'all', 'all-no-mgs', 'ui'] }, () => {
+context('Prepare accounts for future tests', { tags: ['preparing', 'smoke', 'api-all', 'all', 'all-no-mgs', 'ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const SR2Username = Cypress.env('SR2User');
@@ -68,7 +69,7 @@ context('Prepare accounts for future tests', { tags: ['preparing', 'smoke', 'all
                     method: METHOD.GET,
                     url: API.ApiServer + API.RandomKey,
                     headers: { authorization },
-                    timeout: 600000
+                    timeout: TIMEOUTS.ui
                 }).then((response) => {
                     let hederaAccountId = response.body.id
                     let hederaAccountKey = response.body.key
@@ -99,7 +100,7 @@ context('Prepare accounts for future tests', { tags: ['preparing', 'smoke', 'all
                                 '@context': [],
                             },
                         },
-                        timeout: 400000,
+                        timeout: TIMEOUTS.backend,
                     }).then(() => {
                         cy.task('log', `hedera credentials created for ${username}. hederaAccountId: ${hederaAccountId}`);
                         cy.task('log', 'Remember to transfer hbar funds to this account for running tests.');
@@ -138,14 +139,14 @@ context('Prepare accounts for future tests', { tags: ['preparing', 'smoke', 'all
                         }
                     }).then((response) => {
                         response.body.forEach(element => {
-                            if (element.username == SRUsername)
+                            if (element.username === SRUsername)
                                 {SRDid = element.did;}
                         })
                         cy.request({
                             method: METHOD.GET,
                             url: API.ApiServer + API.RandomKey,
                             headers: { authorization },
-                            timeout: 600000
+                            timeout: TIMEOUTS.backend
                         }).then((response) => {
                             let hederaAccountId = response.body.id
                             let hederaAccountKey = response.body.key
@@ -160,7 +161,7 @@ context('Prepare accounts for future tests', { tags: ['preparing', 'smoke', 'all
                                     hederaAccountKey,
                                     parent: SRDid
                                 },
-                                timeout: 400000,
+                                timeout: TIMEOUTS.longOperation,
                             }).then(() => {
                                 cy.task('log', `hedera credentials created for ${userUsername}. hederaAccountId: ${hederaAccountId}`);
                             });

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { ModuleStatus } from '@guardian/interfaces';
 import { PolicyImport } from '../../dist/helpers/import-helpers/policy/policy-import.js';
-import { DatabaseServer } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import { restoreStubs, stub } from '../_handler-harness.mjs';
 
 /*

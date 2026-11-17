@@ -1,5 +1,6 @@
 import { WalletAccount } from '../entity/wallet-account.js';
-import { DatabaseServer, PinoLogger } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
 import { IVault } from '../vaults/index.js';
 
 /**

@@ -11,6 +11,13 @@ export interface IFormulaLink {
     item: string;
 }
 
+export interface IFormulaSource {
+    methodology?: string;
+    section?: string;
+    equation?: string;
+    page?: string;
+}
+
 export interface IFormulaItem {
     uuid: string;
     name: string;
@@ -18,7 +25,9 @@ export interface IFormulaItem {
     type: FormulaItemType;
     value?: any;
     link?: IFormulaLink | null;
+    links?: IFormulaLink[];
     relationships?: string[];
+    source?: IFormulaSource | null;
 }
 
 export interface IFormulaFile {

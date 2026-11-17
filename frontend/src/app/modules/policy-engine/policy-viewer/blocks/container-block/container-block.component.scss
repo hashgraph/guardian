@@ -42,27 +42,39 @@
 }
 
 :host ::ng-deep {
-    .mat-tab-header {
-        background-color: var(--color-grey-1) !important;
+    .p-tabs {
+        background: transparent;
     }
 
-    .mat-ink-bar {
-        background-color: var(--primary-color) !important;
+    .p-tablist-tab-list {
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid var(--guardian-border-color, #E1E7EF);
     }
 
-    .mat-tab-label {
+    .p-tab {
+        padding: 10px 16px;
+        border: none;
+        border-bottom: 2px solid transparent;
+        background: transparent;
         color: var(--color-grey-5);
-        text-align: center;
         font-family: Inter, sans-serif;
         font-size: 14px;
-        font-style: normal;
         font-weight: 600;
         line-height: 16px;
-        opacity: unset;
+
+        &:hover {
+            color: var(--guardian-font-color);
+        }
     }
 
-    .mat-tab-label-active {
-        color: var(--primary-color);
+    .p-tab-active {
+        border-bottom-color: var(--color-primary);
+        color: var(--color-primary);
+    }
+
+    .p-tablist-active-bar {
+        display: none;
     }
 }
 

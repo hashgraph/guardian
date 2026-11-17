@@ -14,7 +14,8 @@ export type IRequestDraftDocument = Record<string, unknown>;
 
 export interface IDraftImportResult {
     document: IRequestDraftDocument;
-    warnings: string[];
+    replacesData: boolean;
+    mismatch: boolean;
 }
 
 export interface IRequestVcDraftEnvelope {
@@ -86,12 +87,11 @@ export class RequestDraftFileService {
             this.toastService.error('The selected file does not contain draft data.', 'Import failed');
             return null;
         }
-        const warnings: string[] = [];
-        if (formHasData) {
-            warnings.push('The current form already contains data that will be replaced.');
-        }
-        warnings.push(...this.getDraftMismatches(parsed, context));
-        return { document, warnings };
+        return {
+            document,
+            replacesData: formHasData,
+            mismatch: this.hasDraftMismatch(parsed, context)
+        };
     }
 
     private readFileAsJson(file: File): Promise<IRequestVcDraftEnvelope> {
@@ -109,47 +109,53 @@ export class RequestDraftFileService {
         });
     }
 
-    private getDraftMismatches(parsed: IRequestVcDraftEnvelope, context: IDraftFileContext): string[] {
-        const mismatches: string[] = [];
+    private hasDraftMismatch(parsed: IRequestVcDraftEnvelope, context: IDraftFileContext): boolean {
         if (parsed?.type && parsed.type !== RequestDraftFileService.DRAFT_TYPE) {
-            mismatches.push('This file is not a request document draft.');
+            return true;
         }
         if (parsed?.schema && context.schema?.iri && parsed.schema !== context.schema.iri) {
-            mismatches.push('The draft was created for a different schema.');
+            return true;
         }
         if (parsed?.policyId && context.policyId && parsed.policyId !== context.policyId) {
-            mismatches.push('The draft was created for a different policy.');
+            return true;
         }
         if (parsed?.blockId && context.blockId && parsed.blockId !== context.blockId) {
-            mismatches.push('The draft was created for a different form.');
+            return true;
         }
-        return mismatches;
+        return false;
     }
 
-    public confirmDraftImport(warnings: string[], onContinue: () => void): void {
-        if (!warnings.length) {
+    public confirmDraftImport(result: IDraftImportResult, onContinue: () => void): void {
+        let header: string;
+        let text: string;
+        let confirm: string;
+        if (result.mismatch) {
+            header = 'Draft may not match this form';
+            text = 'This draft was not created for this form. Proceeding may leave fields empty or incorrect and will replace any data already entered.';
+            confirm = 'Proceed anyway';
+        } else if (result.replacesData) {
+            header = 'Replace form data with draft?';
+            text = 'Loading this draft will replace everything currently entered in the form';
+            confirm = 'Replace';
+        } else {
             onContinue();
             return;
         }
-        const text =
-            'Please review before loading this draft:\n\n' +
-            warnings.map((m) => `• ${m}`).join('\n') +
-            '\n\nDo you want to continue?';
         const dialogOptionRef = this.dialogService.open(CustomConfirmDialogComponent, {
             showHeader: false,
             width: '640px',
             styleClass: 'guardian-dialog without-saving-dialog',
             data: {
-                header: 'Load draft from file?',
+                header,
                 text,
                 buttons: [
                     { name: 'Cancel', class: 'secondary' },
-                    { name: 'Continue', class: 'primary' }
+                    { name: confirm, class: 'primary' }
                 ]
             },
         });
-        dialogOptionRef?.onClose.subscribe((result: string) => {
-            if (result === 'Continue') {
+        dialogOptionRef?.onClose.subscribe((closedWith: string) => {
+            if (closedWith === confirm) {
                 onContinue();
             }
         });

@@ -1,5 +1,16 @@
 import { ApiResponse } from './helpers/api-response.js';
-import { BinaryMessageResponse, DatabaseServer, MessageAction, MessageError, MessageResponse, MessageServer, NewNotifier, PinoLogger, PolicyStatistic, PolicyStatisticImportExport, StatisticAssessmentMessage, StatisticMessage, Users } from '@guardian/common';
+import { buildRelationshipsSchemas, pickRelationshipsPolicy } from './helpers/relationships.js';
+import { BinaryMessageResponse, MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { NewNotifier } from '@guardian/common/notification/notifier';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { PolicyStatistic } from '@guardian/common/entity/policy-statistic';
+import { PolicyStatisticImportExport } from '@guardian/common/import-export/policy-statistic';
+import { Users } from '@guardian/common/helpers/users';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { StatisticAssessmentMessage } from '@guardian/hedera/message/statistic-assessment-message';
+import { StatisticMessage } from '@guardian/hedera/message/statistic-message';
 import {
     EntityStatus,
     GenerateUUIDv4,
@@ -176,13 +187,14 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Item does not exist.');
                 }
 
-                const schemas = await PolicyStatisticImportExport.getPolicySchemas(policy);
+                const schemas = buildRelationshipsSchemas(await PolicyStatisticImportExport.getPolicySchemas(policy));
+                const policySummary = pickRelationshipsPolicy(policy);
 
                 if (item.status === EntityStatus.PUBLISHED) {
                     const schema = await DatabaseServer.getSchema({ topicId: item.topicId });
-                    return new MessageResponse({ policy, schemas, schema });
+                    return new MessageResponse({ policy: policySummary, schemas, schema });
                 } else {
-                    return new MessageResponse({ policy, schemas });
+                    return new MessageResponse({ policy: policySummary, schemas });
                 }
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], userId);

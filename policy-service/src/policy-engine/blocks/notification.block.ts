@@ -21,7 +21,8 @@ import {
     ExternalEventType,
 } from '../interfaces/external-event.js';
 import { PolicyUtils } from '../helpers/utils.js';
-import { NotificationHelper, Users } from '@guardian/common';
+import { NotificationHelper } from '@guardian/common/notification/notification-helper';
+import { Users } from '@guardian/common/helpers/users';
 import {
     LocationType,
     NotificationAction,
@@ -29,6 +30,7 @@ import {
     UserOption,
 } from '@guardian/interfaces';
 import { PolicyUser } from '@policy-engine/policy-user.js';
+import { PreviewScope } from '../helpers/preview.js';
 
 /**
  * Notification block
@@ -213,7 +215,8 @@ export class NotificationBlock {
 
         const options = await ref.getOptions(event.user);
 
-        const notify = await this.getNotificationFunction(ref, event.user);
+        const send = await this.getNotificationFunction(ref, event.user);
+        const notify = PreviewScope.current() ? async () => undefined : send;
 
         switch (options.user) {
             case UserOption.ALL: {

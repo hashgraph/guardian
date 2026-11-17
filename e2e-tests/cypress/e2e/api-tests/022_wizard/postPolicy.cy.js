@@ -2,8 +2,9 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import { randomInt } from '../../../support/random';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('Create Policy by Wizard', { tags: ['wizard', 'firstPool', 'all', 'all-no-mgs'] }, () => {
+context('Create Policy by Wizard', { tags: ['wizard', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     // policyTag is unique in the DB, so a hardcoded one makes every run after the first fail with a
@@ -267,7 +268,7 @@ context('Create Policy by Wizard', { tags: ['wizard', 'firstPool', 'all', 'all-n
                 headers: {
                     authorization,
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.longOperation
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.SUCCESS);
             });

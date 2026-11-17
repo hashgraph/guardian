@@ -1,4 +1,5 @@
-import { DataBaseHelper, VpDocument } from '@guardian/common';
+import { DataBaseHelper } from '@guardian/common/helpers/db-helper';
+import { VpDocument } from '@guardian/common/entity/vp-document';
 import { CollectionRestore, IDiffAction } from '../../index.js';
 
 export class VpCollectionRestore extends CollectionRestore<VpDocument> {

@@ -1,8 +1,9 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('Delete role', { tags: ['permissions', 'firstPool', 'all', 'all-no-mgs'] }, () => {
+context('Delete role', { tags: ['permissions', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const roleName = 'TestRole';
 
@@ -19,7 +20,7 @@ context('Delete role', { tags: ['permissions', 'firstPool', 'all', 'all-no-mgs']
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
                 response.body.forEach(item => {
-                    if (item.name == roleName)
+                    if (item.name === roleName)
                         {roleId = item.id}
                 });
             });
@@ -34,7 +35,7 @@ context('Delete role', { tags: ['permissions', 'firstPool', 'all', 'all-no-mgs']
                 headers: {
                     authorization,
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
                 cy.request({
@@ -46,7 +47,7 @@ context('Delete role', { tags: ['permissions', 'firstPool', 'all', 'all-no-mgs']
                 }).then((response) => {
                     expect(response.status).eql(STATUS_CODE.OK);
                     response.body.forEach(item => {
-                        if (item.id == roleId)
+                        if (item.id === roleId)
                             {throw new Error('Role still exists')}
                     });
                 });

@@ -1,13 +1,19 @@
+# This file is linted and formatted using Docker Compose Linter (https://github.com/zavoloklom/docker-compose-linter):
+# npx dclint . --fix=true
+
+name: cypress
+
 services:
   cypress-api:
     build:
       context: .
       dockerfile: Dockerfile
-    image: cypress-runner
-    shm_size: "2gb"
-    env_file:
-      - .env
-      - ../guardian-service/configs/.env.guardian
+    volumes:
+      - ./cypress/reports:/e2e/cypress/reports
+      - ./cypress/test_results:/e2e/cypress/test_results
+      - ./cypress/screenshots:/e2e/cypress/screenshots
+      - ./cypress/videos:/e2e/cypress/videos
+      - ./cypress/downloads:/e2e/cypress/downloads
     environment:
       - CYPRESS_portApi=${CYPRESS_portApi:-3002}
       - CYPRESS_baseUrl=
@@ -21,14 +27,44 @@ services:
       # Left empty on purpose: entrypoint.sh falls back to HEDERA_NET from the Guardian env file
       # above, and to the `testnet` default in cypress.env.json when that is unset too.
       - CYPRESS_hederaNet=${CYPRESS_hederaNet:-}
+    env_file:
+      - .env
+      - ../guardian-service/configs/.env.guardian
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    shm_size: "2gb"
+
+  cypress-ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - ui
     volumes:
       - ./cypress/reports:/e2e/cypress/reports
       - ./cypress/test_results:/e2e/cypress/test_results
       - ./cypress/screenshots:/e2e/cypress/screenshots
       - ./cypress/videos:/e2e/cypress/videos
       - ./cypress/downloads:/e2e/cypress/downloads
+    environment:
+      - CYPRESS_portApi=${CYPRESS_portApi:-3002}
+      - CYPRESS_baseUrl=http://ui
+      - CYPRESS_apiServer=${CYPRESS_apiServer:-http://host.docker.internal:3002/}
+      - CYPRESS_ipfsApi=${CYPRESS_ipfsApi:-http://host.docker.internal:5001}
+      - CYPRESS_BROWSER=${CYPRESS_BROWSER:-chromium}
+      - CYPRESS_VERIFY_TIMEOUT=${CYPRESS_VERIFY_TIMEOUT:-300000}
+      - CYPRESS_grepTags=${CYPRESS_grepTags:-ui}
+      - CYPRESS_grepFilterSpecs=${CYPRESS_grepFilterSpecs:-true}
+      - CYPRESS_SPEC=${CYPRESS_SPEC:-cypress/e2e/ui-tests/specs/**/*.cy.js}
+      - CYPRESS_UI_WAIT_TIMEOUT=${CYPRESS_UI_WAIT_TIMEOUT:-180}
+      - CYPRESS_operatorId=${CYPRESS_operatorId:-}
+      - CYPRESS_operatorKey=${CYPRESS_operatorKey:-}
+    env_file:
+      - .env
+      - ../guardian-service/configs/.env.guardian
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    shm_size: "2gb"
 
   ui:
     image: gcr.io/hedera-registry/frontend-demo:${GUARDIAN_VERSION:-latest}
@@ -43,37 +79,4 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     expose:
-      - "80"
-
-  cypress-ui:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: cypress-runner
-    shm_size: "2gb"
-    depends_on:
-      - ui
-    env_file:
-      - .env
-      - ../guardian-service/configs/.env.guardian
-    environment:
-      - CYPRESS_portApi=${CYPRESS_portApi:-3002}
-      - CYPRESS_baseUrl=http://ui
-      - CYPRESS_apiServer=${CYPRESS_apiServer:-http://host.docker.internal:3002/}
-      - CYPRESS_ipfsApi=${CYPRESS_ipfsApi:-http://host.docker.internal:5001}
-      - CYPRESS_BROWSER=${CYPRESS_BROWSER:-chromium}
-      - CYPRESS_VERIFY_TIMEOUT=${CYPRESS_VERIFY_TIMEOUT:-300000}
-      - CYPRESS_grepTags=${CYPRESS_grepTags:-ui}
-      - CYPRESS_grepFilterSpecs=${CYPRESS_grepFilterSpecs:-true}
-      - CYPRESS_SPEC=${CYPRESS_SPEC:-cypress/e2e/ui-tests/specs/**/*.cy.js}
-      - CYPRESS_UI_WAIT_TIMEOUT=${CYPRESS_UI_WAIT_TIMEOUT:-180}
-      - CYPRESS_operatorId=${CYPRESS_operatorId:-}
-      - CYPRESS_operatorKey=${CYPRESS_operatorKey:-}
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    volumes:
-      - ./cypress/reports:/e2e/cypress/reports
-      - ./cypress/test_results:/e2e/cypress/test_results
-      - ./cypress/screenshots:/e2e/cypress/screenshots
-      - ./cypress/videos:/e2e/cypress/videos
-      - ./cypress/downloads:/e2e/cypress/downloads
+      - '80'

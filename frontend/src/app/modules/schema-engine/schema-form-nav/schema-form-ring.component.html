@@ -1,0 +1,30 @@
+@if (size === 'lg') {
+  <span class="sf-ring-lg">
+    <svg [attr.width]="shape.box" [attr.height]="shape.box" [attr.viewBox]="'0 0 ' + shape.box + ' ' + shape.box" aria-hidden="true">
+      <circle [attr.cx]="center" [attr.cy]="center" [attr.r]="shape.radius" fill="none" class="sf-ring-track" [attr.stroke-width]="shape.stroke" />
+      <circle
+        [attr.cx]="center" [attr.cy]="center" [attr.r]="shape.radius" fill="none" [attr.stroke-width]="shape.stroke" stroke-linecap="round"
+        [class.sf-ring-done]="state === 'done'" [class.sf-ring-bar]="state !== 'done'"
+        [attr.stroke-dasharray]="length" [attr.stroke-dashoffset]="offset" [attr.transform]="rotate"
+        />
+    </svg>
+    <span class="sf-ring-text"><ng-content></ng-content></span>
+  </span>
+} @else if (state === 'optional') {
+  <svg class="sf-ring" [attr.width]="shape.box" [attr.height]="shape.box" [attr.viewBox]="'0 0 ' + shape.box + ' ' + shape.box" [attr.aria-label]="label">
+    <path [attr.d]="shape.dash" class="sf-ring-dash" stroke-width="2" stroke-linecap="round" />
+  </svg>
+} @else if (state === 'done') {
+  <svg class="sf-ring sf-ring-done" [attr.width]="shape.box" [attr.height]="shape.box" [attr.viewBox]="'0 0 ' + shape.box + ' ' + shape.box" [attr.aria-label]="label">
+    <circle [attr.cx]="center" [attr.cy]="center" [attr.r]="center" class="sf-ring-fill" />
+    <path [attr.d]="shape.check" fill="none" class="sf-ring-check" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+  </svg>
+} @else {
+  <svg class="sf-ring" [attr.width]="shape.box" [attr.height]="shape.box" [attr.viewBox]="'0 0 ' + shape.box + ' ' + shape.box" [attr.aria-label]="label">
+    <circle [attr.cx]="center" [attr.cy]="center" [attr.r]="shape.radius" fill="none" class="sf-ring-track" [attr.stroke-width]="shape.stroke" />
+    <circle
+      [attr.cx]="center" [attr.cy]="center" [attr.r]="shape.radius" fill="none" class="sf-ring-bar" [attr.stroke-width]="shape.stroke" stroke-linecap="round"
+      [attr.stroke-dasharray]="length" [attr.stroke-dashoffset]="offset" [attr.transform]="rotate"
+      />
+  </svg>
+}

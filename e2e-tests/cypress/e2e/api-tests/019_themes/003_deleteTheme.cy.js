@@ -1,10 +1,10 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('Delete Policy Themes', { tags: ['themes', 'secondPool', 'all', 'all-no-mgs'] }, () => {
+context('Delete Policy Themes', { tags: ['themes', 'secondPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-    const themeName = 'ThemeAPI';
 
     let themeId;
 
@@ -16,7 +16,7 @@ context('Delete Policy Themes', { tags: ['themes', 'secondPool', 'all', 'all-no-
                 headers: {
                     authorization,
                 },
-                timeout: 60000,
+                timeout: TIMEOUTS.backend,
             }).then((response) => {
                 themeId = response.body.at(0).id;
             });
@@ -31,7 +31,7 @@ context('Delete Policy Themes', { tags: ['themes', 'secondPool', 'all', 'all-no-
                 headers: {
                     authorization,
                 },
-                timeout: 60000,
+                timeout: TIMEOUTS.backend,
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
             })

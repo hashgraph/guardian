@@ -21,8 +21,13 @@ export class CustomConfirmDialogComponent implements OnInit {
     public loading = true;
     public header: string;
     public text: string;
+    /** regular font weight for the text (it is medium by default) */
+    public regularText: boolean;
     public texts: string[];
     public details: string[];
+    /** items listed with a colored type icon: `icon` is the name of a file in assets/images/icons, `type` sets the colors */
+    public typedItems?: { name: string, type: string, icon: string }[];
+    public json: string = '';
     public buttons: {
         name: string,
         class: string,
@@ -42,8 +47,14 @@ export class CustomConfirmDialogComponent implements OnInit {
     ) {
         this.header = this.config.data.header;
         this.text = this.config.data.text;
+        this.regularText = !!this.config.data.regularText;
         this.texts = this.config.data.texts;
         this.details = this.config.data.details;
+        this.typedItems = this.config.data.typedItems;
+        const document = this.config.data.document;
+        if (document) {
+            this.json = typeof document === 'string' ? document : JSON.stringify(document, null, 4);
+        }
 
         this.buttons = this.config.data.buttons;
         this.options = this.config.data.options;

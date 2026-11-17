@@ -5,7 +5,13 @@ import { AnyBlockType, IPolicyDocument, IPolicyGetData } from '../policy-engine.
 import { PolicyUser } from '../policy-user.js';
 import { BlockActionError } from '../errors/index.js';
 import { LocationType, SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
-import { DatabaseServer, MessageAction, MessageServer, MessageType, Tag, TagMessage, VcHelper, } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { Tag } from '@guardian/common/entity/tag';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { MessageType } from '@guardian/hedera/message/message-type';
+import { TagMessage } from '@guardian/hedera/message/tag-message';
+import { VcHelper } from '@guardian/hedera/vc-helper';
 import { PopulatePath } from '@mikro-orm/mongodb';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
 import { PolicyUtils } from '../helpers/utils.js';

@@ -52,7 +52,10 @@ import Long from 'long';
 import { TransactionLogger } from './transaction-logger.js';
 import process from 'node:process';
 import { FireblocksHelper } from './fireblocks-helper.js';
-import { Environment, MockEntityType, MockService, MockType, MockHelper } from '@guardian/common';
+import { Environment } from '@guardian/common/helpers/environment';
+import { MockEntityType, MockType } from '@guardian/common/helpers/mock-types';
+import { MockService, MockHelper } from '@guardian/hedera/mock-service';
+import { HederaClientFactory } from '@guardian/hedera/client';
 
 export const MAX_FEE = Math.abs(+process.env.MAX_TRANSACTION_FEE) || 30;
 export const INITIAL_BALANCE = 30;
@@ -213,7 +216,7 @@ export class HederaSDKHelper {
         Environment.setNetwork(networkOptions.network);
         this.dryRun = dryRun || null;
         this.mockId = mockId || null;
-        this.client = Environment.createClient();
+        this.client = HederaClientFactory.createClient();
         this.network = this.client?.ledgerId?.toString();
         if (operatorId && operatorKey) {
             this.client.setOperator(operatorId, operatorKey);
@@ -1231,7 +1234,7 @@ export class HederaSDKHelper {
                     messageMap.set(messageId, items);
                 }
                 if (res.data.links?.next) {
-                    url = `${res.request.protocol}//${res.request.host}${res.data.links?.next}`;
+                    url = HederaSDKHelper.resolveNextPage(url, res.data.links.next);
                 } else {
                     goNext = false;
                 }
@@ -1673,7 +1676,7 @@ export class HederaSDKHelper {
      * @returns Client
      */
     public static client(operatorId?: string | AccountId, operatorKey?: string | PrivateKey) {
-        const client = Environment.createClient();
+        const client = HederaClientFactory.createClient();
         if (operatorId && operatorKey) {
             client.setOperator(operatorId, operatorKey);
         }
@@ -2012,8 +2015,10 @@ export class HederaSDKHelper {
                     }
                 }
             }
-            url = `${res.request.protocol}//${res.request.host}${res.data.links?.next}`;
             hasNext = !!res.data.links?.next;
+            if (hasNext) {
+                url = HederaSDKHelper.resolveNextPage(url, res.data.links.next);
+            }
         }
 
         return result;
@@ -2135,6 +2140,17 @@ export class HederaSDKHelper {
                 type: 'nfts',
             }
         );
+    }
+
+    /**
+     * Resolves the `links.next` of a mirror node page against the request that returned it,
+     * so the port of a mirror node that is not served on the default one is kept
+     * @param requestUrl Address of the request that returned the page
+     * @param next `links.next` of the page
+     * @returns Address of the next page
+     */
+    private static resolveNextPage(requestUrl: string, next: string): string {
+        return new URL(next, requestUrl).toString();
     }
 
     /**
@@ -2542,7 +2558,7 @@ export class HederaSDKHelper {
             result.lastTimestamp = item.consensus_timestamp;
         }
         if (response.data.links?.next) {
-            result.next = `${response.request.protocol}//${response.request.host}${response.data.links?.next}`;
+            result.next = HederaSDKHelper.resolveNextPage(url, response.data.links.next);
         }
         return result;
     }

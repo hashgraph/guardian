@@ -1,4 +1,7 @@
-import { IAuthUser, NotificationHelper, PinoLogger, RunFunctionAsync } from '@guardian/common';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { RunFunctionAsync } from '@guardian/common/helpers/run-function-async';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { NotificationHelper } from '@guardian/common/notification/notification-helper';
 import { Permissions, PolicyStatus, SchemaEntity, TaskAction, UserRole } from '@guardian/interfaces';
 import { ClientProxy } from '@nestjs/microservices';
 import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req } from '@nestjs/common';

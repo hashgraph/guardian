@@ -133,7 +133,7 @@
             outline: none;
             border: 1px solid var(--guardian-grey-color-2, #E1E7EF);
             font-family: Inter;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 400;
             color: var(--guardian-font-color, #000);
             padding: 8px 16px;
@@ -349,4 +349,31 @@
 .DRY-RUN-dropdown .guardian-status-select.p-select,
 .status-DRY_RUN.guardian-status-select.p-select {
     background: var(--guardian-dry-run-background) !important;
+}
+
+
+.guardian-dropdown-panel.formula-relationship-panel {
+    // the overlay min-width is the width of the trigger, which is the whole editor width
+    min-width: 360px !important;
+    width: max-content;
+    max-width: 80vw;
+
+    .p-select-list {
+        gap: 0;
+    }
+
+    mark {
+        padding: 0 1px;
+        border-radius: 2px;
+        color: inherit;
+        background: var(--guardian-warning-background, #FFF6E3);
+        box-shadow: inset 0 -1px 0 var(--color-accent-yellow-1, #DA9B22);
+    }
+
+    .p-select-option {
+        height: auto;
+        min-height: 40px;
+        padding: 6px 16px !important;
+        white-space: normal;
+    }
 }

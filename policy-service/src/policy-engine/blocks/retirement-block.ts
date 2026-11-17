@@ -1,9 +1,17 @@
+import { PolicyCredential } from '../helpers/policy-credential.js';
 import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
 import { BlockActionError } from '../errors/index.js';
 import { DocumentCategoryType, DocumentSignature, LocationType, SchemaEntity, SchemaHelper, TokenType, OrgRolePermission } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
-import { Token as TokenCollection, VcHelper, VcDocumentDefinition as VcDocument, MessageServer, VCMessage, MessageAction, VPMessage, HederaDidDocument } from '@guardian/common';
+import { Token as TokenCollection } from '@guardian/common/entity/token';
+import { VcHelper } from '@guardian/hedera/vc-helper';
+import { VcDocument } from '@guardian/hedera/vcjs/vc-document';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { VCMessage } from '@guardian/hedera/message/vc-message';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { VPMessage } from '@guardian/hedera/message/vp-message';
+import { HederaDidDocument } from '@guardian/hedera/vcjs/did/hedera-did-document';
 import { PolicyUtils } from '../helpers/utils.js';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
@@ -13,6 +21,7 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfac
 import { MintService } from '../mint/mint-service.js';
 import { RecordActionStep } from '../record-action-step.js';
 import { checkOrgTokenPermission } from '../helpers/org-utils.js';
+import { PreviewScope, keepPreviewDocumentOrigins, registerPreviewMessage } from '../helpers/preview.js';
 
 /**
  * Retirement block
@@ -95,7 +104,8 @@ export class RetirementBlock {
             ...(serialNumbers && { serialNumbers: serialNumbers.join(',') })
         }
         const uuid = await ref.components.generateUUID(actionStatusId);
-        const wipeVC = await vcHelper.createVerifiableCredential(
+        const wipeVC = await PolicyCredential.createVC(
+            vcHelper,
             vcSubject,
             didDocument,
             null,
@@ -112,7 +122,8 @@ export class RetirementBlock {
      */
     private async createVP(didDocument: HederaDidDocument, uuid: string, vcs: VcDocument[]) {
         const vcHelper = new VcHelper();
-        const vp = await vcHelper.createVerifiablePresentation(
+        const vp = await PolicyCredential.createVP(
+            vcHelper,
             vcs,
             didDocument,
             null,
@@ -239,22 +250,26 @@ export class RetirementBlock {
         ref.log(`Topic Id: ${topicId}`);
         const topic = await PolicyUtils.getPolicyTopic(ref, topicId, userId);
         const vcMessage = new VCMessage(MessageAction.CreateVC);
-        vcMessage.setDocument(wipeVC);
+        if (!actionStatus?.preview) {
+            vcMessage.setDocument(wipeVC);
+        }
         vcMessage.setRelationships(relationships);
         vcMessage.setTag(ref);
         vcMessage.setEntityType(ref);
         vcMessage.setOption(null, ref);
         vcMessage.setUser(null);
-        const vcMessageResult = await messageServer
-            .setTopicObject(topic)
-            .sendMessage(vcMessage, {
-                sendToIPFS: true,
-                memo: null,
-                userId,
-                interception: null,
-                dryRun: ref.dryRun,
-                mockId: ref.mockId
-            });
+        const vcMessageResult = actionStatus?.preview
+            ? registerPreviewMessage(actionStatus, vcMessage, topic?.topicId)
+            : await messageServer
+                .setTopicObject(topic)
+                .sendMessage(vcMessage, {
+                    sendToIPFS: true,
+                    memo: null,
+                    userId,
+                    interception: null,
+                    dryRun: ref.dryRun,
+                    mockId: ref.mockId
+                });
 
         const vcDocument = PolicyUtils.createVC(ref, user, wipeVC, actionStatus?.id);
         vcDocument.type = DocumentCategoryType.RETIREMENT;
@@ -269,23 +284,27 @@ export class RetirementBlock {
 
         relationships.push(vcMessageResult.getId());
         const vpMessage = new VPMessage(MessageAction.CreateVP);
-        vpMessage.setDocument(vp);
+        if (!actionStatus?.preview) {
+            vpMessage.setDocument(vp);
+        }
         vpMessage.setRelationships(relationships);
         vpMessage.setTag(ref);
         vpMessage.setEntityType(ref);
         vpMessage.setOption(null, ref);
         vpMessage.setUser(null);
 
-        const vpMessageResult = await messageServer
-            .setTopicObject(topic)
-            .sendMessage(vpMessage, {
-                sendToIPFS: true,
-                memo: null,
-                userId,
-                interception: null,
-                dryRun: ref.dryRun,
-                mockId: ref.mockId
-            });
+        const vpMessageResult = actionStatus?.preview
+            ? registerPreviewMessage(actionStatus, vpMessage, topic?.topicId)
+            : await messageServer
+                .setTopicObject(topic)
+                .sendMessage(vpMessage, {
+                    sendToIPFS: true,
+                    memo: null,
+                    userId,
+                    interception: null,
+                    dryRun: ref.dryRun,
+                    mockId: ref.mockId
+                });
 
         const vpDocument = PolicyUtils.createVP(ref, user, vp, actionStatus?.id);
         PolicyUtils.setDocumentTags(vpDocument, tags);
@@ -326,7 +345,9 @@ export class RetirementBlock {
         if (options.useTemplate) {
             if (docs[0].tokens) {
                 const tokenId = docs[0].tokens[options.template];
-                token = await ref.databaseServer.getToken(tokenId, ref.dryRun);
+                token = PreviewScope.current()
+                    ? await ref.databaseServer.findOne(TokenCollection, { tokenId })
+                    : await ref.databaseServer.getToken(tokenId, ref.dryRun);
             }
         } else {
             token = await ref.databaseServer.getToken(options.tokenId);
@@ -381,7 +402,7 @@ export class RetirementBlock {
             }
             const json = VcDocument.fromJsonTree(doc.document);
 
-            vcs.push(json);
+            vcs.push(keepPreviewDocumentOrigins(doc, json));
             if (doc.messageId) {
                 vsMessages.push(doc.messageId);
             }

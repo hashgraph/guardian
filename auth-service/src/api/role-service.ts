@@ -1,4 +1,9 @@
-import { DatabaseServer, MessageError, MessageResponse, NatsService, PinoLogger, Singleton, containsRegex } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { NatsService } from '@guardian/common/mq/nats-service';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { Singleton } from '@guardian/common/decorators/singleton';
+import { containsRegex } from '@guardian/common/helpers/utils';
 import { AuthEvents, GenerateUUIDv4, IGroup, IOwner, PermissionsArray } from '@guardian/interfaces';
 import { DynamicRole } from '../entity/dynamic-role.js';
 import { User } from '../entity/user.js';

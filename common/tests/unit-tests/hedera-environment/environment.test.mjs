@@ -1,5 +1,5 @@
 import { assert } from 'chai';
-import { Environment } from '../../../dist/hedera-modules/environment.js';
+import { Environment } from '../../../dist/helpers/environment.js';
 
 describe('common Environment.setNetwork', () => {
     it('configures testnet endpoints', () => {

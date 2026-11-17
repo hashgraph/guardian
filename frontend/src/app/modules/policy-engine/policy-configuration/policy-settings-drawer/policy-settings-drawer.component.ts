@@ -38,7 +38,7 @@ export class PolicySettingsDrawerComponent {
         { id: 'Navigation', label: 'Navigation', icon: 'pi pi-compass' },
         { id: 'Groups', label: 'Groups', icon: 'pi pi-sitemap' },
         { id: 'Topics', label: 'Topics', icon: 'pi pi-comments' },
-        { id: 'Tokens', label: 'Tokens', icon: 'pi pi-bitcoin' },
+        { id: 'Tokens', label: 'Tokens', icon: 'icon-hbar' },
     ];
 
     private readonly moduleSections: { id: string; label: string; icon: string }[] = [

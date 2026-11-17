@@ -148,7 +148,7 @@ The following libraries were removed as part of sandbox hardening. They are unne
 
 ### 5. Execution Modes
 
-Guardian supports two execution modes for Python custom logic blocks, controlled by the `PYTHON_SANDBOX_MODE` environment variable.
+Guardian supports two execution modes for Python custom logic blocks, and Python can be switched off entirely. This is controlled by the `PYTHON_SANDBOX_MODE` environment variable.
 
 #### Pyodide Mode (default)
 
@@ -160,6 +160,15 @@ The default mode runs Python code using Pyodide (CPython compiled to WebAssembly
 * **Limitation:** some C-extension packages (rasterio, rioxarray) are unavailable in WASM
 
 **Configuration:** No env var needed (default), or explicitly set `PYTHON_SANDBOX_MODE=pyodide`
+
+#### Disabled Mode
+
+If you do not run policies with Python calculations, set `PYTHON_SANDBOX_MODE=disabled` to save resources.
+
+* The Pyodide package warmup is skipped at policy-service startup, which avoids its RAM, CPU and network use
+* `PYTHON_SANDBOX_TIMEOUT_MS` is not required
+* Python Custom Logic blocks fail at execution with "Python custom logic is disabled on this instance", and policy validation reports a warning for them
+* JavaScript Custom Logic blocks are not affected
 
 #### Docker Mode (experimental)
 
@@ -256,7 +265,7 @@ All restrictions above are provided by Docker container isolation:
 
 | Environment Variable        | Template Value                   | Required                            | Description                                                                                                                                                                                                                       |
 | --------------------------- | -------------------------------- | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PYTHON_SANDBOX_MODE`       | `pyodide`                        | No (defaults to `pyodide` if unset) | Execution mode: `pyodide` or `docker`                                                                                                                                                                                             |
+| `PYTHON_SANDBOX_MODE`       | `pyodide`                        | No (defaults to `pyodide` if unset) | Execution mode: `pyodide`, `docker` or `disabled`                                                                                                                                                                                           |
 | `PYTHON_SANDBOX_TIMEOUT_MS` | `120000`                         | Yes                                 | Execution timeout in milliseconds (both modes). Provided by all `configs/.env.*.guardian.system` templates; the policy-service has no in-code fallback, so the variable must be present or block execution will fail immediately. |
 | `PYTHON_SANDBOX_IMAGE`      | `guardian/python-sandbox:latest` | No (Docker mode only)               | Docker sandbox image name                                                                                                                                                                                                         |
 | `PYTHON_SANDBOX_MEMORY`     | `512m`                           | No (Docker mode only)               | Container memory limit (passed to `docker run --memory` and `--memory-swap`). Accepts the same suffix forms as Docker (`b`, `k`, `m`, `g`).                                                                                       |

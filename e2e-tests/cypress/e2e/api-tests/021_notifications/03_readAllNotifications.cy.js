@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
-context('Read notifications', { tags: ['notifications', 'firstPool', 'all', 'all-no-mgs'] }, () => {
+context('Read notifications', { tags: ['notifications', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     it('Read all notifications', () => {

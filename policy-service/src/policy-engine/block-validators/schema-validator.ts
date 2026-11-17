@@ -2,7 +2,8 @@
  * Schema Validator
  */
 import { ISchema, SchemaCategory } from '@guardian/interfaces';
-import { DatabaseServer, Schema } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { Schema } from '@guardian/common/entity/schema';
 import { IBlockErrors } from './interfaces/block-errors.interface.js';
 
 /**

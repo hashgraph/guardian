@@ -1,6 +1,6 @@
 import {AfterDelete, BeforeCreate, BeforeUpdate, Entity, Property} from '@mikro-orm/core';
-import {RestoreEntity} from '../models/index.js';
-import {DataBaseHelper} from '../helpers/index.js';
+import { RestoreEntity } from '../models/restore-entity.js';
+import { DataBaseHelper } from '../helpers/db-helper.js';
 import {DeleteCache} from './delete-cache.js';
 import {GlobalDocumentType, GlobalEventsStreamStatus} from '@guardian/interfaces';
 

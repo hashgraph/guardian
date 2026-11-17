@@ -1,3 +1,4 @@
+import { PolicyCredential } from '../helpers/policy-credential.js';
 import { TokenAddon } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { AnyBlockType } from '../policy-engine.interface.js';
@@ -5,7 +6,8 @@ import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-abo
 import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyUser, UserCredentials } from '../policy-user.js';
 import { LocationType, Schema, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
-import { VcDocumentDefinition as VcDocument, VcHelper } from '@guardian/common';
+import { VcDocument } from '@guardian/hedera/vcjs/vc-document';
+import { VcHelper } from '@guardian/hedera/vc-helper';
 import { BlockActionError } from '../errors/index.js';
 
 /**
@@ -126,7 +128,8 @@ export class TokenOperationAddon {
         }
         const didDocument = await root.loadDidDocument(ref, userId);
         const uuid = await ref.components.generateUUID();
-        const vc = await vcHelper.createVerifiableCredential(
+        const vc = await PolicyCredential.createVC(
+            vcHelper,
             vcSubject,
             didDocument,
             null,

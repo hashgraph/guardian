@@ -1,10 +1,7 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import {
-    MessageResponse,
-    MessageError,
-    DatabaseServer,
-    IAuthUser,
-} from '@guardian/common';
+import { MessageResponse, MessageError } from '@guardian/common/models/message-response';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
 import {
     ConfigType,
     MessageAPI,

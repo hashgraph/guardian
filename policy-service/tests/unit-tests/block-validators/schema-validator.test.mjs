@@ -4,9 +4,11 @@ import esmock from 'esmock';
 const { SchemaValidator } = await esmock.strict(
     '../../../dist/policy-engine/block-validators/schema-validator.js',
     {
-        '@guardian/common': {
-            DatabaseServer: class { constructor() {} async getSchemaByIRI() { return null; } },
-            Schema: class {},
+        '@guardian/common/database-modules/database-server': {
+            DatabaseServer: class { constructor() {} async getSchemaByIRI() { return null; } }
+        },
+        '@guardian/common/entity/schema': {
+            Schema: class {}
         },
         '@guardian/interfaces': {
             SchemaCategory: { SYSTEM: 'SYSTEM' },

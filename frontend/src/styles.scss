@@ -7,6 +7,7 @@
 @import "codemirror/addon/hint/show-hint.css";
 @import "primeicons/primeicons.css";
 @import "mathlive/fonts.css";
+@import "mathlive/static.css";
 
 html,
 body {
@@ -594,6 +595,11 @@ svg-icon.svg-icon-16 {
     height: 16px;
     line-height: 16px;
     font-size: 16px;
+}
+
+svg-icon.svg-icon-16 svg {
+    width: 16px;
+    height: 16px;
 }
 
 svg-icon.svg-icon-32 {

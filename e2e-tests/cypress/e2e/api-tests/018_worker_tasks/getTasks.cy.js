@@ -1,8 +1,9 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('Worker tasks', { tags: ['worker', 'secondPool', 'all', 'all-no-mgs'] }, () => {
+context('Worker tasks', { tags: ['worker', 'secondPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     //TBD: check failed tasks, auto-retry, manual retry
@@ -14,7 +15,7 @@ context('Worker tasks', { tags: ['worker', 'secondPool', 'all', 'all-no-mgs'] },
                 headers: {
                     authorization,
                 },
-                timeout: 60000,
+                timeout: TIMEOUTS.backend,
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 expect(response.body.at(0)).to.have.property('createDate');

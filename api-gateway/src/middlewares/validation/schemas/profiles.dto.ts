@@ -44,6 +44,16 @@ export class UserDTO implements IUser {
     permissions: string[];
 
     @ApiProperty({
+        type: 'array',
+        items: { type: 'object' },
+        required: false,
+        description: 'Assignment records of the user, of every type (Policy, RemotePolicy, Schema, Token, Module).'
+    })
+    @IsOptional()
+    @IsArray()
+    assignedEntities?: any[];
+
+    @ApiProperty({
         type: 'string',
         required: false,
         example: Examples.DID

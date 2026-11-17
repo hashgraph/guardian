@@ -30,7 +30,7 @@ const SEEDED_ARTEFACTS = [
     { envKey: 'tool_for_compare2', fixture: 'AR-Tool-14-v5.0.7.tool', publish: IpfsSeeding.publishToolFixture },
 ];
 
-context('Seed the Hedera artefacts the suite imports from', { tags: ['preparing', 'smoke', 'all', 'all-no-mgs', 'ui'] }, () => {
+context('Seed the Hedera artefacts the suite imports from', { tags: ['preparing', 'smoke', 'api-all', 'all', 'all-no-mgs', 'ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
 

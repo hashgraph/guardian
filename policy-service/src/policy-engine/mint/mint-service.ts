@@ -1,6 +1,21 @@
 import { AnyBlockType } from '../policy-engine.interface.js';
 import { ContractParamType, ExternalMessageEvents, GenerateUUIDv4, IRootConfig, ISignOptions, NotificationAction, TokenType, WorkerTaskType, } from '@guardian/interfaces';
-import { DatabaseServer, ExternalEventChannel, KeyType, MessageAction, MessageServer, MintRequest, MultiPolicy, MultiPolicyTransaction, NotificationHelper, PinoLogger, SynchronizationMessage, Token, TopicConfig, Users, VcDocumentDefinition as VcDocument, Wallet, Workers } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { ExternalEventChannel } from '@guardian/common/mq/external-channel';
+import { KeyType, Wallet } from '@guardian/common/helpers/wallet';
+import { MintRequest } from '@guardian/common/entity/mint-request';
+import { MultiPolicy } from '@guardian/common/entity/multi-policy';
+import { MultiPolicyTransaction } from '@guardian/common/entity/multi-policy-transaction';
+import { NotificationHelper } from '@guardian/common/notification/notification-helper';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { Token } from '@guardian/common/entity/token';
+import { Users } from '@guardian/common/helpers/users';
+import { Workers } from '@guardian/common/helpers/workers';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { SynchronizationMessage } from '@guardian/hedera/message/synchronization-message';
+import { TopicConfig } from '@guardian/hedera/topic';
+import { VcDocument } from '@guardian/hedera/vcjs/vc-document';
 import { AccountId, PrivateKey, TokenId } from '@hiero-ledger/sdk';
 import { PolicyUtils } from '../helpers/utils.js';
 import { IHederaCredentials, PolicyUser } from '../policy-user.js';
@@ -8,6 +23,7 @@ import { TokenConfig } from './configs/token-config.js';
 import { MintNFT } from './types/mint-nft.js';
 import { MintFT } from './types/mint-ft.js';
 import { FilterObject } from '@mikro-orm/core';
+import { PreviewScope } from '../helpers/preview.js';
 
 /**
  * Mint Service
@@ -121,6 +137,28 @@ export class MintService {
         } = options;
 
         const multipleConfig = await MintService.getMultipleConfig(ref, documentOwner);
+        if (PreviewScope.current()) {
+            if (!multipleConfig) {
+                const tokenConfig = await MintService.getTokenConfig(ref, token, userId);
+                const isTransferNeeded = targetAccount !== tokenConfig.treasuryId;
+                await ref.databaseServer.saveMintRequest({
+                    target: targetAccount,
+                    amount: tokenValue,
+                    vpMessageId,
+                    tokenId: token.tokenId,
+                    tokenType: token.tokenType,
+                    decimals: token.decimals,
+                    memo: transactionMemo,
+                    policyId: ref.policyId,
+                    owner: documentOwner.did,
+                    relayerAccount,
+                    ...(token.tokenType === 'non-fungible' ? { metadata: vpMessageId } : {}),
+                    isTransferNeeded,
+                    wasTransferNeeded: isTransferNeeded
+                });
+            }
+            return;
+        }
         const users = new Users();
         const documentOwnerUser = await users.getUserById(documentOwner.did, userId);
         const policyOwner = await users.getUserById(ref.policyOwner, userId);
@@ -703,6 +741,9 @@ export class MintService {
         serialNumbers?: number[]
     }): Promise<void> {
         const { ref, token, tokenValue, root, targetAccount, uuid, userId, serialNumbers } = options;
+        if (PreviewScope.current()) {
+            return;
+        }
         const workers = new Workers();
         if (token.wipeContractId) {
             await workers.addNonRetryableTask(

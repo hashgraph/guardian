@@ -1,4 +1,5 @@
-import { DatabaseServer, PolicyTool } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { PolicyTool } from '@guardian/common/entity/tool';
 import { BlockValidator } from './block-validator.js';
 import { IModulesErrors } from './interfaces/modules-errors.interface.js';
 import { ISchema, ModuleStatus } from '@guardian/interfaces';

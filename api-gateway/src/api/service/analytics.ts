@@ -32,7 +32,8 @@ import {
     ObjectExamples
 } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
-import { IAuthUser, PinoLogger } from '@guardian/common';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
 import { Guardians, ONLY_SR, InternalException } from '#helpers';
 
 function getPolicyId(filters: FilterPoliciesDTO): {

@@ -12,81 +12,115 @@
     </div>
   }
 
-  <div class="header-container">
-    <div class="schema-breadcrumb">
-      <a class="breadcrumb-back" (click)="onBack()">Schema Rules</a>
-      <span class="breadcrumb-sep"> / </span>
-      <span class="breadcrumb-current">{{item?.name}}</span>
-    </div>
-
-    <div class="guardian-user-page-header">
-      <span>{{item?.name}}</span>
-      @if (policy) {
-        <div class="policy-name">
-          <span>Policy Name: {{policy.name}}</span>
-          @if (policy.version) {
-            <span class="policy-version">Version: {{policy.version}}</span>
-          }
-        </div>
-      }
-    </div>
-  </div>
-  <div class="step-container">
-    <div class="guardian-step-container">
-      <div class="guardian-stepper horizontal-stepper">
-        <div class="guardian-step" [attr.action]="stepper[0]" (click)="onStep(0)">
-          <div class="guardian-step-icon">
-            <svg-icon
-              class="icon-btn svg-icon-16"
-              src="/assets/images/icons/16/file-fill.svg">
-            </svg-icon>
-          </div>
-          <div class="guardian-step-name">Overview</div>
-        </div>
-        <div class="guardian-step-separator"></div>
-        <div class="guardian-step" [attr.action]="stepper[1]" (click)="onStep(1)">
-          <div class="guardian-step-icon">
-            <svg-icon
-              class="icon-btn svg-icon-16"
-              src="/assets/images/icons/16/tree.svg">
-            </svg-icon>
-          </div>
-          <div class="guardian-step-name">Select Schemas</div>
-        </div>
-        <div class="guardian-step-separator"></div>
-        <div class="guardian-step" [attr.action]="stepper[2]" (click)="onStep(2)">
-          <div class="guardian-step-icon">
-            <svg-icon
-              class="icon-btn svg-icon-16"
-              src="/assets/images/icons/16/table.svg">
-            </svg-icon>
-          </div>
-          <div class="guardian-step-name">Configure Rules</div>
-        </div>
+  <div class="top-toolbar">
+    <nav class="pc-breadcrumb">
+      <div (click)="onBack()" class="pc-back-crumb" title="Back to schema rules">
+        <i class="pi pi-arrow-left"></i>
       </div>
+      <a (click)="onBack()" class="pc-crumb-link">Schema Rules</a>
+      <i class="pi pi-chevron-right pc-breadcrumb-sep"></i>
+    </nav>
+    <div (click)="identityMenu.toggle($event)" class="policy-identity">
+      <span class="type-icon">
+        <svg-icon src="/assets/images/icons/circle-check.svg"></svg-icon>
+      </span>
+      <div class="policy-identity-text">
+        <span class="policy-identity-name"
+          [title]="item?.name || 'Untitled rule'">{{ item?.name || 'Untitled rule' }}</span>
+        <span class="policy-identity-meta">Policy: {{ policy?.name }} · Rule details</span>
+      </div>
+      <i class="pi pi-chevron-down policy-identity-caret"></i>
     </div>
-  </div>
-  <div class="body-container">
-    @if (stepper[0]) {
-      <div class="overview-viewer">
-        <form [formGroup]="overviewForm">
-          <div class="guardian-input-container">
-            <label class="form-label" htmlFor="version">* Name</label>
-            <input formControlName="name" id="name" pInputText type="text" [readonly]="readonly"/>
-          </div>
-          <div class="guardian-input-container">
-            <label class="form-label" htmlFor="version">Description</label>
-            <input formControlName="description" id="description" pInputText type="text" [readonly]="readonly"/>
-          </div>
-          <div class="guardian-input-container">
-            <label class="form-label" htmlFor="version">* Policy</label>
-            <input formControlName="policy" id="policy" pInputText type="text" readonly/>
-          </div>
-        </form>
+    @if (item?.status === EntityStatus.ACTIVE) {
+      <div (click)="user.SCHEMAS_RULE_CREATE && statusMenu.toggle($event)" [class.status-badge--static]="!user.SCHEMAS_RULE_CREATE" class="status-badge status-badge--active" title="Active">
+        <i class="pi pi-check-circle"></i>
+        <span>Active</span>
+        @if (user.SCHEMAS_RULE_CREATE) {
+          <i class="pi pi-sort-down-fill status-badge-caret"></i>
+        }
+      </div>
+    } @else if (item) {
+      <div (click)="user.SCHEMAS_RULE_CREATE && statusMenu.toggle($event)" [class.status-badge--static]="!user.SCHEMAS_RULE_CREATE" class="status-badge status-badge--draft" title="Draft">
+        <i class="pi pi-pencil"></i>
+        <span>Draft</span>
+        @if (user.SCHEMAS_RULE_CREATE) {
+          <i class="pi pi-sort-down-fill status-badge-caret"></i>
+        }
       </div>
     }
+    <div class="toolbar-spacer"></div>
+    @if (!readonly && dirty) {
+      <div class="unsaved-marker">
+        <span class="unsaved-dot"></span>
+        <span>Unsaved changes</span>
+      </div>
+    }
+    <div class="view-segment">
+      <div class="view-segment-item" [class.active]="view === 'schemas'" (click)="onView('schemas')">
+        <svg-icon src="/assets/images/icons/16/tree.svg"></svg-icon>
+        <span>Schemas</span>
+      </div>
+      <div class="view-segment-item" [class.active]="view === 'rules'" (click)="onView('rules')">
+        <svg-icon src="/assets/images/icons/16/table.svg"></svg-icon>
+        <span>Rules</span>
+        <span class="seg-count">{{ rulesCount }}</span>
+      </div>
+    </div>
+    <div (click)="onToggleTest()" class="top-toolbar-btn bordered-btn" [class.toggled]="testOpen" title="Test rules with sample values">
+      <i class="pi pi-play-circle"></i>
+      <span>Test</span>
+    </div>
+    @if (!readonly) {
+      <div (click)="onSave()" class="top-toolbar-btn top-toolbar-btn--primary" title="Save">
+        <i class="pi pi-save"></i>
+        <span>Save</span>
+      </div>
+    }
+  </div>
 
-    @if (stepper[1]) {
+  <p-popover #statusMenu>
+    @if (item?.status === EntityStatus.ACTIVE) {
+      <div (click)="onChangeStatus(false); statusMenu.hide()" class="toolbar-menu edit-color"
+        title="Return to editing.">
+        <i class="pi pi-pencil edit-color"></i>
+        <span class="edit-color">Deactivate</span>
+      </div>
+    } @else {
+      <div (click)="onChangeStatus(true); statusMenu.hide()" class="toolbar-menu publish-color"
+        title="Activate the rule.">
+        <i class="pi pi-check-circle publish-color"></i>
+        <span class="publish-color">Activate</span>
+      </div>
+    }
+  </p-popover>
+
+  <p-popover #identityMenu>
+    <div class="identity-popover">
+      <div class="identity-popover-header">Rule details</div>
+      <form [formGroup]="overviewForm">
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="name">* Name</label>
+          <input formControlName="name" id="name" pInputText type="text" [readonly]="readonly"/>
+        </div>
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="description">Description</label>
+          <input formControlName="description" id="description" pInputText type="text" [readonly]="readonly"/>
+        </div>
+        <div class="guardian-input-container">
+          <label class="form-label" htmlFor="policy">* Policy</label>
+          <div class="policy-field">
+            <input formControlName="policy" id="policy" pInputText type="text" readonly/>
+            @if (showPolicyVersion) {
+              <span class="policy-version">v{{ policy.version }}</span>
+            }
+          </div>
+        </div>
+      </form>
+    </div>
+  </p-popover>
+
+  <div class="body-container">
+    @if (view === 'schemas') {
       <div class="schema-viewer">
         <div class="tree-container">
           <app-tree-graph
@@ -105,21 +139,23 @@
                 <div class="node-header">
                   {{node.data.name}}
                 </div>
-                @if (node.fields.selectedCount>0) {
+                @let isRoot = node.type === 'root';
+                @let nodeCount = isRoot ? node.fields.selectedAllCount : node.fields.selectedCount;
+                @if (nodeCount>0) {
                   <div class="node-fields">
-                    @for (item of node.fields.selectedFields; track item) {
-                      <div class="node-field">
+                    @for (item of (isRoot ? node.fields.selectedAllFields : node.fields.selectedFields); track item) {
+                      <div class="node-field" [attr.nested]="item.lvl > 0" [attr.title]="item.lvl > 0 ? item.parent?.data?.description : null">
                         {{item.data.description}}
                       </div>
                     }
-                    @if (node.fields.selectedCount>4) {
+                    @if (nodeCount>4) {
                       <div class="node-not-fields">
-                        + {{node.fields.selectedCount-4}} more
+                        + {{nodeCount-4}} more
                       </div>
                     }
                   </div>
                 }
-                @if (!node.fields.selectedCount) {
+                @if (!nodeCount) {
                   <div class="node-fields">
                     <div class="node-not-fields">
                       Nothing selected
@@ -350,7 +386,8 @@
       </div>
     }
 
-    @if (stepper[2]) {
+    @if (view === 'rules') {
+      <div class="rules-view">
       <div class="config-viewer">
         <div class="variables-container">
           <div class="variables-header">
@@ -360,28 +397,33 @@
             <div class="variables-grid">
               <div class="variables-grid-header">
                 <div class="variables-grid-cell cell-84">ID</div>
-                <div class="variables-grid-cell cell-200">PATH</div>
+                <div class="variables-grid-cell cell-260">PATH</div>
                 <div class="variables-grid-cell cell-200">PROPERTY</div>
                 <div class="variables-grid-cell cell-max">FIELD</div>
-                <div class="variables-grid-cell cell-200">TYPE</div>
+                <div class="variables-grid-cell cell-140">TYPE</div>
                 <div class="variables-grid-cell cell-150">RULES</div>
                 <div class="variables-grid-cell cell-125"></div>
               </div>
               <div class="variables-grid-body">
                 @for (variable of variables.variables; track variable) {
-                  <div class="variables-grid-row">
-                    <div class="variables-grid-cell cell-84">
+                  <div class="variables-grid-row" [class.hl]="hoverKey === key(variable)"
+                    (mouseenter)="hoverKey = key(variable)" (mouseleave)="hoverKey = null">
+                    <div class="variables-grid-cell cell-84" [class.cell-editable]="!readonly">
                       <input
                         class="guardian-input guardian-input-cell"
                         [(ngModel)]="variable.id"
+                        (ngModelChange)="onTestIdChange()"
                         id="formula.id"
                         pInputText
                         type="text"
                         [readonly]="readonly"/>
+                      @if (!readonly) {
+                        <i class="pi pi-pencil cell-edit-icon"></i>
+                      }
                       <div class="cell-focus"></div>
                     </div>
-                    <div class="variables-grid-cell cell-200">
-                      {{variable.schemaName}} / {{variable.schemaPath}}
+                    <div class="variables-grid-cell cell-260">
+                      {{variable.schemaName}} › {{formatPath(variable.schemaPath)}}
                     </div>
                     <div class="variables-grid-cell cell-200">
                       {{variable.fieldPropertyName}}
@@ -389,7 +431,7 @@
                     <div class="variables-grid-cell cell-max">
                       {{variable.fieldDescription}}
                     </div>
-                    <div class="variables-grid-cell cell-200">
+                    <div class="variables-grid-cell cell-140">
                       <span style="text-transform: capitalize">
                         {{variable.displayType}}
                       </span>
@@ -411,15 +453,17 @@
                           svgClass="icon-color-primary">
                         </svg-icon>
                       </button>
-                      <button
-                        class="guardian-icon-button big"
-                        (click)="onDeleteVariable(variable)">
-                        <svg-icon
-                          class="icon-btn svg-icon"
-                          src="/assets/images/icons/delete.svg"
-                          svgClass="icon-color-delete">
-                        </svg-icon>
-                      </button>
+                      @if (!readonly) {
+                        <button
+                          class="guardian-icon-button big"
+                          (click)="onDeleteVariable(variable)">
+                          <svg-icon
+                            class="icon-btn svg-icon"
+                            src="/assets/images/icons/delete.svg"
+                            svgClass="icon-color-delete">
+                          </svg-icon>
+                        </button>
+                      }
                     </div>
                   </div>
                 }
@@ -440,15 +484,84 @@
           }
         </div>
       </div>
+      @if (testOpen) {
+        <aside class="test-panel">
+          <div class="tp-head">
+            <i class="pi pi-play-circle tp-head-icon"></i>
+            <span class="tp-title">Test rules</span>
+            <span class="tp-close" (click)="onToggleTest()" title="Close"><i class="pi pi-times"></i></span>
+          </div>
+          <div class="tp-sub">Enter sample values – results update as you type and after every rule edit. Values are not saved.</div>
+          @if (testResults.size) {
+            @let summary = testSummary;
+            <div class="tp-summary">
+              @if (summary.pass) {
+                <span class="pill ok"><i class="pi pi-check"></i>{{ summary.pass }} pass</span>
+              }
+              @if (summary.fail) {
+                <span class="pill fail"><i class="pi pi-exclamation-triangle"></i>{{ summary.fail }} fails</span>
+              }
+              @if (summary.error) {
+                <span class="pill err"><i class="pi pi-times"></i>{{ summary.error }} can't evaluate</span>
+              }
+              @if (summary.none) {
+                <span class="pill none">{{ summary.none }} no rule</span>
+              }
+            </div>
+          }
+          <div class="tp-list">
+            @for (variable of variables.variables; track variable) {
+              @let result = testResults.get(key(variable));
+              @let testEnum = getTestEnum(variable);
+              <div class="tp-row" [class.hl]="hoverKey === key(variable)"
+                (mouseenter)="hoverKey = key(variable)" (mouseleave)="hoverKey = null"
+                (focusin)="hoverKey = key(variable)" (focusout)="hoverKey = null">
+                <div class="tp-label">
+                  <span class="tp-id">{{ variable.id }}</span>
+                  <span class="tp-name" [title]="variable.fieldDescription">{{ variable.fieldDescription }}</span>
+                  @if (result === FieldRuleResult.Success) {
+                    <span class="pill ok"><i class="pi pi-check"></i>Passes</span>
+                  } @else if (result === FieldRuleResult.Failure) {
+                    <span class="pill fail"><i class="pi pi-exclamation-triangle"></i>Fails</span>
+                  } @else if (result === FieldRuleResult.Error) {
+                    <span class="pill err"><i class="pi pi-times"></i>Can't evaluate</span>
+                  } @else if (result === FieldRuleResult.None) {
+                    <span class="pill none">No rule</span>
+                  }
+                </div>
+                <div class="tp-input" [attr.result]="result">
+                  @if (testEnum) {
+                    <p-select
+                      [ngModel]="testValues.get(key(variable)) || ''"
+                      (ngModelChange)="onTestValue(variable, $event)"
+                      [options]="getTestOptions(variable)"
+                      [showClear]="false"
+                      class="guardian-dropdown"
+                      appendTo="body"
+                      placeholder="Value"
+                      panelStyleClass="guardian-dropdown-panel"
+                      optionLabel="label"
+                      optionValue="value">
+                    </p-select>
+                  } @else {
+                    <input
+                      pInputText
+                      type="text"
+                      placeholder="Value"
+                      [ngModel]="testValues.get(key(variable)) || ''"
+                      (ngModelChange)="onTestValue(variable, $event)"/>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+          <div class="tp-foot">
+            <span class="tp-legend"><b>Fails</b> – the rule returned false. <b>Can't evaluate</b> – a value it needs is missing or invalid.</span>
+            <button type="button" class="link-btn" (click)="onClearTest()">Clear values</button>
+          </div>
+        </aside>
+      }
+      </div>
     }
   </div>
-
-  @if (!readonly) {
-    <div class="actions-container">
-      @if (stepper[2]) {
-        <button (click)="onPreview()" class="guardian-button guardian-button-secondary">Preview</button>
-      }
-      <button (click)="onSave()" class="guardian-button guardian-button-primary">Apply Changes</button>
-    </div>
-  }
 </div>

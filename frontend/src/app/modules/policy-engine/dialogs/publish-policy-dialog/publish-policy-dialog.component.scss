@@ -38,6 +38,18 @@
     margin-bottom: 24px;
 }
 
+.version-input-container {
+    height: auto;
+}
+
+.version-error {
+    margin-top: 6px;
+    font-family: Inter;
+    font-size: 12px;
+    line-height: 14px;
+    color: var(--guardian-failure-color);
+}
+
 .form-input-container {
     display: flex;
     flex-direction: column;

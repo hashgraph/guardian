@@ -177,7 +177,6 @@ export class HeaderComponent implements OnInit {
 
     logOut() {
         this.auth.removeAccessToken();
-        this.auth.removeUsername();
         this.authState.updateState(false);
         this.router.navigate(['/login']);
     }

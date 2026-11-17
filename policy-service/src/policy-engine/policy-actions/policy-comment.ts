@@ -1,5 +1,7 @@
 import { PolicyActionType } from './policy-action.type.js';
-import { DatabaseServer, PolicyAction, PolicyComment } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { PolicyAction } from '@guardian/common/entity/policy-action';
+import { PolicyComment } from '@guardian/common/entity/policy-comment';
 
 export class PolicyCommentAction {
     public static async request(options: {

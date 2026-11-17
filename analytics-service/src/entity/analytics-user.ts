@@ -1,5 +1,5 @@
 import { Entity, Property, Index } from '@mikro-orm/core';
-import { BaseEntity } from '@guardian/common';
+import { BaseEntity } from '@guardian/common/models/base-entity';
 import { UserType } from '../interfaces/user.type.js';
 
 /**

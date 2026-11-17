@@ -1,5 +1,7 @@
 import JSZip from 'jszip';
-import { Policy, PolicyStatistic, Schema as SchemaCollection } from '../entity/index.js';
+import { Policy } from '../entity/policy.js';
+import { PolicyStatistic } from '../entity/policy-statistic.js';
+import { Schema as SchemaCollection } from '../entity/schema.js';
 import {
     EntityStatus,
     IFormulaData,
@@ -14,7 +16,7 @@ import {
 } from '@guardian/interfaces';
 import { SchemaRuleImportExport } from './schema-rule.js';
 import { PolicyImportExport } from './policy.js';
-import { DatabaseServer } from '../database-modules/index.js';
+import { DatabaseServer } from '../database-modules/database-server.js';
 import { ImportExportUtils } from './utils.js';
 
 /**

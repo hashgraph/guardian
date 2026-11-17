@@ -91,7 +91,8 @@ function loadController(dist) {
             ForbiddenErrorDTO: class {}, TagDTO: class {}, TagFilterDTO: class {},
             TagMapDTO: class {}, ThemeDTO: class {},
         },
-        '@guardian/common': commonMock,
+        '@guardian/common/helpers/pino-logger': commonMock,
+        '@guardian/common/helpers/run-function-async': commonMock,
     });
 }
 
@@ -650,7 +651,8 @@ describe('TagsApi', function () {
                 TagMapDTO: class {}, TaskDTO: class {}, UnprocessableEntityErrorDTO: class {},
                 pageHeader: {}, Response451_DTO: class {},
             },
-            '@guardian/common': commonMock,
+            '@guardian/common/helpers/pino-logger': commonMock,
+            '@guardian/common/helpers/run-function-async': commonMock,
         });
         const api = makeApi(LocalTagsApi);
         await assert.rejects(

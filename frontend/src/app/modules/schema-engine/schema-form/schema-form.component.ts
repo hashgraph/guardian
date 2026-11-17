@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { ChangeDetectorRef, Component, DoCheck, EventEmitter, Input, OnInit, Output, QueryList, SimpleChanges, ViewChildren } from '@angular/core';
 import { UntypedFormArray } from '@angular/forms';
 import {
     isGeoCustomType,
@@ -8,20 +8,30 @@ import {
     UnitSystem
 } from '@guardian/interfaces';
 import { DialogService } from 'primeng/dynamicdialog';
-import { Subject, Subscription, firstValueFrom, takeUntil } from 'rxjs';
+import { Subject, Subscription, firstValueFrom, merge, takeUntil } from 'rxjs';
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from '../../../services/api';
+import { FormFormulas } from 'src/app/modules/formulas/models/form-formulas';
+import { FormulaItem } from 'src/app/modules/formulas/models/formula-tree';
 import { FieldForm, IFieldControl, IFieldIndexControl } from '../schema-form-model/field-form';
+import { getErrorMessage, showError } from './schema-form-errors';
+import { countRequired, requiredWithoutControl } from './schema-form-completion';
+import { baseMetaTags, metaType } from './schema-form-metadata';
+import { recordSummary } from './schema-form-records';
+import { geoRecordSummary } from '../geo-file/geo-value-summary';
 import { getMinutesAgoStream } from 'src/app/utils/autosave-utils';
 import { withNewTabLinks } from '../rich-text-editor/rich-text-sanitizer';
-import { markdownToHtml } from '../rich-text-editor/markdown';
+import { markdownToHtml, markdownToPlainText } from '../rich-text-editor/markdown';
 import {
     GeoOption,
     GeoResolverField,
     GeoType,
     resolveGeoDependencies
 } from './geo-dependency-resolver';
+
+const EMPTY_FORMULAS: FormulaItem[] = [];
+const PREVIEW_RENDER_CHUNK = 10;
 
 enum PlaceholderByFieldType {
     Email = "example@email.com",
@@ -37,30 +47,6 @@ enum PlaceholderByFieldType {
 enum PresetPrefixByFieldType {
     URL = "https://"
 }
-
-enum ErrorFieldMessageByFieldType {
-    Email = "Please make sure the field contain a valid email address",
-    Number = "Please make sure the field contain a valid number value",
-    Duration = "Please make sure the field contain a valid duration value",
-    Integer = "Please make sure the field contain a valid integer value",
-    URL = "Please make sure the field contain a valid URL value",
-    URI = "Please make sure the field contain a valid URI value",
-    DateTime = "Please make sure the field contain a valid datetime value",
-    Date = "Please make sure the field contain a valid date value",
-    Other = "Please make sure the field contain a valid value"
-};
-
-enum ErrorArrayMessageByFieldType {
-    Email = "Please make sure all fields contain a valid email address",
-    Number = "Please make sure all fields contain a valid number value",
-    Duration = "Please make sure all fields contain a valid duration value",
-    Integer = "Please make sure all fields contain a valid integer value",
-    URL = "Please make sure all fields contain a valid URL value",
-    URI = "Please make sure all fields contain a valid URI value",
-    DateTime = "Please make sure all fields contain a valid datetime value",
-    Date = "Please make sure all fields contain a valid date value",
-    Other = "Please make sure all fields contain a valid value"
-};
 
 class IButton {
     id: string;
@@ -83,8 +69,13 @@ const FILE_EXTENSIONS = '.txt, .pdf, .doc, .docx, .xls, .csv, .kml, .geoJSON';
     styleUrls: ['./schema-form.component.scss'],
     standalone: false
 })
-export class SchemaFormComponent implements OnInit {
+export class SchemaFormComponent implements OnInit, DoCheck {
+    // The PrimeNG auto-resize reads scrollHeight on every change detection, which forces a layout
+    // for each textarea. Browsers with `field-sizing` grow the textarea in CSS instead.
+    public readonly scriptAutoResize = !CSS.supports('field-sizing', 'content');
     @Input('form-model') formModel!: FieldForm;
+    /** Renders only these controls of `formModel` (a section); `null` renders all of them. */
+    @Input() renderControls: IFieldControl<any>[] | null = null;
     @Input('private-fields') hide!: { [x: string]: boolean };
     @Input('readonly-fields') readonly?: any;
     @Input('delimiter-hide') delimiterHide: boolean = false;
@@ -102,11 +93,16 @@ export class SchemaFormComponent implements OnInit {
     @Input() policyId?: string = '';
     @Input() blockId: string = '';
     @Input() rules?: SchemaRuleValidateResult;
-    @Input() paginationHidden: boolean = true;
     @Input() isFormForFinishSetup: boolean = false;
     @Input() isFormForRequestBlock: boolean = false;
     @Input() lastSavedAt?: Date;
     @Input() isEditMode: boolean = false;
+    @Input() formulas?: FormFormulas | null;
+    @Input() formulaEntries?: Record<string, number> | null;
+    @Input() previewMissingFieldIds: string[] = [];
+    @Input() previewValidation: boolean = false;
+    @Input() previewBusy: boolean = false;
+    @Input() progressPending: boolean = false;
 
     @Output() change = new EventEmitter<Schema | null>();
     @Output() destroy = new EventEmitter<void>();
@@ -115,18 +111,38 @@ export class SchemaFormComponent implements OnInit {
     @Output() saveBtnEvent = new EventEmitter<IFieldControl<any>[] | undefined | boolean | null>();
     @Output() updatableBtnEvent = new EventEmitter();
     @Output() buttons = new EventEmitter<any>();
-    @Output() onAccordionSelect = new EventEmitter<{path: string, isOpen: boolean}>();
+    @Output() previewLoadingChange = new EventEmitter<boolean>();
+    @Output() previewInteraction = new EventEmitter<void>();
+    @Output() previewNavigation = new EventEmitter<void>();
 
     public minutesAgo$ = getMinutesAgoStream(() => this.lastSavedAt);
 
     public destroy$: Subject<boolean> = new Subject<boolean>();
-    public isShown: boolean[] = [true];
-    public currentIndex: number = 0;
     public buttonsConfig: IButton[] = [];
     public editButtonConfig: IButton;
     private geoSubscriptions = new Subscription();
     private geoOptions = new Map<string, GeoOption[]>();
-    private controlsIndex: Map<string, { ancestors: IFieldControl<any>[], field: IFieldControl<any>, listItem?: any }> = new Map();
+
+    private entryScopes = new WeakMap<object, Record<string, number>>();
+    private scopeMeta = new WeakMap<object, { entries: unknown; index: number }>();
+    private requiredCache = new WeakMap<IFieldControl<any>, { left: number; total: number; control: unknown }>();
+    private requiredSubs = new Map<IFieldControl<any>, Subscription>();
+    private controlsChangedSub?: Subscription;
+    private controlsChangedFor?: FieldForm;
+    private recordCache = new WeakMap<object, { value: unknown; index2: unknown; result: { title: string; sub: string } }>();
+    private fullRowCache = new WeakMap<IFieldControl<any>, boolean>();
+    private enumModeCache = new WeakMap<IFieldControl<any>, { values: unknown; mode: 'seg' | 'cards' | 'select' }>();
+    private loneSet: Set<number> | null = null;
+    private layoutList: IFieldControl<any>[] | null = null;
+    private layoutSignature = '';
+    private ruleLines = new Map<string, { failed: boolean; text: string } | null>();
+    private ruleLinesFor?: SchemaRuleValidateResult;
+    private metaStaticCache = new WeakMap<IFieldControl<any>, { text: string; title?: string }[]>();
+    private metaTypeCache = new WeakMap<IFieldControl<any>, string>();
+    private previewSections = new WeakSet<object>();
+    private previewFrames = new Map<IFieldControl<any> | IFieldIndexControl<any>, number>();
+    public previewRenderLimit: number = Infinity;
+    private previewRenderFrame: number | null = null;
 
     constructor(
         private ipfs: IPFSService,
@@ -137,35 +153,144 @@ export class SchemaFormComponent implements OnInit {
     ngOnInit(): void {
     }
 
+    /** The controls this form draws: the section it is limited to, or all of them. */
+    public get renderedControls(): IFieldControl<any>[] {
+        return this.renderControls ?? this.formModel?.controls ?? [];
+    }
+
+    public isPreviewSectionReady(item: IFieldControl<any> | IFieldIndexControl<any>): boolean {
+        return !this.previewValidation || this.previewSections.has(item);
+    }
+
+    private cancelPreviewSections(): void {
+        for (const frame of this.previewFrames.values()) {
+            cancelAnimationFrame(frame);
+            this.previewLoadingChange.emit(false);
+        }
+        this.previewFrames.clear();
+        this.previewSections = new WeakSet<object>();
+    }
+
+    public preparePreviewSection(item: IFieldControl<any> | IFieldIndexControl<any>): void {
+        if (!this.previewValidation) return;
+        const pending = this.previewFrames.get(item);
+        if (!item.open) {
+            if (pending !== undefined) {
+                cancelAnimationFrame(pending);
+                this.previewFrames.delete(item);
+                this.previewLoadingChange.emit(false);
+            }
+            this.previewSections.delete(item);
+            return;
+        }
+        if (pending !== undefined || this.previewSections.has(item)) return;
+        this.previewLoadingChange.emit(true);
+        this.previewFrames.set(item, requestAnimationFrame(() => {
+            this.previewFrames.set(item, requestAnimationFrame(() => {
+                this.previewSections.add(item);
+                this.changeDetectorRef.detectChanges();
+                this.previewFrames.set(item, requestAnimationFrame(() => {
+                    this.previewFrames.delete(item);
+                    this.previewLoadingChange.emit(false);
+                }));
+            }));
+        }));
+    }
+
+    private stopPreviewRendering(): void {
+        if (this.previewRenderFrame !== null) {
+            cancelAnimationFrame(this.previewRenderFrame);
+            this.previewRenderFrame = null;
+            this.previewLoadingChange.emit(false);
+        }
+        this.previewRenderLimit = Infinity;
+    }
+
+    private startPreviewRendering(): void {
+        this.stopPreviewRendering();
+        if (!this.previewValidation || this.renderedControls.length <= PREVIEW_RENDER_CHUNK) return;
+        this.previewRenderLimit = PREVIEW_RENDER_CHUNK;
+        this.previewLoadingChange.emit(true);
+        const next = () => {
+            this.previewRenderLimit += PREVIEW_RENDER_CHUNK;
+            // `detectChanges()` on this view skips its own `ngDoCheck`, so refresh the layout here.
+            this.computeLayout();
+            if (this.previewRenderLimit < this.renderedControls.length) {
+                this.changeDetectorRef.detectChanges();
+                this.previewRenderFrame = requestAnimationFrame(next);
+                return;
+            }
+            this.previewRenderFrame = null;
+            this.previewRenderLimit = Infinity;
+            this.computeLayout();
+            this.changeDetectorRef.detectChanges();
+            this.previewLoadingChange.emit(false);
+        };
+        this.previewRenderFrame = requestAnimationFrame(next);
+    }
+
+    public prepareOpenPreviewSections(): void {
+        if (!this.previewValidation) return;
+        for (const item of this.formModel?.controls || []) {
+            if (!item.isRef || !item.open) continue;
+            this.preparePreviewSection(item);
+            for (const row of item.list || []) {
+                if (row.open) this.preparePreviewSection(row);
+            }
+        }
+        this.childForms?.forEach((form) => form.prepareOpenPreviewSections());
+    }
+
+    public getFieldFormulas(item: IFieldControl<any>): FormulaItem[] {
+        return this.formulas?.get(item.fullPath, this.formulaEntries) ?? EMPTY_FORMULAS;
+    }
+
+    /**
+     * Entries scope for formulas of a repeated sub-schema entry: parent scope plus
+     * this array's current entry index. The same object is returned until the parent scope or
+     * the entry index changes, so child components do not see a new input on every pass.
+     */
+    public getEntryFormulaScope(item: IFieldControl<any>, listItem: any): Record<string, number> {
+        const index = Number(listItem.index);
+        const meta = this.scopeMeta.get(listItem);
+        const cached = this.entryScopes.get(listItem);
+        if (cached && meta && meta.entries === this.formulaEntries && meta.index === index) {
+            return cached;
+        }
+        // A rebuilt scope is a new object and is never mutated afterwards, so `FormFormulas`
+        // can key its memo by object identity.
+        const scope: Record<string, number> = { ...this.formulaEntries, [item.path]: index };
+        this.entryScopes.set(listItem, scope);
+        this.scopeMeta.set(listItem, { entries: this.formulaEntries, index });
+        return scope;
+    }
+
     ngOnChanges(changes: SimpleChanges) {
+        if (changes.formModel || changes.renderControls) {
+            this.loneSet = null;
+            this.layoutList = null;
+        }
+        if (changes.formModel) {
+            this.subscribeControlsChanged();
+        }
+        if (changes.rules) {
+            this.ruleLines.clear();
+            this.ruleLinesFor = this.rules;
+        }
+        if (changes.rules || changes.formulas || changes.formulaEntries) {
+            this.metaStaticCache = new WeakMap();
+        }
+        if (changes.formModel || changes.previewValidation || changes.renderControls) {
+            if (this.previewValidation || this.previewFrames.size) this.cancelPreviewSections();
+            if (this.previewValidation) this.prepareOpenPreviewSections();
+            if (this.previewValidation || this.previewRenderFrame !== null) this.startPreviewRendering();
+        }
         if (this.formModel && this.formModel.controls) {
             for (const item of this.formModel.controls) {
                 this.updateRemoteFiles(item);
             }
         }
         this.setupGeoDependencies();
-        this.updatePages();
-        try {
-            this.buildControlsIndex();
-        } catch (e) {
-             console.error('[schema-form] buildControlsIndex failed', e);
-        }
-        if (changes.rules && this.rules) {
-            for (const value of Object.values(this.rules)) {
-                if (value.status === 'Failure' || value.status === 'Error') {
-                    value.tooltip = 'Failure: ' + value.rules
-                        .filter((r) => r.status === 'Failure' || r.status === 'Error')
-                        .map((r) => r.name)
-                        .join(', ');
-                } else {
-                    value.tooltip = 'Success: ' + value.rules
-                        .filter((r) => r.status === 'Success')
-                        .map((r) => r.name)
-                        .join(', ');
-                }
-
-            }
-        }
         if (!this.isEditMode) {
             this.createButtons();
         } else {
@@ -173,36 +298,15 @@ export class SchemaFormComponent implements OnInit {
         }
     }
 
-    private buildControlsIndex() {
-        this.controlsIndex.clear();
-        const walk = (controls: IFieldControl<any>[] | undefined | null, ancestors: IFieldControl<any>[]) => {
-            if (!controls || !Array.isArray(controls)) return;
-            for (const field of controls) {
-                const entryAnc = ancestors.slice();
-                if (field.id) {
-                    this.controlsIndex.set(field.id, { ancestors: entryAnc, field });
-                }
-
-                if (field.isArray) {
-                    const list = Array.isArray((field as any).list) ? (field as any).list : [];
-                    for (const listItem of list) {
-                        const idx = (listItem as any).index2 ?? (listItem as any).index;
-                        const composite = `${field.id}-${idx}`;
-                        this.controlsIndex.set(composite, { ancestors: entryAnc.concat([field]), field, listItem });
-                    }
-                }
-
-                const childControls = Array.isArray((field as any).model?.controls) ? (field as any).model.controls : undefined;
-                if (Array.isArray(childControls) && childControls.length > 0) {
-                    walk(childControls, entryAnc.concat([field]));
-                }
-            }
-        };
-
-        walk(this.formModel?.controls, []);
+    ngDoCheck(): void {
+        this.computeLayout();
     }
 
     ngOnDestroy() {
+        this.controlsChangedSub?.unsubscribe();
+        this.clearRequiredCache();
+        this.cancelPreviewSections();
+        this.stopPreviewRendering();
         this.clearSuggestHideTimer();
         this.geoSubscriptions.unsubscribe();
         this.destroy.emit();
@@ -217,7 +321,7 @@ export class SchemaFormComponent implements OnInit {
                 if (!this.formModel?.controls || this.isChildSchema) {
                     return false;
                 }
-                return this.currentIndex === 0 && !this.cancelHidden;
+                return !this.cancelHidden;
             },
             disabled: () => {
                 return false;
@@ -229,46 +333,12 @@ export class SchemaFormComponent implements OnInit {
                 this.onCancelBtnClick();
             },
         }, {
-            id: 'prev',
-            visible: () => {
-                if (!this.formModel?.controls || this.isChildSchema) {
-                    return false;
-                }
-                return this.currentIndex !== 0;
-            },
-            disabled: () => {
-                return false;
-            },
-            text: 'Previous',
-            class: 'p-button-outlined',
-            type: 'secondary',
-            fn: () => {
-                this.getPrevShownFields(this.formModel?.controls);
-            },
-        }, {
-            id: 'next',
-            visible: () => {
-                if (!this.formModel?.controls || this.isChildSchema) {
-                    return false;
-                }
-                return !this.isShown[this.formModel.controls.length - 1];
-            },
-            disabled: () => {
-                return false;
-            },
-            text: 'Next',
-            class: 'p-button',
-            type: 'primary',
-            fn: () => {
-                this.getNextShownFields(this.formModel?.controls);
-            },
-        }, {
             id: 'submit',
             visible: () => {
                 if (!this.formModel?.controls || this.isChildSchema) {
                     return false;
                 }
-                return !!this.isShown[this.formModel.controls.length - 1] && !this.submitHidden;
+                return !this.submitHidden;
             },
             disabled: () => {
                 return false;
@@ -323,12 +393,15 @@ export class SchemaFormComponent implements OnInit {
 
     public addGroup(item: IFieldControl<any>) {
         this.formModel?.addGroup(item);
+        if (this.previewValidation) this.previewInteraction.emit();
         this.change.emit();
         this.changeDetectorRef.detectChanges();
     }
 
     public addItem(item: IFieldControl<UntypedFormArray>) {
         this.formModel?.addItem(item);
+        if (this.previewValidation) this.previewInteraction.emit();
+        if (this.previewValidation) this.prepareOpenPreviewSections();
         setTimeout(() => {
             this.formModel?.updateValueAndValidity();
             this.change.emit();
@@ -340,6 +413,7 @@ export class SchemaFormComponent implements OnInit {
             event.stopPropagation();
         }
         this.formModel?.removeGroup(item);
+        if (this.previewValidation) this.previewInteraction.emit();
         this.formModel?.updateValueAndValidity();
         this.changeDetectorRef.detectChanges();
         this.change.emit();
@@ -378,6 +452,7 @@ export class SchemaFormComponent implements OnInit {
 
     private applyRemoveItem(item: IFieldControl<any>, listItem: IFieldIndexControl<any>): void {
         this.formModel?.removeItem(item, listItem);
+        if (this.previewValidation) this.previewInteraction.emit();
         this.formModel?.updateValueAndValidity();
         this.changeDetectorRef.detectChanges();
         this.change.emit();
@@ -403,6 +478,7 @@ export class SchemaFormComponent implements OnInit {
 
     public patchSuggestValue(item: IFieldControl<any>) {
         this.formModel?.patchSuggestValue(item);
+        item.control?.markAsTouched();
         this.changeDetectorRef.detectChanges();
         this.change.emit();
     }
@@ -423,16 +499,335 @@ export class SchemaFormComponent implements OnInit {
         return item.isArray && item.isRef;
     }
 
-    public ifInvalidField(item: IFieldControl<any> | IFieldIndexControl<any>): boolean {
-        return (item.control && !item.control.valid && !item.control.disabled);
+    public isInvalidField(item: IFieldControl<any>): boolean {
+        return this.previewValidation
+            ? this.isPreviewMissingField(item)
+            : this.showError(item);
+    }
+
+    public isPreviewMissingField(item: IFieldControl<any>): boolean {
+        const value = item.control?.value;
+        return this.previewMissingFieldIds.includes(item.id) && !item.control.disabled
+            && (value === undefined || value === null || value === '');
     }
 
     public ifRequiredField(item: IFieldControl<any>): boolean {
+        if (this.previewValidation && !item.control) {
+            return item.required;
+        }
         return item.required && !item.control.disabled;
     }
 
     public isRules(item: IFieldControl<any>) {
         return this.rules ? this.rules[item.fullPath] : undefined;
+    }
+
+    /** Looked up by `fullPath`; the lines are rebuilt lazily whenever the `rules` object is replaced (S5). */
+    public ruleLine(item: IFieldControl<any>): { failed: boolean; text: string } | null {
+        if (this.ruleLinesFor !== this.rules) {
+            this.ruleLines.clear();
+            this.ruleLinesFor = this.rules;
+        }
+        const key = item.fullPath;
+        if (this.ruleLines.has(key)) {
+            return this.ruleLines.get(key)!;
+        }
+        const line = this.buildRuleLine(item);
+        this.ruleLines.set(key, line);
+        return line;
+    }
+
+    private buildRuleLine(item: IFieldControl<any>): { failed: boolean; text: string } | null {
+        const rule = this.isRules(item);
+        if (!rule) {
+            return null;
+        }
+        const failed = rule.status === 'Failure' || rule.status === 'Error';
+        if (!failed && rule.status !== 'Success') {
+            return null;
+        }
+        const names = (rule.rules || [])
+            .filter((r) => failed ? (r.status === 'Failure' || r.status === 'Error') : r.status === 'Success')
+            .map((r) => r.name)
+            .join(', ');
+        return { failed, text: `${failed ? 'Rule check failed' : 'Rule check passed'}: ${names}` };
+    }
+
+    public isLoneField(index: number): boolean {
+        if (!this.loneSet) {
+            this.computeLayout();
+        }
+        return this.loneSet!.has(index);
+    }
+
+    /**
+     * Rebuilds `loneSet` in one pass, only when the rendered list, the render limit or a
+     * visibility flag changed (S3). Runs from `ngDoCheck` and before the self-driven
+     * `detectChanges()` calls, which do not run this component's own `ngDoCheck`.
+     */
+    private computeLayout(): void {
+        const list = this.renderedControls;
+        let signature = `${list.length}|${this.previewRenderLimit}|`;
+        for (const control of list) {
+            signature += control.visibility ? '1' : '0';
+        }
+        if (this.loneSet && list === this.layoutList && signature === this.layoutSignature) {
+            return;
+        }
+        this.layoutList = list;
+        this.layoutSignature = signature;
+        const lone = new Set<number>();
+        // Whether the nearest visible control before / after each index is a full row (true at the ends).
+        const before: boolean[] = new Array(list.length);
+        let previous = true;
+        for (let i = 0; i < list.length; i++) {
+            before[i] = previous;
+            if (list[i].visibility) {
+                previous = this.isFullRow(list[i]);
+            }
+        }
+        const limit = Math.min(list.length, this.previewRenderLimit);
+        let next = true;
+        for (let i = list.length - 1; i >= 0; i--) {
+            if (i >= limit) {
+                continue;
+            }
+            if (!this.isFullRow(list[i]) && before[i] && next) {
+                lone.add(i);
+            }
+            if (list[i].visibility) {
+                next = this.isFullRow(list[i]);
+            }
+        }
+        this.loneSet = lone;
+    }
+
+    /**
+     * Depends only on the schema, so it is cached per item (S3). Enum fields are the exception:
+     * their answer follows `enumMode`, which can change when remote values load.
+     */
+    public isFullRow(item: IFieldControl<any>): boolean {
+        if (this.isEnum(item)) {
+            return this.computeFullRow(item);
+        }
+        let result = this.fullRowCache.get(item);
+        if (result === undefined) {
+            result = this.computeFullRow(item);
+            this.fullRowCache.set(item, result);
+        }
+        return result;
+    }
+
+    private computeFullRow(item: IFieldControl<any>): boolean {
+        if (item.isArray || item.isRef || this.isHelpText(item) || this.isRichText(item)) {
+            return true;
+        }
+        const customType = item.customType || '';
+        if (customType === 'table' || customType === 'geo' || customType === 'sentinel' || this.isIPFS(item)) {
+            return true;
+        }
+        if (this.isEnum(item)) {
+            return this.enumMode(item) === 'cards';
+        }
+        if (this.isGeoLocation(item) || this.isBoolean(item)) {
+            return false;
+        }
+        return item.type === 'string' && !item.format;
+    }
+
+    /**
+     * Cached per item (S4). `enumValues` is set at build time, and again when a remote enum
+     * loads, so the cache entry remembers the array it was computed from.
+     */
+    public enumMode(item: IFieldControl<any>): 'seg' | 'cards' | 'select' {
+        const cached = this.enumModeCache.get(item);
+        if (cached && cached.values === item.enumValues) {
+            return cached.mode;
+        }
+        const mode = this.computeEnumMode(item);
+        this.enumModeCache.set(item, { values: item.enumValues, mode });
+        return mode;
+    }
+
+    private computeEnumMode(item: IFieldControl<any>): 'seg' | 'cards' | 'select' {
+        const values: any[] = Array.isArray(item.enumValues) ? item.enumValues : [];
+        if (!values.length || values.length > 4) {
+            return 'select';
+        }
+        const chars = values.reduce((sum, value) => sum + String(value ?? '').length, 0);
+        return chars + 4 * values.length <= 30 ? 'seg' : 'cards';
+    }
+
+    public isSingleOption(item: IFieldControl<any>): boolean {
+        return !!item.required && !!this.isEnum(item) && Array.isArray(item.enumValues) && item.enumValues.length === 1;
+    }
+
+    public isDefaultValue(item: IFieldControl<any>): boolean {
+        return item.default !== undefined && !!item.control
+            && item.control.value === item.default && !item.control.touched;
+    }
+
+    public setChoice(item: IFieldControl<any> | IFieldIndexControl<any>, value: any): void {
+        const control = item.control;
+        if (!control || control.disabled) {
+            return;
+        }
+        control.setValue(value);
+        control.markAsDirty();
+        control.markAsTouched();
+    }
+
+    public showOptionalChip(item: IFieldControl<any>): boolean {
+        return !item.required && !item.readonly && !this.isHelpText(item) && !this.isBoolean(item);
+    }
+
+    public isChosen(item: IFieldControl<any>): boolean {
+        const value = item.control?.value;
+        return value !== undefined && value !== null && value !== '';
+    }
+
+    public get errorsRevealed(): boolean {
+        return !!this.formModel?.rootForm?.errorsRevealed;
+    }
+
+    public showLockRow(item: IFieldControl<any>): boolean {
+        if (!item.readonly || !item.control) {
+            return false;
+        }
+        const customType = item.customType || '';
+        const value = item.control.value;
+        return customType !== 'table' && customType !== 'richText' && !this.isBoolean(item)
+            && !this.isGeoLocation(item) && this.isChosen(item) && typeof value !== 'object';
+    }
+
+    public get showMetadata(): boolean {
+        return !!this.formModel?.rootForm?.showMetadata;
+    }
+
+    /** Static for a field, so it is cached per item (S9). */
+    public metaType(item: IFieldControl<any>): string {
+        let type = this.metaTypeCache.get(item);
+        if (type === undefined) {
+            type = metaType(item);
+            this.metaTypeCache.set(item, type);
+        }
+        return type;
+    }
+
+    /**
+     * The strip is cached without the formula count: that count follows the form data
+     * (`FormFormulas.setData` resets its memo without replacing `formulas`), so it is added live.
+     */
+    public metaTags(item: IFieldControl<any>): { text: string; title?: string }[] {
+        let tags = this.metaStaticCache.get(item);
+        if (!tags) {
+            tags = this.buildMetaTags(item);
+            this.metaStaticCache.set(item, tags);
+        }
+        const formulas = this.getFieldFormulas(item).length;
+        if (!formulas) {
+            return tags;
+        }
+        const formulaTag = { text: `${formulas} formula${formulas === 1 ? '' : 's'}` };
+        const at = tags.findIndex((tag) => tag.text === 'schema rule' || tag.text === 'read-only preset');
+        return at < 0 ? [...tags, formulaTag] : [...tags.slice(0, at), formulaTag, ...tags.slice(at)];
+    }
+
+    private buildMetaTags(item: IFieldControl<any>): { text: string; title?: string }[] {
+        const tags: { text: string; title?: string }[] = baseMetaTags(item);
+        if (this.formModel?.isConditional(item)) {
+            tags.push({ text: 'conditional' });
+        }
+        if (this.rules?.[item.fullPath]) {
+            tags.push({ text: 'schema rule' });
+        }
+        if (item.readonly) {
+            tags.push({ text: 'read-only preset' });
+        }
+        return tags;
+    }
+
+    public metaPath(item: IFieldControl<any>): string {
+        return this.formModel.metadataPath(item);
+    }
+
+    /** Required counts of a card, cached per card until its subtree or the set of controls changes (S1). */
+    public requiredLeft(item: IFieldControl<any>): { left: number; total: number } {
+        const control = item.control;
+        const cached = this.requiredCache.get(item);
+        if (cached && cached.control === control) {
+            return cached;
+        }
+        const { answered, total: own } = countRequired(item.model?.controls);
+        const paths = item.model?.previewRequiredPaths?.();
+        const total = own + (paths ? requiredWithoutControl(item.model.controls, paths).length : 0);
+        const entry = { left: total - answered, total, control };
+        this.requiredCache.set(item, entry);
+        this.requiredSubs.get(item)?.unsubscribe();
+        this.requiredSubs.delete(item);
+        if (control) {
+            this.requiredSubs.set(item, control.valueChanges.subscribe(() => this.requiredCache.delete(item)));
+        }
+        return entry;
+    }
+
+    private clearRequiredCache(): void {
+        for (const sub of this.requiredSubs.values()) {
+            sub.unsubscribe();
+        }
+        this.requiredSubs.clear();
+        this.requiredCache = new WeakMap();
+    }
+
+    /** `controlsChanged$` covers condition-driven visibility, which arrives with `emitEvent: false`. */
+    private subscribeControlsChanged(): void {
+        const root = this.formModel?.rootForm;
+        if (root === this.controlsChangedFor) {
+            return;
+        }
+        this.controlsChangedSub?.unsubscribe();
+        this.controlsChangedFor = root;
+        this.clearRequiredCache();
+        this.controlsChangedSub = root
+            ? merge(root.controlsChanged$, root.requirementsChanged$).subscribe(() => this.clearRequiredCache())
+            : undefined;
+    }
+
+    public recordText(item: IFieldControl<any>, listItem: IFieldIndexControl<any>): { title: string; sub: string } {
+        // A managed array's title reads another array, so it is never cached (S2).
+        if (this.isManagedArray(item)) {
+            return { title: this.entryTitle(item, listItem), sub: '' };
+        }
+        const cached = this.recordCache.get(listItem);
+        if (cached && cached.value === listItem.control?.value && cached.index2 === listItem.index2) {
+            return cached.result;
+        }
+        const result = this.buildRecordText(item, listItem);
+        this.recordCache.set(listItem, { value: listItem.control?.value, index2: listItem.index2, result });
+        return result;
+    }
+
+    private buildRecordText(item: IFieldControl<any>, listItem: IFieldIndexControl<any>): { title: string; sub: string } {
+        if (item.customType === 'geo') {
+            return geoRecordSummary(item.description, listItem.control?.value);
+        }
+        const geo = item.customType === 'sentinel';
+        const values = (listItem.model?.controls || []).map((field: IFieldControl<any>) =>
+            field.isRef || field.isArray ? undefined
+                : this.isRichText(field) ? markdownToPlainText(field.control?.value) : field.control?.value
+        );
+        const summary = recordSummary(values, geo ? `${item.description} #${listItem.index2}` : `New ${item.description}`);
+        const filled = values.some((value: unknown) => value !== null && value !== undefined && value !== '' && typeof value !== 'object');
+        if (!filled && !geo) {
+            summary.sub = 'Not filled in yet';
+        }
+        return summary;
+    }
+
+    public toggleOpen(item: IFieldControl<any> | IFieldIndexControl<any>, open: boolean): void {
+        item.open = open;
+        this.preparePreviewSection(item);
+        if (open && this.previewValidation) this.previewNavigation.emit();
     }
 
     public isRulesStatus(item: IFieldControl<any>) {
@@ -647,6 +1042,8 @@ export class SchemaFormComponent implements OnInit {
         }
     }
 
+    @ViewChildren(SchemaFormComponent) public childForms?: QueryList<SchemaFormComponent>;
+
     private findString(item: any): string {
         if (typeof item === 'object') {
             return this.findString(Object.values(item)[0]);
@@ -718,7 +1115,9 @@ export class SchemaFormComponent implements OnInit {
                     } else {
                         control.patchValue(IPFS_SCHEMA + res);
                     }
+                    control.markAsTouched();
                     listItem.fileUploading = false;
+                    if (this.previewValidation) this.previewInteraction.emit();
                 }, (error) => {
                     listItem.fileUploading = false;
                 });
@@ -740,38 +1139,12 @@ export class SchemaFormComponent implements OnInit {
         this.ipfs.getImageWithDryRunFallback(reference, !!(this.dryRun && this.policyId));
 
 
-    public getInvalidMessageByFieldType(item: IFieldControl<any>, itemFromList?: IFieldIndexControl<any>): string {
-        const type = item.format || item.type;
-        const messages = item.isArray
-            ? ErrorArrayMessageByFieldType
-            : ErrorFieldMessageByFieldType;
+    public showError(item: IFieldControl<any>, listItem?: IFieldIndexControl<any>): boolean {
+        return showError(item, !!this.formModel?.rootForm?.errorsRevealed, listItem);
+    }
 
-        if (item.control?.errors?.[item.id]) {
-            return item.control.errors[item.id];
-        } else if (itemFromList?.control?.errors?.[item.id]) {
-            return itemFromList.control.errors[item.id];
-        }
-
-        switch (type) {
-            case 'email':
-                return messages.Email;
-            case 'number':
-                return messages.Number;
-            case 'duration':
-                return messages.Duration;
-            case 'integer':
-                return messages.Integer;
-            case 'url':
-                return messages.URL;
-            case 'uri':
-                return messages.URI;
-            case 'date-time':
-                return messages.DateTime;
-            case 'date':
-                return messages.Date;
-            default:
-                return messages.Other;
-        }
+    public getErrorMessage(item: IFieldControl<any>, listItem?: IFieldIndexControl<any>): string {
+        return getErrorMessage(item, listItem);
     }
 
     public getPlaceholderByFieldType(item: IFieldControl<any>): string {
@@ -829,90 +1202,6 @@ export class SchemaFormComponent implements OnInit {
         }
     }
 
-    private getNextShownFields(fields: SchemaField[] | undefined | null): boolean[] {
-        if (!fields) {
-            return this.isShown;
-        }
-        this.isShown = new Array(fields.length).fill(false);
-        let nextRefIndex = -1;
-        let initialDivision = 0;
-        for (let i = this.currentIndex + 1; i < fields.length; i++) {
-            nextRefIndex = i;
-            if (fields[i].isRef) {
-                if (this.currentIndex == 0 && initialDivision == 0) {
-                    initialDivision = 1;
-                    this.currentIndex = i;
-                    this.isShown = new Array(fields.length).fill(false);
-                    if (fields[this.currentIndex].isRef && fields[this.currentIndex - 1].isRef) {
-                        this.isShown[this.currentIndex] = true;
-                        break;
-                    }
-                    continue;
-                }
-                break;
-            }
-            this.isShown[i] = true;
-        }
-        if (nextRefIndex !== -1) {
-            if (this.currentIndex === 0) {
-                this.currentIndex = -1;
-            }
-            for (let i = this.currentIndex + 1; i <= nextRefIndex; i++) {
-                this.isShown[i] = true;
-            }
-            this.currentIndex = nextRefIndex;
-        }
-        this.buttons.emit(this.buttonsConfig);
-
-        this.updateScroll();
-
-        return this.isShown;
-    }
-
-    private getPrevShownFields(fields: SchemaField[] | undefined | null): boolean[] {
-        if (!fields) {
-            return this.isShown;
-        }
-        this.isShown = new Array(fields.length).fill(false);
-        let prevRefIndex = -1;
-        if (this.currentIndex === 0) {
-            // If the current index is already at the beginning of the array,
-            // show all fields with isRef set to false
-            for (let i = 0; i < fields.length; i++) {
-                if (!fields[i].isRef) {
-                    this.isShown[i] = true;
-                }
-            }
-        } else {
-            for (let i = this.currentIndex - 1; i >= 0; i--) {
-                if (fields[i].isRef) {
-                    prevRefIndex = i;
-                    for (let j = prevRefIndex - 1; j >= 0; j--) {
-                        if (fields[j].isRef) {
-                            break
-                        } else if (j == 0) {
-                            prevRefIndex = 0;
-                        }
-                    }
-                    break;
-                }
-                //this.isShown[i] = true;
-                this.currentIndex = i;
-            }
-            if (prevRefIndex !== -1) {
-                for (let i = this.currentIndex - 1; i >= prevRefIndex; i--) {
-                    this.isShown[i] = true;
-                }
-                this.currentIndex = prevRefIndex;
-            }
-        }
-        this.buttons.emit(this.buttonsConfig);
-
-        this.updateScroll();
-
-        return this.isShown;
-    }
-
     public closeWindow() {
         window.close();
     }
@@ -933,219 +1222,6 @@ export class SchemaFormComponent implements OnInit {
         this.updatableBtnEvent.emit()
     }
 
-    public showPage(item: IFieldControl<any>, index: number): boolean {
-        return this.isShown[index] || this.isChildSchema;
-    }
-
-    private updateScroll() {
-        const contentElement = document.querySelector('#main-content');
-        const formElement = document.querySelector('.schema-form');
-        setTimeout(() => {
-            if (window.innerWidth <= 810) {
-                contentElement!.scrollTo({
-                    top: -1,
-                    behavior: 'smooth'
-                });
-            } else {
-                if (formElement) {
-                    formElement.scrollTo({
-                        top: -1,
-                        behavior: 'smooth'
-                    });
-                }
-            }
-        }, 100)
-    }
-
-    public openField(link?: string): void {
-        if (!link || !this.formModel?.controls) return;
-
-        let found = false;
-        let parts:any = [link];
-        if (link.includes(';')) {
-            parts = link.split(';').map(p => p.trim()).filter(p => p.length > 0);
-            if (parts.length > 0) {
-                const leaf = parts[parts.length - 1];
-                const idxEntry = this.controlsIndex.get(leaf);
-                if (idxEntry) {
-                    for (const anc of idxEntry.ancestors || []) anc.open = true;
-                    idxEntry.field.open = true;
-                    if (idxEntry.listItem) idxEntry.listItem.open = true;
-                    found = true;
-                } else {
-                    found = this.findAndOpenByParts(parts, this.formModel.controls);
-                }
-            }
-        } else {
-            const idxEntry = this.controlsIndex.get(link);
-            if (idxEntry) {
-                for (const anc of idxEntry.ancestors || []) 
-                    anc.open = true;
-                idxEntry.field.open = true;
-                if (idxEntry.listItem) 
-                    idxEntry.listItem.open = true;
-                found = true;
-            } else {
-                found = this.findAndOpen(this.formModel.controls, link);
-            }
-        }
-
-        if (found) {
-            try {
-                this.changeDetectorRef.detectChanges();
-            } catch (e) {
-                console.error(e);
-            }
-            this.scrollToAccordionAttr(parts[parts.length - 1]);
-        }
-    }
-
-    private findAndOpen(controls: IFieldControl<any>[] | undefined | null, target: string): boolean {
-        if (!controls || !Array.isArray(controls)) return false;
-
-        for (const field of controls) {
-            (field as any).link = undefined;
-            if (field.id === target) {
-                field.open = true;
-                return true;
-            }
-
-            if (field.isArray) {
-                const list = Array.isArray((field as any).list) ? (field as any).list : [];
-                for (const listItem of list) {
-                    const idx = (listItem as any).index2 ?? (listItem as any).index;
-                    const composite = `${field.id}-${idx}`;
-                    if (composite === target) {
-                        field.open = true;
-                        (listItem as any).open = true;
-                        return true;
-                    }
-                    
-                    const itemChildControls = Array.isArray((field as any).model?.controls) ? (field as any).model.controls : undefined;
-                    if (Array.isArray(itemChildControls) && itemChildControls.length > 0) {
-                        const foundInItem = this.findAndOpen(itemChildControls, target);
-                        if (foundInItem) {
-                            field.open = true;
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            const childControls = Array.isArray((field as any).model?.controls) ? (field as any).model.controls : undefined;
-            if (Array.isArray(childControls) && childControls.length > 0) {
-                const foundInChild = this.findAndOpen(childControls, target);
-                if (foundInChild) {
-                    field.open = true;
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    private findAndOpenByParts(parts: string[], controls: IFieldControl<any>[] | undefined | null, idx: number = 0): boolean {
-        if (!controls || !Array.isArray(controls) || idx >= parts.length) return false;
-
-        const part = parts[idx];
-
-        for (const field of controls) {
-            if (field.id === part) {
-                field.open = true;
-                if (idx === parts.length - 1) {
-                    return true;
-                }
-                const childControls = Array.isArray((field as any).model?.controls) ? (field as any).model.controls : undefined;
-                if (Array.isArray(childControls) && childControls.length > 0) {
-                    const found = this.findAndOpenByParts(parts, childControls, idx + 1);
-                    if (found) {
-                        field.open = true;
-                        return true;
-                    }
-                }
-                continue;
-            }
-
-            if (field.isArray) {
-                const list = Array.isArray((field as any).list) ? (field as any).list : [];
-                for (const listItem of list) {
-                    const itemIdx = (listItem as any).index2 ?? (listItem as any).index;
-                    const composite = `${field.id}-${itemIdx}`;
-                    if (composite === part) {
-                        field.open = true;
-                        (listItem as any).open = true;
-                        if (idx === parts.length - 1) {
-                            return true;
-                        }
-                        const itemChildControls = Array.isArray((field as any).model?.controls) ? (field as any).model.controls : undefined;
-                        if (Array.isArray(itemChildControls) && itemChildControls.length > 0) {
-                            const foundInItem = this.findAndOpenByParts(parts, itemChildControls, idx + 1);
-                            if (foundInItem) {
-                                field.open = true;
-                                (listItem as any).open = true;
-                                return true;
-                            }
-                        }
-                        const listItemChildControls = Array.isArray((listItem as any).model?.controls) ? (listItem as any).model.controls : undefined;
-                        if (Array.isArray(listItemChildControls) && listItemChildControls.length > 0) {
-                            const foundInItem = this.findAndOpenByParts(parts, listItemChildControls, idx + 1);
-                            if (foundInItem) {
-                                field.open = true;
-                                (listItem as any).open = true;
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-
-            const childControls = Array.isArray((field as any).model?.controls) ? (field as any).model.controls : undefined;
-            if (Array.isArray(childControls) && childControls.length > 0) {
-                const foundInChild = this.findAndOpenByParts(parts, childControls, idx);
-                if (foundInChild) {
-                    field.open = true;
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    private scrollToAccordionAttr(value: string) {
-        setTimeout(() => {
-            try {
-                this.changeDetectorRef.detectChanges();
-            } catch (e) { }
-
-            const attrSelector = `[accordiontabid="${value}"]`;
-
-            try {
-                const node = document.querySelector(attrSelector) as Element | null;
-                if (node) {
-                    (node as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    return;
-                }
-            } catch (e) { }
-        }, 1000);
-    }
-
-    public onAccordionSelectEvent(isOpen: any, item: IFieldControl<any>, index: string = '', childrenAccordionId?: string) {
-        let accordionId = item.id;
-        if (index) {
-            accordionId = `${accordionId}-${index}`;
-        }
-
-        if (childrenAccordionId) {
-            accordionId = `${accordionId};${childrenAccordionId}`;
-        }
-        this.onAccordionSelect.emit({
-            path: accordionId,
-            isOpen: isOpen
-        });
-    }
-
     private updateRemoteFiles(item: IFieldControl<any>) {
         if (item.remoteLink && item.fileUploading === true) {
             this.ipfs
@@ -1154,6 +1230,7 @@ export class SchemaFormComponent implements OnInit {
                 .subscribe((res: any) => {
                     item.enumValues = res?.enum;
                     item.fileUploading = false;
+                    this.loneSet = null;
                 }, (error) => {
                     item.fileUploading = false;
                     console.error(error);
@@ -1161,60 +1238,4 @@ export class SchemaFormComponent implements OnInit {
         }
     }
 
-    private updatePages() {
-        if (this.formModel && this.formModel.controls) {
-            for (let i = 0; i < this.formModel.controls.length; i++) {
-                const item = this.formModel.controls[i];
-                if (item.isRef) {
-                    this.isShown[i] = true;
-                    break;
-                } else {
-                    this.isShown[i] = true;
-                }
-            }
-        }
-    }
-
-    public canDrawTable(item: IFieldControl<any>): boolean {
-        const customTypes = ['geo', 'table', 'sentinel', 'country', 'continent', 'state'];
-
-        if (!item.isArray || !item.isRef || item.hidden) {
-            return false;
-        }
-
-        if (customTypes.includes(item.customType || '')) {
-            return false;
-        }
-        
-        const visibleFields = item.fields?.filter(f => !f.hidden) || [];
-        if (visibleFields.length === 0) {
-            return false;
-        }
-        
-        return !visibleFields.some(f => 
-            f.isArray || f.isRef || 
-            customTypes.includes(f.customType || '')
-        );
-    }
-
-    private getTitleMappedNames(item: IFieldControl<any>): Set<string> {
-        return this.formModel?.getTitleMappedNames(item) || new Set<string>();
-    }
-
-    public getTableHeaderFields(item: IFieldControl<any>): any[] | undefined {
-        const mapped = this.getTitleMappedNames(item);
-        if (this.hide) {
-            return item.fields?.filter(f => f.type !== 'null' && !this.hide[f.name] && !f.hidden && !mapped.has(f.name));
-        }
-        return item.fields?.filter(f => f.type !== 'null' && !f.hidden && !mapped.has(f.name));
-    }
-
-    public getTableRowFields(item: IFieldIndexControl<any>, owner?: IFieldControl<any>): any[] | undefined {
-        const mapped = owner ? this.getTitleMappedNames(owner) : new Set<string>();
-        if (this.hide) {
-            return item.model.controls?.filter((f: any) => f.type !== 'null' && !this.hide[f.name] && !f.hidden && !mapped.has(f.name));
-        }
-        return item.model.controls?.filter((f: any) => f.type !== 'null' && !f.hidden && !mapped.has(f.name));
-    }
 }
-

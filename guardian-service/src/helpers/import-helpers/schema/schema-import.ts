@@ -12,20 +12,19 @@ import {
     TopicType,
     resolveIwaVersion,
 } from '@guardian/interfaces';
-import {
-    DatabaseServer,
-    PinoLogger,
-    MessageAction,
-    MessageServer,
-    MessageType,
-    replaceValueRecursive,
-    SchemaConverterUtils,
-    TagMessage,
-    TopicConfig,
-    TopicHelper,
-    Users,
-    INotificationStep
-} from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { FormulaImportExport } from '@guardian/common/import-export/formula';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { replaceValueRecursive } from '@guardian/common/helpers/utils';
+import { SchemaConverterUtils } from '@guardian/common/helpers/schema-converter-utils';
+import { Users } from '@guardian/common/helpers/users';
+import { INotificationStep } from '@guardian/common/notification/notification-step.interface';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { MessageType } from '@guardian/hedera/message/message-type';
+import { TagMessage } from '@guardian/hedera/message/tag-message';
+import { TopicConfig } from '@guardian/hedera/topic';
+import { TopicHelper } from '@guardian/hedera/topic-helper';
 import { ImportSchemaError, ImportSchemaMap, ImportSchemaOptions, ImportSchemaResult } from './schema-import.interface.js';
 import geoJson from '@guardian/interfaces/dist/helpers/geojson-schema/geo-json.js';
 import sentinelHub from '@guardian/interfaces/dist/helpers/sentinel-hub/sentinel-hub-schema.js';
@@ -45,6 +44,7 @@ export class SchemaImport {
     private readonly externalSchemas: Map<string, string>;
     private readonly validatedSchemas: Map<string, Schema>;
     private readonly errors: ImportSchemaError[];
+    private readonly warnings: ImportSchemaError[];
 
     private root: IRootConfig;
     private topicHelper: TopicHelper;
@@ -63,6 +63,7 @@ export class SchemaImport {
         this.validatedSchemas.set('#GeoJSON', geoJson as any as Schema);
         this.validatedSchemas.set('#SentinelHUB', sentinelHub as any as Schema);
         this.errors = [];
+        this.warnings = [];
     }
 
     public addExternalSchemas(externalSchemas: { name: string, iri: string }[]): void {
@@ -354,6 +355,29 @@ export class SchemaImport {
         }
     }
 
+    /**
+     * A replaced schema gets a new IRI, point the formulas of the policy to it
+     * @param iris previous IRI to new IRI
+     */
+    private async relinkFormulas(iris: Map<string, string>): Promise<void> {
+        const policy = await DatabaseServer.getPolicy({ topicId: this.topicId });
+        if (!policy) {
+            return;
+        }
+        const formulas = await DatabaseServer.getFormulas({ policyId: policy.id });
+        for (const formula of formulas) {
+            const before = FormulaImportExport.getSchemaIds(formula.config);
+            const links = Array.from(iris.keys()).filter((iri) => before.has(iri));
+            if (!links.length) {
+                continue;
+            }
+            for (const iri of links) {
+                FormulaImportExport.replaceIds(formula.config, iri, iris.get(iri));
+            }
+            await DatabaseServer.updateFormula(formula);
+        }
+    }
+
     private async saveSchemas(
         schemas: ISchema[],
         step: INotificationStep,
@@ -376,24 +400,36 @@ export class SchemaImport {
             if (checkForCircularDependency(file)) {
                 throw new Error(`There is circular dependency in schema: ${file.iri}`);
             }
-            validateSchemaFieldKeys(file);
-            let dependencyError: string | null = null;
+            let validationMessage: string | null = null;
             try {
-                validateSchemaDependencies(file);
-            } catch (validationError) {
-                dependencyError = validationError instanceof Error
-                    ? validationError.message
-                    : String(validationError);
+                validateSchemaFieldKeys(file);
+            } catch (keyError) {
+                validationMessage = keyError instanceof Error ? keyError.message : String(keyError);
+                this.warnings.push({
+                    type: 'schema',
+                    uuid: file.uuid,
+                    name: file.name,
+                    error: validationMessage
+                });
+            }
+            if (!validationMessage) {
+                try {
+                    validateSchemaDependencies(file);
+                } catch (validationError) {
+                    validationMessage = validationError instanceof Error
+                        ? validationError.message
+                        : String(validationError);
+                }
             }
 
             const schemaObject = DatabaseServer.createSchema(file);
             const errors = SchemaHelper.checkErrors(file as Schema);
-            if (dependencyError) {
+            if (validationMessage) {
                 errors.push({
                     target: {
                         type: 'schema'
                     },
-                    message: dependencyError
+                    message: validationMessage
                 });
             }
             SchemaHelper.updateIRI(schemaObject);
@@ -432,10 +468,10 @@ export class SchemaImport {
                 row.description = schemaObject.description;
                 row.entity = schemaObject.entity;
                 row.document = schemaObject.document;
-                row.status = dependencyError
+                row.status = validationMessage
                     ? SchemaStatus.ERROR
                     : SchemaStatus.DRAFT;
-                row.errors = dependencyError ? errors : [];
+                row.errors = validationMessage ? errors : [];
                 SchemaHelper.setVersion(row, newVersion, previousVersion);
                 SchemaHelper.updateIRI(row);
                 await DatabaseServer.updateSchema(row.id, row);
@@ -463,6 +499,7 @@ export class SchemaImport {
         }
 
         if (updatedSchemasIriMap.size > 0) {
+            await this.relinkFormulas(updatedSchemasIriMap);
             const schemasForRewrite = await DatabaseServer.getSchemas({ topicId: this.topicId });
             for (const savedSchema of schemasForRewrite) {
                 let needsUpdate = false;
@@ -609,7 +646,8 @@ export class SchemaImport {
 
         return {
             schemasMap: this.schemasMapping,
-            errors: this.errors
+            errors: this.errors,
+            warnings: this.warnings
         };
     }
 
@@ -670,7 +708,8 @@ export class SchemaImport {
 
         return {
             schemasMap: this.schemasMapping,
-            errors: this.errors
+            errors: this.errors,
+            warnings: this.warnings
         };
     }
 
@@ -756,7 +795,8 @@ export class SchemaImport {
 
         return {
             schemasMap: this.schemasMapping,
-            errors: this.errors
+            errors: this.errors,
+            warnings: this.warnings
         };
     }
 }

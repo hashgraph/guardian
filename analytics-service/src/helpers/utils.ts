@@ -1,4 +1,5 @@
-import { DatabaseServer, Workers } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { Workers } from '@guardian/common/helpers/workers';
 import { WorkerTaskType } from '@guardian/interfaces';
 import { AnalyticsStatus as Status } from '../entity/analytics-status.js';
 import { AnalyticsTopicCache as TopicCache } from '../entity/analytics-topic-cache.js';

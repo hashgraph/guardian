@@ -8,11 +8,11 @@ describe('StatisticAssessmentViewComponent', () => {
             config: {
                 variables: [{ id: 'v1', fieldDescription: 'Var 1', schemaId: 'sch1', path: 'a.b' }],
                 scores: [{
-                    id: 'sc1',
-                    description: 'Score 1',
-                    relationships: ['v1'],
-                    options: [{ description: 'Opt A' }],
-                }],
+                        id: 'sc1',
+                        description: 'Score 1',
+                        relationships: ['v1'],
+                        options: [{ description: 'Opt A' }],
+                    }],
                 formulas: [{ id: 'f1', description: 'F', formula: 'v1', type: 'number' }],
             },
         } as any;
@@ -21,9 +21,7 @@ describe('StatisticAssessmentViewComponent', () => {
     };
 
     beforeEach(() => {
-        component = new StatisticAssessmentViewComponent(
-            {} as any, {} as any, {} as any, {} as any, { queryParams: { subscribe: jasmine.createSpy() } } as any
-        );
+        component = new StatisticAssessmentViewComponent({} as any, {} as any, {} as any, {} as any, { queryParams: { subscribe: vi.fn() } } as any);
     });
 
     describe('updateMetadata credentialSubject handling', () => {

@@ -13,27 +13,46 @@
     align-content: center;
 }
 
-.content {
-    flex-wrap: nowrap;
-    display: flex;
-}
+// Compact pager, rendered inside the table card footer.
+:host ::ng-deep .table-paginator {
+    height: auto !important;
+    padding: 0;
+    column-gap: 12px;
+    border-radius: 0 !important;
+    background: transparent;
+    box-shadow: none !important;
+    font-size: 13px;
 
-.content {
-    box-shadow: 0px 3px 6px #00000020;
-    background: #e5e5e5;
-    display: inline-block;
-    margin: 7px;
-    padding: 10px 10px 6px 10px;
-}
+    .p-select {
+        width: 72px;
+        height: 30px;
+        border-radius: 8px;
+    }
 
-.content-name{
-    display: inline-block;
-    margin-right: 10px;
-}
+    .p-select .p-select-label {
+        font-size: 13px;
+    }
 
-.content-select{
-    display: inline-block;
-    width: 190px;
+    .flex {
+        display: flex;
+        gap: 4px;
+    }
+
+    .svg-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        box-sizing: border-box;
+        border: 1px solid var(--guardian-border-color, #E1E7EF);
+        border-radius: 8px;
+
+        &:hover {
+            border-color: var(--color-primary);
+            box-shadow: none;
+        }
+    }
 }
 
 *[readonly-block="true"] {

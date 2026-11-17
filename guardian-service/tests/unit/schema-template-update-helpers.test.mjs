@@ -226,7 +226,7 @@ describe('schema template update diff helpers', () => {
 
         assert.deepEqual(details, [
             { label: 'Field Name', before: 'Old label', after: 'New label' },
-            { label: 'Type', before: 'string', after: 'number' },
+            { label: 'Type', before: 'String', after: 'Number' },
             { label: 'Semantic ID', before: 'schema:old#field_1', after: 'schema:new#field_1' },
             { label: 'Order', before: '0', after: '1' },
             { label: 'Required', before: 'No', after: 'Yes' }
@@ -1293,7 +1293,7 @@ describe('buildSchemaTemplateUpdatePreviewFromContext - policy-side field edits'
         const change = preview.changes.find((c) => c.type === 'FIELD_UPDATE');
         assert.ok(change, 'a policy-only edit that the update reverts must be visible');
         const byLabel = Object.fromEntries(change.details.map((d) => [d.label, d]));
-        assert.deepEqual([byLabel.Type.before, byLabel.Type.after], ['number', 'string']);
+        assert.deepEqual([byLabel.Type.before, byLabel.Type.after], ['Number', 'String']);
         assert.deepEqual([byLabel.Required.before, byLabel.Required.after], ['Yes', 'No']);
         assert.deepEqual([byLabel.Array.before, byLabel.Array.after], ['Yes', 'No']);
         assert.equal(byLabel.Autocalculate.before, 'Yes');

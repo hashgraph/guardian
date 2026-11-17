@@ -1,10 +1,10 @@
 import assert from 'node:assert';
 import { connect, headers, NatsConnection, StringCodec, Subscription } from 'nats';
-import { IMessageResponse, MessageError } from '../models/index.js';
+import { IMessageResponse, MessageError } from '../models/message-response.js';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { ZipCodec } from './zip-codec.js';
-import { GenerateTLSOptionsNats } from '../helpers/index.js';
-import { JwtServicesValidator } from '../security/index.js';
+import { GenerateTLSOptionsNats } from '../helpers/generate-tls-options.js';
+import { JwtServicesValidator } from '../security/jwt-services-validator.js';
 
 const MQ_TIMEOUT = 300000;
 /**

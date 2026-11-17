@@ -1,3 +1,5 @@
+@use '../../../schema-engine/doc-toggle' as toggle;
+
 .loading {
     background: var(--guardian-background, #fff);
     position: absolute;
@@ -268,7 +270,7 @@
                 flex-wrap: wrap;
                 gap: 6px;
                 margin-top: 6px;
-                color: var(--guardian-dry-run-color, #848fa9);
+                color: var(--color-grey-5);
                 font-size: 13px;
                 line-height: 18px;
 
@@ -303,9 +305,9 @@
             line-height: 16px;
 
             &.counter-pill-warn {
-                color: #8a5a00;
-                background: #fff8e6;
-                border-color: #f0d99b;
+                background: color-mix(in srgb, var(--color-accent-yellow-1, #DA9B22) 10%, var(--guardian-background, #fff));
+                border-color: color-mix(in srgb, var(--color-accent-yellow-1, #DA9B22) 40%, var(--guardian-border-color, #E1E7EF));
+                color: color-mix(in srgb, var(--color-accent-yellow-1, #DA9B22) 70%, #000);
             }
         }
 
@@ -348,7 +350,7 @@
             border-radius: 6px;
             background: var(--guardian-background, #fff);
             border: 1px solid var(--guardian-border-color, #e1e7ef);
-            color: var(--guardian-dry-run-color, #848fa9);
+            color: var(--color-grey-5);
             font-size: 12px;
             font-weight: 500;
         }
@@ -359,7 +361,7 @@
             height: 32px;
             padding: 0 12px;
             border-bottom: 1px solid var(--guardian-border-color, #e1e7ef);
-            color: var(--guardian-dry-run-color, #848fa9);
+            color: var(--color-grey-5);
             font-size: 12px;
             font-weight: 600;
             line-height: 16px;
@@ -411,24 +413,29 @@
             line-height: 16px;
         }
 
+        /*
+         * One vocabulary for every diff, built the way the schema editor builds its panels:
+         * a brand colour mixed into the background. Added is the green accent, changed the
+         * yellow accent, kept/custom the primary, removed stays neutral.
+         */
         .diff-badge-green {
-            color: #128c35;
-            background: rgba(25, 190, 71, 0.14);
-        }
-
-        .diff-badge-red {
-            color: var(--color-accent-red-1, #ff432a);
-            background: rgba(255, 67, 42, 0.12);
+            color: color-mix(in srgb, var(--color-accent-green-1, #19BE47) 82%, #000);
+            background: color-mix(in srgb, var(--color-accent-green-1, #19BE47) 14%, var(--guardian-background, #fff));
         }
 
         .diff-badge-yellow {
-            color: #8a5a00;
-            background: #fff8e6;
+            color: color-mix(in srgb, var(--color-accent-yellow-1, #DA9B22) 70%, #000);
+            background: color-mix(in srgb, var(--color-accent-yellow-1, #DA9B22) 14%, var(--guardian-background, #fff));
         }
 
         .diff-badge-blue {
-            color: var(--guardian-primary-color, #4169e2);
-            background: rgba(65, 105, 226, 0.10);
+            color: color-mix(in srgb, var(--color-primary, #4169E2) 82%, #000);
+            background: color-mix(in srgb, var(--color-primary, #4169E2) 10%, var(--guardian-background, #fff));
+        }
+
+        .diff-badge-red {
+            color: var(--color-grey-6, #495057);
+            background: var(--guardian-grey-color, #EFF3F7);
         }
 
         .diff-row-title {
@@ -447,7 +454,7 @@
         }
 
         .diff-row-scope {
-            color: var(--guardian-dry-run-color, #848fa9);
+            color: var(--color-grey-5);
             font-size: 12px;
             line-height: 16px;
         }
@@ -482,10 +489,19 @@
 
         .diff-detail-label {
             padding: 8px 10px;
-            color: var(--guardian-dry-run-color, #848fa9);
+            color: var(--color-grey-5);
             font-size: 12px;
             font-weight: 600;
             line-height: 16px;
+        }
+
+        .diff-detail-value,
+        .diff-value-text,
+        .diff-message {
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            overflow: hidden;
         }
 
         .diff-detail-value {
@@ -498,11 +514,11 @@
             white-space: normal;
 
             &.before {
-                background: #f8fafc;
+                background: var(--guardian-grey-background, #F9FAFC);
             }
 
             &.after {
-                background: #f7fdf9;
+                background: color-mix(in srgb, var(--color-primary, #4169E2) 7%, var(--guardian-background, #fff));
             }
         }
 
@@ -522,28 +538,27 @@
             background: var(--guardian-background, #fff);
 
             &.diff-single-add {
-                background: #f7fdf9;
-                border-color: rgba(25, 190, 71, 0.24);
+                background: color-mix(in srgb, var(--color-accent-green-1, #19BE47) 8%, var(--guardian-background, #fff));
+                border-color: color-mix(in srgb, var(--color-accent-green-1, #19BE47) 40%, var(--guardian-border-color, #E1E7EF));
             }
 
             &.diff-single-remove {
-                background: #fff8f7;
-                border-color: rgba(255, 67, 42, 0.18);
+                background: var(--guardian-grey-background, #F9FAFC);
             }
         }
 
         .diff-value-before {
-            background: #f8fafc;
+            background: var(--guardian-grey-background, #F9FAFC);
         }
 
         .diff-value-after {
-            background: #f7fdf9;
-            border-color: rgba(25, 190, 71, 0.24);
+            background: color-mix(in srgb, var(--color-primary, #4169E2) 7%, var(--guardian-background, #fff));
+            border-color: color-mix(in srgb, var(--color-primary, #4169E2) 24%, var(--guardian-border-color, #E1E7EF));
         }
 
         .diff-value-label {
             margin-bottom: 4px;
-            color: var(--guardian-dry-run-color, #848fa9);
+            color: var(--color-grey-5);
             font-size: 11px;
             font-weight: 600;
             line-height: 14px;
@@ -562,7 +577,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--guardian-dry-run-color, #848fa9);
+            color: var(--color-grey-5);
             font-size: 16px;
             font-weight: 600;
         }
@@ -576,63 +591,299 @@
             line-height: 16px;
             font-weight: 600;
             text-transform: uppercase;
-            color: var(--guardian-dry-run-color, #848fa9);
+            color: var(--color-grey-5);
             margin-bottom: 8px;
         }
 
-        .conflict-item {
-            border: 1px solid var(--guardian-border-color, #e1e7ef);
-            border-radius: 6px;
-            padding: 12px;
-            font-size: 14px;
-            color: var(--guardian-font-color, #23252e);
-            margin-bottom: 8px;
-        }
-
-        .conflict-section .conflict-item {
-            background: var(--guardian-warning-background, #fff8e6);
-            border-color: var(--guardian-warning-border, #f0d99b);
-        }
-
-        .conflict-header {
+        /* Resolve conflicts: the new form's language - Inter, 8-10px radii, pills, the segmented toggle. */
+        .resolve {
             display: flex;
-            align-items: flex-start;
+            flex-direction: column;
+            gap: 12px;
+            padding: 16px;
+            font-family: Inter, sans-serif;
         }
 
-        .conflict-message {
+        .resolve-head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .resolve-title {
             margin: 0;
-            line-height: 20px;
+            font-size: 17px;
+            font-weight: 600;
+            line-height: 22px;
+            color: var(--guardian-font-color);
         }
 
-        .resolution-actions {
+        .resolve-progress {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--color-grey-5);
+
+            &.resolve-progress-done {
+                color: color-mix(in srgb, var(--color-accent-green-1, #19BE47) 82%, #000);
+            }
+        }
+
+        .resolve-card {
+            border: 1px solid var(--guardian-border-color);
+            border-radius: 10px;
+            background: var(--guardian-background);
+            box-shadow: 0 1px 2px var(--guardian-shadow, #00000014);
+            overflow: hidden;
+        }
+
+        .resolve-card-head {
             display: flex;
-            flex-wrap: wrap;
+            align-items: center;
             gap: 8px;
-            margin-top: 10px;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--guardian-border-color);
+            background: color-mix(in srgb, var(--guardian-border-color) 30%, var(--guardian-grey-background));
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--guardian-font-color);
         }
 
-        .resolution-button {
-            height: 32px;
-            border-radius: 6px;
-            border: 1px solid var(--guardian-border-color, #e1e7ef);
-            background: var(--guardian-background, #fff);
-            color: var(--guardian-font-color, #23252e);
-            padding: 0 12px;
-            font-size: 13px;
+        .resolve-card-name {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .resolve-bulk {
+            display: inline-flex;
+            gap: 6px;
+            margin-left: auto;
+        }
+
+        .resolve-bulk-btn {
+            height: 26px;
+            padding: 0 10px;
+            border: 1px solid color-mix(in srgb, var(--guardian-border-color) 70%, var(--guardian-font-color));
+            border-radius: 7px;
+            background: var(--guardian-background);
+            color: var(--guardian-font-color);
+            font-family: Inter, sans-serif;
+            font-size: 12px;
+            font-weight: 600;
             cursor: pointer;
 
-            &.selected {
-                border-color: var(--guardian-primary-color, #4169e2);
-                color: var(--guardian-primary-color, #4169e2);
-                background: rgba(65, 105, 226, 0.08);
+            &:hover:not(:disabled) {
+                background: color-mix(in srgb, var(--color-primary, #4169E2) 8%, var(--guardian-background));
+                border-color: var(--color-primary, #4169E2);
+                color: var(--color-primary, #4169E2);
             }
 
-            &.resolution-button-blocked {
+            &:focus-visible {
+                outline: 2px solid var(--color-primary, #4169E2);
+                outline-offset: 2px;
+            }
+
+            &:disabled {
                 cursor: not-allowed;
-                border-style: dashed;
-                border-color: var(--guardian-border-color, #e1e7ef);
-                color: var(--guardian-disabled-color, #848fa9);
-                background: var(--guardian-disabled-background, #eff3f7);
+                opacity: 0.5;
+            }
+        }
+
+        .resolve-count {
+            padding: 1px 8px;
+            border-radius: 999px;
+            border: 1px solid var(--guardian-border-color);
+            background: var(--guardian-background);
+            color: var(--color-grey-5);
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .resolve-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 320px;
+            align-items: start;
+            gap: 10px 16px;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--guardian-border-color);
+
+            &:last-child {
+                border-bottom: 0;
+            }
+        }
+
+        .resolve-row-main {
+            min-width: 0;
+        }
+
+        .resolve-row-title {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+            min-width: 0;
+        }
+
+        .resolve-name {
+            min-width: 0;
+            max-width: 100%;
+            overflow-wrap: anywhere;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 20px;
+            color: var(--guardian-font-color);
+        }
+
+        .resolve-pill {
+            flex: none;
+            padding: 2px 10px;
+            border-radius: 999px;
+            background: var(--guardian-grey-color-2, #E1E7EF);
+            color: var(--guardian-font-color);
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 16px;
+
+            &.resolve-pill-edited {
+                background: var(--guardian-primary-background, #E1E7FA);
+                color: color-mix(in srgb, var(--color-primary, #4169E2) 82%, #000);
+            }
+        }
+
+        .resolve-note {
+            margin-top: 2px;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            overflow: hidden;
+            font-size: 12.5px;
+            line-height: 18px;
+            color: var(--color-grey-5);
+        }
+
+        /* One connected toggle: the options read as a pair, the chosen one filled with primary. */
+        .resolve-actions {
+            width: 320px;
+            justify-self: end;
+            display: inline-flex;
+            align-items: stretch;
+            border: 1px solid color-mix(in srgb, var(--guardian-border-color) 70%, var(--guardian-font-color));
+            border-radius: 8px;
+            background: var(--guardian-background);
+            overflow: hidden;
+        }
+
+        .resolve-row-pending .resolve-actions {
+            border-color: var(--color-accent-yellow-1, #DA9B22);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent-yellow-1, #DA9B22) 18%, transparent);
+        }
+
+        .resolve-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            flex: 1 1 0;
+            min-width: 0;
+            height: 32px;
+            padding: 0 10px;
+            border: 0;
+            border-radius: 0;
+            background: transparent;
+            color: var(--guardian-font-color);
+            font-family: Inter, sans-serif;
+            font-size: 12.5px;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+
+            & + .resolve-btn {
+                border-left: 1px solid color-mix(in srgb, var(--guardian-border-color) 70%, var(--guardian-font-color));
+            }
+
+            &:hover:not(:disabled):not(.selected) {
+                background: color-mix(in srgb, var(--color-primary, #4169E2) 8%, var(--guardian-background));
+                color: var(--color-primary, #4169E2);
+            }
+
+            &:focus-visible {
+                outline: 2px solid var(--color-primary, #4169E2);
+                outline-offset: -2px;
+            }
+
+            &.selected {
+                background: var(--color-primary, #4169E2);
+                color: var(--guardian-on-primary-color, #fff);
+            }
+
+            &:disabled {
+                cursor: not-allowed;
+                opacity: 0.5;
+            }
+
+            .pi {
+                font-size: 11px;
+            }
+        }
+
+        /* An unanswered row is marked, so it cannot be scrolled past unnoticed. */
+        .resolve-row {
+            box-shadow: inset 3px 0 0 var(--color-accent-green-1, #19BE47);
+        }
+
+        .resolve-row.resolve-row-pending {
+            box-shadow: inset 3px 0 0 var(--color-accent-yellow-1, #DA9B22);
+        }
+
+        .resolve-compare {
+            grid-column: 1 / -1;
+            border: 1px solid var(--guardian-border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .resolve-compare-row {
+            display: grid;
+            grid-template-columns: 120px minmax(0, 1fr) minmax(0, 1fr);
+            border-bottom: 1px solid var(--guardian-border-color);
+            font-size: 13px;
+            line-height: 18px;
+
+            &:last-child {
+                border-bottom: 0;
+            }
+
+            > div {
+                min-width: 0;
+                padding: 7px 10px;
+            }
+        }
+
+        .resolve-compare-head {
+            background: var(--guardian-grey-background);
+            color: var(--color-grey-5);
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .resolve-compare-label {
+            color: var(--color-grey-5);
+            font-weight: 500;
+        }
+
+        .resolve-compare-value {
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            overflow: hidden;
+            overflow-wrap: anywhere;
+            color: var(--guardian-font-color);
+
+            & + .resolve-compare-value {
+                border-left: 1px solid var(--guardian-border-color);
+                background: color-mix(in srgb, var(--color-primary, #4169E2) 6%, var(--guardian-background));
             }
         }
 
@@ -644,7 +895,7 @@
             justify-content: center;
             border: 1px dashed var(--guardian-border-color, #e1e7ef);
             border-radius: 6px;
-            color: var(--guardian-dry-run-color, #848fa9);
+            color: var(--color-grey-5);
             font-size: 14px;
         }
     }
@@ -671,4 +922,167 @@
 .empty-icon-color {
     fill: #AAB7C4;
     color: #AAB7C4;
+}
+
+.action-buttons .footer-hint {
+    min-width: 0;
+    height: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-right: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: color-mix(in srgb, var(--color-accent-yellow-1, #DA9B22) 70%, #000);
+    font-family: Inter, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+/* file.svg ships with fill="none" on its root and no fill of its own, so without this it draws nothing.
+   The icon is injected by svg-icon, outside this component's scoping, hence ::ng-deep. */
+:host ::ng-deep .diff-group-icon {
+    width: 18px;
+    height: 18px;
+    flex: none;
+    fill: currentColor;
+    color: var(--color-grey-5, #848FA9);
+}
+
+/* The darkened text is for the light theme; on the dark backgrounds it would lose contrast. */
+:host-context(.guardian-theme-dark) .resolve-pill.resolve-pill-edited {
+    color: #A9BCFF;
+}
+
+/* Field badges: the same recipe as the badges on a field row in the schema editor. */
+:host ::ng-deep .field-badges {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+}
+
+:host ::ng-deep .fb {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 14px;
+    white-space: nowrap;
+}
+
+:host ::ng-deep .fb-type,
+:host ::ng-deep .fb-opt,
+:host ::ng-deep .fb-hidden {
+    background: var(--guardian-grey-color, #EFF3F7);
+    color: var(--color-grey-6, #495057);
+}
+
+:host ::ng-deep .fb-req {
+    background: var(--guardian-failure-background, #FFEAEA);
+    color: color-mix(in srgb, var(--color-accent-red-1, #FF432A) 82%, #000);
+}
+
+:host ::ng-deep .fb-arr {
+    background: color-mix(in srgb, var(--color-primary, #4169E2) 10%, var(--guardian-background, #fff));
+    color: var(--color-primary, #4169E2);
+}
+
+:host ::ng-deep .fb-auto {
+    background: color-mix(in srgb, var(--color-primary, #4169E2) 10%, var(--guardian-background, #fff));
+    color: color-mix(in srgb, var(--color-primary, #4169E2) 82%, #000);
+}
+
+/* A field row, as in the schema editor: a 28px type icon, the name, the key in monospace, then badges. */
+.fi {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    min-width: 0;
+}
+
+.fi-icon {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: var(--guardian-grey-background, #F9FAFC);
+
+    .pi {
+        font-size: 13px;
+        color: var(--color-grey-5, #848FA9);
+    }
+}
+
+.fi-info {
+    min-width: 0;
+}
+
+.fi-title {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 18px;
+    color: var(--guardian-font-color, #23252E);
+    overflow-wrap: anywhere;
+}
+
+.fi-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+    min-width: 0;
+}
+
+.fi-key {
+    display: block;
+    max-width: 100%;
+    margin-top: 1px;
+    font-family: var(--font-mono, 'Courier New', Courier, monospace);
+    font-size: 11px;
+    line-height: 14px;
+    color: var(--color-grey-5, #848FA9);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Field row: change badge | icon, name and key | badges running to the end of the row. */
+.context .update-preview .diff-row.diff-row-field {
+    grid-template-columns: 96px minmax(160px, 280px) minmax(0, 1fr);
+    align-items: start;
+    gap: 12px 16px;
+
+    .diff-row-main {
+        display: contents;
+    }
+
+    > .diff-details,
+    > .diff-message {
+        grid-column: 1 / -1;
+    }
+}
+
+.context .update-preview .fi-badges {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    align-content: flex-start;
+}
+
+/* Deleted field: only "In the policy" and "In the template". */
+.context .update-preview .resolve-compare.resolve-compare-two .resolve-compare-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }

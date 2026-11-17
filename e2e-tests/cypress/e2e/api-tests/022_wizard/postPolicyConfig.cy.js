@@ -1,8 +1,9 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('Create Policy by Wizard', { tags: ['wizard', 'firstPool', 'all', 'all-no-mgs'] }, () => {
+context('Create Policy by Wizard', { tags: ['wizard', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const policyName = 'wizardPolicyEdited';
@@ -16,7 +17,7 @@ context('Create Policy by Wizard', { tags: ['wizard', 'firstPool', 'all', 'all-n
                 headers: {
                     authorization,
                 },
-                timeout: 180000
+                timeout: TIMEOUTS.backend
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 //The wizard spec names its policy after the run it was created in, so the most

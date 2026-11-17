@@ -1,5 +1,5 @@
 import {AfterDelete, BeforeCreate, Entity, Property} from '@mikro-orm/core';
-import { BaseEntity } from '../models/index.js';
+import { BaseEntity } from '../models/base-entity.js';
 import { EntityStatus, GenerateUUIDv4, IPolicyLabel, IPolicyLabelConfig } from '@guardian/interfaces';
 import { DataBaseHelper } from '../helpers/db-helper.js';
 import { ObjectId } from '@mikro-orm/mongodb';

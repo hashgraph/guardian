@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { OrgRolePermission } from '@guardian/interfaces';
-import { Users } from '@guardian/common';
+import { Users } from '@guardian/common/helpers/users';
 import { makeBlock, makeUser, restoreHarness } from './_block-exec-harness.mjs';
 import { MintBlock } from '../../../dist/policy-engine/blocks/mint-block.js';
 import { PolicyUtils } from '../../../dist/policy-engine/helpers/utils.js';

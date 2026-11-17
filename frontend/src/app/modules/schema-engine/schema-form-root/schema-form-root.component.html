@@ -1,86 +1,157 @@
 <div class="schema-form-root" #contentContainer>
-  @if (model && hasNavigation && navCollapsed) {
-    <div class="nav-collapse-rail">
-      <button
-        class="nav-collapse-btn"
-        type="button"
-        title="Expand panel"
-        aria-label="Expand panel"
-        (click)="toggleNav()">
-        <i class="pi pi-chevron-right"></i>
-      </button>
-    </div>
-  }
   @if (model) {
-    <div class="schema-form-view-nav" [hidden]="!hasNavigation || navCollapsed" #navContainer>
-      <div class="nav-collapse-header">
-        <span class="nav-collapse-title">Sections</span>
-        <button
-          class="nav-collapse-btn"
-          type="button"
-          title="Collapse panel"
-          aria-label="Collapse panel"
-          (click)="toggleNav()">
-          <i class="pi pi-chevron-left"></i>
-        </button>
-      </div>
-      <app-schema-form-navigation
-        #schemaNav
-        [schemaFields]="navFields"
-        (selectEvent)="onNavSelectEvent($event)"
-        (hasItemsChangeEvent)="onNavHasItemsEvent($event)"
-        >
-      </app-schema-form-navigation>
-    </div>
+    <app-schema-form-nav
+      [sections]="hasSections ? sections : []"
+      [completion]="completion"
+      [progressPending]="previewRequirementsStale"
+      [screen]="screen"
+      [activeIndex]="activeIndex"
+      [cards]="activeCards"
+      [errorsRevealed]="errorsRevealed"
+      [barLabel]="barLabel"
+      [overviewLabel]="showOverview ? 'Overview' : null"
+      [locked]="isPreviewLocked"
+      (sectionSelect)="onRailSelect($event)"
+      (selectCard)="onRailCard($event)"
+      >
+      <ng-container ngProjectAs="[navTop]"><ng-content select="[sfNotice]"></ng-content></ng-container>
+      @if (hasSections) {
+        @if (screen === 'overview') {
+          <app-schema-form-overview [cards]="overviewCards" [locked]="isPreviewLocked" [progressPending]="previewRequirementsStale" (open)="openSection($event)">
+            <div overviewHead>
+              @if (promotedName) {
+                <div class="sf-notice">
+                  <i class="pi pi-info-circle" aria-hidden="true"></i>
+                  <span>This schema has one root sub-schema, <b>{{ promotedName }}</b>. Its sub-schemas are shown as the sections.</span>
+                </div>
+              }
+              <div class="sf-overview-head">
+                <div class="sf-overview-text">
+                  @if (schemaName) {
+                    <div class="sf-eyebrow">{{ schemaName }}</div>
+                  }
+                  <h2 class="sf-overview-title">{{ overviewTitle }}</h2>
+                  @if (overviewNothingRequired) {
+                    <p class="sf-lead">This form has no required fields. Open a section to fill in what applies.</p>
+                  } @else if (overviewHint) {
+                    <p class="sf-lead">{{ overviewHint }}</p>
+                  }
+                  <div class="sf-overview-actions">
+                    @if (overviewNothingRequired) {
+                      <button type="button" class="sf-btn sf-btn-primary" (click)="openSection(0)">Start</button>
+                    } @else if (overviewComplete) {
+                      @if (overviewSubmit; as submit) {
+                        <button type="button" class="sf-btn sf-btn-primary" [disabled]="submit.disabled" (click)="submit.run()">{{ submit.text }}</button>
+                      }
+                    } @else {
+                      <button type="button" class="sf-btn sf-btn-primary" (click)="openSection(firstIncomplete)">{{ overviewPrimaryText }}</button>
+                    }
+                  </div>
+                </div>
+                @if (!overviewNothingRequired) {
+                  <div class="sf-overview-total" [style.visibility]="previewRequirementsStale ? 'hidden' : null">
+                    <app-schema-form-ring size="lg" [state]="overviewComplete ? 'done' : 'progress'" [pct]="percent">{{ percent }}%</app-schema-form-ring>
+                    <div>
+                      <b class="sf-overview-count">{{ completion?.answered ?? 0 }} of {{ completion?.total ?? 0 }}</b>
+                      <div class="sf-overview-caption">required answers</div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          </app-schema-form-overview>
+        } @else {
+            <div class="sf-section-head">
+              <h2 class="sf-section-title">{{ activeSection?.title }}</h2>
+              @if (!previewRequirementsStale && completion?.sections?.[activeIndex]; as stats) {
+                <span
+                  class="sf-chip"
+                  [class.sf-chip-ok]="stats.total > 0 && stats.answered >= stats.total"
+                  [class.sf-chip-err]="errorsRevealed && stats.hasErrors"
+                  >
+                  @if (stats.total === 0) {
+                    All optional
+                  } @else if (stats.answered >= stats.total) {
+                    Complete
+                  } @else {
+                    {{ stats.answered }} of {{ stats.total }} required
+                  }
+                </span>
+              }
+              @if (nestedCards.length) {
+                <button type="button" class="sf-link" (click)="setAllOpen(false)">Collapse all</button>
+                <button type="button" class="sf-link" (click)="setAllOpen(true)">Expand all</button>
+              }
+            </div>
+        }
+      }
+@if (showChildForm) {
+        <app-schema-form
+          #childForm
+          [form-model]="formOwner!"
+          [renderControls]="formControls"
+          [previewMissingFieldIds]="previewMissingFieldIds"
+          [previewValidation]="requiredFields !== null"
+          [previewBusy]="isPreviewLocked"
+          [progressPending]="previewRequirementsStale"
+          [formulas]="formulaModel"
+          [private-fields]="hide"
+          [readonly-fields]="readonly"
+          [delimiter-hide]="delimiterHide"
+          [example]="example"
+          [cancelText]="cancelText"
+          [saveText]="saveText"
+          [submitText]="submitText"
+          [cancelHidden]="cancelHidden"
+          [submitHidden]="submitHidden"
+          [saveShown]="saveShown"
+          [showButtons]="showButtons"
+          [isChildSchema]="isChildSchema"
+          [comesFromDialog]="comesFromDialog"
+          [dryRun]="dryRun"
+          [policyId]="policyId"
+          [blockId]="blockId"
+          [rules]="rules"
+          [isFormForFinishSetup]="isFormForFinishSetup"
+          [isFormForRequestBlock]="isFormForRequestBlock"
+          [lastSavedAt]="lastSavedAt"
+          [isEditMode]="isEditMode"
+          (change)="onChange($event)"
+          (destroy)="onDestroy($event)"
+          (buttons)="onButtons($event)"
+          (cancelBtnEvent)="onCancelBtnEvent($event)"
+          (submitBtnEvent)="onSubmitBtnEvent($event)"
+          (saveBtnEvent)="onSaveBtnEvent($event)"
+          (updatableBtnEvent)="onUpdatableBtnEvent()"
+          (previewLoadingChange)="onPreviewLoadingChange($event)"
+          (previewInteraction)="previewInteraction.emit()"
+          (previewNavigation)="previewNavigation.emit()"
+          >
+        </app-schema-form>
+      }
+      @if (screen === 'section' && sections.length > 1) {
+        <div class="sf-section-links" [attr.inert]="isPreviewLocked ? '' : null">
+          @if (activeIndex > 0) {
+            <button type="button" class="sf-section-link" (click)="openSection(activeIndex - 1)">
+              <i class="pi pi-arrow-left" aria-hidden="true"></i>
+              {{ sections[activeIndex - 1].title }}
+            </button>
+          } @else {
+            <span></span>
+          }
+          @if (activeIndex < sections.length - 1) {
+            <button type="button" class="sf-section-link" (click)="openSection(activeIndex + 1)">
+              {{ sections[activeIndex + 1].title }}
+              <i class="pi pi-arrow-right" aria-hidden="true"></i>
+            </button>
+          }
+        </div>
+      }
+    </app-schema-form-nav>
   }
-  @if (model && hasNavigation && !navCollapsed) {
-    <div
-      class="resize-handler"
-      (mousedown)="onResizeStart($event)"
-    ></div>
-  }
-  <div class="schema-form-content" [class.full-width]="!model || !hasNavigation">
-    @if (model) {
-      <app-schema-form
-        #childForm
-        [form-model]="model"
-        [private-fields]="hide"
-        [readonly-fields]="readonly"
-        [delimiter-hide]="delimiterHide"
-        [example]="example"
-        [cancelText]="cancelText"
-        [saveText]="saveText"
-        [submitText]="submitText"
-        [cancelHidden]="cancelHidden"
-        [submitHidden]="submitHidden"
-        [saveShown]="saveShown"
-        [showButtons]="showButtons"
-        [isChildSchema]="isChildSchema"
-        [comesFromDialog]="comesFromDialog"
-        [dryRun]="dryRun"
-        [policyId]="policyId"
-        [blockId]="blockId"
-        [rules]="rules"
-        [paginationHidden]="paginationHidden"
-        [isFormForFinishSetup]="isFormForFinishSetup"
-        [isFormForRequestBlock]="isFormForRequestBlock"
-        [lastSavedAt]="lastSavedAt"
-        [isEditMode]="isEditMode"
-        (change)="onChange($event)"
-        (destroy)="onDestroy($event)"
-        (buttons)="onButtons($event)"
-        (cancelBtnEvent)="onCancelBtnEvent($event)"
-        (submitBtnEvent)="onSubmitBtnEvent($event)"
-        (saveBtnEvent)="onSaveBtnEvent($event)"
-        (updatableBtnEvent)="onUpdatableBtnEvent()"
-        (onAccordionSelect)="onAccordionSelect($event)"
-        >
-      </app-schema-form>
-    }
-  </div>
 </div>
-@if (loading) {
-  <div class="guardian-loading">
+@if (requiredFields === null ? loading : !previewActionsDisabled && (loading || previewLoadingCount > 0)) {
+  <div class="guardian-loading" [class.preview-loading-overlay]="requiredFields !== null">
     <div class="guardian-loading-image"></div>
   </div>
 }

@@ -1,4 +1,6 @@
-import { IAuthUser, NotificationService, PinoLogger } from '@guardian/common';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { NotificationService } from '@guardian/common/notification/notification.service';
 import { Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Response, } from '@nestjs/common';
 import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Examples, ObjectExamples, InternalServerErrorDTO, NotificationDTO, ProgressDTO, pageHeader } from '#middlewares';

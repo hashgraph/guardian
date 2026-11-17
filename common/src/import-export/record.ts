@@ -1,6 +1,8 @@
 import JSZip from 'jszip';
-import { Record, VpDocument as VpDocumentCollection, VcDocument as VcDocumentCollection, VcDocument, VpDocument } from '../entity/index.js';
-import { DatabaseServer } from '../database-modules/index.js';
+import { Record } from '../entity/record.js';
+import { VpDocument as VpDocumentCollection, VpDocument } from '../entity/vp-document.js';
+import { VcDocument as VcDocumentCollection, VcDocument } from '../entity/vc-document.js';
+import { DatabaseServer } from '../database-modules/database-server.js';
 import { FilterObject } from '@mikro-orm/core';
 import { IRecordPolicyTestMetadata } from '@guardian/interfaces';
 

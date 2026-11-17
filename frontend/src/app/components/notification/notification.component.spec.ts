@@ -4,13 +4,13 @@ describe('NotificationComponent', () => {
     let toastService: any;
 
     function create(): any {
-        toastService = jasmine.createSpyObj('ToastService', ['info', 'success', 'warn', 'error']);
-        return new NotificationComponent(
-            {} as any,
-            {} as any,
-            toastService as any,
-            {} as any,
-        );
+        toastService = {
+            info: vi.fn().mockName("ToastService.info"),
+            success: vi.fn().mockName("ToastService.success"),
+            warn: vi.fn().mockName("ToastService.warn"),
+            error: vi.fn().mockName("ToastService.error")
+        };
+        return new NotificationComponent({} as any, {} as any, toastService as any, {} as any);
     }
 
     // Every async task sends the same "Operation started" constant, so the toast looked
@@ -21,7 +21,7 @@ describe('NotificationComponent', () => {
 
             component.toastProgress({ message: 'Operation started', action: 'Migrate data' });
 
-            const [detail, summary] = toastService.info.calls.mostRecent().args;
+            const [detail, summary] = vi.mocked(toastService.info).mock.lastCall;
             expect(detail).toContain('Migrate data');
             expect(detail).not.toBe('Operation started');
             expect(summary).toBe('Migrate data');
@@ -32,7 +32,7 @@ describe('NotificationComponent', () => {
 
             component.toastProgress({ action: 'Publish policy' });
 
-            expect(toastService.info.calls.mostRecent().args[0]).toContain('Publish policy');
+            expect(vi.mocked(toastService.info).mock.lastCall![0]).toContain('Publish policy');
         });
 
         it('passes a specific message through untouched', () => {

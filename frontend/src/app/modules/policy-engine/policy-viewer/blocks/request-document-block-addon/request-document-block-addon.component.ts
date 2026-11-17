@@ -3,8 +3,7 @@ import {
     Component,
     Input,
     OnInit,
-    TemplateRef,
-    ViewChild,
+    inject,
 } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { DocumentGenerator, ISchema, IUser, Schema, PolicyStatus } from '@guardian/interfaces';
@@ -12,14 +11,14 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
-import { Router } from '@angular/router';
 import { DialogService } from 'primeng/dynamicdialog';
 import { AbstractUIBlockComponent } from '../models/abstract-ui-block.component';
-import { RequestDocumentBlockDialog } from '../request-document-block/dialog/request-document-block-dialog.component';
+import { RequestDocumentFormComponent } from '../request-document-block/form/request-document-form.component';
+import { TablePersistenceService } from 'src/app/services/table-persistence.service';
+import { GeoFilePersistenceService } from 'src/app/services/geo-file-persistence.service';
+import { FormTakeoverService } from '../../form-takeover/form-takeover.service';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { SchemaService } from 'src/app/services/schema.service';
-import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
-import { PolicyTestAutomationService } from '../../policy-test-automation/policy-test-automation.service';
 
 interface IRequestDocumentAddonData {
     readonly: boolean;
@@ -70,7 +69,6 @@ export class RequestDocumentBlockAddonComponent
     public presetReadonlyFields: any;
     public dialogLoading: boolean = false;
     public dialogTitle: any;
-    public dialogRef: any;
     public uiClass: any;
     public buttonName: any;
     public hideWhenDiscontinued?: boolean = false;
@@ -78,7 +76,13 @@ export class RequestDocumentBlockAddonComponent
     public rules: any;
     public hideFields: any;
     public readonly: boolean = false;
-    public dialog: RequestDocumentBlockDialog;
+    public form: RequestDocumentFormComponent | null = null;
+    // Drafts are always allowed here: `edit` and `draft` are never set for the addon
+    public readonly allowDraft: boolean = true;
+    /** The addon request never stores a draft on the server, so Save Draft stays in this browser */
+    public readonly draftEnabled: boolean = false;
+    private formTakeover = inject(FormTakeoverService, { optional: true });
+    private destroyed = false;
     public edit: boolean;
     public draft: boolean;
     public relayerAccount: boolean;
@@ -93,10 +97,10 @@ export class RequestDocumentBlockAddonComponent
         private schemaRulesService: SchemaRulesService,
         private fb: UntypedFormBuilder,
         private dialogService: DialogService,
-        private router: Router,
         private changeDetectorRef: ChangeDetectorRef,
-        private policyTest: PolicyTestAutomationService,
         private schemaService: SchemaService,
+        private tablePersist: TablePersistenceService,
+        private geoFilePersist: GeoFilePersistenceService,
     ) {
         super(policyEngineService, profile, wsService);
         this.dataForm = this.fb.group({});
@@ -127,7 +131,13 @@ export class RequestDocumentBlockAddonComponent
         (window as any).__request[this.id] = this;
     }
 
+    public get isDestroyed(): boolean {
+        return this.destroyed;
+    }
+
+    // An open form outlives the block, as in RequestDocumentBlockComponent
     ngOnDestroy(): void {
+        this.destroyed = true;
         this.destroy();
     }
 
@@ -215,58 +225,10 @@ export class RequestDocumentBlockAddonComponent
         return null;
     }
 
-    public onSubmit() {
-        if (this.disabled) {
-            return;
-        }
-        if (this.loading) {
-            return;
-        }
-        if (this.dataForm.valid) {
-            const data = this.dataForm.getRawValue();
-            prepareVcData(data);
-            const payload = {
-                document: data,
-                ref: this.ref?.id,
-            };
-
-            const captureOutput = this.dryRun && this.policyTest.state.captureNextFormSubmit;
-
-            this.dialogRef.close();
-            this.dialogRef = null;
-            this.loading = true;
-            this.policyEngineService.setBlockDataWithResult(this.id, this.policyId, payload).subscribe(
-                    (result) => {
-                        if (captureOutput) {
-                            this.policyTest.captureTestCase({
-                                policyId: this.policyId,
-                                blockId: this.id,
-                                blockType: 'requestDocumentBlockAddon',
-                                ...payload,
-                                result: result?.result || result?.response
-                            });
-                        }
-                    },
-                    (e) => {
-                        this.loading = false;
-                    }
-                );
-        }
-    }
-
     public preset(document: any) {
         this.presetDocument = document;
         this.changeDetectorRef.detectChanges();
-        if (this.dialog) {
-            this.dialog.detectChanges();
-        }
-    }
-
-    public onCancel(): void {
-        if (this.dialogRef) {
-            this.dialogRef.close();
-            this.dialogRef = null;
-        }
+        this.form?.detectChanges();
     }
 
     public getRef() {
@@ -285,14 +247,35 @@ export class RequestDocumentBlockAddonComponent
             this.presetDocument = null;
         }
 
-        const dialogRef = this.dialogService.open(RequestDocumentBlockDialog, {
+        this.showDocumentDialog();
+    }
+
+    /**
+     * Opens a new form with the values of a submitted document, without resetting the
+     * data form first. Uploaded files and tables stay linked.
+     */
+    public async duplicateSubmitted(values: any, sourceId: string | null) {
+        this.preset(values);
+        await this.tablePersist.restoreTablesFromDraft(values);
+        await this.geoFilePersist.restoreGeoFilesFromDraft(values);
+        this.showDocumentDialog(sourceId);
+    }
+
+    private showDocumentDialog(duplicatedFrom: string | null = null) {
+        if (this.formTakeover) {
+            this.formTakeover.open(RequestDocumentFormComponent, {
+                parent: this,
+                allowDraft: this.allowDraft,
+                duplicatedFrom
+            });
+            return;
+        }
+        this.dialogService.open(RequestDocumentFormComponent, {
             showHeader: false,
             width: '90%',
-            styleClass: 'guardian-dialog',
-            data: this
-        })!;
-        dialogRef.onClose.subscribe(async (result) => {
-            //
+            styleClass: 'guardian-dialog pv-scope',
+            data: this,
+            inputValues: { duplicatedFrom }
         });
     }
 
@@ -305,9 +288,5 @@ export class RequestDocumentBlockAddonComponent
 
     public onRestoreClick() {
         return;
-    }
-
-    public onCancelPage(value: boolean) {
-        this.router.navigate(['/policy-viewer']);
     }
 }

@@ -22,6 +22,7 @@ import { OtpCodesDialogComponent } from '../login/otp-codes-dialog/otp-codes-dia
 import { OtpConfigDialogComponent } from '../login/otp-config-dialog/otp-config-dialog.component';
 import { OtpDisableDialogComponent } from '../login/otp-disable-dialog/otp-disable-dialog.component';
 import moment from 'moment';
+import { SchemaFormRootComponent } from '../../modules/schema-engine/schema-form-root/schema-form-root.component';
 import { AppTheme, AppThemeOption, AppThemeService } from '../../services/app-theme.service';
 import { MenuLayout, MenuLayoutOption, MenuLayoutService } from '../../services/menu-layout.service';
 import { DocWidgetService } from '../../services/doc-widget.service';
@@ -35,7 +36,7 @@ const FEEDBACK_MAILTO_TEMPLATE =
     '&body=This%20is%20%5Bfeedback%20/%20support%20request%20/%20feature%20request%5D%0A%0A--%0A%0A' +
     'Add%20a%20summary%20here.%0A%0A%0AVersion:%20%5B{VERSION}%5D%0AOrigin:%20%5B{ORIGIN}%5D%0A---%0A';
 
-enum OperationMode {
+export enum OperationMode {
     None,
     Generate,
     GetAllUserTopics,
@@ -62,6 +63,7 @@ interface IColumn {
 })
 export class RootProfileComponent implements OnInit, OnDestroy {
     @ViewChild('actionMenu') actionMenu: any;
+    @ViewChild(SchemaFormRootComponent) formRoot?: SchemaFormRootComponent;
 
     public loading: boolean = true;
     public subLoading: boolean = false;
@@ -204,7 +206,11 @@ export class RootProfileComponent implements OnInit, OnDestroy {
                 this.cdRef.detectChanges();
             })
         );
-        this.loadProfile();
+        // changeTab() has just loaded it for the general tab. A second load would end the loading state
+        // again after the wizard is shown, and drop the progress of a Generate clicked in between.
+        if (this.tab !== 'general') {
+            this.loadProfile();
+        }
         this.step = 'HEDERA';
         this.refreshOtpStatus();
         this.subscriptions.add(
@@ -514,6 +520,12 @@ export class RootProfileComponent implements OnInit, OnDestroy {
             this.operationMode = OperationMode.None;
             this.taskService.get(taskId).subscribe(
                 (task) => {
+                    if (!task?.result) {
+                        // The result can be hidden while the gateway still runs the task callback.
+                        this.toastService.error('The operation finished but its result did not arrive. Try again.', 'Result missing');
+                        this.loading = false;
+                        return;
+                    }
                     switch (operationMode) {
                         case OperationMode.Generate: {
                             const { id, key } = task.result;
@@ -610,7 +622,11 @@ export class RootProfileComponent implements OnInit, OnDestroy {
     }
 
     public onSubmit() {
-        if (this.hederaForm.valid && this.vcForm.valid) {
+        if (!this.vcForm.valid) {
+            this.formRoot?.revealErrors();
+            return;
+        }
+        if (this.hederaForm.valid) {
             const hederaForm = this.hederaForm.value;
             const vcDocument = this.vcForm.value;
             const didDocument = this.didDocumentType.value ?

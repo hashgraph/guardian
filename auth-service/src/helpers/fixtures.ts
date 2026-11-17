@@ -1,6 +1,6 @@
 import { User } from '../entity/user.js';
 import { UserRole } from '@guardian/interfaces';
-import { DatabaseServer } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import { UserPassword } from '#utils';
 import process from 'node:process';
 

@@ -76,7 +76,6 @@ export class ChangePasswordComponent implements OnInit {
         this.auth.changePassword(value.login, value.oldPassword, value.newPassword)
             .subscribe((result) => {
                 this.auth.setRefreshToken(result.refreshToken);
-                this.auth.setUsername(value.login);
                 this.auth.updateAccessToken().subscribe(_result => {
                     this.authState.updateState(true);
                     const home = this.auth.home(result.role);

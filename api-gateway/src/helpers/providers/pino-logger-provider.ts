@@ -1,7 +1,8 @@
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 
-import { PinoLogger, pinoLoggerInitialization } from '@guardian/common';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { pinoLoggerInitialization } from '@guardian/common/helpers/pino-logger-initialization';
 
 //constants
 import { LOGGER_MONGO_PROVIDER } from '#constants';

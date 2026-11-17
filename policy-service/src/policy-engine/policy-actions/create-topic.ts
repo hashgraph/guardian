@@ -1,4 +1,6 @@
-import { PolicyAction, TopicConfig, TopicHelper } from '@guardian/common';
+import { PolicyAction } from '@guardian/common/entity/policy-action';
+import { TopicConfig } from '@guardian/hedera/topic';
+import { TopicHelper } from '@guardian/hedera/topic-helper';
 import { GenerateUUIDv4, TopicType } from '@guardian/interfaces';
 import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';

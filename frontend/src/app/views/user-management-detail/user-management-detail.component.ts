@@ -1,15 +1,16 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { PermissionsService } from '../../services/permissions.service';
 import { ProfileService } from '../../services/profile.service';
-import { PolicyStatus, UserPermissions } from '@guardian/interfaces';
+import { AssignedEntityType, PolicyStatus, UserPermissions } from '@guardian/interfaces';
 import { Subscription, forkJoin } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
-import { PermissionsGroup } from 'src/app/utils/index';
+import { PermissionsGroup, getUserInitials, shortDid } from 'src/app/utils/index';
+import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
     selector: 'app-user-management-detail',
     templateUrl: './user-management-detail.component.html',
-    styleUrls: ['./user-management-detail.component.scss'],
+    styleUrls: ['../../modules/policy-engine/styles/top-toolbar.scss', './user-management-detail.component.scss'],
     standalone: false
 })
 export class UsersManagementDetailComponent implements OnInit, OnDestroy {
@@ -26,7 +27,7 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
         owner: string,
         own: boolean,
         canEdit: boolean
-    }[];
+    }[] = [];
     public group: PermissionsGroup;
     public permissions: any[] = [];
     public policyPage: any[] = [];
@@ -65,6 +66,16 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
     }];
     public needSave: boolean = false;
     public allPolicy: boolean = false;
+    public assignedCount: number = 0;
+    public grantedCount: number = 0;
+    public showAll: boolean = false;
+    public shortDid = shortDid;
+    public visiblePreview: typeof this.preview = [];
+    public preview: {
+        name: string,
+        actions: string[],
+        entities: { name: string, type: string, granted: boolean, cells: ({ value: boolean, tooltip: string } | null)[] }[]
+    }[] = [];
 
     private subscription = new Subscription();
     private oldGroups: Map<string, any>;
@@ -73,7 +84,8 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
         private permissionsService: PermissionsService,
         private profileService: ProfileService,
         private router: Router,
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        private toastService: ToastService
     ) {
     }
 
@@ -125,8 +137,10 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
         this.loading = true;
         this.permissionsService.getUser(this.username).subscribe((user) => {
             this.target = user;
+            this.needSave = false;
             this.setControls();
             this.updateControls();
+            this.assignedCount = this.countPolicies(user?.assignedEntities);
             setTimeout(() => {
                 this.loading = false;
             }, 500);
@@ -157,6 +171,79 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
         }, (e) => {
             this.loadError(e);
         });
+    }
+
+    private countPolicies(entities: any[] | undefined): number {
+        return entities?.filter((e) => e.type === AssignedEntityType.Policy).length || 0;
+    }
+
+    private loadAssignedCount() {
+        this.permissionsService.getUser(this.username).subscribe((user) => {
+            this.assignedCount = this.countPolicies(user?.assignedEntities);
+        }, (e) => {
+            console.error(e);
+        });
+    }
+
+    public get parentLabel(): string {
+        const parent = this.target?.parent;
+        if (!parent) {
+            return '';
+        }
+        return parent === this.user.did ? this.user.username : shortDid(parent);
+    }
+
+    public get initials(): string {
+        return getUserInitials(this.username);
+    }
+
+    public copyDid() {
+        if (this.target?.did) {
+            navigator.clipboard.writeText(this.target.did).then(() => {
+                this.toastService.success('Copied to clipboard');
+            }).catch((error) => console.error(error));
+        }
+    }
+
+    private updatePreview() {
+        let granted = 0;
+        const preview: typeof this.preview = [];
+        for (const category of this.group.categories) {
+            const entities = [];
+            for (const entity of category.entities) {
+                const cells = Array.from(entity.actions as any[], (action: any) => {
+                    if (!action) {
+                        return null;
+                    }
+                    return { value: !!action.control?.value, tooltip: action.tooltip || '' };
+                });
+                const count = cells.filter((cell) => cell?.value).length;
+                granted += count;
+                entities.push({ name: entity.name, type: entity.type, granted: count > 0, cells });
+            }
+            preview.push({ name: category.name, actions: category.actions, entities });
+        }
+        this.preview = preview;
+        this.grantedCount = granted;
+        this.updateVisiblePreview();
+    }
+
+    public setShowAll(value: boolean) {
+        this.showAll = value;
+        this.updateVisiblePreview();
+    }
+
+    private updateVisiblePreview() {
+        this.visiblePreview = this.showAll
+            ? this.preview
+            : this.preview
+                .map((category) => ({ ...category, entities: category.entities.filter((e) => e.granted) }))
+                .filter((category) => category.entities.length);
+    }
+
+    public onToggleAssign(row: any, checked: boolean) {
+        row.assigned = checked;
+        this.assignPolicy(row, checked);
     }
 
     private loadError(error: any): void {
@@ -238,6 +325,7 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
                 }
             }
         }
+        this.updatePreview();
     }
 
     private changed(): boolean {
@@ -312,6 +400,9 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
 
     public onChange(index: string | number | undefined) {
         this.selectedIndex = typeof index === 'number' ? index : 0;
+        if (this.selectedIndex === 0 && this.needSave) {
+            return;
+        }
         this.loadData();
     }
 
@@ -332,6 +423,7 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
             this.loading = true;
             this.permissionsService.assignPolicy(this.username, ids, assign).subscribe((response) => {
                 this.loadData();
+                this.loadAssignedCount();
             }, (e) => {
                 this.loadError(e);
             });
@@ -339,6 +431,7 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
             this.loading = true;
             this.permissionsService.delegatePolicy(this.username, ids, assign).subscribe((response) => {
                 this.loadData();
+                this.loadAssignedCount();
             }, (e) => {
                 this.loadError(e);
             });
@@ -350,7 +443,7 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
             case PolicyStatus.DRAFT:
                 return 'grey';
             case PolicyStatus.DRY_RUN:
-                return 'grey';
+                return 'dry-run';
             case PolicyStatus.DISCONTINUED:
             case PolicyStatus.PUBLISH_ERROR:
                 return 'red';
@@ -383,6 +476,9 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
     }
 
     public onCancelRole() {
+        if (!this.needSave) {
+            return;
+        }
         this.needSave = false;
         this.setControls();
         this.updateControls();
@@ -408,6 +504,7 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
             this.loading = true;
             this.permissionsService.assignPolicy(this.username, ids, assign).subscribe((response) => {
                 this.loadData();
+                this.loadAssignedCount();
             }, (e) => {
                 this.loadError(e);
             });
@@ -415,6 +512,7 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
             this.loading = true;
             this.permissionsService.delegatePolicy(this.username, ids, assign).subscribe((response) => {
                 this.loadData();
+                this.loadAssignedCount();
             }, (e) => {
                 this.loadError(e);
             });

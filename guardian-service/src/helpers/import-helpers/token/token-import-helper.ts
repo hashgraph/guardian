@@ -1,4 +1,5 @@
-import { INotificationStep, Token } from '@guardian/common';
+import { INotificationStep } from '@guardian/common/notification/notification-step.interface';
+import { Token } from '@guardian/common/entity/token';
 import { IOwner } from '@guardian/interfaces';
 import { ImportTokenResult } from './token-import.interface.js';
 import { TokenImport } from './token-import.js';

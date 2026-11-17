@@ -30,7 +30,8 @@ import {
     SchemaNode,
     SuggestionsOrderPriority
 } from '@guardian/interfaces';
-import { IAuthUser, NatsService } from '@guardian/common';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { NatsService } from '@guardian/common/mq/nats-service';
 import { NewTask } from './task-manager.js';
 import {
     ModuleDTO,
@@ -60,6 +61,7 @@ import {
     PolicyPreviewDTO,
     ProfileDTO,
     PolicyKeyDTO,
+    RemoteUserExportDTO,
     ToolVersionDTO,
     OnboardingDTO
 } from '#middlewares';
@@ -1020,8 +1022,8 @@ export class Guardians extends NatsService {
      *
      * @returns {ISchema[]} Schema preview
      */
-    public async getSchemasDublicates(schemaNames: string[], owner?: IOwner, policyId?: string) {
-        return await this.sendMessage(MessageAPI.SCHEMA_IMPORT_CHECK_FOR_DUBLICATES, { schemaNames, owner, policyId });
+    public async getSchemasDublicates(schemaNames: string[], owner?: IOwner, policyId?: string, schemas?: any[]) {
+        return await this.sendMessage(MessageAPI.SCHEMA_IMPORT_CHECK_FOR_DUBLICATES, { schemaNames, schemas, owner, policyId });
     }
 
     /**
@@ -4463,6 +4465,17 @@ export class Guardians extends NatsService {
      */
     public async generateKey(user: IAuthUser, messageId: string, key?: string): Promise<PolicyKeyDTO> {
         return await this.sendMessage(MessageAPI.GENERATE_USER_KEYS, { user, messageId, key });
+    }
+
+    /**
+     * Export profile for registering the user as a remote user on another instance
+     *
+     * @param {IAuthUser} user - user
+     *
+     * @returns {RemoteUserExportDTO} - profile file content
+     */
+    public async exportRemoteUser(user: IAuthUser): Promise<RemoteUserExportDTO> {
+        return await this.sendMessage(MessageAPI.EXPORT_REMOTE_USER, { user });
     }
 
     /**

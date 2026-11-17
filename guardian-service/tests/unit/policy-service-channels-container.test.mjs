@@ -5,7 +5,7 @@ const channelCtorCalls = [];
 let uuidCounter = 0;
 
 const { PolicyServiceChannelsContainer } = await esmock('../../dist/helpers/policy-service-channels-container.js', {
-    '@guardian/common': {
+    '@guardian/common/mq/message-broker-channel': {
         MessageBrokerChannel: class FakeChannel {
             constructor(cn, name) {
                 this.cn = cn;
@@ -14,8 +14,10 @@ const { PolicyServiceChannelsContainer } = await esmock('../../dist/helpers/poli
             }
             subscribe() { return { unsubscribe: () => {} }; }
             publish() {}
-        },
-        Singleton: (target) => target,
+        }
+    },
+    '@guardian/common/decorators/singleton': {
+        Singleton: (target) => target
     },
     '@guardian/interfaces': {
         GenerateUUIDv4: () => `uuid-${++uuidCounter}`,

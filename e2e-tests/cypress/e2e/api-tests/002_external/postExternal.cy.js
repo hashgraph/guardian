@@ -2,8 +2,9 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import { seededMessageId } from '../../../support/CustomHelpers/ipfsSeeding';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('External', { tags: ['external', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
+context('External', { tags: ['external', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
 
@@ -19,7 +20,7 @@ context('External', { tags: ['external', 'thirdPool', 'all', 'all-no-mgs'] }, ()
                     headers: {
                         authorization,
                     },
-                    timeout: 480000,
+                    timeout: TIMEOUTS.longOperation,
                 }).then((response) => {
                     expect(response.status).to.eq(STATUS_CODE.SUCCESS);
                 });

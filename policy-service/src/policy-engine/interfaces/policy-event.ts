@@ -141,14 +141,16 @@ export class PolicyLink<T> {
             if (actionStatus) {
                 actionStatus.inc();
 
-                const res = this.callback.call(this.target, event);
+                const res = actionStatus.previewBranches
+                    ? this.runPreviewBranch(actionStatus, event)
+                    : this.callback.call(this.target, event);
 
                 if (typeof res?.then === 'function') {
                     res.then((result) => {
                         actionStatus.dec();
                         return result;
                     }).catch((err: unknown) => {
-                        actionStatus.addError(err);
+                        actionStatus.addError(err, this.target?.blockType);
                         actionStatus.dec();
                     });
                 } else {
@@ -186,7 +188,9 @@ export class PolicyLink<T> {
         if (actionStatus) {
             actionStatus.inc()
 
-            const res = await this.callback.bind(this.target)(event);
+            const res = actionStatus.previewBranches
+                ? await this.runPreviewBranch(actionStatus, event)
+                : await this.callback.bind(this.target)(event);
 
             actionStatus.dec()
 
@@ -195,6 +199,20 @@ export class PolicyLink<T> {
             return await this.callback.bind(this.target)(event);
         }
     }
+    /**
+     * Run the callback in its own Preview branch
+     * @param actionStatus
+     * @param event
+     * @private
+     */
+    private runPreviewBranch(actionStatus: RecordActionStep, event: IPolicyEvent<T>): Promise<any> {
+        const display = this.outputType === PolicyOutputEventType.RefreshEvent
+            || this.outputType === PolicyOutputEventType.ReleaseEvent;
+        const error = this.outputType === PolicyOutputEventType.ErrorEvent;
+        const step = !display && !error;
+        return actionStatus.previewBranches.run(() => this.callback.call(this.target, event), step, display, error);
+    }
+
     /**
      * Get owner
      * @param user

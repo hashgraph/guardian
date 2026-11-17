@@ -16,9 +16,11 @@ export const PREFIXES = {
  * has to carry the `tag` part to match anything at all.
  */
 export const TAG_PREFIXES = {
-  // Schemas are served by two controllers: `/schemas/...` and the single
-  // schema route of `@Controller('schema')`.
-  SCHEMAS: [`${PREFIXES.TAG}/schemas`, `${PREFIXES.TAG}/schema/`],
+  // Schemas are served by three controllers: `/schemas/...`, the single
+  // schema route of `@Controller('schema')` and the tag schema listing of
+  // `@Controller('tags')`, which schema mutations (e.g. the editor creating a
+  // tag schema) have to refresh too.
+  SCHEMAS: [`${PREFIXES.TAG}/schemas`, `${PREFIXES.TAG}/schema/`, `${PREFIXES.TAG}/tags/schemas`],
   // Every cached route of `@Controller('accounts')`: the listing, the session,
   // the standard registries and the balance.
   ACCOUNTS: [`${PREFIXES.TAG}/accounts`],

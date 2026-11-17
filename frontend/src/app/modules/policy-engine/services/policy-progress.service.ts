@@ -1,6 +1,11 @@
 import { ComponentRef, Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { IBlock } from '../structures';
+
+export interface ActiveStep {
+    label: string;
+    parentLabel?: string;
+}
 
 @Injectable()
 export class PolicyProgressService {
@@ -11,13 +16,35 @@ export class PolicyProgressService {
     private _componentRefsMap: Map<string, ComponentRef<any>> = new Map();
     private _role: string;
     private _hasNavigation: boolean;
-    private _currentStepIndex: number;
-    private _currentStepBlockId: string;
+    private _policy: { id: string; name: string } | null = null;
 
     private dataSubject: BehaviorSubject<any> = new BehaviorSubject(null);
     data$: Observable<any> = this.dataSubject.asObservable();
 
+    private navigationInvalidatedSubject: Subject<void> = new Subject<void>();
+    navigationInvalidated$: Observable<void> = this.navigationInvalidatedSubject.asObservable();
+
+    private activeStepSubject: BehaviorSubject<ActiveStep | null> = new BehaviorSubject<ActiveStep | null>(null);
+    activeStep$: Observable<ActiveStep | null> = this.activeStepSubject.asObservable();
+
     constructor() {
+    }
+
+    get activeStep(): ActiveStep | null {
+        return this.activeStepSubject.value;
+    }
+
+    setPolicy(id: string, name: string): void {
+        this._policy = { id, name };
+    }
+
+    clearPolicy(): void {
+        this._policy = null;
+    }
+
+    // The name of the policy being viewed, or '' when `policyId` is not that policy
+    policyName(policyId?: string | null): string {
+        return this._policy && policyId && this._policy.id === policyId ? (this._policy.name || '') : '';
     }
 
     updateData(data: any): void {
@@ -25,6 +52,13 @@ export class PolicyProgressService {
             this._role = data.role;
         }
         this.dataSubject.next(data);
+    }
+
+    // Keeps the role current without notifying `data$` subscribers
+    setRole(role: string): void {
+        if (role) {
+            this._role = role;
+        }
     }
 
     getCurrentRole(): string {
@@ -70,6 +104,12 @@ export class PolicyProgressService {
         this._componentRefsMap.set(id, component);
     }
 
+    removeComponentRef(id: string, component: ComponentRef<any>) {
+        if (this._componentRefsMap.get(id) === component) {
+            this._componentRefsMap.delete(id);
+        }
+    }
+
     getComponentRefById(id: string): ComponentRef<any> | undefined {
         return this._componentRefsMap.get(id);
     }
@@ -113,16 +153,11 @@ export class PolicyProgressService {
         }
     }
 
-    updateCurrentStep(index: number, blockId: string): void {
-        this._currentStepIndex = index;
-        this._currentStepBlockId = blockId;
+    invalidateNavigation(): void {
+        this.navigationInvalidatedSubject.next();
     }
 
-    getCurrentStepIndex(): number {
-        return this._currentStepIndex;
-    }
-
-    getCurrentStepBlockId(): string {
-        return this._currentStepBlockId;
+    setActiveStep(step: ActiveStep | null): void {
+        this.activeStepSubject.next(step);
     }
 }

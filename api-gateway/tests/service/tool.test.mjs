@@ -48,7 +48,8 @@ async function load() {
         '#auth': { Auth: () => () => undefined, AuthUser: () => () => undefined },
         '#constants': { CACHE_PREFIXES: { TAG: 'tag' }, TOOL_REQUIRED_PROPS: { a: 'id' } },
         '#middlewares': new Proxy({}, { get: () => class {} }),
-        '@guardian/common': { PinoLogger: class {}, RunFunctionAsync: () => undefined },
+        '@guardian/common/helpers/pino-logger': { PinoLogger: class {} },
+        '@guardian/common/helpers/run-function-async': { RunFunctionAsync: () => undefined },
         '@guardian/interfaces': guardiansInterfaces
     });
 }

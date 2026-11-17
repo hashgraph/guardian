@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, NgZone, OnInit } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
@@ -133,16 +133,34 @@ export class SchemaConfigComponent implements OnInit {
         { label: 'System Schemas', value: SchemaType.System }
     ];
     public textSearch: any;
+    // null after a failed load, so the same search can be retried
+    private appliedSearchKey: string | null = '';
+    // References and Fields read every schema document, so they are opt-in
     public textSearchOptionsValue: string[] = [
-        'uuid', 'name', 'description', 'references', 'fields'
+        'uuid', 'name', 'description'
     ];
-    public textSearchOptions: { label: string; value: string }[] = [
-        { label: 'UUID', value: 'uuid' },
-        { label: 'Name', value: 'name' },
-        { label: 'Description', value: 'description' },
-        { label: 'References', value: 'references' },
-        { label: 'Fields', value: 'fields' },
+    public textSearchOptions = [
+        {
+            label: 'Schema details',
+            items: [
+                { label: 'UUID', value: 'uuid' },
+                { label: 'Name', value: 'name' },
+                { label: 'Description', value: 'description' }
+            ]
+        },
+        {
+            label: 'Documents content (slower)',
+            items: [
+                { label: 'References', value: 'references' },
+                { label: 'Fields', value: 'fields' }
+            ]
+        }
     ];
+    public get isSlowSearch(): boolean {
+        const slow = this.textSearchOptions[1].items;
+        return slow.some((o) => this.textSearchOptionsValue.includes(o.value));
+    }
+
     public templateSchemasOnly: boolean = false;
     public unusedInPolicyOnly: boolean = false;
 
@@ -160,6 +178,7 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     constructor(
+        private ngZone: NgZone,
         public tagsService: TagsService,
         private profileService: ProfileService,
         private schemaService: SchemaService,
@@ -471,6 +490,7 @@ export class SchemaConfigComponent implements OnInit {
         this.page = [];
         this.count = 0;
         this.loading = false;
+        this.appliedSearchKey = null;
         console.error(error);
     }
 
@@ -645,12 +665,14 @@ export class SchemaConfigComponent implements OnInit {
             case SchemaType.Tool:
             default: {
                 const category = this.getCategory();
+                const searchText = this.getSearchText();
+                this.appliedSearchKey = this.getSearchKey(searchText);
                 loader = this.schemaService.getSchemasByPage({
                     category,
                     topicId: this.currentTopic || '',
                     templateSchemasOnly: this.type === SchemaType.Policy && this.templateSchemasOnly,
                     unusedInPolicyOnly: this.type === SchemaType.Policy && this.unusedInPolicyOnly,
-                    search: this.textSearch,
+                    search: searchText || undefined,
                     searchOptions: this.textSearchOptionsValue,
                     pageIndex: this.pageIndex,
                     pageSize: this.pageSize
@@ -809,6 +831,24 @@ export class SchemaConfigComponent implements OnInit {
                 this.loading = false;
             }, 500);
         }
+    }
+
+    private getSearchText(): string {
+        return String(this.textSearch ?? '').trim();
+    }
+
+    private getSearchKey(text = this.getSearchText()): string {
+        return text ? JSON.stringify([text, this.textSearchOptionsValue]) : '';
+    }
+
+    public onSearchChange() {
+        // The scope dropdown emits panel-hide outside the Angular zone, and the
+        // reload started from there is never followed by change detection.
+        this.ngZone.run(() => {
+            if (this.getSearchKey() !== this.appliedSearchKey) {
+                this.onFilter();
+            }
+        });
     }
 
     public onFilter(event?: any) {
@@ -1265,7 +1305,8 @@ export class SchemaConfigComponent implements OnInit {
                 this.loading = true;
                 this.schemaService.checkForDublicates({
                     policyId: result.topicId,
-                    schemaNames: schemas.map(({ name }: { name: string }) => name)
+                    schemaNames: schemas.map(({ name }: { name: string }) => name),
+                    schemas: schemas.map(({ name, document }: { name: string, document: any }) => ({ name, document }))
                 }).subscribe(
                     (res) => {
                         this.loading = false;
@@ -1275,12 +1316,14 @@ export class SchemaConfigComponent implements OnInit {
                                     data,
                                     ...result,
                                     schemasCanBeReplaced: res.schemasCanBeReplaced,
+                                    formulaWarnings: res.formulaWarnings,
                                 });
                             } else if (type == 'file') {
                                 this.importFromFileReplace({
                                     data,
                                     ...result,
                                     schemasCanBeReplaced: res.schemasCanBeReplaced,
+                                    formulaWarnings: res.formulaWarnings,
                                 });
                             } else if (type == 'xlsx') {
                                 this.importExcelReplace({
@@ -1288,6 +1331,7 @@ export class SchemaConfigComponent implements OnInit {
                                     data,
                                     ...result,
                                     schemasCanBeReplaced: res.schemasCanBeReplaced,
+                                    formulaWarnings: res.formulaWarnings,
                                 });
                             }
                         } else {
@@ -1309,7 +1353,7 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     private importFromMessageReplace(result: any) {
-        const { data, schemasCanBeReplaced } = result;
+        const { data, schemasCanBeReplaced, formulaWarnings } = result;
         const dialogRef = this.dialogService.open(ReplaceSchemasDialogComponent, {
             header: 'Schemas for replace',
             width: '90%',
@@ -1318,6 +1362,7 @@ export class SchemaConfigComponent implements OnInit {
             data: {
                 title: 'Schemas for replace',
                 schemasCanBeReplaced,
+                formulaWarnings,
             },
         })!;
         dialogRef.onClose.subscribe(async (resultWithSchemasForReplace) => {
@@ -1328,7 +1373,7 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     private importFromFileReplace(result: any) {
-        const { data, schemasCanBeReplaced } = result;
+        const { data, schemasCanBeReplaced, formulaWarnings } = result;
         const dialogRef = this.dialogService.open(ReplaceSchemasDialogComponent, {
             header: 'Schemas for replace',
             width: '90%',
@@ -1337,6 +1382,7 @@ export class SchemaConfigComponent implements OnInit {
             data: {
                 title: 'Schemas for replace',
                 schemasCanBeReplaced,
+                formulaWarnings,
             },
         })!;
         dialogRef.onClose.subscribe(async (resultWithSchemasForReplace) => {
@@ -1347,7 +1393,7 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     private importExcelReplace(result: any) {
-        const { data, schemasCanBeReplaced } = result;
+        const { data, schemasCanBeReplaced, formulaWarnings } = result;
         const dialogRef = this.dialogService.open(ReplaceSchemasDialogComponent, {
             header: 'Schemas for replace',
             width: '90%',
@@ -1356,6 +1402,7 @@ export class SchemaConfigComponent implements OnInit {
             data: {
                 title: 'Schemas for replace',
                 schemasCanBeReplaced,
+                formulaWarnings,
             },
         })!;
         dialogRef.onClose.subscribe(async (resultWithSchemasForReplace) => {

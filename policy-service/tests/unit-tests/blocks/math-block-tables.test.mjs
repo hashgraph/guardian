@@ -3,7 +3,7 @@ import { makeBlock, makeUser, restoreHarness } from './_block-exec-harness.mjs';
 import { MathBlock } from '../../../dist/policy-engine/blocks/math-block.js';
 import { DocumentMap } from '../../../dist/policy-engine/helpers/math-model/index.js';
 import { PolicyUtils } from '../../../dist/policy-engine/helpers/utils.js';
-import { DatabaseServer } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 
 const declaredTable = () => JSON.stringify({
     type: 'table',

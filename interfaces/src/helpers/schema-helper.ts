@@ -1,4 +1,4 @@
-import { GenerateUUIDv4, IOwner, ISchema, ISchemaDocument, SchemaCondition, SchemaField, SchemaFieldPredicate, SchemaPredicateComparator, ISchemaArrayDependency } from '../index.js';
+import { GenerateUUIDv4, IOwner, ISchema, ISchemaDocument, SchemaCondition, SchemaIfCondition, SchemaField, SchemaFieldPredicate, SchemaPredicateComparator, ISchemaArrayDependency } from '../index.js';
 
 import { SchemaDataTypes } from '../interface/schema-document.interface.js';
 import { IIwaFieldRemap, IIwaUpgradeReport, mapIwaPathV1ToV3 } from '../type/iwa-version.type.js';
@@ -389,8 +389,13 @@ export class SchemaHelper {
             enumName,
             tableColumns,
             conditionRequired,
+            conditionUserOrdered,
+            advisoryText,
         } = SchemaHelper.parseFieldComment(field.comment);
         field.suggest = suggest;
+        if (typeof advisoryText === 'string' && advisoryText.trim()) {
+            field.advisoryText = advisoryText.trim();
+        }
         if (field.isRef) {
             const { type } = SchemaHelper.parseRef(field.type);
             field.context = {
@@ -432,6 +437,7 @@ export class SchemaHelper {
         // branch `required` would demand fields of a condition that was never asked. See
         // `validateConditionFields`, which enforces the flag against the active branch.
         field.required = required || !!conditionRequired;
+        field.conditionUserOrdered = !!conditionUserOrdered;
         field.hidden = !!hidden;
         field.autocalculate = !!autocalculate;
         field.expression = expression;
@@ -907,6 +913,93 @@ export class SchemaHelper {
     }
 
     /**
+     * Resolve the value(s) a predicate path points at in a document.
+     * Arrays met mid-path are indexed by `entries` (array path, dot-joined, to entry index);
+     * with `anyEntry` every element is visited; otherwise the array is not traversed.
+     * @param data document
+     * @param path field path
+     * @param entries array path to entry index
+     * @param anyEntry visit every array element
+     * @returns candidate values
+     */
+    public static resolveConditionValues(
+        data: any,
+        path: string[],
+        entries?: Record<string, number> | null,
+        anyEntry: boolean = false
+    ): any[] {
+        let nodes: any[] = [data];
+        for (let i = 0; i < path.length; i++) {
+            const next: any[] = [];
+            for (const node of nodes) {
+                if (node === null || node === undefined || typeof node !== 'object') {
+                    next.push(undefined);
+                    continue;
+                }
+                if (i > 0 && Array.isArray(node)) {
+                    const key = path.slice(0, i).join('.');
+                    if (entries && Object.prototype.hasOwnProperty.call(entries, key)) {
+                        next.push(node[entries[key]]?.[path[i]]);
+                        continue;
+                    }
+                    if (anyEntry) {
+                        for (const element of node) {
+                            if (element === null || element === undefined || typeof element !== 'object') {
+                                next.push(undefined);
+                            } else {
+                                next.push(element[path[i]]);
+                            }
+                        }
+                        continue;
+                    }
+                }
+                next.push(node[path[i]]);
+            }
+            nodes = next;
+        }
+        return nodes;
+    }
+
+    /**
+     * Evaluate an if-condition against a document.
+     * @param ifCondition predicate, `{ AND }` or `{ OR }`
+     * @param data document
+     * @param equalsFn equality used by predicates
+     * @param options array entry scoping
+     * @returns true if the condition matches
+     */
+    public static evaluateIfCondition(
+        ifCondition: SchemaIfCondition | null | undefined,
+        data: any,
+        equalsFn: (a: any, b: any) => boolean = SchemaHelper.valuesEqual,
+        options?: { entries?: Record<string, number> | null; anyEntry?: boolean }
+    ): boolean {
+        const ic: any = ifCondition;
+        const test = (p: any): boolean => {
+            const path = (p?.fieldPath?.length > 1) ? p.fieldPath : [p?.field?.name];
+            if (!path[0]) {
+                return false;
+            }
+            const candidates = SchemaHelper.resolveConditionValues(
+                data, path, options?.entries, !!options?.anyEntry
+            );
+            return candidates.some((v) =>
+                SchemaHelper.testPredicateValue(p?.comparator, v, p.fieldValue, equalsFn)
+            );
+        };
+        if (!ic) {
+            return false;
+        }
+        if (Array.isArray(ic.AND)) {
+            return ic.AND.length > 0 && ic.AND.every(test);
+        }
+        if (Array.isArray(ic.OR)) {
+            return ic.OR.some(test);
+        }
+        return test(ic);
+    }
+
+    /**
      * Validate the fields a schema's conditions reveal against a submitted document.
      *
      * `buildDocument` declares the shape of every branch but does not mark branch fields
@@ -928,38 +1021,10 @@ export class SchemaHelper {
             return errors;
         }
 
-        const resolve = (path: string[]): any => {
-            let node: any = data;
-            for (const segment of path) {
-                if (node === null || node === undefined || typeof node !== 'object') {
-                    return undefined;
-                }
-                node = node[segment];
-            }
-            return node;
-        };
         const present = (value: any): boolean =>
             value !== undefined && value !== null && value !== '';
-        const test = (p: any): boolean => {
-            const path = (p?.fieldPath?.length > 1) ? p.fieldPath : [p?.field?.name];
-            if (!path[0]) {
-                return false;
-            }
-            return SchemaHelper.testPredicateValue(p?.comparator, resolve(path), p.fieldValue);
-        };
-        const evaluate = (condition: SchemaCondition): boolean => {
-            const ic: any = condition?.ifCondition;
-            if (!ic) {
-                return false;
-            }
-            if (Array.isArray(ic.AND)) {
-                return ic.AND.length > 0 && ic.AND.every(test);
-            }
-            if (Array.isArray(ic.OR)) {
-                return ic.OR.some(test);
-            }
-            return test(ic);
-        };
+        const evaluate = (condition: SchemaCondition): boolean =>
+            SchemaHelper.evaluateIfCondition(condition?.ifCondition, data);
 
         const revealMap = SchemaHelper.buildRevealMap(conditions);
         for (const condition of conditions) {
@@ -1617,6 +1682,17 @@ export class SchemaHelper {
     }
 
     /**
+     * Check that the field can carry advisory text
+     * @param field
+     */
+    public static supportsAdvisoryText(field: SchemaField): boolean {
+        return !!field && !field.readOnly && !field.autocalculate
+            && !['policyId', 'ref', 'guardianVersion'].includes(field.name)
+            && field.type !== 'null'
+            && (!field.isRef || field.customType === 'geo' || field.customType === 'sentinel');
+    }
+
+    /**
      * Build Field comment
      * @param field
      * @param name
@@ -1631,6 +1707,9 @@ export class SchemaHelper {
             'https://www.schema.org/text';
         if (![null, undefined].includes(field.isPrivate)) {
             comment.isPrivate = field.isPrivate;
+        }
+        if (field.advisoryText?.trim() && SchemaHelper.supportsAdvisoryText({ ...field, name })) {
+            comment.advisoryText = field.advisoryText.trim();
         }
         if (field.unit) {
             comment.unit = field.unit;
@@ -1661,6 +1740,9 @@ export class SchemaHelper {
         }
         if (field.hidden) {
             comment.hidden = !!field.hidden;
+        }
+        if (field.conditionUserOrdered) {
+            comment.conditionUserOrdered = true;
         }
         if (field.suggest) {
             comment.suggest = field.suggest;
@@ -2099,6 +2181,88 @@ export class SchemaHelper {
         } catch (error) {
             return {};
         }
+    }
+
+    /**
+     * Parses a field's raw comment/$comment string and strips orderPosition and
+     * conditionUserOrdered. A field's position in schema.fields (and the flag marking it as
+     * user-ordered) is cosmetic (drag-reorder, condition selection, legacy normalization)
+     * and must not count as a change when hashing a field for content-only comparison,
+     * e.g. template field lock checks.
+     * @param comment
+     */
+    public static cleanCommentForHash(comment: unknown): any {
+        if (typeof comment !== 'string') {
+            return comment;
+        }
+        const parsed = SchemaHelper.parseFieldComment(comment);
+        delete parsed.orderPosition;
+        delete parsed.conditionUserOrdered;
+        return parsed;
+    }
+
+    public static equalArrayDependencies(a: ISchemaArrayDependency, b: ISchemaArrayDependency): boolean {
+        const mappings = (link: ISchemaArrayDependency) => (link.valueMappings || [])
+            .map(pair => JSON.stringify([pair.source, pair.target])).sort();
+        return JSON.stringify([a.on, a.field, a.kind, a.title || [], mappings(a)])
+            === JSON.stringify([b.on, b.field, b.kind, b.title || [], mappings(b)]);
+    }
+
+    public static collectArrayDependencies(
+        document: ISchemaDocument | null | undefined,
+        dependencies?: ISchemaArrayDependency[]
+    ): ISchemaArrayDependency[] {
+        const result: ISchemaArrayDependency[] = [...(dependencies
+            ?? SchemaHelper.parseSchemaComment(document?.$comment).arrayDependencies ?? [])];
+        const key = (path: string[]): string => JSON.stringify(path);
+        const sourceOf = (path: string[]): ISchemaArrayDependency | undefined =>
+            result.find(link => key(link.field) === key(path));
+        const isAbove = (path: string[], start: string[]): boolean => {
+            const seen = new Set<string>();
+            for (let current = start; current && !seen.has(key(current)); current = sourceOf(current)?.on) {
+                if (key(current) === key(path)) {
+                    return true;
+                }
+                seen.add(key(current));
+            }
+            return false;
+        };
+        const add = (links: ISchemaArrayDependency[], path: string[]): void => {
+            const own = links.map(link => ({ ...link, on: [...path, ...link.on], field: [...path, ...link.field] }));
+            for (const link of own) {
+                if (!result.some(existing => SchemaHelper.equalArrayDependencies(existing, link))
+                    && !isAbove(link.field, link.on)) {
+                    result.push(link);
+                }
+            }
+        };
+        const visit = (node: any, path: string[], defs: any, ancestors: Set<object>, own = true): void => {
+            if (!node || typeof node !== 'object' || ancestors.has(node)) {
+                return;
+            }
+            const next = new Set([...ancestors, node]);
+            const definitions = node.$defs || defs;
+            if (own) {
+                const links = SchemaHelper.parseSchemaComment(node.$comment).arrayDependencies;
+                add(Array.isArray(links) ? links : [], path);
+            }
+            for (const name of Object.keys(node.properties || {})) {
+                const property = node.properties[name];
+                if (!property || property.type === 'array' || property.items) {
+                    continue;
+                }
+                const child = property.$ref ? definitions?.[property.$ref] : property;
+                visit(child, [...path, name], definitions, next);
+            }
+            for (const branch of node.allOf || []) {
+                visit(branch, path, definitions, next, false);
+            }
+            for (const branch of [node.then, node.else]) {
+                visit(branch, path, definitions, next, false);
+            }
+        };
+        visit(document, [], document?.$defs, new Set(), false);
+        return result;
     }
 
     /**

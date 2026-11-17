@@ -1,4 +1,4 @@
-import { VcDocument } from '@guardian/common';
+import { VcDocument } from '@guardian/common/entity/vc-document';
 import { PolicyDataLoader } from './loader.js';
 
 /**

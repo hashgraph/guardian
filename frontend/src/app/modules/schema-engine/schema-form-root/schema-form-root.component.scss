@@ -1,39 +1,123 @@
-@import '../nav-collapse';
+@use '../preview-loading' as preview;
+@use '../sections' as sections;
 
-.schema-form-root {
-    display: flex;
-    gap: 8px;
-    width: 100%;
+:host {
+    @include sections.sf-vars;
+    display: block;
+    container: sf-root / inline-size;
 }
 
-.schema-form-view-nav {
-    width: 25%;
-    max-width: 75%;
-    align-self: flex-start;
-    position: sticky;
-    top: 0;
-    max-height: calc(100vh - 440px);
-    box-sizing: border-box;
-    overflow-y: auto;
-    border: 1px solid var(--guardian-border-color, rgba(0, 0, 0, 0.06));
-    border-radius: 6px;
-    transition: width 0.2s ease;
+.preview-loading-overlay {
+    @include preview.overlay;
+}
 
-    // The panel now owns the border and the scroll; the sticky collapse
-    // header stays pinned while the tree scrolls underneath it.
-    ::ng-deep .schema-nav {
-        max-height: none;
-        overflow: visible;
-        border: none;
-        border-radius: 0;
+.schema-form-root {
+    position: relative;
+    display: flex;
+    width: 100%;
+
+    app-schema-form-nav {
+        flex: 1;
+        min-width: 0;
     }
 }
 
-.schema-form-content {
-    flex: 1;
-    min-width: 0;
+.sf-notice {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding: 9px 12px;
+    border: 1px solid var(--guardian-border-color);
+    border-radius: 10px;
+    background: var(--guardian-dry-run-background);
+    font-family: Inter;
+    font-size: 13px;
+    color: var(--guardian-font-color);
+
+    i {
+        color: var(--color-primary);
+    }
 }
 
-.schema-form-content.full-width {
-    flex: 0 0 100%;
+// The Overview header is projected into app-schema-form-overview, so it is styled here
+.sf-overview-head {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 28px;
+    margin-bottom: 22px;
+    font-family: Inter;
+    font-size: 14px;
+    color: var(--guardian-font-color);
+}
+
+.sf-overview-text {
+    flex: 1;
+    min-width: 240px;
+}
+
+@include sections.sf-overview-text;
+
+.sf-overview-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+
+    &:empty {
+        display: none;
+    }
+}
+
+.sf-overview-total {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.sf-overview-count {
+    font-size: 20px;
+}
+
+.sf-overview-caption {
+    color: var(--sf-text-3);
+}
+
+@include sections.sf-section-head;
+@include sections.sf-section-links;
+
+// Buttons of the form shell, same as the policy viewer mockup (.btn)
+.sf-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 14px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-family: Inter;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+
+    &:focus-visible {
+        outline: 2px solid var(--color-primary);
+        outline-offset: 2px;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}
+
+.sf-btn-primary {
+    background: var(--color-primary);
+    color: var(--guardian-secondary-color);
+
+    &:hover:not(:disabled) {
+        background: color-mix(in srgb, var(--color-primary) 88%, var(--color-grey-black-1));
+    }
 }

@@ -8,7 +8,7 @@ import { BlockActionError } from '../errors/index.js';
 import { AnyBlockType, IPolicyGetData } from '../policy-engine.interface.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
-import { IAuthUser } from '@guardian/common';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
 /**

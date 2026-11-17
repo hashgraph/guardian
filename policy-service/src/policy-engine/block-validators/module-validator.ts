@@ -4,7 +4,7 @@
 import { BlockValidator } from './block-validator.js';
 import { IModulesErrors } from './interfaces/modules-errors.interface.js';
 import { ISchema, ModuleStatus } from '@guardian/interfaces';
-import { DatabaseServer } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import { ToolValidator } from './tool-validator.js';
 import { SchemaValidator } from './schema-validator.js';
 

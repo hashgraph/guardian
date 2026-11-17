@@ -1,3 +1,4 @@
+import { restoreSchemaDefs } from '../../../common/models/schema-defs';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GenerateUUIDv4, Schema, UserPermissions } from '@guardian/interfaces';
@@ -15,7 +16,11 @@ import { VCViewerDialog } from '../../../schema-engine/vc-dialog/vc-dialog.compo
 @Component({
     selector: 'app-statistic-assessment-view',
     templateUrl: './statistic-assessment-view.component.html',
-    styleUrls: ['./statistic-assessment-view.component.scss'],
+    styleUrls: [
+        '../../../policy-engine/styles/top-toolbar.scss',
+        '../../styles/top-bar-extras.scss',
+        './statistic-assessment-view.component.scss'
+    ],
     standalone: false
 })
 export class StatisticAssessmentViewComponent implements OnInit {
@@ -37,7 +42,7 @@ export class StatisticAssessmentViewComponent implements OnInit {
     public target: any;
     public relationships: any;
     public schemasMap: Map<string, Schema>;
-    public stepper = [true, false, false];
+    public view: 'document' | 'relationships' = 'document';
 
     public preview: IVariable[];
     public scores: IScore[];
@@ -119,7 +124,7 @@ export class StatisticAssessmentViewComponent implements OnInit {
         ]) => {
             this.definition = definition;
             this.policy = definitionRelationships?.policy || {};
-            this.schemas = definitionRelationships?.schemas || [];
+            this.schemas = restoreSchemaDefs(definitionRelationships?.schemas || []);
             this.schema = definitionRelationships?.schema;
             this.assessment = assessment || {};
             this.target = assessmentRelationships?.target || {};
@@ -134,12 +139,16 @@ export class StatisticAssessmentViewComponent implements OnInit {
         });
     }
 
-    public onBack() {
+    public onAssessments() {
         this.router.navigate([
             '/policy-statistics',
             this.definitionId,
             'assessments'
         ]);
+    }
+
+    public onStatistics() {
+        this.router.navigate(['/policy-statistics']);
     }
 
     private updateMetadata() {
@@ -260,12 +269,12 @@ export class StatisticAssessmentViewComponent implements OnInit {
         }
     }
 
-    public onStep(index: number) {
-        this.navLoading = true;
-        for (let i = 0; i < this.stepper.length; i++) {
-            this.stepper[i] = false;
+    public onView(view: 'document' | 'relationships') {
+        if (this.view === view) {
+            return;
         }
-        this.stepper[index] = true;
+        this.navLoading = true;
+        this.view = view;
         setTimeout(() => {
             this.tree?.move(18, 46);
             setTimeout(() => {

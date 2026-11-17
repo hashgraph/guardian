@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
-context('Get policy label relationships', { tags: ['policy_labels', 'firstPool', 'all', 'all-no-mgs'] }, () => {
+context('Get policy label relationships', { tags: ['policy_labels', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const UserUsername = Cypress.env('User');
     let policyLabel; let policy;
 
@@ -73,7 +73,7 @@ context('Get policy label relationships', { tags: ['policy_labels', 'firstPool',
                 expect(resPolicy.owner).to.eq(policy.owner);
                 expect(resPolicy.status).to.eq(policy.status);
                 expect(resPolicy.topicId).to.eq(policy.topicId);
-                expect(resPolicy.policyRoles).to.eql(policy.userRoles);
+                expect(resPolicy).to.not.have.property('config');
                 expect(resPolicy.uuid).to.eq(policy.uuid);
                 expect(resPolicy.version).to.eq(policy.version);
             });

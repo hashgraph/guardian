@@ -1,6 +1,11 @@
 import { IVCDocument, MessageAPI, PolicyStatus, } from '@guardian/interfaces';
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { DatabaseServer, IAuthUser, MessageError, MessageResponse, Policy, VcDocument, VpDocument } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { Policy } from '@guardian/common/entity/policy';
+import { VcDocument } from '@guardian/common/entity/vc-document';
+import { VpDocument } from '@guardian/common/entity/vp-document';
 import type { FindOptions } from '@mikro-orm/core';
 
 /**

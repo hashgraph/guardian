@@ -2,7 +2,8 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
-context('Analytics MGS. Comparing', { tags: ['mgs-comparing', 'all'] }, () => {
+// Skipped until the shared remote Guardian environment and its credentials are available: see pending-issues/folders-blocked-by-environment.md
+context.skip('Analytics MGS. Comparing', { tags: ['mgs-comparing', 'api-all', 'all'] }, () => {
 
     const MGSAdminUsername = Cypress.env('MGSAdmin');
     const MGSStoreUsername = 'storeData';
@@ -24,7 +25,7 @@ context('Analytics MGS. Comparing', { tags: ['mgs-comparing', 'all'] }, () => {
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 response.body.tenants.forEach(element => {
-                    if (element.tenantName == MGSStoreUsername) {
+                    if (element.tenantName === MGSStoreUsername) {
                         tenantId = element.id
                     }
                 })

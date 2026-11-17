@@ -1,6 +1,13 @@
 import { IChainItem, MessageAPI, SchemaEntity } from '@guardian/interfaces';
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { DatabaseServer, DidDocument, MessageError, MessageResponse, PinoLogger, VcDocument, VpDocument, VpDocumentDefinition as HVpDocument, IAuthUser } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { DidDocument } from '@guardian/common/entity/did-document';
+import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { VcDocument } from '@guardian/common/entity/vc-document';
+import { VpDocument } from '@guardian/common/entity/vp-document';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { VpDocument as HVpDocument } from '@guardian/hedera/vcjs/vp-document';
 import { FilterQuery } from '@mikro-orm/core';
 
 /**

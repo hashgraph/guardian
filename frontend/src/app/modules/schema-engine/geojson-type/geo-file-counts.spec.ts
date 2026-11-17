@@ -1,0 +1,137 @@
+import { DOMParser } from '@xmldom/xmldom';
+import { kml } from '@tmcw/togeojson';
+import { GeojsonTypeComponent } from './geojson-type.component';
+
+const cases = [
+    {
+        "name": "multi-point",
+        "text": "{\"type\": \"MultiPoint\", \"coordinates\": [[1, 2], [3, 4]]}",
+        "expected": {
+            "features": 1,
+            "vertices": 2
+        }
+    },
+    {
+        "name": "null-and-collection",
+        "text": "{\"type\": \"FeatureCollection\", \"features\": [{\"type\": \"Feature\", \"properties\": {}, \"geometry\": null}, {\"type\": \"Feature\", \"properties\": {}, \"geometry\": {\"type\": \"GeometryCollection\", \"geometries\": []}}, {\"type\": \"Feature\", \"properties\": {}, \"geometry\": {\"type\": \"Point\", \"coordinates\": [1, 2]}}]}",
+        "expected": {
+            "features": 1,
+            "vertices": 1
+        }
+    },
+    {
+        "name": "root-collection",
+        "text": "{\"type\": \"GeometryCollection\", \"geometries\": []}",
+        "expected": {
+            "features": 1,
+            "vertices": 0
+        }
+    },
+    {
+        "name": "point",
+        "text": "<kml xmlns:gx=\"http://www.google.com/kml/ext/2.2\"><Placemark><Point><coordinates>1,2</coordinates></Point></Placemark></kml>",
+        "expected": {
+            "features": 1,
+            "vertices": 1
+        }
+    },
+    {
+        "name": "line",
+        "text": "<kml xmlns:gx=\"http://www.google.com/kml/ext/2.2\"><Placemark><LineString><coordinates>1,2 3,4</coordinates></LineString></Placemark></kml>",
+        "expected": {
+            "features": 1,
+            "vertices": 2
+        }
+    },
+    {
+        "name": "polygon",
+        "text": "<kml xmlns:gx=\"http://www.google.com/kml/ext/2.2\"><Placemark><Polygon><outerBoundaryIs><LinearRing><coordinates>0,0 1,0 1,1 0,1</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark></kml>",
+        "expected": {
+            "features": 1,
+            "vertices": 5
+        }
+    },
+    {
+        "name": "mixed-geometry",
+        "text": "<kml xmlns:gx=\"http://www.google.com/kml/ext/2.2\"><Placemark><MultiGeometry><Point><coordinates>1,2</coordinates></Point><Point><coordinates>3,4</coordinates></Point></MultiGeometry></Placemark></kml>",
+        "expected": {
+            "features": 0,
+            "vertices": 0
+        }
+    },
+    {
+        "name": "overlay",
+        "text": "<kml xmlns:gx=\"http://www.google.com/kml/ext/2.2\"><GroundOverlay><LatLonBox><north>2</north><south>0</south><east>2</east><west>0</west></LatLonBox></GroundOverlay></kml>",
+        "expected": {
+            "features": 1,
+            "vertices": 5
+        }
+    },
+    {
+        "name": "quad",
+        "text": "<kml xmlns:gx=\"http://www.google.com/kml/ext/2.2\"><GroundOverlay><gx:LatLonQuad><coordinates>0,0 1,0 1,1 0,1</coordinates></gx:LatLonQuad></GroundOverlay></kml>",
+        "expected": {
+            "features": 1,
+            "vertices": 5
+        }
+    },
+    {
+        "name": "links",
+        "text": "<kml xmlns:gx=\"http://www.google.com/kml/ext/2.2\"><NetworkLink/><NetworkLink><Region><LatLonAltBox><north>2</north><south>0</south><east>2</east><west>0</west></LatLonAltBox></Region></NetworkLink></kml>",
+        "expected": {
+            "features": 1,
+            "vertices": 5
+        }
+    },
+    {
+        "name": "short-track",
+        "text": "<kml xmlns:gx=\"http://www.google.com/kml/ext/2.2\"><Placemark><gx:Track><gx:coord>1 2 0</gx:coord><gx:coord>3 4 0</gx:coord></gx:Track></Placemark></kml>",
+        "expected": {
+            "features": 1,
+            "vertices": 1
+        }
+    },
+    {
+        "name": "long-track",
+        "text": "<kml xmlns:gx=\"http://www.google.com/kml/ext/2.2\"><Placemark><gx:Track><gx:coord>1 2 0</gx:coord><gx:coord>3 4 0</gx:coord><gx:coord>5 6 0</gx:coord></gx:Track></Placemark></kml>",
+        "expected": {
+            "features": 1,
+            "vertices": 3
+        }
+    },
+    {
+        "name": "point-whitespace",
+        "text": "<kml><Placemark><Point><coordinates>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        1,2</coordinates></Point></Placemark></kml>",
+        "expected": {
+            "features": 1,
+            "vertices": 1
+        }
+    },
+    {
+        "name": "track-empty-tuple",
+        "text": "<kml><Placemark><gx:Track xmlns:gx=\"http://www.google.com/kml/ext/2.2\"><gx:coord/></gx:Track></Placemark></kml>",
+        "expected": {
+            "features": 1,
+            "vertices": 1
+        }
+    },
+    {
+        "name": "track-unprefixed-priority",
+        "text": "<kml><Placemark><gx:Track xmlns:gx=\"http://www.google.com/kml/ext/2.2\"><gx:coord>1 2</gx:coord><gx:coord>3 4</gx:coord><gx:coord>5 6</gx:coord><coord>7 8</coord></gx:Track></Placemark></kml>",
+        "expected": {
+            "features": 1,
+            "vertices": 1
+        }
+    }
+];
+
+describe('browser feature and vertex count parity', () => {
+    for (const fixture of cases) {
+        it(`matches server counts for ${fixture.name}`, () => {
+            const data = fixture.text.startsWith('<')
+                ? kml(new DOMParser().parseFromString(fixture.text, 'application/xml')) : JSON.parse(fixture.text);
+            expect(GeojsonTypeComponent.prototype['shapeCount'](data)).toBe(fixture.expected.features);
+            expect(GeojsonTypeComponent.prototype['pointCount'](data)).toBe(fixture.expected.vertices);
+        });
+    }
+});

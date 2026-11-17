@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
-context('Trustchains', { tags: ['trustchains', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
+context('Trustchains', { tags: ['trustchains', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     let policyId;
 

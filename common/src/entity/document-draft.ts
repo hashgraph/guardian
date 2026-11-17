@@ -1,6 +1,7 @@
 import { Entity, Property, AfterDelete, BeforeCreate, BeforeUpdate, AfterUpdate } from '@mikro-orm/core';
-import { RestoreEntity } from '../models/index.js';
-import { DataBaseHelper, extractTableFileIds } from '../helpers/index.js';
+import { RestoreEntity } from '../models/restore-entity.js';
+import { DataBaseHelper } from '../helpers/db-helper.js';
+import { extractTableFileIds } from '../helpers/table-file-ids.js';
 import { DeleteCache } from './delete-cache.js';
 import { ObjectId } from '@mikro-orm/mongodb';
 

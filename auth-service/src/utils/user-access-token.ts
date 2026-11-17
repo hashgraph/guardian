@@ -1,4 +1,4 @@
-import { SecretManager } from '@guardian/common';
+import { SecretManager } from '@guardian/common/secret-manager/secret-manager';
 import { GenerateUUIDv4, IUser } from '@guardian/interfaces';
 import { InternalServerErrorException } from '@nestjs/common';
 import pkg from 'jsonwebtoken';

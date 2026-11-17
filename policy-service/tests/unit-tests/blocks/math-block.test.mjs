@@ -1,5 +1,10 @@
 import { assert } from 'chai';
 import { MathBlock } from '../../../dist/policy-engine/block-validators/blocks/math-block.js';
+import { MathBlock as MathBlockRuntime } from '../../../dist/policy-engine/blocks/math-block.js';
+import { makeBlock, restoreHarness } from './_block-exec-harness.mjs';
+import { PolicyUtils } from '../../../dist/policy-engine/helpers/utils.js';
+import { PolicyCredential } from '../../../dist/policy-engine/helpers/policy-credential.js';
+import { PolicyComponentsUtils } from '../../../dist/policy-engine/policy-components-utils.js';
 
 class FakeValidator {
     constructor(opts = {}) {
@@ -242,5 +247,102 @@ describe('MathBlock.validate', () => {
             v.errors[0].split('Review the Math block field paths and update references to existing schema fields.').length,
             2
         );
+    });
+});
+
+const INPUT_IRI = '#input-schema';
+
+const inputSchemaDocument = JSON.stringify({
+    $id: INPUT_IRI,
+    title: 'Input',
+    type: 'object',
+    properties: {
+        total: {
+            title: 'total',
+            description: 'Total',
+            type: 'number',
+            readOnly: false,
+            $comment: JSON.stringify({ term: 'total' })
+        }
+    },
+    required: []
+});
+
+const runtimeRefWith = (options = {}) => ({
+    blockType: 'mathBlock',
+    uuid: 'uuid-1',
+    policyId: 'policy-1',
+    dryRun: null,
+    policyOwner: 'did:owner',
+    components: { generateUUID: async () => 'uuid-vc' },
+    getOptions: async () => ({
+        expression: { variables: [], formulas: [], outputs: [] },
+        inputSchema: INPUT_IRI,
+        outputSchema: '',
+        ...options
+    })
+});
+
+describe('MathBlock runtime output schema fallback', () => {
+    let orig;
+    let loaded;
+
+    beforeEach(() => {
+        orig = {
+            loadSchemaByID: PolicyUtils.loadSchemaByID,
+            getUserCredentials: PolicyUtils.getUserCredentials,
+            createVC: PolicyUtils.createVC,
+            setGuardianVersion: PolicyUtils.setGuardianVersion,
+            policyCredentialCreateVC: PolicyCredential.createVC,
+            blockErrorFn: PolicyComponentsUtils.BlockErrorFn
+        };
+        loaded = [];
+        PolicyUtils.loadSchemaByID = async (_ref, id) => {
+            loaded.push(id);
+            return { iri: id, name: 'Schema', document: inputSchemaDocument, contextURL: 'ctx' };
+        };
+        PolicyUtils.getUserCredentials = async () => ({ loadDidDocument: async () => ({}) });
+        PolicyUtils.setGuardianVersion = () => undefined;
+        PolicyUtils.createVC = (_ref, owner, vc) => ({ owner, document: vc });
+        PolicyCredential.createVC = async (_helper, subject) => ({ credentialSubject: [subject] });
+        PolicyComponentsUtils.BlockErrorFn = async () => undefined;
+    });
+
+    afterEach(() => {
+        Object.assign(PolicyUtils, {
+            loadSchemaByID: orig.loadSchemaByID,
+            getUserCredentials: orig.getUserCredentials,
+            createVC: orig.createVC,
+            setGuardianVersion: orig.setGuardianVersion
+        });
+        PolicyCredential.createVC = orig.policyCredentialCreateVC;
+        PolicyComponentsUtils.BlockErrorFn = orig.blockErrorFn;
+    });
+
+    after(() => restoreHarness());
+
+    const block = () => makeBlock(MathBlockRuntime, { options: { onErrorAction: 'no-action' } }).block;
+
+    const metadata = { owner: 'did:user', id: 'id-1', relationships: [] };
+
+    it('creates the VC with the input schema type and iri when outputSchema is unset', async () => {
+        const item = await block().createDocument({ total: 1 }, metadata, runtimeRefWith(), 'user-1');
+
+        assert.deepEqual(loaded, [INPUT_IRI]);
+        assert.equal(item.type, INPUT_IRI);
+        assert.equal(item.schema, INPUT_IRI);
+    });
+
+    it('prefers outputSchema over inputSchema when it is set', async () => {
+        const item = await block().createDocument(
+            { total: 1 },
+            metadata,
+            runtimeRefWith({ outputSchema: '#output-schema' }),
+            'user-1'
+        );
+
+        assert.deepEqual(loaded, ['#output-schema']);
+        assert.equal(item.type, '#output-schema');
+        assert.equal(item.schema, '#output-schema');
     });
 });

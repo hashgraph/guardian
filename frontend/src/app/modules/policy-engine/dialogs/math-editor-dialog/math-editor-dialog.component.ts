@@ -208,8 +208,6 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     private latexCursorSave: { formula: MathFormula; start: number; end: number } | null = null;
     private mathLiveMap = new Map<string, MathLiveComponent>();
 
-    public activePathItem: FieldLink | null = null;
-    public pathSuggestions: string[] = [];
     public fieldWarnings = new Map<string, boolean>();
     public mathIssues: MathIssue[] = [];
     public issueGroups: MathIssueGroupView[] = [];
@@ -1074,67 +1072,21 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     public onPathChange(item: FieldLink, value: string, type: 'input' | 'output' = 'input'): void {
         item.field = value;
         item.update();
-        this._computePathSuggestions(item, type);
         this._updateFieldWarning(item, type);
         if (type === 'output') {
             this.updateTableOutput(item);
         }
         this.updateIssues();
-    }
-
-    public onPathKeyup(event: KeyboardEvent): void {
-        if (event.key === 'Escape') {
-            this.activePathItem = null;
-            this.pathSuggestions = [];
-        }
-    }
-
-    public onPathBlur(item: FieldLink): void {
-        setTimeout(() => {
-            if (this.activePathItem === item) {
-                this.activePathItem = null;
-                this.pathSuggestions = [];
-            }
-        }, 200);
-    }
-
-    public selectPathSuggestion(item: FieldLink, path: string, type: 'input' | 'output' = 'input'): void {
-        item.field = path;
-        item.update();
-        this._updateFieldWarning(item, type);
-        if (type === 'output') {
-            this.updateTableOutput(item);
-        }
-        this.updateIssues();
-        this.activePathItem = null;
-        this.pathSuggestions = [];
     }
 
     private _updateFieldWarning(item: FieldLink, type: 'input' | 'output' = 'input'): void {
         this.fieldWarnings.set(item.id, !!(item.field && !this.getField(type, item.schema, item.field)));
     }
 
-    private _computePathSuggestions(item: FieldLink, type: 'input' | 'output' = 'input'): void {
-        const prefix = item.field || '';
-        if (!prefix) {
-            this.pathSuggestions = [];
-            this.activePathItem = null;
-            return;
-        }
-        const map = type === 'output'
+    public getPaths(item: FieldLink, type: 'input' | 'output'): ReadonlyMap<string, IFieldNode> | null {
+        return (type === 'output'
             ? this.outputSchemaFieldMap
-            : (item.schema ? this.schemaFieldMap.get(item.schema) : this.inputSchemaFieldMap);
-        if (!map) {
-            this.pathSuggestions = [];
-            this.activePathItem = null;
-            return;
-        }
-        const suggestions = Array.from(map.keys())
-            .filter(p => p.includes(prefix))
-            .sort((a, b) => a.length - b.length)
-            .slice(0, 10);
-        this.pathSuggestions = suggestions;
-        this.activePathItem = suggestions.length ? item : null;
+            : (item.schema ? this.schemaFieldMap.get(item.schema) : this.inputSchemaFieldMap)) || null;
     }
 
     public onStep(

@@ -145,10 +145,10 @@
         @if (showTopSaveActions) {
             @if (!isTemplateConfigMode && (!isTemplatePreviewMode || selectedSchema)) {
             <div class="sc-nav-tabs">
-                <button class="sc-nav-tab" [class.active]="activeTab === 'builder'" (click)="activeTab = 'builder'">
+                <button class="sc-nav-tab" [class.active]="activeTab === 'builder'" (click)="setActiveTab('builder')">
                     Builder
                 </button>
-                <button class="sc-nav-tab" [class.active]="activeTab === 'preview'" (click)="activeTab = 'preview'">
+                <button class="sc-nav-tab" [class.active]="activeTab === 'preview'" (click)="setActiveTab('preview')">
                     Preview
                 </button>
             </div>
@@ -317,10 +317,10 @@
         </div>
     }
 
-    <div class="sc-main">
+    <div class="sc-main" #schemaLayout>
 
         <!-- ── Sidebar ──────────────────────────────────────────── -->
-        <aside class="sc-sidebar">
+        <aside class="sc-sidebar" [appSchemaListResize]="schemaLayout" #sidebarResize="schemaListResize">
 
             <div class="sc-sidebar-tabs">
                 @if (!isTemplateConfigMode) {
@@ -373,6 +373,8 @@
             @if (activeSideTab === 'schemas') {
                 <div class="sc-schemas-pane">
                     <div class="sc-schemas-toolbar">
+                        <!-- The system schema list has no search -->
+                        @if (type !== 'system') {
                         <div class="sc-search-wrap">
                             <i class="pi pi-search sc-search-icon"></i>
                             <input
@@ -382,6 +384,7 @@
                                 [ngModel]="schemaSearch"
                                 (ngModelChange)="schemaSearch$.next($event)" />
                         </div>
+                        }
                         @if (!isTemplatePreviewMode) {
                         <button class="sc-btn-new-schema" [disabled]="isTemplateReadonly" (click)="onNewSchema()" title="New schema">
                             <i class="pi pi-plus"></i>
@@ -401,25 +404,43 @@
                             </div>
                         } @else {
                             @for (schema of filteredSchemas; track (schema._id || schema.id || schema.uuid)) {
+                                @let rowMessage = getSchemaRowTooltip(schema);
                                 <div
                                     class="sc-schema-row"
                                     [class.active]="(schema._id && selectedSchema?._id === schema._id) || (schema.id && selectedSchema?.id === schema.id)"
                                     [class.sc-schema-row--no-drop]="!canDragSchema(schema)"
                                     [draggable]="canDragSchema(schema)"
-                                    [pTooltip]="getSchemaRowTooltip(schema)"
-                                    tooltipPosition="right"
+                                    [pTooltip]="rowMessage ? schemaWarningTooltip : ''"
+                                    tooltipStyleClass="sc-row-tooltip"
+                                    appSchemaRowTooltip
+                                    tooltipPosition="top"
                                     (mouseenter)="hoveredSchemaId = schema.id || schema._id"
                                     (mouseleave)="hoveredSchemaId = null"
                                     (dragstart)="onSchemaDragStart($event, schema)"
                                     (dragend)="onDragEnd()"
                                     (click)="switchSchema(schema)">
+                                    <ng-template #schemaWarningTooltip>
+                                        <span class="sc-row-tooltip-message"><i class="pi pi-exclamation-triangle"></i><span>{{ rowMessage }}</span></span>
+                                    </ng-template>
+                                    <ng-template #schemaNameContent>
+                                        <span class="sc-row-tooltip-name">{{ schema.name }}</span>
+                                        @if (rowMessage) {
+                                            <span class="sc-row-tooltip-message sc-row-tooltip-message--separated"><i class="pi pi-exclamation-triangle"></i><span>{{ rowMessage }}</span></span>
+                                        }
+                                    </ng-template>
                                     <div class="sc-schema-icon">
                                         <i class="pi pi-file"></i>
                                     </div>
                                     <div class="sc-schema-info">
-                                        <span class="sc-schema-name">
+                                        <span class="sc-schema-name"
+                                              [appSchemaNameTooltip]="schema.name || ''"
+                                              #schemaNameTooltip="schemaNameTooltip"
+                                              [pTooltip]="schemaNameTooltip.rowTooltip('', schemaNameContent)"
+                                              tooltipStyleClass="sc-row-tooltip"
+                                              tooltipPosition="top"
+                                              [appSchemaRowInnerTooltip]="schemaNameTooltip.truncated">
                                             @if (isSchemaFeatured(schema)) {
-                                                <i class="pi pi-star-fill schema-featured-icon" pTooltip="Featured" tooltipPosition="right"></i>
+                                                <i class="pi pi-star-fill schema-featured-icon" pTooltip="Featured" tooltipPosition="right" appSchemaRowInnerTooltip></i>
                                             }
                                             {{ schema.name }}
                                         </span>
@@ -433,17 +454,17 @@
                                         </div>
                                     </div>
                                     @if (isTemplateSchemaLocked(schema)) {
-                                        <span class="st-schema-lock" [pTooltip]="getTemplateSchemaLockTooltip(schema)" tooltipPosition="right">
+                                        <span class="st-schema-lock" [pTooltip]="getTemplateSchemaLockTooltip(schema)" tooltipPosition="right" appSchemaRowInnerTooltip>
                                             <i class="pi pi-lock"></i>
                                         </span>
                                     }
                                     @if (isTemplateConfigMode) {
-                                <button class="sc-schema-delete-btn" (click)="$event.stopPropagation(); openTemplateSchemaEditor({ schema })" [pTooltip]="isTemplateReadonly ? 'View' : 'Edit'" tooltipPosition="right">
+                                <button class="sc-schema-delete-btn" (click)="$event.stopPropagation(); openTemplateSchemaEditor({ schema })" [pTooltip]="isTemplateReadonly ? 'View' : 'Edit'" tooltipPosition="right" appSchemaRowInnerTooltip>
                                             <i class="pi pi-pencil"></i>
                                         </button>
                                     } @else if (hoveredSchemaId === (schema.id || schema._id)) {
                                         @if (!isTemplateSchemaDeleteLocked(schema)) {
-                                        <button class="sc-schema-delete-btn" (click)="$event.stopPropagation(); onDeleteSchema(schema)" pTooltip="Delete" tooltipPosition="right">
+                                        <button class="sc-schema-delete-btn" (click)="$event.stopPropagation(); onDeleteSchema(schema)" pTooltip="Delete" tooltipPosition="right" appSchemaRowInnerTooltip>
                                             <i class="pi pi-trash"></i>
                                         </button>
                                         }
@@ -461,11 +482,21 @@
             }
 
         </aside>
+        <div class="sc-sidebar-resizer"
+             role="separator"
+             aria-label="Resize schema list"
+             aria-orientation="vertical"
+             [attr.aria-valuemin]="sidebarResize.minWidthPercent"
+             [attr.aria-valuemax]="sidebarResize.maxWidthPercent"
+             [attr.aria-valuenow]="sidebarResize.roundedWidth"
+             tabindex="0"
+             (keydown)="sidebarResize.key($event)"
+             (pointerdown)="sidebarResize.start($event)"></div>
 
         <!-- ═══════════════════════════════════════════════════════ CANVAS -->
         <div class="sc-canvas">
 
-            <div class="sc-canvas-body" [class.sc-canvas-body--drilling]="isDrilling">
+            <div class="sc-canvas-body" [class.sc-canvas-body--drilling]="isDrilling && activeTab === 'builder'">
 
                 @if (schemaLoading && !selectedSchema) {
 
@@ -488,10 +519,10 @@
                         </button>
                     </div>
 
-                } @else if (activeTab === 'builder') {
+                } @else {
 
-                    <!-- ── BUILDER ── -->
-                    <div class="sc-editor">
+                    <!-- ── BUILDER ── (kept mounted and hidden on the Preview tab) -->
+                    <div class="sc-editor" [class.sc-editor--hidden]="activeTab !== 'builder' || isDrilling">
 
                         <!-- ── Root schema properties panel ── -->
                         <div class="sc-schema-props" [class.sc-schema-props--locked]="selectedSchemaSettingsLocked">
@@ -626,13 +657,13 @@
                                         <label class="sc-schema-props-label">Entity type</label>
                                         <p-select class="guardian-dropdown sc-schema-props-select"
                                                   panelStyleClass="guardian-dropdown-panel"
-                                                  [options]="entityOptions"
+                                                  [options]="schemaEntityOptions"
                                                   [disabled]="selectedSchemaSettingsLocked"
                                                   optionLabel="label"
                                                   optionValue="value"
                                                   appendTo="body"
                                                   [(ngModel)]="selectedSchema.entity"
-                                                  (ngModelChange)="markDirty()">
+                                                  (ngModelChange)="onSchemaEntityChange(selectedSchema)">
                                         </p-select>
                                     </div>
                                     <div class="sc-schema-props-field">
@@ -755,40 +786,55 @@
                         }
                     </div>
 
-                } @else {
+                }
 
-                    <!-- ── PREVIEW TAB ── -->
-                    <div class="sc-preview">
+                <!-- ── PREVIEW TAB ── (mounted on first open, hidden on Builder; remounted via previewKey) -->
+                @if (previewMounted && selectedSchema) {
+                    <div class="sc-preview" [class.sc-preview--hidden]="activeTab !== 'preview'">
                         <div class="sc-preview-bar">
                             <span>View as:</span>
-                            <button class="sc-view-pill" [class.active]="previewPill === 'submitter'" (click)="setPreviewPill('submitter')">Submitter</button>
-                            <button class="sc-view-pill" [class.active]="previewPill === 'readonly'" (click)="setPreviewPill('readonly')">Read-only</button>
+                            <div class="sc-nav-tabs">
+                                <button class="sc-nav-tab" [class.active]="previewPill === 'submitter'" (click)="setPreviewPill('submitter')">Submitter</button>
+                                <button class="sc-nav-tab" [class.active]="previewPill === 'readonly'" (click)="setPreviewPill('readonly')">Read-only</button>
+                            </div>
+                            <span class="sc-spacer"></span>
+                            @let showMeta = formPreferences.showFieldMetadata$ | async;
+                            <button
+                                type="button"
+                                class="sc-field-metadata-toggle"
+                                [attr.aria-pressed]="!!showMeta"
+                                (click)="formPreferences.setShowFieldMetadata(!formPreferences.showFieldMetadata)">
+                                <i class="pi" [class.pi-eye]="showMeta" [class.pi-eye-slash]="!showMeta" aria-hidden="true"></i>
+                                Field metadata
+                            </button>
                         </div>
                         <div class="sc-preview-viewport">
-                            @if (selectedSchema) {
-                                <app-schema-form-root
-                                    [schema]="selectedSchema"
-                                    [preset]="previewPreset"
-                                    [private-fields]="{}"
-                                    [readonly-fields]="previewReadonlyFields"
-                                    [example]="previewPill !== 'submitter'"
-                                    [showButtons]="false"
-                                    [paginationHidden]="true">
-                                </app-schema-form-root>
-                            } @else {
-                                <div class="sc-preview-placeholder">
-                                    <i class="pi pi-eye-slash"></i>
-                                    <span>Select a schema to preview</span>
-                                </div>
+                            @for (key of [previewKey]; track key) {
+                                @if (previewSchemaRef; as pSchema) {
+                                    <app-schema-form-root
+                                        [schema]="pSchema"
+                                        [preset]="previewPreset"
+                                        [formulas]="previewFormulas"
+                                        [formulaLinkScope]="previewFormulaLinkScope"
+                                        [private-fields]="{}"
+                                        [readonly-fields]="previewReadonlyFields"
+                                        [example]="previewPill !== 'submitter'"
+                                        [showOverview]="false"
+                                        [layout]="previewLayout"
+                                        [showButtons]="false">
+                                    </app-schema-form-root>
+                                }
                             }
                         </div>
                     </div>
-
                 }
 
                 <!-- ── Sub-schema drill-down panel ── -->
                 @if (isDrilling) {
-                    <div class="sc-drill-panel">
+                    <div class="sc-drill-panel"
+                         [class.sc-drill-panel--hidden]="activeTab !== 'builder'"
+                         [class.sc-drill-panel--enter]="drillEntering"
+                         (animationend)="$event.target === $event.currentTarget && (drillEntering = false)">
 
                         <div class="sc-drill-breadcrumb">
                             <button class="sc-drill-crumb sc-drill-crumb--root" (click)="drillClose()">
@@ -803,6 +849,17 @@
                                     (click)="!$last ? drillTo(i) : null">
                                     {{ entry.fieldLabel }}
                                 </button>
+                                @if ($last && (drilledSchema?.id || $any(drilledSchema)?._id)) {
+                                    <button class="sc-drill-open-tab"
+                                            pTooltip="Open this sub-schema as the root schema in a new tab"
+                                            tooltipPosition="bottom"
+                                            [showDelay]="100"
+                                            [hideDelay]="0"
+                                            aria-label="Open this sub-schema as the root schema in a new tab"
+                                            (click)="openDrilledSchemaInNewTab()">
+                                        <i class="pi pi-external-link"></i>
+                                    </button>
+                                }
                             }
                         </div>
 
@@ -844,7 +901,7 @@
                                                       optionValue="value"
                                                       appendTo="body"
                                                       [(ngModel)]="ds.entity"
-                                                      (ngModelChange)="markDirty()">
+                                                      (ngModelChange)="onSchemaEntityChange(ds)">
                                             </p-select>
                                         </div>
                                         <div class="sc-schema-props-field">
@@ -918,7 +975,7 @@
             </div>
 
             <!-- ── Right panel (field properties) ──────────────────────── -->
-            @if (selectedField && isTemplateConfigMode) {
+            @if (selectedField && isTemplateConfigMode && activeTab === 'builder') {
                 <aside class="sc-right-panel">
                     <div class="sc-rp-header">
                         <div class="sc-rp-title">
@@ -954,7 +1011,7 @@
                     </div>
                 </aside>
             }
-            @if (selectedField && !isTemplateConfigMode) {
+            @if (selectedField && !isTemplateConfigMode && activeTab === 'builder') {
                 <aside class="sc-right-panel" [class.sc-right-panel--locked]="selectedFieldLocked">
                     <div class="sc-rp-header">
                         <div class="sc-rp-title">
@@ -1020,15 +1077,21 @@
                                 [(ngModel)]="selectedField.description"
                                 (ngModelChange)="markDirty(); invalidateSelectedFieldSuggestion()" />
                         </div>
-                        @if (selectedFieldIsString) {
+                        @if (selectedFieldSupportsAdvisoryText) {
                             <div class="sc-rp-group">
-                                <label class="sc-rp-label">Pattern</label>
-                                <input
-                                    class="sc-rp-input"
-                                    type="text"
-                                    placeholder="e.g. [0-9]+"
-                                    [(ngModel)]="selectedField.pattern"
-                                    (ngModelChange)="markDirty()" />
+                                <label class="sc-rp-label" for="field-advisory-toggle">Advisory text</label>
+                                <p-toggleswitch
+                                    inputId="field-advisory-toggle"
+                                    [ngModel]="advisoryTextEnabled"
+                                    (ngModelChange)="toggleAdvisoryText($event)"></p-toggleswitch>
+                                @if (advisoryTextEnabled) {
+                                    <textarea
+                                        class="sc-rp-input sc-rp-textarea"
+                                        rows="3"
+                                        aria-label="Advisory text"
+                                        [(ngModel)]="selectedField.advisoryText"
+                                        (ngModelChange)="markDirty()"></textarea>
+                                }
                             </div>
                         }
                         <div class="sc-rp-group">
@@ -1048,10 +1111,82 @@
                             </div>
                         </div>
 
-                        @if (selectedFieldHasGeoAncestors || selectedField.dependency) {
+                        @if (selectedFieldIsGeoJson) {
                             <div class="sc-rp-divider"></div>
+                            <div class="sc-rp-label">GeoJSON types</div>
+                            <div class="sc-check-list">
+                                @for (opt of geoJsonOptions; track opt) {
+                                    <div class="sc-check-item" (click)="toggleGeoJsonType(opt)">
+                                        <p-checkbox class="guardian-checkbox checkbox-24" [binary]="true"
+                                                    style="pointer-events:none"
+                                                    [ngModel]="isGeoJsonTypeSelected(opt)"></p-checkbox>
+                                        <div class="sc-check-desc">
+                                            <strong>{{ opt }}</strong>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        @if (selectedFieldShowsRequiredModes) {
+                            <div class="sc-rp-divider"></div>
+                            <div class="sc-rp-label">Required / Visibility</div>
+                            <div class="sc-radio-list">
+                                @for (opt of selectedFieldRequiredModes; track opt.value) {
+                                    <div class="sc-radio-item" (click)="setFieldRequiredMode(opt.value)">
+                                        <p-radioButton class="guardian-radio-button radio-button-24" name="sc-required-mode"
+                                                       style="pointer-events:none"
+                                                       [value]="opt.value"
+                                                       [ngModel]="getFieldRequiredMode(selectedField)"></p-radioButton>
+                                        <span>{{ opt.label }}</span>
+                                    </div>
+                                }
+                            </div>
+                            <div class="sc-rp-divider"></div>
+                        }
+
+                        @if (getFieldRequiredMode(selectedField) === 'autocalculate') {
                             <div class="sc-rp-group">
-                                <label class="sc-rp-label">Depends on</label>
+                                <label class="sc-rp-label">* Parameter: Expression</label>
+                                <div class="sc-expr-row">
+                                    <input
+                                        class="sc-rp-input sc-expr-preview"
+                                        type="text"
+                                        readonly
+                                        [value]="$any(selectedField).expression || ''"
+                                        placeholder="No expression set" />
+                                    <button class="sc-btn sc-btn-expr" (click)="openExpressionEditor()"
+                                        [class.sc-btn-expr--warn]="!$any(selectedField).expression">
+                                        <i class="pi pi-pencil"></i>
+                                        Edit
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                        @if (selectedFieldParameterUnused) {
+                            <div class="sc-rp-group">
+                                <label class="sc-rp-label">Parameter</label>
+                                <input
+                                    class="sc-rp-input"
+                                    type="text"
+                                    disabled
+                                    placeholder="Not used by this field type" />
+                            </div>
+                        }
+                        @if (selectedFieldIsString) {
+                            <div class="sc-rp-group">
+                                <label class="sc-rp-label">Parameter: Pattern</label>
+                                <input
+                                    class="sc-rp-input"
+                                    type="text"
+                                    placeholder="e.g. [0-9]+"
+                                    [(ngModel)]="selectedField.pattern"
+                                    (ngModelChange)="markDirty()" />
+                            </div>
+                        }
+                        @if (selectedFieldHasGeoAncestors || selectedField.dependency) {
+                            <div class="sc-rp-group">
+                                <label class="sc-rp-label">Parameter: Depends on</label>
                                 <p-select
                                     class="guardian-dropdown sc-rp-select"
                                     panelStyleClass="guardian-dropdown-panel"
@@ -1076,11 +1211,9 @@
                                 }
                             </div>
                         }
-
                         @if (selectedFieldIsEnum) {
-                            <div class="sc-rp-divider"></div>
                             <div class="sc-rp-group">
-                                <label class="sc-rp-label">Enum name</label>
+                                <label class="sc-rp-label">Parameter: Enum name</label>
                                 <input
                                     class="sc-rp-input"
                                     type="text"
@@ -1110,27 +1243,21 @@
                                 }
                             </div>
                         }
-
-                        @if (selectedFieldIsGeoJson) {
-                            <div class="sc-rp-divider"></div>
-                            <div class="sc-rp-label">GeoJSON types</div>
-                            <div class="sc-check-list">
-                                @for (opt of geoJsonOptions; track opt) {
-                                    <div class="sc-check-item" (click)="toggleGeoJsonType(opt)">
-                                        <p-checkbox class="guardian-checkbox checkbox-24" [binary]="true"
-                                                    style="pointer-events:none"
-                                                    [ngModel]="isGeoJsonTypeSelected(opt)"></p-checkbox>
-                                        <div class="sc-check-desc">
-                                            <strong>{{ opt }}</strong>
-                                        </div>
-                                    </div>
-                                }
+                        @if (selectedFieldIsUnit) {
+                            <div class="sc-rp-group">
+                                <label class="sc-rp-label">Parameter: Unit</label>
+                                <input
+                                    class="sc-rp-input"
+                                    type="text"
+                                    placeholder="e.g. tCO₂e, ha, m³"
+                                    [(ngModel)]="selectedField.unit"
+                                    (ngModelChange)="markDirty()" />
                             </div>
                         }
 
                         @if (selectedFieldIsHelpText) {
                             <div class="sc-rp-divider"></div>
-                            <div class="sc-rp-label">Text style</div>
+                            <div class="sc-rp-label">Parameter: Text style</div>
                             <div class="sc-check-list">
                                 <div class="sc-check-item" (click)="$any(selectedField).textBold = !$any(selectedField).textBold; markDirty()">
                                     <p-checkbox class="guardian-checkbox checkbox-24" [binary]="true"
@@ -1187,26 +1314,9 @@
                             </button>
                         }
 
-                        @if (selectedFieldIsUnit) {
-                            <div class="sc-rp-divider"></div>
-                            <div class="sc-rp-group">
-                                <label class="sc-rp-label">Unit</label>
-                                <input
-                                    class="sc-rp-input"
-                                    type="text"
-                                    placeholder="e.g. tCO₂e, ha, m³"
-                                    [(ngModel)]="selectedField.unit"
-                                    (ngModelChange)="markDirty()" />
-                            </div>
-                        }
-
                         @if (getFieldCurrentType(selectedField) === 'sub-schema') {
-                            <div class="sc-rp-divider"></div>
                             <div class="sc-rp-group">
-                                <label class="sc-rp-label">
-                                    <i class="pi pi-sitemap" style="font-size:11px;color:var(--color-primary, #4169E2);margin-right:4px"></i>
-                                    Sub-schema reference
-                                </label>
+                                <label class="sc-rp-label">Parameter: Sub-schema reference</label>
                                 <p-select
                                     class="guardian-dropdown sc-rp-select"
                                     panelStyleClass="guardian-dropdown-panel sc-ref-schema-panel"
@@ -1240,75 +1350,9 @@
                             </div>
                         }
 
-                        <div class="sc-rp-divider"></div>
-                        <div class="sc-rp-label">Required / Visibility</div>
-                        <div class="sc-radio-list">
-                            @for (opt of requiredModeOptions; track opt.value) {
-                                <div class="sc-radio-item" (click)="setFieldRequiredMode(opt.value)">
-                                    <p-radioButton class="guardian-radio-button radio-button-24" name="sc-required-mode"
-                                                   style="pointer-events:none"
-                                                   [value]="opt.value"
-                                                   [ngModel]="getFieldRequiredMode(selectedField)"></p-radioButton>
-                                    <span>{{ opt.label }}</span>
-                                </div>
-                            }
-                        </div>
-                        @if (getFieldRequiredMode(selectedField) === 'autocalculate') {
-                            <div class="sc-rp-group sc-rp-group--expr">
-                                <label class="sc-rp-label">
-                                    Expression
-                                    @if (!$any(selectedField).expression) {
-                                        <span class="sc-rp-hint sc-rp-hint--warn">required</span>
-                                    }
-                                </label>
-                                <div class="sc-expr-row">
-                                    <input
-                                        class="sc-rp-input sc-rp-input--mono sc-expr-preview"
-                                        type="text"
-                                        readonly
-                                        [value]="$any(selectedField).expression || ''"
-                                        placeholder="No expression set" />
-                                    <button class="sc-btn sc-btn-expr" (click)="openExpressionEditor()"
-                                        [class.sc-btn-expr--warn]="!$any(selectedField).expression">
-                                        <i class="pi pi-pencil"></i>
-                                        Edit
-                                    </button>
-                                </div>
-                            </div>
-                        }
-
-                        @if (selectedFieldCanBeArray || selectedFieldCanBeUpdatable) {
-                            <div class="sc-rp-divider"></div>
-                            <div class="sc-rp-label">Other</div>
-                            <div class="sc-check-list">
-                                @if (selectedFieldCanBeArray) {
-                                    <div class="sc-check-item" (click)="toggleBehaviour('isArray')">
-                                        <p-checkbox class="guardian-checkbox checkbox-24" [binary]="true"
-                                                    style="pointer-events:none"
-                                                    [ngModel]="selectedField.isArray"></p-checkbox>
-                                        <div class="sc-check-desc">
-                                            <strong>Allow multiple answers</strong>
-                                            <span>Renders as a list</span>
-                                        </div>
-                                    </div>
-                                }
-                                @if (selectedFieldCanBeUpdatable) {
-                                    <div class="sc-check-item" (click)="toggleBehaviour('isUpdatable')">
-                                        <p-checkbox class="guardian-checkbox checkbox-24" [binary]="true"
-                                                    style="pointer-events:none"
-                                                    [ngModel]="selectedField.isUpdatable"></p-checkbox>
-                                        <div class="sc-check-desc">
-                                            <strong>Updatable field</strong>
-                                            <span>Value can be updated after submission</span>
-                                        </div>
-                                    </div>
-                                }
-                            </div>
-                        }
-
                         @if (selectedFieldIsTable) {
                             <div class="sc-rp-divider"></div>
-                            <div class="sc-rp-label">Table columns</div>
+                            <div class="sc-rp-label">Parameter: Table columns</div>
                             <div class="sc-check-list">
                                 <div class="sc-check-item" (click)="toggleTableColumns()">
                                     <p-checkbox class="guardian-checkbox checkbox-24" [binary]="true"
@@ -1379,18 +1423,199 @@
                             }
                         }
 
+
+                        @let formulasView = selectedFieldFormulasView;
+                        @if (formulasView && formulasView.state !== 'hidden') {
+                            <div class="sc-rp-divider"></div>
+                            <div class="sc-rp-label">Formulas</div>
+                            @if (formulasView.state === 'save-first') {
+                                <div class="sc-ff-hint">Save the schema first to assign formulas.</div>
+                            } @else if (formulasView.state === 'sub-schema') {
+                                <div class="sc-ff-hint">This is a sub-schema – assign formulas from a document schema that uses it.</div>
+                            } @else if (formulasView.state === 'loading') {
+                                <div class="sc-ff-hint">Loading formulas…</div>
+                            } @else {
+                                @if (formulasView.rows.length) {
+                                    <div class="sc-ff-list">
+                                        @for (row of formulasView.rows; track row.key) {
+                                            <div class="sc-ff-row" [class.sc-ff-row--pending]="row.pending">
+                                                <span class="sc-ff-type" [attr.data-type]="row.type" [title]="row.typeName">
+                                                    <svg-icon [src]="'/assets/images/icons/' + row.icon + '.svg'"></svg-icon>
+                                                </span>
+                                                <div class="sc-ff-text">
+                                                    <span class="sc-ff-name" [title]="row.itemName">{{ row.itemName }}</span>
+                                                    <span class="sc-ff-doc" [title]="row.formulaName">{{ row.formulaName }}</span>
+                                                </div>
+                                                @if (row.pending) {
+                                                    <span class="sc-ff-tag sc-ff-tag--pending">unsaved</span>
+                                                }
+                                                @if (!row.pending) {
+                                                    <a class="sc-ff-icon-btn" target="_blank" rel="noopener"
+                                                        [routerLink]="['/formulas', row.formulaId]" [queryParams]="{ item: row.itemUuid }"
+                                                        pTooltip="Open this formula in the Formula Editor in a new tab" tooltipPosition="left">
+                                                        <i class="pi pi-external-link"></i>
+                                                    </a>
+                                                }
+                                                @if (row.published) {
+                                                    <span class="sc-ff-tag">Published</span>
+                                                } @else if (!selectedFieldLocked) {
+                                                    <button class="sc-ff-icon-btn sc-ff-remove" type="button" title="Remove from this field"
+                                                        (click)="unbindFieldFormula(row)">
+                                                        <i class="pi pi-times"></i>
+                                                    </button>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                } @else {
+                                    <div class="sc-ff-hint">No formulas on this field.</div>
+                                }
+                                @if (!selectedFieldLocked) {
+                                    <div class="sc-ff-actions">
+                                        <p-select
+                                            class="guardian-dropdown sc-rp-select"
+                                            panelStyleClass="guardian-dropdown-panel sc-ff-panel"
+                                            [options]="formulasView.groups"
+                                            [group]="true"
+                                            optionGroupLabel="label"
+                                            optionGroupChildren="items"
+                                            optionLabel="label"
+                                            optionValue="value"
+                                            [filter]="true"
+                                            filterBy="label"
+                                            [resetFilterOnHide]="true"
+                                            appendTo="body"
+                                            emptyMessage="No formula items to assign"
+                                            placeholder="Assign an existing formula…"
+                                            [(ngModel)]="fieldFormulas.assignValue"
+                                            (onChange)="assignFieldFormula($event.value)">
+                                            <ng-template pTemplate="group" let-group>
+                                                <span class="sc-ff-group">{{ group.label }}</span>
+                                            </ng-template>
+                                            <ng-template pTemplate="item" let-option>
+                                                <div class="sc-ff-option">
+                                                    <span class="sc-ff-type sc-ff-type--sm" [attr.data-type]="option.type">
+                                                        <svg-icon [src]="'/assets/images/icons/' + option.icon + '.svg'"></svg-icon>
+                                                    </span>
+                                                    <span class="sc-ff-option-name" [title]="option.label">{{ option.label }}</span>
+                                                    @if (option.linkedTo) {
+                                                        <span class="sc-ff-option-link" [title]="option.linkedTo">{{ option.linkedTo }}</span>
+                                                    }
+                                                </div>
+                                            </ng-template>
+                                        </p-select>
+                                        @if (!fieldFormulas.creating) {
+                                            <button class="sc-rp-ai-hint-link sc-ff-new-btn" type="button" (click)="fieldFormulas.startCreate()">
+                                                <i class="pi pi-plus"></i>
+                                                New formula
+                                            </button>
+                                        }
+                                    </div>
+                                    @if (fieldFormulas.creating) {
+                                        <div class="sc-ff-new">
+                                            <div class="sc-ff-new-title">New formula</div>
+                                            <div class="sc-rp-group">
+                                                <label class="sc-rp-label">Name</label>
+                                                <input
+                                                    class="sc-rp-input"
+                                                    type="text"
+                                                    placeholder="Formula name"
+                                                    [(ngModel)]="fieldFormulas.newName"
+                                                    (keydown.enter)="createFieldFormula()"
+                                                    (keydown.escape)="fieldFormulas.cancelCreate()" />
+                                            </div>
+                                            <div class="sc-rp-group">
+                                                <label class="sc-rp-label">Add to</label>
+                                                <p-select
+                                                    class="guardian-dropdown sc-rp-select"
+                                                    panelStyleClass="guardian-dropdown-panel sc-ff-doc-panel"
+                                                    [options]="formulasView.documents"
+                                                    optionLabel="label"
+                                                    optionValue="value"
+                                                    appendTo="body"
+                                                    placeholder="Select a formula document…"
+                                                    [(ngModel)]="fieldFormulas.newDocument">
+                                                    <ng-template pTemplate="item" let-option>
+                                                        @if (option.isNew) {
+                                                            <div class="sc-ff-doc-new">
+                                                                <i class="pi pi-plus"></i>
+                                                                {{ option.label }}
+                                                            </div>
+                                                        } @else {
+                                                            <span class="sc-ff-option-name" [title]="option.label">{{ option.label }}</span>
+                                                        }
+                                                    </ng-template>
+                                                </p-select>
+                                            </div>
+                                            <div class="sc-ff-new-hint">Creates an empty formula linked to this field. Add its expression in the Formula Editor.</div>
+                                            <div class="sc-ff-new-buttons">
+                                                <button class="sc-btn sc-btn--sm" type="button" (click)="fieldFormulas.cancelCreate()">Cancel</button>
+                                                <button class="sc-btn sc-btn--sm sc-btn-primary" type="button"
+                                                    [disabled]="!fieldFormulas.canCreate"
+                                                    (click)="createFieldFormula()">
+                                                    Create
+                                                </button>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            }
+                        }
+
+                        @if (selectedFieldCanBeArray || selectedFieldCanBeUpdatable || selectedFieldCanBePrivate) {
+                            <div class="sc-rp-divider"></div>
+                            <div class="sc-rp-label">Other</div>
+                            <div class="sc-check-list">
+                                @if (selectedFieldCanBeArray) {
+                                    <div class="sc-check-item" (click)="toggleBehaviour('isArray')">
+                                        <p-checkbox class="guardian-checkbox checkbox-24" [binary]="true"
+                                                    style="pointer-events:none"
+                                                    [ngModel]="selectedField.isArray"></p-checkbox>
+                                        <div class="sc-check-desc">
+                                            <strong>Allow multiple answers</strong>
+                                            <span>Renders as a list</span>
+                                        </div>
+                                    </div>
+                                }
+                                @if (selectedFieldCanBeUpdatable) {
+                                    <div class="sc-check-item" (click)="toggleBehaviour('isUpdatable')">
+                                        <p-checkbox class="guardian-checkbox checkbox-24" [binary]="true"
+                                                    style="pointer-events:none"
+                                                    [ngModel]="selectedField.isUpdatable"></p-checkbox>
+                                        <div class="sc-check-desc">
+                                            <strong>Updatable field</strong>
+                                            <span>Value can be updated after submission</span>
+                                        </div>
+                                    </div>
+                                }
+                                @if (selectedFieldCanBePrivate) {
+                                    <div class="sc-check-item" (click)="toggleBehaviour('isPrivate')">
+                                        <p-checkbox class="guardian-checkbox checkbox-24" [binary]="true"
+                                                    style="pointer-events:none"
+                                                    [ngModel]="selectedField.isPrivate"></p-checkbox>
+                                        <div class="sc-check-desc">
+                                            <strong>Private field</strong>
+                                            <span>Value is stored encrypted</span>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+
+
                         @if (selectedFieldShowValues) {
                             <div class="sc-rp-divider"></div>
                             <div class="sc-rp-label">Values</div>
                             @if (selectedField!.isRef) {
                                 <!-- Ref fields (sub-schema, GeoJSON, SentinelHUB): delegate to schema-form-root
                                      so "+ Add [description]" and nested-document editing work identically to
-                                     the old editor. Wrapper class hides the nav panel via CSS overrides. -->
+                                     the old editor. It stays a single page (layout="single"). -->
                                 <div class="sc-fv-ref-form">
                                     <app-schema-form-root
                                         [fields]="refPresetFormFields!"
                                         [preset]="refPresetValues"
                                         [showButtons]="false"
+                                        layout="single"
                                         [likeDryRun]="true"
                                         (form)="onRefPresetFormChange($event)"
                                     ></app-schema-form-root>
@@ -1644,7 +1869,11 @@
                             [class.sc-field-card--drag-bot]="!isTemplateConfigMode && sidebarDropIndex === i && sidebarDropPos === 'bot'"
                             (mousedown)="!isTemplateConfigMode ? onCardMouseDown($event, field, isDrilling ? drillCurrentFields : (selectedSchema?.fields ?? [])) : null"
                             (click)="selectField(field)">
-                            <span class="sc-drag-handle" [class.sc-drag-handle--disabled]="isTemplateConfigMode || isTemplateFieldLocked(field)"><i class="pi pi-bars"></i></span>
+                            <span class="sc-drag-handle"
+                                  [class.sc-drag-handle--disabled]="isTemplateConfigMode || isTemplateFieldLocked(field)"
+                                  pTooltip="This field cannot be moved"
+                                  tooltipPosition="top"
+                                  [tooltipDisabled]="!isTemplateConfigMode && !isTemplateFieldLocked(field)"><i class="pi pi-bars"></i></span>
                             <div class="sc-field-type-icon" [class.sc-field-type-icon--ref]="getFieldCurrentType(field) === 'sub-schema'">
                                 <i class="pi {{ getFieldIcon(field) }}"></i>
                             </div>
@@ -1676,9 +1905,25 @@
                                     @if (field.isUpdatable) {
                                         <span class="sc-badge sc-badge--upd">Updatable</span>
                                     }
+                                    @if (field.isPrivate) {
+                                        <span class="sc-badge sc-badge--priv">Private</span>
+                                    }
                                     @if (isFieldConditional(field)) {
                                         <span class="sc-badge sc-badge--cond">
-                                            <i class="pi pi-code"></i>Condition
+                                            <i class="pi pi-code"></i>Condition trigger
+                                        </span>
+                                    }
+                                    @if (isFieldConditionOwned(field)) {
+                                        <span class="sc-badge sc-badge--cond-member"
+                                            pTooltip="Shown only when the condition it belongs to matches"
+                                            tooltipPosition="top">
+                                            <i class="pi pi-eye"></i>Conditional field
+                                        </span>
+                                    }
+                                    @let formulaCount = getFieldFormulaCount(field);
+                                    @if (formulaCount) {
+                                        <span class="sc-badge sc-badge--formula">
+                                            <svg-icon src="/assets/images/icons/function.svg"></svg-icon>{{ formulaCount === 1 ? 'Formula' : formulaCount + ' Formulas' }}
                                         </span>
                                     }
                                 </div>
@@ -1900,6 +2145,9 @@
                                     (mouseover)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
                             </ng-template>
                         </p-select>
+                        @if (arrayDependencyError) {
+                            <small class="sc-array-link-field-error" role="alert">{{ arrayDependencyError }}</small>
+                        }
                     </label>
                     <label>
                         <span>Entry display name <small>(optional)</small></span>
@@ -2016,11 +2264,7 @@
                         <button class="sc-btn sc-btn-primary"
                             [disabled]="!canApplyArrayDependency() || isArrayDependencyFormLocked"
                             (click)="applyArrayDependency()">
-                            @if (editingArrayDependency) {
-                                <i class="pi pi-check"></i>Save link
-                            } @else {
-                                <i class="pi pi-plus"></i>Add link
-                            }
+                            Save link
                         </button>
                     </div>
                 </div>
@@ -2162,30 +2406,17 @@
 
             @for (cond of (currentContextSchema?.conditions || []); track cond; let ci = $index) {
                 <div class="sc-cond-block">
-
-                    <!-- Block header: IF / IF ALL / IF ANY toggle + delete -->
-                    <div class="sc-cond-block-hdr">
-                        <div class="sc-cond-type-group">
-                            <button class="sc-cond-type-btn"
-                                [class.active]="getIfOperator(cond) === 'SINGLE'"
-                                [disabled]="isConditionLocked(cond)"
-                                (click)="setConditionOperator(cond, 'SINGLE')">IF</button>
-                            <button class="sc-cond-type-btn"
-                                [class.active]="getIfOperator(cond) === 'AND'"
-                                [disabled]="isConditionLocked(cond)"
-                                (click)="setConditionOperator(cond, 'AND')">IF ALL</button>
-                            <button class="sc-cond-type-btn"
-                                [class.active]="getIfOperator(cond) === 'OR'"
-                                [disabled]="isConditionLocked(cond)"
-                                (click)="setConditionOperator(cond, 'OR')">IF ANY</button>
-                        </div>
-                        <span class="sc-cond-type-note">
-                            @if (getIfOperator(cond) === 'SINGLE') { — single condition }
-                            @else if (getIfOperator(cond) === 'AND') { — all must match }
-                            @else { — any must match }
-                        </span>
+                    <app-condition-if-editor
+                        [ifCondition]="cond.ifCondition"
+                        (ifConditionChange)="cond.ifCondition = $event; markDirty()"
+                        [fieldGroups]="getConditionFieldPSelectGroups()"
+                        [resolveField]="condResolveField"
+                        [resolveFieldPath]="condResolveFieldPath"
+                        [firstEntry]="condFirstEntry"
+                        [disabled]="isConditionLocked(cond)">
+                        <!-- Block header: IF / IF ALL / IF ANY toggle + lock / delete (toggle lives in the shared editor) -->
                         @if (isTemplateConfigMode) {
-                            <button class="sc-cond-block-lock"
+                            <button condHeaderActions class="sc-cond-block-lock"
                                 tooltipPosition="top"
                                 [pTooltip]="isConditionLocked(cond) ? 'Unlock this condition' : 'Lock this condition'"
                                 [disabled]="isTemplateReadonly"
@@ -2193,10 +2424,10 @@
                                 <i class="pi" [class.pi-lock]="isConditionLocked(cond)" [class.pi-lock-open]="!isConditionLocked(cond)"></i>
                             </button>
                         } @else if (isConditionLocked(cond)) {
-                            <i class="pi pi-lock sc-cond-block-lock-badge" title="Locked by the applied template"></i>
+                            <i condHeaderActions class="pi pi-lock sc-cond-block-lock-badge" title="Locked by the applied template"></i>
                         }
                         @if (!isTemplateConfigMode) {
-                            <button class="sc-cond-block-del"
+                            <button condHeaderActions class="sc-cond-block-del"
                                 tooltipPosition="top"
                                 [pTooltip]="getRemoveConditionTitle(cond)"
                                 [disabled]="conditionHasLockedField(cond) || isConditionLocked(cond)"
@@ -2204,98 +2435,9 @@
                                 <i class="pi pi-trash"></i>
                             </button>
                         }
-                    </div>
-
-                    <!-- Rule rows -->
-                    <div class="sc-cond-block-body">
-                        <div class="sc-cond-when-label">When</div>
-
-                        @for (row of getIfRows(cond); track $index; let ri = $index) {
-                            <div class="sc-cond-rule-row">
-                                <span class="sc-cond-rule-num">{{ ri + 1 }}.</span>
-                                <p-select
-                                    class="sc-cond-field-sel guardian-dropdown"
-                                    panelStyleClass="guardian-dropdown-panel width-825 sc-cond-panel"
-                                    [options]="getConditionFieldPSelectGroups()"
-                                    [group]="true"
-                                    optionLabel="label"
-                                    optionValue="pathStr"
-                                    [filter]="true"
-                                    filterBy="label"
-                                    [resetFilterOnHide]="true"
-                                    [virtualScroll]="true"
-                                    [virtualScrollItemSize]="38"
-                                    appendTo="body"
-                                    placeholder="Select field…"
-                                    [disabled]="isConditionLocked(cond)"
-                                    [ngModel]="getIfRowFieldPath(row)"
-                                    (onChange)="setIfRowField(cond, ri, $event.value)">
-                                    <ng-template pTemplate="item" let-option>
-                                        <span class="sc-cond-opt-row">
-                                            <span class="sc-cond-opt-label"
-                                                (mouseover)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
-                                        </span>
-                                    </ng-template>
-                                </p-select>
-                                @if (getIfRowComparatorOptions(row).length > 1) {
-                                    <p-select
-                                        class="sc-cond-op-sel guardian-dropdown"
-                                        panelStyleClass="guardian-dropdown-panel"
-                                        [options]="getIfRowComparatorOptions(row)"
-                                        optionLabel="label"
-                                        optionValue="value"
-                                        appendTo="body"
-                                        [disabled]="isConditionLocked(cond)"
-                                        [ngModel]="getIfRowComparator(row)"
-                                        (onChange)="setIfRowComparator(cond, ri, $event.value)">
-                                        <ng-template pTemplate="item" let-option>
-                                            <span class="sc-cond-opt-row">
-                                                <span class="sc-cond-opt-label"
-                                                      (mouseover)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
-                                            </span>
-                                        </ng-template>
-                                    </p-select>
-                                } @else {
-                                    <span class="sc-cond-op-eq">=</span>
-                                }
-                                <div class="sc-cond-val-wrap">
-                                    @if (isIfRowEnum(row)) {
-                                        <p-select
-                                            class="sc-cond-val-sel guardian-dropdown"
-                                            panelStyleClass="guardian-dropdown-panel width-300"
-                                            [options]="getIfRowOptions(row)"
-                                            appendTo="body"
-                                            placeholder="Select value…"
-                                            [disabled]="isConditionLocked(cond)"
-                                            [ngModel]="getIfRowValue(row)"
-                                            (onChange)="setIfRowValue(cond, ri, $event.value)">
-                                            <ng-template pTemplate="item" let-option>
-                                                <span (mouseover)="updateOverflowTitle($event, option)">{{ option }}</span>
-                                            </ng-template>
-                                        </p-select>
-                                    } @else {
-                                        <input class="sc-cond-val-inp" type="text" placeholder="value"
-                                            [disabled]="isConditionLocked(cond)"
-                                            [value]="getIfRowValue(row)"
-                                            (input)="setIfRowValue(cond, ri, $any($event.target).value)" />
-                                    }
-                                </div>
-                                <button class="sc-cond-row-del"
-                                    [disabled]="getIfRows(cond).length <= 1 || isConditionLocked(cond)"
-                                    (click)="removeIfRow(cond, ri)">
-                                    <i class="pi pi-times"></i>
-                                </button>
-                            </div>
-                        }
-
-                        @if (getIfOperator(cond) !== 'SINGLE') {
-                            <button class="sc-cond-add-rule" [disabled]="isConditionLocked(cond)" (click)="addIfRow(cond)">
-                                <i class="pi pi-plus"></i> Add condition row
-                            </button>
-                        }
 
                         <!-- THEN / ELSE 2-column grid -->
-                        <div class="sc-cond-te-grid">
+                        <div condBody class="sc-cond-te-grid">
 
                             <!-- THEN -->
                             <div class="sc-cond-te-block">
@@ -2304,37 +2446,24 @@
                                 </div>
                                 <div class="sc-cond-te-body">
                                     @for (f of (cond.thenFields || []); track f.name) {
-                                        <div class="sc-field-card sc-cond-field-card"
-                                            [class.active]="selectedField === f"
-                                            title="Click to configure field"
-                                            (click)="selectField(f)">
-                                            <div class="sc-field-type-icon">
-                                                <i class="pi {{ getFieldIcon(f) }}"></i>
-                                            </div>
-                                            <div class="sc-field-info">
-                                                <span class="sc-field-key">{{ f.description || f.title || f.name }}</span>
-                                                <span class="sc-field-desc">{{ f.name }}</span>
-                                                <div class="sc-field-meta-row">
-                                                    <span class="sc-badge sc-badge--type">{{ getFieldTypeBadge(f) }}</span>
-                                                    @if (f.required) {
-                                                        <span class="sc-badge sc-badge--req">Required</span>
-                                                    }
-                                                    @if (f.isArray) {
-                                                        <span class="sc-badge sc-badge--arr">Array</span>
-                                                    }
-                                                </div>
-                                            </div>
-                                            <div class="sc-field-card-actions">
-                                                @if (!isTemplateConfigMode && !isTemplateFieldLocked(f)) {
-                                                    <button class="sc-icon-btn sc-icon-btn--danger" title="Remove" (click)="removeThenField(cond, f); $event.stopPropagation()">
-                                                        <i class="pi pi-trash"></i>
-                                                    </button>
-                                                }
-                                            </div>
+                                        <div class="sc-cond-te-item" [class.sc-cond-te-item--active]="selectedField === f">
+                                            <i class="pi {{ getFieldIcon(f) }}"></i>
+                                            <span class="sc-cond-te-label" [title]="f.name"
+                                                (click)="selectField(f)">{{ f.description || f.title || f.name }}</span>
+                                            @if (canEnterSubSchema(f)) {
+                                                <button class="sc-subschema-enter-btn"
+                                                    [title]="isTemplateConfigMode ? 'Open sub-schema settings' : 'Enter sub-schema'"
+                                                    (click)="isTemplateConfigMode ? enterTemplateSubSchema(f, $event) : enterSubSchema(f, $event)">
+                                                    <i class="pi pi-arrow-right"></i>Enter
+                                                </button>
+                                            }
                                             @if (isTemplateFieldLocked(f)) {
-                                                <span class="st-field-lock" pTooltip="Field editing is locked" tooltipPosition="top">
-                                                    <i class="pi pi-lock"></i>
-                                                </span>
+                                                <i class="pi pi-lock" pTooltip="Field editing is locked" tooltipPosition="top"></i>
+                                            }
+                                            @if (!isTemplateConfigMode && !isTemplateFieldLocked(f)) {
+                                                <button class="sc-cond-te-del" [disabled]="isConditionLocked(cond)" (click)="removeThenField(cond, f)">
+                                                    <i class="pi pi-times"></i>
+                                                </button>
                                             }
                                         </div>
                                     }
@@ -2354,30 +2483,39 @@
                                         </div>
                                     }
                                     <div class="sc-cond-te-add-row">
-                                        <button class="sc-cond-te-add-btn" [disabled]="!canAddFieldToSelectedSchema || isConditionLocked(cond)" (click)="addThenField(cond)">
-                                            <i class="pi pi-plus"></i>New field
-                                        </button>
                                         <p-select
                                             class="sc-cond-te-ref-sel guardian-dropdown"
                                             panelStyleClass="guardian-dropdown-panel width-825 sc-cond-panel"
-                                            [options]="getCrossTargetPSelectGroups()"
+                                            [options]="getCondFieldPickerOptions(cond)"
                                             [group]="true"
                                             optionLabel="label"
                                             optionValue="pathStr"
+                                            optionDisabled="disabled"
                                             [filter]="true"
-                                            filterBy="label,pathStr"
+                                            filterBy="label,fullLabel,pathStr"
                                             [resetFilterOnHide]="true"
                                             [virtualScroll]="true"
                                             [virtualScrollItemSize]="38"
                                             appendTo="body"
-                                            [placeholder]="getCrossTargetPSelectGroups().length ? 'Ref field' : '(no sub-schema fields)'"
-                                            [disabled]="!getCrossTargetPSelectGroups().length || isConditionLocked(cond)"
+                                            [placeholder]="getCondFieldPickerOptions(cond).length ? 'Select field…' : '(no selectable fields)'"
+                                            [disabled]="!getCondFieldPickerOptions(cond).length || isConditionLocked(cond)"
                                             [(ngModel)]="condThenRefVal[ci]"
                                             (onChange)="onCondThenRefChange(cond, ci, $event.value)">
+                                            <ng-template pTemplate="group" let-group>
+                                                <span class="sc-cond-group-row"
+                                                    [pTooltip]="group.label" tooltipPosition="top" tooltipStyleClass="sc-cond-tooltip" [tooltipOptions]="{showDelay: 300}">
+                                                    <span class="sc-cond-group-name">{{ group.name }}</span>
+                                                    @if (group.parents; as parents) {
+                                                        <span class="sc-cond-group-parents">in {{ parents }}</span>
+                                                    }
+                                                </span>
+                                            </ng-template>
                                             <ng-template pTemplate="item" let-option>
-                                                <span class="sc-cond-opt-row">
+                                                <span class="sc-cond-opt-row"
+                                                    [pTooltip]="option.disabled ? 'Already used in another condition' : undefined"
+                                                    tooltipPosition="top">
                                                     <span class="sc-cond-opt-label"
-                                                        (mouseover)="updateOverflowTitle($event, option.isBlock ? option.label + ' – Sub-schema' : option.label)">{{ option.label }}</span>
+                                                        [pTooltip]="option.isBlock ? option.fullLabel + ' – Sub-schema' : option.fullLabel" tooltipPosition="top" tooltipStyleClass="sc-cond-tooltip" [tooltipOptions]="{showDelay: 300}">{{ option.label }}</span>
                                                     @if (option.isBlock) {
                                                         <span class="sc-cond-opt-block-badge">Sub-schema</span>
                                                     }
@@ -2395,37 +2533,24 @@
                                 </div>
                                 <div class="sc-cond-te-body">
                                     @for (f of (cond.elseFields || []); track f.name) {
-                                        <div class="sc-field-card sc-cond-field-card"
-                                            [class.active]="selectedField === f"
-                                            title="Click to configure field"
-                                            (click)="selectField(f)">
-                                            <div class="sc-field-type-icon">
-                                                <i class="pi {{ getFieldIcon(f) }}"></i>
-                                            </div>
-                                            <div class="sc-field-info">
-                                                <span class="sc-field-key">{{ f.description || f.title || f.name }}</span>
-                                                <span class="sc-field-desc">{{ f.name }}</span>
-                                                <div class="sc-field-meta-row">
-                                                    <span class="sc-badge sc-badge--type">{{ getFieldTypeBadge(f) }}</span>
-                                                    @if (f.required) {
-                                                        <span class="sc-badge sc-badge--req">Required</span>
-                                                    }
-                                                    @if (f.isArray) {
-                                                        <span class="sc-badge sc-badge--arr">Array</span>
-                                                    }
-                                                </div>
-                                            </div>
-                                            <div class="sc-field-card-actions">
-                                                @if (!isTemplateConfigMode && !isTemplateFieldLocked(f)) {
-                                                    <button class="sc-icon-btn sc-icon-btn--danger" title="Remove" (click)="removeElseField(cond, f); $event.stopPropagation()">
-                                                        <i class="pi pi-trash"></i>
-                                                    </button>
-                                                }
-                                            </div>
+                                        <div class="sc-cond-te-item" [class.sc-cond-te-item--active]="selectedField === f">
+                                            <i class="pi {{ getFieldIcon(f) }}"></i>
+                                            <span class="sc-cond-te-label" [title]="f.name"
+                                                (click)="selectField(f)">{{ f.description || f.title || f.name }}</span>
+                                            @if (canEnterSubSchema(f)) {
+                                                <button class="sc-subschema-enter-btn"
+                                                    [title]="isTemplateConfigMode ? 'Open sub-schema settings' : 'Enter sub-schema'"
+                                                    (click)="isTemplateConfigMode ? enterTemplateSubSchema(f, $event) : enterSubSchema(f, $event)">
+                                                    <i class="pi pi-arrow-right"></i>Enter
+                                                </button>
+                                            }
                                             @if (isTemplateFieldLocked(f)) {
-                                                <span class="st-field-lock" pTooltip="Field editing is locked" tooltipPosition="top">
-                                                    <i class="pi pi-lock"></i>
-                                                </span>
+                                                <i class="pi pi-lock" pTooltip="Field editing is locked" tooltipPosition="top"></i>
+                                            }
+                                            @if (!isTemplateConfigMode && !isTemplateFieldLocked(f)) {
+                                                <button class="sc-cond-te-del" [disabled]="isConditionLocked(cond)" (click)="removeElseField(cond, f)">
+                                                    <i class="pi pi-times"></i>
+                                                </button>
                                             }
                                         </div>
                                     }
@@ -2445,30 +2570,39 @@
                                         </div>
                                     }
                                     <div class="sc-cond-te-add-row">
-                                        <button class="sc-cond-te-add-btn" [disabled]="!canAddFieldToSelectedSchema || isConditionLocked(cond)" (click)="addElseField(cond)">
-                                            <i class="pi pi-plus"></i>New field
-                                        </button>
                                         <p-select
                                             class="sc-cond-te-ref-sel guardian-dropdown"
                                             panelStyleClass="guardian-dropdown-panel width-825 sc-cond-panel"
-                                            [options]="getCrossTargetPSelectGroups()"
+                                            [options]="getCondFieldPickerOptions(cond)"
                                             [group]="true"
                                             optionLabel="label"
                                             optionValue="pathStr"
+                                            optionDisabled="disabled"
                                             [filter]="true"
-                                            filterBy="label,pathStr"
+                                            filterBy="label,fullLabel,pathStr"
                                             [resetFilterOnHide]="true"
                                             [virtualScroll]="true"
                                             [virtualScrollItemSize]="38"
                                             appendTo="body"
-                                            [placeholder]="getCrossTargetPSelectGroups().length ? 'Ref field' : '(no sub-schema fields)'"
-                                            [disabled]="!getCrossTargetPSelectGroups().length || isConditionLocked(cond)"
+                                            [placeholder]="getCondFieldPickerOptions(cond).length ? 'Select field…' : '(no selectable fields)'"
+                                            [disabled]="!getCondFieldPickerOptions(cond).length || isConditionLocked(cond)"
                                             [(ngModel)]="condElseRefVal[ci]"
                                             (onChange)="onCondElseRefChange(cond, ci, $event.value)">
+                                            <ng-template pTemplate="group" let-group>
+                                                <span class="sc-cond-group-row"
+                                                    [pTooltip]="group.label" tooltipPosition="top" tooltipStyleClass="sc-cond-tooltip" [tooltipOptions]="{showDelay: 300}">
+                                                    <span class="sc-cond-group-name">{{ group.name }}</span>
+                                                    @if (group.parents; as parents) {
+                                                        <span class="sc-cond-group-parents">in {{ parents }}</span>
+                                                    }
+                                                </span>
+                                            </ng-template>
                                             <ng-template pTemplate="item" let-option>
-                                                <span class="sc-cond-opt-row">
+                                                <span class="sc-cond-opt-row"
+                                                    [pTooltip]="option.disabled ? 'Already used in another condition' : undefined"
+                                                    tooltipPosition="top">
                                                     <span class="sc-cond-opt-label"
-                                                        (mouseover)="updateOverflowTitle($event, option.isBlock ? option.label + ' – Sub-schema' : option.label)">{{ option.label }}</span>
+                                                        [pTooltip]="option.isBlock ? option.fullLabel + ' – Sub-schema' : option.fullLabel" tooltipPosition="top" tooltipStyleClass="sc-cond-tooltip" [tooltipOptions]="{showDelay: 300}">{{ option.label }}</span>
                                                     @if (option.isBlock) {
                                                         <span class="sc-cond-opt-block-badge">Sub-schema</span>
                                                     }
@@ -2480,7 +2614,7 @@
                             </div>
 
                         </div>
-                    </div>
+                    </app-condition-if-editor>
                 </div>
             }
 
@@ -2536,7 +2670,7 @@
     [style]="{ width: 'min(760px, 95vw)' }"
     [closeOnEscape]="!isRichTextPresetBusy()"
     [styleClass]="isRichTextPresetBusy() ? 'sc-rte-preset-dialog sc-rte-preset-dialog--locked' : 'sc-rte-preset-dialog'"
-    (onHide)="closeRichTextPresetDialog()">
+    (onHide)="cancelRichTextPresetDialog()">
     <div class="sc-rte-preset-dialog-body">
         <app-rich-text-editor
             #richTextPresetEditor

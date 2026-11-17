@@ -53,6 +53,7 @@ export class LogsViewComponent implements OnInit, OnDestroy {
         { id: 'ERROR', label: 'Error' },
         { id: 'WARN', label: 'Warning' },
         { id: 'INFO', label: 'Info' },
+        { id: 'DEBUG', label: 'Debug' },
     ];
 
     onSearch: EventEmitter<any> = new EventEmitter();

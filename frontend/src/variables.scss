@@ -49,6 +49,7 @@
     --header-width-expand: 280px;
     --header-width-collapse: 80px;
     --first-steps-panel-width: 380px;
+    --first-steps-offset: 0px;
     --header-color-primary: #0031ff;
     --header-preloader-color: #FFF;
     --header-color-primary-dark: rgba(0, 0, 0, 1);
@@ -169,6 +170,10 @@
     --guardian-secondary-background: #171B24;
     --guardian-menu-color-2: #9e7bf5;
     --guardian-success-background: #12351F;
+    --guardian-tree-canvas-color: #10131A;
+    --guardian-tree-grid-color: #1D222D;
+    --guardian-tree-node-border: #303746;
+    --guardian-tree-tab-border: #303746;
     --guardian-failure-background: #3A1717;
     --guardian-disabled-color: #778299;
     --guardian-disabled-background: #202735;
@@ -188,6 +193,10 @@
     --formula-variable-background: #3A2E12;
     --formula-function-background: #3A1730;
     --formula-text-background: #12351F;
+    --formula-constant-color: #7E9BF0;
+    --formula-variable-color: #E8B04A;
+    --formula-function-color: #F25DBE;
+    --formula-text-color: #3DD66A;
 
     /* Navigation menu — brand-tinted, dark mode */
     --sidebar-bg: #171B24;
@@ -208,6 +217,10 @@
     --header-width-expand: 0px;
     --header-width-collapse: 0px;
     --topbar-height: 56px;
+}
+
+:root.first-steps-open {
+    --first-steps-offset: var(--first-steps-panel-width);
 }
 
 @media (max-width: 810px) {

@@ -23,6 +23,8 @@ import { DataInputDialogComponent } from './data-input-dialog/data-input-dialog.
 import { CompareBtnComponent } from './compare-btn/compare-btn.component';
 import { CompareViewerComponent } from './compare-viewer/compare-viewer.component';
 import { AlertComponent } from './alert/alert.component';
+import { ConditionIfEditorComponent } from './condition-if-editor/condition-if-editor.component';
+import { SchemaPathInputComponent } from './schema-path-input/schema-path-input.component';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
@@ -44,6 +46,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { MathLiveComponent } from './mathlive/mathlive.component';
 import { MenuButton } from './menu-button/menu-button.component';
 import { CheckboxButton } from './checkbox-button/checkbox-button.component';
+import { CopyButtonComponent } from './copy-button/copy-button.component';
 import { IPFSLinkComponent } from './ipfs-link/ipfs-link.component';
 import { TableDialogComponent } from './table-dialog/table-dialog.component';
 import { AgGridModule } from 'ag-grid-angular';
@@ -60,6 +63,8 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 @NgModule({
     declarations: [
+        ConditionIfEditorComponent,
+        SchemaPathInputComponent,
         DatetimePicker,
         HederaExplorer,
         SelectMenuButton,
@@ -90,6 +95,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
         MenuButton,
         CheckboxButton,
         IPFSLinkComponent,
+        CopyButtonComponent,
         TableDialogComponent,
         PolicyComments,
         TextInputAutocompleteDirective,
@@ -128,6 +134,8 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
         { provide: DialogService, useClass: GuardianDialogService }
     ],
     exports: [
+        ConditionIfEditorComponent,
+        SchemaPathInputComponent,
         DatetimePicker,
         HederaExplorer,
         SelectMenuButton,
@@ -158,6 +166,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
         MenuButton,
         CheckboxButton,
         IPFSLinkComponent,
+        CopyButtonComponent,
         TableDialogComponent,
         PolicyComments,
         TextInputAutocompleteDirective,

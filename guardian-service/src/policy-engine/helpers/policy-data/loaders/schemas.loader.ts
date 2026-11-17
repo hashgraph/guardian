@@ -1,4 +1,5 @@
-import { DatabaseServer, Schema } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { Schema } from '@guardian/common/entity/schema';
 import { PolicyDataLoader } from './loader.js';
 
 /**

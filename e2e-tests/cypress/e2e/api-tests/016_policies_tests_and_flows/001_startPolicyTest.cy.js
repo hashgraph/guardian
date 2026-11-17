@@ -1,8 +1,9 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('Start policy test', { tags: ['policies', 'secondPool', 'all', 'all-no-mgs'] }, () => {
+context('Start policy test', { tags: ['policies', 'secondPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 	const SRUsername = Cypress.env('SRUser');
 	let policyId; let testId;
 
@@ -14,7 +15,7 @@ context('Start policy test', { tags: ['policies', 'secondPool', 'all', 'all-no-m
 				headers: {
 					authorization,
 				},
-				timeout: 180000
+				timeout: TIMEOUTS.backend
 			}).then((response) => {
 				expect(response.status).to.eq(STATUS_CODE.OK);
 				//The same copy the import spec works on: iterating and keeping the last match
@@ -45,7 +46,7 @@ context('Start policy test', { tags: ['policies', 'secondPool', 'all', 'all-no-m
 				headers: {
 					authorization,
 				},
-				timeout: 180000,
+				timeout: TIMEOUTS.backend,
 			}).then((response) => {
 				expect(response.status).to.eq(STATUS_CODE.OK);
 				expect(response.body.id).to.equal(testId);

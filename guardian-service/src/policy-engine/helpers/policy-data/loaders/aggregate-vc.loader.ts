@@ -1,4 +1,4 @@
-import { AggregateVC } from '@guardian/common';
+import { AggregateVC } from '@guardian/common/entity/aggregate-documents';
 import { PolicyDataLoader } from './loader.js';
 
 /**

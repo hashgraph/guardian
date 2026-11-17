@@ -1,9 +1,9 @@
 import { NatsConnection, headers, Subscription } from 'nats';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { ZipCodec } from './zip-codec.js';
-import { IMessageResponse } from '../models/index.js';
+import { IMessageResponse } from '../models/message-response.js';
 import { ForbiddenException } from '@nestjs/common';
-import { JwtServicesValidator } from '../security/index.js';
+import { JwtServicesValidator } from '../security/jwt-services-validator.js';
 
 type CallbackFunction = (body: any, error?: string, code?: number, data?: any) => void;
 
@@ -252,8 +252,9 @@ export abstract class NatsService {
 
         const messagePromise = this.sendMessage<T>(subject, data, true, messageId);
 
+        let timer: ReturnType<typeof setTimeout>;
         const timeoutPromise = new Promise<T>((_, reject) => {
-            setTimeout(() => {
+            timer = setTimeout(() => {
                 this.responseCallbacksMap.delete(messageId);
                 // Reuse REQUEST_TIMEOUT - same "no ack" code requestOrThrow uses below.
                 const error: any = new Error(`Timeout exceed (${subject})`);
@@ -262,7 +263,8 @@ export abstract class NatsService {
             }, timeout);
         });
 
-        return Promise.race([messagePromise, timeoutPromise]);
+        // Clear the timer once the reply (or an error) arrives, so a hot path does not leave one pending timer per call.
+        return Promise.race([messagePromise, timeoutPromise]).finally(() => clearTimeout(timer));
     }
 
     /**

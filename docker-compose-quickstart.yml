@@ -202,13 +202,6 @@ services:
     expose:
       - '6555'
 
-  topic-viewer:
-    image: gcr.io/hedera-registry/topic-viewer:${GUARDIAN_VERSION:-latest}
-    expose:
-      - '3006'
-      - '5009'
-    init: true
-
   web-proxy:
     image: gcr.io/hedera-registry/frontend-demo:${GUARDIAN_VERSION:-latest}
     depends_on:

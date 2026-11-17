@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { HederaSDKHelper, NetworkOptions } from '../dist/api/helpers/hedera-sdk-helper.js';
-import { Environment } from '@guardian/common';
+import { Environment } from '@guardian/common/helpers/environment';
 
 describe('HederaSDKHelper.setNetwork', () => {
     afterEach(() => {

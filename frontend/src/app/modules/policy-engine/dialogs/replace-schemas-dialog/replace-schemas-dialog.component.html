@@ -55,10 +55,24 @@
               tooltipPosition="bottom">
             </p-button>
           </div>
+          @if (formulaWarnings.get(s.id); as warnings) {
+            <div class="formula-warnings">
+              @for (text of warnings; track $index) {
+                <div class="formula-warning"><i class="pi pi-exclamation-triangle"></i><span>{{ text }}</span></div>
+              }
+            </div>
+          }
         }
       </div>
     }
   </div>
+
+  @if (selectedWarningCount > 0) {
+    <div class="formula-warning-summary">
+      <i class="pi pi-exclamation-triangle"></i>
+      Replacing the checked schemas will break {{ selectedWarningCount }} formula {{ selectedWarningCount === 1 ? 'link' : 'links' }}. Close this dialog to cancel, or replace and fix the formulas afterwards.
+    </div>
+  }
 </div>
 
 <div class="dialog-footer">

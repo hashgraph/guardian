@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { Environment } from '../../../dist/hedera-modules/environment.js';
+import { Environment } from '../../../dist/helpers/environment.js';
 
 // Mutable singleton — restore between tests.
 const reset = () => {

@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators, } from '@angular/forms';
 import { forkJoin, Subscription } from 'rxjs';
 import { IPolicy, IStandardRegistryResponse, IUser, LocationType, Schema, SchemaEntity, UserPermissions, } from '@guardian/interfaces';
@@ -31,6 +31,7 @@ import { MenuLayout, MenuLayoutOption, MenuLayoutService } from '../../services/
 import { DocWidgetService } from '../../services/doc-widget.service';
 import { FirstStepsService } from '../../services/first-steps.service';
 import { formatBalance, getUserInitials } from '../../utils';
+import { SchemaFormRootComponent } from '../../modules/schema-engine/schema-form-root/schema-form-root.component';
 
 
 enum OperationMode {
@@ -71,6 +72,7 @@ interface IColumn {
     standalone: false
 })
 export class UserProfileComponent implements OnInit {
+    @ViewChild(SchemaFormRootComponent) formRoot?: SchemaFormRootComponent;
     public loading: boolean = true;
     public subLoading: boolean = false;
     public taskId: string | undefined = undefined;
@@ -137,6 +139,7 @@ export class UserProfileComponent implements OnInit {
     public vcDocumentForm!: UntypedFormGroup;
     public remoteCredentialsForm!: UntypedFormGroup;
     public remoteDidDocumentForm!: UntypedFormControl;
+    public remoteProofForm!: UntypedFormControl;
     public didKeys: any[] = [];
 
     public tab: 'general' | 'keys' | 'relayerAccounts' | 'credentials' = 'general';
@@ -211,6 +214,7 @@ export class UserProfileComponent implements OnInit {
             topicId: new UntypedFormControl('', [Validators.required, noWhitespaceValidator()])
         });
         this.remoteDidDocumentForm = new UntypedFormControl('', [Validators.required]);
+        this.remoteProofForm = new UntypedFormControl('', [Validators.required]);
 
         this.localFullForm = new UntypedFormGroup({});
         this.localFullForm.addControl('standardRegistry', this.standardRegistryForm);
@@ -227,6 +231,7 @@ export class UserProfileComponent implements OnInit {
         this.remoteFullForm.addControl('locationType', this.locationType);
         this.remoteFullForm.addControl('hederaCredentials', this.remoteCredentialsForm);
         this.remoteFullForm.addControl('didDocument', this.remoteDidDocumentForm);
+        this.remoteFullForm.addControl('proof', this.remoteProofForm);
 
         // Steps
         // Common
@@ -262,7 +267,8 @@ export class UserProfileComponent implements OnInit {
                 return this.locationType.value;
             },
             canNext: () => {
-                return !this.locationType.value && this.hederaCredentialsForm.valid || this.remoteCredentialsForm.valid && this.remoteDidDocumentForm.valid;
+                return !this.locationType.value && this.hederaCredentialsForm.valid ||
+                    this.remoteCredentialsForm.valid && this.remoteDidDocumentForm.valid && this.remoteProofForm.valid;
             },
             next: () => {
                 if (!this.locationType.value) {
@@ -475,7 +481,11 @@ export class UserProfileComponent implements OnInit {
                 this.cdRef.detectChanges();
             })
         );
-        this.loadDate();
+        // changeTab() has just loaded it for the general tab. A second load would end the loading state
+        // again after the wizard is shown, and drop the progress of a Generate clicked in between.
+        if (this.tab !== 'general') {
+            this.loadDate();
+        }
         this.update();
         this.refreshOtpStatus();
     }
@@ -627,6 +637,26 @@ export class UserProfileComponent implements OnInit {
         }
     }
 
+    public onConfirm(): void {
+        if (!this.validForm) {
+            for (const form of [
+                this.standardRegistryForm,
+                this.hederaCredentialsForm,
+                this.didDocumentForm,
+                this.didKeysForm,
+                this.vcDocumentForm,
+                this.remoteCredentialsForm,
+                this.remoteDidDocumentForm,
+                this.remoteProofForm
+            ]) {
+                form.markAllAsTouched();
+            }
+            this.formRoot?.revealErrors();
+            return;
+        }
+        this.onNext();
+    }
+
     public onNext(): void {
         if (this.currentStep?.canNext()) {
             this.currentStep.next();
@@ -758,6 +788,9 @@ export class UserProfileComponent implements OnInit {
                 return false;
             }
             if (!this.remoteDidDocumentForm.valid) {
+                return false;
+            }
+            if (!this.remoteProofForm.valid) {
                 return false;
             }
             return true;
@@ -930,6 +963,14 @@ export class UserProfileComponent implements OnInit {
             profile.hederaAccountId = data.hederaCredentials.id?.trim();
             profile.topicId = data.hederaCredentials.topicId;
             profile.didDocument = data.didDocument;
+            try {
+                profile.proof = JSON.parse(data.proof);
+            } catch (error) {
+                this.remoteProofForm.setErrors({ incorrect: true });
+                this.loading = false;
+                this.headerProps.setLoading(false);
+                return;
+            }
         } else {
             //Local
             const data = this.localFullForm.value;
@@ -991,24 +1032,22 @@ export class UserProfileComponent implements OnInit {
     }
 
     public download() {
-        if (this.profile) {
-            const name = this.profile.username;
-            const data = {
-                username: this.profile.username,
-                hederaAccountId: this.profile.hederaAccountId,
-                topicId: this.profile.topicId,
-                did: this.profile.did,
-                didDocument: this.profile.didDocument?.document,
-                vcDocument: this.profile.vcDocument?.document,
-            }
+        if (!this.profile) {
+            return;
+        }
+        this.loading = true;
+        this.profileService.exportRemoteUser().subscribe((data) => {
             const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data));
             const downloadAnchorNode = document.createElement('a');
             downloadAnchorNode.setAttribute('href', dataStr);
-            downloadAnchorNode.setAttribute('download', name + '.user');
+            downloadAnchorNode.setAttribute('download', data.username + '.user');
             document.body.appendChild(downloadAnchorNode);
             downloadAnchorNode.click();
             downloadAnchorNode.remove();
-        }
+            this.loading = false;
+        }, () => {
+            this.loading = false;
+        });
     }
 
     public importFromFile(event: any) {
@@ -1022,6 +1061,7 @@ export class UserProfileComponent implements OnInit {
                 topicId: config.topicId || ''
             })
             this.remoteDidDocumentForm.setValue(JSON.stringify(config.didDocument))
+            this.remoteProofForm.setValue(config.proof ? JSON.stringify(config.proof) : '');
         });
     }
 

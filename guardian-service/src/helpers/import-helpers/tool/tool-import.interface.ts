@@ -1,4 +1,4 @@
-import { PolicyTool } from '@guardian/common';
+import { PolicyTool } from '@guardian/common/entity/tool';
 
 /**
  * Import tool mapping
@@ -22,6 +22,10 @@ export interface ImportToolResult {
      * Errors
      */
     errors: any[];
+    /**
+     * Warnings
+     */
+    warnings?: any[];
 }
 
 /**

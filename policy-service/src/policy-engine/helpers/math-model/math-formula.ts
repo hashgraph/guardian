@@ -152,7 +152,7 @@ export class MathFormula {
                 return;
             }
             const ce = createComputeEngine();
-            const p = ce.parse(text, { canonical: false });
+            const p = ce.parse(text, { form: 'raw' });
             const commands = findCommand(p.json, 'Tuple');
             const indexes: string[] = [];
             for (const command of commands) {

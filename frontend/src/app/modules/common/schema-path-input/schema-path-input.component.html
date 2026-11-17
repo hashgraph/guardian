@@ -1,0 +1,38 @@
+<div class="path-input-wrapper" [class.invalid]="showWarning && (unknown || empty)">
+  <input
+    type="text"
+    pInputText
+    class="path-input"
+    [ngModel]="value"
+    (ngModelChange)="onInput($event)"
+    (keyup)="onKeyup($event)"
+    (blur)="onBlur()"
+    [placeholder]="placeholder"
+    [readOnly]="readonly"
+  />
+  @if (browse && !readonly) {
+    <button
+      type="button"
+      class="guardian-icon-button path-pick-btn"
+      (click)="browseClick.emit()"
+      title="Browse schema fields">
+      <svg-icon
+        class="icon-btn svg-icon"
+        src="/assets/images/icons/16/search.svg"
+        svgClass="icon-color-primary">
+      </svg-icon>
+    </button>
+  }
+  @if (suggestions.length) {
+    <div class="path-suggestions">
+      @for (s of suggestions; track s) {
+        <div class="path-suggestion-item" (mousedown)="onSelect(s)">{{s}}</div>
+      }
+    </div>
+  }
+</div>
+@if (showWarning && unknown) {
+  <div class="path-unknown-warning">Path not found in schema</div>
+} @else if (showWarning && empty) {
+  <div class="path-unknown-warning">Select the field to link</div>
+}

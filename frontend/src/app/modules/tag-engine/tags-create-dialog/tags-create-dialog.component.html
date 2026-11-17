@@ -95,6 +95,6 @@
       class="button secondary" label="Add Document" pButton style="margin-right: auto;"></button>
     }
     <button (click)="onNoClick()" class="button secondary" label="Cancel" pButton></button>
-    <button (click)="onCreate()" [disabled]="disabled" [label]="'Create'" class="button" pButton></button>
+    <button (click)="onCreate()" [disabled]="!started" [label]="'Create'" class="button" pButton></button>
   </div>
 </div>

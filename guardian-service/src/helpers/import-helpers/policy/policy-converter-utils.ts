@@ -1,4 +1,4 @@
-import { Policy } from '@guardian/common';
+import { Policy } from '@guardian/common/entity/policy';
 import { BlockType, GenerateUUIDv4, UserType } from '@guardian/interfaces';
 import { EventConfig, PolicyInputEventType, PolicyOutputEventType, EventActor } from '../../../policy-engine/interfaces/index.js';
 

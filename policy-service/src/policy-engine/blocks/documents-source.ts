@@ -8,7 +8,7 @@ import { StateField } from '../helpers/decorators/index.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import ObjGet from 'lodash.get';
 import { BlockActionError } from '../errors/index.js';
-import { MAP_DOCUMENT_AGGREGATION_FILTERS } from '@guardian/common';
+import { MAP_DOCUMENT_AGGREGATION_FILTERS } from '@guardian/common/helpers/db-helper';
 import { LocationType } from '@guardian/interfaces';
 
 /**

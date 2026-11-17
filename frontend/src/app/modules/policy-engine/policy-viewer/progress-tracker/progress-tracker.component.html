@@ -1,24 +1,114 @@
-<div class="progress-container">
-  @for (step of steps; track step; let i = $index) {
-    <div (click)="onStepAction(step.blockId)"
-      [ngClass]="{'active': isStepActive(step), 'spaceAfter': steps[i+1] && steps[i+1].level <= 1 && step.level <= 1, 'subStep': step.level > 1, 'stepWithAction': isStepActive(step) || stepHasAction(step.blockId)}"
+<ng-template #stepList>
+  @for (step of steps; track step.blockId) {
+    @let state = getState(step);
+    <div
       class="step-item"
-      >
-      @if (step.level <= 1) {
-        <i [ngClass]="isStepCompleted(step) && !stepHasAction(step.blockId) ? 'pi-check' : 'pi-angle-right'"
-        class="pi"></i>
-      }
-      <p>{{ step.label }}</p>
+      [class.active]="state === 'active'"
+      [class.passed]="step.level <= 1 && state === 'passed'"
+      [class.reach]="state === 'reach'"
+      [class.locked]="step.level <= 1 && state === 'locked'"
+      [class.sub-step]="step.level > 1"
+      [attr.role]="state === 'reach' ? 'link' : null"
+      [attr.aria-current]="state === 'active' ? 'step' : null"
+      [pTooltip]="getTooltip(step)"
+      tooltipStyleClass="guardian-tooltip small-guardian-tooltip"
+      tooltipPosition="right"
+      tabindex="0"
+      (click)="onStepAction(step)"
+      (keydown.enter)="onStepAction(step)"
+    >
+      <span class="step-label">{{ step.label }}</span>
+      <span class="step-indicator">
+        @if (step.level <= 1) {
+          @switch (state) {
+            @case ('passed') {
+              <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true">
+                <circle cx="10" cy="10" r="8.5" class="ring" />
+                <path d="M6.5 10.3l2.5 2.5 4.5-5" class="mark" />
+              </svg>
+            }
+            @case ('locked') {
+              <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true">
+                <circle cx="10" cy="10" r="8.5" class="ring dashed" />
+                <rect x="7" y="9.2" width="6" height="4.4" rx="1" class="fill" />
+                <path d="M8.2 9.2V8a1.8 1.8 0 013.6 0v1.2" class="mark" />
+              </svg>
+            }
+            @case ('reach') {
+              <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true" class="chevron">
+                <path d="M8 6l4 4-4 4" class="mark" />
+              </svg>
+            }
+          }
+        } @else if (state === 'active') {
+          <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true" class="spinner">
+            <circle cx="10" cy="10" r="7" class="track" />
+            <path d="M10 3a7 7 0 017 7" class="arc" />
+          </svg>
+        }
+      </span>
     </div>
   }
-</div>
-<div class="progress-footer-container">
-</div>
+</ng-template>
 
-<!-- <div class="progress-footer">
-<button pButton type="button" class="button" label="Previous" [disabled]="true"></button>
-<div>
-  <button pButton type="button" class="p-button-outlined" label="Save Changes" style="margin-right: 16px;"></button>
-  <button pButton type="button" class="p-button" label="Next"></button>
-</div>
-</div> -->
+<ng-template #legend>
+  <div class="nav-legend">
+    <span>
+      <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" class="ico">
+        <circle cx="10" cy="10" r="8.5" class="ring" />
+        <path d="M6.5 10.3l2.5 2.5 4.5-5" class="mark" />
+      </svg>
+      Earlier
+    </span>
+    <span>
+      <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" class="ico">
+        <circle cx="10" cy="10" r="7" class="track" />
+        <path d="M10 3a7 7 0 017 7" class="arc" />
+      </svg>
+      In progress
+    </span>
+    <span>
+      <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" class="ico">
+        <circle cx="10" cy="10" r="8.5" class="ring dashed" />
+        <rect x="7" y="9.2" width="6" height="4.4" rx="1" class="fill" />
+        <path d="M8.2 9.2V8a1.8 1.8 0 013.6 0v1.2" class="mark" />
+      </svg>
+      Not available yet
+    </span>
+  </div>
+</ng-template>
+
+@if (!hidden) {
+  <nav class="progress-rail" aria-label="Policy navigation">
+    <div class="nav-head">
+      <span class="nav-title">Workflow</span>
+      <button type="button" class="nav-hide" (click)="toggleHidden()">Hide menu</button>
+    </div>
+    <div class="nav-list">
+      <ng-container [ngTemplateOutlet]="stepList"></ng-container>
+    </div>
+    <ng-container [ngTemplateOutlet]="legend"></ng-container>
+  </nav>
+}
+
+<button type="button" class="progress-bar" (click)="toggleDrawer()">
+  <span class="bar-mark"></span>
+  <span class="bar-text">
+    <small>Workflow{{ currentSubLabel ? ' · ' + currentSubLabel : '' }}</small>
+    <b>{{ currentLabel }}</b>
+  </span>
+  <i class="pi pi-angle-down"></i>
+</button>
+@if (drawerOpen) {
+  <div class="drawer-bg" (click)="toggleDrawer()"></div>
+  <aside class="progress-drawer" aria-label="Policy navigation">
+    <div class="nav-head">
+      <span class="nav-title">Workflow</span>
+      <button type="button" class="nav-hide" (click)="toggleDrawer()">Close</button>
+    </div>
+    <div class="nav-list">
+      <ng-container [ngTemplateOutlet]="stepList"></ng-container>
+    </div>
+    <ng-container [ngTemplateOutlet]="legend"></ng-container>
+  </aside>
+}

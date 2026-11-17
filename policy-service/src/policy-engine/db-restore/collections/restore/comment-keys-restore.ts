@@ -1,4 +1,8 @@
-import { DataBaseHelper, EncryptVcHelper, KeyType, PolicyComment, PolicyDiscussion, Wallet } from '@guardian/common';
+import { DataBaseHelper } from '@guardian/common/helpers/db-helper';
+import { EncryptVcHelper } from '@guardian/common/helpers/encrypt-vc-helper';
+import { KeyType, Wallet } from '@guardian/common/helpers/wallet';
+import { PolicyComment } from '@guardian/common/entity/policy-comment';
+import { PolicyDiscussion } from '@guardian/common/entity/policy-discussion';
 import { ICollectionKeys } from '../../interfaces/collection-diff.interface.js';
 import { IKeyAction } from '../../interfaces/action.interface.js';
 import { UserCredentials } from '../../../policy-user.js';

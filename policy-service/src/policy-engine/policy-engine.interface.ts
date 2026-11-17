@@ -1,5 +1,6 @@
 import { BlockCacheType, EventConfig, IPolicyEvent, PolicyOutputEventType } from './interfaces/index.js';
-import { DatabaseServer, Policy } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { Policy } from '@guardian/common/entity/policy';
 import { PolicyUser, UserCredentials } from './policy-user.js';
 import { ComponentsService } from './helpers/components-service.js';
 import { IBlockErrorData, LocationType, PolicyAvailability, PolicyStatus } from '@guardian/interfaces';
@@ -392,6 +393,11 @@ export interface IPolicyBlock {
      * After init callback
      */
     afterInit(): Promise<void>;
+
+    /**
+     * Links of the events this block emits
+     */
+    sourceLinks: { outputType: PolicyOutputEventType }[];
 
     /**
      * Add source link
@@ -1023,6 +1029,11 @@ export interface IPolicyDBDocument<T> {
      * Draft ID
      */
     draftId?: string;
+
+    /**
+     * The draft record a draft save stored, read back from the database
+     */
+    draftRecord?: { id: string; updateDate: Date };
 
     /**
      * Parent document

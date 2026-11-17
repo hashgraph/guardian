@@ -2,8 +2,73 @@
 
 The `/e2e-tests` folder comprises the Guardian Cypress test automation framework and automated UI and API tests runnable on the local machine or via Docker.
 
-Unless specified otherwise, the tests are idempotent and can be run multiple times without side effects, and in any order.
-The only requirement is preparing the environment with a few accounts using the `preparing` tag, and ensuring the accounts have enough balance for the operations performed during the tests (especially the StandardRegistry):
+## Quickstart
+
+You need Node.js 24, Docker, `kind` and `kubectl`. From a fresh clone:
+
+```bash
+cd e2e-tests
+npm ci                       # the test dependencies
+npm run guardian:build       # installs the Guardian workspace and builds the packages the stack runs
+npm run solo:up              # the network, once
+npm run guardian:up          # MongoDB, NATS, Valkey and Kubo containers, then every Guardian service
+npm run guardian:status      # checks the network, the infra and every service, one line each
+npm run guardian:test:smoke  # only the tests tagged smoke
+```
+
+`guardian:status` prints `OK` or `FAIL` for the Solo network, each infra container and each service (process running, connected to NATS, gateway answering), with the log of every service, and exits non-zero when a check fails. `guardian:test` and `guardian:test:smoke` run the same checks first and stop when one fails. `guardian:services:up` stops with the log of a service that exits at startup, and refuses to start while something already listens on the gateway port `3002`.
+
+The services run the built `dist/` folders: after changing the Guardian sources, run `npm run guardian:build` again and restart them with `npm run guardian:services:down` and `npm run guardian:services:up`.
+
+**NOTE: Behind a TLS-intercepting proxy (for example Zscaler) image pulls inside the kind node fail with `x509: certificate signed by unknown authority`**. Set `SOLO_EXTRA_CA_CERT` to the PEM bundle of the proxy CA and `solo:up` installs it in the node before Solo creates any pod:
+
+```bash
+SOLO_EXTRA_CA_CERT=/path/to/proxy-ca.pem npm run solo:up
+```
+
+```bash
+# Other commands
+npm run guardian:test        # the whole suite
+npm run guardian:test -- cypress/e2e/api-tests/001_demo/getRandomKey.cy.js   # a single spec
+npm run guardian:test -- 'cypress/e2e/api-tests/010_tokens/*.cy.js' cypress/e2e/api-tests/001_demo/getRandomKey.cy.js   # several specs or globs
+npm run guardian:down        # stops the services and removes the containers
+```
+
+The two halves can run in different places, for example when the tests are driven from a dev container that has no docker:
+
+```bash
+npm run guardian:infra:up        # on the host: MongoDB, NATS, Valkey and Kubo containers
+npm run guardian:build           # in the dev container: installs and builds Guardian for the container's platform
+npm run guardian:services:up     # in the dev container: every Guardian service, gateway on http://127.0.0.1:3002
+npm run guardian:services:down   # restart the services without touching the infra or the database
+npm run guardian:infra:down      # on the host: removes the containers
+```
+
+`INFRA_HOST` is where the services reach the infra and the Hedera network: `127.0.0.1` by default, `host.docker.internal` when `/.dockerenv` exists. Export it to override the detection. The dev container has its own network namespace, so point Cypress at `http://127.0.0.1:3002` there (`--env apiServer=http://127.0.0.1:3002`).
+
+## Running every test
+
+`npm run test:everything` runs, one group after the other, everything the repository tests outside the service unit tests of `main.yml`: the linter on the specs, the tests of the helper scripts, the frontend unit specs and the whole Cypress suite. A group that fails does not stop the others; the summary at the end lists each one and the exit code is non-zero when any failed. Name the groups to run only those:
+
+```bash
+npm run test:everything                       # lint, scripts, frontend, cypress
+npm run test:everything -- lint scripts       # only the linter and the helper-script tests
+```
+
+It expects the [Quickstart](#quickstart) to be done and does not touch the stack: the `cypress` group runs against the services already running, so after changing the Guardian sources rebuild and restart them first, as the Quickstart says. When the `cypress` group runs, it first checks the stack with `npm run guardian:status` and stops before any group if a check fails. Then it prepares, once, what the Quickstart does not: `npm ci` in `frontend` and `npx playwright install chromium`, when the `frontend` group runs. If that fails, the `frontend` group is reported as failed and the others still run.
+
+| Group | What it runs |
+|---|---|
+| `lint` | `npx eslint cypress` |
+| `scripts` | `npm run test:scripts` and `.github/scripts/report-test-summary.test.mjs` |
+| `frontend` | `npx ng test --watch=false` in `frontend` (Vitest, headless Chromium) |
+| `cypress` | `npm run guardian:test` |
+
+In the dev container, prefix the command with `NODE_OPTIONS=--use-system-ca` when you run the `frontend` group: the Playwright download goes through the container's TLS proxy, whose certificate is only in the system store.
+
+## Running tests manually
+
+Unless specified otherwise, the tests are idempotent and can be run multiple times without side effects, and in any order. The only requirement is preparing the environment with a few accounts using the `preparing` tag, and ensuring the accounts have enough balance for the operations performed during the tests (especially the StandardRegistry):
 
 ```bash
 export CYPRESS_portApi=3000/api/v1
@@ -12,7 +77,30 @@ TAG=preparing ./run-test-by-tag.sh
 
 See [Running Tests with Tags](#running-tests-with-tags) below for more details.
 
-## Guardian E2E (Docker)
+### Idempotency is per API folder, not per spec file
+
+For the API suites, the unit that must be idempotent and order-independent is the folder (`api-tests/<NNN_area>/`): run on its own after `000_accounts_creating`, twice in a row, or before or after any other folder, it must pass. The spec files inside a folder may depend on each other and on what earlier specs of the same folder created, in this run or in a previous run of the folder (`013_contracts/004` needs `001`–`003`; `025_policy_labels/08` posts to a label that `00` created and `06` published).
+
+So a single spec file that fails on its own, or reads data left by a previous run of its folder, is not a defect by itself: run the whole folder before judging it. A folder that needs data from another folder is a defect (see [`pending-issues/`](pending-issues/)).
+
+## Linting the tests
+
+Run the linter on the specs and helpers (the folders Cypress generates, such as `cypress/reports` and `cypress/test_results`, are excluded in `eslint.config.mjs`) and fix what it reports before committing:
+
+```bash
+npx eslint cypress
+```
+
+The linter reports no finding, and CI keeps it that way. Rules worth knowing:
+
+- `cypress/unsafe-to-chain-command`: a command that changes the subject (`click`, `clear`, `type`, `blur`, `invoke`) must not be followed by another chained command; re-query instead (`cy.get(selector).clear(); cy.get(selector).type(value);`).
+- `cypress/no-assigning-return-values`: a Cypress command returns a chainable, not a value; use `.then()` or an alias (`.as()` and `cy.get('@name')`).
+- `cypress/no-unnecessary-waiting`: wait for the condition, never for a fixed time. Take budgets from `support/CustomHelpers/timeouts.js` (`TIMEOUTS.ui`, `TIMEOUTS.backend`, `TIMEOUTS.longOperation`), poll backend state with `pollUntil` (`support/checkingMethods.js`), wait for a policy block with `waitForBlockAvailable`, and for UI state use a retrying `cy.get(..., { timeout }).should(...)`. Polling loops pause `POLL_INTERVAL` between two reads; the only fixed pause left is the 1 s in `waitForTaskComplete`, silenced with a reason.
+- `max-len` (360): build a long document as an object and `JSON.stringify` it (as `support/CustomHelpers/systemSchemas.js` does), or split the string.
+
+To check that a change adds no finding, compare with the findings of the last commit. Extract it with `git archive HEAD e2e-tests/cypress/e2e e2e-tests/cypress/support e2e-tests/eslint.config.mjs e2e-tests/package.json | tar -x -C <dir>`, symlink `node_modules` into it and run `npx eslint cypress` there. ESLint pads its columns to the longest message of each file, so squeeze repeated spaces before diffing the two outputs.
+
+## Guardian E2E via Docker
 
 ### Prerequisites
 
@@ -90,7 +178,7 @@ cd e2e-tests
 UI_GATEWAY_HOST=host.docker.internal UI_GATEWAY_PORT=3002 docker compose run --rm --build cypress-ui
 ```
 
-## Guardian Local Machine (Non-Docker)
+## Guardian E2E native
 
 ### Description
 
@@ -106,7 +194,7 @@ UI_GATEWAY_HOST=host.docker.internal UI_GATEWAY_PORT=3002 docker compose run --r
 
 ### Software Requirements
 
-- Node.js 20 and above
+- Node.js 24 and above
 - Docker and Docker Compose (for Docker-based test execution)
 - Follow steps from the [README](https://github.com/hashgraph/guardian/blob/main/README.md) to install and deploy the Guardian application.
 
@@ -114,10 +202,10 @@ UI_GATEWAY_HOST=host.docker.internal UI_GATEWAY_PORT=3002 docker compose run --r
 
 #### Manual Setup
 
-From the `/e2e-tests` folder, run the following command to install Cypress:
+From the `/e2e-tests` folder, install Cypress and the other test dependencies from the lockfile:
 
 ```bash
-npm install cypress
+npm ci
 ```
 
 ### Configuration
@@ -131,6 +219,7 @@ If you built the Guardian in Docker, set the `portApi` variable in `cypress.env.
 - `operatorId` - Hedera operator ID (empty by default – must be supplied)
 - `operatorKey` - Hedera operator key (empty by default – must be supplied)
 - `ipfsStorageApiKey` - IPFS storage API key (empty by default; only needed for a non-local `IPFS_PROVIDER`)
+- `mongoUrl` - MongoDB of the Guardian stack (default: `mongodb://localhost:27017`, then `mongodb://host.docker.internal:27017`). Only the disaster-recovery spec uses it: it removes the original registry from `guardian_db` and `auth_db` before restoring it, as on a new, empty instance
 - `MGSAdmin` - MGS tenant name
 - `MGSIndexerAPIToken` - MGS Indexer API token
 
@@ -146,12 +235,12 @@ npx cypress open
 
 #### Local Command Line Execution
 
-The project pins Cypress 14.x (`package.json`). If you use **Cypress 15+**, `--env` requires **JSON** (see [Cypress 15 and --env](#cypress-15-and---env) below).
+The project pins Cypress 15 (`package.json`). `--env` takes either `key=value` pairs separated by commas or a JSON object, so separate several tags with spaces, not commas (see [--env and "Cannot parse as valid JSON"](#--env-and-cannot-parse-as-valid-json) below).
 
 ##### Run all API tests (most basic)
 
 ```bash
-npx cypress run --browser chrome --env "grepTags=all,grepFilterSpecs=true"
+npx cypress run --browser chrome --env "grepTags=api-all,grepFilterSpecs=true"
 ```
 
 ##### Run with specific tags (sanity testing with user preparation)
@@ -160,7 +249,7 @@ npx cypress run --browser chrome --env "grepTags=all,grepFilterSpecs=true"
 npx cypress run --browser chrome --headed --env "grepTags=preparing policies,grepFilterSpecs=true"
 ```
 
-**Cypress 15+ only** (if you see "Cannot parse as valid JSON"):
+The same with a JSON object:
 
 ```bash
 npx cypress run --browser chrome --headed --env '{"grepTags":"preparing policies","grepFilterSpecs":true}'
@@ -178,6 +267,38 @@ npx cypress run --spec "path/to/file.cy.js"
 npx cypress run --env "grepTags=ui,grepFilterSpecs=true"
 ```
 
+##### Preparing the app for UI tests
+
+UI tests drive the real frontend, so the app must be running where `CYPRESS_baseUrl` points:
+
+```bash
+cd frontend
+UI_GATEWAY_ORIGIN=http://host.docker.internal:3002/ \
+  ng serve --host 127.0.0.1 --port 4200 --proxy-config ./proxy.hostdocker.js
+```
+
+- `UI_GATEWAY_ORIGIN` is where the dev server proxies `/api/v1` and the WebSocket to. `yarn start` uses `proxy.conf.json`, which assumes a gateway on `localhost:3002`; `proxy.hostdocker.js` exists for the common case of running the suite in a container (or a VM) that reaches the host's Guardian stack through `host.docker.internal`.
+- Pass `CYPRESS_baseUrl=http://127.0.0.1:4200` to the Cypress run (the `entrypoint.sh` examples above do this).
+- The `[proxy]` lines the logger in `proxy.hostdocker.js` prints are the only request-level trace of a UI run — the Angular dev server does not log proxied requests even at `logLevel: "debug"`. See [Diagnosing a hung request](#diagnosing-a-hung-request-ui-runs).
+- If a suite keeps hitting odd bootstrap states (page stuck on a spinner even after the tests reload it), restart `ng serve` before re-running: a long-lived dev server accumulates state (stale incremental builds, dead WebSocket pairings) that a fresh one does not have.
+
+##### UI suite patterns (idempotent re-runs)
+
+`ui`-tagged specs drive the real frontend in a persistent browser profile, and the backend state they create (users, tools, policies, tokens) survives the run. Suites 00–02 are idempotent — every spec passes on repeated runs against the same workspace; suite 03 uses the same per-run naming isolation; 04 and later are not converted yet. The patterns they share, worth knowing before extending a UI suite, live in `cypress/support/` and `ui-tests/pages/`:
+
+- **Clean boot** (`homePage.js` → `visit()`): the profile persists `accessToken` and `refreshToken` in `localStorage` (the app reads the username from the access token), so a failed run would auto-log the next one in and skip the login page the Sign Up / login flows depend on. `visit()` wipes those keys in `onBeforeLoad`, then waits for the app shell's loader to release before the first assertion.
+- **Settled-phase waits** (`homePage.js` → `_settledUserProfilePhase()`): the user-profile view flashes through several render states as its first load settles, so a one-shot read mis-branches. The helper polls with a real timer until a terminal state (`wizard` or `ready`) has *held* for a short while, resolves with the settled phase, and rejects with the last phase seen on the deadline, so a stuck load fails loudly instead of hanging. The same idiom backs the Sign Up settle wait in `ensureAccount`, which always ends logged out on a known state.
+- **Task round trips** (`importFlow.js` → `waitForTaskRoundtrip()`): import, create, publish and dry-run actions run as backend tasks — the app navigates to `/task/:id` and redirects back on completion, and lists do not refresh on their own. Flows wait for the full round trip, then re-land with a fresh `cy.visit`.
+- **Import-preview tool checks** (`importFlow.js` → `settleToolRowChecks()` / `replaceInaccessibleTools()`): a preview row settles to valid/invalid when its per-row check request answers, but that request has no client-side timeout — one check the gateway never answers pins its row at `load`, which keeps the Import button disabled forever. The helper waits with a deadline, re-issues the checks for rows still loading (the row's change handler re-runs them), and after the last attempt fails the test with the stuck `messageIds`. Rows pointing at tool messages this gateway cannot resolve are re-pointed at the same-named workspace tool through the row's search picker — and the picker only lists *published* tools, which is why `toolsPage.js` → `ensureToolPublished()` imports the Methodology Library tools and publishes them on demand first (published ones are left alone, drafts are published, missing ones imported).
+- **Background-window visibility** (`homePage.js` → `logOut()`): `getClientRects()` and `getBoundingClientRect()` can report zero for genuinely rendered elements in the backgrounded electron window, so branch signals must be DOM presence, not layout metrics. The new header renders the sign-out icon and the hover flyout in mutually exclusive `@if` states (and the flyout only shows on a real `:hover` a test cannot produce), so `logOut()` branches on which of the two is in the DOM and expands a collapsed menu first rather than trying to hover it.
+- **Wizard navigation without position assumptions** (`wizardSteps.js`): a policy opens on whichever step the viewer last visited for that user, and step bodies may contain nested tab containers. `clickButtonInWizardSteps` probes the visible step body for the control, then walks the visible tabs, then the step items — throwing a listing of everything it explored when the control is nowhere — and `clickWizardTab` steers a flow to a named tab.
+- **Dialogs drop keystrokes while they re-render** (tag create, contract import, token edit): `type()` into such a field can lose characters, so set the value in one step with `cy.get(sel).invoke('val', value).trigger('input')` and assert it with `should('have.value', value)`.
+- **Row action icons have `pointer-events: none`**: click their wrapper (`div.guardian-icon-button`, `.select-menu-item`), not the icon.
+- **The request form is a sectioned wizard** (`userPoliciesPage.js`): it opens on an overview, so start with `openOverviewSection()` (Start, or Continue when answers are pending), then find fields by their label (`.sf-label-text`). `answerMissingFields()` follows the footer's "Jump to next missing" link. A required repeating entry counts as one answer, so the link lands on its card without focusing a field; the helper then opens the entries (Edit) and their cards and fills what is invalid inside. A date picker stays open over the fields below it until Escape closes it.
+- **Lists filter client-side on the loaded page**, and modules and tokens list newest first.
+
+Product bugs surfaced while making the suites idempotent are documented in [`pending-issues/`](pending-issues/), one file per issue.
+
 ##### Run smoke tests
 
 ```bash
@@ -188,12 +309,14 @@ npx cypress run --env "grepTags=smoke,grepFilterSpecs=true"
 
 Tags allow you to run specific test subsets. For local CLI runs using `--env "grepTags=..."`, pass multiple tags as a **space-separated** list. For Docker runs, `CYPRESS_grepTags` accepts both spaces and commas (the entrypoint normalizes them).
 
+Tests are tagged on the Mocha context object: `context('...', { tags: ['ui', 'smoke'] }, ...)`. A tag on the context covers every test in it; there is no per-`it()` tagging in this suite, and title-text `@tag` markers are not matched.
+
 ##### Verified tag examples
 
 **All API tests (basic run):**
 
 ```bash
-npx cypress run --browser chrome --env "grepTags=all,grepFilterSpecs=true"
+npx cypress run --browser chrome --env "grepTags=api-all,grepFilterSpecs=true"
 ```
 
 **Sanity run (preparing + specific feature, e.g. policies):**
@@ -202,23 +325,25 @@ npx cypress run --browser chrome --env "grepTags=all,grepFilterSpecs=true"
 npx cypress run --browser chrome --headed --env "grepTags=preparing policies,grepFilterSpecs=true"
 ```
 
-**Cypress 15+:** use JSON for `--env`, e.g. `--env '{"grepTags":"preparing policies","grepFilterSpecs":true}'`
-
 ##### Single Tag
 
 ```bash
 npx cypress run --browser chrome --env "grepTags=accounts,grepFilterSpecs=true"
 ```
 
-##### Multiple Tags (AND operation)
+##### Multiple Tags (OR operation)
+
+Tags separated by spaces select the specs that have **any** of them:
 
 ```bash
 npx cypress run --browser chrome --env "grepTags=preparing policies,grepFilterSpecs=true"
 ```
 
+To select only the specs that have **every** tag, join them with `+` (`grepTags=policies+smoke`).
+
 **Important**:
 
-- **Local CLI (`--env "..."`)**: use spaces, e.g. `preparing policies`
+- **Local CLI (`--env "..."`)**: use spaces, e.g. `preparing policies`. A comma separates two `--env` entries, so `grepTags=preparing,policies` is not a tag list
 - **Docker (`CYPRESS_grepTags=...`)**: spaces or commas are accepted, e.g. `preparing policies` or `preparing,policies`
 
 ##### Available Tags
@@ -253,7 +378,12 @@ npx cypress run --browser chrome --env "grepTags=preparing policies,grepFilterSp
 
 **General Tags:**
 
-- `all` - all API tests for Guardian platform
+- `all` - every test: API, policy, UI and disaster recovery, except the specs that do not carry it (`009_policies/VM033.cy.js`, tagged `VM0033`, and the `017_indexer` specs). It needs the frontend, so the CI starts it whenever the tags select a UI test
+- `api-all` - all API tests
+- `policy-all` - all policy tests (CDM and iREC; `policyAT` selects the same specs)
+- `ui-all` - all UI tests
+- `dr-all` - the disaster-recovery test (needs direct access to MongoDB, see `mongoUrl`)
+- `all-no-mgs` - every test except the ones that need MGS
 - `preparing` - special test used for generating accounts for tests (should be run before feature-specific tests)
 - `smoke` - all tests for the most important and frequently used functionality
 - `ui` - all UI tests
@@ -451,8 +581,7 @@ ReportName="Guardian's Cypress Report"
 ## CYPRESS_SPEC=cypress/e2e/api-tests/**/*.cy.js
 ```
 
-The `.env` file is automatically loaded by docker compose.
-Keeping `.env` mostly empty is fine; only set values you need for your run.
+The `.env` file is automatically loaded by docker compose. Keeping `.env` mostly empty is fine; only set values you need for your run.
 
 Variable precedence for `docker compose run`:
 
@@ -546,33 +675,21 @@ These directories are mounted as volumes from the Docker container to your local
 
 ### Running against a local Hiero network
 
-The suite defaults to Hedera testnet, and nothing below is needed for that. A local network is worth
-the setup when you want to run the whole suite without spending testnet HBAR, without waiting on real
-consensus and mirror-node indexing, or on a ledger that starts empty every time. It is what the
-`E2E Tests` workflow (`.github/workflows/api-manual.yml`) does on every run.
+The suite defaults to Hedera testnet, and nothing below is needed for that. A local network is worth the setup when you want to run the whole suite without spending testnet HBAR, without waiting on real consensus and mirror-node indexing, or on a ledger that starts empty every time. It is what the E2E Tests and UI Tests workflows (through the reusable `.github/workflows/e2e-run.yml`) do on every run, using `hiero-ledger/hiero-solo-action`.
 
 #### The `hederaNet` parameter
 
-`hederaNet` tells the suite which network the Guardian stack under test is on. It defaults to
-`testnet` in `cypress.env.json`, so an existing invocation keeps behaving exactly as it does today.
+`hederaNet` tells the suite which network the Guardian stack under test is on. It defaults to `testnet` in `cypress.env.json`, so an existing invocation keeps behaving exactly as it does today.
 
 Two things change when it is set to anything else:
 
 - `006_settings/getSettingsEnv` asserts that `GET /settings/environment` reports that network.
 - `000_accounts_creating/seedHederaArtefacts` runs. `cypress.env.json` pins Hedera message IDs that
-  were published on testnet and resolve nowhere else, so that spec publishes the same artefacts from
-  local fixtures and records the resulting message IDs in `cypress/fixtures/seededMessages.json`.
-  Every consuming spec asks `seededMessageId(<key>)`
-  (`cypress/support/CustomHelpers/ipfsSeeding.js`) for the ID and stays network-agnostic; that
-  resolver is the only place the branch lives.
+  were published on testnet and resolve nowhere else, so that spec publishes the same artefacts from local fixtures and records the resulting message IDs in `cypress/fixtures/seededMessages.json`. Every consuming spec asks `seededMessageId(<key>)` (`cypress/support/CustomHelpers/ipfsSeeding.js`) for the ID and stays network-agnostic; that resolver is the only place the branch lives.
 
-  The seven seeded keys are `irec_policy`, `policy_with_artifacts`, `policy_for_compare1/2`,
-  `module_for_import` and `tool_for_compare1/2`. Two more are pinned but not seeded:
-  `schema_for_import`, which only a UI spec uses, and `contract_for_import`, which no spec
-  references at all.
+  The seven seeded keys are `irec_policy`, `policy_with_artifacts`, `policy_for_compare1/2`, `module_for_import` and `tool_for_compare1/2`. Two more are pinned but not seeded: `schema_for_import`, which only a UI spec uses, and `contract_for_import`, which no spec references at all.
 
-`entrypoint.sh` back-fills `CYPRESS_hederaNet` from a bare `HEDERA_NET`, so pointing the suite at a
-stack you started with `HEDERA_NET=localnode` needs no extra flag:
+`entrypoint.sh` back-fills `CYPRESS_hederaNet` from a bare `HEDERA_NET`, so pointing the suite at a stack you started with `HEDERA_NET=localnode` needs no extra flag:
 
 ```bash
 # testnet, unchanged
@@ -587,111 +704,125 @@ CYPRESS_hederaNet=localnode CYPRESS_grepTags="smoke" docker compose run --rm cyp
 
 #### Bringing the network up with Solo
 
-[Solo](https://solo.hiero.org) provisions a single-node Hiero network on Kubernetes-in-Docker. The
-lightest configuration Guardian can use is a consensus node plus a mirror node — no explorer, no
-JSON-RPC relay, no block node.
+[Solo](https://solo.hiero.org) provisions a single-node Hiero network on Kubernetes-in-Docker. You need Docker, `kind`, `kubectl` and Node 22 or newer; one script does the rest:
 
 ```bash
-npm install -g @hiero-ledger/solo@latest
-solo one-shot single deploy
+cd e2e-tests
+npm run solo:up
 ```
 
-The port forwards are **not** free choices. Guardian's `localnode` branch hardcodes the consensus
-node on `:50211` as account `0.0.3`, the mirror node gRPC endpoint on `:5600` and the mirror node
-REST API on `:5551` (`common/src/hedera-modules/environment.ts`). The `OVERRIDE_HEDERA_*` variables
-cannot be used to move them: only `guardian-service` and `policy-service` read those, while
-`topic-listener-service` goes straight to `HEDERA_NET` + `LOCALNODE_*`. So publish Solo on the ports
-Guardian already expects:
+`solo:up` runs `solo one-shot single deploy --minimal-setup`, waits until the consensus node and the mirror REST API answer, and creates the operator: an ED25519 account with 50,000,000 HBAR, funded by the genesis account, since one-shot only predefines ECDSA accounts. It then compiles `contracts/`, uploads their bytecode, and writes everything Guardian needs to `e2e-tests/.solo/solo.env`. Solo is pinned (see `SOLO_VERSION` in `scripts/solo-network.mjs`) and runs through `npx`, with its state in `e2e-tests/.solo/home`, so a globally installed Solo and `~/.solo` are never touched.
+
+Behind a TLS-intercepting proxy (for example Zscaler) image pulls inside the kind node fail with `x509: certificate signed by unknown authority`. Set `SOLO_EXTRA_CA_CERT` to the PEM bundle of the proxy CA and `solo:up` installs it in the node before Solo creates any pod:
 
 ```bash
-kubectl port-forward svc/haproxy-node1-svc -n <namespace> 50211:50211 &
-kubectl port-forward svc/mirror-1-rest     -n <namespace> 5551:80     &
-kubectl port-forward svc/mirror-1-grpc     -n <namespace> 5600:5600   &
+SOLO_EXTRA_CA_CERT=/path/to/proxy-ca.pem npm run solo:up
 ```
 
-These are plain background processes: if one dies, the whole stack silently loses the network. The
-workflow supervises them for exactly that reason.
-
-Then create the operator account. It pays for every account, topic, token and contract the run
-creates, and HBAR is free here, so fund it generously:
+When you are done:
 
 ```bash
-solo ledger account create --deployment <deployment> --hbar-amount 50000000
+npm run solo:down
 ```
 
-The command prints the account ID; its private key is in the cluster:
+It destroys the deployment, deletes the `solo-cluster` kind cluster and removes `e2e-tests/.solo/`.
 
-```bash
-kubectl get secret account-key-<accountId> -n <namespace> -o jsonpath='{.data.privateKey}' | base64 -d
-```
+The network is published on `127.0.0.1:35211` (consensus node, account `0.0.3`) and `127.0.0.1:38081` (mirror node REST API). These are not the ports Guardian's `localnode` mode assumes (`:50211` and `:5551`, `common/src/helpers/environment.ts`), so `solo.env` points Guardian at them with `OVERRIDE_NETWORK_CONFIGURATION`, `OVERRIDE_HEDERA_CONSENSUS_NODES` and `OVERRIDE_HEDERA_MIRROR_NODES`. `guardian-service`, `policy-service` and `topic-listener-service` all apply them, as does `.github/scripts/upload-contract-bytecode.mjs`.
 
 #### Contract bytecode
 
-`guardian-service` deploys the retire/wipe contracts from Hedera File IDs, and the ones shipped in
-`configs/.env..guardian.system` are testnet files that a fresh network does not have — without
-replacing them every spec in `013_contracts/` fails on the first deploy. Compile and upload them:
-
-```bash
-# RPC_URL is not used by `compile`, but Hardhat validates every declared network at config load
-# and all four remote ones take their url from it, so it has to be set to something.
-cd contracts && npm install && RPC_URL=http://localhost:7546 npx hardhat compile && cd -
-
-OPERATOR_ID=<accountId> OPERATOR_KEY=<privateKey> \
-  node .github/scripts/upload-contract-bytecode.mjs
-```
-
-It prints the four File IDs both as it uploads them and, at the end, as the four
-`*_FILE_ID` lines to paste into the env file below.
+`guardian-service` deploys the retire/wipe contracts from Hedera File IDs, and the ones shipped in `configs/.env..guardian.system` are testnet files that a fresh network does not have; without replacing them every spec in `013_contracts/` fails on the first deploy. `solo:up` compiles `contracts/` and runs `.github/scripts/upload-contract-bytecode.mjs` for you, and the four `*_FILE_ID` variables end up in `solo.env`.
 
 #### Pointing Guardian at it
 
-`configs/.env.localnode.guardian.system` is the ecosystem env file for this setup; fill in
-`OPERATOR_ID`, `OPERATOR_KEY` and the four `*_FILE_ID` variables, then:
+To run Guardian natively and the suite against it, the way the workflow does, use the `e2e-tests` scripts. `guardian:build` installs the Guardian workspace with the Yarn release vendored in `.yarn/releases` and runs the workflow's build step; pass package names (`npm run guardian:build -- @guardian/interfaces`) to build only those. Run it before `solo:up`, which uploads the contract bytecode with the workspace's Hedera SDK:
+
+```bash
+cd e2e-tests
+npm ci                       # the test dependencies
+npm run guardian:build       # the Guardian workspace and the packages the stack runs
+npm run solo:up              # the network, once
+npm run guardian:up          # MongoDB, NATS, Valkey and Kubo containers, then every Guardian service
+npm run guardian:status      # checks the network, the infra and every service
+npm run guardian:test        # the whole suite
+npm run guardian:test:smoke  # only the tests tagged smoke
+npm run guardian:test -- cypress/e2e/api-tests/001_demo/getRandomKey.cy.js   # a single spec
+npm run guardian:test -- 'cypress/e2e/api-tests/010_tokens/*.cy.js' cypress/e2e/api-tests/001_demo/getRandomKey.cy.js   # several specs or globs
+npm run guardian:down        # stops the services and removes the containers
+```
+
+`guardian:test` accepts any number of specs after `--`, each a file or a glob (`*` and `**` work, as in the default pattern `cypress/e2e/api-tests/**/*.cy.js`), or one comma-separated list. Quote the globs, so that Cypress expands them rather than your shell. Specs that need users or seeded artefacts rely on `000_accounts_creating/create_accounts.cy.js` and, on a local network, `000_accounts_creating/seedHederaArtefacts.cy.js`, which run first in a full run; include them when you run a spec on a freshly started stack.
+
+`guardian:test` always filters on the `all` tag, also when it is given specs: a spec without that tag (`009_policies/VM033.cy.js`, the `017_indexer` specs) is left out, and a run of only such specs ends with "Can't run because no spec files were found". Run those with `npx cypress run --spec <file>`, or with `entrypoint.sh` and `CYPRESS_grepTags` set to one of their tags.
+
+`scripts/local-guardian.sh` loads `.solo/solo.env` for you and takes the JWT keys from `configs/.env.quickstart.guardian.system`, so nothing has to be configured. Service logs and the pids of the services it started are in `e2e-tests/.local/logs`. The infra containers are recreated on every `guardian:up`, because the ledger is empty after each `solo:up` and an older database would point at accounts that no longer exist. Stop a running `guardian-quickstart` first: they use the same ports.
+
+To start the services yourself instead, load the variables in every shell that starts one, and in the one that runs the suite:
+
+```bash
+set -a; source e2e-tests/.solo/solo.env; set +a
+cd e2e-tests && CYPRESS_grepTags="smoke" ./entrypoint.sh
+```
+
+`entrypoint.sh` back-fills `CYPRESS_hederaNet`, `CYPRESS_operatorId` and `CYPRESS_operatorKey` from `HEDERA_NET`, `OPERATOR_ID` and `OPERATOR_KEY`.
+
+For the docker compose stack, `configs/.env.localnode.guardian.system` is the ecosystem env file: fill in `OPERATOR_ID`, `OPERATOR_KEY` and the four `*_FILE_ID` variables from `solo.env`, then:
 
 ```bash
 GUARDIAN_ENV=localnode docker compose up
 ```
 
-One caveat for the compose path: the services run in containers, so `LOCALNODE_ADDRESS` has to be
-`host.docker.internal` rather than `127.0.0.1` — and on Linux that also needs
-`extra_hosts: ["host.docker.internal:host-gateway"]` on every Guardian service, which the root
-`docker-compose*.yml` do not declare. Running the services natively (`npm start` per service, as the
-workflow does) has no such problem and `LOCALNODE_ADDRESS=127.0.0.1` is enough.
+The services run in containers there, so `LOCALNODE_ADDRESS` and the `OVERRIDE_*` addresses use `host.docker.internal` rather than `127.0.0.1`, and on Linux that also needs `extra_hosts: ["host.docker.internal:host-gateway"]` on every Guardian service, which the root `docker-compose*.yml` do not declare. Running the services natively has no such problem.
 
 ### CI/CD Integration
 
-#### GitHub Actions Workflow
+#### GitHub Actions Workflows
 
-The repository includes automated test execution via GitHub Actions (`.github/workflows/api-manual.yml`).
+Three workflows run the suites, all on the same stack definition:
+
+| Workflow | File | Runs |
+|---|---|---|
+| **E2E Run** | `.github/workflows/e2e-run.yml` | Reusable (`workflow_call`), never triggered on its own. Starts a local Hiero network with Solo, the infrastructure and the Guardian services, optionally the frontend, runs Cypress, and publishes reports. |
+| **E2E Tests** | `.github/workflows/e2e-tests.yml` | The API and policy suites: `smoke` on every push, `api-all policy-all` nightly. |
+| **UI Tests** | `.github/workflows/ui-manual.yml` | The UI suite plus the disaster-recovery spec (`ui-all dr-all`), nightly and on demand. |
+
+Both callers pass `suite`, `grep_tags`, and optionally `spec`, `with_frontend`, `solo_version` and `timeout_minutes` to `e2e-run.yml`. Anything about how the stack is started changes in `e2e-run.yml` only.
 
 ##### Manual Workflow Run
 
-1. Go to **Actions** → **Guardian CI API Tests (Manual)**
+1. Go to **Actions** → **E2E Tests** or **UI Tests**
 2. Click **Run workflow**
 3. Enter parameters:
-   - **Tags**: e.g., `all`, `smoke`, `preparing policies`, etc.
-   - **Report name**: Custom report title
+   - **Tags**: e.g., `all`, `smoke`, `preparing policies`, `api-all`, `policy-all` for E2E Tests; `ui-all dr-all` (the default) for UI Tests. `all` works in either and runs every test
+   - **Spec** (UI Tests only): a spec glob such as `cypress/e2e/ui-tests/specs/02_policies/*.cy.js`. The account seeding specs always run first, because every other spec needs the users and artefacts they create
+   - **Solo version**: optional, the Solo release that deploys the local Hiero network
 
 ##### Available Input Parameters
 
-- `tags` (default: `all`) - Test tags to run. For multiple tags, use spaces (e.g. `policies schemas`) or commas (e.g. `policies,schemas`). In Docker/CI runs, `preparing` is automatically prepended for feature-scoped runs (not for `all`).
-- `report_name` (default: `Guardian's Cypress Report`) - Custom report name
+- `tags` (E2E Tests default: `smoke`; UI Tests default: `ui-all dr-all`) - Test tags to run. For multiple tags, use spaces (e.g. `policies schemas`) or commas (e.g. `policies,schemas`). In CI, `preparing` is automatically prepended for feature-scoped runs (not for `all`, and not when `ui` is among the tags).
+- `spec` (UI Tests only, default: empty) - Narrows the run to a spec glob.
+- `solo_version` (default: empty, which uses `SOLO_VERSION` in `e2e-run.yml`) - Solo release passed to `hiero-ledger/hiero-solo-action`.
+
+Scheduled runs happen nightly at 03:00 UTC: E2E Tests runs `api-all policy-all`, UI Tests runs `ui-all dr-all`. Pushes to E2E Tests run `smoke`.
 
 ##### Workflow Features
 
-- Automatically builds Guardian services
-- Starts necessary services (MongoDB, NATS, Guardian services)
-- Runs Cypress tests in Docker
-- Publishes test results
-- Uploads HTML and JSON reports as artifacts
-- Cleans up Docker resources
+- Starts a local Hiero network with Solo, and uploads the contract bytecode to it
+- Builds Guardian services
+- Starts MongoDB, NATS, Valkey and Kubo as service containers, and the Guardian services natively
+- For UI runs, installs the frontend and serves it with `ng serve` on `127.0.0.1:4200`, proxied to the gateway (`frontend/proxy.hostdocker.js`), the same way as the local recipe in "Preparing the app for UI tests"
+- Runs Cypress natively on the runner against that stack
+- With the `ui_request_trace` input of a manual run (`UI Tests`, or `E2E Tests` with UI tags), the dev server logs every request it proxies to the gateway (`UI_PROXY_LOG`), into `frontend-1.log` of the Guardian logs artifact. It is for diagnosing a UI failure, and the log is large
+- Publishes test results (one check per suite: `Test results · api`, `· policy`, `· ui`)
+- Uploads HTML and JSON reports as artifacts, plus the Guardian (frontend included) and Solo logs when a run fails
+- Deletes the Solo kind cluster at the end of the run
 
 ##### Test Report Artifacts
 
 After workflow completion:
 
 1. Open the run in **Actions** → **Summary**.
-2. In the **Artifacts** section, download **cypress-reports** (contains the full report tree, including `html/` and `html/.jsons`).
+2. In the **Artifacts** section, download **`cypress-reports-<suite>-...`** (contains the full report tree, including `html/` and `html/.jsons`).
 3. Unzip and open `html/index.html` in a browser to view the interactive Cypress report (test details, screenshots, etc.).
 4. **Published results** – JUnit results are also published to the workflow summary.
 
@@ -742,7 +873,7 @@ The HTML report includes:
 #### Pattern 1: Basic API Test Run
 
 ```bash
-npm install
+npm ci
 npx cypress run --browser chrome --env "grepTags=all,grepFilterSpecs=true"
 ```
 
@@ -771,31 +902,49 @@ npx cypress run --browser chrome --env "grepTags=preparing policies schemas arti
 
 ### Troubleshooting
 
-#### Cypress 15 and --env
+#### --env and "Cannot parse as valid JSON"
 
-If you see **"Cannot parse as valid JSON"** when using `--env`, you are on Cypress 15+, which requires `--env` to be a JSON object.
+Cypress reads `--env` as `key=value` pairs separated by commas, and falls back to JSON when a part is not a pair. A comma between two tags makes such a part (in `--env "grepTags=all,policies,grepFilterSpecs=true"`, `policies` is not a pair), so Cypress stops with **"Cannot parse as valid JSON"**. Separate the tags with spaces, or pass a JSON object:
 
-- **Option A (recommended):** Use the project’s Cypress 14 from `e2e-tests`: run `npm install` in `e2e-tests` and use `npx cypress run` from that directory so the pinned version (14.x) is used.
-- **Option B:** Use JSON for `--env`:
+```bash
+npx cypress run --browser chrome --env "grepTags=preparing policies,grepFilterSpecs=true"
+npx cypress run --browser chrome --env '{"grepTags":"preparing policies","grepFilterSpecs":true}'
+```
 
-  ```bash
-  npx cypress run --browser chrome --env '{"grepTags":"preparing policies","grepFilterSpecs":true}'
-  ```
-
-  For all API tests: `--env '{"grepTags":"all","grepFilterSpecs":true}'`
+`CYPRESS_grepTags` (Docker, `entrypoint.sh`) is not parsed that way: there, commas and spaces both separate tags.
 
 #### Common Issues
 
-##### Tag Syntax Errors
-
-- **Wrong**: `grepTags=all, policies` (space before comma)
-- **Correct**: `grepTags=all,policies` or `grepTags=all, policies` (space only after comma)
-
 ##### No Tests Found
 
-- Verify tags are spelled correctly
-- Ensure tests are tagged in test files with `@tag` syntax
-- Check that `grepFilterSpecs=true` is set
+- Verify tags are spelled correctly (see [Available Tags](#available-tags)).
+- Tests are tagged on the **Mocha context object**, e.g. `context('...', { tags: ['ui'] }, ...)`. `@cypress/grep` reads the tags from the context object; `@tag` markers in a test *title* are not picked up, so a title like `it('@ui ...')` will not be selected by `grepTags=ui`.
+- Check that `grepFilterSpecs=true` is set: without it every spec file is loaded and the tags only filter the tests inside each file, which for a whole suite is slow and muddies the "no tests found" signal.
+
+##### Diagnosing a hung request (UI runs)
+
+Start the app with the `proxy.hostdocker.js` logger (see [Preparing the app for UI tests](#preparing-the-app-for-ui-tests)). It traces every request the app makes to the backend on stderr:
+
+```
+[proxy] GET /profiles/StandardRegistry (auth)
+[proxy] GET /profiles/StandardRegistry <- 200
+[proxy] POST /accounts/login (NO-AUTH)
+```
+
+- `(auth)` / `(NO-AUTH)` is the presence of the `Authorization` header, so a tokenless call stands out.
+- A request that is logged as sent but **never gets a `<- <status>` line** was accepted by the gateway and is still open. In the UI this shows as a page stuck on a spinner.
+- `WS-UPGRADE` lines without a follow-up indicate the WebSocket was accepted but never used by the app.
+
+##### The services run old code after a pull
+
+`npm start` runs each service from `dist/`, so a stale build silently runs the previous code. Rebuild with `npx tsc -p .` in `interfaces`, `common` and `hedera`, in this order, then in every service, and restart the services (`npm run guardian:services:down` and `up`). A stale `hedera` package is easy to miss: `policy-service` then fails with `createUnsignedCredential` missing on `VcHelper`, which lives in `hedera`, not `common`.
+
+##### Cypress behaviours that look like bugs
+
+- `.should('be.visible', { timeout })` ignores the timeout, because assertion options are not command options: put the timeout on the `cy.get` or `cy.contains`.
+- A `cy.request` that sends a binary body (a Blob) yields the response body as an `ArrayBuffer` from another realm, even for a JSON response, so `instanceof ArrayBuffer` is false. Check `byteLength` instead, as `decodeBody` in `support/cdmTools.js` does.
+- A `Cypress.on('fail')` handler can fire more than once (retries), so it must be idempotent, and `cy.writeFile` throws inside it.
+- List endpoints are paginated with `pageIndex` and `pageSize`; there is no `page` parameter.
 
 ##### Docker Connection Issues
 

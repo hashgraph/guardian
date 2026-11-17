@@ -1,19 +1,18 @@
-import {
-    ApplicationState,
-    COMMON_CONNECTION_CONFIG,
-    DatabaseServer,
-    Environment,
-    GenerateTLSOptionsNats,
-    JwtServicesValidator,
-    LargePayloadContainer,
-    MessageBrokerChannel,
-    Migration,
-    mongoForLoggingInitialization,
-    OldSecretManager,
-    PinoLogger,
-    pinoLoggerInitialization,
-    ValidateConfiguration
-} from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { ApplicationState } from '@guardian/common/helpers/application-state';
+import { COMMON_CONNECTION_CONFIG } from '@guardian/common/helpers/db-helper';
+import { Environment } from '@guardian/common/helpers/environment';
+import { applyNetworkOverrides } from '@guardian/common/helpers/network-overrides';
+import { GenerateTLSOptionsNats } from '@guardian/common/helpers/generate-tls-options';
+import { Migration } from '@guardian/common/helpers/migration';
+import { mongoForLoggingInitialization } from '@guardian/common/helpers/mongo-logging-initialization';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { pinoLoggerInitialization } from '@guardian/common/helpers/pino-logger-initialization';
+import { ValidateConfiguration } from '@guardian/common/helpers/validate-configuration';
+import { LargePayloadContainer } from '@guardian/common/mq/large-payload-container';
+import { MessageBrokerChannel } from '@guardian/common/mq/message-broker-channel';
+import { OldSecretManager } from '@guardian/common/secret-manager/old-style/old-secret-manager';
+import { JwtServicesValidator } from '@guardian/common/security/jwt-services-validator';
 import { ListenerService } from './api/listener-service.js';
 import { ApplicationStates, GenerateUUIDv4 } from '@guardian/interfaces';
 import * as process from 'node:process';
@@ -67,9 +66,17 @@ Promise.all([
 
     Environment.setLocalNodeProtocol(process.env.LOCALNODE_PROTOCOL);
     Environment.setLocalNodeAddress(process.env.LOCALNODE_ADDRESS);
-    Environment.setNetwork(process.env.HEDERA_NET);
-
     const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
+
+    await applyNetworkOverrides(process.env, async (variableName, error) => {
+        await logger.warn(
+            `${variableName} field in settings: ${error.message}`,
+            ['TOPIC_LISTENER_SERVICE'],
+            null
+        );
+        console.warn(error);
+    });
+    Environment.setNetwork(process.env.HEDERA_NET);
 
     const state = new ApplicationState();
     await state

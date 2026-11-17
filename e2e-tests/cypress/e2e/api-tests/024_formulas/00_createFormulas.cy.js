@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
-context('Create formulas', { tags: ['formulas', 'firstPool', 'all', 'all-no-mgs'] }, () => {
+context('Create formulas', { tags: ['formulas', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const formulaName = 'testFormulaAPI';
 

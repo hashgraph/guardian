@@ -1,14 +1,16 @@
+import { randomInt } from '../../../../support/random';
 import { ContractsPage } from '../../pages/contractsPage';
 const contractsPage = new ContractsPage();
 
 import { HomePage } from '../../pages/homePage';
 const homePage = new HomePage();
 
-context('Workflow Contract UI Verify', { tags: ['ui'] }, () => {
+context('Workflow Contract UI Verify', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
-    const wipeContract = 'wUIContract';
-    const retireContract = 'rUIContract';
+    const runId = randomInt(1000000000);
+    const wipeContract = 'wUIContract' + runId;
+    const retireContract = 'rUIContract' + runId;
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
@@ -17,6 +19,15 @@ context('Workflow Contract UI Verify', { tags: ['ui'] }, () => {
         contractsPage.openContractsTab();
     })
 
+    before(() => {
+        cy.viewport(1920, 1080);
+        homePage.visit();
+        homePage.login(SRUsername);
+        contractsPage.openContractsTab();
+        contractsPage.createContractNamed('wipe', wipeContract);
+        contractsPage.createContractNamed('retire', retireContract);
+    });
+
     it('verify ui', () => {
         contractsPage.openContractTypeTab('wipe');
         contractsPage.verifyButtonsAndHeaders();
@@ -24,5 +35,11 @@ context('Workflow Contract UI Verify', { tags: ['ui'] }, () => {
         contractsPage.openContractTypeTab('retire');
         contractsPage.verifyButtonsAndHeaders();
         contractsPage.verifyContractDataAndActions(retireContract);
+    });
+
+    after(() => {
+        contractsPage.openContractsTab();
+        contractsPage.removeContractNamed('wipe', wipeContract);
+        contractsPage.removeContractNamed('retire', retireContract);
     });
 });

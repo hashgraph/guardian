@@ -2,7 +2,7 @@ import { Permissions } from '@guardian/interfaces';
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Examples, SuggestionsConfigDTO, SuggestionsConfigItemDTO, SuggestionsInputDTO, SuggestionsOutputDTO, InternalServerErrorDTO } from '#middlewares';
-import { IAuthUser } from '@guardian/common';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
 import { AuthUser, Auth } from '#auth';
 import { Guardians, ONLY_SR } from '#helpers';
 

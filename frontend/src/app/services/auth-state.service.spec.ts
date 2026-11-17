@@ -1,3 +1,4 @@
+import type { MockedObject } from "vitest";
 import { TestBed } from '@angular/core/testing';
 import { AppThemeService } from './app-theme.service';
 import { AuthService } from './auth.service';
@@ -10,13 +11,19 @@ import { AuthStateService } from './auth-state.service';
  * that would discard the theme on every page refresh.
  */
 describe('AuthStateService — theme scoping', () => {
-    let theme: jasmine.SpyObj<AppThemeService>;
-    let auth: jasmine.SpyObj<AuthService>;
+    let theme: MockedObject<AppThemeService>;
+    let auth: MockedObject<AuthService>;
 
     beforeEach(() => {
-        theme = jasmine.createSpyObj<AppThemeService>('AppThemeService', ['applyForUser', 'reset']);
-        auth = jasmine.createSpyObj<AuthService>('AuthService', ['getUserKey', 'updateAccessToken']);
-        auth.getUserKey.and.returnValue('user-a');
+        theme = {
+            applyForUser: vi.fn().mockName("AppThemeService.applyForUser"),
+            reset: vi.fn().mockName("AppThemeService.reset")
+        } as unknown as MockedObject<AppThemeService>;
+        auth = {
+            getUsername: vi.fn().mockName("AuthService.getUsername"),
+            updateAccessToken: vi.fn().mockName("AuthService.updateAccessToken")
+        } as unknown as MockedObject<AuthService>;
+        auth.getUsername.mockReturnValue('user-a');
 
         TestBed.configureTestingModule({
             providers: [
@@ -45,7 +52,7 @@ describe('AuthStateService — theme scoping', () => {
     it('resets the theme when the session ends', () => {
         const state = service();
         state.updateState(true);
-        theme.reset.calls.reset();
+        theme.reset.mockClear();
 
         state.updateState(false);
 

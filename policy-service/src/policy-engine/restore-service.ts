@@ -1,6 +1,14 @@
 import { IPolicyDiff, PolicyBackup, PolicyRestore } from './db-restore/index.js';
 import { FileHelper } from './db-restore/file-helper.js';
-import { DatabaseServer, ITopicMessage, MessageAction, MessageServer, MessageType, Policy, PolicyDiffMessage, TopicConfig, TopicListener, Users } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { ITopicMessage, TopicListener } from '@guardian/common/topic-listener/topic-listener';
+import { Policy } from '@guardian/common/entity/policy';
+import { Users } from '@guardian/common/helpers/users';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { MessageType } from '@guardian/hedera/message/message-type';
+import { PolicyDiffMessage } from '@guardian/hedera/message/policy-diff-message';
+import { TopicConfig } from '@guardian/hedera/topic';
 import { PolicyComponentsUtils } from './policy-components-utils.js';
 
 class Timer {

@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
-context('Get roles', { tags: ['permissions', 'firstPool', 'all', 'all-no-mgs'] }, () => {
+context('Get roles', { tags: ['permissions', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     it('Get users permissions', () => {

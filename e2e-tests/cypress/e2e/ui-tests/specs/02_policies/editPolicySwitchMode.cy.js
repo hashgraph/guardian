@@ -5,10 +5,12 @@ const homePage = new HomePage();
 import { PoliciesPage } from '../../pages/policiesPage';
 const policiesPage = new PoliciesPage();
 
-context('Edit Policy. Switch mode flow', { tags: ['ui'] }, () => {
+context('Edit Policy. Switch mode flow', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
-    const name = randomInt(999) + 'testName';
+    // A 1000-space name collides with policies left behind by earlier runs (the app
+    // suffixes duplicates, so a name search then matches both) - 1e9 keeps re-runs unique.
+    const name = randomInt(1000000000) + 'testName';
 
     beforeEach(() => {
         cy.viewport(1920, 1080);
@@ -23,8 +25,8 @@ context('Edit Policy. Switch mode flow', { tags: ['ui'] }, () => {
         policiesPage.backToPoliciesList();
         policiesPage.checkStatus(name, 'Draft');
         policiesPage.openEditingPolicy(name);
-        policiesPage.clickOnButtonByText('Tree');
-        policiesPage.clickOnButtonByText('JSON');
+        policiesPage.switchView('Tree');
+        policiesPage.switchView('JSON');
         policiesPage.verifyIfContainerJsonIsDisplayed();
     });
 

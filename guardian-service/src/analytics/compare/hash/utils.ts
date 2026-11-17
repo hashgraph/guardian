@@ -1,6 +1,6 @@
 import MurmurHash3 from 'imurmurhash';
 import * as crypto from 'node:crypto';
-import { Hashing } from '@guardian/common';
+import { Hashing } from '@guardian/common/helpers/hashing';
 
 /**
  * Hash Utils

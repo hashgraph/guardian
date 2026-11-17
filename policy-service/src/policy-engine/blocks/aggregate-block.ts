@@ -1,5 +1,7 @@
+import { addPreviewDocumentRead, assertPreviewFiniteResult, evaluatePreviewFormula, recordPreviewWait, throwPreviewFormulaError } from '../helpers/preview.js';
 import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
-import { AggregateVC, VcDocumentDefinition as VcDocument } from '@guardian/common';
+import { AggregateVC } from '@guardian/common/entity/aggregate-documents';
+import { VcDocument } from '@guardian/hedera/vcjs/vc-document';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { PolicyUtils } from '../helpers/utils.js';
@@ -228,11 +230,13 @@ export class AggregateBlock {
         const element = VcDocument.fromJsonTree(doc.document);
         const scope = PolicyUtils.getVCScope(element);
         for (const expression of expressions) {
-            const formulaResult = PolicyUtils.evaluateFormula(expression.value, scope);
+            const formulaResult = evaluatePreviewFormula(expression.value, scope, doc);
             if (formulaResult === 'Incorrect formula') {
                 ref.error(`expression: ${expression.value}, ${formulaResult}, ${JSON.stringify(scope)}`);
+                throwPreviewFormulaError(ref, `expression: ${expression.value}, ${formulaResult}`);
             }
             result[expression.name] = parseFloat(formulaResult);
+            assertPreviewFiniteResult(result[expression.name]);
         }
         return result;
     }
@@ -287,6 +291,7 @@ export class AggregateBlock {
         }
         if (groupByFields) {
             for (const groupByField of groupByFields) {
+                addPreviewDocumentRead(document, groupByField.fieldPath);
                 filters[groupByField.fieldPath] = ObjGet(document, groupByField.fieldPath);
             }
         }
@@ -302,6 +307,7 @@ export class AggregateBlock {
 
         if (result === 'Incorrect formula') {
             ref.error(`tick aggregate: ${document.owner}, '${condition}' (${JSON.stringify(scope)}) = ${result}`);
+            throwPreviewFormulaError(ref, `condition: ${condition}, ${result}`);
         } else {
             ref.log(`tick aggregate: ${document.owner}, '${condition}' (${JSON.stringify(scope)}) = ${result}`);
         }
@@ -317,6 +323,7 @@ export class AggregateBlock {
             }));
         }
         ref.backup();
+        return result === true;
     }
 
     /**
@@ -371,14 +378,18 @@ export class AggregateBlock {
         if (Array.isArray(docs)) {
             for (const doc of docs) {
                 await this.saveDocuments(ref, doc);
-                if (aggregateType === 'cumulative') {
-                    await this.tickAggregate(ref, doc, event?.user?.userId, event.actionStatus);
+                const continued = aggregateType === 'cumulative'
+                    && await this.tickAggregate(ref, doc, event?.user?.userId, event.actionStatus);
+                if (!continued) {
+                    recordPreviewWait({ ...event, data: { data: doc } }, ref);
                 }
             }
         } else {
             await this.saveDocuments(ref, docs);
-            if (aggregateType === 'cumulative') {
-                await this.tickAggregate(ref, docs, event?.user?.userId, event.actionStatus);
+            const continued = aggregateType === 'cumulative'
+                && await this.tickAggregate(ref, docs, event?.user?.userId, event.actionStatus);
+            if (!continued) {
+                recordPreviewWait(event, ref);
             }
         }
 

@@ -6,7 +6,10 @@ import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
-import { VcHelper, HederaDidDocument, VcDocumentDefinition, VcDocument } from '@guardian/common';
+import { VcDocument } from '@guardian/common/entity/vc-document';
+import { VcHelper } from '@guardian/hedera/vc-helper';
+import { HederaDidDocument } from '@guardian/hedera/vcjs/did/hedera-did-document';
+import { VcDocument as VcDocumentDefinition } from '@guardian/hedera/vcjs/vc-document';
 import { IntegrationServiceFactory } from '../../integrations/index.js';
 import { generateConfigForIntegrationBlock } from '../../helpers/generate-config-for-integration-block-helper.js';
 import { PolicyUtils } from '../helpers/utils.js';

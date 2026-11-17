@@ -31,6 +31,7 @@ export interface IFieldJson {
     key: string;
     title: string;
     description: string;
+    advisoryText?: string;
     required: string;
     type: string;
     isArray: boolean;
@@ -314,6 +315,10 @@ export class SchemaToJson {
             property: field.property || '',
             isUpdatable: field.isUpdatable || false,
         };
+
+        if (field.advisoryText?.trim()) {
+            fieldJson.advisoryText = field.advisoryText.trim();
+        }
 
         const privateValue = SchemaToJson.getPrivate(field);
         if (privateValue !== null) {
@@ -1104,6 +1109,7 @@ export class JsonToSchema {
             name: JsonToSchema.fromRequiredString(value.key, context.add('key')),
             title: JsonToSchema.fromString(value.title, context.add('title')),
             description: JsonToSchema.fromString(value.description, context.add('description')) || '',
+            advisoryText: JsonToSchema.fromString(value.advisoryText, context.add('advisoryText'))?.trim() || undefined,
             property: JsonToSchema.fromString(value.property, context.add('property')) || '',
             type: JsonToSchema.fromType(value, all, context.add('type')),
             format: JsonToSchema.fromFormat(value, context.add('format')) as any,

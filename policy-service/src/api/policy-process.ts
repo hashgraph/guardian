@@ -1,34 +1,34 @@
 import '../config.js'
-import {
-    COMMON_CONNECTION_CONFIG,
-    DatabaseServer,
-    Environment,
-    ExternalEventChannel,
-    GenerateTLSOptionsNats,
-    IPFS,
-    JwtServicesValidator,
-    LargePayloadContainer,
-    MessageBrokerChannel,
-    MessageServer,
-    MockService,
-    mongoForLoggingInitialization,
-    NotificationService,
-    OldSecretManager,
-    PinoLogger,
-    pinoLoggerInitialization,
-    TopicListener,
-    Users,
-    Wallet,
-    Workers
-} from '@guardian/common';
-import { entities } from '@guardian/common/dist/entities.js';
+import { COMMON_CONNECTION_CONFIG } from '@guardian/common/helpers/db-helper';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { Environment } from '@guardian/common/helpers/environment';
+import { applyNetworkOverrides } from '@guardian/common/helpers/network-overrides';
+import { ExternalEventChannel } from '@guardian/common/mq/external-channel';
+import { GenerateTLSOptionsNats } from '@guardian/common/helpers/generate-tls-options';
+import { IPFS } from '@guardian/common/helpers/ipfs';
+import { JwtServicesValidator } from '@guardian/common/security/jwt-services-validator';
+import { LargePayloadContainer } from '@guardian/common/mq/large-payload-container';
+import { MessageBrokerChannel } from '@guardian/common/mq/message-broker-channel';
+import { mongoForLoggingInitialization } from '@guardian/common/helpers/mongo-logging-initialization';
+import { NotificationService } from '@guardian/common/notification/notification.service';
+import { OldSecretManager } from '@guardian/common/secret-manager/old-style/old-secret-manager';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { pinoLoggerInitialization } from '@guardian/common/helpers/pino-logger-initialization';
+import { TopicListener } from '@guardian/common/topic-listener/topic-listener';
+import { Users } from '@guardian/common/helpers/users';
+import { Wallet } from '@guardian/common/helpers/wallet';
+import { Workers } from '@guardian/common/helpers/workers';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { MockService } from '@guardian/hedera/mock-service';
+import { entities } from '@guardian/common/entities';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { BlockTreeGenerator } from '../policy-engine/block-tree-generator.js';
 import { PolicyValidator } from '../policy-engine/block-validators/index.js';
 import process from 'node:process';
 import { CommonVariables } from '../helpers/common-variables.js';
-import { PolicyEvents } from '@guardian/interfaces';
+import { PolicyEvents, PolicyStatus } from '@guardian/interfaces';
+import { getDiscontinuedIdleMs, IdleStop } from '../helpers/idle-stop.js';
 import { SynchronizationService } from '../policy-engine/multi-policy-service/index.js';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
@@ -96,41 +96,14 @@ Promise.all([
 
     const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
 
-    if (process.env.OVERRIDE_NETWORK_CONFIGURATION === 'true') {
-        if (process.env.OVERRIDE_HEDERA_CONSENSUS_NODES) {
-            try {
-                const nodes = JSON.parse(process.env.OVERRIDE_HEDERA_CONSENSUS_NODES);
-                Environment.setNodes(nodes);
-            } catch (error) {
-                await logger.warn(
-                    'OVERRIDE_HEDERA_CONSENSUS_NODES field in settings: ' + error.message,
-                    ['POLICY', policyConfig.name, policyId.toString()],
-                    policyOwnerId
-                );
-                console.warn(error);
-            }
-        }
-        if (process.env.OVERRIDE_HEDERA_MIRROR_NODES) {
-            try {
-                const mirrorNodes = JSON.parse(
-                    process.env.OVERRIDE_HEDERA_MIRROR_NODES
-                );
-                Environment.setMirrorNodes(mirrorNodes);
-            } catch (error) {
-                await logger.warn(
-                    'OVERRIDE_HEDERA_MIRROR_NODES field in settings: ' +
-                    error.message,
-                    ['POLICY', policyConfig.name, policyId.toString()],
-                    policyOwnerId
-                );
-                console.warn(error);
-            }
-        }
-
-        if (process.env.OVERRIDE_HEDERA_MIRROR_NODES_BASE_API) {
-            Environment.setMirrorNodesBaseApi(process.env.OVERRIDE_HEDERA_MIRROR_NODES_BASE_API);
-        }
-    }
+    await applyNetworkOverrides(process.env, async (variableName, error) => {
+        await logger.warn(
+            `${variableName} field in settings: ${error.message}`,
+            ['POLICY', policyConfig.name, policyId.toString()],
+            policyOwnerId
+        );
+        console.warn(error);
+    });
 
     Environment.setNetwork(process.env.HEDERA_NET);
     MessageServer.setLang(process.env.MESSAGE_LANG);
@@ -175,11 +148,34 @@ Promise.all([
     const synchronizationService = new SynchronizationService(policyConfig, logger, policyOwnerId);
     synchronizationService.start();
 
-    generator.getPolicyMessages(PolicyEvents.DELETE_POLICY, policyId, async (payload: { policyOwnerId: string | null }) => {
-        await generator.destroyModel(policyId, logger, payload.policyOwnerId);
+    const shutdown = async (ownerId: string | null, drainFirst = false) => {
+        if (drainFirst) {
+            // Stop answering before the blocks are unregistered: a late request must get
+            // NO_RESPONDERS (and start the policy again), not a block-not-found error
+            try {
+                await cn.drain();
+            } catch (error) {
+                console.warn(error);
+            }
+        }
+        await generator.destroyModel(policyId, logger, ownerId);
         synchronizationService.stop();
         process.exit(0);
+    };
+
+    generator.getPolicyMessages(PolicyEvents.DELETE_POLICY, policyId, async (payload: { policyOwnerId: string | null }) => {
+        await shutdown(payload.policyOwnerId);
     });
+
+    // A discontinued policy runs only on demand: it stops itself when nobody uses it
+    if (policyConfig.status === PolicyStatus.DISCONTINUED) {
+        const idleStop = new IdleStop(getDiscontinuedIdleMs(), () => {
+            void logger.info('Stop idle discontinued policy', ['POLICY', policyConfig.name, policyId.toString()], policyOwnerId);
+            void shutdown(policyOwnerId, true);
+        });
+        generator.setIdleStop(idleStop);
+        idleStop.start();
+    }
 
     generator.publish(PolicyEvents.POLICY_READY, {
         policyId: policyId.toString(),

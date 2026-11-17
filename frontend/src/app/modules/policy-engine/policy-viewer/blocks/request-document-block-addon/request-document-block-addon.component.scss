@@ -47,22 +47,6 @@
     overflow: visible;
 }
 
-.create-button-container {
-    ::ng-deep {
-        .p-button {
-            border-radius: 8px;
-            background: var(--primary-color);
-        }
-    }
-}
-
-.btn-block-link {
-    ::ng-deep {
-        .p-button {
-            height: 34px;
-        }
-    }
-}
 
 .dialog-actions-container {
     background: var(--color-grey-white);

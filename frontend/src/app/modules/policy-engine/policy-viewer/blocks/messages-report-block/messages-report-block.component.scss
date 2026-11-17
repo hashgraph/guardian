@@ -4,6 +4,11 @@
     left: 0;
     right: 0;
     min-height: 300px;
+
+    // A parent rule resets `right`, so the search form would size the block to its fixed width.
+    &:has(> .dashboard > .filters) {
+        width: 100%;
+    }
 }
 
 .loading {
@@ -621,18 +626,44 @@
 .filters {
     display: flex;
     flex-wrap: wrap;
-    padding: 20px;
+    padding-top: 20px;
     justify-items: center;
-    justify-content: center;
     align-items: center;
     align-content: center;
 }
 
+.filters > .p-fluid {
+    width: 1080px;
+    max-width: 100%;
+}
+
 .search-input {
-    height: 128px;
+    border-radius: 8px;
+    border: 1px solid var(--color-grey-3);
+    background: var(--color-grey-white);
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-sizing: border-box;
     overflow: hidden;
-    width: 50vw;
-    min-width: 400px;
+    width: 100%;
+    padding: 16px;
+
+    input {
+        flex: 1;
+        min-width: 0;
+        height: 40px;
+    }
+
+    .p-button {
+        flex: none;
+        width: 40px;
+        height: 40px;
+        border-color: var(--color-primary);
+        background: var(--color-primary);
+        color: var(--guardian-secondary-color, #FFF);
+    }
 }
 
 .search-btn {

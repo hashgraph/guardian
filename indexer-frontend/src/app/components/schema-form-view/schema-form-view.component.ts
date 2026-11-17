@@ -5,6 +5,7 @@ import {
     NgIf,
     NgSwitch,
     NgSwitchCase,
+    NgTemplateOutlet,
 } from '@angular/common';
 import {
     ChangeDetectionStrategy,
@@ -22,7 +23,10 @@ import { FormulasViewDialog } from '../../dialogs/formulas-view-dialog/formulas-
 import {TableViewerComponent} from '../table-viewer/table-viewer.component';
 import { isSafeHref, withNewTabLinks } from './rich-text-view';
 import { collectImageReferences, markdownToHtml } from './markdown-view';
-import { EntitiesService } from '@services/entities.service';
+import { ArtifactsService } from '@services/artifacts.service';
+import { firstValueFrom } from 'rxjs';
+
+const GEO_JSON_MAX_ROWS = 10;
 
 /**
  * Form view by schema
@@ -38,6 +42,7 @@ import { EntitiesService } from '@services/entities.service';
         NgFor,
         NgSwitch,
         NgSwitchCase,
+        NgTemplateOutlet,
         DatePipe,
         JsonPipe,
         CheckboxModule,
@@ -63,11 +68,13 @@ export class SchemaFormViewComponent {
 
     private resolvedImages = new Map<string, string | null>();
     private pendingImages = new Map<string, Promise<string | null>>();
+    private loadingGeoFiles = new Set<string>();
+    private geoFileErrors = new Map<string, string>();
 
     constructor(
         private dialogService: DialogService,
-        private entitiesService: EntitiesService,
-        private changeDetector: ChangeDetectorRef
+        private changeDetector: ChangeDetectorRef,
+        private artifacts: ArtifactsService
     ) { }
 
     isBooleanView(item: boolean | any): string {
@@ -232,14 +239,30 @@ export class SchemaFormViewComponent {
 
         let request = this.pendingImages.get(reference);
         if (!request) {
-            request = this.entitiesService.getImageByLink(reference)
+            const cid = reference.replace(/^ipfs:\/\//, '');
+            const fileId = this.analytics?.richTextImages?.[cid];
+            if (!fileId) {
+                return null;
+            }
+            request = firstValueFrom(this.artifacts.getFileBlob(fileId))
+                .then(response => {
+                    const blob = response.body;
+                    if (!blob) throw new Error('Image is not available');
+                    return new Promise<string>((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => typeof reader.result === 'string'
+                            ? resolve(reader.result) : reject(new Error('Image could not be read'));
+                        reader.onerror = () => reject(new Error('Image could not be read'));
+                        reader.readAsDataURL(new Blob([blob], { type: 'image/jpeg' }));
+                    });
+                })
                 .catch(() => null)
                 .finally(() => this.pendingImages.delete(reference));
             this.pendingImages.set(reference, request);
         }
 
         const source = await request;
-        this.resolvedImages.set(reference, source);
+        if (source) this.resolvedImages.set(reference, source);
         return source;
     }
 
@@ -255,6 +278,60 @@ export class SchemaFormViewComponent {
         }
         event.preventDefault();
         window.open(href, '_blank', 'noopener,noreferrer');
+    }
+
+    getGeoRows(value: unknown): number {
+        const lines = JSON.stringify(value, null, 2)?.split('\n').length || 1;
+        return Math.min(lines, GEO_JSON_MAX_ROWS);
+    }
+
+    isGeoFileLoading(link: any): boolean {
+        return !!link?.cid && this.loadingGeoFiles.has(link.cid);
+    }
+
+    getGeoFileError(link: any): string | undefined {
+        return link?.cid ? this.geoFileErrors.get(link.cid) : undefined;
+    }
+
+    getGeoFileId(link: any): string | undefined {
+        return link?.cid ? this.analytics?.geoFiles?.[link.cid] : undefined;
+    }
+
+    async downloadGeoFile(link: any): Promise<void> {
+        const cid = link?.cid;
+        const fileId = this.getGeoFileId(link);
+        if (!cid || !fileId || this.loadingGeoFiles.has(cid)) {
+            return;
+        }
+        this.loadingGeoFiles.add(cid);
+        this.geoFileErrors.delete(cid);
+        this.changeDetector.markForCheck();
+        try {
+            const response = await firstValueFrom(this.artifacts.getFileBlob(fileId));
+            if (!response.body) {
+                throw new Error('File not found');
+            }
+            let blob: Blob = response.body;
+            const head = new Uint8Array(await blob.slice(0, 2).arrayBuffer());
+            if (head[0] === 0x1f && head[1] === 0x8b) {
+                blob = await new Response(
+                    blob.stream().pipeThrough(new DecompressionStream('gzip'))
+                ).blob();
+            }
+            const url = URL.createObjectURL(blob);
+            const anchor = document.createElement('a');
+            anchor.href = url;
+            anchor.download = link.name || cid;
+            document.body.appendChild(anchor);
+            anchor.click();
+            anchor.remove();
+            URL.revokeObjectURL(url);
+        } catch {
+            this.geoFileErrors.set(cid, 'Failed to download the original file.');
+        } finally {
+            this.loadingGeoFiles.delete(cid);
+            this.changeDetector.markForCheck();
+        }
     }
 
     isPrefix(item: SchemaField): boolean {

@@ -1,9 +1,7 @@
-import {
-    IAuthUser,
-    Policy as PolicyCollection,
-    PolicyTool as PolicyToolCollection,
-    Users
-} from '@guardian/common';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { Policy as PolicyCollection } from '@guardian/common/entity/policy';
+import { PolicyTool as PolicyToolCollection } from '@guardian/common/entity/tool';
+import { Users } from '@guardian/common/helpers/users';
 import { ComponentsService } from '../helpers/components-service.js';
 import { BlockEngine } from './block-engine.js';
 import { IDebugContext } from './block-result.js';

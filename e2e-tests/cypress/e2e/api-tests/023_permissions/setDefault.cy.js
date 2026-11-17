@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
-context('Set role as default', { tags: ['permissions', 'firstPool', 'all', 'all-no-mgs'] }, () => {
+context('Set role as default', { tags: ['permissions', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const roleName = 'Policy User';
 
@@ -19,7 +19,7 @@ context('Set role as default', { tags: ['permissions', 'firstPool', 'all', 'all-
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
                 response.body.forEach(item => {
-                    if (item.name == roleName)
+                    if (item.name === roleName)
                         {roleId = item.id}
                 });
             });
@@ -48,7 +48,7 @@ context('Set role as default', { tags: ['permissions', 'firstPool', 'all', 'all-
                 }).then((response) => {
                     expect(response.status).eql(STATUS_CODE.OK);
                     response.body.forEach(item => {
-                        if (item.name == roleName)
+                        if (item.name === roleName)
                             {expect(item.default).eql(true);}
                     });
                 });

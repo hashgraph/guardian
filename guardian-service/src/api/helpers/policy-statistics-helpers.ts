@@ -1,4 +1,11 @@
-import { DatabaseServer, PolicyStatistic, SchemaConverterUtils, TopicConfig, TopicHelper, Users, VcDocument, VcHelper } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { PolicyStatistic } from '@guardian/common/entity/policy-statistic';
+import { SchemaConverterUtils } from '@guardian/common/helpers/schema-converter-utils';
+import { Users } from '@guardian/common/helpers/users';
+import { VcDocument } from '@guardian/common/entity/vc-document';
+import { TopicConfig } from '@guardian/hedera/topic';
+import { TopicHelper } from '@guardian/hedera/topic-helper';
+import { VcHelper } from '@guardian/hedera/vc-helper';
 import { GenerateUUIDv4, IOwner, IStatisticConfig, PolicyStatus, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
 import { generateSchemaContext } from '../../helpers/import-helpers/index.js';
 

@@ -1,7 +1,13 @@
 import WebSocket, { WebSocketServer } from 'ws'
 import { IncomingMessage, Server } from 'node:http';
 import { ApplicationStates, GenerateUUIDv4, MessageAPI, NotifyAPI } from '@guardian/interfaces';
-import { IAuthUser, JwtServicesValidator, MessageResponse, NatsService, NotificationHelper, PinoLogger, Singleton } from '@guardian/common';
+import { Singleton } from '@guardian/common/decorators/singleton';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { MessageResponse } from '@guardian/common/models/message-response';
+import { NatsService } from '@guardian/common/mq/nats-service';
+import { NotificationHelper } from '@guardian/common/notification/notification-helper';
+import { JwtServicesValidator } from '@guardian/common/security/jwt-services-validator';
 import { NatsConnection } from 'nats';
 import { Users } from '#helpers';
 import { Mutex } from 'async-mutex';

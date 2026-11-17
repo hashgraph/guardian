@@ -1,3 +1,4 @@
+import type { Mock } from "vitest";
 import { HttpErrorResponse } from '@angular/common/http';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
@@ -56,14 +57,8 @@ function blockData(tag: string): IStepBlockData {
     return { blocks: [block(tag)], index: 0, readonly: false };
 }
 
-function createComponent(
-    policyEngineService: PolicyEngineService = idleService
-): ITestableStepBlock {
-    const component = new StepBlockComponent(
-        policyEngineService,
-        {} as WebSocketService,
-        {} as PolicyHelper
-    );
+function createComponent(policyEngineService: PolicyEngineService = idleService): ITestableStepBlock {
+    const component = new StepBlockComponent(policyEngineService, {} as WebSocketService, {} as PolicyHelper);
     return component as unknown as ITestableStepBlock;
 }
 
@@ -71,14 +66,14 @@ describe('StepBlockComponent - empty result during a step transition', () => {
     let component: ITestableStepBlock;
 
     beforeEach(() => {
-        jasmine.clock().install();
+        vi.useFakeTimers();
         component = createComponent();
         // start from a healthy, rendered step
         component.setData(blockData('current'));
     });
 
     afterEach(() => {
-        jasmine.clock().uninstall();
+        vi.useRealTimers();
     });
 
     it('starts out rendering the current step', () => {
@@ -91,7 +86,7 @@ describe('StepBlockComponent - empty result during a step transition', () => {
     it('does not show the message while the gap is open', () => {
         component.setData(null);
 
-        jasmine.clock().tick(DELAY - 1);
+        vi.advanceTimersByTime(DELAY - 1);
 
         expect(component.unavailable).toBe(false);
         expect(component.activeBlock).toEqual(block('current'));
@@ -102,12 +97,12 @@ describe('StepBlockComponent - empty result during a step transition', () => {
 
         component.setData(null);
         for (let elapsed = 0; elapsed < DELAY - 100; elapsed += 50) {
-            jasmine.clock().tick(50);
+            vi.advanceTimersByTime(50);
             seen.push(component.unavailable);
         }
 
         component.setData(blockData('next'));
-        jasmine.clock().tick(DELAY * 5);
+        vi.advanceTimersByTime(DELAY * 5);
         seen.push(component.unavailable);
 
         // this is the regression: the message must never have been rendered at all
@@ -118,7 +113,7 @@ describe('StepBlockComponent - empty result during a step transition', () => {
     it('shows the message once the empty state outlives the gap', () => {
         component.setData(null);
 
-        jasmine.clock().tick(DELAY);
+        vi.advanceTimersByTime(DELAY);
 
         expect(component.unavailable).toBe(true);
         expect(component.errored).toBe(false);
@@ -133,20 +128,20 @@ describe('StepBlockComponent - empty result during a step transition', () => {
         expect(fresh.loading).toBe(true);
         expect(fresh.unavailable).toBe(false);
 
-        jasmine.clock().tick(DELAY);
+        vi.advanceTimersByTime(DELAY);
         expect(fresh.loading).toBe(false);
         expect(fresh.unavailable).toBe(true);
     });
 
     it('restarts the wait when a second empty result arrives', () => {
         component.setData(null);
-        jasmine.clock().tick(DELAY - 100);
+        vi.advanceTimersByTime(DELAY - 100);
 
         component.setData(null);
-        jasmine.clock().tick(DELAY - 100);
+        vi.advanceTimersByTime(DELAY - 100);
         expect(component.unavailable).toBe(false);
 
-        jasmine.clock().tick(100);
+        vi.advanceTimersByTime(100);
         expect(component.unavailable).toBe(true);
     });
 
@@ -154,7 +149,7 @@ describe('StepBlockComponent - empty result during a step transition', () => {
         component.setData(null);
 
         component.ngOnDestroy();
-        jasmine.clock().tick(DELAY * 5);
+        vi.advanceTimersByTime(DELAY * 5);
 
         expect(component.unavailable).toBe(false);
         expect(component.activeBlock).toEqual(block('current'));
@@ -162,10 +157,10 @@ describe('StepBlockComponent - empty result during a step transition', () => {
 
     it('drops a pending empty state when the user retries', () => {
         component.setData(null);
-        jasmine.clock().tick(DELAY - 100);
+        vi.advanceTimersByTime(DELAY - 100);
 
-        component.retry();               // resets loaded/hasError and reloads
-        jasmine.clock().tick(DELAY * 5);
+        component.retry(); // resets loaded/hasError and reloads
+        vi.advanceTimersByTime(DELAY * 5);
 
         expect(component.unavailable).toBe(false);
         expect(component.activeBlock).toEqual(block('current'));
@@ -176,13 +171,13 @@ describe('StepBlockComponent - "Block Unavailable" vs a real failure', () => {
     let component: ITestableStepBlock;
 
     beforeEach(() => {
-        jasmine.clock().install();
+        vi.useFakeTimers();
         component = createComponent();
         component.setData(blockData('current'));
     });
 
     afterEach(() => {
-        jasmine.clock().uninstall();
+        vi.useRealTimers();
     });
 
     // policy-service raises 503; api-gateway remaps block-data errors to 422, so a
@@ -190,10 +185,10 @@ describe('StepBlockComponent - "Block Unavailable" vs a real failure', () => {
     it('maps a 422 "Block Unavailable" to the message, not the error state', () => {
         component._onError({ status: 422, error: { message: 'Block Unavailable' } });
 
-        jasmine.clock().tick(DELAY - 1);
-        expect(component.unavailable).toBe(false);   // still inside the gap
+        vi.advanceTimersByTime(DELAY - 1);
+        expect(component.unavailable).toBe(false); // still inside the gap
 
-        jasmine.clock().tick(1);
+        vi.advanceTimersByTime(1);
         expect(component.unavailable).toBe(true);
         expect(component.errored).toBe(false);
     });
@@ -201,7 +196,7 @@ describe('StepBlockComponent - "Block Unavailable" vs a real failure', () => {
     it('maps a 503 to the message, not the error state', () => {
         component._onError({ status: 503, error: { message: 'Block Unavailable' } });
 
-        jasmine.clock().tick(DELAY);
+        vi.advanceTimersByTime(DELAY);
 
         expect(component.unavailable).toBe(true);
         expect(component.errored).toBe(false);
@@ -225,11 +220,13 @@ describe('StepBlockComponent - "Block Unavailable" vs a real failure', () => {
 
 describe('StepBlockComponent - overlapping reloads', () => {
     it('cancels an in-flight request when a newer reload starts', () => {
-        const subscriptions: Array<{ unsubscribe: jasmine.Spy }> = [];
+        const subscriptions: Array<{
+            unsubscribe: Mock;
+        }> = [];
         const policyEngineService = {
             getBlockData: () => ({
                 subscribe: () => {
-                    const subscription = { unsubscribe: jasmine.createSpy('unsubscribe') };
+                    const subscription = { unsubscribe: vi.fn() };
                     subscriptions.push(subscription);
                     return subscription;
                 }
@@ -266,13 +263,13 @@ describe('StepBlockComponent - step parked on a server-side block', () => {
     }
 
     beforeEach(() => {
-        jasmine.clock().install();
+        vi.useFakeTimers();
         component = createComponent();
         component.setData(blockData('current'));
     });
 
     afterEach(() => {
-        jasmine.clock().uninstall();
+        vi.useRealTimers();
     });
 
     it('shows progress, not the "not your turn" message', () => {
@@ -289,7 +286,7 @@ describe('StepBlockComponent - step parked on a server-side block', () => {
 
         // well past any timeout-based guard
         for (let elapsed = 0; elapsed < DELAY * 20; elapsed += DELAY) {
-            jasmine.clock().tick(DELAY);
+            vi.advanceTimersByTime(DELAY);
             expect(component.unavailable).toBe(false);
         }
     });
@@ -317,7 +314,7 @@ describe('StepBlockComponent - step parked on a server-side block', () => {
         component.setData(pendingData());
         component.setData(null);
 
-        jasmine.clock().tick(DELAY + 1);
+        vi.advanceTimersByTime(DELAY + 1);
 
         expect(component.pending).toBe(false);
         expect(component.unavailable).toBe(true);

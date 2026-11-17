@@ -1,6 +1,6 @@
 import { Entity, Enum, Property } from '@mikro-orm/core';
 import { NotificationType, NotificationAction } from '@guardian/interfaces';
-import { BaseEntity } from '@guardian/common';
+import { BaseEntity } from '@guardian/common/models/base-entity';
 
 /**
  * Notification

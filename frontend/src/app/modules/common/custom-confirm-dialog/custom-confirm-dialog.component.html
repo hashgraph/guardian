@@ -15,7 +15,7 @@
   }
 
   @if (text) {
-    <div class="confirmation-text">{{ text }}</div>
+    <div class="confirmation-text" [class.confirmation-text--regular]="regularText">{{ text }}</div>
   }
   @if (texts) {
     <div class="confirmation-texts">
@@ -30,6 +30,23 @@
         <div>{{detail}}</div>
       }
     </div>
+  }
+
+  @if (typedItems?.length) {
+    <div class="confirmation-typed-items">
+      @for (entry of typedItems; track $index) {
+        <div class="typed-item">
+          <span class="f-type-icon" [attr.data-type]="entry.type">
+            <svg-icon [src]="'/assets/images/icons/' + entry.icon + '.svg'"></svg-icon>
+          </span>
+          <span class="typed-item-name" [title]="entry.name">{{ entry.name }}</span>
+        </div>
+      }
+    </div>
+  }
+
+  @if (json) {
+    <div class="confirmation-document">{{ json }}</div>
   }
 
   @if (options) {

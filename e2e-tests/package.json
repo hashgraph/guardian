@@ -1,16 +1,30 @@
 {
     "name": "guardian-e2e-test",
-    "version": "3.7.1",
+    "version": "3.8.0-rc",
     "description": "This a place for quardian e2e automation test suite",
     "main": "index.js",
     "scripts": {
-        "test": "npx cypress run",
-        "e2e": "npx cypress run",
-        "ui-only-headed": "npx cypress run --headed --env \"grepTags=ui,grepFilterSpecs=true\"",
-        "ui-only": "npx cypress run --env \"grepTags=ui,grepFilterSpecs=true\"",
-        "test-tag": "./run-test-by-tag.sh",
         "api-tests": "npx cypress run --env \"grepTags=all,grepFilterSpecs=true\" --spec \"cypress/e2e/api-tests/**/*.cy.js\" --browser chrome",
-        "smoke-pull": "npx cypress run --env \"grepTags=smoke,grepFilterSpecs=true\" --spec \"cypress/e2e/api-tests/**/*.cy.js\" --browser chrome"
+        "e2e": "npx cypress run",
+        "guardian:build": "scripts/local-guardian.sh build",
+        "guardian:down": "scripts/local-guardian.sh down",
+        "guardian:infra:down": "scripts/local-guardian.sh infra-down",
+        "guardian:infra:up": "scripts/local-guardian.sh infra-up",
+        "guardian:services:down": "scripts/local-guardian.sh services-down",
+        "guardian:services:up": "scripts/local-guardian.sh services-up",
+        "guardian:status": "scripts/local-guardian.sh status",
+        "guardian:test": "scripts/local-guardian.sh test",
+        "guardian:test:smoke": "scripts/local-guardian.sh smoke",
+        "guardian:up": "scripts/local-guardian.sh up",
+        "solo:down": "node scripts/solo-network.mjs down",
+        "solo:up": "node scripts/solo-network.mjs up",
+        "test": "npx cypress run",
+        "test:scripts": "node --test \"scripts/*.test.mjs\"",
+        "test:everything": "scripts/test-everything.sh",
+        "test:smoke": "npx cypress run --env \"grepTags=smoke,grepFilterSpecs=true\" --spec \"cypress/e2e/api-tests/**/*.cy.js\" --browser chrome",
+        "test:tag": "./run-test-by-tag.sh",
+        "ui-only-headed": "npx cypress run --headed --env \"grepTags=ui,grepFilterSpecs=true\"",
+        "ui-only": "npx cypress run --env \"grepTags=ui,grepFilterSpecs=true\""
     },
     "keywords": [
         "qa",
@@ -26,6 +40,7 @@
         "eslint": "^10.8.1",
         "eslint-plugin-cypress": "^7.0.0",
         "globals": "^17.9.0",
+        "mongodb": "6.21.0",
         "node-fetch": "3.3.2"
     },
     "dependencies": {

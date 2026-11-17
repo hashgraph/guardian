@@ -96,6 +96,9 @@
             <p-multiSelect
               [(ngModel)]="textSearchOptionsValue"
               [options]="textSearchOptions"
+              [group]="true"
+              optionGroupLabel="label"
+              optionGroupChildren="items"
               class="guardian-multiselect"
               appendTo="body"
               placeholder="Not selected"
@@ -105,17 +108,21 @@
               optionValue="value"
               [showHeader]="false"
               [filter]="false"
-              panelStyleClass="guardian-multiselect-panel schema-text-search-options"
-              (onPanelHide)="onFilter()">
+              panelStyleClass="guardian-multiselect-panel"
+              scrollHeight="auto"
+              (onPanelHide)="onSearchChange()">
             </p-multiSelect>
             <input
-              (change)="onFilter()"
+              (change)="onSearchChange()"
               [(ngModel)]="textSearch"
               pInputText
               type="text"
               placeholder="Search"
               />
             <i class="pi pi-search search-icon"></i>
+            @if (isSlowSearch) {
+              <span class="search-hint">Searching inside documents may take a while.</span>
+            }
           </div>
         }
       </div>
@@ -171,23 +178,25 @@
         @if (isPolicy || isModule || isTool) {
           <p-treeTable [value]="treeData"
             class="guardian-grid-table"
+            [class.policy-grid]="isPolicy"
+            [class.policy-grid-select]="isPolicy && canDisplayColumn('select')"
             [scrollable]="true"
             >
             <ng-template pTemplate="colgroup">
               <colgroup>
                 @if (type === 'policy') {
                   @if (canDisplayColumn('select')) {
-                    <col style="width: 54px;" />
+                    <col class="col-select" />
                   }
                   <col />
-                  <col style="width: 112px;" />
-                  <col style="width: 85px;" />
-                  <col style="width: 100px;" />
-                  <col style="width: 185px;" />
-                  <col style="width: 185px;" />
-                  <col style="width: 100px;" />
-                  <col style="width: 140px;" />
-                  <col style="width: 145px;" />
+                  <col class="col-topic" />
+                  <col class="col-version" />
+                  <col class="col-entity" />
+                  <col class="col-template" />
+                  <col class="col-tags" />
+                  <col class="col-status" />
+                  <col class="col-operations" />
+                  <col class="col-actions" />
                 }
                 @if (type === 'module') {
                   <col style="width: 150px;" />

@@ -3,8 +3,9 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import { seededMessageId } from '../../../support/CustomHelpers/ipfsSeeding';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('Modules', { tags: ['modules', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
+context('Modules', { tags: ['modules', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
@@ -80,8 +81,9 @@ context('Modules', { tags: ['modules', 'thirdPool', 'all', 'all-no-mgs'] }, () =
                 });
                 expect(response.body.creator).eql(did);
                 expect(response.body.description).eql('');
-                // A repeated import gets a "_<timestamp>" suffix to keep module names unique
-                expect(response.body.name).to.match(/^ComparedModuleIPFS(_\d+)?$/);
+                // A repeated import gets a "_<timestamp>" suffix to keep module names unique;
+                // re-seeding the same stack accumulates one suffix per import, so allow several.
+                expect(response.body.name).to.match(/^ComparedModuleIPFS(_\d+)*$/);
                 expect(response.body.owner).eql(did);
                 expect(response.body.status).eql('DRAFT');
                 expect(response.body.type).eql('CUSTOM');
@@ -131,7 +133,7 @@ context('Modules', { tags: ['modules', 'thirdPool', 'all', 'all-no-mgs'] }, () =
             postImportMessageWithAuth(
                 authorization,
                 { messageId: invalidMessageId },
-                { timeout: 240000, failOnStatusCode: false }
+                { timeout: TIMEOUTS.longOperation, failOnStatusCode: false }
             ).then((response) => {
                 expect(response.status).eql(STATUS_CODE.NOT_FOUND);
                 expect(response.body.message).eql(

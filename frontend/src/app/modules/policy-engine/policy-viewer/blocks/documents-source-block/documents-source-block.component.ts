@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { DialogBlock } from '../../dialog-block/dialog-block.component';
@@ -8,11 +8,14 @@ import { ViewerDialog } from '../../../dialogs/viewer-dialog/viewer-dialog.compo
 import { DialogService } from 'primeng/dynamicdialog';
 import { HttpErrorResponse } from '@angular/common/http';
 import { VCFullscreenDialog } from 'src/app/modules/schema-engine/vc-fullscreen-dialog/vc-fullscreen-dialog.component';
-import { Subject } from 'rxjs';
+import { Subject, forkJoin, firstValueFrom, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { CommentsService } from 'src/app/services/comments.service';
 import { richTextToText, withNewTabLinks } from 'src/app/modules/schema-engine/rich-text-editor/rich-text-sanitizer';
 import { collectImageReferences, markdownToHtml } from 'src/app/modules/schema-engine/rich-text-editor/markdown';
 import { IPFSService } from 'src/app/services/ipfs.service';
+import { PolicyProgressService } from '../../../services/policy-progress.service';
+import { FormTakeoverService } from '../../form-takeover/form-takeover.service';
 
 /**
  * Component for display block of 'interfaceDocumentsSource' types.
@@ -55,6 +58,8 @@ export class DocumentsSourceBlockComponent implements OnInit {
     readonly: boolean = false;
 
     private _destroy$ = new Subject<void>();
+    private policyProgress = inject(PolicyProgressService, { optional: true });
+    private formTakeover = inject(FormTakeoverService, { optional: true });
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -132,19 +137,17 @@ export class DocumentsSourceBlockComponent implements OnInit {
             const fields: any[] = data.fields || [];
             const _fieldMap: any = {};
             const _fields: any[] = [];
+            const bound = await this.getBindBlocks(fields);
             for (let i = 0; i < fields.length; i++) {
                 const element = fields[i];
                 element.names = element.name.split('.');
                 element.index = String(i);
                 if (element.bindBlock) {
-                    element._block = await this.getBindBlock(element.bindBlock);
+                    element._block = bound.get(element.bindBlock) ?? null;
                 }
-
-                element._blocks = element.bindBlocks ? await Promise.all(
-                    element.bindBlocks.map(
-                        async (item: any) => await this.getBindBlock(item)
-                    )
-                ) : [];
+                element._blocks = element.bindBlocks
+                    ? element.bindBlocks.map((item: any) => bound.get(item) ?? null)
+                    : [];
 
                 if (_fieldMap[element.title]) {
                     _fieldMap[element.title].push(element);
@@ -210,7 +213,11 @@ export class DocumentsSourceBlockComponent implements OnInit {
         }
         const autoSize = Math.round((100 - minCol) / autoCol);
         for (const field of this.fields) {
-            field.__sortable = field.type === 'text' && field.name;
+            // Sorting reorders only the rows loaded in the browser, so it is offered
+            // without pagination, and not for paths PrimeNG cannot resolve ('L').
+            field.__sortable = field.type === 'text' && !!field.name
+                && !this.paginationAddon && !field.names?.includes('L');
+            field.__isAction = this.isActionField(field);
             if (field.width) {
                 field.__width = field.width;
                 field.__minWidth = field.width;
@@ -264,14 +271,28 @@ export class DocumentsSourceBlockComponent implements OnInit {
         }
     }
 
-    async getBindBlock(blockTag: any) {
-        return new Promise<any>(async (resolve, reject) => {
-            this.policyEngineService.getBlockDataByName(blockTag, this.policyId, this.savepointIds).subscribe((data: any) => {
-                resolve(data);
-            }, (e) => {
-                resolve(null);
-            });
-        });
+    private async getBindBlocks(fields: any[]): Promise<Map<string, any>> {
+        const tags = new Set<string>();
+        for (const field of fields) {
+            if (field.bindBlock) {
+                tags.add(field.bindBlock);
+            }
+            for (const tag of field.bindBlocks || []) {
+                tags.add(tag);
+            }
+        }
+        const result = new Map<string, any>();
+        if (!tags.size) {
+            return result;
+        }
+        const list = Array.from(tags);
+        const values = await firstValueFrom(forkJoin(
+            list.map((tag) => this.policyEngineService
+                .getBlockDataByName(tag, this.policyId, this.savepointIds)
+                .pipe(catchError(() => of(null))))
+        ));
+        list.forEach((tag, index) => result.set(tag, values[index]));
+        return result;
     }
 
     onDialog(row: any, field: any, comments?: boolean) {
@@ -280,6 +301,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
         if (field._block) {
             const dialogRef = this.dialog.open(DialogBlock, {
                 width: '90%',
+                styleClass: 'pv-scope',
                 data: {
                     data: data,
                     document: document,
@@ -295,40 +317,52 @@ export class DocumentsSourceBlockComponent implements OnInit {
             dialogRef.onClose.subscribe(async (result) => {
             });
         } else {
+            const data = {
+                type: 'VC',
+                title: field.dialogContent,
+                subtitle: [
+                    this.policyProgress?.policyName(this.policyId),
+                    this.policyProgress?.activeStep?.label
+                ].filter(Boolean).join(' · '),
+                viewDocument: true,
+                dryRun: !!row.dryRunId,
+                id: row.id,
+                row: row,
+                document: document,
+                openComments: comments,
+                destroy: this._destroy$
+            };
+            if (this.formTakeover) {
+                // As the request form: the view takes over the content area of the viewer
+                const ref = this.formTakeover.open(VCFullscreenDialog, { config: data });
+                ref.instance.closed.subscribe(() => this.refreshCommentsCount(row));
+                return;
+            }
             const dialogRef = this.dialogService.open(VCFullscreenDialog, {
                 showHeader: false,
                 width: '90%',
                 styleClass: 'guardian-dialog',
                 maskStyleClass: 'guardian-fullscreen-dialog',
-                data: {
-                    type: 'VC',
-                    backLabel: 'Back to Policy',
-                    title: field.dialogContent,
-                    viewDocument: true,
-                    dryRun: !!row.dryRunId,
-                    id: row.id,
-                    row: row,
-                    document: document,
-                    openComments: comments,
-                    destroy: this._destroy$
-                }
+                data
             })!;
-            dialogRef.onClose.subscribe(async (result) => {
-                if (row.dryRunId) {
-                    // dry-run documents are never persisted as real VC records,
-                    // so the backend cannot resolve a count for this row.
-                    return;
-                }
-                this.commentsService
-                    .getPolicyCommentsCount(this.policyId, row.id)
-                    .subscribe(
-                        (count) => {
-                            row.comments = count?.count ?? row.comments;
-                        },
-                        (error) => console.error('[documents-source] comment count failed', error)
-                    );
-            });
+            dialogRef.onClose.subscribe(() => this.refreshCommentsCount(row));
         }
+    }
+
+    private refreshCommentsCount(row: any): void {
+        if (row.dryRunId) {
+            // dry-run documents are never persisted as real VC records,
+            // so the backend cannot resolve a count for this row.
+            return;
+        }
+        this.commentsService
+            .getPolicyCommentsCount(this.policyId, row.id)
+            .subscribe(
+                (count) => {
+                    row.comments = count?.count ?? row.comments;
+                },
+                (error) => console.error('[documents-source] comment count failed', error)
+            );
     }
 
     public richTextValue = '';
@@ -701,6 +735,29 @@ export class DocumentsSourceBlockComponent implements OnInit {
         if (element.history && element.history.length) {
             this.statusDetailed = this.statusDetailed === element ? null : element;
         }
+    }
+
+    private static readonly STATUS_TONES: { tone: 'bad' | 'wait' | 'ok', keywords: string[] }[] = [
+        { tone: 'bad', keywords: ['reject', 'revok', 'fail', 'declin', 'cancel'] },
+        { tone: 'wait', keywords: ['waiting', 'pending', 'minting', 'submitted', 'review', 'resubmit', 'revision'] },
+        { tone: 'ok', keywords: ['approv', 'minted', 'verified', 'validated', 'issued', 'registered', 'published', 'complete'] }
+    ];
+
+    public getStatusTone(value: any): 'ok' | 'wait' | 'bad' | 'neutral' {
+        const text = String(value ?? '').toLowerCase();
+        for (const { tone, keywords } of DocumentsSourceBlockComponent.STATUS_TONES) {
+            if (keywords.some((keyword) => text.includes(keyword))) {
+                return tone;
+            }
+        }
+        return 'neutral';
+    }
+
+    public isActionField(field: any): boolean {
+        if (field.type === 'button') {
+            return field.uiClass !== 'link';
+        }
+        return field.type === 'block' || field.type === 'blocks';
     }
 
     getClass(type: string): string {

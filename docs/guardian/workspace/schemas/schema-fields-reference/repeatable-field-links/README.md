@@ -46,6 +46,7 @@ The second location chose _Quantification Approach 1_ — the same card hides th
 * **Chains are supported.** A dependent field can itself be a source for another field, forming a group of any depth.
 * **One source, many dependents.** A single source field can drive several dependent fields at once.
 * **Conditions work with nested fields.** In the When clause, fields inside a repeatable group are available as a trigger — and the condition is evaluated independently for each entry.
+* **Links are kept in Excel.** Exporting schemas to Excel and importing them back keeps their repeatable field links, in a **Repeatable Links** column on each schema sheet.
 
 #### Related
 

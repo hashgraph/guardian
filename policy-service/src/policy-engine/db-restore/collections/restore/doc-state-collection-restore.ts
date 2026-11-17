@@ -1,4 +1,5 @@
-import { DataBaseHelper, DocumentState } from '@guardian/common';
+import { DataBaseHelper } from '@guardian/common/helpers/db-helper';
+import { DocumentState } from '@guardian/common/entity/document-state';
 import { CollectionRestore, IDiffAction } from '../../index.js';
 
 export class DocStateCollectionRestore extends CollectionRestore<DocumentState> {

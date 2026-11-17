@@ -1,6 +1,6 @@
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyActionType } from './policy-action.type.js';
-import { PolicyAction } from '@guardian/common';
+import { PolicyAction } from '@guardian/common/entity/policy-action';
 import { PolicyUser } from '../policy-user.js';
 
 export class PolicyDisconnectAction {

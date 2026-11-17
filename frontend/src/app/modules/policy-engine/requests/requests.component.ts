@@ -1,159 +1,119 @@
-import { Component, OnInit } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EntityStatus, ExternalPolicyStatus, LocationType, PolicyActionStatus, PolicyActionType, PolicyStatus, UserPermissions } from '@guardian/interfaces';
-import { filter, forkJoin, Subscription } from 'rxjs';
+import { LocationType, PolicyActionStatus, PolicyActionType, PolicyStatus } from '@guardian/interfaces';
+import { debounceTime, firstValueFrom, forkJoin, Subject, Subscription } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
-import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
-import { SearchExternalPolicyDialog } from '../dialogs/search-external-policy-dialog/search-external-policy-dialog.component';
-import { VCViewerDialog } from '../../schema-engine/vc-dialog/vc-dialog.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
+import { ToastService } from 'src/app/services/toast.service';
+import { getOperationInfo, getRequestKind, getStatusInfo, IOperationInfo, IStatusInfo, RequestKind, timeAgo } from './request-labels';
+import { RequestDetailsAction, RequestDetailsDialog } from './request-details-dialog/request-details-dialog.component';
+import { IConfirmButton, IConfirmRow, RequestConfirmDialog } from './request-confirm-dialog/request-confirm-dialog.component';
 
-interface IColumn {
-    id: string;
-    title: string;
-    type: string;
-    size: string;
-    tooltip: boolean;
-    permissions?: (user: UserPermissions) => boolean;
-    canDisplay?: () => boolean;
+interface IBulkProgress {
+    label: string;
+    total: number;
+    done: number;
+    running: boolean;
+    failures: { name: string, message: string }[];
 }
+
+interface IRequestItem {
+    row: any;
+    kind: RequestKind;
+    operation: IOperationInfo;
+    status: IStatusInfo;
+    ago: string;
+}
+
+type BulkKind = 'approve' | 'reject';
+
+type RequestTab = 'need' | 'progress' | 'failed' | 'all';
+
+const DEFAULT_TAB: RequestTab = 'need';
+
+/**
+ * What every tab lists: the types and the statuses of the threads
+ */
+const TAB_FILTERS: { [tab in RequestTab]: { type?: string, status?: string } } = {
+    need: { type: PolicyActionType.REQUEST, status: PolicyActionStatus.NEW },
+    progress: { type: `${PolicyActionType.ACTION},${PolicyActionType.REMOTE_ACTION}`, status: PolicyActionStatus.NEW },
+    failed: { status: PolicyActionStatus.ERROR },
+    all: {}
+};
 
 @Component({
     selector: 'app-policy-requests',
     templateUrl: './requests.component.html',
-    styleUrls: ['./requests.component.scss'],
+    styleUrls: [
+        '../styles/top-toolbar.scss',
+        './request-common.scss',
+        './requests.component.scss'
+    ],
+    providers: [DatePipe],
     standalone: false
 })
-export class PolicyRequestsComponent implements OnInit {
+export class PolicyRequestsComponent implements OnInit, OnDestroy {
     public readonly title: string = 'Incoming Requests';
 
     public loading: boolean = true;
     public isConfirmed: boolean = false;
     public isLocalUser: boolean = false;
-    public user: UserPermissions = new UserPermissions();
-    public owner: string;
     public page: any[];
+    public items: IRequestItem[] = [];
     public pageIndex: number;
     public pageSize: number;
     public pageCount: number;
-    public columns: IColumn[];
-    private _defaultColumns: IColumn[];
+
+    public readonly tabs: { id: RequestTab, label: string }[] = [
+        { id: 'need', label: 'Needs your approval' },
+        { id: 'progress', label: 'In progress' },
+        { id: 'failed', label: 'Failed' },
+        { id: 'all', label: 'All' }
+    ];
+    public tab: RequestTab = DEFAULT_TAB;
+    public counts: { [tab in RequestTab]: number } = { need: 0, progress: 0, failed: 0, all: 0 };
 
     public allPolicies: any[] = [];
-    public currentPolicy: any = null;
-    public currentPolicyId: string;
-    public currentType: any = null;
-    public currentStatus: any = null;
+    public policyOptions: { id: string, name: string }[] = [{ id: '', name: 'All policies' }];
+    /**
+     * The policy the page was opened for (`policyId` in the URL), it cannot be changed here
+     */
+    public scopedPolicyId: string = '';
+    /**
+     * The policy picked in the filter (`policy` in the URL)
+     */
+    public selectedPolicyId: string = '';
+    public searchTerm: string = '';
 
-    public types = [{
-        name: 'All',
-        value: ''
-    }, {
-        name: 'Actions',
-        value: 'ACTION'
-    }, {
-        name: 'Requests',
-        value: 'REQUEST'
-    }];
-
-    public statuses = [{
-        name: 'All',
-        value: ''
-    }, {
-        name: 'New',
-        value: 'NEW'
-    }, {
-        name: 'Completed',
-        value: 'COMPLETED'
-    }, {
-        name: 'Rejected',
-        value: 'REJECTED'
-    }, {
-        name: 'Error',
-        value: 'ERROR'
-    }];
+    public selected = new Set<string>();
+    public bulk: IBulkProgress | null = null;
 
     private subscription = new Subscription();
+    private dataSubscription: Subscription | null = null;
+    private profileLoaded: boolean = false;
+    private searchRows: any[] = [];
+    /**
+     * The server returns at most this many rows to a search
+     */
+    public readonly searchLimit = 5000;
+    private readonly refresh = new Subject<void>();
+    private readonly search = new Subject<void>();
 
     constructor(
         private profileService: ProfileService,
         private externalPoliciesService: ExternalPoliciesService,
         private policyEngineService: PolicyEngineService,
         private dialogService: DialogService,
+        private toastService: ToastService,
         private router: Router,
         private route: ActivatedRoute,
-        private wsService: WebSocketService
+        private wsService: WebSocketService,
+        private datePipe: DatePipe
     ) {
-        this._defaultColumns = [
-            {
-                id: 'policyName',
-                title: 'Name',
-                type: 'text',
-                size: '200',
-                tooltip: true
-            },
-            {
-                id: 'type',
-                title: 'Type',
-                type: 'text',
-                size: '140',
-                tooltip: true,
-            },
-            {
-                id: 'status',
-                title: 'Status',
-                type: 'text',
-                size: '180',
-                tooltip: false
-            },
-            {
-                id: 'topicId',
-                title: 'Topic',
-                type: 'text',
-                size: '135',
-                tooltip: true
-            },
-            {
-                id: 'messageId',
-                title: 'Policy Public ID',
-                type: 'text',
-                size: '200',
-                tooltip: true
-            },
-            {
-                id: 'blockTag',
-                title: 'Block Tag',
-                type: 'text',
-                size: '150',
-                tooltip: true
-            },
-            {
-                id: 'operationType',
-                title: 'Operation Type',
-                type: 'text',
-                size: '140',
-                tooltip: true,
-            },
-            {
-                id: 'options',
-                title: '',
-                type: 'text',
-                size: '180',
-                tooltip: false
-            },
-            {
-                id: 'operations',
-                title: '',
-                type: 'text',
-                size: '220',
-                tooltip: false
-            }
-        ];
-
-        this.columns = [...this._defaultColumns];
     }
 
     ngOnInit() {
@@ -163,29 +123,72 @@ export class PolicyRequestsComponent implements OnInit {
         this.pageCount = 0;
         this.subscription.add(
             this.route.queryParams.subscribe((queryParams) => {
-                if (queryParams.policyId) {
-                    this.currentPolicyId = queryParams.policyId;
+                const scopedPolicyId = queryParams.policyId || '';
+                const selectedPolicyId = scopedPolicyId ? '' : (queryParams.policy || '');
+                const tab = this.tabs.find((t) => t.id === queryParams.tab)?.id || DEFAULT_TAB;
+
+                const changed = scopedPolicyId !== this.scopedPolicyId ||
+                    selectedPolicyId !== this.selectedPolicyId ||
+                    tab !== this.tab;
+
+                this.scopedPolicyId = scopedPolicyId;
+                this.selectedPolicyId = selectedPolicyId;
+                this.tab = tab;
+
+                if (!this.profileLoaded) {
+                    this.loadProfile();
+                } else if (changed) {
+                    this.pageIndex = 0;
+                    this.selected.clear();
+                    this.loadData();
                 }
-                if (queryParams.type) {
-                    this.currentStatus = queryParams.type;
-                }
-                if (queryParams.status) {
-                    this.currentType = queryParams.status;
-                }
-                this.currentStatus = this.statuses.find((p: any) => p.id === this.currentStatus) || this.statuses[0].value;
-                this.currentType = this.statuses.find((p: any) => p.id === this.currentType) || this.types[0].value;
-                this.loadProfile();
             })
         );
         this.subscription.add(
             this.wsService.requestSubscribe((message) => {
-                this.loadProfile();
+                const policyId = message?.data?.policyId;
+                if (this.policyId && policyId && policyId !== this.policyId) {
+                    return;
+                }
+                this.refresh.next();
+            })
+        );
+        this.subscription.add(
+            this.refresh.pipe(debounceTime(500)).subscribe(() => {
+                if (this.isConfirmed && !this.bulk?.running) {
+                    this.loadData(true);
+                }
+            })
+        );
+        this.subscription.add(
+            this.search.pipe(debounceTime(300)).subscribe(() => {
+                this.pageIndex = 0;
+                this.loadData();
             })
         );
     }
 
     ngOnDestroy(): void {
         this.subscription.unsubscribe();
+        this.dataSubscription?.unsubscribe();
+    }
+
+    /**
+     * The policy the list is limited to
+     */
+    public get policyId(): string {
+        return this.scopedPolicyId || this.selectedPolicyId;
+    }
+
+    public get scopedPolicy(): any {
+        return this.allPolicies.find((p: any) => p.id === this.scopedPolicyId) || null;
+    }
+
+    /**
+     * Policies that are not remote are not in the filter, the rows still know the name
+     */
+    public get scopedPolicyName(): string {
+        return this.scopedPolicy?.name || this.page?.[0]?.policyName || 'Policy';
     }
 
     private loadProfile() {
@@ -195,164 +198,299 @@ export class PolicyRequestsComponent implements OnInit {
             this.profileService.getProfile(),
             this.policyEngineService.all(LocationType.REMOTE),
         ]).subscribe(([profile, remotePolicies]) => {
+            this.profileLoaded = true;
             this.isConfirmed = !!(profile && profile.confirmed);
             this.isLocalUser = profile.location === LocationType.LOCAL;
-            this.user = new UserPermissions(profile);
-            this.owner = this.user.did;
 
-            this.allPolicies = [...remotePolicies];
-            this.allPolicies = this.allPolicies.filter((p) => p.status === PolicyStatus.VIEW);
-            this.allPolicies.unshift({
-                name: 'All',
-            });
-            this.allPolicies.forEach((p: any) => p.label = p.name);
-
-            if (this.currentPolicyId) {
-                const policy = this.allPolicies.find((p: any) => p.id === this.currentPolicyId);
-                if (policy) {
-                    this.currentPolicy = policy;
-                }
-            }
-
-            this.currentStatus = this.statuses.find((p: any) => p.id === this.currentStatus) || this.statuses[0].value;
-            this.currentType = this.statuses.find((p: any) => p.id === this.currentType) || this.types[0].value;
-
-            if (this.user.POLICIES_EXTERNAL_POLICY_UPDATE) {
-                this.columns = [...this._defaultColumns, {
-                    id: 'options',
-                    title: 'Options',
-                    type: 'text',
-                    size: '180',
-                    tooltip: false
-                }];
-            } else {
-                this.columns = [...this._defaultColumns];
-            }
+            this.allPolicies = [...remotePolicies].filter((p) => p.status === PolicyStatus.VIEW);
+            this.policyOptions = [
+                { id: '', name: 'All policies' },
+                ...this.allPolicies.map((p) => ({ id: p.id, name: p.name }))
+            ];
 
             if (this.isConfirmed) {
                 this.loadData();
             } else {
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
+                this.loading = false;
             }
         }, (e) => {
             this.loading = false;
         });
     }
 
-    private loadData() {
-        const filters: any = {};
-        this.loading = true;
-
-        if (this.currentPolicy) {
-            filters.policyId = this.currentPolicy.id;
+    private loadData(silent: boolean = false) {
+        const filters: any = { ...TAB_FILTERS[this.tab] };
+        if (!silent) {
+            this.loading = true;
         }
-        if (this.currentStatus) {
-            filters.status = this.currentStatus;
+        if (this.policyId) {
+            filters.policyId = this.policyId;
         }
+        filters.sortField = 'createDate';
+        filters.sortDirection = 'desc';
 
-        if (this.currentType) {
-            filters.type = this.currentType;
-        }
+        this.loadCounts();
 
-        this.externalPoliciesService
+        // the server cannot search, so a search reads every row of the tab and filters them here
+        const searching = !!this.searchTerm.trim();
+        this.dataSubscription?.unsubscribe();
+        this.dataSubscription = this.externalPoliciesService
             .getActionRequests(
-                this.pageIndex,
-                this.pageSize,
+                searching ? 0 : this.pageIndex,
+                searching ? 0 : this.pageSize,
                 filters
             )
             .subscribe((response) => {
                 const { page, count } = this.externalPoliciesService.parsePage(response);
-                this.page = page;
-                this.pageCount = count;
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
+                if (searching) {
+                    this.searchRows = page;
+                    this.showSearchPage();
+                } else {
+                    this.searchRows = [];
+                    this.setPage(page, count);
+                }
+                this.loading = false;
             }, (e) => {
                 this.loading = false;
             });
     }
 
-    public onBack(id?: string) {
-        if (id) {
-            this.router.navigate(['/policy-viewer', id]);
-        } else {
-            this.router.navigate(['/policy-viewer']);
-        }
+    private loadCounts() {
+        this.externalPoliciesService
+            .getActionRequestsCount(this.policyId ? { policyId: this.policyId } : undefined)
+            .subscribe((response) => {
+                const body = response?.body;
+                if (body) {
+                    this.counts = {
+                        need: body.requestsCount || 0,
+                        progress: body.actionsCount || 0,
+                        failed: body.failedCount || 0,
+                        all: body.threadsCount || 0
+                    };
+                }
+            });
     }
 
-    public onPage(event: any): void {
-        if (this.pageSize != event.pageSize) {
-            this.pageIndex = 0;
-            this.pageSize = event.pageSize;
-        } else {
-            this.pageIndex = event.pageIndex;
-            this.pageSize = event.pageSize;
-        }
-        this.loadData();
+    private setPage(rows: any[], count: number) {
+        this.page = rows;
+        this.pageCount = count;
+        this.items = rows.map((row) => ({
+            row,
+            kind: getRequestKind(row),
+            operation: getOperationInfo(row),
+            status: getStatusInfo(row),
+            ago: timeAgo(row.createDate)
+        }));
+        this.pruneSelection();
     }
 
-    public onFilter(event: any) {
-        this.pageIndex = 0;
-        // this.router.navigate(['/policy-labels'], { queryParams: { topic } });
-        this.loadData();
+    public get searchLimited(): boolean {
+        return !!this.searchTerm.trim() && this.searchRows.length >= this.searchLimit;
     }
 
-    public onApprove(item: any) {
-        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
-            showHeader: false,
-            width: '640px',
-            styleClass: 'guardian-dialog',
-            data: {
-                header: 'Approve request',
-                text: `Are you sure want to approve request?`,
-                buttons: [{
-                    name: 'Close',
-                    class: 'secondary'
-                }, {
-                    name: 'Approve',
-                    class: 'primary'
-                }]
+    private showSearchPage() {
+        const term = this.searchTerm.trim().toLowerCase();
+        const found = this.searchRows.filter((row) => {
+            const operation = getOperationInfo(row);
+            return [operation.title, operation.reason, row.policyName, getStatusInfo(row).label]
+                .some((value) => String(value || '').toLowerCase().includes(term));
+        });
+        const start = this.pageIndex * this.pageSize;
+        this.setPage(found.slice(start, start + this.pageSize), found.length);
+    }
+
+    private updateUrl() {
+        this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: {
+                tab: this.tab !== DEFAULT_TAB ? this.tab : null,
+                policy: this.selectedPolicyId || null
             },
-        })!;
-        dialogRef.onClose.subscribe((result: string) => {
-            if (result === 'Approve') {
-                this.loading = true;
-                this.externalPoliciesService
-                    .approveAction(item.messageId)
-                    .subscribe((result) => {
-                        this.loadData();
-                    }, (e) => {
-                        this.loading = false;
-                    });
-            }
+            queryParamsHandling: 'merge',
+            replaceUrl: true
         });
     }
 
-    public onReject(item: any) {
-        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+    public onBackToPolicies() {
+        this.router.navigate(['/policy-viewer']);
+    }
+
+    public onBackToPolicy() {
+        this.router.navigate(['/policy-viewer', this.scopedPolicyId]);
+    }
+
+    /**
+     * Show the requests of every policy
+     */
+    public onClearScope() {
+        this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { policyId: null, policy: null },
+            queryParamsHandling: 'merge'
+        });
+    }
+
+    public onTab(tab: RequestTab) {
+        if (tab === this.tab) {
+            return;
+        }
+        this.tab = tab;
+        this.pageIndex = 0;
+        this.selected.clear();
+        this.updateUrl();
+        this.loadData();
+    }
+
+    public onPolicyFilter() {
+        this.pageIndex = 0;
+        this.updateUrl();
+        this.loadData();
+    }
+
+    public onSearch() {
+        this.search.next();
+    }
+
+    public onClearSearch() {
+        this.searchTerm = '';
+        this.pageIndex = 0;
+        this.loadData();
+    }
+
+    public onPage(event: any): void {
+        this.pageIndex = this.pageSize !== event.pageSize ? 0 : event.pageIndex;
+        this.pageSize = event.pageSize;
+        if (this.searchTerm.trim()) {
+            this.showSearchPage();
+        } else {
+            this.loadData();
+        }
+    }
+
+    public get isEmpty(): boolean {
+        return !this.loading && this.items.length === 0;
+    }
+
+    //#region Selection
+
+    public canDecide(row: any): boolean {
+        return this.isLocalUser &&
+            row.type === PolicyActionType.REQUEST &&
+            !!row.loaded &&
+            row.status === PolicyActionStatus.NEW;
+    }
+
+    public isSelected(row: any): boolean {
+        return this.selected.has(row.startMessageId);
+    }
+
+    public onSelect(row: any, checked: boolean) {
+        if (checked) {
+            this.selected.add(row.startMessageId);
+        } else {
+            this.selected.delete(row.startMessageId);
+        }
+    }
+
+    public get selectableRows(): any[] {
+        return (this.page || []).filter((row) => this.canDecide(row));
+    }
+
+    public get selectedRows(): any[] {
+        return this.selectableRows.filter((row) => this.isSelected(row));
+    }
+
+    public get allSelected(): boolean {
+        const rows = this.selectableRows;
+        return rows.length > 0 && rows.every((row) => this.isSelected(row));
+    }
+
+    public onSelectAll(checked: boolean) {
+        for (const row of this.selectableRows) {
+            this.onSelect(row, checked);
+        }
+    }
+
+    private pruneSelection() {
+        const ids = new Set(this.selectableRows.map((row) => row.startMessageId));
+        for (const id of Array.from(this.selected)) {
+            if (!ids.has(id)) {
+                this.selected.delete(id);
+            }
+        }
+    }
+
+    //#endregion
+
+    //#region Single row actions
+
+    private describe(row: any): IConfirmRow[] {
+        return [
+            { name: 'Policy', value: row.policyName || row.policyId || 'Unknown' },
+            { name: 'Operation', value: getOperationInfo(row).title },
+            { name: 'Created', value: this.datePipe.transform(row.createDate, 'dd MMM yyyy, HH:mm') || '' }
+        ];
+    }
+
+    private confirm(
+        header: string,
+        text: string,
+        buttons: IConfirmButton[],
+        content: { rows?: IConfirmRow[], list?: string[], document?: any } = {}
+    ) {
+        return this.dialogService.open(RequestConfirmDialog, {
             showHeader: false,
-            width: '640px',
+            width: content.document ? '720px' : '560px',
             styleClass: 'guardian-dialog',
-            data: {
-                header: 'Reject request',
-                text: `Are you sure want to reject request?`,
-                buttons: [{
-                    name: 'Close',
-                    class: 'secondary'
-                }, {
-                    name: 'Reject',
-                    class: 'delete'
-                }]
-            },
+            data: { header, text, buttons, ...content },
         })!;
+    }
+
+    public onApprove(item: any) {
+        this.loading = true;
+        this.externalPoliciesService
+            .getRequestDocument({ startMessageId: item.startMessageId })
+            .subscribe((response) => {
+                this.loading = false;
+                const dialogRef = this.confirm(
+                    'Approve request',
+                    'The request will be signed and executed on your behalf. Review the document before approving.',
+                    [{ name: 'Close', class: 'secondary' }, { name: 'Approve', class: 'primary' }],
+                    {
+                        rows: this.describe(item),
+                        document: response?.body?.document || response?.body || {}
+                    }
+                );
+                dialogRef.onClose.subscribe((result: string) => {
+                    if (result === 'Approve') {
+                        this.loading = true;
+                        this.externalPoliciesService
+                            .approveAction(item.messageId)
+                            .subscribe(() => {
+                                this.loadData();
+                            }, (e) => {
+                                this.loading = false;
+                            });
+                    }
+                });
+            }, (e) => {
+                this.loading = false;
+            });
+    }
+
+    public onReject(item: any) {
+        const dialogRef = this.confirm(
+            'Reject request',
+            'The request will be rejected and the policy will be notified.',
+            [{ name: 'Close', class: 'secondary' }, { name: 'Reject', class: 'delete' }],
+            { rows: this.describe(item) }
+        );
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Reject') {
                 this.loading = true;
                 this.externalPoliciesService
                     .rejectAction(item.messageId)
-                    .subscribe((result) => {
+                    .subscribe(() => {
                         this.loadData();
                     }, (e) => {
                         this.loading = false;
@@ -362,28 +500,18 @@ export class PolicyRequestsComponent implements OnInit {
     }
 
     public onCancel(item: any) {
-        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
-            showHeader: false,
-            width: '640px',
-            styleClass: 'guardian-dialog',
-            data: {
-                header: 'Cancel request',
-                text: `Are you sure want to cancel request?`,
-                buttons: [{
-                    name: 'Close',
-                    class: 'secondary'
-                }, {
-                    name: 'Cancel',
-                    class: 'delete'
-                }]
-            },
-        })!;
+        const dialogRef = this.confirm(
+            'Cancel request',
+            'The pending action will be cancelled and will not be sent to the remote policy.',
+            [{ name: 'Close', class: 'secondary' }, { name: 'Cancel request', class: 'delete' }],
+            { rows: this.describe(item) }
+        );
         dialogRef.onClose.subscribe((result: string) => {
-            if (result === 'Cancel') {
+            if (result === 'Cancel request') {
                 this.loading = true;
                 this.externalPoliciesService
                     .cancelAction(item.messageId)
-                    .subscribe((result) => {
+                    .subscribe(() => {
                         this.loadData();
                     }, (e) => {
                         this.loading = false;
@@ -396,91 +524,124 @@ export class PolicyRequestsComponent implements OnInit {
         this.loading = true;
         this.externalPoliciesService
             .reloadAction(item.messageId)
-            .subscribe((result) => {
+            .subscribe(() => {
                 this.loadData();
             }, (e) => {
                 this.loading = false;
             });
     }
 
-    getStatusName(row: any) {
-        switch (row.status) {
-            case PolicyActionStatus.NEW:
-                return 'New';
-            case PolicyActionStatus.COMPLETED:
-                return 'Completed';
-            case PolicyActionStatus.REJECTED:
-                return 'Rejected';
-            case PolicyActionStatus.ERROR:
-                return 'Error';
-            case PolicyActionStatus.CANCELED:
-                return 'Canceled';
-            default:
-                return 'Incorrect status';
-        }
-    }
+    //#endregion
 
-    getTypeName(row: any) {
-        switch (row.type) {
-            case PolicyActionType.ACTION:
-                return 'Action';
-            case PolicyActionType.REMOTE_ACTION:
-                return 'Action';
-            case PolicyActionType.REQUEST:
-                return 'Request';
-            default:
-                return 'Incorrect type';
-        }
-    }
+    //#region Bulk actions
 
-    getOperationName(row: any) {
-        if (row.type === PolicyActionType.REQUEST) {
-            switch (row.document?.type) {
-                case 'sign-and-send-role':
-                    return 'Select role';
-                case 'generate-did':
-                    return 'Generate DID Document';
-                case 'sign-vc':
-                    return 'Sign VC Document';
-                case 'send-message':
-                    return 'Send message';
-                case 'send-messages':
-                    return 'Send messages';
-                case 'create-topic':
-                    return 'Create topic';
-                case 'associate-token':
-                    return 'Associate token';
-                case 'dissociate-token':
-                    return 'Dissociate token';
-                default:
-                    return row.document?.type;
+    public onBulk(kind: BulkKind) {
+        const rows = this.selectedRows;
+        if (!rows.length || this.bulk?.running) {
+            return;
+        }
+        const approve = kind === 'approve';
+        const dialogRef = this.confirm(
+            approve ? 'Approve selected requests' : 'Reject selected requests',
+            approve
+                ? `${rows.length} request(s) will be signed and executed on your behalf, one after another.`
+                : `${rows.length} request(s) will be rejected, one after another.`,
+            [
+                { name: 'Close', class: 'secondary' },
+                approve ? { name: 'Approve all', class: 'primary' } : { name: 'Reject all', class: 'delete' }
+            ],
+            { list: rows.map((row) => this.describeShort(row)) }
+        );
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Approve all' || result === 'Reject all') {
+                this.runBulk(kind, rows);
             }
-        }
-        return '';
+        });
     }
 
-    public openVCDocument(row: any) {
-        this.externalPoliciesService
-            .getRequestDocument({ startMessageId: row.startMessageId })
-            .subscribe((response) => {
-                const dialogRef = this.dialogService.open(VCViewerDialog, {
-                    showHeader: false,
-                    width: '90%',
-                    styleClass: 'guardian-dialog',
-                    data: {
-                        row: null,
-                        document: response?.body?.document || response?.body,
-                        title: 'Document',
-                        type: 'JSON',
-                    }
-                })!;
-                dialogRef.onClose.subscribe(async (result) => {
+    private describeShort(row: any): string {
+        return `${row.policyName || row.policyId || 'Unknown'} – ${getOperationInfo(row).title}`;
+    }
+
+    private async runBulk(kind: BulkKind, rows: any[]) {
+        const approve = kind === 'approve';
+        const progress: IBulkProgress = {
+            label: approve ? 'Approving' : 'Rejecting',
+            total: rows.length,
+            done: 0,
+            running: true,
+            failures: []
+        };
+        this.bulk = progress;
+        for (const row of rows) {
+            try {
+                await firstValueFrom(approve
+                    ? this.externalPoliciesService.approveAction(row.messageId, true)
+                    : this.externalPoliciesService.rejectAction(row.messageId, true));
+            } catch (error) {
+                progress.failures.push({
+                    name: this.describeShort(row),
+                    message: this.getErrorMessage(error)
                 });
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
-            }, (e) => {
-                this.loading = false;
-            });
+            }
+            progress.done++;
+        }
+        progress.running = false;
+        this.selected.clear();
+        const succeeded = progress.total - progress.failures.length;
+        if (progress.failures.length) {
+            this.toastService.error(
+                `${succeeded} of ${progress.total} request(s) processed, ${progress.failures.length} failed.`,
+                approve ? 'Approve selected' : 'Reject selected'
+            );
+        } else {
+            this.toastService.success(
+                `${succeeded} request(s) ${approve ? 'approved' : 'rejected'}.`
+            );
+            this.bulk = null;
+        }
+        this.loadData();
+    }
+
+    public onDismissBulk() {
+        this.bulk = null;
+    }
+
+    private getErrorMessage(error: any): string {
+        const message = error?.error?.message || error?.message || 'Unknown error';
+        return typeof message === 'string' ? message : JSON.stringify(message);
+    }
+
+    //#endregion
+
+    public onDetails(row: any) {
+        const dialogRef = this.dialogService.open(RequestDetailsDialog, {
+            showHeader: false,
+            width: '720px',
+            styleClass: 'guardian-dialog',
+            data: {
+                row,
+                canDecide: this.canDecide(row),
+                isLocalUser: this.isLocalUser
+            }
+        })!;
+        dialogRef.onClose.subscribe((action: RequestDetailsAction | null) => {
+            switch (action) {
+                case 'approve':
+                    this.onApprove(row);
+                    break;
+                case 'reject':
+                    this.onReject(row);
+                    break;
+                case 'cancel':
+                    this.onCancel(row);
+                    break;
+                case 'reload':
+                    this.onReload(row);
+                    break;
+                default:
+                    break;
+            }
+        });
     }
 }

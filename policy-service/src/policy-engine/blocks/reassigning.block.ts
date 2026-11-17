@@ -1,5 +1,5 @@
 import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
-import { VcHelper } from '@guardian/common';
+import { VcHelper } from '@guardian/hedera/vc-helper';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
@@ -12,6 +12,7 @@ import { Inject } from '../../helpers/decorators/inject.js';
 import { LocationType, SchemaEntity } from '@guardian/interfaces';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
 import { RecordActionStep } from '../record-action-step.js';
+import { keepPreviewDocumentOrigins } from '../helpers/preview.js';
 
 /**
  * Reassigning block
@@ -139,8 +140,10 @@ export class ReassigningBlock {
             options: { uuid, group: groupContext, ...evidenceOptions },
             userId: user.userId
         });
-
         let item = PolicyUtils.createVC(ref, owner, vc, actionStatus?.id);
+        if (actionStatus?.preview) {
+            keepPreviewDocumentOrigins(document, item);
+        }
 
         const tags = await PolicyUtils.getBlockTags(ref);
         PolicyUtils.setDocumentTags(item, tags);

@@ -87,8 +87,11 @@
           @for (columnKey of previewHeaderKeysLimited; track columnKey; let columnIndex = $index) {
             <div
               class="table-field__cell table-field__cell--head"
-              role="columnheader">
-              {{ previewHeaderNameFor(columnKey, columnIndex) }}
+              role="columnheader"
+              [pTooltip]="previewHeaderNameFor(columnKey, columnIndex)"
+              tooltipPosition="top"
+              tooltipStyleClass="guardian-tooltip">
+              <span class="table-field__head-text">{{ previewHeaderNameFor(columnKey, columnIndex) }}</span>
             </div>
           }
         </div>

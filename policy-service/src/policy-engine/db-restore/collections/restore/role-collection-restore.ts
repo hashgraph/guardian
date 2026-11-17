@@ -1,4 +1,5 @@
-import { DataBaseHelper, PolicyRoles } from '@guardian/common';
+import { DataBaseHelper } from '@guardian/common/helpers/db-helper';
+import { PolicyRoles } from '@guardian/common/entity/policy-roles';
 import { CollectionRestore, IDiffAction } from '../../index.js';
 
 export class RoleCollectionRestore extends CollectionRestore<PolicyRoles> {

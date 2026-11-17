@@ -1,8 +1,8 @@
 import { AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeUpdate, Entity, OnLoad, Property } from '@mikro-orm/core';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { ISchemaTemplateConfig, ISchemaTemplateSnapshot, ISchemaTemplateSnapshotSchemas, ModuleStatus } from '@guardian/interfaces';
-import { DataBaseHelper } from '../helpers/index.js';
-import { BaseEntity } from '../models/index.js';
+import { DataBaseHelper } from '../helpers/db-helper.js';
+import { BaseEntity } from '../models/base-entity.js';
 
 /**
  * Policy-specific schema template snapshot.

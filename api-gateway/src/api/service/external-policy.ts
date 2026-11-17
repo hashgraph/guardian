@@ -1,4 +1,6 @@
-import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { RunFunctionAsync } from '@guardian/common/helpers/run-function-async';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { LocationType, Permissions, TaskAction, UserPermissions } from '@guardian/interfaces';
 import { ApiAcceptedResponse, ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
@@ -77,7 +79,8 @@ export class ExternalPoliciesApi {
         @Query('pageSize') pageSize?: number,
     ): Promise<ExternalPolicyDTO[]> {
         try {
-            const owner = new EntityOwner(user);
+            // A user mid-registration has no DID yet: they own no external policies, which is an empty page, not a 422.
+            const owner = user?.did ? new EntityOwner(user) : null;
             const guardians = new Guardians();
             if (owner) {
                 const { items, count } = await guardians.groupExternalPolicyRequests({
@@ -738,16 +741,30 @@ export class ExternalPoliciesApi {
     @ApiQuery({
         name: 'status',
         type: String,
-        description: 'Status',
+        description: 'Status, or several statuses separated by a comma',
         required: false,
         example: 'NEW'
     })
     @ApiQuery({
         name: 'type',
         type: String,
-        description: 'Type',
+        description: 'Type, or several types separated by a comma',
         required: false,
-        example: 'ACTION'
+        example: 'ACTION,REMOTE_ACTION'
+    })
+    @ApiQuery({
+        name: 'sortField',
+        type: String,
+        description: 'Field to sort by (createDate, status, type, documentType, topicId, blockTag, policyId)',
+        required: false,
+        example: 'createDate'
+    })
+    @ApiQuery({
+        name: 'sortDirection',
+        type: String,
+        description: 'Sort direction (asc or desc)',
+        required: false,
+        example: 'desc'
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -807,6 +824,8 @@ export class ExternalPoliciesApi {
         @Query('policyId') policyId?: string,
         @Query('status') status?: string,
         @Query('type') type?: string,
+        @Query('sortField') sortField?: string,
+        @Query('sortDirection') sortDirection?: string,
     ): Promise<PolicyRequestDTO[]> {
         try {
             const options: any = {
@@ -816,7 +835,9 @@ export class ExternalPoliciesApi {
                     type
                 },
                 pageIndex,
-                pageSize
+                pageSize,
+                sortField,
+                sortDirection
             };
             const engineService = new PolicyEngine();
             const { items, count } = await engineService.getRemoteRequests(options, user);
@@ -849,23 +870,6 @@ export class ExternalPoliciesApi {
         description: 'Policy message id',
         required: true,
         example: Examples.MESSAGE_ID
-    })
-    @ApiBody({
-        description: 'Object that contains a configuration.',
-        required: true,
-        type: PolicyRequestDTO,
-        examples: {
-            approveRequest: {
-                summary: 'Approve a remote policy request',
-                value: {
-                    uuid: '9db028d2-03ad-4d49-a178-cf4b67f8c147',
-                    type: 'ACTION',
-                    messageId: '1773670900.819264517',
-                    status: 'NEW',
-                    document: {}
-                }
-            }
-        }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -954,23 +958,6 @@ export class ExternalPoliciesApi {
         required: true,
         example: Examples.MESSAGE_ID
     })
-    @ApiBody({
-        description: 'Object that contains a configuration.',
-        required: true,
-        type: PolicyRequestDTO,
-        examples: {
-            rejectRequest: {
-                summary: 'Reject a remote policy request',
-                value: {
-                    uuid: '9db028d2-03ad-4d49-a178-cf4b67f8c147',
-                    type: 'ACTION',
-                    messageId: '1773670900.819264517',
-                    status: 'NEW',
-                    document: {}
-                }
-            }
-        }
-    })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: PolicyRequestDTO,
@@ -1058,23 +1045,6 @@ export class ExternalPoliciesApi {
         description: 'Action Identifier',
         example: Examples.MESSAGE_ID,
     })
-    @ApiBody({
-        description: 'Object that contains a configuration.',
-        required: true,
-        type: PolicyRequestDTO,
-        examples: {
-            cancelRequest: {
-                summary: 'Cancel a remote policy request',
-                value: {
-                    uuid: '9db028d2-03ad-4d49-a178-cf4b67f8c147',
-                    type: 'ACTION',
-                    messageId: '1773670900.819264517',
-                    status: 'NEW',
-                    document: {}
-                }
-            }
-        }
-    })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: PolicyRequestDTO,
@@ -1161,23 +1131,6 @@ export class ExternalPoliciesApi {
         required: true,
         description: 'Action Identifier',
         example: Examples.MESSAGE_ID,
-    })
-    @ApiBody({
-        description: 'Object that contains a configuration.',
-        required: true,
-        type: PolicyRequestDTO,
-        examples: {
-            reloadRequest: {
-                summary: 'Reload a remote policy request',
-                value: {
-                    uuid: '9db028d2-03ad-4d49-a178-cf4b67f8c147',
-                    type: 'ACTION',
-                    messageId: '1773670900.819264517',
-                    status: 'NEW',
-                    document: {}
-                }
-            }
-        }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -1269,7 +1222,7 @@ export class ExternalPoliciesApi {
         examples: {
             default: {
                     summary: 'Default example',
-                value: { requestsCount: 0, actionsCount: 0, delayCount: 0, total: 0 }
+                value: { requestsCount: 0, actionsCount: 0, failedCount: 0, threadsCount: 0, delayCount: 0, total: 0 }
             }
         }
     })

@@ -1,102 +1,150 @@
+import URL from '../../../support/GuardianUrls';
 import * as Checks from '../../../support/checkingMethods';
-import CommonElements from '../../../support/defaultUIElements';
+import { addTag, deleteTag } from '../../../support/tagsExplorer';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-const ContractsPageLocators = {
-    createContractBtn: 'Create Contract',
-    contractNameDescriptionInput: '[placeholder = "Description"]',
-    okBtn: 'Ok',
-    wipingContracts: '[aria-label="Token wiping contracts"]',
-    retireContracts: '[aria-label="Token retirement contracts"]',
-    createTagButton: ' Create a Tag ',
-    tagNameInput: '[ng-reflect-name="name"]',
-    tagDescInput: '[ng-reflect-name="description"]',
-    createButton: "[ng-reflect-label='Create']",
-    deleteTagIcon: "svg-icon[svgclass='accent-color-red']",
-    closeWindowButton: "[ng-reflect-label='Close']",
-    importContractBtn: 'Import Contract',
-    importedContractIdInput: '[ng-reflect-name="contractId"]',
-    operationsBtn: ' Operations ',
-    headerSelector: 'th.mat-header-cell',
+const L = {
+    // Actions bar
+    tab: '.tabs-nav p-tab',
+    createButton: 'button.button[label="Create Contract"]',
+    importButton: 'button.button[label="Import"]',
+
+    // Dialogs (create/import use the shared data-input dialog)
+    dialog: 'div.guardian-dialog',
+    dialogConfirm: 'div.guardian-dialog button.guardian-button-primary',
+    // The dialog binds [formControlName], which leaves no attribute in the DOM: address inputs by placeholder.
+    dialogInput: (name) => `div.guardian-dialog input[placeholder="${{ contractId: 'Contract Identifier', description: 'Description' }[name]}"]`,
+
+    // Table
+    row: 'tr.card-row',
+    header: 'tr.header th',
+    idCell: 'td.contract-column',
+    descCell: 'td.description-column',
+    tagsCell: 'td.tags-column',
+    tagsExplorer: 'tags-explorer',
+    permissionsCell: 'td.permissions-column',
+    operationsCell: 'td.operations-column',
+    operationsMenu: 'select-menu-button .select-menu',
+    operationsItem: '.select-menu-item',
+    operationsItemTitle: '.select-menu-item-title',
+
+    errorToast: '.p-toast-message-error',
+    toastClose: 'button.p-toast-close-button',
 };
+
+const hasDescription = (row, name) => row.querySelector(L.descCell)?.textContent.trim() === name;
 
 export class ContractsPage {
 
     openContractsTab() {
-        cy.get(CommonElements.navBar).should('exist')
-        cy.get('body').then(($body) => {
-            if ($body.find(`span:contains(${CommonElements.contractsTab})`).length == 0)
-                {cy.get(CommonElements.navBar).contains(CommonElements.tokensTab).click();}
-        })
-        cy.get(CommonElements.navBar).contains(CommonElements.contractsTab).click();
+        cy.visit(URL.Root + URL.Contracts);
         Checks.waitForLoading();
-    }
-
-    fillContract(name) {
-        cy.get(ContractsPageLocators.contractNameDescriptionInput).type(name);
-        cy.contains(ContractsPageLocators.okBtn).click();
-        Checks.waitForLoading();
-        cy.contains(ContractsPageLocators.contractName, name).should('exist');
-    }
-
-    createContract() {
-        cy.contains(ContractsPageLocators.createContractBtn).click();
     }
 
     openContractTypeTab(type) {
-        if (type == 'wipe')
-            {cy.get(ContractsPageLocators.wipingContracts).then(($tab) => {
-                if (!$tab.hasClass('p-highlight'))
-                    {cy.wrap($tab).click();}
-            });}
-        if (type == 'retire')
-            {cy.get(ContractsPageLocators.retireContracts).then(($tab) => {
-                if (!$tab.hasClass('p-highlight'))
-                    {cy.wrap($tab).click();}
-            });}
+        const label = type === 'wipe' ? 'Token Wiping Contracts' : 'Token Retirement Contracts';
+        cy.get(L.tab, { timeout: TIMEOUTS.ui }).contains(label).click();
         Checks.waitForLoading();
     }
 
-    addTag(name, tagName) {
-        cy.contains(name).siblings().contains(ContractsPageLocators.createTagButton).click();
-        cy.get(ContractsPageLocators.tagNameInput).type(tagName);
-        cy.get(ContractsPageLocators.tagDescInput).type(tagName);
-        cy.get(ContractsPageLocators.createButton).click();
-        cy.contains(tagName).should('exist');
+    _row(name) {
+        return cy.get(L.row, { timeout: TIMEOUTS.backend })
+            .filter((_, row) => hasDescription(row, name));
     }
 
-    deleteTag(name, tagName) {
-        cy.contains(name).siblings().contains(tagName).click();
-        cy.get(ContractsPageLocators.deleteTagIcon).click();
-        cy.get(ContractsPageLocators.closeWindowButton).click();
-        cy.contains(tagName).should('not.exist');
+    createContract() {
+        cy.get(L.createButton, { timeout: TIMEOUTS.ui }).click();
+        cy.get(L.dialog, { timeout: TIMEOUTS.ui }).should('be.visible');
     }
 
-    importContract(id) {
-        cy.contains(ContractsPageLocators.importContractBtn).click();
-        cy.get(ContractsPageLocators.importedContractIdInput).type(id);
+    // Fills the Description field of the create dialog, confirms, and waits for the new row.
+    fillContract(name) {
+        this._confirmDialog(name);
+        this._row(name);
+    }
+
+    _confirmDialog(description) {
+        cy.get(L.dialogInput('description')).invoke('val', description).trigger('input');
+        cy.get(L.dialogInput('description')).should('have.value', description);
+        cy.get(L.dialogConfirm).click();
+        Checks.waitForLoading();
+    }
+
+    // Creates a contract of the given type ('wipe' | 'retire') and waits for its row.
+    createContractNamed(type, name) {
+        this.openContractTypeTab(type);
+        this.createContract();
+        this.fillContract(name);
+    }
+
+    // Yields the Hedera contract id shown in the row of the contract.
+    getContractId(name) {
+        return this._row(name).find(L.idCell).invoke('text').then((text) => text.trim());
+    }
+
+    // Removes the contract of the given type from the list.
+    removeContractNamed(type, name) {
+        this.openContractTypeTab(type);
+        this.removeContract(name);
+    }
+
+    // Imports the contract and waits for its row; an error toast fails at once with its text.
+    importContract(contractId, name) {
+        cy.get(L.importButton, { timeout: TIMEOUTS.ui }).click();
+        cy.get(L.dialog, { timeout: TIMEOUTS.ui }).should('be.visible');
+        // the dialog drops keystrokes while it re-renders: set the whole value at once
+        cy.get(L.dialogInput('contractId')).invoke('val', contractId).trigger('input');
+        cy.get(L.dialogInput('contractId')).should('have.value', contractId);
+        this._confirmDialog(name);
+        cy.get('body', { timeout: TIMEOUTS.backend }).should(($body) => {
+            const imported = $body.find(L.row).filter((_, row) => hasDescription(row, name)).length > 0;
+            const failure = $body.find(L.errorToast).text().trim();
+            expect(failure, `error toast while importing contract ${contractId}`).to.eq('');
+            expect(imported, 'the imported contract row').to.eq(true);
+        });
+    }
+
+    addTag(contractName, tagName) {
+        addTag(() => this._row(contractName), tagName);
+    }
+
+    deleteTag(contractName, tagName) {
+        deleteTag(() => this._row(contractName), tagName);
+    }
+
+    removeContract(name) {
+        this._row(name).find(L.operationsMenu).click();
+        // Match the title exactly: the "Remove wiper" description also reads "Remove contract wiper."
+        // The title ignores pointer events, so the click goes to the menu item around it.
+        cy.contains(L.operationsItemTitle, /^Remove contract$/, { timeout: TIMEOUTS.ui }).parent().click();
+        Checks.waitForLoading();
+        cy.get('body').should(($body) => {
+            expect($body.find(L.row).filter((_, row) => hasDescription(row, name)).length).to.eq(0);
+        });
+    }
+
+    contractIdRowExists(contractId) {
+        cy.get('body').then(($body) => {
+            expect($body.find(L.row).filter(`:has(${L.idCell}:contains("${contractId}"))`).length).to.be.greaterThan(0);
+        });
     }
 
     verifyButtonsAndHeaders() {
-        cy.contains(ContractsPageLocators.createContractBtn).should('exist');
-        cy.contains(ContractsPageLocators.importContractBtn).should('exist');
-        cy.get(ContractsPageLocators.headerSelector).then(($header) => {
-            expect($header.get(0).innerText).to.eq('Hedera Contract Id')
-            expect($header.get(1).innerText).to.eq('Description')
-            expect($header.get(2).innerText).to.eq('Tags')
-            expect($header.get(3).innerText).to.eq('Permissions')
-            expect($header.get(4).innerText).to.eq('Operations')
-        })
+        cy.get(L.createButton).should('be.visible');
+        cy.get(L.importButton).should('be.visible');
+        const expected = ['HEDERA CONTRACT ID', 'DESCRIPTION', 'TAGS', 'PERMISSIONS', 'OPERATIONS'];
+        cy.get(L.header).should('have.length', expected.length).each(($th, i) => {
+            expect($th.text().trim()).to.eq(expected[i]);
+        });
     }
 
     verifyContractDataAndActions(name) {
-        cy.contains(name).parent().should(($contract) => {
-            const contractElements = $contract.get(0).childNodes;
-            expect(contractElements.item(0).getElementsByTagName('hedera-explorer')).to.exist;
-            expect(contractElements.item(0).getElementsByTagName('a')).to.exist;
-            expect(contractElements.item(1).innerText).to.eq(name);
-            expect(contractElements.item(2).getElementsByTagName('tags-explorer')).to.exist;
-            expect(contractElements.item(3).getElementsByClassName('permissions')).to.exist;
-            expect(contractElements.item(4).getElementsByTagName('select-menu-button')).to.exist;
-        })
+        this._row(name).should(($row) => {
+            expect($row.find('hedera-explorer').length).to.be.greaterThan(0);
+            expect($row.find(L.descCell).text().trim()).to.eq(name);
+            expect($row.find(L.tagsExplorer).length).to.be.greaterThan(0);
+            expect($row.find(L.permissionsCell + ' .permissions').length).to.be.greaterThan(0);
+            expect($row.find(L.operationsCell + ' select-menu-button').length).to.be.greaterThan(0);
+        });
     }
 }

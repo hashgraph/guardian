@@ -93,13 +93,7 @@ Example of URL which has correct format: [https://ipfs.io/ipfs/bafkreihgbx6fsqup
 {% endhint %}
 
 {% hint style="info" %}
-**Note: Important points to be noted when "GeoJSON" type is selected:**
-
-1. Click on map and place the marker’s, polygons, lines.
-2. Polygons and lines can be placed by double clicking on map.
-3. Right Click on the map will remove temporary points for polygons and lines
-4. View type can also be changed by pasting the GeoJSON.
-5. We can upload .kml, .json files to add locations. More details on this can be found in this [doc](large-geospatial-files.md).
+**Note:** For how the "GeoJSON" type works - drawing on the map, pasting GeoJSON, importing `.geojson`, `.json`, `.kml` and `.kmz` files, and the file size limits - see [GeoJSON Field](schema-fields-reference/geojson-field/).
 {% endhint %}
 
 {% hint style="info" %}

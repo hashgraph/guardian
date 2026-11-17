@@ -37,6 +37,8 @@ To enable users to participate in the remote policy workflow they must be regist
 
 Profile files can be used to create corresponding Remote Users, which can participate in the policy execution workflow using external (other) Guardian instance as a ‘console’ without exposing users private keys to any Guardian other than user’s home instance.
 
+The profile file includes a registration proof signed with the user's DID key on the home instance. When the file is imported, the other Guardian loads the user's DID document from Hedera, checks that it was published by the user's Hedera account, and verifies the proof against it. The proof is accepted for 24 hours after the profile is downloaded; after that, download the profile again. Profile files downloaded before this check was introduced have no proof and can't be imported.
+
 ![](<../../../.gitbook/assets/7 (24).png>)
 
 ### **4. Encryption**

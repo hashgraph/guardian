@@ -12,67 +12,63 @@
     </div>
   }
 
-  <div class="header-container">
-    <div class="guardian-user-back-button">
-      <button
-        (click)="onBack()"
-        class="guardian-button guardian-button-primary">
-        <div class="guardian-button-icon">
-          <svg-icon class="icon-btn svg-icon"
-            src="/assets/images/icons/left-arrow.svg"
-            svgClass="icon-color-secondary">
-          </svg-icon>
-        </div>
-        <div class="guardian-button-label">Back to Assessments</div>
-      </button>
+  <div class="top-toolbar">
+    <nav class="pc-breadcrumb">
+      <div (click)="onAssessments()" class="pc-back-crumb" title="Back to assessments">
+        <i class="pi pi-arrow-left"></i>
+      </div>
+      <a (click)="onStatistics()" class="pc-crumb-link">Statistics</a>
+      <i class="pi pi-chevron-right pc-breadcrumb-sep"></i>
+      <a (click)="onAssessments()" class="pc-crumb-link">Assessments</a>
+      <i class="pi pi-chevron-right pc-breadcrumb-sep"></i>
+    </nav>
+    <div (click)="identityMenu.toggle($event)" class="policy-identity">
+      <span class="type-icon">
+        <svg-icon src="/assets/images/icons/stats.svg"></svg-icon>
+      </span>
+      <div class="policy-identity-text">
+        <span class="policy-identity-name"
+          [title]="definition?.name || 'Untitled statistic'">{{ definition?.name || 'Untitled statistic' }}</span>
+        <span class="policy-identity-meta">Policy: {{ policy?.name }} · Assessment details</span>
+      </div>
+      <i class="pi pi-chevron-down policy-identity-caret"></i>
     </div>
-
-    <div class="guardian-user-page-header">
-      <span>{{definition?.name}}</span>
-      @if (policy) {
-        <div class="policy-name">
-          <span>Policy Name: {{policy.name}}</span>
-          <span class="policy-version">Version: {{policy.version}}</span>
-        </div>
-      }
-    </div>
-  </div>
-
-  <div class="step-container">
-    <div class="guardian-step-container">
-      <div class="guardian-stepper horizontal-stepper">
-        <div class="guardian-step" [attr.action]="stepper[0]" (click)="onStep(0)">
-          <div class="guardian-step-icon">
-            <svg-icon
-              class="icon-btn svg-icon-16"
-              src="/assets/images/icons/16/list.svg">
-            </svg-icon>
-          </div>
-          <div class="guardian-step-name">Overview</div>
-        </div>
-        <div class="guardian-step-separator"></div>
-        <div class="guardian-step" [attr.action]="stepper[1]" (click)="onStep(1)">
-          <div class="guardian-step-icon">
-            <svg-icon
-              class="icon-btn svg-icon-16"
-              src="/assets/images/icons/16/file-fill.svg">
-            </svg-icon>
-          </div>
-          <div class="guardian-step-name">Document</div>
-        </div>
-        <div class="guardian-step-separator"></div>
-        <div class="guardian-step" [attr.action]="stepper[2]" (click)="onStep(2)">
-          <div class="guardian-step-icon">
-            <svg-icon
-              class="icon-btn svg-icon-16"
-              src="/assets/images/icons/16/tree.svg">
-            </svg-icon>
-          </div>
-          <div class="guardian-step-name">Relationships</div>
-        </div>
+    <div class="toolbar-spacer"></div>
+    <div class="view-segment">
+      <div class="view-segment-item" [class.active]="view === 'document'" (click)="onView('document')">
+        <svg-icon src="/assets/images/icons/16/file-fill.svg"></svg-icon>
+        <span>Document</span>
+      </div>
+      <div class="view-segment-item" [class.active]="view === 'relationships'" (click)="onView('relationships')">
+        <svg-icon src="/assets/images/icons/16/tree.svg"></svg-icon>
+        <span>Relationships</span>
       </div>
     </div>
   </div>
+
+  <p-popover #identityMenu>
+    <div class="identity-popover">
+      <div class="identity-popover-header">Assessment details</div>
+      @if (definition) {
+        <div class="kv-grid">
+          <span class="kv-label">Name</span>
+          <span class="kv-value">{{ definition.name }}</span>
+          <span class="kv-label">Policy Name</span>
+          <span class="kv-value">{{ policy?.name }}</span>
+          <span class="kv-label">Policy Version</span>
+          <span class="kv-value">{{ policy?.version }}</span>
+          <span class="kv-label">Policy Topic ID</span>
+          <span class="kv-value">{{ assessment?.policyInstanceTopicId }}</span>
+          <span class="kv-label">Topic ID</span>
+          <span class="kv-value">{{ assessment?.topicId }}</span>
+          <span class="kv-label">Message ID</span>
+          <span class="kv-value">{{ assessment?.messageId }}</span>
+          <span class="kv-label">Target Document</span>
+          <span class="kv-value">{{ assessment?.target }}</span>
+        </div>
+      }
+    </div>
+  </p-popover>
 
   <div class="body-container">
 
@@ -82,45 +78,7 @@
       </div>
     }
 
-    @if (stepper[0]) {
-      <div class="nav-body-container">
-        @if (definition) {
-          <div class="step-body-container">
-            <div class="fields-container">
-              <div class="field-container">
-                <div class="field-name">Name</div>
-                <div class="field-value">{{definition.name}}</div>
-              </div>
-              <div class="field-container">
-                <div class="field-name">Policy Name</div>
-                <div class="field-value">{{policy.name}}</div>
-              </div>
-              <div class="field-container">
-                <div class="field-name">Policy Version</div>
-                <div class="field-value">{{policy.version}}</div>
-              </div>
-              <div class="field-container">
-                <div class="field-name">Policy Topic ID</div>
-                <div class="field-value">{{assessment.policyInstanceTopicId}}</div>
-              </div>
-              <div class="field-container">
-                <div class="field-name">Topic ID</div>
-                <div class="field-value">{{assessment.topicId}}</div>
-              </div>
-              <div class="field-container">
-                <div class="field-name">Message ID</div>
-                <div class="field-value">{{assessment.messageId}}</div>
-              </div>
-              <div class="field-container">
-                <div class="field-name">Target Document</div>
-                <div class="field-value">{{assessment.target}}</div>
-              </div>
-            </div>
-          </div>
-        }
-      </div>
-    }
-    @if (stepper[1]) {
+    @if (view === 'document') {
       <div class="nav-body-container">
         <div class="step-body-container">
           @if (preview) {
@@ -196,7 +154,7 @@
         </div>
       </div>
     }
-    @if (stepper[2]) {
+    @if (view === 'relationships') {
       <div class="nav-body-container">
         <div class="tree-container">
           <app-tree-graph

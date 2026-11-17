@@ -3,8 +3,9 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import { randomInt } from '../../../support/random';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('Modules', { tags: ['modules', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
+context('Modules', { tags: ['modules', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const moduleName = 'APIModuleForPreview';
@@ -54,7 +55,7 @@ context('Modules', { tags: ['modules', 'thirdPool', 'all', 'all-no-mgs'] }, () =
             url: exportUrl(uuid),
             headers: { authorization },
             encoding: null,
-            timeout: 180000,
+            timeout: TIMEOUTS.backend,
         });
 
     const postPreviewWithAuth = (authorization, file) =>
@@ -66,7 +67,7 @@ context('Modules', { tags: ['modules', 'thirdPool', 'all', 'all-no-mgs'] }, () =
                 'content-type': 'binary/octet-stream',
                 authorization,
             },
-            timeout: 180000,
+            timeout: TIMEOUTS.backend,
             encoding: null,
         });
 

@@ -1,4 +1,4 @@
-import { Policy } from '@guardian/common';
+import { Policy } from '@guardian/common/entity/policy';
 import { RootSearchModel } from './root.model.js';
 
 /**

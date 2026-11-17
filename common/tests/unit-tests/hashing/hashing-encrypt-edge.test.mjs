@@ -1,5 +1,5 @@
 import { assert } from 'chai';
-import { Hashing } from '../../../dist/hedera-modules/hashing.js';
+import { Hashing } from '../../../dist/helpers/hashing.js';
 import { EncryptUtils } from '../../../dist/helpers/encrypt-utils.js';
 
 const hex = (d) => Buffer.from(d).toString('hex');

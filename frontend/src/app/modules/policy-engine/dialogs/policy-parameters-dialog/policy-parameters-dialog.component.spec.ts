@@ -3,12 +3,7 @@ import { PolicyParametersDialog } from './policy-parameters-dialog.component';
 
 describe('PolicyParametersDialog', () => {
     function build(): any {
-        return new PolicyParametersDialog(
-            {} as any,
-            { data: { policyId: 'p1' } } as any,
-            {} as any,
-            {} as any,
-        );
+        return new PolicyParametersDialog({} as any, { data: { policyId: 'p1' } } as any, {} as any, {} as any);
     }
 
     // takeUntil(this._destroy$) guarded the ngOnInit subscription, but nothing ever
@@ -34,6 +29,6 @@ describe('PolicyParametersDialog', () => {
         // a completed subject completes any later subscriber at once
         let completed = false;
         component._destroy$.subscribe({ complete: () => { completed = true; } });
-        expect(completed).toBeTrue();
+        expect(completed).toBe(true);
     });
 });

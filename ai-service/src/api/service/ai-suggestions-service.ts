@@ -1,7 +1,8 @@
 import { ApiResponse } from '../../helpers/api-response.js';
 import { AIManager } from '../../ai-manager.js';
 import { MessageAPI } from '@guardian/interfaces';
-import { MessageError, MessageResponse, PinoLogger } from '@guardian/common';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
 
 /**
  * Connect to the message broker methods of working with artifacts.

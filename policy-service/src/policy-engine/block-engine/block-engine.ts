@@ -1,5 +1,5 @@
 import { BlockErrorActions, DocumentSignature, DocumentStatus, PolicyStatus } from '@guardian/interfaces';
-import { DatabaseServer } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import { BlockData, BlockResult, IDebugContext } from './block-result.js';
 import { IPolicyBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';

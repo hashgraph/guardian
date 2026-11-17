@@ -1,0 +1,119 @@
+import { FormulaItem, FormulasTree, IFormulaConditionContext } from './formula-tree';
+
+const EMPTY: FormulaItem[] = [];
+
+/**
+ * Where the links of a form's fields are stored when the form shows a sub-schema:
+ * links are saved against the document schema and the path from it.
+ */
+export interface IFormulaLinkScope {
+    schema: string;
+    prefix: string[];
+}
+
+/**
+ * Formulas of a request form: filters formula items by their display condition
+ * against the current form values. Results are memoized until the data changes.
+ */
+export class FormFormulas {
+    public readonly fields: Record<string, { tree: FormulasTree; schema: string; path: string }>;
+
+    private data: any = null;
+    private readonly prefix: string[];
+    private cache = new Map<string, FormulaItem[]>();
+    /**
+     * The serialized form of each `entries` object. Entry scopes are never mutated after they
+     * are handed out (a changed scope is a new object), so the key can be reused per object.
+     */
+    private entriesKeys = new WeakMap<object, string>();
+
+    constructor(
+        public readonly tree: FormulasTree,
+        public readonly schemaIri: string,
+        private equalsFn?: (a: any, b: any) => boolean,
+        linkScope?: IFormulaLinkScope | null
+    ) {
+        this.prefix = linkScope?.schema ? linkScope.prefix : [];
+        this.fields = linkScope?.schema
+            ? FormFormulas.scopedFields(tree, schemaIri, linkScope)
+            : tree.getFields(schemaIri);
+    }
+
+    /**
+     * Fields of the sub-schema keyed by its own IRI, resolved from the links stored
+     * against the document schema under the drilled-into path.
+     */
+    private static scopedFields(
+        tree: FormulasTree,
+        schemaIri: string,
+        linkScope: IFormulaLinkScope
+    ): Record<string, { tree: FormulasTree; schema: string; path: string }> {
+        const head = linkScope.prefix.length ? `${linkScope.prefix.join('.')}.` : '';
+        const result: Record<string, { tree: FormulasTree; schema: string; path: string }> = {};
+        for (const field of Object.values<any>(tree.getFields(linkScope.schema))) {
+            if (field.path.startsWith(head)) {
+                result[`${schemaIri}/${field.path.slice(head.length)}`] = field;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * True when any formula item of the schema has a display condition,
+     * i.e. the visible items can change together with the form data.
+     */
+    public get hasConditions(): boolean {
+        return Object.values(this.fields).some((field) =>
+            this.tree.get(field.schema, field.path).some((item) => item.hasConditionOn(field.schema, field.path))
+        );
+    }
+
+    /**
+     * Condition paths are stored from the document schema, so the data of a drilled-into
+     * sub-schema form is wrapped under the drill path.
+     */
+    public setData(raw: any): void {
+        this.data = this.prefix.reduceRight((value, name) => ({ [name]: value }), raw);
+        this.cache.clear();
+    }
+
+    public get(fullPath: string, entries?: Record<string, number> | null): FormulaItem[] {
+        const field = this.fields[fullPath];
+        if (!field) {
+            return EMPTY;
+        }
+        const key = `${fullPath}|${this.entriesKey(entries)}`;
+        let result = this.cache.get(key);
+        if (!result) {
+            const items = this.tree.get(field.schema, field.path, this.context(entries));
+            result = items.length ? items : EMPTY;
+            this.cache.set(key, result);
+        }
+        return result;
+    }
+
+    private entriesKey(entries?: Record<string, number> | null): string {
+        if (!entries) {
+            return 'null';
+        }
+        let key = this.entriesKeys.get(entries);
+        if (key === undefined) {
+            key = JSON.stringify(entries);
+            this.entriesKeys.set(entries, key);
+        }
+        return key;
+    }
+
+    public context(entries?: Record<string, number> | null): IFormulaConditionContext {
+        return { data: this.data, entries: this.scopeEntries(entries), anyEntry: true, equalsFn: this.equalsFn };
+    }
+
+    /** Array entry keys are paths in the form, the conditions read them from the document. */
+    private scopeEntries(entries?: Record<string, number> | null): Record<string, number> | null | undefined {
+        if (!entries || !this.prefix.length) {
+            return entries;
+        }
+        const head = this.prefix.join('.');
+        return Object.fromEntries(Object.entries(entries).map(([key, index]) => [`${head}.${key}`, index]));
+    }
+}

@@ -240,6 +240,57 @@ export class FieldTypesDictionary {
             field.customType == type.customType
         )
     }
+
+    /**
+     * The name the schema editor shows for a field's type. A bare JSON `type` is ambiguous
+     * (`null` is Help Text, `string` may be a Date, an Email, an Enum...), so this resolves
+     * it exactly as the editor does: unit system, then reference kind, then the dictionary
+     * entry matching type, format, pattern and custom type. Anything unmatched is a String.
+     */
+    public static getLabel(field: {
+        type?: string;
+        format?: string;
+        pattern?: string;
+        customType?: string;
+        isRef?: boolean;
+        unitSystem?: string;
+        refTemplateSchemaId?: string;
+    }): string {
+        if (!field) {
+            return 'String';
+        }
+        if (field.unitSystem === UnitSystem.Prefix) {
+            return 'Prefix';
+        }
+        if (field.unitSystem === UnitSystem.Postfix) {
+            return 'Postfix';
+        }
+        if (field.isRef || field.refTemplateSchemaId) {
+            if (field.type === '#GeoJSON') {
+                return 'GeoJSON';
+            }
+            if (field.type === '#SentinelHUB') {
+                return 'SentinelHUB';
+            }
+            return 'Sub-schema';
+        }
+        const match = [...FieldTypesDictionary.FieldTypes, ...FieldTypesDictionary.CustomFieldTypes].find((item: any) =>
+            !item.isRef &&
+            !item.unitSystem &&
+            // tslint:disable-next-line:triple-equals
+            field.type == item.type &&
+            // tslint:disable-next-line:triple-equals
+            (field.format || undefined) == item.format &&
+            // tslint:disable-next-line:triple-equals
+            (field.pattern || undefined) == item.pattern &&
+            // tslint:disable-next-line:triple-equals
+            (field.customType || undefined) == item.customType
+        );
+        if (!match) {
+            return 'String';
+        }
+        return match.name === 'hederaAccount' ? 'Account' : match.name;
+    }
 }
 
 export class DefaultFieldDictionary {

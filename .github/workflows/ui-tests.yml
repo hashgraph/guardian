@@ -1,0 +1,45 @@
+name: UI Tests
+run-name: UI Tests · ${{ inputs.tags || 'ui-all dr-all' }}
+on:
+  schedule:
+    - cron: '0 3 * * *' # Run at 03:00 UTC every day (nightly)
+  workflow_dispatch:
+    inputs:
+      tags:
+        type: string
+        description: Tags for the test scope (ui-all, dr-all, ui, ...). Separate several with spaces
+        default: "ui-all dr-all"
+      spec:
+        type: string
+        description: Optional spec glob to narrow the run, e.g. cypress/e2e/ui-tests/specs/02_policies/*.cy.js
+        default: ""
+      solo_version:
+        type: string
+        description: Solo release that deploys the local Hiero network (empty uses the workflow default)
+        default: ""
+      ui_request_trace:
+        type: boolean
+        description: Log every request the dev server proxies to the gateway (frontend-1.log in the guardian-logs artifact; large)
+        default: false
+
+permissions:
+  contents: read
+  checks: write        # required by publish-unit-test-result-action
+
+concurrency:
+  group: ui-tests-${{ github.event_name }}-${{ github.ref }}
+  # A nightly or a hand-triggered run is not superseded by a later one.
+  cancel-in-progress: false
+
+jobs:
+  ui:
+    name: UI tests
+    uses: ./.github/workflows/e2e-run.yml
+    secrets: inherit
+    with:
+      suite: ui
+      grep_tags: ${{ inputs.tags || 'ui-all dr-all' }}
+      spec: ${{ inputs.spec }}
+      solo_version: ${{ inputs.solo_version }}
+      ui_request_trace: ${{ inputs.ui_request_trace || false }}
+      timeout_minutes: 180

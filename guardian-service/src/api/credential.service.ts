@@ -1,14 +1,10 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import {
-    CredentialRecord,
-    DataBaseHelper,
-    IAuthUser,
-    MessageError,
-    MessageResponse,
-    PinoLogger,
-    Wallet,
-    KeyType,
-} from '@guardian/common';
+import { CredentialRecord } from '@guardian/common/entity/credential-record';
+import { DataBaseHelper } from '@guardian/common/helpers/db-helper';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { Wallet, KeyType } from '@guardian/common/helpers/wallet';
 import {
     IntegrationType,
     CREDENTIAL_SERVICE_TYPES,

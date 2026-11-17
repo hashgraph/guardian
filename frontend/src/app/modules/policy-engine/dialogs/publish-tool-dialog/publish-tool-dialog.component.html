@@ -17,9 +17,12 @@
       </div>
     }
     <div>
-      <div class="guardian-input-container">
+      <div class="guardian-input-container version-input-container">
         <label class="form-label" htmlFor="version">* Version</label>
-        <input [formControl]="versionControl" id="version" pInputText type="text"/>
+        <input [formControl]="versionControl" [class.invalid]="!!versionError" id="version" pInputText type="text"/>
+        @if (versionError) {
+          <small class="version-error">{{versionError}}</small>
+        }
       </div>
     </div>
   </div>

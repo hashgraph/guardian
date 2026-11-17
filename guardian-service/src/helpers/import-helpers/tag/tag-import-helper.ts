@@ -1,4 +1,11 @@
-import { DatabaseServer, INotificationStep, IPolicyComponents, MessageAction, MessageServer, MessageType, Tag, TagMessage } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { INotificationStep } from '@guardian/common/notification/notification-step.interface';
+import { IPolicyComponents } from '@guardian/common/import-export/policy';
+import { Tag } from '@guardian/common/entity/tag';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { MessageType } from '@guardian/hedera/message/message-type';
+import { TagMessage } from '@guardian/hedera/message/tag-message';
 import { GenerateUUIDv4, TagType } from '@guardian/interfaces';
 import { ImportSchemaResult } from '../schema/schema-import.interface.js';
 

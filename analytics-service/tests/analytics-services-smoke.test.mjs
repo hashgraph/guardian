@@ -27,6 +27,11 @@ const commonMock = {
     DatabaseServer: StubDatabaseServer,
     Workers: StubWorkers,
     BaseEntity: class {},
+};
+
+// `@guardian/hedera` pulls the Hedera SDK and the VC/BBS stack, so stub the
+// message classes rather than loading the real package under esmock.
+const hederaMock = {
     MessageType: { StandardRegistry: 'StandardRegistry', Policy: 'Policy', Token: 'Token', Schema: 'Schema' },
     RegistrationMessage: class {
         static fromMessageObject() { return new this(); }
@@ -58,7 +63,17 @@ const utilsPath = '../dist/helpers/utils.js';
 async function loadUserService(utilsOverride) {
     const mocks = utilsOverride ? { [utilsPath]: utilsOverride } : {};
     const mod = await esmock('../dist/analytics/user.service.js', mocks, {
-        '@guardian/common': commonMock,
+        '@guardian/common/database-modules/database-server': { DatabaseServer: commonMock.DatabaseServer },
+        '@guardian/common/helpers/workers': { Workers: commonMock.Workers },
+        '@guardian/common/models/base-entity': { BaseEntity: commonMock.BaseEntity },
+        '@guardian/hedera/message/message-type': { MessageType: hederaMock.MessageType },
+        '@guardian/hedera/message/registration-message': { RegistrationMessage: hederaMock.RegistrationMessage },
+        '@guardian/hedera/message/policy-message': { PolicyMessage: hederaMock.PolicyMessage },
+        '@guardian/hedera/message/token-message': { TokenMessage: hederaMock.TokenMessage },
+        '@guardian/hedera/message/schema-message': { SchemaMessage: hederaMock.SchemaMessage },
+        '@guardian/hedera/message/vc-message': { VCMessage: hederaMock.VcMessage },
+        '@guardian/hedera/message/vp-message': { VPMessage: hederaMock.VpMessage },
+        '@guardian/hedera/message/did-message': { DIDMessage: hederaMock.DIDMessage },
         '@guardian/interfaces': interfacesMock,
     });
     return mod.AnalyticsUserService;

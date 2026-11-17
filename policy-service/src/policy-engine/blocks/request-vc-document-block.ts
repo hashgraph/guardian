@@ -6,7 +6,8 @@ import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyGetData, IPoli
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { EventBlock } from '../helpers/decorators/event-block.js';
-import { VcDocument as VcDocumentCollection, VcHelper } from '@guardian/common';
+import { VcDocument as VcDocumentCollection } from '@guardian/common/entity/vc-document';
+import { VcHelper } from '@guardian/hedera/vc-helper';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
@@ -14,6 +15,16 @@ import deepEqual from 'deep-equal';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
 import { hydrateTablesInObject, loadFileTextById } from '../helpers/table-field.js';
 import { RecordActionStep } from '../record-action-step.js';
+import { GeospatialFileValidator } from '../helpers/geospatial-file-validator.js';
+import {
+    calculatePreviewAutoFields,
+    collectPreviewHiddenPaths,
+    collectPreviewNullPaths,
+    collectPreviewUnavailablePaths,
+    collectPreviewPaths,
+    fillPreviewPlaceholders,
+    removePreviewEmptyValues,
+} from '../helpers/preview.js';
 
 /**
  * Request VC document block
@@ -137,6 +148,10 @@ export class RequestVcDocumentBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
         const sources = await ref.getSources(user);
         const restoreData = this.state[user.id] && this.state[user.id].restoreData;
+        // A draft is stored on the server only when something listens to the DraftEvent
+        const draftEnabled = (ref.sourceLinks || []).some(
+            (link) => link.outputType === PolicyOutputEventType.DraftEvent
+        );
 
         return {
             id: ref.uuid,
@@ -163,6 +178,7 @@ export class RequestVcDocumentBlock {
             hideFields: options.hideFields || [],
             data: sources && sources.length && sources[0] || null,
             restoreData,
+            draftEnabled,
         };
     }
 
@@ -189,7 +205,7 @@ export class RequestVcDocumentBlock {
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
     async setData(user: PolicyUser, data: IPolicyDocument, _, actionStatus): Promise<any> {
-        if (this.state.hasOwnProperty(user.id)) {
+        if (!actionStatus?.preview && this.state.hasOwnProperty(user.id)) {
             delete this.state[user.id].restoreData;
         }
 
@@ -205,8 +221,9 @@ export class RequestVcDocumentBlock {
         const options = await ref.getOptions(user);
         try {
             const actionStatusId = actionStatus?.id ?? (ref.dryRun ? data?.recordActionId ?? null : null);
+            const preview = !!actionStatus?.preview;
             //Prepare data
-            const document = await this.prepareDocument(data);
+            const document = await this.prepareDocument(data, actionStatus);
             const draft = data.draft;
             const draftId = data.draftId;
             const editType = options.editType;
@@ -241,7 +258,7 @@ export class RequestVcDocumentBlock {
             }
 
             //Validate
-            if (!draft) {
+            if (!draft && !preview) {
                 const _vcHelper = new VcHelper();
                 const res = await _vcHelper.verifySubject(credentialSubject);
                 if (!res.ok) {
@@ -250,7 +267,15 @@ export class RequestVcDocumentBlock {
             }
 
             //Create Verifiable Credential
-            const item = await this.createVerifiableCredential(user, documentOwner, relayerAccount, credentialSubject, actionStatusId, data.evidence);
+            const item = await this.createVerifiableCredential(
+                user,
+                documentOwner,
+                relayerAccount,
+                credentialSubject,
+                actionStatusId,
+                data.evidence,
+                !draft && !preview
+            );
             PolicyUtils.setDocumentRef(item, documentRef);
 
             //Update metadata
@@ -271,7 +296,7 @@ export class RequestVcDocumentBlock {
             }
 
             //Validate
-            if (!draft) {
+            if (!draft && !preview) {
                 const validationError = await this.validateDocuments(user, state);
                 if (validationError) {
                     throw new BlockActionError(validationError.message, ref.blockType, ref.uuid, validationError.data);
@@ -279,8 +304,10 @@ export class RequestVcDocumentBlock {
             }
 
             //Trigger Events
+            let draftRecord: { id: string; updateDate: Date } | null = null;
             if (draft) {
                 await ref.triggerEvents(PolicyOutputEventType.DraftEvent, user, state, actionStatus);
+                draftRecord = await this.getDraftRecord(ref, state.data);
             } else {
                 // actionStatus.saveResult(state);
                 await ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state, actionStatus);
@@ -296,11 +323,36 @@ export class RequestVcDocumentBlock {
 
             //Backup
             ref.backup();
+            if (draftRecord) {
+                item.draftRecord = draftRecord;
+            }
             return item;
         } catch (error) {
             ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
             throw new BlockActionError(error, ref.blockType, ref.uuid, error.data);
         }
+    }
+
+    /**
+     * Id and update time of the draft record stored by the DraftEvent target, or null if none was stored
+     * @param ref Block
+     * @param saved Event data after the DraftEvent was triggered
+     */
+    private async getDraftRecord(
+        ref: AnyBlockType,
+        saved: any
+    ): Promise<{ id: string; updateDate: Date } | null> {
+        const savedId = saved?.id ?? saved?._id;
+        if (!savedId) {
+            return null;
+        }
+        const id = String(savedId);
+        const record = await ref.databaseServer.getVcDocument({
+            id: { $eq: id },
+            policyId: { $eq: ref.policyId },
+            draft: { $eq: true }
+        });
+        return record ? { id, updateDate: record.updateDate } : null;
     }
 
     /**
@@ -384,7 +436,7 @@ export class RequestVcDocumentBlock {
         return { valid: true };
     }
 
-    private async prepareDocument(data: IPolicyDocument): Promise<any> {
+    private async prepareDocument(data: IPolicyDocument, actionStatus?: RecordActionStep): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
 
         const document = data.document;
@@ -393,12 +445,48 @@ export class RequestVcDocumentBlock {
             throw new BlockActionError('Invalid document.', ref.blockType, ref.uuid);
         }
 
+        if (actionStatus?.preview) {
+            removePreviewEmptyValues(document);
+        }
+        const source = actionStatus?.preview ? structuredClone(document) : null;
+
         const disposeTables = await hydrateTablesInObject(
             document,
             async (fileId: string) => loadFileTextById(ref, fileId),
         );
 
-        PolicyUtils.setAutoCalculateFields(this._schema, document);
+        if (actionStatus?.preview) {
+            const unavailable = collectPreviewUnavailablePaths(this._schema.fields, this._schema.conditions, document);
+            const previewFields = Reflect.get(data, 'previewFields') === true;
+            if (previewFields) {
+                fillPreviewPlaceholders(this._schema.fields, document);
+            }
+            const dependencies: Record<string, string[]> = {};
+            const errors: string[] = [];
+            calculatePreviewAutoFields(this._schema.fields, document, dependencies, errors, '', previewFields);
+            actionStatus.setPreviewSource({
+                schema: this._schema.iri,
+                document: source,
+                paths: collectPreviewPaths(this._schema.fields),
+                dependencies,
+                hidden: collectPreviewHiddenPaths(this._schema.fields),
+                nulls: collectPreviewNullPaths(this._schema.fields),
+                unavailable,
+                discovery: previewFields
+            });
+            for (const path of Object.keys(dependencies)) {
+                actionStatus.addPreviewRead(this._schema.iri, path);
+            }
+            if (errors.length && !previewFields) {
+                disposeTables();
+                throw new Error(errors[0]);
+            }
+            for (const error of errors) {
+                actionStatus.addError(new Error(error), ref.blockType);
+            }
+        } else {
+            PolicyUtils.setAutoCalculateFields(this._schema, document);
+        }
 
         disposeTables();
 
@@ -447,8 +535,12 @@ export class RequestVcDocumentBlock {
         relayerAccount: string,
         credentialSubject: any,
         actionStatusId: string,
-        evidence?: { dataType: string; data: string }[]
+        evidence?: { dataType: string; data: string }[],
+        validateGeospatialFiles = true
     ): Promise<IPolicyDocument> {
+        if (validateGeospatialFiles) {
+            await GeospatialFileValidator.validateDocument(credentialSubject, issuer.userId);
+        }
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
 
         const groupContext = await PolicyUtils.getGroupContext(ref, issuer);

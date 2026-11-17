@@ -1,4 +1,4 @@
-import { mongoForLoggingInitialization } from '@guardian/common';
+import { mongoForLoggingInitialization } from '@guardian/common/helpers/mongo-logging-initialization';
 
 //constants
 import { LOGGER_MONGO_PROVIDER } from '#constants';

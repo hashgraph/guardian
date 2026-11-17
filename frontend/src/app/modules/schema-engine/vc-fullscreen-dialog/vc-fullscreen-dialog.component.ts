@@ -2,8 +2,15 @@ import {
     ChangeDetectorRef,
     Component,
     ElementRef,
+    EventEmitter,
+    HostBinding,
+    Input,
     OnDestroy,
+    Optional,
+    Output,
     ViewChild,
+    ViewChildren,
+    QueryList,
 } from '@angular/core';
 import {
     DialogService,
@@ -17,6 +24,7 @@ import {
     UserPermissions,
 } from '@guardian/interfaces';
 import { ActivatedRoute, Router } from '@angular/router';
+import { SchemaFormRootComponent } from '../schema-form-root/schema-form-root.component';
 import { ProfileService } from 'src/app/services/profile.service';
 import { PolicyComments } from '../../common/policy-comments/policy-comments.component';
 import {
@@ -38,6 +46,8 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { ApproveUpdateVcDocumentDialogComponent } from '../../policy-engine/dialogs/approve-update-vc-document-dialog/approve-update-vc-document-dialog.component';
 import { TablePersistenceService } from 'src/app/services/table-persistence.service';
+import { GeoFilePersistenceService } from 'src/app/services/geo-file-persistence.service';
+import { SchemaFormPreferencesService } from 'src/app/services/schema-form-preferences.service';
 import { prepareVcData } from '../../common/models/prepare-vc-data';
 import { ViewerDialog } from '../../policy-engine/dialogs/viewer-dialog/viewer-dialog.component';
 
@@ -51,20 +61,33 @@ import { ViewerDialog } from '../../policy-engine/dialogs/viewer-dialog/viewer-d
     standalone: false
 })
 export class VCFullscreenDialog implements OnDestroy {
+    @ViewChildren(SchemaFormRootComponent)
+    formRoots: QueryList<SchemaFormRootComponent>;
     @ViewChild('discussionComponent', { static: false })
     discussionComponent: PolicyComments;
     @ViewChild('documentViewComponent', { static: false })
     documentViewComponent: DocumentViewComponent;
 
+    /** The options when the view takes over the policy viewer; a dialog gets them from its config. */
+    @Input() config?: any;
+    @Output() closed = new EventEmitter<void>();
+    @HostBinding('class.takeover') get isTakeover(): boolean {
+        return !this.dialogRef;
+    }
+
+    /** The name of the document's schema, which is the heading once it is known. */
+    public schemaTitle: string = '';
+
     public loading: boolean = true;
 
     public user: UserPermissions = new UserPermissions();
 
-    public backLabel: string = '';
+    public subtitle: string = '';
     public title: string = '';
     public type: 'VP' | 'VC' | 'JSON' | 'TEXT' = 'JSON';
     public toggle: boolean = false;
     public currentTab: number = 1;
+    public hideNotProvided: boolean = true;
 
     public row?: any;
     public messageId?: string;
@@ -115,8 +138,8 @@ export class VCFullscreenDialog implements OnDestroy {
     private _subscription?: Subscription | null;
 
     constructor(
-        public dialogRef: DynamicDialogRef,
-        public dialogConfig: DynamicDialogConfig,
+        @Optional() public dialogRef: DynamicDialogRef,
+        @Optional() public dialogConfig: DynamicDialogConfig,
         private dialogService: DialogService,
         private profileService: ProfileService,
         private commentsService: CommentsService,
@@ -131,7 +154,9 @@ export class VCFullscreenDialog implements OnDestroy {
         private policyEngineService: PolicyEngineService,
         private toastService: ToastService,
         private dialog: DialogService,
-        private tablePersist: TablePersistenceService
+        private tablePersist: TablePersistenceService,
+        private geoFilePersist: GeoFilePersistenceService,
+        public formPreferences: SchemaFormPreferencesService
     ) {
         this.dataForm = this.fb.group({});
     }
@@ -166,7 +191,7 @@ export class VCFullscreenDialog implements OnDestroy {
         const {
             type,
             title,
-            backLabel,
+            subtitle,
             dryRun,
             id,
             row,
@@ -178,9 +203,9 @@ export class VCFullscreenDialog implements OnDestroy {
             commentsReadonly,
             openComments,
             destroy,
-        } = this.dialogConfig.data;
+        } = this.config ?? this.dialogConfig?.data ?? {};
 
-        this.backLabel = backLabel || 'Back';
+        this.subtitle = subtitle || '';
 
         if (type === 'VC') {
             this.type = 'VC';
@@ -305,6 +330,13 @@ export class VCFullscreenDialog implements OnDestroy {
         }
     }
 
+    public onSchemaName(name: string): void {
+        // A title configured by the policy author wins; the bare type ("VC") is only a placeholder
+        const placeholder = !this.title || this.title === this.type || /^V[CP] Document$/.test(this.title);
+        this.schemaTitle = placeholder ? name : '';
+        this.ref.markForCheck();
+    }
+
     public onToggle(index: number) {
         this.currentTab = index;
     }
@@ -331,14 +363,20 @@ export class VCFullscreenDialog implements OnDestroy {
         try {
             this._subscription?.unsubscribe();
             this._subscription = null;
-            this.dialogRef.close(null);
+            this.closeView();
         } catch (error) {
             console.error(error);
         }
     }
 
+    /** Closes the view: the takeover through `closed`, the dialog through its ref. */
+    private closeView(): void {
+        this.closed.emit();
+        this.dialogRef?.close(null);
+    }
+
     public onFindInExport(): void {
-        this.dialogRef.close(null);
+        this.closeView();
         this.router.navigate([], {
             relativeTo: this.route,
             queryParams: {
@@ -524,6 +562,11 @@ export class VCFullscreenDialog implements OnDestroy {
         );
     }
 
+    /** The backend applies edits to credentialSubject[0] only. */
+    public get editSubjects(): any[] {
+        return this.subjects.slice(0, 1);
+    }
+
     public getCredentialSubject(item: any): string {
         if (this.subjects.length > 1) {
             return `Credential Subject #${this.subjects.indexOf(item) + 1}`;
@@ -541,6 +584,34 @@ export class VCFullscreenDialog implements OnDestroy {
     }
 
     public onUpdatableBtnEvent(isSwitchMode?: boolean) {
+        if (!this.dataForm.valid) {
+            if (!isSwitchMode) {
+                this.formRoots?.forEach((root) => root.revealErrors(root === this.formRoots.first));
+                return;
+            }
+            const discardRef = this.dialog.open(
+                ApproveUpdateVcDocumentDialogComponent,
+                {
+                    data: {
+                        text: 'Your changes have errors and can\'t be saved. Leave edit mode and discard them?',
+                        okBtnName: 'Discard changes',
+                        closeBtnName: 'Keep editing',
+                    },
+                    header: 'Unsaved changes',
+                    height: '200px',
+                    width: '500px',
+                    modal: true,
+                    closable: true,
+                }
+            )!;
+            discardRef.onClose.subscribe((result) => {
+                if (result) {
+                    this.loadProfile();
+                    this.isEditMode = false;
+                }
+            });
+            return;
+        }
         const dialogRef = this.dialog.open(
             ApproveUpdateVcDocumentDialogComponent,
             {
@@ -568,18 +639,37 @@ export class VCFullscreenDialog implements OnDestroy {
             this.loading = true;
             const data = this.dataForm.getRawValue();
 
-            await this.tablePersist.persistTablesInDocument(data, false);
+            let geoPersistStarted = false;
+            try {
+                await this.tablePersist.persistTablesInDocument(data, false);
+                geoPersistStarted = true;
+                await this.geoFilePersist.persistGeoFilesInDocument(data, false);
+            } catch (error) {
+                await this.tablePersist.rollbackIpfsUploads();
+                if (geoPersistStarted) await this.geoFilePersist.rollbackGridFsUploads();
+                console.error(error);
+                this.loading = false;
+                return;
+            }
             prepareVcData(data);
 
+            let requestSucceeded = false;
             this.policyEngineService
                 .createNewVersionVcDocument(this.policyId!, {
                     documentId: this.lastVersionVcDoc.id ?? this.documentId,
                     document: data,
                 })
                 .pipe(
-                    finalize(() => this.loading = false)
+                    finalize(async () => {
+                        if (!requestSucceeded) {
+                            await this.tablePersist.rollbackIpfsUploads();
+                            await this.geoFilePersist.rollbackGridFsUploads();
+                        }
+                        this.loading = false;
+                    })
                 )
                 .subscribe((status) => {
+                    requestSucceeded = true;
                     if (status.ok) {
                         this.onEditMode(true);
                         this.toastService.success(
@@ -596,7 +686,7 @@ export class VCFullscreenDialog implements OnDestroy {
         if (!Array.isArray($event)) {
             if ($event.id === 'submit') {
                 $event.disabled = () => {
-                    return !this.dataForm.valid || this.loading || !this.dataForm.dirty;
+                    return this.loading || !this.dataForm.dirty;
                 };
             }
         }

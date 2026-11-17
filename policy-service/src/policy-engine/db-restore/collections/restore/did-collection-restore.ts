@@ -1,4 +1,5 @@
-import { DataBaseHelper, DidDocument } from '@guardian/common';
+import { DataBaseHelper } from '@guardian/common/helpers/db-helper';
+import { DidDocument } from '@guardian/common/entity/did-document';
 import { CollectionRestore, IDiffAction } from '../../index.js';
 
 export class DidCollectionRestore extends CollectionRestore<DidDocument> {

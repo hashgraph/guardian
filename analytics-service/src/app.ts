@@ -1,15 +1,13 @@
-import {
-    COMMON_CONNECTION_CONFIG,
-    DatabaseServer,
-    JwtServicesValidator,
-    LargePayloadContainer,
-    MessageBrokerChannel,
-    Migration,
-    mongoForLoggingInitialization,
-    PinoLogger,
-    pinoLoggerInitialization,
-    Workers,
-} from '@guardian/common';
+import { COMMON_CONNECTION_CONFIG } from '@guardian/common/helpers/db-helper';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { JwtServicesValidator } from '@guardian/common/security/jwt-services-validator';
+import { LargePayloadContainer } from '@guardian/common/mq/large-payload-container';
+import { MessageBrokerChannel } from '@guardian/common/mq/message-broker-channel';
+import { Migration } from '@guardian/common/helpers/migration';
+import { mongoForLoggingInitialization } from '@guardian/common/helpers/mongo-logging-initialization';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { pinoLoggerInitialization } from '@guardian/common/helpers/pino-logger-initialization';
+import { Workers } from '@guardian/common/helpers/workers';
 import { HttpStatus, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';

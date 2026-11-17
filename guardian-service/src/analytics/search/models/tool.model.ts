@@ -1,5 +1,5 @@
 
-import { PolicyTool } from '@guardian/common';
+import { PolicyTool } from '@guardian/common/entity/tool';
 import { RootSearchModel } from './root.model.js';
 
 /**

@@ -1,5 +1,5 @@
 import { Entity, Index, Property, Unique } from '@mikro-orm/core';
-import { BaseEntity } from '@guardian/common';
+import { BaseEntity } from '@guardian/common/models/base-entity';
 
 /**
  * OrganizationMember collection (auth-service local copy)

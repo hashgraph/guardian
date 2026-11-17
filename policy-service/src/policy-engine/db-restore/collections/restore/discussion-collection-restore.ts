@@ -1,4 +1,8 @@
-import { DataBaseHelper, EncryptVcHelper, KeyType, PolicyDiscussion, VcDocument, Wallet } from '@guardian/common';
+import { DataBaseHelper } from '@guardian/common/helpers/db-helper';
+import { EncryptVcHelper } from '@guardian/common/helpers/encrypt-vc-helper';
+import { KeyType, Wallet } from '@guardian/common/helpers/wallet';
+import { PolicyDiscussion } from '@guardian/common/entity/policy-discussion';
+import { VcDocument } from '@guardian/common/entity/vc-document';
 import { CollectionRestore, IDiffAction } from '../../index.js';
 
 export class PolicyDiscussionCollectionRestore extends CollectionRestore<PolicyDiscussion> {

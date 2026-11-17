@@ -1,4 +1,4 @@
-import { Workers } from '@guardian/common';
+import { Workers } from '@guardian/common/helpers/workers';
 import {
     ContractAPI,
     ContractType,

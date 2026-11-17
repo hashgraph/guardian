@@ -1,7 +1,8 @@
 import { AnyBlockType } from '../policy-engine.interface.js';
 import { PolicyActionType } from './policy-action.type.js';
 import { PolicyUser } from '../policy-user.js';
-import { PolicyAction, Users } from '@guardian/common';
+import { PolicyAction } from '@guardian/common/entity/policy-action';
+import { Users } from '@guardian/common/helpers/users';
 
 export class RelayerAccountAction {
     public static async request(options: {

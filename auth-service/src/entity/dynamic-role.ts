@@ -1,7 +1,7 @@
 
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { BeforeCreate, Entity, Index, Property } from '@mikro-orm/core';
-import { BaseEntity } from '@guardian/common';
+import { BaseEntity } from '@guardian/common/models/base-entity';
 
 /**
  * Role collection

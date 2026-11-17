@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 # Stage 0: # Define the versions of the base images used
-ARG NODE_VERSION=24.21.0-alpine
-ARG NGINX_VERSION=1.30.4-alpine
+ARG NODE_VERSION=24.22.3-alpine
+ARG NGINX_VERSION=1.30.6-alpine
 
 FROM --platform=$BUILDPLATFORM node:${NODE_VERSION} AS base
 WORKDIR /usr/local/app
@@ -28,7 +28,7 @@ COPY --link ./frontend/. ./
 RUN npm install interfaces.tgz && npm run build:demo
 
 # Stage 3: Compile headers-more module for the same NGINX_VERSION
-FROM nginxinc/nginx-unprivileged:${NGINX_VERSION} AS build-mod
+FROM nginx/nginx-unprivileged:${NGINX_VERSION} AS build-mod
 
 ARG NGINX_VERSION
 USER root
@@ -46,7 +46,7 @@ RUN apk add --no-cache build-base pcre-dev zlib-dev openssl-dev git wget \
   && cp objs/ngx_http_headers_more_filter_module.so /modules/
 
 # Stage 4: Create the final image
-FROM nginxinc/nginx-unprivileged:${NGINX_VERSION} AS image
+FROM nginx/nginx-unprivileged:${NGINX_VERSION} AS image
 
 USER root
 

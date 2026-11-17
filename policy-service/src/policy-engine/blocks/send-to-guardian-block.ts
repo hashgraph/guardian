@@ -4,7 +4,17 @@ import { DocumentStatus, LocationType } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
-import { DIDMessage, HederaDidDocument, Message, MessageAction, MessageMemo, VcDocument as VcDocumentCollection, VcDocumentDefinition as VcDocument, VCMessage, VpDocument as VpDocumentCollection, VpDocumentDefinition as VpDocument, VPMessage } from '@guardian/common';
+import { VcDocument as VcDocumentCollection } from '@guardian/common/entity/vc-document';
+import { VpDocument as VpDocumentCollection } from '@guardian/common/entity/vp-document';
+import { DIDMessage } from '@guardian/hedera/message/did-message';
+import { HederaDidDocument } from '@guardian/hedera/vcjs/did/hedera-did-document';
+import { Message } from '@guardian/hedera/message/message';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageMemo } from '@guardian/hedera/memo-mappings/message-memo';
+import { VcDocument } from '@guardian/hedera/vcjs/vc-document';
+import { VCMessage } from '@guardian/hedera/message/vc-message';
+import { VpDocument } from '@guardian/hedera/vcjs/vp-document';
+import { VPMessage } from '@guardian/hedera/message/vp-message';
 import { PolicyUtils } from '../helpers/utils.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
@@ -13,6 +23,7 @@ import { DocumentType } from '../interfaces/document.type.js';
 import { FilterQuery } from '@mikro-orm/core';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
 import { PolicyUser } from '@policy-engine/policy-user.js';
+import { PreviewScope, keepPreviewDocumentOrigins } from '../helpers/preview.js';
 
 /**
  * Document Operations
@@ -187,7 +198,7 @@ export class SendToGuardianBlock {
                 delete old.draftId;
             }
             old = this.mapDocument(old, document);
-            old = await PolicyUtils.updateVC(ref, old, userId);
+            old = this.recordPreviewSave(await PolicyUtils.updateVC(ref, old, userId));
         } else {
             if (!document.draft) {
                 delete document.draftId;
@@ -238,12 +249,24 @@ export class SendToGuardianBlock {
         let old = await this.getVPRecord(document, operation, ref);
         if (old) {
             old = this.mapDocument(old, document);
-            return await ref.databaseServer.updateVP(old);
+            return this.recordPreviewSave(await ref.databaseServer.updateVP(old));
         } else {
             delete document.id;
             delete document._id;
             return await ref.databaseServer.saveVP(document)
         }
+    }
+
+    /**
+     * Count an updated output record as the latest Preview save of its branch
+     * @param record
+     */
+    private recordPreviewSave<D extends IPolicyDocument>(record: D): D {
+        const id = record?._id ?? record?.id;
+        if (id !== undefined && id !== null) {
+            PreviewScope.current()?.previewBranches?.save(String(id));
+        }
+        return record;
     }
 
     /**
@@ -527,7 +550,9 @@ export class SendToGuardianBlock {
         } else if (type === DocumentType.VerifiableCredential) {
             const vc = VcDocument.fromJsonTree(document.document);
             const vcMessage = new VCMessage(MessageAction.CreateVC);
-            vcMessage.setDocument(vc);
+            if (!PreviewScope.current()) {
+                vcMessage.setDocument(vc);
+            }
             vcMessage.setDocumentStatus(document.option?.status || DocumentStatus.NEW);
             vcMessage.setRelationships(document.relationships);
             vcMessage.setTag(ref);
@@ -631,6 +656,15 @@ export class SendToGuardianBlock {
     }
 
     /**
+     * Keep preview origins
+     * @param source
+     * @param result
+     */
+    private keepPreviewOrigins(source: IPolicyDocument, result: IPolicyDocument): IPolicyDocument {
+        return keepPreviewDocumentOrigins(source, result);
+    }
+
+    /**
      * Run block action
      * @event PolicyEventType.Run
      * @param {IPolicyEvent} event
@@ -656,12 +690,12 @@ export class SendToGuardianBlock {
             for (const doc of docs) {
                 PolicyUtils.setDocumentTags(doc, tags);
                 const newDoc = await this.documentSender(doc, event?.user?.userId, event.user);
-                newDocs.push(newDoc);
+                newDocs.push(this.keepPreviewOrigins(doc, newDoc));
             }
             event.data.data = newDocs;
         } else {
             PolicyUtils.setDocumentTags(docs, tags);
-            event.data.data = await this.documentSender(docs, event?.user?.userId, event.user);
+            event.data.data = this.keepPreviewOrigins(docs, await this.documentSender(docs, event?.user?.userId, event.user));
         }
 
         const olds: IPolicyDocument | IPolicyDocument[] = event.data.old;

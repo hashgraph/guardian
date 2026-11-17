@@ -26,7 +26,7 @@ describe('RecordService recording lifecycle', () => {
         expect(request.request.method).toBe('POST');
         expect(request.request.body).toBeNull();
         request.flush(true);
-        expect(result).toBeTrue();
+        expect(result).toBe(true);
     });
 
     it('posts resume to the resume route', () => {
@@ -36,7 +36,7 @@ describe('RecordService recording lifecycle', () => {
         expect(request.request.method).toBe('POST');
         expect(request.request.body).toBeNull();
         request.flush(true);
-        expect(result).toBeTrue();
+        expect(result).toBe(true);
     });
 
     it('keeps stop on the existing binary route and body', () => {

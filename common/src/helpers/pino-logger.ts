@@ -13,10 +13,15 @@ import { Singleton } from '../decorators/singleton.js';
 import { LogType, PinoLogType } from '@guardian/interfaces';
 
 export const levelTypeMapping: PinoLogType[] = [
+    PinoLogType.DEBUG,
     PinoLogType.INFO,
     PinoLogType.WARN,
     PinoLogType.ERROR,
 ];
+
+export function resolveLogLevel(value: unknown): PinoLogType {
+    return levelTypeMapping.find(level => level === value) ?? PinoLogType.INFO;
+}
 
 export const MAP_TRANSPORTS: { [key: string]: any } = {
     CONSOLE: ConsoleTransport,
@@ -26,7 +31,7 @@ export const MAP_TRANSPORTS: { [key: string]: any } = {
 }
 
 interface LoggerOptions {
-    logLevel: LogType;
+    logLevel: PinoLogType;
     collectionName: string;
     transports: string;
     mapTransports: { [key: string]: any };
@@ -70,7 +75,9 @@ export class PinoLogger {
     private create() {
         const transportInstances = this.determinedTransports.map(TransportClass => new TransportClass(this.options));
 
+        const level = resolveLogLevel(this.options.logLevel);
         return pino({
+            level,
             base: null,
             formatters: {
                 log(object) {
@@ -78,7 +85,7 @@ export class PinoLogger {
                 }
             },
             timestamp: false,
-        }, pino.multistream(transportInstances.map(transport => ({ stream: transport })), { dedupe: true }));
+        }, pino.multistream(transportInstances.map(transport => ({ stream: transport, level })), { dedupe: true }));
     }
 
     /**
@@ -95,7 +102,7 @@ export class PinoLogger {
         this.logger.debug({
             message,
             attributes,
-            type: LogType.INFO,
+            type: LogType.DEBUG,
             datetime: new Date(),
             userId,
         });

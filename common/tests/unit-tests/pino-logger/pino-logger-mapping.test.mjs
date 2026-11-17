@@ -161,13 +161,13 @@ describe('@unit PinoLogger.init pino configuration', () => {
 });
 
 describe('@unit PinoLogger log methods', () => {
-    it('debug logs message/attributes/userId with INFO type', async () => {
+    it('debug logs message/attributes/userId with DEBUG type', async () => {
         const logger = build('CONSOLE');
         await logger.debug('msg', ['A'], 'user-1');
         const entry = state.logged.debug[0];
         assert.equal(entry.message, 'msg');
         assert.deepEqual(entry.attributes, ['A']);
-        assert.equal(entry.type, LogType.INFO);
+        assert.equal(entry.type, LogType.DEBUG);
         assert.equal(entry.userId, 'user-1');
         assert.ok(entry.datetime instanceof Date);
     });
@@ -222,7 +222,7 @@ describe('@unit PinoLogger log methods', () => {
 
 describe('@unit PinoLogger esmocked constants', () => {
     it('still exposes the level mapping and transport registry', () => {
-        assert.equal(levelTypeMapping.length, 3);
+        assert.equal(levelTypeMapping.length, 4);
         assert.deepEqual(Object.keys(MAP_TRANSPORTS).sort(), ['CONSOLE', 'FILE', 'MONGO', 'SEQ']);
     });
 });

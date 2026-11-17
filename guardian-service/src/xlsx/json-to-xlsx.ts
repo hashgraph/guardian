@@ -2,8 +2,11 @@ import { Dictionary, FieldTypes, geoDisplayValue } from './models/dictionary.js'
 import { anyToXlsx, examplesToXlsx, booleanToXlsx, entityToXlsx, fontToXlsx, stringToXlsx, typeToXlsx, unitToXlsx, valueToFormula, visibilityToXlsx } from './models/value-converters.js';
 import { Hyperlink, Range, Workbook, Worksheet } from './models/workbook.js';
 import { Table } from './models/table.js';
-import { ISchema, IwaVersion, resolveIwaVersion, Schema, SchemaCondition, SchemaField, SchemaHelper } from '@guardian/interfaces';
-import { PolicyTool, PolicyProperty, IPFS, DatabaseServer } from '@guardian/common';
+import { ISchema, ISchemaArrayDependency, IwaVersion, resolveIwaVersion, Schema, SchemaCondition, SchemaField, SchemaHelper } from '@guardian/interfaces';
+import { PolicyTool } from '@guardian/common/entity/tool';
+import { PolicyProperty } from '@guardian/common/entity/policy-property';
+import { IPFS } from '@guardian/common/helpers/ipfs';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import { IRowField } from './interfaces/row-field.interface.js';
 import { SheetName } from './models/sheet-name.js';
 import { XlsxEnum } from './models/xlsx-enum.js';
@@ -335,6 +338,65 @@ export class JsonToXlsx {
                 fieldCache
             );
         }
+
+        JsonToXlsx.writeArrayDependencies(worksheet, table, schema, fieldCache);
+    }
+
+    public static writeArrayDependencies(
+        worksheet: Worksheet,
+        table: Table,
+        schema: Schema,
+        fieldCache: Map<string, IRowField>
+    ): void {
+        const dependencies: ISchemaArrayDependency[] = [...(schema.arrayDependencies || [])];
+        const collect = (fields: SchemaField[], path: string[], ancestors: Set<string>): void => {
+            for (const field of fields || []) {
+                const fieldPath = [...path, field.name];
+                if (!field.isRef || field.isArray || !field.type || ancestors.has(field.type)) {
+                    continue;
+                }
+                if (!(field.fields || []).some(child => fieldCache.has([...fieldPath, child.name].join('.')))) {
+                    continue;
+                }
+                const { arrayDependencies } = SchemaHelper.parseSchemaComment(schema.document?.$defs?.[field.type]?.$comment);
+                for (const dependency of Array.isArray(arrayDependencies) ? arrayDependencies : []) {
+                    dependencies.push({
+                        ...dependency,
+                        on: [...fieldPath, ...dependency.on],
+                        field: [...fieldPath, ...dependency.field]
+                    });
+                }
+                collect(field.fields, fieldPath, new Set([...ancestors, field.type]));
+            }
+        };
+        collect(schema.fields, [], new Set());
+
+        const keyCell = (path: string[]): string | null => {
+            const rowField = fieldCache.get(path.join('.'));
+            return rowField ? worksheet.getPath(table.getCol(Dictionary.KEY), rowField.row) : null;
+        };
+        const written = new Set<number>();
+        const write = (path: string[], formula: string): void => {
+            const rowField = fieldCache.get(path.join('.'));
+            if (rowField && !written.has(rowField.row)) {
+                written.add(rowField.row);
+                worksheet.getCell(table.getCol(Dictionary.REPEATABLE_LINKS), rowField.row).setFormulae(formula);
+            }
+        };
+        for (const dependency of dependencies) {
+            const source = keyCell(dependency.on);
+            const title = dependency.title?.length ? keyCell([...dependency.on, ...dependency.title]) : null;
+            if (!source || (dependency.title?.length && !title)) {
+                continue;
+            }
+            write(dependency.field, title ? `${source}&" | "&${title}` : source);
+            for (const mapping of dependency.valueMappings || []) {
+                const mappingSource = keyCell([...dependency.on, ...mapping.source]);
+                if (mappingSource) {
+                    write([...dependency.field, ...mapping.target], mappingSource);
+                }
+            }
+        }
     }
 
     public static writeField(
@@ -379,6 +441,17 @@ export class JsonToXlsx {
         worksheet
             .getCell(table.getCol(Dictionary.KEY), row)
             .setValue(stringToXlsx(field.name));
+
+        worksheet
+            .getCell(table.getCol(Dictionary.UPDATABLE), row)
+            .setValue(booleanToXlsx(!!field.isUpdatable));
+        worksheet
+            .getCell(table.getCol(Dictionary.PRIVATE), row)
+            .setValue(booleanToXlsx(!!field.isPrivate));
+
+        worksheet
+            .getCell(table.getCol(Dictionary.ADVISORY_TEXT), row)
+            .setValue(stringToXlsx(field.advisoryText?.trim()));
 
         const iwaPropertyCell = worksheet
             .getCell(table.getCol(Dictionary.IWA_PROPERTY), row)

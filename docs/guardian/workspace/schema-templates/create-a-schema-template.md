@@ -25,7 +25,9 @@ tags:
     The editor lets the user change the template name and description, create schemas for the template, and open template settings.
 4.  Create template schemas.
 
-    Schemas created inside the template are saved with `category = TEMPLATE`, `templateId`, stable `templateSchemaId`, and field-level `templateFieldId` values.
+    Schemas created inside the template are saved with `category = TEMPLATE`, `templateId`, stable `templateSchemaId`, and field-level `templateFieldId` values.<br>
+
+    <div data-gb-custom-block data-tag="hint" data-style="warning" class="hint hint-warning"><p><strong>Important:</strong> Set the <strong>Entity type</strong> of the main (root) template schema to <strong>VC</strong> or <strong>EVC</strong>, not <strong>Default</strong>. A root schema left as <strong>Default</strong> cannot be used as the schema of a verifiable credential in a policy.</p></div>
 5.  Configure template restrictions.
 
     \

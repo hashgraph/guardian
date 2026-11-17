@@ -1,5 +1,8 @@
 import { DocumentGenerator, ISchema, Permissions, Schema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, StatusType, TaskAction } from '@guardian/interfaces';
-import { IAuthUser, PinoLogger, RunFunctionAsync, SchemaImportExport } from '@guardian/common';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { RunFunctionAsync } from '@guardian/common/helpers/run-function-async';
+import { SchemaImportExport } from '@guardian/common/import-export/schema';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
 import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiCreatedResponse, ApiExcludeEndpoint, ApiExtraModels, ApiForbiddenResponse, ApiHeader, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiProduces, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, Version } from '@nestjs/common';
 import { Auth, AuthUser } from '#auth';
@@ -1232,6 +1235,7 @@ export class SchemaApi {
     ): Promise<SchemaDTO[]> {
         try {
             SchemaUtils.fromOld(newSchema);
+            SchemaUtils.rejectSystemCategory(newSchema);
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
             newSchema.topicId = topicId;
@@ -1368,6 +1372,7 @@ export class SchemaApi {
         @Body() newSchema: SchemaDTO,
         @Req() req
     ): Promise<TaskDTO> {
+        SchemaUtils.rejectSystemCategory(newSchema);
         const owner = new EntityOwner(user);
         const guardians = new Guardians();
         const taskManager = new TaskManager();
@@ -1567,7 +1572,7 @@ export class SchemaApi {
         if (!schema) {
             throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
         }
-        const permissionError = SchemaUtils.checkPermission(schema, owner, SchemaCategory.POLICY);
+        const permissionError = SchemaUtils.checkDeletePermission(schema, owner);
         if (permissionError) {
             throw new HttpException(permissionError, HttpStatus.FORBIDDEN)
         }
@@ -2073,7 +2078,7 @@ export class SchemaApi {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
 
-            return await guardians.getSchemasDublicates(body.schemaNames, owner, body.policyId);
+            return await guardians.getSchemasDublicates(body.schemaNames, owner, body.policyId, body.schemas);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -3843,7 +3848,7 @@ export class SchemaApi {
                 if (!schema) {
                     throw new HttpException('Schema not found.', HttpStatus.NOT_FOUND)
                 }
-                const error = SchemaUtils.checkPermission(schema, owner, SchemaCategory.POLICY);
+                const error = SchemaUtils.checkDeletePermission(schema, owner);
                 if (error) {
                     throw new HttpException(error, HttpStatus.FORBIDDEN)
                 }

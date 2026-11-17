@@ -7,24 +7,19 @@ describe('PolicyWizardDialogComponent', () => {
     let schemaService: any;
 
     function build(configData: any = {}, schemaResp: any = { schema: null }): any {
-        ref = { close: jasmine.createSpy('close') };
+        ref = { close: vi.fn() };
         schemaService = {
-            getSchemaWithSubSchemas: jasmine.createSpy('getSchemaWithSubSchemas')
-                .and.returnValue(of(schemaResp)),
+            getSchemaWithSubSchemas: vi.fn().mockReturnValue(of(schemaResp)),
         };
-        return new PolicyWizardDialogComponent(
-            new UntypedFormBuilder() as any,
-            { detectChanges: () => {} } as any,
-            (() => 'SchemaName') as any,
-            ref as any,
-            { header: 'H', data: { schemas: [], policies: [], tokens: [], ...configData } } as any,
-            { getPolicyCategories: () => of([]) } as any,
-            schemaService as any,
-        );
+        return new PolicyWizardDialogComponent(new UntypedFormBuilder() as any, { detectChanges: () => { } } as any, (() => 'SchemaName') as any, ref as any, { header: 'H', data: { schemas: [], policies: [], tokens: [], ...configData } } as any, { getPolicyCategories: () => of([]) } as any, schemaService as any);
     }
 
     function stubTree(component: any) {
-        component.matTree = jasmine.createSpyObj('matTree', ['refreshTree', 'onPrevClick', 'onNextClick']);
+        component.matTree = {
+            refreshTree: vi.fn().mockName("matTree.refreshTree"),
+            onPrevClick: vi.fn().mockName("matTree.onPrevClick"),
+            onNextClick: vi.fn().mockName("matTree.onNextClick")
+        };
     }
 
     function validForm(component: any) {
@@ -112,10 +107,10 @@ describe('PolicyWizardDialogComponent', () => {
         it('still settles the selection', async () => {
             const component: any = build();
             stubTree(component);
-            spyOn(console, 'error');
+            vi.spyOn(console, 'error').mockImplementation(() => undefined);
             component.selectedSchemas = [];
             component.currentNode = { children: [] as any[] };
-            schemaService.getSchemaWithSubSchemas.and.returnValue(throwError(() => new Error('boom')));
+            schemaService.getSchemaWithSubSchemas.mockReturnValue(throwError(() => new Error('boom')));
 
             const added = { iri: 'n1', name: 'N1', fields: [], category: 'cat', id: 'i1', topicId: 'tp' };
             component.onSelectedSchemasChange([added]);
@@ -128,10 +123,10 @@ describe('PolicyWizardDialogComponent', () => {
         it('is reported as a dependency that could not be verified', async () => {
             const component: any = build();
             stubTree(component);
-            spyOn(console, 'error');
+            vi.spyOn(console, 'error').mockImplementation(() => undefined);
             component.selectedSchemas = [];
             component.currentNode = { children: [] as any[] };
-            schemaService.getSchemaWithSubSchemas.and.returnValue(throwError(() => new Error('boom')));
+            schemaService.getSchemaWithSubSchemas.mockReturnValue(throwError(() => new Error('boom')));
             component.onSelectedSchemasChange([
                 { iri: 'n1', name: 'N1', fields: [], category: 'cat', id: 'i1', topicId: 'tp' },
             ]);
@@ -147,19 +142,19 @@ describe('PolicyWizardDialogComponent', () => {
         it('stops blocking Create once the lookup succeeds', async () => {
             const component: any = build();
             stubTree(component);
-            spyOn(console, 'error');
+            vi.spyOn(console, 'error').mockImplementation(() => undefined);
             component.selectedSchemas = [];
             component.currentNode = { children: [] as any[] };
             const added = { iri: 'n1', name: 'N1', fields: [], category: 'cat', id: 'i1', topicId: 'tp' };
 
-            schemaService.getSchemaWithSubSchemas.and.returnValue(throwError(() => new Error('boom')));
+            schemaService.getSchemaWithSubSchemas.mockReturnValue(throwError(() => new Error('boom')));
             component.onSelectedSchemasChange([added]);
             await flushMicrotasks();
 
             // the user retries and the network is back
             component.selectedSchemas = [];
             component.currentNode = { children: [] as any[] };
-            schemaService.getSchemaWithSubSchemas.and.returnValue(of({ schema: added, subSchemas: [] }));
+            schemaService.getSchemaWithSubSchemas.mockReturnValue(of({ schema: added, subSchemas: [] }));
             component.onSelectedSchemasChange([added]);
             await flushMicrotasks();
 
@@ -173,11 +168,11 @@ describe('PolicyWizardDialogComponent', () => {
         it('drops the banner as soon as the selection changes', async () => {
             const component: any = build();
             stubTree(component);
-            spyOn(console, 'error');
+            vi.spyOn(console, 'error').mockImplementation(() => undefined);
             component.selectedSchemas = [];
             component.currentNode = { children: [] as any[] };
             const added = { iri: 'n1', name: 'N1', fields: [], category: 'cat', id: 'i1', topicId: 'tp' };
-            schemaService.getSchemaWithSubSchemas.and.returnValue(throwError(() => new Error('boom')));
+            schemaService.getSchemaWithSubSchemas.mockReturnValue(throwError(() => new Error('boom')));
             component.onSelectedSchemasChange([added]);
             await flushMicrotasks();
             validForm(component);
@@ -204,23 +199,15 @@ describe('PolicyWizardDialogComponent', () => {
         component.onSelectedSchemasChange([{ iri: '#P', category: 'cat', id: 'i1', topicId: 'tp' }]);
         await flushMicrotasks();
 
-        expect(component.resolvedSchemas.has('#S')).toBeTrue();
+        expect(component.resolvedSchemas.has('#S')).toBe(true);
     });
 });
 
 describe('PolicyWizardDialogComponent step-tree labels', () => {
     function makeFull(configData = {}) {
         const fb = new UntypedFormBuilder();
-        const ref = { close: jasmine.createSpy('close') };
-        const cmp = new PolicyWizardDialogComponent(
-            fb as any,
-            { detectChanges: () => {} } as any,
-            (() => 'SchemaName') as any,
-            ref as any,
-            { header: 'H', data: { schemas: [], policies: [], tokens: [], ...configData } } as any,
-            { getPolicyCategories: () => of([]) } as any,
-            { getSchemaWithSubSchemas: () => of({ schema: null }) } as any,
-        );
+        const ref = { close: vi.fn() };
+        const cmp = new PolicyWizardDialogComponent(fb as any, { detectChanges: () => { } } as any, (() => 'SchemaName') as any, ref as any, { header: 'H', data: { schemas: [], policies: [], tokens: [], ...configData } } as any, { getPolicyCategories: () => of([]) } as any, { getSchemaWithSubSchemas: () => of({ schema: null }) } as any);
         return { cmp, fb, ref };
     }
 
@@ -230,15 +217,7 @@ describe('PolicyWizardDialogComponent step-tree labels', () => {
     // stops read as one the user keeps coming back to.
     describe('step-tree labels distinguish where a role is configured', () => {
         function addSchemaRole(cmp: any, fb: any, node: any) {
-            cmp.onSchemaRoleConfigChange(
-                'OWNER',
-                [],
-                fb.array([]),
-                fb.control([]),
-                fb.control(false),
-                fb.control(''),
-                node,
-            );
+            cmp.onSchemaRoleConfigChange('OWNER', [], fb.array([]), fb.control([]), fb.control(false), fb.control(''), node);
             return node;
         }
 

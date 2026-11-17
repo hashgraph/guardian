@@ -1,5 +1,7 @@
 import { Permissions, PolicyHelper, PolicyStatus } from '@guardian/interfaces';
-import { DatabaseServer, IAuthUser, Policy } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { Policy } from '@guardian/common/entity/policy';
 import { IPolicyUser } from './policy-user.js';
 import { ExternalEvent } from './interfaces/external-event.js';
 
@@ -23,6 +25,40 @@ export class PolicyComponentsUtils {
      * External Event function
      */
     public static ExternalEventFn: (event: ExternalEvent<any>) => Promise<void>;
+
+    /**
+     * Set the current policy role on each dry-run virtual user
+     * @param policy
+     * @param users
+     * @param savepointIds
+     */
+    public static async SetVirtualUserRoles<T extends { did?: string, role?: string | null }>(
+        policy: Policy,
+        users: T[],
+        savepointIds?: string[]
+    ): Promise<T[]> {
+        if (!policy || !Array.isArray(users)) {
+            return users;
+        }
+        const policyId = policy.id.toString();
+        const db = new DatabaseServer(policyId);
+        for (const user of users) {
+            if (!user?.did) {
+                continue;
+            }
+            if (user.did === policy.owner) {
+                user.role = 'Administrator';
+                continue;
+            }
+            const groups = await db.getGroupsByUser(policyId, user.did, {
+                fields: ['role', 'active'],
+                savepointIds
+            });
+            const active = groups.filter((group) => group.active !== false).pop();
+            user.role = active?.role || null;
+        }
+        return users;
+    }
 
     /**
      * Get Policy Groups

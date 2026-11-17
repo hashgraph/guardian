@@ -1,4 +1,7 @@
 <div class="dialog-body">
+  @if (!config.header && title) {
+    <div class="dialog-title">{{ title }}</div>
+  }
   @if (this.description) {
     <div class="description">
       {{ this.description }}
@@ -14,8 +17,10 @@
     </div>
   }
   <div class="textarea">
+    <label class="textarea-label" for="confirmation-dialog-reason">Reason</label>
     <div class="p-fluid">
       <textarea
+        id="confirmation-dialog-reason"
         pInputTextarea
         rows="4"
         [formControl]="value"

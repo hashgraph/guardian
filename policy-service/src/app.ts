@@ -1,5 +1,17 @@
-import { ApplicationState, JwtServicesValidator, COMMON_CONNECTION_CONFIG, DatabaseServer, LargePayloadContainer, MessageBrokerChannel, mongoForLoggingInitialization, PinoLogger, pinoLoggerInitialization, Users, Wallet, OldSecretManager, MockService } from '@guardian/common';
-import { entities } from '@guardian/common/dist/entities.js';
+import { ApplicationState } from '@guardian/common/helpers/application-state';
+import { JwtServicesValidator } from '@guardian/common/security/jwt-services-validator';
+import { COMMON_CONNECTION_CONFIG } from '@guardian/common/helpers/db-helper';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { LargePayloadContainer } from '@guardian/common/mq/large-payload-container';
+import { MessageBrokerChannel } from '@guardian/common/mq/message-broker-channel';
+import { mongoForLoggingInitialization } from '@guardian/common/helpers/mongo-logging-initialization';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { pinoLoggerInitialization } from '@guardian/common/helpers/pino-logger-initialization';
+import { Users } from '@guardian/common/helpers/users';
+import { Wallet } from '@guardian/common/helpers/wallet';
+import { OldSecretManager } from '@guardian/common/secret-manager/old-style/old-secret-manager';
+import { MockService } from '@guardian/hedera/mock-service';
+import { entities } from '@guardian/common/entities';
 import { ApplicationStates } from '@guardian/interfaces';
 import { PolicyContainer } from './helpers/policy-container.js';
 import { BlockService } from './policy-engine/block-service.js';
@@ -9,6 +21,7 @@ import { MongoDriver } from '@mikro-orm/mongodb';
 import { DEFAULT_MONGO } from '#constants';
 import { BlockTreeGenerator } from './policy-engine/block-tree-generator.js';
 import { warmupPyodideCache } from './policy-engine/helpers/workers/pyodide-warmup.js';
+import { isPythonSandboxDisabled } from './policy-engine/helpers/workers/python-sandbox-mode.js';
 
 export const obj = {};
 
@@ -28,7 +41,9 @@ function requirePositiveIntEnv(name: string): number {
     return n;
 }
 
-requirePositiveIntEnv('PYTHON_SANDBOX_TIMEOUT_MS');
+if (!isPythonSandboxDisabled()) {
+    requirePositiveIntEnv('PYTHON_SANDBOX_TIMEOUT_MS');
+}
 requirePositiveIntEnv('DRY_RUN_BLOCK_TIMEOUT_MS');
 
 Promise.all([

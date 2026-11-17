@@ -3,7 +3,7 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
-context('Update policy labels', { tags: ['policy_labels', 'firstPool', 'all', 'all-no-mgs'] }, () => {
+context('Update policy labels', { tags: ['policy_labels', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const UserUsername = Cypress.env('User');
     const labelConfigUUID = randomInt(99999).toString();
 

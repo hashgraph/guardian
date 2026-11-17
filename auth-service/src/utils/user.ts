@@ -11,7 +11,10 @@ import {
 import { USER_REQUIRED_PROPS, USER_KEYS_PROPS } from '#constants';
 import { User } from '../entity/user.js';
 import { DynamicRole } from '../entity/dynamic-role.js';
-import { checkHederaKey, DatabaseServer, KeyType, Wallet, Workers } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { KeyType, Wallet } from '@guardian/common/helpers/wallet';
+import { Workers } from '@guardian/common/helpers/workers';
+import { checkHederaKey } from '@guardian/hedera/utils';
 
 export enum UserProp {
     RAW = 'RAW',

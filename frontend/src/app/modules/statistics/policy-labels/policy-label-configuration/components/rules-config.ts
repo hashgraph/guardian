@@ -1,6 +1,6 @@
+import { restoreSchemaDefs } from "src/app/modules/common/models/schema-defs";
 import { Schema, SchemaField, IRulesItemConfig, IStatisticItemConfig, LabelValidators } from "@guardian/interfaces";
 import { DialogService } from "primeng/dynamicdialog";
-import { Subject } from "rxjs";
 import { CustomConfirmDialogComponent } from "src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component";
 import { FormulaRule, ConditionRule, RangeRule } from "src/app/modules/common/models/conditions";
 import { createAutocomplete } from "src/app/modules/common/models/lang-modes/autocomplete";
@@ -15,14 +15,15 @@ import { TreeSource } from "src/app/modules/common/tree-graph/tree-source";
 import { IPFSService } from "src/app/services/ipfs.service";
 import { ScoreDialog } from "../../../policy-statistics/dialogs/score-dialog/score-dialog.component";
 import { EnumValue, SchemaRuleConfigDialog } from "../../../schema-rules/dialogs/schema-rule-config-dialog/schema-rule-config-dialog.component";
-import { NavItem } from "./nav-item";
+import { NavIcons, NavItem } from "./nav-item";
 import { PolicyLabelConfigurationComponent } from "../policy-label-configuration.component";
 
 
 export class RulesConfig {
     public show: boolean = false;
     public readonly: boolean = false;
-    public stepper = [true, false];
+    public view: 'schemas' | 'rules' = 'schemas';
+    public dirty: boolean = false;
 
     public searchField: string = '';
     public nodeLoading: boolean = true;
@@ -39,6 +40,9 @@ export class RulesConfig {
 
     public name: string;
     public type: string;
+    public typeLabel: string;
+    public icon: string;
+    public tag: string;
 
     private _selectTimeout1: any;
     private _selectTimeout2: any;
@@ -95,7 +99,9 @@ export class RulesConfig {
         return this.source?.roots;
     }
 
-    public readonly step = new Subject<number>();
+    public get rulesCount(): number {
+        return this.variables.variables.length;
+    }
 
     constructor(
         private parent: PolicyLabelConfigurationComponent,
@@ -118,7 +124,7 @@ export class RulesConfig {
     }
 
     public setSchemas(relationships: any) {
-        const schemas = relationships.policySchemas || [];
+        const schemas = restoreSchemaDefs(relationships.policySchemas || []);
 
         this.nodes = [];
         this.schemas = [];
@@ -179,6 +185,9 @@ export class RulesConfig {
         this.readonly = clone.readonly || clone.freezed;
         this.name = clone.label;
         this.type = clone.blockType === 'statistic' ? 'Statistic' : 'Rule';
+        this.typeLabel = clone.blockType === 'statistic' ? 'Statistic rules' : 'Rules';
+        this.icon = NavIcons[clone.blockType] || NavIcons['default'];
+        this.tag = (clone.config as any)?.tag || '';
 
         this.variables.fromData(config?.variables);
         this.scores.fromData(config?.scores);
@@ -186,6 +195,7 @@ export class RulesConfig {
 
         this.variables.updateType(this.schemas);
         this.updateCodeMirror();
+        this.dirty = false;
 
         const map1 = this.variables.getMap();
         for (const root of this.source.roots) {
@@ -209,9 +219,17 @@ export class RulesConfig {
 
     public onCancel() {
         this.currentNode = null;
+        this.dirty = false;
+    }
+
+    public markDirty() {
+        if (!this.readonly) {
+            this.dirty = true;
+        }
     }
 
     public onSave() {
+        this.dirty = false;
         if (this.currentNode) {
             const item = this.currentNode.config as (IRulesItemConfig | IStatisticItemConfig);
             if (item.config) {
@@ -256,37 +274,17 @@ export class RulesConfig {
         return enums;
     }
 
-    public isActionStep(index: number): boolean {
-        return this.stepper[index];
-    }
-
-    public async goToStep(index: number) {
-        for (let i = 0; i < this.stepper.length; i++) {
-            this.stepper[i] = (i == index);
+    public setView(view: 'schemas' | 'rules') {
+        if (this.view === view) {
+            return;
         }
-        return this.refreshView();
-    }
-
-    public async refreshView() {
-        return new Promise<void>((resolve, reject) => {
-            if (this.stepper[0]) {
-                setTimeout(() => {
-                    this.tree?.move(18, 46);
-                    setTimeout(() => {
-                        this.tree?.refresh();
-                        resolve();
-                    }, 1500);
-                }, 100);
-            } else {
-                setTimeout(() => {
-                    resolve();
-                }, 400);
-            }
-        });
-    }
-
-    public onStep(index: number) {
-        this.step.next(index);
+        this.view = view;
+        if (view === 'schemas') {
+            setTimeout(() => {
+                this.tree?.move(18, 46);
+                this.tree?.refresh();
+            }, 0);
+        }
     }
 
     public schemaConfigChange(index: string | number | undefined) {
@@ -367,6 +365,7 @@ export class RulesConfig {
             return;
         }
         field.selected = !field.selected;
+        this.markDirty();
         if (this.rootNode) {
             const rootView = this.rootNode.fields;
             rootView.updateHidden();
@@ -508,6 +507,7 @@ export class RulesConfig {
     public onAddScore() {
         this.scores.add();
         this.updateCodeMirror();
+        this.markDirty();
     }
 
     public onRename() {
@@ -528,6 +528,7 @@ export class RulesConfig {
             if (result) {
                 score.description = result.description;
                 score.options = result.options;
+                this.markDirty();
             }
         });
     }
@@ -553,6 +554,7 @@ export class RulesConfig {
             if (result === 'Delete') {
                 this.scores.delete(score);
                 this.updateCodeMirror();
+                this.markDirty();
             }
         });
     }
@@ -560,6 +562,7 @@ export class RulesConfig {
     public onAddFormula() {
         this.formulas.add();
         this.updateCodeMirror();
+        this.markDirty();
     }
 
     public onDeleteFormula(formula: SchemaFormula) {
@@ -582,6 +585,7 @@ export class RulesConfig {
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
                 this.formulas.delete(formula);
+                this.markDirty();
             }
         });
     }
@@ -605,6 +609,7 @@ export class RulesConfig {
             if (result) {
                 const rule: FormulaRule | ConditionRule | RangeRule = result.rule;
                 formula.addRule(rule);
+                this.markDirty();
             }
         });
     }

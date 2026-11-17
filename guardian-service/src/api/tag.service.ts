@@ -1,4 +1,14 @@
-import { DatabaseServer, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, PinoLogger, Tag, TagMessage, TopicConfig, Users, VcHelper } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { Tag } from '@guardian/common/entity/tag';
+import { Users } from '@guardian/common/helpers/users';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { MessageType } from '@guardian/hedera/message/message-type';
+import { TagMessage } from '@guardian/hedera/message/tag-message';
+import { TopicConfig } from '@guardian/hedera/topic';
+import { VcHelper } from '@guardian/hedera/vc-helper';
 import { GenerateUUIDv4, IOwner, MessageAPI, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { publishTag } from '../helpers/import-helpers/index.js'

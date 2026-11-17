@@ -1,0 +1,16 @@
+# dclint disable require-project-name-field
+# This file is linted and formatted using Docker Compose Linter (https://github.com/zavoloklom/docker-compose-linter):
+# npx dclint . --fix=true
+#
+# This is an override meant to be combined with another compose file via `-f`, not run standalone.
+#
+# Defining CA_CERTIFICATES is mandatory if you want to use this override.
+# Example:
+#
+# CA_CERTIFICATES=~/zscaler-combined-ca.pem docker compose -f docker-compose-quickstart.yml -f docker-compose.ca-certificates.yml up -d --pull always
+#
+services:
+  ipfs-node:
+    volumes:
+      # Inject a complete root bundle directly over the container's default store
+      - ${CA_CERTIFICATES}:/etc/ssl/certs/ca-certificates.crt:ro

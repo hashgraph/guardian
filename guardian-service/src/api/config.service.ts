@@ -1,5 +1,11 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { Environment, IAuthUser, MessageError, MessageResponse, PinoLogger, SecretManager, ValidateConfiguration, Workers } from '@guardian/common';
+import { Environment } from '@guardian/common/helpers/environment';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { SecretManager } from '@guardian/common/secret-manager/secret-manager';
+import { ValidateConfiguration } from '@guardian/common/helpers/validate-configuration';
+import { Workers } from '@guardian/common/helpers/workers';
 import { CommonSettings, MessageAPI } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 

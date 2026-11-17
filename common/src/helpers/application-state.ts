@@ -1,6 +1,6 @@
 import { Singleton } from '../decorators/singleton.js';
-import { NatsService } from '../mq/index.js';
-import { JwtServicesValidator } from '../security/index.js';
+import { NatsService } from '../mq/nats-service.js';
+import { JwtServicesValidator } from '../security/jwt-services-validator.js';
 import { ApplicationStates, GenerateUUIDv4, MessageAPI } from '@guardian/interfaces';
 
 /**

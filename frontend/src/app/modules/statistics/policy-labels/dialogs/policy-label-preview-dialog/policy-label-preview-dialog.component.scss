@@ -1,6 +1,7 @@
 .context {
     position: relative;
-    overflow-y: auto;
+    // the preview container is the only scroll area
+    overflow: hidden;
     padding: 14px 0 20px 0;
     display: flex;
     flex-direction: column;
@@ -33,11 +34,6 @@ form {
 .dialog-grid-body {
     max-height: 256px;
     overflow: auto;
-}
-
-.dialog-body {
-    height: 100vh !important;
-    max-height: 75vh !important;
 }
 
 .action-buttons {
@@ -76,9 +72,9 @@ form {
 .preview-container {
     display: flex;
     flex-direction: row;
-    overflow: auto;
-    max-height: calc(100vh - 500px);
-    min-height: calc(100vh - 500px);
+    overflow: hidden;
+    height: calc(100vh - 460px);
+    min-height: 280px;
     padding-right: 16px;
     position: relative;
 
@@ -206,6 +202,7 @@ form {
         right: 0;
         top: 0;
         bottom: 0;
+        overflow: auto;
 
         .preview-node-body {
             padding: 16px 24px;

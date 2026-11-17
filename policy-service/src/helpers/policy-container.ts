@@ -1,4 +1,7 @@
-import { MessageResponse, NatsService, PinoLogger, Singleton } from '@guardian/common';
+import { MessageResponse } from '@guardian/common/models/message-response';
+import { NatsService } from '@guardian/common/mq/nats-service';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { Singleton } from '@guardian/common/decorators/singleton';
 import { ChildProcess, execFile, fork } from 'node:child_process';
 import process from 'node:process';
 import { GenerateUUIDv4, PolicyEvents } from '@guardian/interfaces';

@@ -1,4 +1,4 @@
-import { RestoreEntity } from '@guardian/common';
+import { RestoreEntity } from '@guardian/common/models/restore-entity';
 import { DiffActionType, ICollectionDiff, IDiffAction } from '../index.js';
 import crypto from 'node:crypto';
 import { ObjectId } from '@mikro-orm/mongodb';

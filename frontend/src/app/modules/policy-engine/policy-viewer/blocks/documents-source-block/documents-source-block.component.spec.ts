@@ -33,8 +33,8 @@ describe('DocumentsSourceBlockComponent', () => {
 
     const field: any = { type: 'richText', name: 'note', index: '0' };
 
-    beforeEach(() => jasmine.clock().install());
-    afterEach(() => jasmine.clock().uninstall());
+    beforeEach(() => vi.useFakeTimers());
+    afterEach(() => vi.useRealTimers());
 
     it('shows the popover with the cell value when the cell has text', () => {
         const component = createComponent({ a: 'Hello [link](https://x.io)' });
@@ -68,7 +68,7 @@ describe('DocumentsSourceBlockComponent', () => {
         expect(popover.hidden).toBe(0);
         expect(component.richTextValue).toContain('Hello');
 
-        jasmine.clock().tick(250);
+        vi.advanceTimersByTime(250);
 
         expect(popover.hidden).toBe(1);
     });
@@ -81,7 +81,7 @@ describe('DocumentsSourceBlockComponent', () => {
         component.onRichTextLeave(popover);
         component.onRichTextEnter(new Event('mouseenter'), row(component, 'b'), field, popover);
 
-        jasmine.clock().tick(250);
+        vi.advanceTimersByTime(250);
 
         expect(popover.hidden).toBe(0);
         expect(popover.shown.length).toBe(2);
@@ -96,7 +96,7 @@ describe('DocumentsSourceBlockComponent', () => {
         component.onRichTextLeave(popover);
         component.onRichTextPopoverEnter();
 
-        jasmine.clock().tick(250);
+        vi.advanceTimersByTime(250);
 
         expect(popover.hidden).toBe(0);
     });
@@ -240,8 +240,8 @@ describe('DocumentsSourceBlockComponent', () => {
 
         function makeIpfs(result: Promise<string>): any {
             return {
-                getImageByLink: jasmine.createSpy('getImageByLink').and.returnValue(result),
-                getImageFromDryRunStorage: jasmine.createSpy('getImageFromDryRunStorage'),
+                getImageByLink: vi.fn().mockReturnValue(result),
+                getImageFromDryRunStorage: vi.fn(),
                 getImageWithDryRunFallback: IPFSService.prototype.getImageWithDryRunFallback,
             };
         }
@@ -319,7 +319,7 @@ describe('DocumentsSourceBlockComponent', () => {
         });
 
         it('fetches a shared picture once while the first request is still pending', async () => {
-            let settle: (value: string) => void = () => {};
+            let settle: (value: string) => void = () => { };
             const ipfs = makeIpfs(new Promise<string>((resolve) => { settle = resolve; }));
             const component = createComponent({
                 a: `![Site](${reference})`,
@@ -336,6 +336,94 @@ describe('DocumentsSourceBlockComponent', () => {
 
             expect(ipfs.getImageByLink).toHaveBeenCalledTimes(1);
             expect(component.richTextValue).toContain(`src="${dataUrl}"`);
+        });
+    });
+
+    describe('status pill tone', () => {
+        it('reads a waiting status as wait, not approved', () => {
+            expect(createComponent().getStatusTone('Waiting for approval')).toBe('wait');
+        });
+
+        it('reads a rejected status as bad', () => {
+            expect(createComponent().getStatusTone('Registry rejected')).toBe('bad');
+        });
+
+        it('reads a minted status as ok', () => {
+            expect(createComponent().getStatusTone('Minted')).toBe('ok');
+        });
+
+        it('reads any other status as neutral', () => {
+            const component = createComponent();
+            expect(component.getStatusTone('Created')).toBe('neutral');
+            expect(component.getStatusTone(undefined)).toBe('neutral');
+        });
+    });
+
+    describe('column sorting', () => {
+        function columns(paginationAddon: any, fields: any[]): any[] {
+            const component = createComponent();
+            component.paginationAddon = paginationAddon;
+            component.hasHistory = false;
+            component.fields = fields;
+            component.updateColumns();
+            return component.fields;
+        }
+
+        it('makes a text column sortable when the table is not paginated', () => {
+            const [field] = columns(null, [{ type: 'text', name: 'option.status', names: ['option', 'status'] }]);
+            expect(field.__sortable).toBe(true);
+        });
+
+        it('does not offer sorting when the rows are paginated', () => {
+            const [field] = columns({}, [{ type: 'text', name: 'option.status', names: ['option', 'status'] }]);
+            expect(field.__sortable).toBe(false);
+        });
+
+        it('does not offer sorting on a path ending in the last array element', () => {
+            const [field] = columns(null, [{ type: 'text', name: 'document.L.value', names: ['document', 'L', 'value'] }]);
+            expect(field.__sortable).toBe(false);
+        });
+    });
+    describe('opening a document in the fullscreen dialog', () => {
+        const open = (progress: any) => {
+            const component: any = Object.create(DocumentsSourceBlockComponent.prototype);
+            const dialogService = { open: vi.fn().mockReturnValue({ onClose: { subscribe: () => undefined } }) };
+            component.dialogService = dialogService;
+            component.policyProgress = progress;
+            component.policyId = 'p1';
+            component._destroy$ = {};
+            component.onDialog({ id: 'row-1', doc: { id: 'vc-1' } }, { name: 'doc', dialogContent: 'Project' });
+            return vi.mocked(dialogService.open).mock.lastCall![1].data;
+        };
+
+        it('passes the policy name and the active step as the context line', () => {
+            const data = open({
+                policyName: (id: string) => (id === 'p1' ? 'Carbon' : ''),
+                activeStep: { label: 'Registration' },
+            });
+            expect(data.subtitle).toBe('Carbon · Registration');
+            expect('backLabel' in data).toBe(false);
+        });
+
+        it('takes over the viewer instead of opening a dialog when it can', () => {
+            const component: any = Object.create(DocumentsSourceBlockComponent.prototype);
+            const closed = { subscribe: vi.fn() };
+            component.formTakeover = { open: vi.fn().mockReturnValue({ instance: { closed } }) };
+            component.dialogService = { open: vi.fn() };
+            component.policyProgress = null;
+            component.policyId = 'p1';
+            component._destroy$ = {};
+            component.onDialog({ id: 'row-1', doc: { id: 'vc-1' } }, { name: 'doc', dialogContent: 'VC' });
+            expect(component.dialogService.open).not.toHaveBeenCalled();
+            const [, inputs] = vi.mocked(component.formTakeover.open).mock.lastCall;
+            expect(inputs.config.id).toBe('row-1');
+            expect('backLabel' in inputs.config).toBe(false);
+            expect(closed.subscribe).toHaveBeenCalled();
+        });
+
+        it('drops the missing parts of the context line', () => {
+            expect(open({ policyName: () => '', activeStep: null }).subtitle).toBe('');
+            expect(open(null).subtitle).toBe('');
         });
     });
 });

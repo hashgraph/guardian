@@ -1,3 +1,4 @@
+import { Subject } from 'rxjs';
 import { PoliciesComponent } from './policies.component';
 
 describe('PoliciesComponent', () => {
@@ -6,21 +7,13 @@ describe('PoliciesComponent', () => {
 
     beforeEach(() => {
         dialogService = {
-            open: jasmine.createSpy('open').and.returnValue({
-                onClose: { pipe: () => ({ subscribe: jasmine.createSpy('subscribe') }) },
+            open: vi.fn().mockReturnValue({
+                onClose: { pipe: () => ({ subscribe: vi.fn() }) },
             }),
         };
-        const indexedDb = { registerStore: jasmine.createSpy('registerStore') };
+        const indexedDb = { registerStore: vi.fn() };
 
-        component = new PoliciesComponent(
-            {} as any, {} as any, {} as any, {} as any, {} as any,
-            { queryParams: { subscribe: jasmine.createSpy('subscribe') } } as any,
-            dialogService as any,
-            {} as any, {} as any, {} as any, {} as any, {} as any, {} as any,
-            new Map<string, any>(),
-            {} as any,
-            indexedDb as any
-        );
+        component = new PoliciesComponent({} as any, {} as any, {} as any, {} as any, {} as any, { queryParams: { subscribe: vi.fn() } } as any, dialogService as any, {} as any, {} as any, {} as any, {} as any, {} as any, {} as any, new Map<string, any>(), {} as any, indexedDb as any);
     });
 
     describe('setVersion previousVersion seeding', () => {
@@ -54,6 +47,71 @@ describe('PoliciesComponent', () => {
             (component as any).setVersion({ id: 'p1', uuid: 'u1' });
 
             expect(component.policies![0].previousVersion).toBe('');
+        });
+    });
+
+    describe('loadAllPolicy', () => {
+        it('cancels the previous request so a late response cannot overwrite a newer one', () => {
+            const requests: Subject<any>[] = [];
+            (component as any).policyEngineService = {
+                page: vi.fn().mockImplementation(() => {
+                    const request = new Subject<any>();
+                    requests.push(request);
+                    return request;
+                }),
+            };
+
+            (component as any).loadAllPolicy();
+            (component as any).loadAllPolicy();
+
+            expect(requests.length).toBe(2);
+            expect(requests[0].observed).toBe(false);
+            expect(requests[1].observed).toBe(true);
+        });
+    });
+
+    describe('status filter', () => {
+        const key = 'GUARDIAN_POLICIES_STATUS_FILTER:did:1:local';
+
+        beforeEach(() => {
+            localStorage.clear();
+            component.owner = 'did:1';
+            component.tab = 'local';
+            vi.spyOn(component as any, 'loadAllPolicy').mockImplementation(() => undefined);
+        });
+
+        afterEach(() => localStorage.clear());
+
+        it('restores saved statuses and drops stale ones', () => {
+            localStorage.setItem(key, JSON.stringify(['PUBLISH', 'VIEW', 'BOGUS']));
+            component.restoreStatusFilter();
+            expect(component.statusFilter).toEqual(['PUBLISH']);
+        });
+
+        it('offers VIEW on the remote tab only', () => {
+            expect(component.statusOptions.map((o) => o.value)).not.toContain('VIEW');
+            component.tab = 'remote';
+            expect(component.statusOptions.map((o) => o.value)).toContain('VIEW');
+        });
+
+        it('saves per user and tab, resets the page and reloads', () => {
+            component.pageIndex = 3;
+            component.onStatusChange(['DRAFT', 'PUBLISH']);
+            expect(JSON.parse(localStorage.getItem(key) as string)).toEqual(['DRAFT', 'PUBLISH']);
+            expect(component.pageIndex).toBe(0);
+            expect((component as any).loadAllPolicy).toHaveBeenCalled();
+        });
+
+        it('removes the stored value when cleared', () => {
+            component.onStatusChange(['DRAFT']);
+            component.onStatusChange([]);
+            expect(localStorage.getItem(key)).toBeNull();
+        });
+
+        it('keeps the filter bar visible when a status is set and nothing matches', () => {
+            component.policies = [];
+            component.statusFilter = ['PUBLISH_ERROR'];
+            expect(component.showFilterBar).toBe(true);
         });
     });
 });

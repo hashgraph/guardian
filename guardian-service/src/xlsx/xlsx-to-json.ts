@@ -1,11 +1,11 @@
 import { Range, Workbook, Worksheet } from './models/workbook.js';
-import { Dictionary, FieldTypes, IFieldTypes } from './models/dictionary.js';
+import { Dictionary, FieldTypes, IFieldTypes, resolveFieldHeader } from './models/dictionary.js';
 import { xlsxToBoolean, xlsxToEntity, xlsxToFont, xlsxToPresetArray, xlsxToPresetValue, xlsxToUnit, xlsxToVisibility } from './models/value-converters.js';
 import { Table } from './models/table.js';
 import * as mathjs from 'mathjs';
 import { XlsxSchemaConditions } from './models/schema-condition.js';
-import { isAncestorType, isRelationType, IwaVersion, ModelHelper, relationParent, SchemaCategory, SchemaEntity, SchemaField } from '@guardian/interfaces';
-import { DatabaseServer } from '@guardian/common';
+import { isAncestorType, isRelationType, ISchemaArrayDependency, IwaVersion, ModelHelper, relationParent, SchemaCategory, SchemaEntity, SchemaField, SchemaHelper } from '@guardian/interfaces';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import { XlsxResult } from './models/xlsx-result.js';
 import { XlsxEnum } from './models/xlsx-enum.js';
 import { EnumTable, SharedEnumTable } from './models/enum-table.js';
@@ -165,12 +165,13 @@ export class XlsxToJson {
         const startRow = range.s.r;
         const endCol = Math.min(range.e.c, startCol + 10);
         const endRow = Math.min(range.e.r, startRow + 10);
-        for (let c = startCol; c < endCol; c++) {
-            for (let r = startRow; r < endRow; r++) {
-                const title = worksheet.getValue<string>(c, r);
-                if (title === Dictionary.FIELD_TYPE) {
-                    return true;
-                }
+        for (let r = startRow; r < endRow; r++) {
+            const headers = new Set<Dictionary | null>();
+            for (let c = startCol; c < endCol; c++) {
+                headers.add(resolveFieldHeader(worksheet.getValue<string>(c, r)));
+            }
+            if (headers.has(Dictionary.FIELD_TYPE) && headers.has(Dictionary.REQUIRED_FIELD)) {
+                return true;
             }
         }
         return false;
@@ -467,7 +468,9 @@ export class XlsxToJson {
                     worksheet,
                     table,
                     row,
-                    xlsxResult
+                    xlsxResult,
+                    schema.entity,
+                    groupIndex > 0
                 );
                 if (field) {
                     allFields.set(field.title, field);
@@ -542,6 +545,13 @@ export class XlsxToJson {
                     conditionCache.push(condition);
                 }
             }
+            const arrayDependencies = XlsxToJson.readArrayDependencies(
+                worksheet,
+                table,
+                allFields,
+                fieldPaths,
+                xlsxResult
+            );
             row = table.end.r + 1;
             const expressions: XlsxExpressions = new XlsxExpressions();
             for (; row < range.e.r; row++) {
@@ -612,6 +622,7 @@ export class XlsxToJson {
                 });
             }
             const conditions = conditionCache.map(c => c.toJson());
+            schema.schema.arrayDependencies = arrayDependencies;
             schema.update(fields, conditions, expressions);
             return schema;
         } catch (error) {
@@ -625,11 +636,76 @@ export class XlsxToJson {
         }
     }
 
+    private static readonly NON_UPDATABLE_TYPES = new Set(['Help Text', 'Prefix', 'Postfix', 'Sub-Schema']);
+
+    /**
+     * Applies the schema editor rules to field flags:
+     * auto calculated fields are single valued, Updatable is not available for display-only
+     * and sub-schema types, Private only for top-level fields of an Encrypted VC schema.
+     */
+    private static readFieldFlags(
+        worksheet: Worksheet,
+        table: Table,
+        field: SchemaField,
+        fieldType: IFieldTypes | null,
+        row: number,
+        xlsxResult: XlsxResult,
+        entity: SchemaEntity | undefined,
+        nested: boolean
+    ): void {
+        const ignored = (header: Dictionary, reason: string) => {
+            xlsxResult.addError({
+                type: 'warning',
+                text: `"${header}" is not available here and is ignored.`,
+                message: `Sheet "${worksheet.name}", row ${row}: "${header}" is ignored because ${reason}.`,
+                worksheet: worksheet.name,
+                cell: worksheet.getPath(table.getCol(header), row),
+                row,
+                col: table.getCol(header)
+            }, field);
+        };
+
+        const autocalculated = field.autocalculate || fieldType?.name === 'Auto-Calculate';
+        if (autocalculated && field.isArray) {
+            field.isArray = false;
+            ignored(Dictionary.ALLOW_MULTIPLE_ANSWERS, 'an auto calculated field holds a single value');
+        }
+
+        if (table.hasCol(Dictionary.UPDATABLE)) {
+            const updatable = xlsxToBoolean(worksheet.getValue<string>(table.getCol(Dictionary.UPDATABLE), row));
+            const unsupported = fieldType
+                ? XlsxToJson.NON_UPDATABLE_TYPES.has(fieldType.name)
+                : !!field.isRef;
+            if (updatable && unsupported) {
+                ignored(Dictionary.UPDATABLE, 'the field type cannot be updated');
+            } else {
+                field.isUpdatable = updatable;
+            }
+        }
+
+        if (table.hasCol(Dictionary.PRIVATE)) {
+            const isPrivate = xlsxToBoolean(worksheet.getValue<string>(table.getCol(Dictionary.PRIVATE), row));
+            if (entity !== SchemaEntity.EVC) {
+                if (isPrivate) {
+                    ignored(Dictionary.PRIVATE, 'the schema type is not "Encrypted Verifiable Credential"');
+                }
+            } else if (nested) {
+                if (isPrivate) {
+                    ignored(Dictionary.PRIVATE, 'it is only available for top-level fields');
+                }
+            } else {
+                field.isPrivate = isPrivate;
+            }
+        }
+    }
+
     private static readField(
         worksheet: Worksheet,
         table: Table,
         row: number,
-        xlsxResult: XlsxResult
+        xlsxResult: XlsxResult,
+        entity?: SchemaEntity,
+        nested: boolean = false
     ): SchemaField {
         if (worksheet.empty(table.start.c, table.end.c, row)) {
             return null;
@@ -717,6 +793,16 @@ export class XlsxToJson {
                     row,
                     col: table.getCol(Dictionary.FIELD_TYPE),
                 }, field);
+            }
+
+            XlsxToJson.readFieldFlags(worksheet, table, field, fieldType, row, xlsxResult, entity, nested);
+
+            if (table.hasCol(Dictionary.ADVISORY_TEXT)
+                && type !== 'Auto-Calculate' && SchemaHelper.supportsAdvisoryText(field)) {
+                const advisoryText = worksheet.getCell(table.getCol(Dictionary.ADVISORY_TEXT), row).getValue<string>();
+                if (typeof advisoryText === 'string' && advisoryText.trim()) {
+                    field.advisoryText = advisoryText.trim();
+                }
             }
 
             if (!typeError && !XlsxToJson.isAutoCalculate(type, field)) {
@@ -1384,6 +1470,134 @@ export class XlsxToJson {
             }, field);
             return;
         }
+    }
+
+    private static readArrayDependencies(
+        worksheet: Worksheet,
+        table: Table,
+        allFields: Map<string, SchemaField>,
+        fieldPaths: Map<string, string[]>,
+        xlsxResult: XlsxResult
+    ): ISchemaArrayDependency[] {
+        const dependencies: ISchemaArrayDependency[] = [];
+        if (!table.hasCol(Dictionary.REPEATABLE_LINKS)) {
+            return dependencies;
+        }
+        const col = table.getCol(Dictionary.REPEATABLE_LINKS);
+        const range = worksheet.getRange();
+        const rows = new Map<ISchemaArrayDependency, number>();
+        const rejected: string[][] = [];
+        const fieldAt = (row: number) => {
+            const key = worksheet.getPath(table.getCol(Dictionary.ANSWER), row);
+            return { field: allFields.get(key), path: fieldPaths.get(key) };
+        };
+        const isInside = (path: string[], parent: string[]): boolean =>
+            path.length > parent.length && parent.every((name, index) => path[index] === name);
+        const isRepeatable = (field: SchemaField): boolean => !!field.isArray && !!field.isRef;
+        const addError = (row: number, field: SchemaField, reason: string): void => {
+            xlsxResult.addError({
+                type: 'error',
+                text: `Invalid repeatable link on field "${field?.description || worksheet.getPath(col, row)}".`,
+                message: `Row ${row}: ${reason} `
+                    + `Supported formats: =A7 or =A7&" | "&A8 on a repeatable field, `
+                    + `and =A8 on a field inside a linked entry, `
+                    + `where A7 and A8 are "Key" cells of the fields that give the value.`,
+                worksheet: worksheet.name,
+                cell: worksheet.getPath(col, row),
+                row,
+                col,
+            }, field);
+        };
+        const reject = (row: number, field: SchemaField, path: string[], reason: string): void => {
+            addError(row, field, reason);
+            if (field && path && isRepeatable(field)) {
+                rejected.push(path);
+            }
+        };
+
+        for (let row = table.end.r + 1; row < range.e.r; row++) {
+            if (worksheet.outColumnRange(col)) {
+                break;
+            }
+            const cell = worksheet.getCell(col, row);
+            const value = cell.isFormulae() ? cell.getFormulae() : cell.isValue() ? String(cell.getValue<string>() ?? '') : '';
+            if (!value.trim()) {
+                continue;
+            }
+            const { field, path } = fieldAt(row);
+            const match = value.trim().replace(/^=/, '')
+                .match(/^\$?[A-Z]{1,3}\$?(\d+)(?:\s*&\s*"\s*\|\s*"\s*&\s*\$?[A-Z]{1,3}\$?(\d+))?$/i);
+            if (!match) {
+                reject(row, field, path, `"${value}" cannot be read as a repeatable link.`);
+                continue;
+            }
+            if (!field || !path) {
+                addError(row, field, 'This row has no field.');
+                continue;
+            }
+            const source = fieldAt(Number(match[1]));
+            const title = match[2] ? fieldAt(Number(match[2])) : null;
+            if (!source.field || !source.path || (title && (!title.field || !title.path))) {
+                reject(row, field, path, 'The reference points to a row with no field.');
+                continue;
+            }
+            if (isRepeatable(field)) {
+                if (!isRepeatable(source.field)) {
+                    reject(row, field, path, `The source "${source.path.join('.')}" is not a repeatable field.`);
+                    continue;
+                }
+                if (title && !isInside(title.path, source.path)) {
+                    reject(row, field, path, `The display name "${title.path.join('.')}" is not a field inside "${source.path.join('.')}".`);
+                    continue;
+                }
+                const dependency: ISchemaArrayDependency = { on: source.path, field: path, kind: 'array' };
+                if (title) {
+                    dependency.title = title.path.slice(source.path.length);
+                }
+                dependencies.push(dependency);
+                xlsxResult.registerArrayDependency(dependency, worksheet, row, col);
+                rows.set(dependency, row);
+            } else {
+                const owner = dependencies
+                    .filter(dependency => isInside(path, dependency.field))
+                    .sort((a, b) => b.field.length - a.field.length)[0];
+                if (!owner && rejected.some(parent => isInside(path, parent))) {
+                    continue;
+                }
+                if (title || !owner) {
+                    addError(row, field, 'A copied value must be on a field inside a linked entry and refer to one field.');
+                    continue;
+                }
+                if (!isInside(source.path, owner.on)) {
+                    addError(row, field, `The copied value "${source.path.join('.')}" is not a field inside "${owner.on.join('.')}".`);
+                    continue;
+                }
+                owner.valueMappings = [...(owner.valueMappings || []), {
+                    source: source.path.slice(owner.on.length),
+                    target: path.slice(owner.field.length)
+                }];
+            }
+        }
+
+        const sources = new Map(dependencies.map(dependency => [dependency.field.join('.'), dependency.on.join('.')]));
+        const cyclic = dependencies.filter(dependency => {
+            const start = dependency.field.join('.');
+            const seen = new Set<string>();
+            let current = sources.get(start);
+            while (current !== undefined && !seen.has(current)) {
+                if (current === start) {
+                    return true;
+                }
+                seen.add(current);
+                current = sources.get(current);
+            }
+            return false;
+        });
+        for (const dependency of cyclic) {
+            const row = rows.get(dependency);
+            addError(row, fieldAt(row).field, `The link "${dependency.on.join('.')}" → "${dependency.field.join('.')}" is part of a cycle.`);
+        }
+        return dependencies.filter(dependency => !cyclic.includes(dependency));
     }
 
     private static parseCondition(formulae: string): ICondition {

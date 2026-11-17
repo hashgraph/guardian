@@ -78,7 +78,7 @@ describe('cache invalidation', () => {
             const client = new FakeCacheClient();
             const service = new CacheService(client);
 
-            const routes = ['/schemas', '/schemas/0.0.1', '/schemas/list/all', '/schemas/schema-with-sub-schemas', '/schema/id1'];
+            const routes = ['/schemas', '/schemas/0.0.1', '/schemas/list/all', '/schemas/schema-with-sub-schemas', '/schema/id1', '/tags/schemas'];
             for (const route of routes) {
                 const [key] = getCacheKey([route], user, CACHE_PREFIXES.CACHE);
                 const [tag] = getCacheKey([route], user);
@@ -100,8 +100,10 @@ describe('cache invalidation', () => {
         it('matches the prefixes a tag is actually stored under', () => {
             const [listing] = getCacheKey(['/schemas/0.0.1'], user);
             const [single] = getCacheKey(['/schema/id1'], user);
+            const [tagSchemas] = getCacheKey(['/tags/schemas'], user);
             assert.ok(CACHE_TAG_PREFIXES.SCHEMAS.some(prefix => listing.startsWith(prefix)));
             assert.ok(CACHE_TAG_PREFIXES.SCHEMAS.some(prefix => single.startsWith(prefix)));
+            assert.ok(CACHE_TAG_PREFIXES.SCHEMAS.some(prefix => tagSchemas.startsWith(prefix)));
         });
     });
 });

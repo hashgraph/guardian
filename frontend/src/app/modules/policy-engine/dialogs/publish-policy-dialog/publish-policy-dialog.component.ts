@@ -56,7 +56,26 @@ export class PublishPolicyDialog {
 
     public get isPublishDisabled(): boolean {
         const isFormInvalid = !this.versionControl.valid;
-        const isVersionNotNewer = this.policy?.previousVersion && ModelHelper.versionCompare(this.policy.previousVersion, this.versionControl.value) >= 0;
-        return isFormInvalid || isVersionNotNewer;
+        return isFormInvalid || this.isVersionNotNewer;
+    }
+
+    public get versionError(): string | null {
+        if (this.versionControl.pristine && this.versionControl.untouched) {
+            return null;
+        }
+        if (this.versionControl.hasError('required')) {
+            return 'Version is required';
+        }
+        if (this.versionControl.hasError('pattern')) {
+            return 'Version must contain only numbers separated by dots, for example 1, 1.0 or 1.0.0';
+        }
+        if (this.isVersionNotNewer) {
+            return `Version must be greater than ${this.policy.previousVersion}`;
+        }
+        return null;
+    }
+
+    private get isVersionNotNewer(): boolean {
+        return !!this.policy?.previousVersion && ModelHelper.versionCompare(this.policy.previousVersion, this.versionControl.value) >= 0;
     }
 }

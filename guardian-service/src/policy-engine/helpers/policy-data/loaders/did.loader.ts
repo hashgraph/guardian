@@ -1,4 +1,4 @@
-import { DidDocument } from '@guardian/common';
+import { DidDocument } from '@guardian/common/entity/did-document';
 import { PolicyDataLoader } from './loader.js';
 
 /**

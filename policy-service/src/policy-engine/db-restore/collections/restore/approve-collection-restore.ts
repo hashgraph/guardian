@@ -1,4 +1,5 @@
-import { DataBaseHelper, ApprovalDocument } from '@guardian/common';
+import { DataBaseHelper } from '@guardian/common/helpers/db-helper';
+import { ApprovalDocument } from '@guardian/common/entity/approval-document';
 import { CollectionRestore, IDiffAction } from '../../index.js';
 
 export class ApproveCollectionRestore extends CollectionRestore<ApprovalDocument> {

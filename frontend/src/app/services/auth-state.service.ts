@@ -4,6 +4,8 @@ import { AuthService } from './auth.service';
 import { AppThemeService } from './app-theme.service';
 import { environment } from '../../environments/environment';
 
+const REFRESH_REFUSED_STATUSES = [401, 403, 422];
+
 @Injectable({
     providedIn: 'root'
 })
@@ -23,7 +25,9 @@ export class AuthStateService {
             if (isLogin) {
                 if (!this.refreshTokenTimer) {
                     this.refreshTokenTimer = setInterval(() => {
-                        this.authService.updateAccessToken().subscribe();
+                        this.authService.updateAccessToken().subscribe({
+                            error: (error) => this.onRefreshFailed(error)
+                        });
                     }, environment.accessTokenUpdateInterval || 29 * 1000)
                 }
             } else {
@@ -31,6 +35,16 @@ export class AuthStateService {
                 this.refreshTokenTimer = null;
             }
         })
+    }
+
+    /**
+     * The auth service refused the refresh token (missing, expired or revoked): the session is over,
+     * so end it rather than retry forever. Any other failure (network, gateway) is left to the next tick.
+     */
+    private onRefreshFailed(error: any): void {
+        if (REFRESH_REFUSED_STATUSES.includes(error?.status)) {
+            this.clearSession();
+        }
     }
 
     public get value(): Observable<boolean> {
@@ -59,7 +73,7 @@ export class AuthStateService {
          * discard the theme on every page refresh.
          */
         if (state) {
-            this.appThemeService.applyForUser(this.authService.getUserKey());
+            this.appThemeService.applyForUser(this.authService.getUsername());
         } else if (!noClearLocalStorage) {
             this.appThemeService.reset();
         }
@@ -67,13 +81,12 @@ export class AuthStateService {
     }
 
     /**
-     * Tear down the current session: drop the stored tokens and username, and
-     * flip the login state (which also stops the refresh timer). The single
-     * place that clears a session, so callers don't re-compose the steps.
+     * Tear down the current session: drop the stored tokens and flip the login
+     * state (which also stops the refresh timer). The single place that clears
+     * a session, so callers don't re-compose the steps.
      */
     public clearSession(): void {
         this.authService.removeAccessToken();
-        this.authService.removeUsername();
         this.updateState(false);
     }
 

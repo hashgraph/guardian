@@ -1,5 +1,5 @@
 import { assert } from 'chai';
-import { Hashing } from '../../../dist/hedera-modules/hashing.js';
+import { Hashing } from '../../../dist/helpers/hashing.js';
 
 describe('Hashing.sha256', () => {
     it('produces the documented sha256 of an empty string', () => {

@@ -1,17 +1,15 @@
-import {
-    DatabaseServer,
-    MessageAction,
-    MessageServer,
-    Policy as PolicyCollection,
-    PolicyModule as ModuleCollection,
-    PolicyTool as PolicyToolCollection,
-    Schema as SchemaCollection,
-    Token as TokenCollection,
-    Tag,
-    TagMessage,
-    TopicConfig,
-    UrlType
-} from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { Policy as PolicyCollection } from '@guardian/common/entity/policy';
+import { PolicyModule as ModuleCollection } from '@guardian/common/entity/module';
+import { PolicyTool as PolicyToolCollection } from '@guardian/common/entity/tool';
+import { Schema as SchemaCollection } from '@guardian/common/entity/schema';
+import { Token as TokenCollection } from '@guardian/common/entity/token';
+import { Tag } from '@guardian/common/entity/tag';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { TagMessage } from '@guardian/hedera/message/tag-message';
+import { TopicConfig } from '@guardian/hedera/topic';
+import { UrlType } from '@guardian/hedera/message/url.interface';
 import {GenerateUUIDv4, IOwner, IRootConfig, TagType} from '@guardian/interfaces';
 
 // /**

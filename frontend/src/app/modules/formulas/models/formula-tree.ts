@@ -1,4 +1,11 @@
-import { IFormulaItem, IFormula, IFormulaLink, FormulaItemType, Schema, SchemaField, IVCDocument, ISchema, IVPDocument, IVC, IVP, ICredentialSubject, IFormulaFile } from "@guardian/interfaces";
+import { IFormulaItem, IFormula, IFormulaLink, FormulaItemType, Schema, SchemaField, IVCDocument, ISchema, IVPDocument, IVC, IVP, ICredentialSubject, IFormulaFile, SchemaHelper, SchemaIfCondition, IFormulaSource } from "@guardian/interfaces";
+
+export interface IFormulaConditionContext {
+    data: any;
+    entries?: Record<string, number> | null;
+    anyEntry?: boolean;
+    equalsFn?: (a: any, b: any) => boolean;
+}
 
 export interface Link {
     schema: string;
@@ -201,73 +208,29 @@ export class SchemaItem {
     }
 }
 
-export class FormulaItem {
-    public readonly uuid: string;
-    public readonly name: string;
-    public readonly description: string;
-    public readonly type: FormulaItemType;
+/**
+ * One link of a formula item, with the entity and the item it points to once resolved.
+ */
+export class FormulaItemLink {
+    public readonly schemaLink: { schema: string, path: string } | null;
+    public readonly formulaLink: { formula: string, variable: string } | null;
+    public readonly condition: SchemaIfCondition | null;
 
-    private _value: any;
-    private _link: IFormulaLink | null;
-    private _relationships: string[] | null;
-
-    private _schemaLink: { schema: string, path: string } | null;
-    private _formulaLink: { formula: string, variable: string } | null;
-    private _parent: FormulaTree | null;
-
-    private _relationshipItems: FormulaItem[];
-    private _parentItems: FormulaItem[];
     private _linkEntity: FormulaTree | Schema | null;
     private _linkItem: FormulaItem | SchemaItem | null;
 
-    constructor(config: IFormulaItem) {
-        this.uuid = config.uuid || '';
-        this.name = config.name || '';
-        this.description = config.description || '';
-        this.type = config.type || '';
-
-        this._value = config.value || '';
-        this._link = config.link || null;
-        this._relationships = config.relationships || null;
-
-        this._schemaLink = null;
-        this._formulaLink = null;
-        if (this._link) {
-            if (this._link.type === 'schema') {
-                this._schemaLink = {
-                    schema: this._link.entityId,
-                    path: this._link.item
-                }
-            }
-            if (this._link.type === 'formula') {
-                this._formulaLink = {
-                    formula: this._link.entityId,
-                    variable: this._link.item
-                }
-            }
+    constructor(public readonly link: IFormulaLink) {
+        this.schemaLink = null;
+        this.formulaLink = null;
+        this.condition = link.type === 'schema' ? (link.condition ?? null) : null;
+        if (link.type === 'schema') {
+            this.schemaLink = { schema: link.entityId, path: link.item };
         }
-
-        this._parent = null;
-        this._relationshipItems = [];
-        this._parentItems = [];
-        this._linkItem = null;
+        if (link.type === 'formula') {
+            this.formulaLink = { formula: link.entityId, variable: link.item };
+        }
         this._linkEntity = null;
-    }
-
-    public get value() {
-        return this._value;
-    }
-
-    public get hasLink() {
-        return !!this._link;
-    }
-
-    public get schemaLink() {
-        return this._schemaLink;
-    }
-
-    public get formulaLink() {
-        return this._formulaLink;
+        this._linkItem = null;
     }
 
     public get linkEntity() {
@@ -279,27 +242,194 @@ export class FormulaItem {
     }
 
     public get linkEntityName() {
-        if (this._formulaLink && this._linkEntity) {
-            return this._linkEntity.name;
-        }
-        if (this._schemaLink && this._linkEntity) {
+        if ((this.formulaLink || this.schemaLink) && this._linkEntity) {
             return this._linkEntity.name;
         }
         return null;
     }
 
     public get linkItemName() {
-        if (this._formulaLink && this._linkItem) {
+        if (this.formulaLink && this._linkItem) {
             return (this._linkItem as FormulaItem).name;
         }
-        if (this._schemaLink && this._linkItem) {
+        if (this.schemaLink && this._linkItem) {
             return (this._linkItem as SchemaItem).field;
         }
         return null;
     }
 
+    /**
+     * A link without a condition is always visible.
+     */
+    public isVisible(ctx?: IFormulaConditionContext): boolean {
+        if (!ctx || !this.condition) {
+            return true;
+        }
+        return SchemaHelper.evaluateIfCondition(
+            this.condition,
+            ctx.data,
+            ctx.equalsFn,
+            { entries: ctx.entries, anyEntry: ctx.anyEntry }
+        );
+    }
+
+    public setFormulas(formulas: FormulaTree[]) {
+        if (this.formulaLink) {
+            const entity = formulas.find((e) => e.uuid === this.formulaLink?.formula) || null;
+            this._linkEntity = entity;
+            if (entity) {
+                this._linkItem = entity.get(this.formulaLink.variable);
+            }
+        }
+    }
+
+    public setSchemas(schemas: Schema[]) {
+        if (this.schemaLink) {
+            const schema = schemas.find((e) => e.iri === this.schemaLink?.schema) || null;
+            this._linkEntity = schema;
+            if (schema) {
+                const field = schema.getField(this.schemaLink.path);
+                if (field) {
+                    this._linkItem = new SchemaItem(schema, field);
+                }
+            } else {
+                this._linkItem = SchemaItem.empty();
+            }
+        }
+    }
+
+    public setDocuments(documents: DocumentItem[]) {
+        if (this.schemaLink && this._linkItem) {
+            (this._linkItem as SchemaItem).setDocuments(documents);
+        }
+    }
+
+    public createNav(): any {
+        if (this.formulaLink) {
+            return {
+                view: 'link',
+                type: this._linkItem?.type,
+                entity: this._linkEntity?.name,
+                name: this._linkItem?.name,
+                data: this._linkItem,
+                children: []
+            };
+        }
+        return {
+            view: 'link',
+            type: 'field',
+            entity: this._linkEntity?.name,
+            name: (this._linkItem as SchemaItem)?.field,
+            data: this._linkItem,
+            children: []
+        };
+    }
+}
+
+export class FormulaItem {
+    public readonly uuid: string;
+    public readonly name: string;
+    public readonly description: string;
+    public readonly type: FormulaItemType;
+    public readonly source: IFormulaSource | null;
+
+    private _value: any;
+    private _relationships: string[] | null;
+
+    private _itemLinks: FormulaItemLink[];
+    private _parent: FormulaTree | null;
+
+    private _relationshipItems: FormulaItem[];
+    private _parentItems: FormulaItem[];
+
+    constructor(config: IFormulaItem) {
+        this.uuid = config.uuid || '';
+        this.name = config.name || '';
+        this.description = config.description || '';
+        this.type = config.type || '';
+
+        this.source = config.source && typeof config.source === 'object' ? config.source : null;
+
+        this._value = config.value || '';
+        this._relationships = config.relationships || null;
+
+        const links = Array.isArray(config.links) ? config.links : (config.link ? [config.link] : []);
+        this._itemLinks = links.filter((e) => !!e).map((e) => new FormulaItemLink(e));
+
+        this._parent = null;
+        this._relationshipItems = [];
+        this._parentItems = [];
+    }
+
+    public get value() {
+        return this._value;
+    }
+
+    public get links(): FormulaItemLink[] {
+        return this._itemLinks;
+    }
+
+    public get hasLink() {
+        return this._itemLinks.length > 0;
+    }
+
+    /**
+     * Schema links of the item.
+     */
+    public get schemaLinks() {
+        return this._itemLinks.filter((e) => !!e.schemaLink);
+    }
+
+    /**
+     * True when any link of the item has a display condition.
+     */
+    public get hasCondition(): boolean {
+        return this._itemLinks.some((e) => !!e.condition);
+    }
+
+    /**
+     * True when a link of the item to the field has a display condition.
+     */
+    public hasConditionOn(schema: string, path: string): boolean {
+        return this._itemLinks.some((e) =>
+            !!e.condition && e.schemaLink?.schema === schema && e.schemaLink?.path === path
+        );
+    }
+
+    /**
+     * The item is shown on the field when any of its links to that field is visible.
+     */
+    public isVisibleOn(schema: string, path: string, ctx?: IFormulaConditionContext): boolean {
+        return this._itemLinks.some((e) =>
+            e.schemaLink?.schema === schema && e.schemaLink?.path === path && e.isVisible(ctx)
+        );
+    }
+
+    // The first link, for the views that show one link.
+
+    public get linkEntity() {
+        return this._itemLinks[0]?.linkEntity ?? null;
+    }
+
+    public get linkItem(): FormulaItem | SchemaItem | null {
+        return this._itemLinks[0]?.linkItem ?? null;
+    }
+
+    public get linkEntityName() {
+        return this._itemLinks[0]?.linkEntityName ?? null;
+    }
+
+    public get linkItemName() {
+        return this._itemLinks[0]?.linkItemName ?? null;
+    }
+
     public get relationshipItems() {
         return this._relationshipItems;
+    }
+
+    /** True when the item belongs to a formula generated from policy math blocks. */
+    public get autoGenerated(): boolean {
+        return this._parent?.autoGenerated ?? false;
     }
 
     public setParent(parent: FormulaTree) {
@@ -308,7 +438,10 @@ export class FormulaItem {
 
     public setRelationship(items: FormulaItem[]) {
         if (Array.isArray(this._relationships)) {
-            this._relationshipItems = items.filter((e) => this._relationships?.includes(e.uuid));
+            const byUuid = new Map(items.map((e) => [e.uuid, e]));
+            this._relationshipItems = this._relationships
+                .map((uuid) => byUuid.get(uuid))
+                .filter((e): e is FormulaItem => !!e);
         } else {
             this._relationshipItems = [];
         }
@@ -322,32 +455,20 @@ export class FormulaItem {
     }
 
     public setFormulas(formulas: FormulaTree[]) {
-        if (this._formulaLink) {
-            this._linkEntity = formulas.find((e) => e.uuid === this._formulaLink?.formula) || null;
-            if (this._linkEntity) {
-                this._linkItem = this._linkEntity.get(this._formulaLink.variable);
-            }
+        for (const link of this._itemLinks) {
+            link.setFormulas(formulas);
         }
     }
 
     public setSchemas(schemas: Schema[]) {
-        if (this._schemaLink) {
-            const schema = schemas.find((e) => e.iri === this._schemaLink?.schema) || null;
-            this._linkEntity = schema;
-            if (schema) {
-                const field = schema.getField(this._schemaLink.path);
-                if (field) {
-                    this._linkItem = new SchemaItem(schema, field);
-                }
-            } else {
-                this._linkItem = SchemaItem.empty();
-            }
+        for (const link of this._itemLinks) {
+            link.setSchemas(schemas);
         }
     }
 
     public setDocuments(documents: DocumentItem[]) {
-        if (this._schemaLink && this._linkItem) {
-            (this._linkItem as SchemaItem).setDocuments(documents);
+        for (const link of this._itemLinks) {
+            link.setDocuments(documents);
         }
     }
 
@@ -359,25 +480,8 @@ export class FormulaItem {
             data: this,
             children: []
         }
-        if (this._formulaLink) {
-            item.children.push({
-                view: 'link',
-                type: this._linkItem?.type,
-                entity: this._linkEntity?.name,
-                name: this._linkItem?.name,
-                data: this._linkItem,
-                children: []
-            });
-        }
-        if (this._schemaLink) {
-            item.children.push({
-                view: 'link',
-                type: 'field',
-                entity: this._linkEntity?.name,
-                name: (this._linkItem as SchemaItem)?.field,
-                data: this._linkItem,
-                children: []
-            });
+        for (const link of this._itemLinks) {
+            item.children.push(link.createNav());
         }
 
         for (const ref of this._relationshipItems) {
@@ -400,6 +504,8 @@ export class FormulaTree {
     public readonly uuid: string;
     public readonly name: string;
     public readonly description: string;
+    /** Generated from the math blocks of a policy, not created on the Formulas page. */
+    public readonly autoGenerated: boolean;
 
     private _links: Map<string, Map<string, FormulaItem[]>>;
     private _items: FormulaItem[];
@@ -409,6 +515,7 @@ export class FormulaTree {
         this.uuid = formula.uuid || '';
         this.name = formula.name || '';
         this.description = formula.description || '';
+        this.autoGenerated = !!formula.autoGenerated;
 
         this._links = new Map<string, Map<string, FormulaItem[]>>();
         this._items = [];
@@ -426,11 +533,16 @@ export class FormulaTree {
         for (const config of items) {
             const item = new FormulaItem(config);
             item.setParent(this);
-            const link = item.schemaLink;
-            if (link) {
+            for (const { schemaLink: link } of item.schemaLinks) {
+                if (!link) {
+                    continue;
+                }
                 const map = this._links.get(link.schema) || new Map<string, FormulaItem[]>();
                 const array = map.get(link.path) || [];
-                array.push(item);
+                // an item with several links to one field is listed once
+                if (!array.includes(item)) {
+                    array.push(item);
+                }
                 map.set(link.path, array);
                 this._links.set(link.schema, map);
             }
@@ -480,13 +592,13 @@ export class FormulaTree {
         return this._links.get(schema)?.get(path) || [];
     }
 
+    /**
+     * Finds an item by uuid (what the link dialog stores), then by name (older links).
+     */
     public get(variable: string): FormulaItem | null {
-        for (const item of this._items) {
-            if (item.name === variable) {
-                return item;
-            }
-        }
-        return null;
+        return this._items.find((item) => item.uuid === variable)
+            || this._items.find((item) => item.name === variable)
+            || null;
     }
 
     public merge(links: Map<string, Map<string, FormulaItem[]>>) {
@@ -563,8 +675,12 @@ export class FormulasTree {
         return this._links.get(schema)?.has(path) || false;
     }
 
-    public get(schema: string, path: string): FormulaItem[] {
-        return this._links.get(schema)?.get(path) || [];
+    public get(schema: string, path: string, ctx?: IFormulaConditionContext): FormulaItem[] {
+        const items = this._links.get(schema)?.get(path) || [];
+        if (!ctx) {
+            return items;
+        }
+        return items.filter((item) => item.isVisibleOn(schema, path, ctx));
     }
 
     public getFiles(items: FormulaItem[]): FormulaFiles[] {
@@ -577,16 +693,20 @@ export class FormulasTree {
         return Array.from(result);
     }
 
-    public getFields(schema?: string) {
+    public getFields(schema?: string, ctx?: IFormulaConditionContext) {
         const result: any = {};
         if (schema) {
             const map = this._links.get(schema);
             if (map) {
-                for (const path of map.keys()) {
+                for (const [path, items] of map.entries()) {
+                    if (ctx && !items.some((item) => item.isVisibleOn(schema, path, ctx))) {
+                        continue;
+                    }
                     result[`${schema}/${path}`] = {
                         tree: this,
                         schema,
-                        path
+                        path,
+                        context: ctx
                     };
                 }
             }
@@ -599,7 +719,7 @@ export class FormulasTree {
         schemas: ISchema[],
         document: IVCDocument,
         relationships: IVCDocument[]
-    }) {
+    }, options?: { excludeAutoGenerated?: boolean }) {
         if (!response) {
             return null;
         }
@@ -625,7 +745,10 @@ export class FormulasTree {
         }
 
         const tree = new FormulasTree();
-        tree.setFormulas(response.formulas);
+        const formulas = options?.excludeAutoGenerated && Array.isArray(response.formulas)
+            ? response.formulas.filter((f) => !f.autoGenerated)
+            : response.formulas;
+        tree.setFormulas(formulas);
         tree.setSchemas(schemas);
         tree.setDocuments(documents);
         tree.update();

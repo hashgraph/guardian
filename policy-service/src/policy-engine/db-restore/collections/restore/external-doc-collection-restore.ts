@@ -1,4 +1,5 @@
-import { DataBaseHelper, ExternalDocument } from '@guardian/common';
+import { DataBaseHelper } from '@guardian/common/helpers/db-helper';
+import { ExternalDocument } from '@guardian/common/entity/external-document';
 import { CollectionRestore, IDiffAction } from '../../index.js';
 
 export class ExternalCollectionRestore extends CollectionRestore<ExternalDocument> {

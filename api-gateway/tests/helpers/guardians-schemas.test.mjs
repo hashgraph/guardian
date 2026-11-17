@@ -140,13 +140,13 @@ describe('Guardians schemas', () => {
     it('getSchemasDublicates forwards args', async () => {
         const { g, calls } = make();
         await g.getSchemasDublicates(['n1'], owner, 'p1');
-        assert.deepEqual(calls[0], [MessageAPI.SCHEMA_IMPORT_CHECK_FOR_DUBLICATES, { schemaNames: ['n1'], owner, policyId: 'p1' }]);
+        assert.deepEqual(calls[0], [MessageAPI.SCHEMA_IMPORT_CHECK_FOR_DUBLICATES, { schemaNames: ['n1'], schemas: undefined, owner, policyId: 'p1' }]);
     });
 
     it('getSchemasDublicates with only names', async () => {
         const { g, calls } = make();
         await g.getSchemasDublicates(['n1']);
-        assert.deepEqual(calls[0], [MessageAPI.SCHEMA_IMPORT_CHECK_FOR_DUBLICATES, { schemaNames: ['n1'], owner: undefined, policyId: undefined }]);
+        assert.deepEqual(calls[0], [MessageAPI.SCHEMA_IMPORT_CHECK_FOR_DUBLICATES, { schemaNames: ['n1'], schemas: undefined, owner: undefined, policyId: undefined }]);
     });
 
     it('createSchema forwards item and owner', async () => {

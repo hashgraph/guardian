@@ -5,8 +5,8 @@ import {
     MessageAPI,
     SignType,
 } from '@guardian/interfaces';
-import { Wallet as WalletManager } from '../wallet/index.js'
-import { NatsService } from '../mq/index.js';
+import { Wallet as WalletManager } from '../wallet/wallet.js';
+import { NatsService } from '../mq/nats-service.js';
 import { Users } from './users.js';
 import { IAuthUser } from '../interfaces/auth.interface.js';
 

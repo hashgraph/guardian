@@ -2,8 +2,9 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 import { seededMessageId } from '../../../support/CustomHelpers/ipfsSeeding';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('Get progresses', { tags: ['notifications', 'firstPool', 'all', 'all-no-mgs'] }, () => {
+context('Get progresses', { tags: ['notifications', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     before('Import policy for check progresses', () => {
@@ -21,7 +22,7 @@ context('Get progresses', { tags: ['notifications', 'firstPool', 'all', 'all-no-
                     headers: {
                         authorization,
                     },
-                    timeout: 180000,
+                    timeout: TIMEOUTS.longOperation,
                 }).then((response) => {
                     expect(response.status).to.eq(STATUS_CODE.ACCEPTED);
                 });

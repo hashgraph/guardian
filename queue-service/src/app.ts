@@ -1,4 +1,15 @@
-import { ApplicationState, COMMON_CONNECTION_CONFIG, DatabaseServer, GenerateTLSOptionsNats, JwtServicesValidator, LargePayloadContainer, MessageBrokerChannel, mongoForLoggingInitialization, NotificationService, OldSecretManager, PinoLogger, pinoLoggerInitialization } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { ApplicationState } from '@guardian/common/helpers/application-state';
+import { COMMON_CONNECTION_CONFIG } from '@guardian/common/helpers/db-helper';
+import { GenerateTLSOptionsNats } from '@guardian/common/helpers/generate-tls-options';
+import { mongoForLoggingInitialization } from '@guardian/common/helpers/mongo-logging-initialization';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { pinoLoggerInitialization } from '@guardian/common/helpers/pino-logger-initialization';
+import { LargePayloadContainer } from '@guardian/common/mq/large-payload-container';
+import { MessageBrokerChannel } from '@guardian/common/mq/message-broker-channel';
+import { NotificationService } from '@guardian/common/notification/notification.service';
+import { OldSecretManager } from '@guardian/common/secret-manager/old-style/old-secret-manager';
+import { JwtServicesValidator } from '@guardian/common/security/jwt-services-validator';
 import { ApplicationStates, GenerateUUIDv4 } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';

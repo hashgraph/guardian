@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 # Stage 0: # Define the versions of the base images used
 ARG NODE_VERSION=20.20.2-alpine
-ARG NGINX_VERSION=1.30.4-alpine
+ARG NGINX_VERSION=1.30.6-alpine
 
 FROM --platform=$BUILDPLATFORM node:${NODE_VERSION} AS base
 WORKDIR /usr/local/app
@@ -35,7 +35,7 @@ COPY --link ./indexer-frontend/. ./
 RUN npm install indexer-interfaces.tgz && npm install indexer-common.tgz && npm run build
 
 # Stage 5: Create the final image
-FROM nginxinc/nginx-unprivileged:${NGINX_VERSION} AS image
+FROM nginx/nginx-unprivileged:${NGINX_VERSION} AS image
 
 # Copy config and built application from the build stage into the image
 COPY --link ./indexer-web-proxy/configs/default.conf /etc/nginx/conf.d/default.conf

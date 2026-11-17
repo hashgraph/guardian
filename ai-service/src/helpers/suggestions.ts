@@ -1,4 +1,5 @@
-import { NatsService, Singleton } from '@guardian/common';
+import { Singleton } from '@guardian/common/decorators/singleton';
+import { NatsService } from '@guardian/common/mq/nats-service';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 
 /**

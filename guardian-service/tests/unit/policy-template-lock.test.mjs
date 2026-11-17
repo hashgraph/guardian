@@ -48,10 +48,10 @@ function makeDb() {
 }
 
 const load = (db) => esmock(lockPath, {
-    '@guardian/common': {
+    '@guardian/common/helpers/db-helper': {
         DataBaseHelper: {
             orm: { em: { getDriver: () => ({ getConnection: () => ({ getDb: () => db }) }) } },
-        },
+        }
     },
 });
 
@@ -139,7 +139,9 @@ describe('withPolicyTemplateLock', function () {
 
     it('runs unlocked rather than failing when there is no connection', async () => {
         const { withPolicyTemplateLock } = await esmock(lockPath, {
-            '@guardian/common': { DataBaseHelper: { orm: undefined } },
+            '@guardian/common/helpers/db-helper': {
+                DataBaseHelper: { orm: undefined }
+            },
         });
 
         assert.equal(await withPolicyTemplateLock('policy-1', async () => 'ran'), 'ran');

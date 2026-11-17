@@ -582,6 +582,15 @@ export class PolicyDTO {
     @ValidateNested({ each: true })
     @Type(() => IgnoreRuleDTO)
     ignoreRules?: IgnoreRuleDTO[];
+
+    @ApiProperty({
+        type: Boolean,
+        required: false,
+        description: 'Discontinued policies only: whether the policy process is running. A stopped one starts on demand.'
+    })
+    @IsOptional()
+    @IsBoolean()
+    isRunning?: boolean;
 }
 
 @ApiExtraModels(PolicyDTO)

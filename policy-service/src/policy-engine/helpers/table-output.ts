@@ -1,7 +1,7 @@
 import Papa from 'papaparse';
 import { promisify } from 'node:util';
 import { gzip as gzipRaw } from 'node:zlib';
-import { isPlainObject } from '@guardian/common';
+import { isPlainObject } from '@guardian/common/helpers/table-csv';
 
 const gzipBuffer = promisify(gzipRaw);
 
@@ -75,4 +75,21 @@ export function buildCompactTableJson(
     compact.columnNames = columns.map((column) => column.name);
     compact.columnKeys = columns.map((column) => column.key);
     return JSON.stringify(compact);
+}
+
+/**
+ * Builds the Table value of a preview: the CSV travels inline under a placeholder file id.
+ */
+export function buildPreviewTableJson(
+    fileId: string,
+    csv: string,
+    columns: ITableOutputColumn[]
+): string {
+    return JSON.stringify({
+        type: 'table',
+        fileId,
+        csv,
+        columnNames: columns.map((column) => column.name),
+        columnKeys: columns.map((column) => column.key)
+    });
 }

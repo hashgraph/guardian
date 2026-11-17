@@ -20,6 +20,7 @@
         <button
           (click)="onAdd()"
           class="guardian-button guardian-compare-button add-item guardian-button-secondary"
+          title="Add to Compare List"
           >
           <div class="guardian-button-icon">
             <svg-icon class="icon-btn svg-icon"
@@ -27,13 +28,14 @@
               svgClass="icon-color-primary">
             </svg-icon>
           </div>
-          <div class="guardian-button-label">Add to Compare List</div>
+          <div class="guardian-button-label">Compare</div>
         </button>
       }
       @if (status) {
         <button
           (click)="onAdd()"
           class="guardian-button guardian-compare-button added-item guardian-button-primary"
+          title="Added to Compare List. Click to remove"
           >
           <div class="guardian-button-icon">
             <svg-icon class="icon-btn svg-icon"
@@ -42,7 +44,7 @@
             </svg-icon>
           </div>
           @if (status) {
-            <div class="guardian-button-label">Added to Compare List</div>
+            <div class="guardian-button-label">Added</div>
           }
         </button>
       }

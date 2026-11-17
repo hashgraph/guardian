@@ -4,7 +4,7 @@ import { Dictionary, FieldTypes } from '../../../dist/xlsx/models/dictionary.js'
 describe('Dictionary enum (xlsx column labels)', () => {
     it('exposes the canonical column labels', () => {
         assert.equal(Dictionary.REQUIRED_FIELD, 'Required Field');
-        assert.equal(Dictionary.FIELD_TYPE, 'Field Type');
+        assert.equal(Dictionary.FIELD_TYPE, 'Type');
         assert.equal(Dictionary.PARAMETER, 'Parameter');
         assert.equal(Dictionary.QUESTION, 'Description');
         assert.equal(Dictionary.ANSWER, 'Test Value');

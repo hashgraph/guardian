@@ -117,7 +117,7 @@ describe('Lookup (CE integration)', function () {
             numList(ce, [10, 20, 30]),
             strList(ce, ['a', 'b', 'c']),
             ce.string('b'));
-        assert.strictEqual(result.value, 20);
+        assert.strictEqual(result.re, 20);
     });
 
     it('returns 0 when key is not found', function () {
@@ -125,7 +125,7 @@ describe('Lookup (CE integration)', function () {
             numList(ce, [10, 20]),
             strList(ce, ['a', 'b']),
             ce.string('z'));
-        assert.strictEqual(result.value, 0);
+        assert.strictEqual(result.re, 0);
     });
 
     it('returns 0 when matched value is not numeric', function () {
@@ -133,7 +133,7 @@ describe('Lookup (CE integration)', function () {
             ce.box(['List', ce.string('not-a-number')]),
             strList(ce, ['k']),
             ce.string('k'));
-        assert.strictEqual(result.value, 0);
+        assert.strictEqual(result.re, 0);
     });
 
     it('matches via numeric coercion: numeric key 5 matches id "5"', function () {
@@ -141,7 +141,7 @@ describe('Lookup (CE integration)', function () {
             numList(ce, [99]),
             ce.box(['List', ce.number(5)]),
             ce.string('5'));
-        assert.strictEqual(result.value, 99);
+        assert.strictEqual(result.re, 99);
     });
 });
 
@@ -155,7 +155,7 @@ describe('LookupTwo (CE integration)', function () {
             numList(ce, [10, 20, 30]),
             strList(ce, ['a', 'a', 'b']), ce.string('a'),
             strList(ce, ['x', 'y', 'y']), ce.string('y'));
-        assert.strictEqual(result.value, 20);
+        assert.strictEqual(result.re, 20);
     });
 
     it('returns 0 when first key matches but second does not', function () {
@@ -163,7 +163,7 @@ describe('LookupTwo (CE integration)', function () {
             numList(ce, [10, 20]),
             strList(ce, ['a', 'a']), ce.string('a'),
             strList(ce, ['x', 'x']), ce.string('y'));
-        assert.strictEqual(result.value, 0);
+        assert.strictEqual(result.re, 0);
     });
 
     it('returns 0 when array lengths differ', function () {
@@ -171,7 +171,7 @@ describe('LookupTwo (CE integration)', function () {
             numList(ce, [10, 20]),
             strList(ce, ['a']),       ce.string('a'),
             strList(ce, ['x', 'y']), ce.string('x'));
-        assert.strictEqual(result.value, 0);
+        assert.strictEqual(result.re, 0);
     });
 });
 
@@ -187,7 +187,7 @@ describe('LookupMin (CE integration)', function () {
             strList(ce, ['a', 'a', 'a']),
             ce.string('a'),
             numList(ce, [3, 1, 2]));
-        assert.strictEqual(result.value, 20);
+        assert.strictEqual(result.re, 20);
     });
 
     it('returns 0 when no key matches', function () {
@@ -196,7 +196,7 @@ describe('LookupMin (CE integration)', function () {
             strList(ce, ['a']),
             ce.string('z'),
             numList(ce, [1]));
-        assert.strictEqual(result.value, 0);
+        assert.strictEqual(result.re, 0);
     });
 });
 
@@ -212,7 +212,7 @@ describe('LookupMax (CE integration)', function () {
             strList(ce, ['a', 'a', 'a']),
             ce.string('a'),
             numList(ce, [3, 1, 2]));
-        assert.strictEqual(result.value, 10);
+        assert.strictEqual(result.re, 10);
     });
 
     it('returns 0 when no key matches', function () {
@@ -221,7 +221,7 @@ describe('LookupMax (CE integration)', function () {
             strList(ce, ['a']),
             ce.string('z'),
             numList(ce, [1]));
-        assert.strictEqual(result.value, 0);
+        assert.strictEqual(result.re, 0);
     });
 });
 
@@ -231,19 +231,19 @@ describe('EqualString (CE integration)', function () {
     beforeEach(function () { ce = makeTestCe(); });
 
     it('returns 1 for equal strings', function () {
-        assert.strictEqual(call(ce, 'EqualString', ce.string('hello'), ce.string('hello')).value, 1);
+        assert.strictEqual(call(ce, 'EqualString', ce.string('hello'), ce.string('hello')).re, 1);
     });
 
     it('returns 0 for unequal strings', function () {
-        assert.strictEqual(call(ce, 'EqualString', ce.string('foo'), ce.string('bar')).value, 0);
+        assert.strictEqual(call(ce, 'EqualString', ce.string('foo'), ce.string('bar')).re, 0);
     });
 
     it('coerces numeric 5 to "5" — matches string "5"', function () {
-        assert.strictEqual(call(ce, 'EqualString', ce.number(5), ce.string('5')).value, 1);
+        assert.strictEqual(call(ce, 'EqualString', ce.number(5), ce.string('5')).re, 1);
     });
 
     it('returns 0 when one operand has no string representation', function () {
         // An empty List has no string/value/symbol → getString returns null
-        assert.strictEqual(call(ce, 'EqualString', ce.box(['List']), ce.string('a')).value, 0);
+        assert.strictEqual(call(ce, 'EqualString', ce.box(['List']), ce.string('a')).re, 0);
     });
 });

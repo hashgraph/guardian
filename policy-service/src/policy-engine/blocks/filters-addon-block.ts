@@ -8,6 +8,7 @@ import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.j
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyAddonBlock, IPolicyGetData } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
+import { getPreviewBlockState, PreviewScope } from '../helpers/preview.js';
 
 /**
  * Filters addon
@@ -100,7 +101,12 @@ export class FiltersAddonBlock {
      */
     public async getFilters(user: PolicyUser): Promise<{ [key: string]: string }> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
-        const filters = ref.filters[user.id] || {};
+        const actionStatus = PreviewScope.current();
+        const previewState = actionStatus
+            ? getPreviewBlockState(actionStatus, `filters:${ref.uuid}`, () => ({ filters: ref.filters, state: this.state }))
+            : null;
+        const filters = (previewState ? previewState.filters : ref.filters)[user.id] || {};
+        const state = previewState ? previewState.state : this.state;
         const options = await ref.getOptions(user);
 
         if (!filters[options.field] && !options.canBeEmpty) {
@@ -119,12 +125,12 @@ export class FiltersAddonBlock {
                 filterValue = '';
             }
 
-            if (filterValue) {
-                const blockState = this.state[user.id] || {};
-                blockState.lastValue = filterValue;
-                this.state[user.id] = blockState;
-            } else {
+            if (!filterValue) {
                 filterValue = '';
+            } else {
+                const blockState = state[user.id] || {};
+                blockState.lastValue = filterValue;
+                state[user.id] = blockState;
             }
             if (options.queryType === 'user_defined') {
                 filterValue = 'eq:' + filterValue;

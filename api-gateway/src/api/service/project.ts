@@ -4,7 +4,7 @@ import { ApiAcceptedResponse, ApiBody, ApiExtraModels, ApiInternalServerErrorRes
 import { ProjectDTO, PropertiesDTO, CompareDocumentsDTO, CompareDocumentsV2DTO, FilterDocumentsDTO, InternalServerErrorDTO, UnprocessableEntityErrorDTO, Examples} from '#middlewares';
 import { CACHE } from '#constants';
 import { UseCache, Guardians, InternalException, ProjectService } from '#helpers';
-import { PinoLogger } from '@guardian/common';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
 
 /**
  * Projects route

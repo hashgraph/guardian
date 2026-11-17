@@ -1,357 +1,629 @@
+import URL from '../../../support/GuardianUrls';
 import * as Checks from '../../../support/checkingMethods';
 import CommonElements from '../../../support/defaultUIElements';
+import { waitForPageReady, waitForPageSettled } from '../../../support/pageReadiness';
+import { dropFile, replaceInaccessibleTools, waitForTaskRoundtrip } from '../../../support/importFlow';
+import { clickButtonInWizardSteps, clickWizardTab } from '../../../support/wizardSteps';
+import { addGeoJsonPoint, openOverviewSection } from './userPoliciesPage';
+import { TIMEOUTS, POLL_INTERVAL } from '../../../support/CustomHelpers/timeouts';
 
-const PoliciesPageLocators = {
-    backButton: "div[title='Back']",
-    savePolicyEditing: "div.readonly-status[title='Save Policy']",
-    dynamicDialog: 'p-dynamicdialog',
-    deleteButton: "p-button[label='Delete']",
-    actionsMore: 'div.btn-icon-menu',
-    editPolicy: 'div.btn-icon-edit',
-    createPolicyButton: 'p-button[ng-reflect-content="Create a Policy"]',
-    importPolicyButton: 'p-button[ng-reflect-content="Import"]',
-    inputName: "[formcontrolname='name']",
-    policyBlock: '[class="block-item"]',
-    policyDeleteButton: 'Delete Policy',
-    createButton: 'Create',
-    exportPolicy: 'Export policy',
-    exportFileButton: ' Save to file ',
-    BackToManagePolicies: 'Back to Manage Policies',
-    exportMessageIdButton: ' Copy message identifier ',
-    publishPolicyButton: 'Publish',
-    discontinuePolicyButton: ' Discontinue ',
-    discontinuePolicyOkButton: 'button[ng-reflect-label="OK"]',
-    versionInput: 'input[id="version"]',
-    importButton: 'button:contains("Import")',
-    importIPFSOption: ' Import from IPFS ',
-    asNewPolicyRadioButton: "p-radiobutton[inputid='new-mode']",
-    approveButton: 'div.btn-approve',
-    revokeOption: 'div.btn-option',
-    deviceTab: 'Devices',
-    issueRequestsTab: 'Issue Requests',
-    approvedLabel: "span[title = 'Approved']",
-    createTagButton: 'span:contains("Create a Tag")',
-    inputName: 'input[formcontrolname="name"]',
-    tagsExplorer: 'tags-explorer',
-    closeButton: 'span:contains("Close")',
-    deleteTagIcon: "svg-icon[svgclass='accent-color-red']",
-    projectPipelineTab: 'Project Pipeline',
-    waitingForValidation: "span[title = 'Waiting for Validation']",
-    monitoringReports: 'Monitoring Reports',
-    minted: "span[title = 'Minted']",
-    descriptionPolicy: 'td.cell-description',
+// The current app renders the policy engine on a PrimeNG 21 base. Static template
+// attributes survive to the DOM (`label="Apply"` on pButton), but bound directive
+// inputs do not: `[pTooltip]` is a property binding, so `ptooltip` is never an
+// attribute. Toolbar buttons are therefore selected by their icon svg, and custom
+// policy-engine pieces keep their own classes.
+const L = {
+    // List (route /policy-viewer)
+    searchInput: 'input.search-policy-input',
+    applyFilters: 'button[label="Apply"]',
+    createPolicyButton: 'div.actions-container-btns svg-icon[src$="/assets/images/icons/add.svg"]',
+    importPolicyButton: 'div.actions-container-btns svg-icon[src*="import-cloud"]',
+    row: 'tr.grid-table-row',
+    statusCell: 'td.cell-status',
+    statusDropdown: 'td.cell-status p-select',
+    statusOption: 'div.dropdown-item-title',
+    editIcon: 'div.btn-icon-edit',
+    menuIcon: 'div.btn-icon-menu',
+    menuItem: 'p-button.policy-menu-btn',
+    instanceButton: 'button.instance-btn',
+
+    // Dialogs
+    dialog: 'div.guardian-dialog',
+    deleteButton: 'button.guardian-button-delete',
+    dialogMask: 'div.p-dialog-mask',
+    plainDialog: 'div.p-dialog',
+    // The editor's full-page preloader, scoped to the host's direct child: nested
+    // panels (properties, grids) reuse div.loading while loading independently and
+    // must not block the page-level wait.
+    loadingOverlay: 'app-policy-configuration > div.loading',
+
+    // Viewer (wizard)
+    viewerIdentity: 'div.policy-identity',
+    stepItem: 'div.step-item',
+    wizardTab: 'div.policy-content p-tab',
+    approveButton: 'button.btn-approve',
+    rejectButton: 'button.btn-reject',
+    signButton: 'button.btn-SIGN',
+    signedStatus: 'div.status.status-SIGNED',
+    informationTitle: 'div.title',
+
+    // Document status chips in wizard grids (span[title=...])
+    statusWaitingApproval: "span[title='Waiting for approval']",
+    statusWaitingToBeAdded: "span[title='Waiting to be Added']",
+    statusWaitingValidation: "span[title='Waiting for Validation']",
+    statusWaitingVerification: "span[title='Waiting for Verification']",
+    statusValidated: "span[title='Validated']",
+    statusVerified: "span[title='Verified']",
+    statusMinted: "span[title='Minted']",
+    // SR approvals: iREC policies report the status as 'Approved', CDM as 'APPROVED';
+    // the union keeps the wait working across both families
+
+    // Editor (policy-configuration)
+    editorViews: 'div.view-segment',
+    savePolicy: "div[title='Save Policy']",
+    undo: "div[title='Undo']",
+    redo: "div[title='Redo']",
+    validation: "div[title='Validation']",
+    errorCount: '.error-count',
+    jsonContainer: '.textarea-code',
+    treeContainer: '.tree-container',
+    componentsContainer: '.components-container:not(:hidden)',
+    componentBtn: '.component-btn',
+    // the transparent drag chip lies over the visible button and both carry the add handler
+    componentAddChip: '.drag-btn',
+    favoriteButton: '.component-btn-favorite',
     componentsBlock: `span.drag-component-name`,
+    componentsSearch: 'input[placeholder="Search"]',
     blockItemName: (name) => `div.block-item-name:contains(${name})`,
     expandBlockBtn: (value) => `[block-instance="${value}"] .block-expand`,
     deleteBlockBtn: 'button[class*="delete-action"]:visible',
-    componentsContainer: '.components-container:not(:hidden)',
-    favoriteButton: '.component-btn-favorite',
-    componentBtn: '.component-btn',
-    moduleIcon: 'svg-icon[ng-reflect-src="/assets/images/icons/policy-mo"]',
-    containerJson: '.textarea-code',
-    treeContainer: '.tree-container',
-    undo: "div[title='Undo']",
-    redo: "div[title='Redo']",
-    successValidationElement: "[title='Validation Policy']",
-    errorCountElement: '.error-count',
-    nextButton: "button[label='Next']",
+    moduleIcon: 'div.tab-header[title="Modules"]',
+    identityAction: 'div.identity-action',
+    drawerPanel: 'div.psd-panel',
+    viewSegmentItem: 'div.view-segment-item',
+    settingsIdentity: 'div.policy-identity',
+    settingsAction: 'div.identity-action',
+    settingsClose: '.psd-close',
 
-    // importBtn: '[label="Import"]',
-    // importContinueBtn: 'p-button[label="Import"]',
-    // importIcon: 'p-button[ng-reflect-text="Import"]',
-    // importFileBtn: "Import from file",
-    // importMsgBtn: "Import from IPFS",
-    // msgInput: '[formcontrolname="timestamp"]',
-    // importFile: '[type="file"]',
-    // selectFileLink: "../../../../../Demo Artifacts/iREC/Policies/",
-    // uploadBtn: ".g-dialog-actions-btn",
-    // policiesList: "/api/v1/policies?pageIndex=0&pageSize=100",
-    // continueImportBtn: 'p-button[label="Import"]',
-    // publishBtn: "Publish",
-    // publishPolicyBtn: 'button[label="Ok"]',
-    // publishedStatus: "Published",
-    // dropDawnPublishBtn: "li[role='option']",
-    // submitBtn: 'button[type="submit"]',
-    // createBtn: 'div.g-dialog-actions-btn',
-    // addBtn: "*[class^='btn-approve btn-option ng-star-inserted']",
-    // createPolicyBtn: 'p-button[ng-reflect-content="Create a Policy"]',
-    // draftBtn: 'ng-reflect-menu="[object Object]"',
-    // taskReq: '/api/v1/tasks/**',
-    // disabledBtn: 'button.policy-menu-btn-des',
-    // modalWindow: 'app-confirmation-dialog',
-    // componentsBlock: '[class^="components-group-item"] span',
-    // matTypography: '.mat-typography',
-    // blockItem: '.block-item',
-    // dialogContainer: '.mat-dialog-container',
-    // deleteTagBtn: '.delete-tag',
-    // closeModalBtn: '.g-dialog-cancel-btn',
-    // uploadFileInput: 'input[type="file"]',
-    // okModalBtn: '#ok-btn',
-    // inputText: 'input[type="text"]',
-    // tagCreationModal: 'tags-create-dialog',
-    // createTagButton: ' Create Tag ',
-    // closeWindowButton: 'div.g-dialog-cancel-btn',
-    // tagsListRequest: "/api/v1/tags/",
-    // tagsDeleteRequest: "/api/v1/tags/*",
-    // tagDeleteButton: "div.delete-tag",
-    // tagNameInput: '[ng-reflect-name="name"]',
-    // tagDescInput: '[ng-reflect-name="description"]',
-    // createFinalBtn: "div.g-dialog-actions-btn",
-    // usersIconButton: 'div[mattooltip="Users"]',
-    // registrantLabel: 'Registrant ',
-    // tokenBalance: 'td.mat-column-tokenBalance',
-    // policyDeleteButtonOld: "button.policy-menu-btn-del",
-    // loadingProgress: ".loading-progress",
-    // policyEditView: "/api/v1/schemas/**",
-    // moreButton: "div.btn-icon-more",
+    // Wizard user blocks
+    // 7252 renders six or fewer roles as role cards (data-role buttons) and a
+    // larger role list as the classic p-select dropdown; the pre-7252 app is
+    // dropdown-only. Role selection therefore tries the card first and falls
+    // back to the dropdown.
+    rolesForm: 'div.roles-form',
+    roleCard: 'div.roles-form button[data-role]',
+    roleSelect: 'div.roles-form p-select',
+    roleOption: 'li[role="option"]',
+    wizardNext: "button:contains('Continue')",
+    dialogCreateButton: 'div.action-buttons button.guardian-button-primary',
+    requestFormDialog: 'div.guardian-dialog',
+    dialogTitle: 'div.header-text',
+
+    // Schema-form fields (wizard application forms)
+    requestForm: 'request-document-form',
+    formFieldContainer: 'div.guardian-input-container',
+    dateInput: 'input.p-datepicker-input',
+    ipfsInput: 'div.ipfs-url textarea',
+    ipfsError: "small.p-error:contains('Invalid IPFS')",
+    addLocationButton: 'button.add-feature-button',
+    addGeometryButton: "button.add-feature-button:contains('Add geometry')",
+    geoClearButton: "button.add-feature-button:contains('Clear')",
+    geoTypeDropdown: 'p-select#typeDropdown',
+    coordinatesInput: 'textarea#coordinatesInput',
+    geoError: 'small.p-error',
+    actionDropdown: 'div.content-dropdown p-select',
+    revokeButton: "button.btn-option:contains('Revoke')",
+
+    // Export dialog footer
+    exportFileButton: 'button:contains("Save to file")',
+    exportMessageIdButton: 'button:contains("Copy message identifier")',
+};
+
+const nameCellMatches = (name) => (_, el) => {
+    const span = el.querySelector('.text-truncate');
+    return span && span.textContent.trim() === name;
 };
 
 export class PoliciesPage {
 
     openPoliciesTab() {
-        cy.get(CommonElements.navBar).should('exist')
-        cy.get('body').then(($body) => {
-            if ($body.find(`span:contains(${CommonElements.policiesTab})`).length == 0)
-                {cy.get(CommonElements.navBar).contains(CommonElements.mainPoliciesTab).should('exist').click();}
-        })
-        cy.get(CommonElements.navBar).contains(CommonElements.policiesTab).should('exist').click();
-        Checks.waitForLoading();
+        cy.visit(URL.Root + URL.Policies);
+        // Gate on the toolbar, not on the search input: the app renders the
+        // filter bar (and with it the search input) only when the list is
+        // non-empty (showFilterBar = hasPolicies || hasStatusFilter), so on a
+        // fresh workspace the input never exists. The toolbar renders as soon
+        // as the list fetch settles in either state. Presence alone is not a
+        // gate on this app base: the route content is in the DOM under the
+        // loading overlay while the workspace bootstrap runs, and a click on
+        // the toolbar would land on the cover.
+        waitForPageReady('div.actions-container');
+        waitForPageSettled('div.loading');
     }
 
     createPolicy() {
         Checks.waitForLoading();
-        cy.get(PoliciesPageLocators.createPolicyButton).click();
+        cy.get(L.createPolicyButton).click();
     }
 
     fillNewPolicyForm(name) {
-        cy.get(PoliciesPageLocators.inputName).type(name);
-        cy.get(CommonElements.dialogWindow).contains(PoliciesPageLocators.createButton).click();
-        Checks.waitForElement(PoliciesPageLocators.policyBlock, undefined, 5000);
+        // eslint-disable-next-line cypress/unsafe-to-chain-command
+        cy.get(L.dialog).find('input#name').clear().type(name);
+        cy.get(L.dialog).contains(CommonElements.Button, 'Create').click();
+        // The create is an async task whose client-side completion is racy in
+        // this environment (a lost one-shot task result leaves the app on the
+        // task page - or bounces it to the list - even though the policy was
+        // created). Don't trust the app's editor redirect: re-derive the
+        // editor from the freshly created row instead.
+        this.backToPoliciesList();
+        this._row(name).find(L.editIcon, { timeout: TIMEOUTS.backend }).click();
+        waitForPageReady(L.editorViews);
     }
 
     backToPoliciesList() {
-        Checks.waitForLoading();
-        cy.get(PoliciesPageLocators.backButton).click({ force: true });
+        cy.visit(URL.Root + URL.Policies);
+        waitForPageReady(L.searchInput);
+        waitForPageSettled('div.loading');
     }
 
     backToPoliciesListBtn() {
+        cy.visit(URL.Root + URL.Policies);
+        waitForPageReady(L.searchInput);
+        waitForPageSettled('div.loading');
+    }
+
+    /**
+     * The row whose name cell is exactly `name`. Search first, because the list is
+     * paginated and leftover policies from earlier runs fill the first page.
+     */
+    _row(name) {
+        this._searchUntilListed(name, 1);
+        return cy.get(L.row, { timeout: TIMEOUTS.backend }).filter(nameCellMatches(name));
+    }
+
+    // A policy created by an async task can be missing from the list for a few seconds after
+    // the app returns to it, and the search filters the already loaded list client-side:
+    // reload the list and search again until its row shows up.
+    _searchUntilListed(name, attempt) {
+        const MAX_ATTEMPTS = 12;
+        this._search(name);
         Checks.waitForLoading();
-        cy.contains(PoliciesPageLocators.BackToManagePolicies).click({ force: true });
-    }
-
-    checkStatus(name, status) {
-        cy.contains('td', name).siblings().contains(status).should('exist');
-    }
-
-    deletePolicy(policyName) {
-        cy.contains(policyName).parent().parent().find(PoliciesPageLocators.actionsMore).click();
-        cy.contains(PoliciesPageLocators.policyDeleteButton).click();
-        cy.get(PoliciesPageLocators.dynamicDialog).find(PoliciesPageLocators.deleteButton).click();
-        Checks.waitForElement(PoliciesPageLocators.createPolicyButton);
-        cy.contains(new RegExp('^' + policyName + '$', 'g')).should('not.exist');
-    }
-
-    startDryRun(name) {
-        cy.contains('td', name).siblings().contains('Draft').click();
-        cy.contains('div.dropdown-item-title', 'Dry Run').click();
-        Checks.waitForLoading();
-    }
-
-    stopDryRun(name) {
-        cy.contains('td', name).siblings().contains('div', 'In Dry Run').click();
-        cy.contains('div.dropdown-item-title', 'Stop').click();
-        Checks.waitForLoading();
-    }
-
-    exportPolicyAsFile(name) {
-        this.openExportModal(name);
-        cy.wait(500);
-        cy.get(CommonElements.dialogWindow).contains(PoliciesPageLocators.exportFileButton).click();
-        cy.verifyDownload('.policy', { contains: true });
-    }
-
-    exportPolicyAsMessageId(name) {
-        this.openExportModal(name);
-        cy.contains(PoliciesPageLocators.exportMessageIdButton).realClick();
-        cy.window().then((win) => {
-            win.navigator.clipboard.readText().then((text) => {
-                //regex numbers.numbers
-                expect(text).to.match(/\d+\.\d+/g);
-            });
+        cy.get('body').then(($body) => {
+            if ($body.find(L.row).filter(nameCellMatches(name)).length) {
+                return;
+            }
+            if (attempt >= MAX_ATTEMPTS) {
+                throw new Error(`policy "${name}" is not listed after ${MAX_ATTEMPTS} searches`);
+            }
+            cy.wait(POLL_INTERVAL);
+            this.backToPoliciesList();
+            this._searchUntilListed(name, attempt + 1);
         });
     }
 
-    openExportModal(name) {
-        cy.contains(name).parent().parent().find(PoliciesPageLocators.actionsMore).click();
-        cy.contains(PoliciesPageLocators.exportPolicy).click();
+    _search(name) {
+        // A dialog left open by an unconfirmed previous step would swallow
+        // every list interaction: fail on the mask itself so the screenshot
+        // shows the culprit.
+        cy.get(L.dialogMask, { timeout: TIMEOUTS.ui }).should('not.exist');
+        // The app reloads itself on every permission update, and the reload
+        // lands in the middle of a workspace bootstrap: the route content is
+        // back in the DOM under its loading overlay, which a presence gate
+        // would pass straight through, so wait for the overlay to go.
+        waitForPageSettled('div.loading');
+        // separate commands: the framework re-renders the input on each
+        // keystroke, so a .clear().type() chain can detach mid-command
+        cy.get(L.searchInput).clear();
+        cy.get(L.searchInput).type(name);
+        cy.get(L.applyFilters).click();
     }
 
-    verifyThatButtonDisabled(buttonName) {
-        cy.contains(buttonName).should('be.disabled');
+    checkStatus(name, status) {
+        this._row(name).find(L.statusCell).should('contain.text', status);
     }
 
-    verifyThatDeleteButtonIsNotActive(name) {
-        cy.contains(name).parent().parent().find(PoliciesPageLocators.actionsMore).click();
-        this.verifyThatButtonDisabled(PoliciesPageLocators.policyDeleteButton)
+    // Row menu
+    _openRowMenu(name) {
+        this._row(name).find(L.menuIcon).click();
+        cy.get(L.menuItem, { timeout: TIMEOUTS.ui }).should('be.visible');
+    }
+
+    deletePolicy(policyName) {
+        this._openRowMenu(policyName);
+        cy.get(L.menuItem, { timeout: TIMEOUTS.ui }).contains('Delete Policy').click();
+        cy.get(L.dialog).find(L.deleteButton).click();
+        Checks.waitForElement(L.createPolicyButton);
+        this._search(policyName);
+        cy.get(L.row, { timeout: TIMEOUTS.backend }).filter((_, el) => {
+            const span = el.querySelector('.text-truncate');
+            return span && span.textContent.trim() === policyName;
+        }).should('not.exist');
+    }
+
+    startDryRun(name) {
+        this._row(name).find(L.statusDropdown).click();
+        cy.get(L.statusOption, { timeout: TIMEOUTS.ui }).contains('Dry Run').click();
+        // the 'Dry Run' option opens a confirm dialog; its primary button kicks
+        // off the (async) push dry-run
+        cy.get(L.dialog).find('button.guardian-button-primary', { timeout: TIMEOUTS.ui })
+            .should('contain.text', 'Start Dry-Run').click();
+        this._waitForAsyncStatusChange();
+    }
+
+    stopDryRun(name) {
+        this._row(name).find(L.statusDropdown).click();
+        cy.get(L.statusOption, { timeout: TIMEOUTS.ui }).contains('Stop').click();
+        Checks.waitForLoading();
     }
 
     publishPolicy(name) {
-        cy.contains('td', name).siblings().eq(3).click();
-        cy.contains('div.dropdown-item-title', PoliciesPageLocators.publishPolicyButton).click();
-        cy.get(PoliciesPageLocators.versionInput).type('0.8.4');
-        cy.contains(CommonElements.Button, PoliciesPageLocators.publishPolicyButton).click();
-        Checks.waitForElement(PoliciesPageLocators.policyBlock, undefined, 5000);
+        this._row(name).find(L.statusDropdown).click();
+        cy.get(L.statusOption, { timeout: TIMEOUTS.ui }).contains('Publish').click();
+        // eslint-disable-next-line cypress/unsafe-to-chain-command
+        cy.get(L.dialog).find('input#version').clear().type('0.8.4');
+        cy.get(L.dialog).contains(CommonElements.Button, 'Publish').click();
+        this._waitForAsyncStatusChange();
+    }
+
+    /**
+     * Publish and dry-run run as backend tasks: the app navigates to
+     * /task/:id and redirects back to the list on completion. The list does
+     * not refresh on its own, so the row must only be read after the round
+     * trip - a cy.visit before it would snapshot the pre-change status and
+     * never update (the publish toast fires, the row still says Draft).
+     */
+    _waitForAsyncStatusChange() {
+        Checks.waitForLoading();
+        waitForTaskRoundtrip();
     }
 
     discontinuePolicy(name) {
-        cy.contains('td', name).siblings().eq(3).click();
-        cy.contains('div.dropdown-item-title', PoliciesPageLocators.discontinuePolicyButton).click();
-        cy.contains('span', 'Immediate').click();
-        cy.get(PoliciesPageLocators.discontinuePolicyOkButton).click();
+        this._row(name).find(L.statusDropdown).click();
+        cy.get(L.statusOption, { timeout: TIMEOUTS.ui }).contains('Discontinue').click();
+        // this dialog is a plain p-dialog (no guardian-dialog class)
+        cy.get(L.plainDialog).filter((_, el) => (el.textContent || '').includes('Discontinue policy')).as('disc');
+        cy.get('@disc').find('.p-selectbutton').contains('Immediate').click();
+        cy.get('@disc').find('button[label="OK"]').click();
+        Checks.waitForLoading();
     }
 
-    importPolicyFromFile(policyFileName) {
-        cy.get(PoliciesPageLocators.importPolicyButton).click();
-        cy.fixture(policyFileName, { encoding: null }).as('policyForImport');
-        cy.get(CommonElements.dialogWindow).find(CommonElements.fileInput).selectFile('@policyForImport', { force: true });
-        Checks.waitForElement(PoliciesPageLocators.asNewPolicyRadioButton);
-        cy.get(CommonElements.dialogWindow).find(PoliciesPageLocators.importButton).last().click();
-        Checks.waitForElement(PoliciesPageLocators.policyBlock, undefined, 5000);
+    // Import (toolbar "Import" -> file/IPFS dialog -> preview)
+    _openImportDialog() {
+        cy.get(L.importPolicyButton).click();
+        cy.get(L.dialog, { timeout: TIMEOUTS.ui }).should('be.visible');
+    }
+
+    /**
+     * `source` is either a file in cypress/fixtures (no '/') or a path relative to
+     * the project root ('/' in it, e.g. a Methodology Library zip). The file is
+     * dropped onto the dialog's drop zone; the drop itself kicks off the import
+     * and the preview dialog then appears.
+     */
+    importPolicyFromFile(source) {
+        this._openImportDialog();
+        dropFile(source);
+        this._choosePreviewImport();
+        // Heavy policies (CDM: four tools, a couple dozen schemas) take a while
+        // to render in the editor, so allow extra readiness attempts.
+        waitForPageReady(L.editorViews);
     }
 
     importPolicyFromIPFS(messageId) {
-        cy.get(PoliciesPageLocators.importPolicyButton).click();
-        cy.contains(PoliciesPageLocators.importIPFSOption).should('be.visible').click();
-        cy.get(CommonElements.dialogWindow).find(CommonElements.Input).type(messageId);
-        cy.get(CommonElements.dialogWindow).find(PoliciesPageLocators.importButton).should('have.not.attr', 'disabled');
-        cy.get(CommonElements.dialogWindow).find(PoliciesPageLocators.importButton).click();
-        Checks.waitForElement(PoliciesPageLocators.asNewPolicyRadioButton);
-        cy.get(CommonElements.dialogWindow).last().find(PoliciesPageLocators.importButton).click();
-        Checks.waitForElement(PoliciesPageLocators.policyBlock, undefined, 5000);
+        this._openImportDialog();
+        cy.get(L.dialog).contains('Import from IPFS').click();
+        // eslint-disable-next-line cypress/unsafe-to-chain-command
+        cy.get(L.dialog).find('input#timestamp').clear().type(messageId);
+        cy.get(L.dialog).find(CommonElements.Button, 'Import').should('not.be.disabled');
+        cy.get(L.dialog).find(CommonElements.Button, 'Import').last().click();
+        this._choosePreviewImport();
+        waitForPageReady(L.editorViews);
     }
 
-    approve(waitFor) {
-        cy.get(PoliciesPageLocators.approveButton).click();
-        if (waitFor == 'revoke')
-            {Checks.waitForElement(PoliciesPageLocators.revokeOption);}
-        if (waitFor == 'approvedLabel')
-            {Checks.waitForElement(PoliciesPageLocators.approvedLabel);}
-        if (waitFor == 'validationLabel')
-            {Checks.waitForElement(PoliciesPageLocators.waitingForValidation);}
-        if (waitFor == 'minted')
-            {Checks.waitForElement(PoliciesPageLocators.minted);}
+    /**
+     * After the import preview appears (a new dialog with the import-mode switch),
+     * import it as a new policy. The footer is the only place the Import
+     * button that creates lives: a whole-dialog text match would also hit the
+     * segmented options (and the xlsx-error variant reads "Skip & Import",
+     * which the :contains match covers).
+     */
+    _choosePreviewImport() {
+        cy.get(L.dialog).find('div.segmented', { timeout: TIMEOUTS.backend }).as('preview');
+        cy.get('@preview').contains('New policy').click();
+        // Policies referencing tools this gateway cannot resolve show the rows
+        // invalid and hold the Import button ("inaccessible Tools"); re-point
+        // each row at the same-named workspace tool first.
+        replaceInaccessibleTools();
+        cy.get('@preview').closest(L.dialog).find('div.dialog-footer button:contains("Import")')
+            .should('not.be.disabled', { timeout: TIMEOUTS.backend })
+            .click();
+    }
+
+    /**
+     * Renames the policy the editor is currently open on. Used right after an import so a
+     * fixed-name spec works against a per-run unique name: the import keeps the artifact's
+     * name (and renames duplicates with a timestamp suffix), and a published leftover
+     * cannot be deleted through the API, so re-runs must not depend on the base name.
+     */
+    renameImportedPolicy(newName) {
+        this.editPolicyProperty('Name', newName);
+        this.savePolicyEditing();
+        this.backToPoliciesList();
+        this.checkStatus(newName, 'Draft');
     }
 
     openPolicy(name) {
-        cy.contains('td', name).siblings().eq(0).click();
+        this._row(name).find(L.instanceButton, { timeout: TIMEOUTS.backend }).click();
+        waitForPageReady(L.viewerIdentity);
     }
 
     openEditingPolicy(name) {
-        cy.contains(name).parent().parent().find(PoliciesPageLocators.editPolicy).click();
-        Checks.waitForElement(PoliciesPageLocators.policyBlock, undefined, 5000);
+        this._row(name).find(L.editIcon, { timeout: TIMEOUTS.backend }).click();
+        waitForPageReady(L.editorViews);
     }
 
-    approveUserInPolicy(waitFor = 'revoke') {
-        this.approve(waitFor);
+    // ---- Viewer approvals (wizard steps) ----
+
+    /**
+     * Clicks a wizard button that is visible on the current step, or walks the
+     * wizard (tabs, then progress-tracker steps) looking for it. The viewer does
+     * not guarantee which step a policy opens on, so the walk keeps flows
+     * independent of that. Delegates to the shared wizardSteps helper.
+     */
+    clickButtonInWizardSteps(selector, options = {}) {
+        return clickButtonInWizardSteps(selector, options);
     }
 
-    openVVBTab() {
-        Checks.waitForLoading();
-        cy.get("p:contains('VVBs')").should('exist');
-        cy.get('.preloader-image').should('not.exist');
-        cy.get("p:contains('VVBs')").realClick();
+    // Opens a step of the policy navigation by its label (e.g. 'VVBs') and lets its body settle.
+    openWizardTab(text) {
+        return clickWizardTab(text);
     }
 
     openPPTab() {
-        Checks.waitForLoading();
-        cy.get("p:contains('Project Participants')").should('exist');
-        cy.get('.preloader-image').should('not.exist');
-        cy.get("p:contains('Project Participants')").click();
+        return this.openWizardTab('Project Participants');
     }
 
-    approveDeviceInPolicy(waitFor = 'revoke') {
+    openVVBTab() {
+        return this.openWizardTab('VVBs');
+    }
+
+    openProjectPipelineTab() {
+        return this.openWizardTab('Projects');
+    }
+
+    openReportsTab() {
+        return this.openWizardTab('Monitoring reports');
+    }
+
+    /**
+     * Clicks the first visible Approve-style button in the wizard (the button block
+     * renders it for the document its engine data points at, so no row click is
+     * needed) and waits for the resulting status chip. `waitFor` keeps the legacy
+     * vocabulary: the default and 'approvedLabel' wait for an approved status,
+     * 'validationLabel' for 'Validated', 'Report' for 'Verified'.
+     */
+    approve(waitFor = 'approvedStatus') {
+        // The wizard probe for the button runs once: let the page finish loading its documents first.
         Checks.waitForLoading();
-        cy.contains(PoliciesPageLocators.deviceTab).should('exist');
-        cy.get('.preloader-image').should('not.exist');
-        cy.contains(PoliciesPageLocators.deviceTab).click();
+        this.clickButtonInWizardSteps(L.approveButton);
+        if (waitFor === 'validationLabel' || waitFor === 'validatedStatus') {
+            Checks.waitForElement(L.statusValidated);
+        } else if (waitFor === 'Report' || waitFor === 'verifiedStatus') {
+            Checks.waitForElement(L.statusVerified);
+        } else if (waitFor === 'minted') {
+            Checks.waitForElement(L.statusMinted);
+        } else {
+            // An approved document has no status badge any more: its Approve button gives way to Revoke.
+            cy.get(L.approveButton, { timeout: TIMEOUTS.backend }).should('not.exist');
+        }
+    }
+
+    approveUserInPolicy(waitFor = 'approvedStatus') {
         this.approve(waitFor);
     }
 
-    approveIssueRequestInPolicy(waitFor = 'revoke') {
+    approveDeviceInPolicy(waitFor = 'approvedStatus') {
         Checks.waitForLoading();
-        cy.contains(PoliciesPageLocators.issueRequestsTab).should('exist');
-        cy.get('.preloader-image').should('not.exist');
-        cy.contains(PoliciesPageLocators.issueRequestsTab).click();
         this.approve(waitFor);
     }
 
-    createTag(policyName, name) {
-        cy.contains('td', policyName).siblings().find(PoliciesPageLocators.tagsExplorer).click();
+    approveIssueRequestInPolicy(waitFor = 'approvedStatus') {
         Checks.waitForLoading();
-        cy.get('body').then((body) => {
-            if (body.find(PoliciesPageLocators.createTagButton).length == 1)
-                {cy.get(PoliciesPageLocators.createTagButton).click();}
-        })
-        cy.get(CommonElements.dialogWindow).last().find(PoliciesPageLocators.inputName).type(name);
-        cy.get(CommonElements.dialogWindow).last().contains(PoliciesPageLocators.createButton).click();
-        cy.get('body').then((body) => {
-            if (body.find(PoliciesPageLocators.closeButton).length == 1)
-                {cy.get(PoliciesPageLocators.closeButton).click();}
-        })
-        Checks.waitForLoading();
-    }
-
-    deleteTag(policyName, name) {
-        cy.contains('td', policyName).siblings().find(PoliciesPageLocators.tagsExplorer).click();
-        Checks.waitForLoading();
-        cy.get(CommonElements.dialogWindow).contains(name).click();
-        cy.get(PoliciesPageLocators.deleteTagIcon).click();
-        cy.get(PoliciesPageLocators.closeButton).click();
-        Checks.waitForLoading();
+        this.approve(waitFor);
     }
 
     addProject() {
-        cy.contains(PoliciesPageLocators.projectPipelineTab).click();
         this.approve('validationLabel');
     }
 
     approveReport() {
         Checks.waitForLoading();
-        cy.get("p:contains('Monitoring reports')").click();
-        Checks.waitForElement(PoliciesPageLocators.approveButton);
         this.approve('minted');
     }
 
+    approveProject() {
+        this.approve('validationLabel');
+    }
+
+    // ---- Tags ----
+
+    createTag(policyName, name) {
+        // While the policy has no top tag the cell renders a compact "Create a
+        // Tag" button that opens the create dialog directly; once it has a top
+        // tag the cell shows the tag chip, which opens the explorer dialog that
+        // hosts the button. Click the control itself - the cell center can fall
+        // in dead space and the click would be a no-op.
+        const cell = this._row(policyName).find('tags-explorer', { timeout: TIMEOUTS.ui });
+        cell.then(($cell) => {
+            const chip = $cell.find('.main-tags');
+            if (chip.length) {
+                cy.wrap(chip.first()).click();
+                cy.contains('tags-explorer-dialog button', 'Create a Tag', { timeout: TIMEOUTS.ui }).click();
+            } else {
+                cy.wrap($cell.find('button.p-button-outlined').first()).click();
+            }
+        });
+        // The dialog opened over the explorer dropped the last keystroke ("tag2" saved as "tag"): set it in one step.
+        const nameInput = 'tags-create-dialog input.p-field-input[formcontrolname="name"]';
+        cy.get(nameInput, { timeout: TIMEOUTS.ui }).invoke('val', name).trigger('input');
+        cy.get(nameInput).should('have.value', name);
+        // pButton binds [label], which leaves no attribute in the DOM: find the button by its text.
+        cy.contains('tags-create-dialog button', 'Create').click();
+        cy.get('tags-create-dialog', { timeout: TIMEOUTS.ui }).should('not.exist');
+        // In the chip branch the explorer stays open behind; close it so the
+        // list row underneath is interactable for the next step.
+        cy.get('body').then(($body) => {
+            const explorer = $body.find('tags-explorer-dialog');
+            if (explorer.length) {
+                cy.get('body').type('{esc}');
+            }
+        });
+        cy.get('tags-explorer-dialog', { timeout: TIMEOUTS.ui }).should('not.exist');
+        Checks.waitForLoading();
+    }
+
+    deleteTag(policyName, name) {
+        // The cell renders the tag chip once the policy has a tag; click the chip
+        // (not the cell, whose center can fall in dead space) to open the explorer.
+        this._row(policyName).find('tags-explorer .main-tags', { timeout: TIMEOUTS.ui }).first().click();
+        Checks.waitForLoading();
+        cy.get('tags-explorer-dialog', { timeout: TIMEOUTS.ui }).contains('div.name', name).click();
+        cy.get('tags-explorer-dialog .details-container svg-icon[src*="delete"]', { timeout: TIMEOUTS.ui }).first().click();
+        cy.get('body').then((body) => {
+            const confirm = body.find('button').filter((_, button) => button.textContent.trim() === 'Delete');
+            if (confirm.length) {
+                cy.wrap(confirm.first()).click();
+            }
+        });
+        Checks.waitForLoading();
+        cy.get('tags-explorer-dialog').contains('div.name', name).should('not.exist', { timeout: TIMEOUTS.ui });
+        // The explorer stays open after the deletion; close it so the list row
+        // underneath is interactable for the next step.
+        cy.get('body').then(($body) => {
+            const explorer = $body.find('tags-explorer-dialog');
+            if (explorer.length) {
+                cy.get('body').type('{esc}');
+            }
+        });
+        cy.get('tags-explorer-dialog', { timeout: TIMEOUTS.ui }).should('not.exist');
+    }
+
+    // ---- Export ----
+
+    openExportModal(name) {
+        this._openRowMenu(name);
+        cy.get(L.menuItem, { timeout: TIMEOUTS.ui }).filter((_, el) => el.textContent.trim() === 'Export policy').click();
+        cy.get(L.dialog, { timeout: TIMEOUTS.ui }).should('be.visible');
+    }
+
+    exportPolicyAsFile(name) {
+        this.openExportModal(name);
+        cy.get(L.dialog).find(L.exportFileButton).click();
+        cy.verifyDownload('.policy', { contains: true });
+    }
+
+    exportPolicyAsMessageId(name) {
+        this.openExportModal(name);
+        cy.get(L.dialog).find(L.exportMessageIdButton).realClick();
+        cy.window().then((win) => {
+            win.navigator.clipboard.readText().then((text) => {
+                expect(text).to.match(/\d+\.\d+/);
+            });
+        });
+    }
+
+    verifyThatButtonDisabled(buttonName) {
+        cy.contains(buttonName.trim()).should('be.disabled');
+    }
+
+    verifyThatDeleteButtonIsNotActive(name) {
+        this._openRowMenu(name);
+        cy.get(L.menuItem, { timeout: TIMEOUTS.ui }).filter((_, el) => el.textContent.trim() === 'Delete Policy').find('button').should('be.disabled');
+    }
+
+    // ---- Editor (policy-configuration) ----
+
+    /**
+     * Edits a policy identity field (Name / Topic Description / Description) through the
+     * policy settings drawer - the current editor renders those rows only inside it - or a
+     * selected block's Tag through the right-hand inspector.
+     */
     editPolicyProperty(property, name) {
-        cy.wait(500)
-        if (property == 'Description')
-            {cy.contains('td.cellName', new RegExp('^' + property + '$', 'g')).parent().find(CommonElements.textarea).clear().type(name);}
-        else
-            {cy.contains('td.cellName', new RegExp('^' + property + '$', 'g')).parent().find(CommonElements.Input).clear().type(name);}
+        if (property === 'Tag') {
+            cy.get('.right-bottom-toolbar').contains('td.cellName', new RegExp('^' + property + '$')).parent().find('input.prop-input').clear();
+            cy.get('.right-bottom-toolbar').contains('td.cellName', new RegExp('^' + property + '$')).parent().find('input.prop-input').type(name);
+            return;
+        }
+        this._ensureSettingsDrawer();
+        const fieldSelector = property === 'Description' ? 'textarea' : 'input.prop-input';
+        cy.get(L.drawerPanel).contains('td.cellName', new RegExp('^' + property + '$')).parent().find(fieldSelector).clear();
+        cy.get(L.drawerPanel).contains('td.cellName', new RegExp('^' + property + '$')).parent().find(fieldSelector).type(name);
+        this._closeSettingsDrawer();
+    }
+
+    // The settings drawer hosts the identity fields; open it through the breadcrumb identity popover if needed.
+    _ensureSettingsDrawer() {
+        // The editor renders a full-page preloader while it loads and it swallows
+        // the identity click underneath, so wait for it to clear first.
+        cy.get(L.loadingOverlay, { timeout: TIMEOUTS.backend }).should('not.exist');
+        cy.get('body').then(($body) => {
+            if ($body.find(L.drawerPanel + '.open').length === 0) {
+                cy.get(L.settingsIdentity, { timeout: TIMEOUTS.ui }).click();
+                cy.get(L.identityAction, { timeout: TIMEOUTS.ui }).click();
+            }
+        });
+        cy.get(L.drawerPanel + '.open', { timeout: TIMEOUTS.ui }).should('exist');
+    }
+
+    _closeSettingsDrawer() {
+        cy.get('body').then(($body) => {
+            if ($body.find(L.drawerPanel + '.open').length > 0) {
+                cy.get(L.settingsClose).click();
+            }
+        });
     }
 
     savePolicyEditing() {
-        cy.get(PoliciesPageLocators.savePolicyEditing).click();
+        cy.get(L.savePolicy).click();
+        Checks.waitForLoading();
     }
 
     verifyPolicyProperty(name, property, value) {
-        if (property == 'Description')
-            {cy.contains('td', name).siblings('.cell-description').should('have.text', value + ' ');}
+        if (property === 'Description') {
+            this._row(name).find('td.cell-description').should('have.text', value + ' ');
+        }
     }
 
     checkFieldsInEditPolicyIsNotEditable() {
-        cy.contains('td', new RegExp('^Name$', 'g')).parent().find(CommonElements.Input).should('have.attr', 'readonly', 'readonly');
-        cy.contains('td', new RegExp('^Policy Tag$', 'g')).parent().find(CommonElements.Input).should('have.attr', 'readonly', 'readonly');
-        cy.contains('td', new RegExp('^Topic Description$', 'g')).parent().find(CommonElements.Input).should('have.attr', 'readonly', 'readonly');
-        cy.contains('td', new RegExp('^Description$', 'g')).parent().find(CommonElements.textarea).should('have.attr', 'readonly', 'readonly');
+        this._ensureSettingsDrawer();
+        cy.contains('td.cellName', new RegExp('^Name$', 'g')).parent().find(CommonElements.Input).should('have.attr', 'readonly', 'readonly');
+        cy.contains('td.cellName', new RegExp('^Policy Tag$', 'g')).parent().find(CommonElements.Input).should('have.attr', 'readonly', 'readonly');
+        cy.contains('td.cellName', new RegExp('^Topic Description$', 'g')).parent().find(CommonElements.Input).should('have.attr', 'readonly', 'readonly');
+        // A read-only policy shows its description as text, not as a textarea.
+        cy.contains('td.cellName', new RegExp('^Description$', 'g')).parent().find('.prop-description-readonly').should('exist');
+        cy.contains('td.cellName', new RegExp('^Description$', 'g')).parent().find(CommonElements.textarea).should('not.exist');
+    }
+
+    // Settings drawer (opened from the policy identity popover)
+    openSettingsDrawer() {
+        cy.get(L.settingsIdentity).click();
+        cy.get(L.settingsAction, { timeout: TIMEOUTS.ui }).click();
+        cy.get('.psd-panel.open', { timeout: TIMEOUTS.ui }).should('be.visible');
+    }
+
+    closeSettingsDrawer() {
+        this._closeSettingsDrawer();
     }
 
     addNewBlock(name) {
-        cy.contains(PoliciesPageLocators.componentsBlock, name).click({ force: true });
+        // The Blocks, Modules and Tools tabs each have a search input; the Blocks one comes first.
+        const blocksSearch = () => cy.get(L.componentsSearch, { timeout: TIMEOUTS.ui }).first();
+        blocksSearch().clear();
+        blocksSearch().type(name);
+        cy.contains(L.componentAddChip, name, { timeout: TIMEOUTS.ui }).click();
+        blocksSearch().clear();
     }
 
     checkBlockExists(name) {
-        cy.get(PoliciesPageLocators.blockItemName(name)).should('be.visible');
+        cy.get(L.blockItemName(name)).should('be.visible');
     }
 
     editBlockName(name, newName) {
@@ -360,45 +632,54 @@ export class PoliciesPage {
     }
 
     clickOnBlock(name) {
-        cy.get(PoliciesPageLocators.blockItemName(name)).should('be.visible').click({ force: true });
+        cy.get(L.blockItemName(name)).should('be.visible').click({ force: true });
     }
 
     expandBlock(name) {
-        cy.get(PoliciesPageLocators.expandBlockBtn(name)).click({ force: true });
+        cy.get(L.expandBlockBtn(name)).click({ force: true });
     }
 
     checkBlockNotExist(name) {
-        cy.wait(10000)
-        cy.get(PoliciesPageLocators.blockItemName(name)).should('not.exist');
+        cy.get(L.blockItemName(name), { timeout: TIMEOUTS.ui }).should('not.exist');
     }
 
     clickOnDeleteBlockButton() {
-        cy.get(PoliciesPageLocators.deleteBlockBtn).click({ force: true });
+        cy.get(L.deleteBlockBtn).click({ force: true });
     }
 
     selectToFavorites(name) {
-        cy.get(PoliciesPageLocators.componentBtn).contains(name).next(PoliciesPageLocators.favoriteButton).click();
+        cy.get(L.componentBtn).contains(name).next(L.favoriteButton).click();
     }
 
     verifyIfSearchResultContains(text) {
-        cy.wait(1000);
-        cy.get(PoliciesPageLocators.componentsContainer).contains(text).should('exist');
+        cy.get(L.componentsContainer).contains(text).should('exist');
     }
 
     verifyIfSearchResultIsNotContains(text) {
-        cy.get(PoliciesPageLocators.componentsContainer).contains(text).should('not.exist');
+        cy.get(L.componentsContainer).contains(text).should('not.exist');
     }
 
     fillSearchField(text) {
+        // eslint-disable-next-line cypress/unsafe-to-chain-command
         cy.get('input[placeholder="Search"]:not(:hidden)').clear().type(text);
     }
 
     openModulesInPolicy() {
-        cy.get(PoliciesPageLocators.moduleIcon).click();
+        cy.get(L.moduleIcon).click();
+    }
+
+    // The Design/JSON/YAML segment of the editor toolbar; "Tree" is the Design view.
+    switchView(view) {
+        const label = view === 'Tree' ? 'Design' : view;
+        cy.get(L.viewSegmentItem, { timeout: TIMEOUTS.ui }).contains(label).click();
+    }
+
+    runValidation() {
+        cy.get(L.validation, { timeout: TIMEOUTS.ui }).click();
     }
 
     verifyIfSearchResultIsEmpty() {
-        cy.get(PoliciesPageLocators.componentsContainer).as('fieldName');
+        cy.get(L.componentsContainer).as('fieldName');
         cy.get('@fieldName').get('.components-group-body').as('fieldNameChild');
         cy.get('@fieldNameChild').should('be.empty');
     }
@@ -412,533 +693,358 @@ export class PoliciesPage {
     }
 
     verifyIfContainerJsonIsDisplayed() {
-        cy.get(PoliciesPageLocators.containerJson).should('be.visible');
+        cy.get(L.jsonContainer).should('be.visible');
     }
 
     verifyIfTreeContainerIsDisplayed() {
-        cy.get(PoliciesPageLocators.treeContainer).should('be.visible');
+        cy.get(L.treeContainer).should('be.visible');
     }
 
     undo() {
-        cy.get(PoliciesPageLocators.undo).should('have.attr', 'storage-active', 'true').click();
+        cy.get(L.undo).should('have.attr', 'storage-active', 'true').click();
     }
 
     redo() {
-        cy.get(PoliciesPageLocators.redo).should('have.attr', 'storage-active', 'true').click();
+        cy.get(L.redo).should('have.attr', 'storage-active', 'true').click();
     }
 
     verifyIfValidationIsSuccessful() {
-        cy.get(PoliciesPageLocators.successValidationElement).should('have.attr', 'errors-count', '0');
+        cy.get(L.validation).should('have.attr', 'errors-count', '0');
     }
 
     verifyIfValidationIsDisplayed() {
-        cy.get(PoliciesPageLocators.errorCountElement).should('be.visible');
+        cy.get(L.errorCount).should('be.visible');
     }
 
     verifyIfValidationCountContains(count) {
-        cy.get(PoliciesPageLocators.errorCountElement).should('have.text', count);
+        cy.get(L.errorCount).should('have.text', count);
+    }
+
+    // ---- Dry-run wizard users ----
+
+    // The virtual users are managed from the "Acting as" chip of the policy viewer.
+    _openActingAsMenu() {
+        cy.get('div.user-chip', { timeout: TIMEOUTS.backend }).click();
+        cy.get('div.viewer-menu--users', { timeout: TIMEOUTS.ui }).should('be.visible');
     }
 
     createDryRunUser() {
-        cy.contains('Create User').click();
+        this._openActingAsMenu();
+        cy.contains('div.viewer-menu-action', 'Create virtual user').click();
         Checks.waitForLoading();
     }
 
     openDryRunUser(user = '1') {
-        if (user == 'Administrator') {
-            cy.contains('Users').realClick();
-            cy.get(CommonElements.Loading).should('not.exist');
-            cy.contains(user).click();
-            Checks.waitForLoading();
-        }
-        else {
-            cy.contains('Users').realClick();
-            cy.get(CommonElements.Loading).should('not.exist');
-            cy.contains(`Virtual User ${user}`).click();
-            Checks.waitForLoading();
-        }
-    }
-
-    registerAs(role) {
-        cy.get(CommonElements.dropdown).first().click();
-        cy.contains(role).click();
-        cy.get(PoliciesPageLocators.nextButton).click();
+        const label = user === 'Administrator' ? user : `Virtual User ${user}`;
+        this._openActingAsMenu();
+        // A user with a role is listed as "<name> - <role>", so match the start of the title.
+        cy.contains('div.viewer-menu-title', label).click();
         Checks.waitForLoading();
     }
 
-    validateTypesDefault() {
-        this.createDryRunUser();
-        this.openDryRunUser();
-        this.registerAs('RoleD');
-        //number
-        cy.get('input').eq(0).should('have.class', 'ng-valid');
-        cy.get('input').eq(0).type('dsadsa');
-        cy.get('input').eq(0).should('have.class', 'ng-invalid');
-        cy.get('button:contains("Submit ")').should('be.disabled');
-        cy.get('input').eq(0).clear({ force: true }).type('213', { force: true });
-        cy.get('input').eq(0).should('have.class', 'ng-valid');
-        //email
-        cy.get('input').eq(1).should('have.class', 'ng-valid');
-        cy.get('input').eq(1).type('dsadsa');
-        cy.get('input').eq(1).should('have.class', 'ng-invalid');
-        cy.get('button:contains("Submit ")').should('be.disabled');
-        cy.get('input').eq(1).clear({ force: true }).type('dsadsa@dsadsa.dsadsa', { force: true });
-        cy.get('input').eq(1).should('have.class', 'ng-valid');
-        //image(IPFS)
-        cy.get('input').eq(2).should('have.class', 'ng-valid');
-        cy.get('input').eq(2).type('dsadsa');
-        cy.get('input').eq(2).should('have.class', 'ng-invalid');
-        cy.get('button:contains("Submit ")').should('be.disabled');
-        cy.get('input').eq(2).clear({ force: true }).type('ipfs://dsadsa', { force: true });
-        cy.get('input').eq(2).should('have.class', 'ng-valid');
-        //date(date)
-        cy.get('input').eq(3).type('fsdfds', { force: true });
-        cy.get('input').eq(2).click();
-        cy.get('input').eq(3).type('2025-01-03', { force: true });
-        //geojson
-        cy.get('button.guardian-button-secondary').eq(1).click();
-        cy.get('textarea').eq(0).type('[1.321,2.321]', { force: true });
-        cy.get('textarea').eq(0).should('have.class', 'ng-valid');
+    registerAs(role) {
+        cy.get(L.rolesForm, { timeout: TIMEOUTS.backend }).then(($form) => {
+            const card = $form.find(`button[data-role="${role}"]`).first();
+            if (card.length) {
+                cy.wrap(card).click();
+            } else {
+                cy.get(L.roleSelect).first().click();
+                cy.get(L.roleOption).contains(role).click();
+            }
+            cy.get(L.wizardNext).click();
+        });
+        Checks.waitForLoading();
+    }
 
-        cy.get('button:contains("Submit ")').should('be.enabled');
+    // ---- Request form validation (dry-run virtual users) ----
+
+    _openRoleRequestForm(user, role) {
+        this.createDryRunUser();
+        this.openDryRunUser(user);
+        this.registerAs(role);
+        openOverviewSection();
+    }
+
+    // The field labelled `label` in the open form section; an array field holds one input per entry.
+    _requestField(label) {
+        return cy.contains(`${L.requestForm} .sf-label-text`, new RegExp(`^${label}$`), { timeout: TIMEOUTS.ui })
+            .closest('.form-field-array, .form-field');
+    }
+
+    _requestFieldInput(label) {
+        return this._requestField(label).find('textarea, input.p-datepicker-input').first();
+    }
+
+    _addFieldEntry(label) {
+        this._requestField(label).contains('button', 'Add Field').click();
+    }
+
+    _expectRequiredFieldEmpty(label) {
+        this._requestFieldInput(label).should('have.class', 'ng-invalid');
+    }
+
+    // The form marks a refused value with ng-invalid and an inline error, and clears both for an accepted one.
+    _expectFieldValidation(label, refusedValue, acceptedValue) {
+        const input = () => this._requestFieldInput(label);
+        input().type(refusedValue, { force: true });
+        input().blur({ force: true });
+        input().should('have.class', 'ng-invalid');
+        this._requestField(label).find('.sf-error').should('exist');
+        input().clear({ force: true });
+        input().type(acceptedValue, { force: true });
+        input().blur({ force: true });
+        input().should('have.class', 'ng-valid');
+        this._requestField(label).find('.sf-error').should('not.exist');
+    }
+
+    // The calendar stays open after typing and covers the fields below it until Escape closes it.
+    _fillDate(label) {
+        this._requestFieldInput(label).type('2025-01-03{esc}', { force: true });
+        cy.get('td.p-datepicker-day-cell').should('not.exist');
+    }
+
+    // An optional GeoJSON field starts without an entry; a geometry needs a type and its coordinates.
+    _fillGeoJsonPoint() {
+        cy.get(L.requestForm).then(($form) => {
+            if (!$form.find('app-geojson-type button:contains("Add geometry")').length) {
+                cy.contains(`${L.requestForm} button`, 'Add geojson').click();
+            }
+        });
+        addGeoJsonPoint(() => cy.get(`${L.requestForm} app-geojson-type`).first());
+    }
+
+    // Nothing left to fix: no inline error and no required field left to jump to.
+    _expectRequestFormComplete() {
+        cy.get(`${L.requestForm} .sf-error`).should('not.exist');
+        cy.get(`${L.requestForm} .form-progress-link`).should('not.exist');
+    }
+
+    validateTypesDefault() {
+        this._openRoleRequestForm('1', 'RoleD');
+        this._expectFieldValidation('number', 'dsadsa', '213');
+        this._expectFieldValidation('email', 'dsadsa', 'dsadsa@dsadsa.dsadsa');
+        this._expectFieldValidation('image', 'dsadsa', 'ipfs://dsadsa');
+        this._fillDate('date');
+        this._fillGeoJsonPoint();
+        this._expectRequestFormComplete();
     }
 
     validateTypesRequired() {
-        this.createDryRunUser();
-        this.openDryRunUser('2');
-        this.registerAs('RoleR');
-        //number
-        cy.get('input').eq(0).should('have.class', 'ng-invalid');
-        cy.get('input').eq(0).type('dsadsa');
-        cy.get('input').eq(0).should('have.class', 'ng-invalid');
-        cy.get('button:contains("Submit ")').should('be.disabled');
-        cy.get('input').eq(0).clear({ force: true }).type('213', { force: true });
-        cy.get('input').eq(0).should('have.class', 'ng-valid');
-        //date(date)
-        cy.get('input').eq(1).type('fsdfds', { force: true });
-        cy.get('input').eq(0).click();
-        cy.get('input').eq(1).type('2025-01-03', { force: true });
-        //email
-        cy.get('input').eq(2).should('have.class', 'ng-invalid');
-        cy.get('input').eq(2).type('dsadsa');
-        cy.get('input').eq(2).should('have.class', 'ng-invalid');
-        cy.get('button:contains("Submit ")').should('be.disabled');
-        cy.get('input').eq(2).clear({ force: true }).type('dsadsa@dsadsa.dsadsa', { force: true });
-        cy.get('input').eq(2).should('have.class', 'ng-valid');
-        //image(IPFS)
-        cy.get('input').eq(3).should('have.class', 'ng-invalid');
-        cy.get('input').eq(3).type('dsadsa');
-        cy.get('input').eq(3).should('have.class', 'ng-invalid');
-        cy.get('button:contains("Submit ")').should('be.disabled');
-        cy.get('input').eq(3).clear({ force: true }).type('ipfs://dsadsa', { force: true });
-        cy.get('input').eq(3).should('have.class', 'ng-valid');
-        //geojson
-        cy.get('textarea').eq(0).type('[1.321,2.321]', { force: true });
-        cy.get('textarea').eq(0).should('have.class', 'ng-valid');
-
-        cy.get('button:contains("Submit ")').should('be.enabled');
+        this._openRoleRequestForm('2', 'RoleR');
+        ['numb', 'email', 'image'].forEach((label) => this._expectRequiredFieldEmpty(label));
+        this._expectFieldValidation('numb', 'dsadsa', '213');
+        this._fillDate('date');
+        this._expectFieldValidation('email', 'dsadsa', 'dsadsa@dsadsa.dsadsa');
+        this._expectFieldValidation('image', 'dsadsa', 'ipfs://dsadsa');
+        this._fillGeoJsonPoint();
+        this._expectRequestFormComplete();
     }
 
     validateTypesMultiplie() {
-        this.createDryRunUser();
-        this.openDryRunUser('3');
-        this.registerAs('RoleMD');
-        //number
-        cy.get('button.guardian-button-secondary').eq(1).click();
-        cy.get('input').eq(0).should('have.class', 'ng-valid');
-        cy.get('input').eq(0).type('dsadsa');
-        cy.get('input').eq(0).should('have.class', 'ng-invalid');
-        cy.get('button:contains("Submit ")').should('be.disabled');
-        cy.get('input').eq(0).clear({ force: true }).type('213', { force: true });
-        cy.get('input').eq(0).should('have.class', 'ng-valid');
-        //email
-        cy.get('button.guardian-button-secondary').eq(2).click();
-        cy.get('input').eq(1).should('have.class', 'ng-valid');
-        cy.get('input').eq(1).type('dsadsa');
-        cy.get('input').eq(1).should('have.class', 'ng-invalid');
-        cy.get('button:contains("Submit ")').should('be.disabled');
-        cy.get('input').eq(1).clear({ force: true }).type('dsadsa@dsadsa.dsadsa', { force: true });
-        cy.get('input').eq(1).should('have.class', 'ng-valid');
-        //image(IPFS)
-        cy.get('button.guardian-button-secondary').eq(3).click();
-        cy.get('input').eq(2).should('have.class', 'ng-valid');
-        cy.get('input').eq(2).type('dsadsa');
-        cy.get('input').eq(2).should('have.class', 'ng-invalid');
-        cy.get('button:contains("Submit ")').should('be.disabled');
-        cy.get('input').eq(2).clear({ force: true }).type('ipfs://dsadsa', { force: true });
-        cy.get('input').eq(2).should('have.class', 'ng-valid');
-        //date(date)
-        cy.get('button.guardian-button-secondary').eq(4).click();
-        cy.get('input').eq(3).type('fsdfds', { force: true });
-        cy.get('input').eq(2).click();
-        cy.get('input').eq(3).type('2025-01-03', { force: true });
-        //geojson
-        cy.get('button.guardian-button-secondary').eq(5).click();
-        cy.get('textarea').eq(0).type('[1.321,2.321]', { force: true });
-        cy.get('textarea').eq(0).should('have.class', 'ng-valid');
-
-        cy.get('button:contains("Submit ")').should('be.enabled');
+        this._openRoleRequestForm('3', 'RoleMD');
+        ['number', 'email', 'image', 'date'].forEach((label) => this._addFieldEntry(label));
+        this._expectFieldValidation('number', 'dsadsa', '213');
+        this._expectFieldValidation('email', 'dsadsa', 'dsadsa@dsadsa.dsadsa');
+        this._expectFieldValidation('image', 'dsadsa', 'ipfs://dsadsa');
+        this._fillDate('date');
+        this._fillGeoJsonPoint();
+        this._expectRequestFormComplete();
     }
 
     validateTypesMultiplieRequired() {
-        this.createDryRunUser();
-        this.openDryRunUser('4');
-        this.registerAs('RoleMR');
-        //number
-        cy.get('input').eq(0).should('have.class', 'ng-invalid');
-        cy.get('input').eq(0).type('dsadsa');
-        cy.get('input').eq(0).should('have.class', 'ng-invalid');
-        cy.get('button:contains("Submit ")').should('be.disabled');
-        cy.get('input').eq(0).clear({ force: true }).type('213', { force: true });
-        cy.get('input').eq(0).should('have.class', 'ng-valid');
-        //email
-        cy.get('input').eq(1).should('have.class', 'ng-invalid');
-        cy.get('input').eq(1).type('dsadsa');
-        cy.get('input').eq(1).should('have.class', 'ng-invalid');
-        cy.get('button:contains("Submit ")').should('be.disabled');
-        cy.get('input').eq(1).clear({ force: true }).type('dsadsa@dsadsa.dsadsa', { force: true });
-        cy.get('input').eq(1).should('have.class', 'ng-valid');
-        //date(date)
-        cy.get('input').eq(2).type('fsdfds', { force: true });
-        cy.get('input').eq(1).click();
-        cy.get('input').eq(2).type('2025-01-03', { force: true });
-        cy.get('input').eq(1).click();
-        //image(IPFS)
-        cy.get('input').eq(3).should('have.class', 'ng-invalid');
-        cy.get('input').eq(3).type('dsadsa', { force: true });
-        cy.get('input').eq(3).should('have.class', 'ng-invalid');
-        cy.get('button:contains("Submit ")').should('be.disabled');
-        cy.get('input').eq(3).clear({ force: true }).type('ipfs://dsadsa', { force: true });
-        cy.get('input').eq(3).should('have.class', 'ng-valid');
-        //geojson
-        cy.get('textarea').eq(0).type('[1.321,2.321]', { force: true });
-        cy.get('textarea').eq(0).should('have.class', 'ng-valid');
-
-        cy.get('button:contains("Submit ")').should('be.enabled');
+        this._openRoleRequestForm('4', 'RoleMR');
+        ['number', 'email', 'image'].forEach((label) => this._expectRequiredFieldEmpty(label));
+        this._expectFieldValidation('number', 'dsadsa', '213');
+        this._expectFieldValidation('email', 'dsadsa', 'dsadsa@dsadsa.dsadsa');
+        this._fillDate('date');
+        this._expectFieldValidation('image', 'dsadsa', 'ipfs://dsadsa');
+        this._fillGeoJsonPoint();
+        this._expectRequestFormComplete();
     }
 
-    approveProject() {
-        cy.contains('Projects').should('exist');
-        cy.get('.preloader-image').should('not.exist');
-        cy.contains('Projects').click();
-        this.approve();
+    // ---- No-op stubs (kept so legacy callers resolve) ----
+
+    clickOnDivByText(text) { // eslint-disable-line no-unused-vars
+        // no wizard tabs in the current app; nothing to click
     }
 
-    clickOnDivByText(text) {
-        // cy.contains('div.tab-header', text).click({ force: true });
+    checkButtonInModalIsNotActive(text) { // eslint-disable-line no-unused-vars
+        // dialog buttons in the current app are disabled via [disabled], asserted where it matters
     }
 
-    checkButtonInModalIsNotActive(text) {
-        //cy.get(PoliciesPageLocators.dialogContainer).contains(new RegExp("^" + text + "$", "g")).should('have.css', 'cursor', 'default');
+    clickOnExportButton(name) { // eslint-disable-line no-unused-vars
+        // superseded by openExportModal
     }
 
-    clickOnExportButton(name) {
-        // cy.contains(name).parent().parent().find(PoliciesPageLocators.actionsMore).click();
-        // cy.contains(PoliciesPageLocators.exportPolicy).click();
-    }
-
-    clickOnButtonByTextInModal(text) {
-        // cy.get(CommonElements.dialogWindow).contains(text).click({ force: true });
+    clickOnButtonByTextInModal(text) { // eslint-disable-line no-unused-vars
+        // no legacy modal in the current app
     }
 
     importPolicyButton() {
-        // cy.get(PoliciesPageLocators.importIcon).click();
+        // superseded by _openImportDialog
     }
+
     approveDevice() {
-        // cy.contains("Register").first().click();
-        // cy.contains("Devices").click({ force: true });
-        // cy.contains("Approve").click({ force: true });
-        // cy.wait(60000);
+        // superseded by approveDeviceInPolicy
     }
+
     approveRequest() {
-        // cy.contains("Register").first().click();
-        // cy.contains("Issue Requests").click({ force: true });
-        // cy.contains("Approve").click({ force: true });
-        // cy.wait(180000);
+        // superseded by approveIssueRequestInPolicy
     }
 
     static waitForPolicyList() {
-        // cy.intercept(PoliciesPageLocators.policiesList).as(
-        //     "waitForPoliciesList"
-        // );
-        // cy.wait("@waitForPoliciesList", { timeout: 300000 })
+        // list renders after the fetch; the page-ready gate covers it
     }
 
     static waitForPolicyEdit() {
-        // cy.intercept(PoliciesPageLocators.policyEditView).as(
-        //     "waitForPolicyEdit"
-        // );
-        // cy.wait("@waitForPolicyEdit", { timeout: 300000 })
+        // the editor renders behind the page-ready gate
     }
 
-    importPolicyFile(file) {
-        // cy.contains(PoliciesPageLocators.importFileBtn).click();
-        // cy.fixture(file, { encoding: null }).as("myFixture");
-        // cy.get(PoliciesPageLocators.importFile).selectFile("@myFixture", {
-        //     force: true,
-        // });
-        // cy.get(PoliciesPageLocators.continueImportBtn).click();
+    importPolicyFile(file) { // eslint-disable-line no-unused-vars
+        // superseded by importPolicyFromFile
     }
 
-    importPolicyMessage(msg) {
-        // cy.contains(PoliciesPageLocators.importMsgBtn).click();
-        // const inputMessage = cy.get(PoliciesPageLocators.msgInput);
-        // inputMessage.type(msg);
-        // cy.intercept(PoliciesPageLocators.taskReq).as(
-        //     "waitForPolicyImport"
-        // );
-        // cy.get(PoliciesPageLocators.importBtn).click();
-        // cy.wait(['@waitForPolicyImport', '@waitForPolicyImport'], { timeout: 100000 })
-        // cy.get(PoliciesPageLocators.importContinueBtn).click();
-        // PoliciesPage.waitForPolicyEdit();
+    importPolicyMessage(msg) { // eslint-disable-line no-unused-vars
+        // superseded by importPolicyFromIPFS
     }
 
-    checkButtonIsNotActive(name) {
-        // cy.contains(name).parent().parent().find(PoliciesPageLocators.actionsMore).click();
-        // cy.contains(PoliciesPageLocators.policyDeleteButton).should('be.disabled');
+    checkButtonIsNotActive(name) { // eslint-disable-line no-unused-vars
+        // superseded by verifyThatButtonDisabled
     }
 
     publishPolicyOld() {
-        // cy.get("tbody>tr").eq("0").find("td").eq("0").within((firstCell) => {
-        //     cy.wrap(firstCell.text()).as("policyName").then(() => {
-        //         cy.get("@policyName").then((policyName) => {
-        //             cy.wait(3000)
-        //             cy.contains(policyName).parent().find("td").eq("7").click();
-        //         });
-        //     });
-        // })
-        // cy.get(PoliciesPageLocators.dropDawnPublishBtn).first().click()
-        // cy.get(PoliciesPageLocators.versionInput).type("0.0.1")
-        // cy.intercept(PoliciesPageLocators.policyEditView).as(
-        //     "waitForPolicyEditView"
-        // );
-        // cy.get(PoliciesPageLocators.publishPolicyBtn).click()
-        // cy.wait("@waitForPolicyEditView", { timeout: 300000 })
-        // //cy.visit(URL.Root + URL.Policies);
-        // cy.get("@policyName").then((policyName) => {
-        //     cy.contains(policyName).parent().find("td").eq("7")
-        //     cy.contains(PoliciesPageLocators.publishedStatus);
-        // });
+        // superseded by publishPolicy
     }
 
     approveOld() {
-        // cy.contains("Policies").click({ force: true });
-        // cy.get("td").first().parent().get("td").eq("8").click();
-        // cy.wait(12000);
-        // cy.contains(" Approve ").click();
-        // cy.wait(12000);
+        // superseded by the viewer approval methods
     }
 
     approveDevicebySR() {
-        // cy.contains("Policies").click({ force: true });
-        // cy.get("td").first().parent().get("td").eq("8").click();
-        // cy.contains("Devices").click({ force: true });
-        // cy.wait(8000);
-        // cy.contains(" Approve ").click({ force: true });
+        // superseded by approveDeviceInPolicy
     }
 
     addVVB() {
-        // cy.contains("Go").first().click();
-        // cy.contains("Project Pipeline").click({ force: true });
-        // cy.wait(14000);
-        // cy.contains("Approve VVB").click({ force: true });
-        // cy.wait(8000);
-        // cy.contains("Project Pipeline").click({ force: true });
-        // cy.get(PoliciesPageLocators.addBtn).click();
-        // cy.wait(12000);
+        // no VVB block in the current app
     }
 
-    clickEditPolicy(name) {
-        // cy.contains("td", name)
-        //     .siblings()
-        //     .contains("div", "edit")
-        //     .click();
-        // cy.wait(1000);
+    clickEditPolicy(name) { // eslint-disable-line no-unused-vars
+        // superseded by openEditingPolicy
     }
 
-    fillFieldInEditPolicyPage(fieldName, text) {
-        // cy.contains("td", new RegExp("^" + fieldName + "$", "g"))
-        //     .siblings("td").as("fieldName");
-        // if (fieldName == "Description") {
-        //     cy.get("@fieldName").children("textarea").as("fieldNameChild");
-        // } else {
-        //     cy.get("@fieldName").children("input").as("fieldNameChild");
-        // }
-        // cy.get("@fieldNameChild").clear().type(text);
+    fillFieldInEditPolicyPage(fieldName, text) { // eslint-disable-line no-unused-vars
+        // superseded by editPolicyProperty
     }
 
     clickSaveButton() {
-        // cy.contains("Save").click();
+        // superseded by savePolicyEditing
     }
 
-    checkPolicyTableContains(text) {
-        // cy.contains("td", text).should("be.visible");
+    checkPolicyTableContains(text) { // eslint-disable-line no-unused-vars
+        // superseded by checkStatus
     }
 
-    checkFieldInEditPolicyIsNotEditable(fieldName) {
-        // cy.contains("td", new RegExp("^" + fieldName + "$", "g"))
-        //     .siblings("td").as("fieldName");
-        // if (fieldName == "Description") {
-        //     cy.get("@fieldName").children("textarea").as("fieldNameChild");
-        // } else {
-        //     cy.get("@fieldName").children("input").as("fieldNameChild");
-        // }
-        // cy.get("@fieldNameChild").should('have.attr', 'readonly', 'readonly');
+    checkFieldInEditPolicyIsNotEditable(fieldName) { // eslint-disable-line no-unused-vars
+        // superseded by checkFieldsInEditPolicyIsNotEditable
     }
 
-    publishDraftPolicy(name) {
-        // cy.contains("td", name)
-        //     .siblings()
-        //     .contains("div", "Draft")
-        //     .click();
-        // cy.contains(new RegExp("^Publish$", "g")).click({ force: true });
-        // cy.get(PoliciesPageLocators.versionInput).type("0.0.1")
-        // cy.contains(PoliciesPageLocators.publishPolicyBtn, "Publish").click();
-        // PoliciesPage.waitForPolicyEdit();
-        // //PoliciesPage.waitForPolicyList();
+    publishDraftPolicy(name) { // eslint-disable-line no-unused-vars
+        // superseded by publishPolicy
     }
 
-    checkModalWindowIsVisible(name) {
-        // cy.get(PoliciesPageLocators.modalWindow).should("be.visible");
-        // cy.contains(PoliciesPageLocators.modalWindow, name).should("be.visible");
+    checkModalWindowIsVisible(name) { // eslint-disable-line no-unused-vars
+        // superseded by the dialog assertions
     }
 
-    checkPolicyTableFieldIsEmpty(fieldName) {
-        // cy.contains("td", new RegExp("^" + fieldName + "$", "g")).siblings("td").as("fieldName");
-        // if (fieldName == "Description") {
-        //     cy.get("@fieldName").children("textarea").as("fieldNameChild");
-        // } else {
-        //     cy.get("@fieldName").children("input").as("fieldNameChild");
-        // }
-        // cy.get("@fieldNameChild").should("be.empty");
+    checkPolicyTableFieldIsEmpty(fieldName) { // eslint-disable-line no-unused-vars
+        // superseded by the cell assertions
     }
 
-    addNewBlockByNameOld(name) {
-        // cy.get(PoliciesPageLocators.componentsBlock).contains(name).click({ force: true });
+    addNewBlockByNameOld(name) { // eslint-disable-line no-unused-vars
+        // superseded by addNewBlock
     }
 
-    checkBlockIsPresent(name) {
-        // cy.get(PoliciesPageLocators.policyBlock).contains(name).should("be.visible");
+    checkBlockIsPresent(name) { // eslint-disable-line no-unused-vars
+        // superseded by checkBlockExists
     }
 
     checkBlockIsNotPresent() {
-        // cy.get(PoliciesPageLocators.policyBlock).should("not.exist");
+        // superseded by checkBlockNotExist
     }
 
     checkTrustChain() {
-        // let tokenId;
-        // cy.readFile('cypress/fixtures/tokenId.txt').then(file => {
-        //     tokenId = file;
-        // }).then(() => {
-        //     cy.contains("Go").first().click();
-        //     cy.contains("Token History").click({ force: true });
-        //     cy.contains("View TrustChain").last().click({ force: true });
-        //     cy.contains(tokenId.trim()).should("exist");
-        //     cy.contains("123").should("exist");
-        // })
+        // no trust-chain view in the current app
     }
 
     checkTokenHistory() {
-        // let tokenId;
-        // cy.readFile('cypress/fixtures/tokenId.txt').then(file => {
-        //     tokenId = file;
-        // }).then(() => {
-        //     cy.contains(tokenId.trim()).parent().parent().parent().find(PoliciesPageLocators.usersIconButton).click();
-        //     cy.contains(PoliciesPageLocators.registrantLabel).parent().find(PoliciesPageLocators.tokenBalance).should('have.text', " 123 ");
-        // })
+        // no token-history view in the current app
     }
 
-    clickOnAddedBlock(name) {
-        // cy.get(PoliciesPageLocators.blockItem).contains(name).click({ force: true });
+    clickOnAddedBlock(name) { // eslint-disable-line no-unused-vars
+        // superseded by clickOnBlock
     }
 
     clickOnDeleteBlockButtonOld() {
-        // cy.get(PoliciesPageLocators.deleteBlockBtn).first().click({ force: true });
+        // superseded by clickOnDeleteBlockButton
     }
 
-    expandBlockOld(name) {
-        // cy.get(PoliciesPageLocators.expandBlockBtn(name)).click({ force: true });
+    expandBlockOld(name) { // eslint-disable-line no-unused-vars
+        // superseded by expandBlock
     }
 
-    clickOnButtonOnPolicy(name, text) {
-        // cy.contains("td", name)
-        //     .siblings()
-        //     .contains("div", text)
-        //     .click({ force: true });
+    clickOnButtonOnPolicy(name, text) { // eslint-disable-line no-unused-vars
+        // superseded by the viewer approval methods
     }
 
-    fillNewTagForm(name) {
-        // const inputName = cy.get(PoliciesPageLocators.inputName);
-        // inputName.type(name);
-        // cy.get(PoliciesPageLocators.createBtn).click();
+    fillNewTagForm(name) { // eslint-disable-line no-unused-vars
+        // superseded by createTag
     }
 
     clickOnDeleteTag() {
-        // cy.get(PoliciesPageLocators.deleteTagBtn).click({ force: true });
+        // superseded by deleteTag
     }
 
     clickOnCloseModal() {
-        // cy.get(PoliciesPageLocators.closeModalBtn).click({ force: true });
+        // superseded by the dialog close assertions
     }
 
-    uploadFile(fileName) {
-        // cy.fixture(fileName, { encoding: null }).as("myFixture");
-        // cy.get(PoliciesPageLocators.uploadFileInput).selectFile("@myFixture", { force: true });
-        // cy.intercept(PoliciesPageLocators.policyEditView).as(
-        //     "waitForPolicyEditView"
-        // );
-        // cy.get(PoliciesPageLocators.continueImportBtn).click({ force: true });
-        // cy.wait("@waitForPolicyEditView", { timeout: 300000 })
+    uploadFile(fileName) { // eslint-disable-line no-unused-vars
+        // superseded by importPolicyFromFile
     }
 
-    fillImportIPFSForm(text) {
-        // cy.get(PoliciesPageLocators.inputText).type(text);
-        // cy.get(PoliciesPageLocators.okModalBtn).click({ force: true });
-        // cy.intercept(PoliciesPageLocators.policyEditView).as(
-        //     "waitForPolicyEditView"
-        // );
-        // cy.get(PoliciesPageLocators.continueImportBtn).click({ force: true });
-        // cy.wait("@waitForPolicyEditView", { timeout: 300000 })
+    fillImportIPFSForm(text) { // eslint-disable-line no-unused-vars
+        // superseded by importPolicyFromIPFS
     }
 
     fillImportIPFSFromClipboard() {
-        // cy.get(PoliciesPageLocators.inputText).then($input => {
-        //     cy.window().then(win => {
-        //         win.navigator.clipboard.readText().then(text => {
-        //             $input.val(text);
-        //         });
-        //     });
-        // });
+        // superseded by importPolicyFromIPFS
     }
 
-    checkButtonInModalIsActive(text) {
-        // cy.get(PoliciesPageLocators.dialogContainer).contains(new RegExp("^" + text + "$", "g")).should('have.css', 'cursor', 'pointer');
+    checkButtonInModalIsActive(text) { // eslint-disable-line no-unused-vars
+        // superseded by the dialog assertions
     }
 
-    checkIfModalIsVisibleByText(text) {
-        // cy.get(PoliciesPageLocators.dialogContainer).contains(new RegExp("^" + text + "$", "g"))
+    checkIfModalIsVisibleByText(text) { // eslint-disable-line no-unused-vars
+        // superseded by the dialog assertions
     }
 
-    verifyIfFieldHasValidation(field) {
-        // cy.get(`input[formcontrolname='${field}']`)
-        //     .clear()
-        //     .trigger('blur');
-        // cy.get(`input[formcontrolname='${field}']`).should("have.class", "ng-invalid");
+    verifyIfFieldHasValidation(field) { // eslint-disable-line no-unused-vars
+        // superseded by the form-field assertions
     }
 
-    fillFieldInModal(field, text) {
-        // cy.get(`input[formcontrolname='${field}']`).clear().type(text);
+    fillFieldInModal(field, text) { // eslint-disable-line no-unused-vars
+        // superseded by the dialog field assertions
     }
 
     waitForLoadingProgress() {
-        // cy.get(PoliciesPageLocators.loadingProgress, { timeout: 180000 }).should('not.exist');
+        // superseded by the page-ready gate
     }
 
     waitForEditPage() {
-        // cy.get(PoliciesPageLocators.matTypography, { timeout: 60000 }).should('be.visible');
+        // superseded by the page-ready gate
     }
 
-    checkPolicyTagModalContains(text) {
-        // cy.get(PoliciesPageLocators.dialogContainer).contains(text).should('exist');
+    checkPolicyTagModalContains(text) { // eslint-disable-line no-unused-vars
+        // superseded by the dialog assertions
     }
 }

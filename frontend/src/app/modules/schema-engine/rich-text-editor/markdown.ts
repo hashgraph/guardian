@@ -1,4 +1,4 @@
-import { isSafeHref } from './rich-text-sanitizer';
+import { isSafeHref, richTextToText } from './rich-text-sanitizer';
 
 export function escapeHtml(value: string): string {
     return value
@@ -397,4 +397,12 @@ export function htmlToMarkdown(html: string | null | undefined): string {
     const blocks: string[] = [];
     collectBlocks(inert.body, blocks);
     return blocks.join('\n\n');
+}
+
+/** The text of a markdown value without its markup, on one line: for titles and summaries. */
+export function markdownToPlainText(markdown: string | null | undefined): string {
+    if (!markdown) {
+        return '';
+    }
+    return richTextToText(markdownToHtml(markdown).replace(/<img[^>]*\balt="([^"]*)"[^>]*>/gi, ' $1 '));
 }

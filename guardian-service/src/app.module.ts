@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { AnalyticsModule } from './api/analytics.service.js';
 import { ProfileModule } from './api/profile.service.js';
 import { SchemaService } from './api/schema.service.js';
-import { NotificationService } from '@guardian/common';
+import { NotificationService } from '@guardian/common/notification/notification.service';
 
 @Module({
     imports: [

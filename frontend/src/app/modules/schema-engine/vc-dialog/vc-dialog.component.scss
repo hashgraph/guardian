@@ -1,35 +1,20 @@
+@use '../doc-toggle' as toggle;
+@use '../doc-chrome' as chrome;
+
 .header-container .tags-container {
     display: flex;
     justify-content: flex-start;
     align-items: center;
     flex-wrap: wrap;
-    margin-left: 16px;
     column-gap: 8px;
     row-gap: 8px;
 
     .tag-item {
-        display: flex;
-        column-gap: 8px;
-        align-items: center;
-        justify-content: space-between;
-        background-color: var(--color-secondary);
-        border: 1px solid var(--color-primary);
-        padding: 6px 12px;
-        border-radius: 6px;
+        @include chrome.tag-pill;
         transition: all 0.25s ease-in-out;
-        cursor: pointer;
 
         .tag-icon {
             fill: var(--color-primary, #0031ff);
-        }
-
-        .name {
-            color: var(--color-primary, #0031ff);
-            font-family: Inter, sans-serif;
-            font-size: 14px;
-            font-style: normal;
-            font-weight: 400;
-            line-height: 16px;
         }
 
         .count {
@@ -69,7 +54,7 @@
 .context {
     position: relative;
     overflow-y: auto;
-    padding: 0px 0px 20px 0px;
+    padding: 0;
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -79,9 +64,16 @@
     .view-dialog-bar {
         display: flex;
         flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
         justify-content: space-between;
-        height: 60px;
-        overflow: hidden;
+        gap: 8px;
+        padding: 8px 20px;
+        border-bottom: 1px solid var(--guardian-border-color);
+
+        .form-toggle {
+            @include toggle.doc-toggle;
+        }
 
         .toggle-container {
             display: flex;
@@ -93,35 +85,116 @@
         }
 
         .option-buttons {
-            height: 40px;
+            min-height: 32px;
+            margin-left: auto;
             display: flex;
+            flex-wrap: wrap;
+            align-items: center;
             gap: 8px;
+
+            .field-metadata-toggle {
+                @include chrome.ghost-toggle;
+            }
+
+            .guardian-button {
+                @include chrome.compact-button;
+                min-width: 0;
+            }
+
+            .guardian-button-secondary {
+                @include chrome.secondary-button;
+            }
         }
     }
 
+    // One scroll area: the view that fills the content (the document, the JSON or the text) scrolls,
+    // so the content itself and the dialog around it never do
     .view-dialog-content {
+        display: flex;
+        flex-direction: column;
         max-height: calc(100vh - 415px);
-        overflow-y: auto;
-        padding-right: 8px;
+        overflow: hidden;
+        padding: 16px 20px;
+        box-sizing: border-box;
+
+        > .view-dialog-document,
+        > .json,
+        > .text {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow: auto;
+        }
 
         .json {
             word-break: keep-all;
             white-space: pre;
             font-family: monospace;
             cursor: text;
-            height: 100%;
-            width: 100%;
-            overflow: auto;
-            border: 1px solid #eee;
+            border: 1px solid var(--guardian-border-color);
             border-radius: 4px;
             padding: 10px;
-            height: calc(100vh - 415px);
             box-sizing: border-box;
         }
     }
 }
 
+:host {
+    // Full-bleed header, bar and footer: cancel the dialog content's own padding
+    display: block;
+    margin: 0 -32px -32px;
+}
+
+:host .dialog-header {
+    height: auto;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px 16px 12px 20px;
+    border-bottom: 1px solid var(--guardian-border-color);
+
+    .header-container {
+        position: static;
+        flex: 1;
+        min-width: 0;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding-left: 0;
+    }
+
+    .header-text {
+        font-size: 16px;
+        font-weight: 600;
+        height: auto;
+        line-height: 24px;
+    }
+}
+
+:host .dialog-body {
+    max-height: none;
+}
+
+:host .dialog-footer {
+    padding-top: 0;
+    border-top: 0;
+}
+
+.dialog-footer .guardian-button {
+    @include chrome.regular-button;
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    &.guardian-button-secondary {
+        @include chrome.secondary-button;
+    }
+}
+
 .dialog-footer .action-buttons {
+    padding: 10px 20px;
+    gap: 8px;
+    border-top: 1px solid var(--guardian-border-color);
     display: flex;
     justify-content: space-between;
     user-select: none;
@@ -139,23 +212,20 @@
 
 @media (max-width: 810px) {
     .view-dialog-content {
-        max-height: calc(100vh - 255px);
-
-        .json {
-            max-height: calc(100vh - 265px);
-        }
+        max-height: calc(100vh - 365px);
     }
 }
 
-.dialog-header .header-container {
-    right: 165px;
-}
-
 :host ::ng-deep {
+    .compare-container .guardian-button {
+        @include chrome.compare-button;
+    }
+
     .version-dropdown {
         .p-select {
             border: 1px solid var(--guardian-primary-color);
             border-radius: 6px;
+            height: 32px;
             color: var(--guardian-primary-color);
 
             box-shadow: none !important;

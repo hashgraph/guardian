@@ -1,4 +1,4 @@
-import { DocumentState } from '@guardian/common';
+import { DocumentState } from '@guardian/common/entity/document-state';
 import { PolicyDataLoader } from './loader.js';
 
 /**

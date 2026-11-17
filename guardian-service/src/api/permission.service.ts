@@ -1,25 +1,21 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import {
-    GuardianRoleMessage,
-    IAuthUser,
-    MessageAction,
-    MessageError,
-    MessageResponse,
-    MessageServer,
-    Topic,
-    TopicConfig,
-    Users,
-    VcHelper,
-    Schema as SchemaCollection,
-    VcDocument as VcDocumentCollection,
-    UserPermissionsMessage,
-    PinoLogger,
-    KeyType,
-    KEY_TYPE_KEY_ENTITY,
-    KeyEntity,
-    Token, DatabaseServer,
-    NewNotifier,
-} from '@guardian/common';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { Topic } from '@guardian/common/entity/topic';
+import { Users } from '@guardian/common/helpers/users';
+import { Schema as SchemaCollection } from '@guardian/common/entity/schema';
+import { VcDocument as VcDocumentCollection } from '@guardian/common/entity/vc-document';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
+import { KeyType, KEY_TYPE_KEY_ENTITY, KeyEntity } from '@guardian/common/helpers/wallet';
+import { Token } from '@guardian/common/entity/token';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { NewNotifier } from '@guardian/common/notification/notifier';
+import { GuardianRoleMessage } from '@guardian/hedera/message/guardian-role-message';
+import { MessageAction } from '@guardian/hedera/message/message-action';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { TopicConfig } from '@guardian/hedera/topic';
+import { VcHelper } from '@guardian/hedera/vc-helper';
+import { UserPermissionsMessage } from '@guardian/hedera/message/user-permissions-message';
 import { GenerateUUIDv4, IOwner, MessageAPI, Schema, SchemaEntity, SchemaHelper, TopicType } from '@guardian/interfaces';
 import { publishSystemSchema } from '../helpers/import-helpers/index.js';
 

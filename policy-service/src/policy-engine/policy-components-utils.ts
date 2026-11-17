@@ -21,7 +21,16 @@ import {
     ISerializedBlock,
     ISerializedBlockExtend
 } from './policy-engine.interface.js';
-import { DatabaseServer, IAuthUser, MessageError, MessageResponse, Policy, PolicyAction, PolicyComment, PolicyDiscussion, PolicyRoles, PolicyTool, Users } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { IAuthUser } from '@guardian/common/interfaces/auth.interface';
+import { MessageError, MessageResponse } from '@guardian/common/models/message-response';
+import { Policy } from '@guardian/common/entity/policy';
+import { PolicyAction } from '@guardian/common/entity/policy-action';
+import { PolicyComment } from '@guardian/common/entity/policy-comment';
+import { PolicyDiscussion } from '@guardian/common/entity/policy-discussion';
+import { PolicyRoles } from '@guardian/common/entity/policy-roles';
+import { PolicyTool } from '@guardian/common/entity/tool';
+import { Users } from '@guardian/common/helpers/users';
 import { STATE_KEY } from './helpers/constants.js';
 import { GetBlockByType } from './blocks/get-block-by-type.js';
 import { GetOtherOptions } from './helpers/get-other-options.js';
@@ -36,6 +45,7 @@ import { PolicyActionsService } from './actions-service.js';
 import { PolicyActionsUtils } from './policy-actions/utils.js';
 import { PolicyUtils } from './helpers/utils.js';
 import { RecordActionStep } from './record-action-step.js';
+import { createPreviewRelayerAccount, PreviewScope } from './helpers/preview.js';
 
 /**
  * Policy tag helper
@@ -252,6 +262,9 @@ export class PolicyComponentsUtils {
      * Block error function
      */
     public static async BlockErrorFn(blockType: string, message: any, user: PolicyUser, data?: any) {
+        if (PreviewScope.current()) {
+            return;
+        }
         errorBlockEvent(blockType, message, user, data);
     };
     /**
@@ -264,6 +277,9 @@ export class PolicyComponentsUtils {
      * External Event function
      */
     public static async ExternalEventFn(event: ExternalEvent<any>) {
+        if (PreviewScope.current()) {
+            return;
+        }
         externalBlockEvent(event);
     };
 
@@ -1555,6 +1571,9 @@ export class PolicyComponentsUtils {
      * @param policyId
      */
     public static backup(policyId: string) {
+        if (PreviewScope.current()) {
+            return;
+        }
         if (PolicyComponentsUtils.BackupControllers.has(policyId)) {
             PolicyComponentsUtils.BackupControllers.get(policyId).backup();
         }
@@ -1643,11 +1662,12 @@ export class PolicyComponentsUtils {
         block: IPolicyInterfaceBlock,
         user: PolicyUser,
         data: any,
-        waitRemotePolicy?: boolean
+        waitRemotePolicy?: boolean,
+        waitUntil?: number
     ): Promise<MessageResponse<any> | MessageError<any>> {
         const controller = PolicyComponentsUtils.ActionsControllers.get(block.policyId);
         if (controller) {
-            const result = await controller.sendAction(block, user, data, waitRemotePolicy);
+            const result = await controller.sendAction(block, user, data, waitRemotePolicy, waitUntil);
             return new MessageResponse(result);
         } else {
             return new MessageError('Invalid policy controller', 500);
@@ -1659,13 +1679,14 @@ export class PolicyComponentsUtils {
         user: PolicyUser,
         data: any,
         actionStatus?: RecordActionStep,
-        waitRemotePolicy?: boolean
+        waitRemotePolicy?: boolean,
+        waitUntil?: number
     ): Promise<MessageResponse<any> | MessageError<any>> {
         const _data = await block.setData(user, data, ActionType.LOCAL, actionStatus);
 
         const controller = PolicyComponentsUtils.ActionsControllers.get(block.policyId);
         if (controller) {
-            const result = await controller.sendAction(block, user, _data, waitRemotePolicy);
+            const result = await controller.sendAction(block, user, _data, waitRemotePolicy, waitUntil);
             return new MessageResponse(result);
         } else {
             return new MessageError('Invalid policy controller', 500);
@@ -1675,7 +1696,8 @@ export class PolicyComponentsUtils {
     private static async _checkRelayerAccount(
         ref: IPolicyInterfaceBlock,
         user: PolicyUser,
-        data: any
+        data: any,
+        preview: boolean = false
     ): Promise<string> {
         if (!data.relayerAccount || ref.dryRun) {
             return;
@@ -1691,7 +1713,7 @@ export class PolicyComponentsUtils {
 
         const relayerAccountConfig = data.relayerAccount;
 
-        const balance = await PolicyUtils.checkAccountBalance(ref, relayerAccountConfig, user.userId);
+        const balance = preview || await PolicyUtils.checkAccountBalance(ref, relayerAccountConfig, user.userId);
         if (balance === false) {
             return 'The relayer account has insufficient balance.';
         }
@@ -1703,6 +1725,8 @@ export class PolicyComponentsUtils {
         let relayerAccount: any;
         if (typeof relayerAccountConfig === 'string') {
             relayerAccount = await (new Users()).getUserRelayerAccount(user.did, relayerAccountConfig, user.userId);
+        } else if (preview) {
+            relayerAccount = { account: createPreviewRelayerAccount(user.did) };
         } else {
             relayerAccount = await (new Users()).createRelayerAccount({ did: user.did, id: user.userId }, relayerAccountConfig, user.userId);
         }
@@ -1733,9 +1757,10 @@ export class PolicyComponentsUtils {
         user: PolicyUser,
         data: any,
         actionStatus?: RecordActionStep,
-        waitRemotePolicy?: boolean
+        waitRemotePolicy?: boolean,
+        waitUntil?: number
     ): Promise<MessageResponse<any> | MessageError<any>> {
-        const error = await PolicyComponentsUtils._checkRelayerAccount(block, user, data);
+        const error = await PolicyComponentsUtils._checkRelayerAccount(block, user, data, !!actionStatus?.preview);
         if (error) {
             return new MessageError(error, 500);
         }
@@ -1751,10 +1776,10 @@ export class PolicyComponentsUtils {
             if (block.locationType === LocationType.REMOTE) {
                 if (block.actionType === LocationType.CUSTOM) {
                     //Action - custom, policy - remote, user - local
-                    return await PolicyComponentsUtils._blockSetDataCustom(block, user, data, actionStatus, waitRemotePolicy);
+                    return await PolicyComponentsUtils._blockSetDataCustom(block, user, data, actionStatus, waitRemotePolicy, waitUntil);
                 } else {
                     //Action - remote, policy - remote, user - local
-                    return await PolicyComponentsUtils._blockSetDataRemote(block, user, data, waitRemotePolicy);
+                    return await PolicyComponentsUtils._blockSetDataRemote(block, user, data, waitRemotePolicy, waitUntil);
                 }
             } else {
                 //Action - custom | remote, policy - local, user - local

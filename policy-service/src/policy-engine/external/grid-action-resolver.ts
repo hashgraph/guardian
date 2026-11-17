@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import { MessageError } from '@guardian/common';
+import { MessageError } from '@guardian/common/models/message-response';
 import { POLICY_DATA_MAX_PAGE_SIZE, POLICY_DATA_DEFAULT_PAGE_SIZE } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyBlock, IPolicyInterfaceBlock } from '../policy-engine.interface.js';

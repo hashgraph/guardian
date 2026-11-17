@@ -1,12 +1,10 @@
-name: Workflow Runs Maintenance
-
 # Deletes cancelled/skipped Actions runs and runs older than 20 weeks, to keep the
 # Actions history and artifact storage manageable.
-
+name: Workflow Runs Maintenance
 on:
-  workflow_dispatch:
   schedule:
     - cron: "0 */6 * * *"  # Runs every 6 hours, at the top of the hour (UTC).
+  workflow_dispatch:
 
 concurrency:
   group: run-cleanup
@@ -17,12 +15,12 @@ permissions:
 
 jobs:
   cleanup:
-    runs-on: guardian-linux-medium
+    runs-on: hg-guard-lin-md
     timeout-minutes: 60
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
         with:
           egress-policy: audit
 

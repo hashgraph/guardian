@@ -1,4 +1,5 @@
-import { DatabaseServer, Token } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
+import { Token } from '@guardian/common/entity/token';
 import { PolicyDataLoader } from './loader.js';
 
 /**

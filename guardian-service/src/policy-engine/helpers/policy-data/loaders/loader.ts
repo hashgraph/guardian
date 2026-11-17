@@ -1,4 +1,4 @@
-import { DatabaseServer } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import JSZip from 'jszip';
 
 /**

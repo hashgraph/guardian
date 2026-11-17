@@ -1,4 +1,5 @@
-import { MessageBrokerChannel, PinoLogger } from '@guardian/common';
+import { MessageBrokerChannel } from '@guardian/common/mq/message-broker-channel';
+import { PinoLogger } from '@guardian/common/helpers/pino-logger';
 import { CronJob } from 'cron';
 
 /**

@@ -1,10 +1,11 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { PermissionsService } from '../../services/permissions.service';
 import { ProfileService } from '../../services/profile.service';
-import { UserPermissions } from '@guardian/interfaces';
+import { AssignedEntityType, UserPermissions } from '@guardian/interfaces';
 import { Subscription, forkJoin } from 'rxjs';
 import { UntypedFormControl } from '@angular/forms';
 import { ActivatedRoute, Params, Router } from '@angular/router';
+import { getUserInitials, shortDid } from 'src/app/utils/index';
 
 @Component({
     selector: 'app-user-management',
@@ -87,15 +88,6 @@ export class UsersManagementComponent implements OnInit, OnDestroy {
             this.page = response.body?.map((user: any) => {
                 return user;
             }) || [];
-            for (const user of this.page) {
-                const permissionsGroup = [];
-                if (Array.isArray(user.permissionsGroup)) {
-                    for (const group of user.permissionsGroup) {
-                        permissionsGroup.push(group.roleName || group.roleId);
-                    }
-                }
-                user.__permissionsGroup = permissionsGroup.join(', ');
-            }
             this.count = parseInt(response.headers.get('X-Total-Count') as any, 10) || this.page.length;
             setTimeout(() => {
                 this.loading = false;
@@ -152,6 +144,22 @@ export class UsersManagementComponent implements OnInit, OnDestroy {
             this.searchFilter.setValue(this._queryParams.username);
         }
     }
+
+    public get hasFilters(): boolean {
+        return Object.keys(this.getFilters()).length > 0;
+    }
+
+    public get defaultRoleName(): string {
+        return this.roles.find((role) => role.default)?.name || '';
+    }
+
+    public getInitials = getUserInitials;
+
+    public policyCount(row: any): number {
+        return row.assignedEntities?.filter((e: any) => e.type === AssignedEntityType.Policy).length || 0;
+    }
+
+    public shortDid = shortDid;
 
     public onChangeRoles(row: any) {
         this.router.navigate(['user-management', row.username]);

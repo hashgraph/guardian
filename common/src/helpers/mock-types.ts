@@ -1,0 +1,21 @@
+export enum MockType {
+    ADD_FILE = 'ADD_FILE',
+    GET_FILE = 'GET_FILE',
+    DELETE_FILE = 'DELETE_FILE',
+    EXECUTE_AND_RECEIPT = 'EXECUTE_AND_RECEIPT',
+    EXECUTE_AND_RECORD = 'EXECUTE_AND_RECORD',
+    GET_TOKEN = 'GET_TOKEN',
+    GET_MESSAGE = 'GET_MESSAGE',
+    GET_MESSAGES = 'GET_MESSAGES',
+    GET_ACCOUNT = 'GET_ACCOUNT',
+    API = 'API'
+}
+
+export enum MockEntityType {
+    FILE = 'FILE',
+    TOPIC = 'TOPIC',
+    MESSAGE = 'MESSAGE',
+    TOKEN = 'TOKEN',
+    ACCOUNT = 'ACCOUNT',
+    API = 'API',
+}

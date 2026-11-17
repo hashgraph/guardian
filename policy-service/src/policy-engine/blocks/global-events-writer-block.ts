@@ -7,9 +7,14 @@ import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { GLOBAL_DOCUMENT_TYPE_DEFAULT, GLOBAL_DOCUMENT_TYPE_ITEMS, GlobalDocumentType, GlobalEvent, LocationType, TopicType } from '@guardian/interfaces';
-import { GlobalEventsWriterStream, Message, MessageServer, TopicConfig, TopicHelper } from '@guardian/common';
+import { GlobalEventsWriterStream } from '@guardian/common/entity/global-events-writer-stream';
+import { Message } from '@guardian/hedera/message/message';
+import { MessageServer } from '@guardian/hedera/message/message-server';
+import { TopicConfig } from '@guardian/hedera/topic';
+import { TopicHelper } from '@guardian/hedera/topic-helper';
 import { TopicId } from '@hiero-ledger/sdk';
 import { CacheState } from './../interfaces/index.js'
+import { PreviewScope, recordPreviewWait } from '../helpers/preview.js';
 
 type SetDataStreamPayload = {
     topicId?: string;
@@ -255,6 +260,9 @@ export class GlobalEventsWriterBlock {
         try {
             const userCredentials = await PolicyUtils.getUserCredentials(ref, user.did, user.userId);
             const hederaAccount = await userCredentials.loadRelayerAccount(ref, user.hederaAccountId, user.userId);
+            if (PreviewScope.current()) {
+                return;
+            }
             const topic = new TopicConfig({ topicId: globalTopicId }, null, null);
             const messageServer = new MessageServer({
                 operatorId: hederaAccount.hederaAccountId,
@@ -483,7 +491,10 @@ export class GlobalEventsWriterBlock {
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, outState, event.actionStatus);
             ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, outState, event.actionStatus);
             ref.backup();
+            return;
         }
+
+        recordPreviewWait(event, ref);
     }
 
     /**

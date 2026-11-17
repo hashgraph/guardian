@@ -26,6 +26,56 @@ export class TablePersistenceService {
         await this.visitNode(root, isDryRun);
     }
 
+    public async inlineTablesForPreview(root: unknown): Promise<void> {
+        await this.visitPreviewNode(root);
+    }
+
+    private async visitPreviewNode(node: unknown): Promise<void> {
+        if (Array.isArray(node)) {
+            for (let index = 0; index < node.length; index += 1) {
+                const element = node[index];
+                if (typeof element === 'string') {
+                    node[index] = await this.inlineTableString(element);
+                } else {
+                    await this.visitPreviewNode(element);
+                }
+            }
+            return;
+        }
+
+        if (node && typeof node === 'object') {
+            for (const key of Object.keys(node)) {
+                const value = Reflect.get(node, key);
+                if (typeof value === 'string') {
+                    Reflect.set(node, key, await this.inlineTableString(value));
+                } else {
+                    await this.visitPreviewNode(value);
+                }
+            }
+        }
+    }
+
+    private async inlineTableString(input: string): Promise<string> {
+        const parsed = this.tryParseTable(input);
+        const idbKey = parsed?.idbKey?.trim();
+        if (!parsed || !idbKey) {
+            return input;
+        }
+        const file = await this.readFileFromIndexedDb(idbKey);
+        if (!file) {
+            return input;
+        }
+        const csv = await this.gzip.gunzipToText(file);
+        const inline: Record<string, unknown> = { type: 'table', fileId: `preview-${idbKey}`, csv };
+        if (Array.isArray(parsed.columnNames) && parsed.columnNames.length) {
+            inline['columnNames'] = parsed.columnNames;
+            if (Array.isArray(parsed.columnKeys) && parsed.columnKeys.length) {
+                inline['columnKeys'] = parsed.columnKeys;
+            }
+        }
+        return JSON.stringify(inline);
+    }
+
     private async copyToDraftStore(idbKey: string): Promise<boolean> {
         const key = (idbKey || '').trim();
         if (!key) {

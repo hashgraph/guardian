@@ -2,8 +2,9 @@ import { randomInt } from '../../../support/random';
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
-context('Profiles', { tags: ['profiles', 'thirdPool', 'all', 'all-no-mgs'] }, () => {
+context('Profiles', { tags: ['profiles', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     let did;
     let credentials;
@@ -24,7 +25,7 @@ context('Profiles', { tags: ['profiles', 'thirdPool', 'all', 'all-no-mgs'] }, ()
                 },
             }).then((response) => {
                 response.body.forEach(element => {
-                    if (element.username == SRUsername)
+                    if (element.username === SRUsername)
                         {did = element.did}
                 });
             });
@@ -60,7 +61,7 @@ context('Profiles', { tags: ['profiles', 'thirdPool', 'all', 'all-no-mgs'] }, ()
                             hederaAccountKey: hederaAccount.key,
                             parent: did
                         },
-                        timeout: 200000
+                        timeout: TIMEOUTS.longOperation
                     })
                 })
             })
@@ -117,7 +118,7 @@ context('Profiles', { tags: ['profiles', 'thirdPool', 'all', 'all-no-mgs'] }, ()
                                 '@context': []
                             }
                         },
-                        timeout: 200000
+                        timeout: TIMEOUTS.backend
                     })
                         .then((response) => {
                             expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED)

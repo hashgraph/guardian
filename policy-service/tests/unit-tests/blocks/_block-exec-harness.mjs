@@ -1,5 +1,5 @@
 import { LocationType, PolicyStatus, PolicyAvailability } from '@guardian/interfaces';
-import { DatabaseServer } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 
 const _origStatics = {};
 let _staticsInstalled = false;
