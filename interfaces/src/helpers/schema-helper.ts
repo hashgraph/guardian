@@ -1054,6 +1054,48 @@ export class SchemaHelper {
     }
 
     /**
+     * True only when a field is certainly hidden for a submitted document: it is revealed
+     * by conditions, and none of them is both reachable and active on a branch holding it.
+     *
+     * Fails closed. A field no condition reveals, or one whose revealing condition reads a
+     * cross-schema path (which this level cannot resolve), is reported as not hidden, so
+     * callers keep their strict checks for it.
+     * @param conditions schema conditions
+     * @param data submitted document (credentialSubject)
+     * @param fieldName top-level field name
+     * @returns true if the field is hidden for this document
+     */
+    public static isFieldHiddenByConditions(
+        conditions: SchemaCondition[] | null | undefined,
+        data: any,
+        fieldName: string
+    ): boolean {
+        if (!Array.isArray(conditions) || !conditions.length || !data || typeof data !== 'object') {
+            return false;
+        }
+        const has = (fields: SchemaField[] | undefined): boolean =>
+            !!fields?.some((field) => field.name === fieldName);
+        const owners = conditions.filter(
+            (condition) => has(condition.thenFields) || has(condition.elseFields)
+        );
+        if (!owners.length) {
+            return false;
+        }
+        const evaluate = (condition: SchemaCondition): boolean =>
+            SchemaHelper.evaluateIfCondition(condition?.ifCondition, data);
+        const revealMap = SchemaHelper.buildRevealMap(conditions);
+        return owners.every((owner) => {
+            if (SchemaHelper.getConditionPredicates(owner).some((name) => name === null)) {
+                return false;
+            }
+            if (!SchemaHelper.isConditionReachable(owner, revealMap, evaluate)) {
+                return true;
+            }
+            return !has(evaluate(owner) ? owner.thenFields : owner.elseFields);
+        });
+    }
+
+    /**
      * Parse conditions
      * @param document
      * @param context

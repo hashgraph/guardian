@@ -226,72 +226,161 @@
       <td class="propRowCol"></td>
       <td class="propRowCell cellName">Preset Schema</td>
       <td class="propRowCell">
-        <select-schema
-          [schemas]="schemas"
-          [(value)]="properties.presetSchema"
-          [disabled]="readonly"
-          (change)="onSelectInput()"
-        ></select-schema>
+        <div class="preset-schema-row">
+          <select-schema
+            class="preset-schema-select"
+            [schemas]="schemas"
+            [(value)]="properties.presetSchema"
+            [disabled]="readonly"
+            (change)="onSelectInput()"
+          ></select-schema>
+          @if ((properties.presetSchema || properties.presetFields?.length) && !readonly) {
+            <button type="button" class="preset-icon-button" pTooltip="Clear preset: removes the preset schema and all mappings" tooltipPosition="top" tooltipStyleClass="preset-tooltip" [tooltipOptions]="{showDelay: 300}"
+              (click)="clearPreset()">
+              <i class="pi pi-trash"></i>
+            </button>
+          }
+        </div>
       </td>
     </tr>
-    @for (field of properties.presetFields; track field; let i = $index) {
-      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.preset" (click)="onHide(propHidden.presetFields, i)">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName" [attr.collapse]="propHidden.presetFields[i]">
-          <i class="pi pi-chevron-down chevron-icon"></i>
-          <span>Field {{ i }}</span>
-        </td>
-        <td class="propRowCell">
-          @if (field.value) {
-            <span>{{ field.name }} = {{ field.value }}</span>
+    <tr class="propRow" [attr.collapse]="propHidden.preset">
+      <td class="propRowCol"></td>
+      <td class="presetCell" colspan="2">
+        @if (!hasBlockSchema) {
+          <div class="preset-hint">Select the schema of this block first, then a preset schema to copy values from.</div>
+        } @else if (!properties.presetSchema) {
+          <div class="preset-hint">Select a preset schema to fill this form with values from an existing document.</div>
+        } @else {
+          <div class="preset-summary">
+            <span>{{ mappedCount }} {{ mappedCount === 1 ? 'field' : 'fields' }} filled from the preset</span>
+          </div>
+          @if (!rows.length) {
+            <div class="preset-hint">No fields are filled from the preset yet. Use "Add new field" below.</div>
           }
-        </td>
-      </tr>
-      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.preset || propHidden.presetFields[i]">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">
-          Title
-        </td>
-        <td class="propRowCell cellValue" [title]="field.title">
-          <span>{{ field.title }}</span>
-        </td>
-      </tr>
-      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.preset || propHidden.presetFields[i]">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">
-          Preset Field
-        </td>
-        <td class="propRowCell">
-          <p-select
-            panelStyleClass="pc-select-panel"
-            [(ngModel)]="field.value"
-            [disabled]="readonly"
-            (onChange)="onSave()"
-            placeholder="Select a value"
-            [options]="getPresetOptions()"
-            optionLabel="label"
-            optionValue="value"
-            [appendTo]="'body'"
-            >
-          </p-select>
-        </td>
-      </tr>
-      @if (field.value) {
-        <tr class="propRow" lvl="1"
-          [attr.collapse]="propHidden.preset || propHidden.presetFields[i]">
-          <td class="propRowCol"></td>
-          <td class="propRowCell cellName">
-            Readonly
-          </td>
-          <td class="propRowCell">
-            <p-toggleswitch
-              [(ngModel)]="field.readonly"
-              [disabled]="readonly"
-              (onChange)="onSave()">
-            </p-toggleswitch>
-          </td>
-        </tr>
-      }
-    }
+          <div class="preset-list">
+            @for (row of rows; track row.name) {
+              <div class="preset-item" [class.mapped]="isMapped(row)" [class.stale]="row.stale">
+                <div class="preset-target">
+                  <span class="preset-title" [pTooltip]="row.title" tooltipPosition="top" tooltipStyleClass="preset-tooltip" [tooltipOptions]="{showDelay: 300}">{{ row.title }}</span>
+                  @if (row.type) {
+                    <span class="preset-chip">{{ row.type }}</span>
+                  }
+                  @if (row.stale) {
+                    <span class="preset-chip preset-chip-warning" pTooltip="This field is not in the block schema any more" tooltipPosition="top" tooltipStyleClass="preset-tooltip" [tooltipOptions]="{showDelay: 300}">missing</span>
+                  }
+                  <div class="preset-path" [pTooltip]="row.name" tooltipPosition="top" tooltipStyleClass="preset-tooltip" [tooltipOptions]="{showDelay: 300}">
+                    <i class="pi pi-sitemap"></i>
+                    @for (part of row.pathParts; track $index; let last = $last) {
+                      <span class="preset-path-part" [class.preset-path-last]="last">{{ part }}</span>
+                      @if (!last) {
+                        <span class="preset-path-sep">&rsaquo;</span>
+                      }
+                    }
+                  </div>
+                </div>
+                <div class="preset-controls">
+                  <p-select
+                    class="preset-select guardian-dropdown"
+                    panelStyleClass="guardian-dropdown-panel sc-cond-panel"
+                    [ngModel]="valueOf(row)"
+                    (ngModelChange)="setSource(row, $event)"
+                    [disabled]="readonly"
+                    placeholder="No preset"
+                    [options]="getSourceOptions(row)"
+                    [group]="true"
+                    optionLabel="label"
+                    optionValue="value"
+                    optionGroupLabel="label"
+                    optionGroupChildren="items"
+                    [showClear]="true"
+                    [filter]="true"
+                    filterBy="label,fullLabel"
+                    [resetFilterOnHide]="true"
+                    [virtualScroll]="true"
+                    [virtualScrollItemSize]="38"
+                    appendTo="body"
+                    >
+                    <ng-template pTemplate="group" let-group>
+                      <ng-container *ngTemplateOutlet="groupRow; context: { $implicit: group }"></ng-container>
+                    </ng-template>
+                    <ng-template pTemplate="item" let-option>
+                      <ng-container *ngTemplateOutlet="optionRow; context: { $implicit: option }"></ng-container>
+                    </ng-template>
+                    <ng-template pTemplate="selectedItem" let-option>
+                      <span class="preset-selected">
+                        <span class="preset-selected-label" [pTooltip]="option.fullLabel" tooltipPosition="top" tooltipStyleClass="preset-tooltip" [tooltipOptions]="{showDelay: 300}">{{ option.fullLabel }}</span>
+                        <span class="preset-opt-type">{{ option.type }}</span>
+                      </span>
+                    </ng-template>
+                  </p-select>
+                  @if (isMapped(row)) {
+                    <label class="preset-readonly" pTooltip="Read-only: users can not change this value" tooltipPosition="top" tooltipStyleClass="preset-tooltip" [tooltipOptions]="{showDelay: 300}">
+                      <i class="pi pi-lock"></i>
+                      <p-toggleswitch
+                        [ngModel]="isReadonlyField(row)"
+                        (ngModelChange)="setReadonly(row, $event)"
+                        [disabled]="readonly">
+                      </p-toggleswitch>
+                    </label>
+                  }
+                  @if (!readonly) {
+                    <button type="button" class="preset-icon-button" pTooltip="Remove this field from the preset" tooltipPosition="top" tooltipStyleClass="preset-tooltip" [tooltipOptions]="{showDelay: 300}" (click)="clearSource(row)">
+                      <i class="pi pi-times"></i>
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+          @if (nestedTargetGroups.length && !readonly) {
+            <div class="preset-add">
+              <div class="preset-hint">Choose a field of this form that should be pre-filled from the preset. Then pick the preset field its value comes from.</div>
+              <p-select
+                class="preset-select guardian-dropdown"
+                panelStyleClass="guardian-dropdown-panel sc-cond-panel"
+                [(ngModel)]="newNestedTarget"
+                (onChange)="addNestedTarget($event.value)"
+                placeholder="+ Add new field"
+                [options]="nestedTargetGroups"
+                [group]="true"
+                optionLabel="label"
+                optionValue="value"
+                optionGroupLabel="label"
+                optionGroupChildren="items"
+                [filter]="true"
+                filterBy="label,fullLabel"
+                [resetFilterOnHide]="true"
+                [virtualScroll]="true"
+                [virtualScrollItemSize]="38"
+                appendTo="body"
+                >
+                <ng-template pTemplate="group" let-group>
+                  <ng-container *ngTemplateOutlet="groupRow; context: { $implicit: group }"></ng-container>
+                </ng-template>
+                <ng-template pTemplate="item" let-option>
+                  <ng-container *ngTemplateOutlet="optionRow; context: { $implicit: option }"></ng-container>
+                </ng-template>
+              </p-select>
+            </div>
+          }
+        }
+      </td>
+    </tr>
   </table>
 }
+
+<ng-template #groupRow let-group>
+  <span class="sc-cond-group-row" [pTooltip]="group.label" tooltipPosition="top" tooltipStyleClass="preset-tooltip" [tooltipOptions]="{showDelay: 300}">
+    <span class="sc-cond-group-name">{{ group.name ?? group.label }}</span>
+    @if (group.parents; as parents) {
+      <span class="sc-cond-group-parents">in {{ parents }}</span>
+    }
+  </span>
+</ng-template>
+
+<ng-template #optionRow let-option>
+  <span class="sc-cond-opt-row">
+    <span class="sc-cond-opt-label" [pTooltip]="option.fullLabel" tooltipPosition="top" tooltipStyleClass="preset-tooltip" [tooltipOptions]="{showDelay: 300}">{{ option.label }}</span>
+    <span class="preset-opt-type">{{ option.type }}</span>
+  </span>
+</ng-template>

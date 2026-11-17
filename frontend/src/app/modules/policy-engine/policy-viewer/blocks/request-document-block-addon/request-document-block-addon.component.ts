@@ -6,7 +6,7 @@ import {
     inject,
 } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
-import { DocumentGenerator, ISchema, IUser, Schema, PolicyStatus } from '@guardian/interfaces';
+import { DocumentGenerator, ISchema, IUser, PresetPath, Schema, PolicyStatus } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -212,6 +212,13 @@ export class RequestDocumentBlockAddonComponent
                     }
                     if (f.value === 'hederaAccountId') {
                         json[f.name] = this.user.hederaAccountId;
+                        continue;
+                    }
+                    if (PresetPath.isNested(f)) {
+                        // Nested path (object or array entries); plain names keep the line below
+                        if (PresetPath.isCompatible(f)) {
+                            PresetPath.write(json, this.schema?.fields, f.name, PresetPath.sourceValue(cs, f));
+                        }
                         continue;
                     }
 

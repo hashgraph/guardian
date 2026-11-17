@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild, inject } from '@angular/core';
-import { DocumentGenerator, ISchema, LocationType, Schema } from '@guardian/interfaces';
+import { DocumentGenerator, ISchema, LocationType, PresetPath, Schema } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
@@ -312,6 +312,13 @@ export class RequestDocumentBlockComponent
                     }
                     if (f.value === 'hederaAccountId') {
                         json[f.name] = this.user.hederaAccountId;
+                        continue;
+                    }
+                    if (PresetPath.isNested(f)) {
+                        // Nested path (object or array entries); plain names keep the line below
+                        if (PresetPath.isCompatible(f)) {
+                            PresetPath.write(json, this.schema?.fields, f.name, PresetPath.sourceValue(cs, f));
+                        }
                         continue;
                     }
 

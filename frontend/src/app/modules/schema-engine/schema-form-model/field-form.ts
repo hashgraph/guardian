@@ -1073,6 +1073,8 @@ export class FieldForm {
                 conditions,
                 preset,
                 privateFields: this.privateFields,
+                // Only nested (dotted) readonly paths go down: a plain name keeps matching root fields only
+                readonlyFields: this.readonlyFields?.filter((item) => item.name?.includes('.')),
                 ownParentControlledFields,
             });
             form.build();
@@ -1419,7 +1421,9 @@ export class FieldForm {
             item.model = null;
         }
 
-        if (this.readonlyFields?.find((readonlyItem) => readonlyItem.name === field.name)) {
+        if (this.readonlyFields?.find((readonlyItem) =>
+            readonlyItem.name === field.name || (field.path && readonlyItem.name === field.path)
+        )) {
             item.readonly = true;
             setTimeout(() => {
                 item.control?.disable();

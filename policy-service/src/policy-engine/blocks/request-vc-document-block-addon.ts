@@ -24,6 +24,7 @@ import {
     removeObjectProperties,
     LocationType,
     SchemaEntity,
+    PresetPath,
 } from '@guardian/interfaces';
 import { BlockActionError } from '../errors/block-action-error.js';
 import { PolicyUtils } from '../helpers/utils.js';
@@ -381,12 +382,30 @@ export class RequestVcDocumentBlockAddon {
                 JSON.parse(JSON.stringify(presetDocument))
             );
             for (const field of readonly) {
+                const nested = PresetPath.isNested(field);
+                const actualRaw = nested
+                    ? PresetPath.read(document, field.name)
+                    : document[field.name];
+                const expectedRaw = nested
+                    ? PresetPath.sourceValue(presetDocumentCopy, field)
+                    : presetDocumentCopy[field.value];
+                // The submitted document is already stamped with this schema's `type`/`@context`
+                // on sub-schema objects, the preset has the other schema's: compare data only
+                const targetField = PresetPath.findField(this._schema?.fields, field.name);
+                const actual = PresetPath.withoutSystemKeys(actualRaw, targetField);
+                const expected = PresetPath.withoutSystemKeys(expectedRaw, targetField);
+                // A field hidden by a false condition is legitimately absent from the document
                 if (
-                    !deepEqual(
-                        document[field.name],
-                        presetDocumentCopy[field.value]
+                    (actual === undefined || actual === null) &&
+                    SchemaHelper.isFieldHiddenByConditions(
+                        this._schema?.conditions,
+                        document,
+                        PresetPath.root(field.name)
                     )
                 ) {
+                    continue;
+                }
+                if (!deepEqual(actual, expected)) {
                     return {
                         error: `Readonly preset field (${field.name}) can not be modified.`,
                         valid: false,

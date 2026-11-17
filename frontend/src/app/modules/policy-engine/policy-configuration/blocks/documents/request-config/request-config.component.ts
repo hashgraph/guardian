@@ -2,6 +2,7 @@ import { Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, 
 import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../structures';
 import { ChangeBlockSettingsDialog } from 'src/app/modules/policy-engine/dialogs/change-block-settings-dialog/change-block-settings-dialog.component';
 import { DialogService } from 'primeng/dynamicdialog';
+import { PresetPath } from '@guardian/interfaces';
 
 /**
  * Settings for block of 'requestVcDocument' type.
@@ -31,7 +32,19 @@ export class RequestConfigComponent implements OnInit {
     properties!: any;
     schemas!: SchemaVariables[];
 
-    presetMap: any;
+    /** One row per root field of the block schema, then nested and stale mappings. */
+    public rows: IPresetRow[] = [];
+    private rootRows: IPresetRow[] = [];
+    public mappedCount = 0;
+    /** Nested fields of the block schema that can still be added as preset targets, grouped by sub-schema. */
+    public nestedTargetGroups: IPresetGroup[] = [];
+    public newNestedTarget: string | null = null;
+    public hasBlockSchema = false;
+
+    private sources: IPresetSource[] = [];
+    private targetNodes = new Map<string, any>();
+    private extraNested = new Set<string>();
+    private optionsCache = new Map<number, IPresetGroup[]>();
 
     public idTypeOptions = [
         { label: 'None', value: '' },
@@ -57,7 +70,6 @@ export class RequestConfigComponent implements OnInit {
     ];
 
     constructor(private dialogService: DialogService) {
-        this.presetMap = [];
     }
 
     ngOnInit(): void {
@@ -89,73 +101,326 @@ export class RequestConfigComponent implements OnInit {
         if (!schema || !presetSchema) {
             this.properties.presetFields = [];
         }
-        this.presetMap = [];
-        if (presetSchema?.data?.fields) {
-            for (const field of presetSchema.data.fields) {
-                this.presetMap.push({
-                    name: field.name,
-                    title: field.description
-                })
-            }
-        }
+        this.buildModel();
     }
 
     onHide(item: any, prop: any) {
         item[prop] = !item[prop];
     }
 
-    onSelectInput() {
-        this.properties.presetFields = [];
-        this.presetMap = [];
-
-        const schema = this.schemas.find(e => e.value == this.properties.schema);
-        const presetSchema = this.schemas.find(e => e.value == this.properties.presetSchema);
-
-        if (schema && presetSchema) {
-            if (schema.data?.fields) {
-                for (const field of schema.data.fields) {
-                    this.properties.presetFields.push({
-                        name: field.name,
-                        title: field.description,
-                        value: null,
-                        readonly: false
-                    })
-                }
-            }
-            if (presetSchema.data?.fields) {
-                this.presetMap.push({
-                    name: null,
-                    title: ''
-                });
-                for (const field of presetSchema.data.fields) {
-                    this.presetMap.push({
-                        name: field.name,
-                        title: field.description
-                    });
-                }
-            }
-        }
-
-        const dMap: any = {};
-        for (let i = 0; i < this.presetMap.length; i++) {
-            const f = this.presetMap[i];
-            dMap[f.title] = f.name;
-        }
-        for (let i = 0; i < this.properties.presetFields.length; i++) {
-            const f = this.properties.presetFields[i];
-            f.value = dMap[f.title];
-        }
-    }
-
     onSave() {
         this.item.changed = true;
     }
 
-    getPresetOptions() {
-        return this.presetMap.map((item: any) => ({
-            label: item.title,
-            value: item.name,
-            title: item.title
-        }));
+    // ---------------------------------------------------------------- preset
+
+    private get blockSchema(): any {
+        return this.schemas?.find(e => e.value == this.properties?.schema)?.data;
     }
+
+    private get presetSchemaData(): any {
+        return this.schemas?.find(e => e.value == this.properties?.presetSchema)?.data;
+    }
+
+    /**
+     * Rebuilds the rows and the source lists from the schemas and the stored mappings.
+     */
+    private buildModel() {
+        const target = this.blockSchema;
+        const preset = this.presetSchemaData;
+        this.hasBlockSchema = !!target;
+        this.optionsCache.clear();
+
+        this.sources = [];
+        if (preset?.getDeepFields) {
+            const walk = (nodes: any[]) => {
+                for (const node of nodes) {
+                    this.sources.push({
+                        name: node.path,
+                        title: node.field?.description || node.path,
+                        type: node.type,
+                        level: node.arrayLvl,
+                        nested: node.path.includes('.')
+                    });
+                    walk(node.fields || []);
+                }
+            };
+            walk(preset.getDeepFields());
+        }
+
+        this.targetNodes = new Map<string, any>();
+        const rootRows: IPresetRow[] = [];
+        if (target?.getDeepFields) {
+            const walk = (nodes: any[]) => {
+                for (const node of nodes) {
+                    this.targetNodes.set(node.path, node);
+                    if (!node.path.includes('.')) {
+                        rootRows.push(this.createRow(node.path));
+                    }
+                    walk(node.fields || []);
+                }
+            };
+            walk(target.getDeepFields());
+        }
+
+        this.rootRows = rootRows;
+        const mappedNames = new Set<string>(
+            this.properties.presetFields.filter((e: any) => e.value).map((e: any) => e.name)
+        );
+        const stored: string[] = this.properties.presetFields.map((e: any) => e.name);
+        const shownRoots = rootRows.filter((row) => mappedNames.has(row.name) || this.extraNested.has(row.name));
+        const rootNames = new Set<string>(rootRows.map((row) => row.name));
+        const otherNames = new Set<string>();
+        for (const name of [...this.extraNested, ...stored]) {
+            if (typeof name === 'string' && !rootNames.has(name)) {
+                otherNames.add(name);
+            }
+        }
+        const otherRows = Array.from(otherNames).map((name) => this.createRow(name));
+
+        this.rows = [...shownRoots, ...otherRows];
+        this.mappedCount = mappedNames.size;
+
+        const used = new Set(this.rows.map((e) => e.name));
+        this.nestedTargetGroups = target?.getDeepFields
+            ? this.buildGroups(target, (node) => !used.has(node.path))
+            : [];
+    }
+
+    private createRow(name: string): IPresetRow {
+        const node = this.targetNodes.get(name);
+        return {
+            name,
+            title: node?.field?.description || this.properties.presetFields.find((e: any) => e.name === name)?.title || name,
+            type: node?.type || '',
+            level: node?.arrayLvl ?? 0,
+            nested: name.includes('.'),
+            pathParts: this.shortPath(name),
+            stale: !node
+        };
+    }
+
+    /**
+     * Path segments for display. A long path keeps its first segment and the last two,
+     * the full path is in the tooltip.
+     */
+    private shortPath(path: string): string[] {
+        const parts = path.split('.');
+        return parts.length > 4 ? [parts[0], '\u2026', ...parts.slice(-2)] : parts;
+    }
+
+    public entryOf(row: IPresetRow): any {
+        return this.properties.presetFields.find((e: any) => e.name === row.name) || null;
+    }
+
+    public valueOf(row: IPresetRow): string | null {
+        return this.entryOf(row)?.value ?? null;
+    }
+
+    public isMapped(row: IPresetRow): boolean {
+        return !!this.entryOf(row)?.value;
+    }
+
+    public isReadonlyField(row: IPresetRow): boolean {
+        return !!this.entryOf(row)?.readonly;
+    }
+
+    /**
+     * Options of a row's source dropdown, grouped by schema like the schema editor's field
+     * pickers. The root fields come first, exactly as before; nested paths follow, and only
+     * those with at least as many arrays as the target.
+     */
+    public getSourceOptions(row: IPresetRow): IPresetGroup[] {
+        let groups = this.optionsCache.get(row.level);
+        if (!groups) {
+            const preset = this.presetSchemaData;
+            groups = preset?.getDeepFields
+                ? this.buildGroups(preset, (node) => !node.path.includes('.') || node.arrayLvl >= row.level)
+                : [];
+            this.optionsCache.set(row.level, groups);
+        }
+        return groups;
+    }
+
+    /**
+     * Groups the fields of a schema the way the schema editor's reference picker does:
+     * one group per (sub-)schema, with the field label, its full path and its type.
+     */
+    private buildGroups(schema: any, accept: (node: any) => boolean): IPresetGroup[] {
+        const groups: IPresetGroup[] = [];
+        const add = (nodes: any[], trail: string[]) => {
+            const items: IPresetOption[] = [];
+            for (const node of nodes) {
+                if (!accept(node)) {
+                    continue;
+                }
+                const label = node.field?.description || node.field?.name || node.path;
+                items.push({
+                    value: node.path,
+                    label,
+                    fullLabel: trail.length ? `${trail.join(' › ')} › ${label}` : label,
+                    type: node.type
+                });
+            }
+            if (items.length) {
+                const parents = trail.slice(0, -1);
+                groups.push({
+                    label: trail.length ? trail.join(' › ') : (schema.name || 'This schema'),
+                    name: trail.length ? trail[trail.length - 1] : (schema.name || 'This schema'),
+                    parents: parents.length > 2
+                        ? `${parents[0]} › … › ${parents[parents.length - 1]}`
+                        : parents.join(' › '),
+                    items
+                });
+            }
+            for (const node of nodes) {
+                if (node.fields?.length) {
+                    add(node.fields, [...trail, this.subSchemaName(node.field)]);
+                }
+            }
+        };
+        add(schema.getDeepFields(), []);
+        return groups;
+    }
+
+    private subSchemaName(field: any): string {
+        const found = this.schemas?.find((e) => e.value === field?.type)?.data;
+        return found?.name || field?.description || field?.name || '';
+    }
+
+    public setSource(row: IPresetRow, value: string | null | undefined) {
+        if (!value) {
+            this.clearSource(row);
+            return;
+        }
+        let entry = this.entryOf(row);
+        if (!entry) {
+            entry = { name: row.name, title: row.title, value, readonly: false };
+            this.properties.presetFields.push(entry);
+        }
+        entry.value = value;
+        this.syncLevels(entry);
+        this.changed();
+    }
+
+    public clearSource(row: IPresetRow) {
+        const index = this.properties.presetFields.findIndex((e: any) => e.name === row.name);
+        if (index >= 0) {
+            this.properties.presetFields.splice(index, 1);
+        }
+        this.extraNested.delete(row.name);
+        this.changed();
+    }
+
+    public setReadonly(row: IPresetRow, value: boolean) {
+        const entry = this.entryOf(row);
+        if (entry) {
+            entry.readonly = !!value;
+            this.onSave();
+        }
+    }
+
+    /**
+     * Drops the preset schema and every mapping, so nothing of the preset stays in the block JSON.
+     */
+    public clearPreset() {
+        delete this.properties.presetSchema;
+        this.properties.presetFields = [];
+        this.extraNested.clear();
+        this.changed();
+    }
+
+    /**
+     * Preset schema changed: map the root fields that have the same title, the way it always did.
+     * Unmatched fields get no entry, so nothing empty is stored.
+     */
+    public onSelectInput() {
+        this.properties.presetFields = [];
+        this.extraNested.clear();
+        this.buildModel();
+        const byTitle = new Map<string, string>();
+        for (const source of this.sources) {
+            if (!source.nested) {
+                byTitle.set(source.title, source.name);
+            }
+        }
+        for (const row of this.rootRows) {
+            const value = row.nested ? undefined : byTitle.get(row.title);
+            if (value) {
+                this.setSourceQuiet(row, value);
+            }
+        }
+        this.changed();
+    }
+
+    private setSourceQuiet(row: IPresetRow, value: string) {
+        const entry = { name: row.name, title: row.title, value, readonly: false };
+        this.properties.presetFields.push(entry);
+    }
+
+    public addNestedTarget(path: string | null) {
+        if (path) {
+            this.extraNested.add(path);
+        }
+        this.newNestedTarget = null;
+        this.buildModel();
+    }
+
+    /**
+     * Keeps the array levels of nested mappings (they decide how a deeper source is
+     * flattened). Plain mappings are stored exactly as before.
+     */
+    private syncLevels(entry: any) {
+        if (PresetPath.isNested(entry)) {
+            const source = this.sources.find((e) => e.name === entry.value);
+            entry.nameLevel = this.targetNodes.get(entry.name)?.arrayLvl;
+            entry.valueLevel = source?.level;
+        } else {
+            delete entry.nameLevel;
+            delete entry.valueLevel;
+        }
+    }
+
+    /**
+     * Removes entries without a source (old policies stored one for every field) and saves.
+     */
+    private changed() {
+        this.properties.presetFields = this.properties.presetFields.filter((e: any) => !!e.value);
+        this.buildModel();
+        this.onSave();
+    }
+}
+
+interface IPresetOption {
+    value: string;
+    label: string;
+    fullLabel: string;
+    type: string;
+}
+
+interface IPresetGroup {
+    label: string;
+    name: string;
+    parents: string;
+    items: IPresetOption[];
+}
+
+interface IPresetSource {
+    name: string;
+    title: string;
+    type: string;
+    level: number;
+    nested: boolean;
+}
+
+interface IPresetRow {
+    name: string;
+    title: string;
+    type: string;
+    level: number;
+    nested: boolean;
+    /** Segments of the path to show, shortened when long. */
+    pathParts: string[];
+    /** The block schema has no such field any more. */
+    stale: boolean;
 }
