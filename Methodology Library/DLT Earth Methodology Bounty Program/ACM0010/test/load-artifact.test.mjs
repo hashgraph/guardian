@@ -44,13 +44,8 @@ test('container layout matches the repository precedent', async () => {
     const requiredDirs = [
         'policy.json',
         'artifacts/metadata.json',
-        'tokens/',
         'schemas/',
         'systemSchemas/',
-        'tools/',
-        'tags/',
-        'tests/',
-        'formulas/',
     ];
     const ours = new Set([...entries.keys()].map((n) => n.split('/')[0] + '/'));
     for (const dir of requiredDirs) {
@@ -60,6 +55,20 @@ test('container layout matches the repository precedent', async () => {
     }
     assert.ok(reference.policy, 'reference policy parses');
     assert.ok(ours.size > 0);
+});
+
+test('archive contains only parseable JSON in Guardian import directories', () => {
+    for (const [name, data] of entries) {
+        assert.ok(!name.endsWith('/.gitkeep'), `empty sentinel file not allowed: ${name}`);
+        if (/^(tokens|schemas|systemSchemas|tools|tags|formulas)\/.+/.test(name)) {
+            assert.ok(data.length > 0, `Guardian JSON entry must not be empty: ${name}`);
+            assert.doesNotThrow(
+                () => JSON.parse(data.toString('utf8')),
+                `Guardian must parse ${name} as JSON`,
+            );
+        }
+    }
+    assert.deepEqual(JSON.parse(entries.get('artifacts/metadata.json').toString('utf8')), []);
 });
 
 test('systemSchemas are present and match the reference implementations', () => {

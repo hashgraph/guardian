@@ -247,14 +247,13 @@ const policy = {
     config: resolveBlock(spec.config),
 };
 
-const EMPTY_DIRS = ['tokens/.gitkeep', 'tools/.gitkeep', 'formulas/.gitkeep', 'tags/.gitkeep', 'tests/.gitkeep'];
-
+// Empty optional JSON directories must be omitted: Guardian parses every file
+// under tokens/, tools/, tags/ and formulas/ as JSON, including .gitkeep.
 const entries = [
     { name: 'policy.json', data: Buffer.from(JSON.stringify(policy), 'utf8') },
-    { name: 'artifacts/metadata.json', data: Buffer.from('{}', 'utf8') },
+    { name: 'artifacts/metadata.json', data: Buffer.from('[]', 'utf8') },
     ...schemaEntries,
     ...systemSchemaEntries,
-    ...EMPTY_DIRS.map((name) => ({ name, data: Buffer.alloc(0) })),
 ];
 
 const buf = buildZip(entries);
