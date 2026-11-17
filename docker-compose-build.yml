@@ -164,25 +164,14 @@ services:
     init: true
 
   mongo:
-    image: mongo:6.0.28
+    image: mongo:9.0.8
     command: "--setParameter allowDiskUseByDefault=true"
     # command: "--setParameter allowDiskUseByDefault=true --quiet --logpath /dev/null" # use this command to reduce log noise
     restart: always
+    volumes:
+      - mongo_data:/data/db
     expose:
       - '27017'
-    init: true
-
-  mongo-express:
-    image: mongo-express:1.0.2-20
-    depends_on:
-      - mongo
-    environment:
-      ME_CONFIG_MONGODB_URL: mongodb://mongo:27017
-      ME_CONFIG_SITE_BASEURL: /mongo-admin
-      ME_CONFIG_BASICAUTH_USERNAME: admin
-      ME_CONFIG_BASICAUTH_PASSWORD: pass
-    expose:
-      - '8081'
     init: true
 
   mrv-sender:
@@ -318,7 +307,6 @@ services:
       - api-gateway
       - auth-service
       - guardian-service
-      - mongo-express
       - mrv-sender
     environment:
       GATEWAY_CLIENT_MAX_BODY_SIZE: 1024m
@@ -357,6 +345,7 @@ networks:
     driver: bridge
 
 volumes:
+  mongo_data:
   # seq_data:
   prometheus_data:
   grafana_data:

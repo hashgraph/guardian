@@ -68,10 +68,12 @@ services:
     init: true
 
   mongo:
-    image: mongo:6.0.28
+    image: mongo:9.0.8
     command: "--setParameter allowDiskUseByDefault=true"
     # command: "--setParameter allowDiskUseByDefault=true --quiet --logpath /dev/null" # use this command to reduce log noise
     restart: always
+    volumes:
+      - mongo_data:/data/db
     expose:
       - '27017'
     init: true
@@ -106,3 +108,6 @@ services:
       replicas: 10
     expose:
       - '6555'
+
+volumes:
+  mongo_data:

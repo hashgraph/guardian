@@ -6,9 +6,11 @@
 version: "3.8"
 services:
   mongo:
-    image: mongo
+    image: mongo:9.0.8
     command: "--setParameter allowDiskUseByDefault=true"
     restart: always
+    volumes:
+      - mongo_data:/data/db
     expose:
       - 27017
  
@@ -19,18 +21,6 @@ services:
     ports:
       - '8222:8222'
     command: '--http_port 8222'
-
-  mongo-express:
-    image: mongo-express:1.0.0-alpha.4
-    ports:
-      - 8081
-    environment:
-      ME_CONFIG_MONGODB_SERVER: mongo
-      ME_CONFIG_MONGODB_PORT: 27017
-      ME_CONFIG_SITE_BASEURL: /mongo-admin
-    depends_on:
-      - mongo
-
 
   notification-service:
     env_file:
@@ -150,9 +140,8 @@ services:
       - auth-service
       - api-gateway
       - mrv-sender
-      - mongo-express
 volumes:
-  mongo:
+  mongo_data:
   # volume-guardian-service:
   # volume-ui-service:
   # volume-mrv-sender:

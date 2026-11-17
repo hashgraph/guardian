@@ -143,7 +143,7 @@ spec:
 
 This folder contains the manifests for the different services that needs to be created in the cluster. Not all of them are exposed to the outside world, and some of them are only used internally by other services.
 
-> _**NOTE:**_ the manifest `web-proxy-ingress.yaml` creates the external routes for the exposed services. Some of them are potentially dangerous if exposed to the internet, for example, `/mongo-admin`, so please make sure you understand the implications of exposing them before doing so and disable the ones you don't need or protect them.
+> _**NOTE:**_ the manifest `web-proxy-ingress.yaml` creates the external routes for the exposed services. Some of them are potentially dangerous if exposed to the internet, so please make sure you understand the implications of exposing them before doing so and disable the ones you don't need or protect them.
 
 **3-controller**
 
@@ -163,7 +163,6 @@ These are third party services that are not part of the Guardian platform, but a
 * ipfs/kubo
 * message-broker
 * HashiCorp vault
-* mongo-express
 
 For production workloads it is recommended to use a more robust setup for these services, like a replica set for mongo, a cluster for ipfs, a cluster for the message broker, etc. Navigating to the Apps section of Rancher, you can find the official [Helm](https://helm.sh/) charts for these services, with Rancher support, which can be used to deploy them in a more robust way. As an example, you can follow the steps below to deploy a message broker cluster using the Rancher UI, you'll see something similar to this:
 

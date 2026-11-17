@@ -101,7 +101,7 @@ start_infra() {
   stop_infra
   docker run -d --name guardian-e2e-cache -p 127.0.0.1:6379:6379 valkey/valkey:8.1-alpine >/dev/null
   docker run -d --name guardian-e2e-nats -p 127.0.0.1:4222:4222 -p 127.0.0.1:8222:8222 nats:2.12-alpine >/dev/null
-  docker run -d --name guardian-e2e-mongo -p 127.0.0.1:27017:27017 mongo:7.0.41 >/dev/null
+  docker run -d --name guardian-e2e-mongo -p 127.0.0.1:27017:27017 mongo:9.0.8 >/dev/null
   docker run -d --name guardian-e2e-ipfs --init -e GOLOG_LOG_LEVEL=warn -e IPFS_TELEMETRY=off \
     -p 127.0.0.1:4001:4001 -p 127.0.0.1:5001:5001 -p 127.0.0.1:8080:8080 ipfs/kubo:v0.43.1 >/dev/null
 
