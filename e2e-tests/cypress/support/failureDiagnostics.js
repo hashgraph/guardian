@@ -7,6 +7,9 @@
 const LOADING_SELECTORS = ['div.loading', '.empty-component'];
 const MAX_CONSOLE_ENTRIES = 20;
 const MAX_TEXT_LENGTH = 300;
+// render-block only puts a block's uuid in the DOM (attribute block-uuid), and the uuids are new for
+// every published policy. The policy viewer reads the policy here, with its config: uuids and tags.
+const POLICY_URL = /\/policies\/[^/?]+(\?|$)/;
 
 const truncate = (text) => {
     const value = String(text);
@@ -27,24 +30,52 @@ const describeArgument = (value) => {
     return String(value);
 };
 
+/** Adds the tag of every block of a policy config (`{ id, tag, children }`) to `blockTags`, by uuid. */
+function recordBlockTags(blockTags, block) {
+    if (!block || typeof block !== 'object') {
+        return;
+    }
+    if (block.id && block.tag) {
+        blockTags.set(block.id, block.tag);
+    }
+    (block.children || []).forEach((child) => recordBlockTags(blockTags, child));
+}
+
 /**
- * Records, in the app window `win`, the console errors and warnings and the HTTP requests still
- * waiting for an answer. Each page load gets a recorder of its own.
+ * Records, in the app window `win`, the console errors and warnings, the HTTP requests still
+ * waiting for an answer and the tags of the blocks of the policies it reads. Each page load gets a recorder of its own.
  */
 function createBrowserRecorder(win, now = () => Date.now()) {
-    const recorder = { consoleEntries: [], pendingRequests: new Map() };
+    const recorder = { consoleEntries: [], pendingRequests: new Map(), blockTags: new Map() };
     let nextRequestId = 0;
+
+    const record = (level, text) => {
+        recorder.consoleEntries.push({ level, at: now(), text: truncate(text) });
+        if (recorder.consoleEntries.length > MAX_CONSOLE_ENTRIES) {
+            recorder.consoleEntries.shift();
+        }
+    };
 
     for (const level of ['error', 'warn']) {
         const original = win.console[level];
         win.console[level] = (...args) => {
-            recorder.consoleEntries.push({ level, at: now(), text: truncate(args.map(describeArgument).join(' ')) });
-            if (recorder.consoleEntries.length > MAX_CONSOLE_ENTRIES) {
-                recorder.consoleEntries.shift();
-            }
+            record(level, args.map(describeArgument).join(' '));
             return original.apply(win.console, args);
         };
     }
+
+    // Angular reads JSON as text and parses it itself, so the body is in responseText.
+    const readPolicyConfig = (xhr) => {
+        if (xhr.status !== 200) {
+            return;
+        }
+        try {
+            const policy = typeof xhr.response === 'string' ? JSON.parse(xhr.responseText) : xhr.response;
+            recordBlockTags(recorder.blockTags, policy?.config);
+        } catch (error) {
+            record('diagnostics', `policy of ${xhr.__diagnosticsRequest.url} unreadable: ${error.message}`);
+        }
+    };
 
     const track = (method, url) => {
         const id = nextRequestId++;
@@ -63,6 +94,9 @@ function createBrowserRecorder(win, now = () => Date.now()) {
         if (this.__diagnosticsRequest) {
             const done = track(this.__diagnosticsRequest.method, this.__diagnosticsRequest.url);
             this.addEventListener('loadend', done);
+            if (String(this.__diagnosticsRequest.method).toUpperCase() === 'GET' && POLICY_URL.test(String(this.__diagnosticsRequest.url))) {
+                this.addEventListener('load', () => readPolicyConfig(this));
+            }
         }
         return originalSend.apply(this, args);
     };
@@ -80,22 +114,24 @@ function createBrowserRecorder(win, now = () => Date.now()) {
 }
 
 // The chain of custom elements (Angular components) from the page down to the element, e.g.
-// `policy-viewer > container-block > button-block`. Custom element names always contain a dash.
-function componentPath(element) {
+// `policy-viewer > render-block[vvb_documents] > button-block`. Custom element names always contain
+// a dash; a policy block is named by its tag, or by its uuid when the policy was not recorded.
+function componentPath(element, blockTags) {
     const names = [];
     for (let node = element.parentElement; node; node = node.parentElement) {
         const name = String(node.tagName || '').toLowerCase();
         if (name.includes('-')) {
-            names.unshift(name);
+            const uuid = node.getAttribute?.('block-uuid');
+            names.unshift(uuid ? `${name}[${blockTags.get(uuid) ?? uuid}]` : name);
         }
     }
     return names.join(' > ') || '(no component)';
 }
 
 /** Where each loading overlay or placeholder still in `document` sits in the component tree. */
-function describeLoadingElements(document) {
+function describeLoadingElements(document, blockTags = new Map()) {
     return LOADING_SELECTORS.flatMap((selector) =>
-        Array.from(document.querySelectorAll(selector), (element) => ({ selector, path: componentPath(element) })));
+        Array.from(document.querySelectorAll(selector), (element) => ({ selector, path: componentPath(element, blockTags) })));
 }
 
 /** The report appended to a failure message; `null` when nothing was recorded. */
@@ -143,7 +179,7 @@ function registerFailureDiagnostics(cypress) {
             try {
                 const report = formatDiagnostics({
                     url: current.win.location?.href,
-                    loadingElements: describeLoadingElements(current.win.document),
+                    loadingElements: describeLoadingElements(current.win.document, current.recorder.blockTags),
                     recorder: current.recorder,
                 });
                 if (report) {

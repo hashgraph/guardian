@@ -14,7 +14,13 @@ function fakeWindow() {
         open() {}
         send() {}
         addEventListener(event, listener) { this.on(event, listener); }
-        answer() { this.emit('loadend'); }
+        // Angular asks for text and parses the JSON itself
+        answer(body = '') {
+            this.status = 200;
+            this.response = this.responseText = body;
+            this.emit('load');
+            this.emit('loadend');
+        }
     }
     let answerFetch;
     return {
@@ -26,9 +32,9 @@ function fakeWindow() {
     };
 }
 
-// An element tree with the parentElement links and tag names a browser gives.
-function element(tagName, parent = null) {
-    return { tagName: tagName.toUpperCase(), parentElement: parent };
+// An element tree with the parentElement links, tag names and attributes a browser gives.
+function element(tagName, parent = null, attributes = {}) {
+    return { tagName: tagName.toUpperCase(), parentElement: parent, getAttribute: (name) => attributes[name] ?? null };
 }
 
 describe('createBrowserRecorder', () => {
@@ -75,6 +81,58 @@ describe('createBrowserRecorder', () => {
         assert.equal(recorder.consoleEntries.length, 20);
         assert.equal(recorder.consoleEntries.at(0).text, 'error 5');
         assert.equal(recorder.consoleEntries.at(-1).text, 'error 24');
+    });
+});
+
+describe('policy block tags', () => {
+    it('names a block by the tag the policy config gives its uuid', () => {
+        const win = fakeWindow();
+        const recorder = createBrowserRecorder(win, () => 0);
+        const policy = new win.XMLHttpRequest();
+        policy.open('GET', '/api/v1/policies/p1');
+        policy.send();
+        policy.answer(JSON.stringify({
+            id: 'p1',
+            config: {
+                id: 'uuid-root', tag: 'root', blockType: 'interfaceContainerBlock',
+                children: [{ id: 'uuid-btn', tag: 'revoke_vvb_own_document_btn', blockType: 'buttonBlock', children: [] }],
+            },
+        }));
+
+        const viewer = element('policy-viewer', element('body'));
+        const root = element('render-block', viewer, { 'block-uuid': 'uuid-root' });
+        const button = element('render-block', element('container-block', root), { 'block-uuid': 'uuid-btn' });
+        const unknown = element('render-block', viewer, { 'block-uuid': 'uuid-unknown' });
+        const overlays = [element('div', element('button-block', button)), element('div', element('button-block', unknown))];
+        const document = { querySelectorAll: (selector) => (selector === 'div.loading' ? overlays : []) };
+
+        assert.deepEqual(describeLoadingElements(document, recorder.blockTags).map(({ path }) => path), [
+            'policy-viewer > render-block[root] > container-block > render-block[revoke_vvb_own_document_btn] > button-block',
+            'policy-viewer > render-block[uuid-unknown] > button-block',
+        ]);
+    });
+
+    it('notes a policy it cannot read instead of failing the page', () => {
+        const win = fakeWindow();
+        const recorder = createBrowserRecorder(win, () => 0);
+        const policy = new win.XMLHttpRequest();
+        policy.open('GET', '/api/v1/policies/p1');
+        policy.send();
+        policy.answer('<html>');
+
+        assert.equal(recorder.blockTags.size, 0);
+        assert.match(recorder.consoleEntries.at(-1).text, /^policy of \/api\/v1\/policies\/p1 unreadable/);
+    });
+
+    it('reads no tags from the other policy requests', () => {
+        const win = fakeWindow();
+        const recorder = createBrowserRecorder(win, () => 0);
+        const blocks = new win.XMLHttpRequest();
+        blocks.open('GET', '/api/v1/policies/p1/blocks');
+        blocks.send();
+        blocks.answer(JSON.stringify({ config: { id: 'uuid-root', tag: 'root' } }));
+
+        assert.equal(recorder.blockTags.size, 0);
     });
 });
 
