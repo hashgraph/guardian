@@ -1,6 +1,6 @@
 # E2E suite performance: measurements, experiments, open issues
 
-**Status:** measurement done, no optimisation applied yet. Experiments E1–E7 measured on 2026-11-13, E8 (all the viable optimisations together) on 2026-11-17.
+**Status:** E1, E1b, E2, E3 and E5 adopted on 2026-11-17; parallel runs and the unmeasured items below are still open. Experiments E1–E7 measured on 2026-11-13, E8 (all the viable optimisations together) on 2026-11-17.
 **Component:** `guardian-service`, `queue-service`, `auth-service`, `frontend`, `e2e-tests`
 **Affects:** the duration of a full e2e run (about 93 min sequential) and the possibility of running it in parallel
 
@@ -119,12 +119,15 @@ Running in parallel also needs a policy stop limited to the shard's own processe
 - `ui-tests/specs/04_contracts/contractTags` "delete contract tag": the tag is deleted (`DELETE 200`) but `{esc}` does not close the tags dialog. Flaky.
 - `ui-tests/specs/05_modules/createModule` "module ipfs import" failed once on the production frontend (3 rows instead of 4) and passed on the rerun. Flaky.
 
+## Adopted
+
+- E1: `RETIRE_CONTRACT_SYNC_MASK` and `WIPE_CONTRACT_SYNC_MASK` every 5 s in `scripts/local-guardian.sh` and `.github/workflows/e2e-run.yml`; E1b: `expectNoWipeRequest` watches for 15 s.
+- E2: the 15 s sleeps are removed; the KYC and freeze transactions already resolve on their receipt.
+- E3: the free-worker reply window is `WORKER_FREE_RESPONSE_WINDOW` (default 300 ms, 50 ms in the e2e environment), and a new task starts a dispatch round right away.
+- E5: UI runs serve `ng serve --configuration production` (README "Preparing the app for UI tests", CI).
+- Found by E8: `get-token-info` now waits for the mirror node to index a new token.
+
 ## Still to do
 
-1. Decide which optimisations to adopt and where:
-   - E1: set the two sync masks in the e2e service environment (`scripts/local-guardian.sh`, `export_service_environment`) and in CI; then shorten the `expectNoWipeRequest` window to match.
-   - E2: check on testnet whether the account info is up to date right after the KYC/freeze receipt; if so remove the sleep (product change, with a unit test).
-   - E3: product change to the queue dispatch, with unit tests in `queue-service`.
-   - E5: serve the production build for UI runs (README "Preparing the app for UI tests", CI).
-2. Parallel runs (E7 gives 45 min instead of 93): check that the auth fix removes the 401s, make the specs above independent of global lists and counters, keep `006_settings` alone, and stop only the shard's own policy processes.
-3. Not measured yet: the queue pickup in a full run with E3 (about 12 min of waits in the baseline; the E8 task snapshots are in `.local/e8-tasks.jsonl`), tool import/publish cost in `policy-tests/cdm` (803 s), the double publish in `processFlowiRec3` (about 17 s each), and the 162 s of app bootstrap after `cy.visit` (logging in through the API instead of the UI form).
+1. Parallel runs (E7 gives 45 min instead of 93): check that the auth fix removes the 401s, make the specs above independent of global lists and counters, keep `006_settings` alone, and stop only the shard's own policy processes.
+2. Not measured yet: the queue pickup in a full run with E3 (about 12 min of waits in the baseline; the E8 task snapshots are in `.local/e8-tasks.jsonl`), tool import/publish cost in `policy-tests/cdm` (803 s), the double publish in `processFlowiRec3` (about 17 s each), and the 162 s of app bootstrap after `cy.visit` (logging in through the API instead of the UI form).
