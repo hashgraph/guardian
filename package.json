@@ -19,7 +19,7 @@
         "lint": "./utils/lint-all.sh",
         "publish-policies": "guardian-cli publish-policies \"Methodology Library\" -c \"configs/automatic-publish-policies.config.json\" -o \"published-policies.txt\""
     },
-    "version": "3.7.1",
+    "version": "3.8.0-rc",
     "workspaces": [
         "interfaces",
         "common",
