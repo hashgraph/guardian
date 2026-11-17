@@ -1,0 +1,597 @@
+{
+    "name": "ACM0010 Baseline Emission Reduction Calculation",
+    "description": "Slice-scoped output of the customLogicBlock in logic/calculate-baseline-ch4.js. Carries BE_CH4,y only.",
+    "entity": "VC",
+    "system": false,
+    "sourceVersion": "1.0.0",
+    "document": {
+        "$id": "#acm0010-baseline-emission-reduction-calculation",
+        "title": "ACM0010 Baseline Emission Reduction Calculation",
+        "type": "object",
+        "required": [
+            "@context",
+            "type",
+            "credentialSubject"
+        ],
+        "properties": {
+            "@context": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                },
+                "readOnly": true
+            },
+            "type": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                },
+                "readOnly": true
+            },
+            "credentialSubject": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                    "$ref": "#acm0010-baseline-calculation-subject"
+                }
+            }
+        },
+        "defs": {
+            "acm0010-baseline-calculation-subject": {
+                "type": "object",
+                "required": [
+                    "ref",
+                    "year",
+                    "baselineAwms",
+                    "methaneConversionFactor",
+                    "livestockBreakdown",
+                    "baselineMethaneEmissionsKgCh4",
+                    "globalWarmingPotentialCh4",
+                    "baselineMethaneEmissionsTCo2e",
+                    "stageBreakdown"
+                ],
+                "properties": {
+                    "ref": {
+                        "type": "string",
+                        "title": "Project ID"
+                    },
+                    "year": {
+                        "type": "integer",
+                        "title": "Monitoring Year"
+                    },
+                    "baselineAwms": {
+                        "type": "string",
+                        "title": "Baseline AWMS"
+                    },
+                    "methaneConversionFactor": {
+                        "type": "number",
+                        "title": "Methane Conversion Factor"
+                    },
+                    "livestockBreakdown": {
+                        "type": "array",
+                        "title": "Livestock Breakdown",
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "type",
+                                "annualVolatileSolids",
+                                "maxMethaneProducingCapacity",
+                                "baselineMethaneEmissionsKgCh4"
+                            ],
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "title": "Livestock Type"
+                                },
+                                "annualVolatileSolids": {
+                                    "type": "number",
+                                    "title": "Annual Volatile Solids (kg VS/yr)"
+                                },
+                                "maxMethaneProducingCapacity": {
+                                    "type": "number",
+                                    "title": "Maximum Methane Producing Capacity (m3 CH4/kg VS)"
+                                },
+                                "baselineMethaneEmissionsKgCh4": {
+                                    "type": "number",
+                                    "title": "Baseline Methane Emissions (kg CH4)"
+                                }
+                            }
+                        }
+                    },
+                    "baselineMethaneEmissionsKgCh4": {
+                        "type": "number",
+                        "title": "Baseline Methane Emissions (kg CH4)"
+                    },
+                    "globalWarmingPotentialCh4": {
+                        "type": "number",
+                        "title": "GWP of CH4"
+                    },
+                    "baselineMethaneEmissionsTCo2e": {
+                        "type": "number",
+                        "title": "Baseline Methane Emissions (tCO2e)"
+                    },
+                    "stageBreakdown": {
+                        "type": "array",
+                        "title": "Baseline AWMS Stage Breakdown",
+                        "description": "Per-stage contribution to BE_CH4,y. The sum of methaneEmissionsKgCh4 across stages equals baselineMethaneEmissionsKgCh4.",
+                        "minItems": 1,
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "stage",
+                                "name",
+                                "methaneConversionFactor",
+                                "volatileSolidsReductionFraction",
+                                "volatileSolidsDecayFactor",
+                                "volatileSolidsInKg",
+                                "methaneEmissionsKgCh4"
+                            ],
+                            "properties": {
+                                "stage": {
+                                    "type": "integer",
+                                    "title": "Stage Index",
+                                    "minimum": 0
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "title": "Stage Name"
+                                },
+                                "methaneConversionFactor": {
+                                    "type": "number",
+                                    "title": "Methane Conversion Factor"
+                                },
+                                "volatileSolidsReductionFraction": {
+                                    "type": "number",
+                                    "title": "Volatile Solids Reduction Fraction"
+                                },
+                                "volatileSolidsDecayFactor": {
+                                    "type": "number",
+                                    "title": "Volatile Solids Decay Factor"
+                                },
+                                "volatileSolidsInKg": {
+                                    "type": "number",
+                                    "title": "Volatile Solids Entering Stage (kg VS)"
+                                },
+                                "methaneEmissionsKgCh4": {
+                                    "type": "number",
+                                    "title": "Stage Methane Emissions (kg CH4)"
+                                }
+                            }
+                        }
+                    },
+                    "volatileSolidsDerivation": {
+                        "type": "array",
+                        "title": "Volatile Solids Derivation",
+                        "description": "Per livestock type, records how annual volatile solids entering the AWMS were obtained. 'supplied' means the value was given directly; 'herdParameters' means it was derived using Option 3.",
+                        "minItems": 1,
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "type",
+                                "source",
+                                "annualVolatileSolidsKgDm"
+                            ],
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "title": "Livestock Type"
+                                },
+                                "source": {
+                                    "type": "string",
+                                    "title": "Derivation Source"
+                                },
+                                "annualVolatileSolidsKgDm": {
+                                    "type": "number",
+                                    "title": "Annual Volatile Solids (kg dm/yr)"
+                                },
+                                "averageWeightSiteKg": {
+                                    "type": "number",
+                                    "title": "Average Animal Weight at Site (kg)"
+                                },
+                                "defaultWeightKg": {
+                                    "type": "number",
+                                    "title": "Default Average Animal Weight (kg)"
+                                },
+                                "volatileSolidsDefaultKgDmPerDay": {
+                                    "type": "number",
+                                    "title": "Default VS Excretion Rate (kg dm/animal/day)"
+                                },
+                                "operationalDaysPerYear": {
+                                    "type": "number",
+                                    "title": "Days Operational in Year"
+                                },
+                                "daysAliveInYear": {
+                                    "type": "number",
+                                    "title": "Days Alive on Farm in Year"
+                                },
+                                "animalsProducedAnnually": {
+                                    "type": "number",
+                                    "title": "Animals Produced Annually"
+                                },
+                                "volatileSolidsPerAnimalKgDm": {
+                                    "type": "number",
+                                    "title": "VS Excretion Per Animal (kg dm/animal/yr)"
+                                },
+                                "annualAverageAnimals": {
+                                    "type": "number",
+                                    "title": "Annual Average Number of Animals"
+                                }
+                            }
+                        }
+                    },
+                    "nitrogenStageBreakdown": {
+                        "type": "array",
+                        "title": "Nitrogen Reduction Stage Breakdown",
+                        "description": "Per-stage relative nitrogen reduction RN and the cumulative nitrogen factor entering that stage. The first stage has a cumulative factor of 1. Present only when at least one stage supplied RN. Distinct from volatileSolidsDecayFactor and never derived from it.",
+                        "minItems": 1,
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "stage",
+                                "name",
+                                "relativeNitrogenReduction",
+                                "nitrogenDecayFactor"
+                            ],
+                            "properties": {
+                                "stage": {
+                                    "type": "integer",
+                                    "title": "Stage Index",
+                                    "minimum": 0
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "title": "Stage Name"
+                                },
+                                "relativeNitrogenReduction": {
+                                    "type": "number",
+                                    "title": "Relative Nitrogen Reduction (RN)",
+                                    "minimum": 0,
+                                    "maximum": 1
+                                },
+                                "nitrogenDecayFactor": {
+                                    "type": "number",
+                                    "title": "Cumulative Nitrogen Factor Entering Stage",
+                                    "minimum": 0,
+                                    "maximum": 1
+                                }
+                            }
+                        }
+                    },
+                    "projectN2O": {
+                        "type": "object",
+                        "title": "Project N2O Emissions",
+                        "description": "PE_N2O,y. Present only when parameters.projectN2OOption was declared. Option 1 (ACM0010 5.4.3.1) uses per-stage project manure fractions and emission factors with nitrogen reduced across successive treatment stages by the cumulative (1 - RN) product. Option 2 (5.4.3.2, the preferred option) uses measured monthly effluent volume and nitrogen concentration and therefore needs no manure fraction, animal count or nitrogen reduction chain. The required fields below are those common to both options; the stage breakdown carries the additional per-option fields.",
+                        "required": [
+                            "option",
+                            "stageBreakdown",
+                            "directN2OEmissionsKgN2ON",
+                            "indirectN2OEmissionsKgN2ON",
+                            "totalN2OEmissionsKgN2ON",
+                            "fractionNitrogenVolatilised",
+                            "n2oNToN2OConversionFactor",
+                            "globalWarmingPotentialN2O",
+                            "projectN2OEmissionsTCo2e"
+                        ],
+                        "properties": {
+                            "option": {
+                                "type": "string",
+                                "title": "Selected Option",
+                                "enum": [
+                                    "option1",
+                                    "option2"
+                                ]
+                            },
+                            "stageBreakdown": {
+                                "type": "array",
+                                "title": "Project N2O Stage Breakdown",
+                                "description": "Per-stage contribution to PE_N2O,y. The sum across stages equals the reported direct total.",
+                                "minItems": 1,
+                                "items": {
+                                    "type": "object",
+                                    "required": [
+                                        "stage",
+                                        "name",
+                                        "projectDirectN2OEmissionFactorKgN2ONPerKgN",
+                                        "directN2OEmissionsKgN2ON"
+                                    ],
+                                    "properties": {
+                                        "stage": {
+                                            "type": "integer",
+                                            "title": "Stage Index",
+                                            "minimum": 0
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "title": "Stage Name"
+                                        },
+                                        "projectDirectN2OEmissionFactorKgN2ONPerKgN": {
+                                            "type": "number",
+                                            "title": "EF_N2O,D,j (kg N2O-N/kg N)",
+                                            "minimum": 0
+                                        },
+                                        "directN2OEmissionsKgN2ON": {
+                                            "type": "number",
+                                            "title": "Stage Direct N2O (kg N2O-N/yr)"
+                                        },
+                                        "projectManureFraction": {
+                                            "type": "number",
+                                            "title": "MS%_j (Option 1)",
+                                            "minimum": 0,
+                                            "maximum": 1
+                                        },
+                                        "projectIndirectN2OEmissionFactorKgN2ONPerKgN": {
+                                            "type": "number",
+                                            "title": "EF_N2O,ID,j (Option 1)",
+                                            "minimum": 0
+                                        },
+                                        "nitrogenDecayFactor": {
+                                            "type": "number",
+                                            "title": "Cumulative Nitrogen Factor Entering Stage (Option 1)",
+                                            "minimum": 0,
+                                            "maximum": 1
+                                        },
+                                        "manureFractionNitrogenExcretion": {
+                                            "type": "number",
+                                            "title": "Nitrogen Reaching This Stage (kg N/yr, Option 1)"
+                                        },
+                                        "indirectN2OEmissionsKgN2ON": {
+                                            "type": "number",
+                                            "title": "Stage Indirect N2O (kg N2O-N/yr, Option 1)"
+                                        },
+                                        "effluentNitrogenKg": {
+                                            "type": "number",
+                                            "title": "Measured Nitrogen Entering Stage (kg N/yr, Option 2)"
+                                        }
+                                    }
+                                }
+                            },
+                            "directN2OEmissionsKgN2ON": {
+                                "type": "number",
+                                "title": "Total Direct N2O (kg N2O-N/yr)"
+                            },
+                            "indirectN2OEmissionsKgN2ON": {
+                                "type": "number",
+                                "title": "Total Indirect N2O (kg N2O-N/yr)"
+                            },
+                            "totalN2OEmissionsKgN2ON": {
+                                "type": "number",
+                                "title": "Total N2O (kg N2O-N/yr)"
+                            },
+                            "totalEffluentNitrogenKg": {
+                                "type": "number",
+                                "title": "Total Measured Effluent Nitrogen (kg N/yr, Option 2)"
+                            },
+                            "projectIndirectN2OEmissionFactorKgN2ONPerKgN": {
+                                "type": "number",
+                                "title": "EF_N2O (Option 2)",
+                                "minimum": 0
+                            },
+                            "fractionNitrogenVolatilised": {
+                                "type": "number",
+                                "title": "F_gas,m / f_N2O",
+                                "minimum": 0,
+                                "maximum": 1
+                            },
+                            "n2oNToN2OConversionFactor": {
+                                "type": "number",
+                                "title": "N2O-N to N2O Conversion Factor (44/28)"
+                            },
+                            "globalWarmingPotentialN2O": {
+                                "type": "number",
+                                "title": "GWP of N2O"
+                            },
+                            "projectN2OEmissionsTCo2e": {
+                                "type": "number",
+                                "title": "PE_N2O,y (tCO2e)"
+                            }
+                        }
+                    },
+                    "baselineN2O": {
+                        "type": "object",
+                        "title": "Baseline N2O Emissions",
+                        "description": "Present only when parameters.globalWarmingPotentialN2O was supplied. Direct and indirect N2O expressed as N2O-N, converted to N2O by 44/28 and to CO2e by GWP_N2O.",
+                        "required": [
+                            "directEmissionFactorSum",
+                            "indirectEmissionFactorSum",
+                            "directN2OEmissionsKgN2ON",
+                            "indirectN2OEmissionsKgN2ON",
+                            "totalN2OEmissionsKgN2ON",
+                            "n2oNToN2OConversionFactor",
+                            "globalWarmingPotentialN2O",
+                            "baselineN2OEmissionsTCo2e"
+                        ],
+                        "properties": {
+                            "directEmissionFactorSum": {
+                                "type": "number",
+                                "title": "Sum of EF_N2O,D,j x MS%_Bl,j"
+                            },
+                            "indirectEmissionFactorSum": {
+                                "type": "number",
+                                "title": "Sum of EF_N2O,ID x MS%_Bl,j x F_gas,m"
+                            },
+                            "directN2OEmissionsKgN2ON": {
+                                "type": "number",
+                                "title": "Direct N2O Emissions (kg N2O-N/yr)"
+                            },
+                            "indirectN2OEmissionsKgN2ON": {
+                                "type": "number",
+                                "title": "Indirect N2O Emissions (kg N2O-N/yr)"
+                            },
+                            "totalN2OEmissionsKgN2ON": {
+                                "type": "number",
+                                "title": "Total N2O Emissions (kg N2O-N/yr)"
+                            },
+                            "n2oNToN2OConversionFactor": {
+                                "type": "number",
+                                "title": "N2O-N to N2O Conversion Factor (44/28)"
+                            },
+                            "globalWarmingPotentialN2O": {
+                                "type": "number",
+                                "title": "GWP of N2O"
+                            },
+                            "baselineN2OEmissionsTCo2e": {
+                                "type": "number",
+                                "title": "Baseline N2O Emissions (tCO2e)"
+                            }
+                        }
+                    },
+                    "baselineEmissionsTCo2e": {
+                        "type": "number",
+                        "title": "Total Baseline Emissions (tCO2e)",
+                        "description": "Baseline methane plus baseline N2O. Present only when baselineN2O is present."
+                    },
+                    "projectEmissionsAerobic": {
+                        "type": "object",
+                        "title": "Project Emissions from Aerobic AWMS Treatment",
+                        "description": "PE_Aer,y. Present only when a stage is flagged aerobicTreatment. Methane generating potential is VS * B0 * density and carries no MCF; aerobic emissions are 0.1% of that potential.",
+                        "required": [
+                            "aerobicStage",
+                            "aerobicStageName",
+                            "volatileSolidsDirectedToAerobicFraction",
+                            "volatileSolidsToAerobicKg",
+                            "ch4DensityTPervm3",
+                            "aerobicMethaneFraction",
+                            "methaneGeneratingPotentialTCh4",
+                            "globalWarmingPotentialCh4",
+                            "projectEmissionsAerobicTCo2e"
+                        ],
+                        "properties": {
+                            "aerobicStage": {
+                                "type": "integer",
+                                "title": "Aerobic Stage Index",
+                                "minimum": 0
+                            },
+                            "aerobicStageName": {
+                                "type": "string",
+                                "title": "Aerobic Stage Name"
+                            },
+                            "volatileSolidsDirectedToAerobicFraction": {
+                                "type": "number",
+                                "title": "F_Aer"
+                            },
+                            "volatileSolidsToAerobicKg": {
+                                "type": "number",
+                                "title": "Volatile Solids Directed to Aerobic System (kg VS)"
+                            },
+                            "ch4DensityTPervm3": {
+                                "type": "number",
+                                "title": "CH4 Density (t/m3)"
+                            },
+                            "aerobicMethaneFraction": {
+                                "type": "number",
+                                "title": "Aerobic Methane Fraction"
+                            },
+                            "methaneGeneratingPotentialTCh4": {
+                                "type": "number",
+                                "title": "Methane Generating Potential (t CH4)"
+                            },
+                            "globalWarmingPotentialCh4": {
+                                "type": "number",
+                                "title": "GWP of CH4"
+                            },
+                            "projectEmissionsAerobicTCo2e": {
+                                "type": "number",
+                                "title": "PE_Aer,y (tCO2e)"
+                            }
+                        }
+                    },
+                    "projectEmissionsTCo2e": {
+                        "type": "number",
+                        "title": "Total Project Emissions (tCO2e)",
+                        "description": "PE_y. Sum of all project emission components (PE_AD, PE_Aer, PE_N2O, PE_flare, PE_transport, PE_elec/heat)."
+                    },
+                    "leakageTCo2e": {
+                        "type": "number",
+                        "title": "Leakage Emissions (tCO2e)",
+                        "description": "LE_y. Net leakage emissions from land application and anaerobic digester."
+                    },
+                    "methaneCapturedTCo2e": {
+                        "type": "number",
+                        "title": "Methane Captured and Destroyed (tCO2e)",
+                        "description": "MD_y. Methane captured and destroyed by the project activity."
+                    },
+                    "emissionReductionsTCo2e": {
+                        "type": "number",
+                        "title": "Emission Reductions (tCO2e)",
+                        "description": "ER_y. Ex ante emission reductions."
+                    },
+                    "emissionReductionsExPostTCo2e": {
+                        "type": "number",
+                        "title": "Ex Post Emission Reductions (tCO2e)",
+                        "description": "ER_y,ex post. Ex post emission reductions."
+                    },
+                    "leakageDetails": {
+                        "type": "object",
+                        "title": "Leakage Details",
+                        "description": "Detailed leakage calculation components."
+                    },
+                    "globalWarmingPotentialN2O": {
+                        "type": "number",
+                        "title": "GWP of N2O",
+                        "description": "Global Warming Potential of N2O used in calculations."
+                    },
+                    "components": {
+                        "type": "object",
+                        "title": "Calculation Components",
+                        "description": "Detailed calculation components."
+                    },
+                    "projectEmissionsAnaerobicDigester": {
+                        "type": "object",
+                        "title": "Project Emissions from Anaerobic Digester PEAD,y (TOOL14 v03.0)",
+                        "description": "TOOL14 v03.0 outputs when anaerobicDigesterActivity computed.",
+                        "properties": {
+                            "tool": {
+                                "type": "string"
+                            },
+                            "toolVersion": {
+                                "type": "string"
+                            },
+                            "qCh4Tonnes": {
+                                "type": "number"
+                            },
+                            "qCh4Source": {
+                                "type": "string"
+                            },
+                            "peEcTCo2": {
+                                "type": "number"
+                            },
+                            "peFcTCo2": {
+                                "type": "number"
+                            },
+                            "peCh4TCo2e": {
+                                "type": "number"
+                            },
+                            "peFlareTCo2e": {
+                                "type": "number"
+                            },
+                            "peAdTCo2e": {
+                                "type": "number"
+                            },
+                            "integrationNote": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "leakageAnaerobicDigester": {
+                        "type": "object",
+                        "title": "Leakage from Anaerobic Digester LEAD,y (TOOL14 v03.0)",
+                        "properties": {
+                            "leStorageTCo2e": {
+                                "type": "number"
+                            },
+                            "leStorageSource": {
+                                "type": "string"
+                            },
+                            "leCompTCo2e": {
+                                "type": "number"
+                            },
+                            "leAdTCo2e": {
+                                "type": "number"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
