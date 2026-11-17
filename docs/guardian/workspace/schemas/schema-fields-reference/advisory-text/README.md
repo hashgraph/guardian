@@ -19,7 +19,7 @@ Advisory text keeps the guidance on the field itself. The author writes it once 
 
 * The author turns on **Advisory text** in the field settings of the schema editor and writes the hint. It is optional.
 * In the form, the hint appears as small text under the field label, above the input. It is always visible.
-* For a field with **Allow multiple answers**, the hint is shown at each input of the list.
+* For a field with **Allow multiple answers**, the hint is shown once, under the field label, not at each input of the list.
 * The hint belongs to the schema. It is saved and published with the schema, and documents created from the form do not contain it.
 * Advisory text is also available in Excel, in an optional **Advisory Text** column.
 
