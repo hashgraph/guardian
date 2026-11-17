@@ -57,7 +57,7 @@ The 7 failing specs. None of them is caused by the patches, as far as the reruns
 
 - `009_policies/postPoliciesImportMsgPreview`: mirror node answered 503 once; it passed on rerun. Fixed since: the worker retries a transient mirror error when reading topic messages.
 - `013_contracts/006_setPools`: the mirror node did not have the new token yet (404, no retry). `007_getPools` and `008_getWipeRequests` then failed with it. The folder passed 149/149 on rerun. Both mirror failures are in `contract-import-fails-on-a-transient-mirror-node-502.md`; the 404 is fixed since (the worker now waits for the mirror node to index the token).
-- `025_policy_labels/07_getTokensPolicyLabel`, `08_postDocument`: they read what `013_contracts` creates (`policy-labels-specs-depend-on-013-contracts.md`).
+- `025_policy_labels/07_getTokensPolicyLabel`, `08_postDocument`: they read the tokens of the newest published `iRec_4` copy, which only `013_contracts` had minted in, and `015` and `024` now publish newer copies. Fixed since: `00` publishes its own copy and mints a token in it.
 - `ui-tests/specs/02_policies/flow_CDM_0001`: the tool picker stayed open (`cdm-import-tool-picker-stays-open.md`), the same failure as on 14 Nov.
 
 ### Patches used
