@@ -278,8 +278,10 @@ UI tests drive the real frontend, so the app must be running where `CYPRESS_base
 ```bash
 cd frontend
 UI_GATEWAY_ORIGIN=http://host.docker.internal:3002/ \
-  ng serve --host 127.0.0.1 --port 4200 --proxy-config ./proxy.hostdocker.js
+  ng serve --configuration production --host 127.0.0.1 --port 4200 --proxy-config ./proxy.hostdocker.js
 ```
+
+- `--configuration production` serves the optimized build: the UI specs run about 20 % faster than on the development build, which bootstraps and renders more slowly. The first build takes about 40 s instead of 15.
 
 - `UI_GATEWAY_ORIGIN` is where the dev server proxies `/api/v1` and the WebSocket to. `yarn start` uses `proxy.conf.json`, which assumes a gateway on `localhost:3002`; `proxy.hostdocker.js` exists for the common case of running the suite in a container (or a VM) that reaches the host's Guardian stack through `host.docker.internal`.
 - Pass `CYPRESS_baseUrl=http://127.0.0.1:4200` to the Cypress run (the `entrypoint.sh` examples above do this).
@@ -815,7 +817,7 @@ Scheduled runs happen nightly at 03:00 UTC: E2E Tests runs `api-all policy-all`,
 - Starts a local Hiero network with Solo, and uploads the contract bytecode to it
 - Builds Guardian services
 - Starts MongoDB, NATS, Valkey and Kubo as service containers, and the Guardian services natively
-- For UI runs, installs the frontend and serves it with `ng serve` on `127.0.0.1:4200`, proxied to the gateway (`frontend/proxy.hostdocker.js`), the same way as the local recipe in "Preparing the app for UI tests"
+- For UI runs, installs the frontend and serves its production build with `ng serve --configuration production` on `127.0.0.1:4200`, proxied to the gateway (`frontend/proxy.hostdocker.js`), the same way as the local recipe in "Preparing the app for UI tests"
 - Runs Cypress natively on the runner against that stack
 - With the `ui_request_trace` input of a manual run (`UI Tests`, or `E2E Tests` with UI tags), the dev server logs every request it proxies to the gateway (`UI_PROXY_LOG`), into `frontend-1.log` of the Guardian logs artifact. It is for diagnosing a UI failure, and the log is large
 - Publishes test results (one check per suite: `Test results · api`, `· policy`, `· ui`)
