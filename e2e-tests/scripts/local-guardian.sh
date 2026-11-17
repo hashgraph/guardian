@@ -74,6 +74,8 @@ export_service_environment() {
   export IPFS_TIMEOUT=720 ACCESS_TOKEN_UPDATE_INTERVAL=600000
   export INITIAL_BALANCE=10000 INITIAL_STANDARD_REGISTRY_BALANCE=100000
   export MIN_PASSWORD_LENGTH=4 PASSWORD_COMPLEXITY=easy
+  # Each queue dispatch round waits this long for free workers; the 300 ms default adds up over a run.
+  export WORKER_FREE_RESPONSE_WINDOW=50
   # Large NATS replies are fetched from this host, and a laptop's hostname often does not resolve.
   export DIRECT_MESSAGE_HOST=127.0.0.1
   # solo.env points at the network through the loopback of the machine that runs it.

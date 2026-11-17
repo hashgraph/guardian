@@ -389,6 +389,8 @@ jobs:
           IPFS_PUBLIC_GATEWAY: http://127.0.0.1:8080/ipfs/{cid}
           IPFS_TIMEOUT: 720
           ACCESS_TOKEN_UPDATE_INTERVAL: 600000
+          # Each queue dispatch round waits this long for free workers; the 300 ms default adds up over a run.
+          WORKER_FREE_RESPONSE_WINDOW: 50
           # HBAR is free on the local network, and token creation alone costs about $1 (8 HBAR at
           # Solo's 12 cents), so the testnet-era 20 HBAR left accounts short.
           INITIAL_BALANCE: 10000
