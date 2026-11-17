@@ -1,5 +1,6 @@
 name: Suggestion, idea, or support request
 description: Share a general idea, suggestion, or support request.
+labels: ["needs: triage"]
 body:
   - type: textarea
     id: summary
