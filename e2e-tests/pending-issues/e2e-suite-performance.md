@@ -66,11 +66,11 @@ E7: run Cypress once per shard with its own `DISPLAY` (Cypress starts its own Xv
 
 ## Issues found
 
-### Concurrent logins of the same user lose a refresh token (auth-service), not verified
+### Concurrent logins of the same user lost a refresh token (auth-service), fixed
 
 In E7, 4 specs failed on `POST /accounts/access-token` answering 401 to a refresh token obtained moments before (`005_profiles/getProfilesRootUser`, `014_tags/00_createGetAndDeleteModuleTags`, `008_artifacts/deleteArtifact`, `009_policies/IPFSandGeoJSONValidation`). It never happens in a sequential run.
 
-Likely cause: a login reads the user, appends the new token id to `user.refreshToken` and saves the whole user (`auth-service/src/api/account-service.ts`, around lines 377 and 429); `GENERATE_NEW_ACCESS_TOKEN` then looks the user up by that id. Two concurrent logins of the same user both save their own copy of the array, so one id is lost and that token is refused. To verify: a unit test in `auth-service` running two logins of the same user concurrently, then refreshing both tokens. Real users logging in from two tabs at once would hit it too.
+Cause, confirmed by `auth-service/tests/account-service-refresh-tokens.test.mjs`: the login (`GENERATE_NEW_TOKEN`) read the user, appended the new token id to `user.refreshToken` and saved the whole user, so two concurrent logins of the same user each saved their own copy of the array and one id was lost; `GENERATE_NEW_ACCESS_TOKEN` then refused that token. The login now adds the id with an atomic `$push` (`UserUtils.addRefreshToken`). Not yet confirmed with a parallel e2e run. `CHANGE_USER_PASSWORD` still saves the whole user, so a login concurrent with a password change can still lose its token.
 
 ### `POST /settings` restarts every published and dry-run policy
 
@@ -98,11 +98,10 @@ Running in parallel also needs a policy stop limited to the shard's own processe
 ## Still to do
 
 1. **E8**: E1 + E1b + E2 + E3 + E5 together on a full sequential run, fresh database, `STOP_POLICIES_BETWEEN_SUITES=1`, to get the realistic gain of the viable optimisations (from the single experiments: roughly −6 min contracts, −3 min KYC sleeps, −10 % on task-heavy specs, −20 % on UI specs).
-2. Verify the auth-service refresh-token race with a unit test, then fix it.
-3. Decide which optimisations to adopt and where:
+2. Decide which optimisations to adopt and where:
    - E1: set the two sync masks in the e2e service environment (`scripts/local-guardian.sh`, `export_service_environment`) and in CI; then shorten the `expectNoWipeRequest` window to match.
    - E2: check on testnet whether the account info is up to date right after the KYC/freeze receipt; if so remove the sleep (product change, with a unit test).
    - E3: product change to the queue dispatch, with unit tests in `queue-service`.
    - E5: serve the production build for UI runs (README "Preparing the app for UI tests", CI).
-4. Parallel runs (E7 gives 45 min instead of 93): fix the auth race, make the specs above independent of global lists and counters, keep `006_settings` alone, and stop only the shard's own policy processes.
-5. Not measured yet: the queue pickup in a full run with E3 (about 12 min of waits in the baseline), tool import/publish cost in `policy-tests/cdm` (803 s), the double publish in `processFlowiRec3` (about 17 s each), and the 162 s of app bootstrap after `cy.visit` (logging in through the API instead of the UI form).
+3. Parallel runs (E7 gives 45 min instead of 93): check that the auth fix removes the 401s, make the specs above independent of global lists and counters, keep `006_settings` alone, and stop only the shard's own policy processes.
+4. Not measured yet: the queue pickup in a full run with E3 (about 12 min of waits in the baseline), tool import/publish cost in `policy-tests/cdm` (803 s), the double publish in `processFlowiRec3` (about 17 s each), and the 162 s of app bootstrap after `cy.visit` (logging in through the API instead of the UI form).

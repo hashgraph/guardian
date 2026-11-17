@@ -374,12 +374,7 @@ export class AccountService extends NatsService {
                                 }
                                 const userAccessTokenService = await UserAccessTokenService.New();
                                 const token = userAccessTokenService.generateRefreshToken(user);
-                                if (!Array.isArray(user.refreshToken)) {
-                                    user.refreshToken = [];
-                                }
-                                user.refreshToken.push(token.id);
-
-                                await new DatabaseServer().save(User, user);
+                                await UserUtils.addRefreshToken(user, token.id);
 
                                 const isStrongPassword = UserPassword.validatePassword(password);
 
