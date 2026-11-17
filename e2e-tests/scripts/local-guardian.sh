@@ -76,6 +76,8 @@ export_service_environment() {
   export MIN_PASSWORD_LENGTH=4 PASSWORD_COMPLEXITY=easy
   # Each queue dispatch round waits this long for free workers; the 300 ms default adds up over a run.
   export WORKER_FREE_RESPONSE_WINDOW=50
+  # Contract events are synchronized from the mirror node every 5 s instead of every minute.
+  export RETIRE_CONTRACT_SYNC_MASK='*/5 * * * * *' WIPE_CONTRACT_SYNC_MASK='*/5 * * * * *'
   # Large NATS replies are fetched from this host, and a laptop's hostname often does not resolve.
   export DIRECT_MESSAGE_HOST=127.0.0.1
   # solo.env points at the network through the loopback of the machine that runs it.

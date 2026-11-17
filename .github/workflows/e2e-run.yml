@@ -391,6 +391,9 @@ jobs:
           ACCESS_TOKEN_UPDATE_INTERVAL: 600000
           # Each queue dispatch round waits this long for free workers; the 300 ms default adds up over a run.
           WORKER_FREE_RESPONSE_WINDOW: 50
+          # Contract events are synchronized from the mirror node every 5 s instead of every minute.
+          RETIRE_CONTRACT_SYNC_MASK: '*/5 * * * * *'
+          WIPE_CONTRACT_SYNC_MASK: '*/5 * * * * *'
           # HBAR is free on the local network, and token creation alone costs about $1 (8 HBAR at
           # Solo's 12 cents), so the testnet-era 20 HBAR left accounts short.
           INITIAL_BALANCE: 10000
