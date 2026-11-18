@@ -5,7 +5,7 @@ import * as Authorization from '../../../support/authorization';
 
 context('Analytics', { tags: ['analytics', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
 
     const URLS = {
         policies: `${API.ApiServer}${API.Policies}`,

@@ -16,11 +16,11 @@ const SEEDED_MESSAGES_FILE = 'cypress/fixtures/seededMessages.json';
 const HEDERA_MESSAGE_ID = /^\d+\.\d+$/;
 
 /**
- * The suite pins a handful of Hedera message IDs in cypress.env.json, all of them published on
+ * The suite pins a handful of Hedera message IDs in cypress.expose.json, all of them published on
  * testnet. On any other network those messages do not exist, so the artefacts behind them have to
  * be published by the run itself.
  */
-export const usesSeededMessages = () => Cypress.env('hederaNet') !== 'testnet';
+export const usesSeededMessages = () => Cypress.expose('hederaNet') !== 'testnet';
 
 /** Reads a `*.policy` / `*.tool` / `*.module` archive from the fixtures folder as a Blob. */
 const readFixtureArchive = (fixtureName) =>
@@ -173,25 +173,25 @@ export const publishToolFixture = (username, fixtureName, toolVersion = '1.0.0')
  * Records the Hedera messages the seeding spec published, so the specs that consume them can look
  * them up through `seededMessageId`.
  */
-export const writeSeededMessageIds = (messageIdsByEnvKey) =>
-    cy.writeFile(SEEDED_MESSAGES_FILE, messageIdsByEnvKey);
+export const writeSeededMessageIds = (messageIdsByKey) =>
+    cy.writeFile(SEEDED_MESSAGES_FILE, messageIdsByKey);
 
 /**
  * Resolves one of the artefact message IDs the suite imports from, and is the only place that knows
- * which network the run is against: on testnet it is the ID pinned in cypress.env.json, anywhere
+ * which network the run is against: on testnet it is the ID pinned in cypress.expose.json, anywhere
  * else the one the seeding spec published on that network. Consuming specs stay network-agnostic.
  *
  * Yields the Hedera message ID.
  */
-export const seededMessageId = (envKey) => {
+export const seededMessageId = (messageKey) => {
     if (!usesSeededMessages()) {
-        return cy.wrap(Cypress.env(envKey), { log: false });
+        return cy.wrap(Cypress.expose(messageKey), { log: false });
     }
     return cy.readFile(SEEDED_MESSAGES_FILE).then((seeded) => {
-        const messageId = seeded?.[envKey];
+        const messageId = seeded?.[messageKey];
         expect(
             messageId,
-            `Hedera message seeded for "${envKey}" (published by 000_accounts_creating/seedHederaArtefacts)`
+            `Hedera message seeded for "${messageKey}" (published by 000_accounts_creating/seedHederaArtefacts)`
         ).to.match(HEDERA_MESSAGE_ID);
         return cy.wrap(messageId, { log: false });
     });

@@ -8,7 +8,7 @@ const configpage = new ConfigPage();
 context('Create User Accounts', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
     const SRName = 'TestSRUI' + randomInt(1000000000);
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     // A fixed name would silently collide with the account a previous run left
     // behind; a 1e9 space keeps re-runs unique.
     const userName = 'TestUserUI' + randomInt(1000000000);

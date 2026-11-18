@@ -1,10 +1,10 @@
 // Allow overriding full API origins (e.g. Docker Desktop), falling back to the configured port.
 const resolveOrigin = (overrideKey, portKey) => {
-    const override = Cypress.env(overrideKey);
+    const override = Cypress.expose(overrideKey);
     if (override) {
         return override.endsWith('/') ? override : `${override}/`;
     }
-    return `http://localhost:${Cypress.env(portKey)}/`;
+    return `http://localhost:${Cypress.expose(portKey)}/`;
 };
 
 // The same origin the rest of the API urls use: building it separately makes the urls below ignore

@@ -6,7 +6,7 @@ import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('External', { tags: ['external', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
 
     let policyTag; let owner;
 

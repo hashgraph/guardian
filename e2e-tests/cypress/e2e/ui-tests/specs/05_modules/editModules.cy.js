@@ -1,7 +1,7 @@
 //TBD: w8 for "Back" button
 // context("Workflow Module Editing", { tags: ['ui', 'ui-all', 'all'] }, () => {
 
-//     const SRUsername = Cypress.env('SRUser');
+//     const SRUsername = Cypress.expose('SRUser');
 //     const moduleName = "UIModuleFor";
 //     let newName;
 

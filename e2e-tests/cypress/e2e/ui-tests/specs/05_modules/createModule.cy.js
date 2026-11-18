@@ -15,7 +15,7 @@ const login = (username) => {
 
 context('Workflow Module Creation', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     // Unique per run: the modules of earlier runs stay in the list.
     const moduleName = 'UIModule' + randomInt(1000000000);
     // Imported archives keep the name they were exported with. The module imported from a Hedera message is

@@ -16,7 +16,7 @@ const login = (username) => {
 
 context('Policy Schema Creation', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     // Unique per run: the schemas of earlier runs stay in the list.
     const schemaName = 'UIPolicySchema' + randomInt(1000000000);
     const schemaFileName = 'exportedSchema.schema';

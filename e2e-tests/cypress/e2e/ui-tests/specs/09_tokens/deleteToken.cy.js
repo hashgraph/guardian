@@ -14,7 +14,7 @@ const login = (username) => {
 
 context('Token Deletion', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     const tokenName = 'UITokenName' + randomInt(1000000000);
 
     before(() => {

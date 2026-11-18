@@ -15,7 +15,7 @@ const login = (username) => {
 // A published module cannot be deleted, so each run leaves the one it published in the list.
 context('Verify Modules UI', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     const runId = randomInt(1000000000);
     const draftModuleName = 'UIModule' + runId;
     const publishedModuleName = 'UIPublishedModule' + runId;

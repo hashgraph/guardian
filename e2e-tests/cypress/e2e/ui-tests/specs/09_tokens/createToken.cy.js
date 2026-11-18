@@ -15,7 +15,7 @@ const login = (username) => {
 // A published token or one without an admin key cannot be deleted, so those stay in the list.
 context('Token Creation', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     // Unique per run: the tokens of earlier runs stay in the list.
     const runId = randomInt(1000000000);
     const tokenName = 'UITokenName' + runId;

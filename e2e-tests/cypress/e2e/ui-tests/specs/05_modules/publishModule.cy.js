@@ -15,7 +15,7 @@ const login = (username) => {
 // A published module cannot be deleted, so each run leaves the one it published in the list.
 context('Workflow Modules Publish', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     const moduleName = 'UIModule' + randomInt(1000000000);
 
     before(() => {

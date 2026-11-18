@@ -19,9 +19,9 @@ const IREC5_FILE = '../Methodology Library/International Renewable Energy Certif
 
 context('Workflow iREC 5 Policy - with Groups(Approver/User)', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
-    const userUsername = Cypress.env('User');
-    const user2Username = Cypress.env('User2');
+    const SRUsername = Cypress.expose('SRUser');
+    const userUsername = Cypress.expose('User');
+    const user2Username = Cypress.expose('User2');
     const runName = randomInt(1000000000) + 'testName';
 
     beforeEach(() => {

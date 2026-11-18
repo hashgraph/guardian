@@ -5,8 +5,15 @@ import * as Authorization from '../../../support/authorization';
 // Skipped until the shared remote Guardian environment and its credentials are available: see pending-issues/folders-blocked-by-environment.md
 context.skip('Indexer MGS. Comparing', { tags: ['mgs-comparing', 'api-all', 'all'] }, () => {
 
-    const MGSIndexerAPIToken = Cypress.env('MGSIndexerAPIToken');
-    const MGSAdminUsername = Cypress.env('MGSAdmin');
+    let MGSIndexerAPIToken;
+    let MGSAdminUsername;
+
+    before(() => {
+        cy.env(['MGSIndexerAPIToken', 'MGSAdmin']).then((secrets) => {
+            MGSIndexerAPIToken = secrets.MGSIndexerAPIToken;
+            MGSAdminUsername = secrets.MGSAdmin;
+        });
+    });
     const MGSStoreUsername = 'storeData'
     let prev; let tenantId; let schema;
 

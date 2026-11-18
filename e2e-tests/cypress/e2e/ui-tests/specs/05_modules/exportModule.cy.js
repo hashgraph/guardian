@@ -14,7 +14,7 @@ const login = (username) => {
 
 context('Workflow Module Export', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     const moduleName = 'UIModule' + randomInt(1000000000);
 
     before(() => {

@@ -8,7 +8,7 @@ import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Analytics', { tags: ['analytics', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     const moduleName = 'FirstAPIModule';
     const compareBlockTag = 'APIBlockModuleCompare';
 
