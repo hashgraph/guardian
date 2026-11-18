@@ -149,7 +149,7 @@ The pilot set (the `000_accounts_creating` prerequisite, the `smoke` API tag, th
 | Policy (`irec`) | 153.8 s | 156.0 s |
 | Sum of the spec durations | 1022.8 s | 1038.3 s |
 | Wall clock of the run (with Cypress start-up for each phase) | 1197 s | 1189 s |
-| UI logins through the form (`POST /accounts/login` through the frontend proxy) | 134 | 132 |
+| UI logins through the form (`POST /accounts/login` through the frontend proxy; the proxy log has a request and a response line for each, and the comparison script counted both: 134 and 132 lines) | 67 | 66 |
 
 Failures, all known:
 
