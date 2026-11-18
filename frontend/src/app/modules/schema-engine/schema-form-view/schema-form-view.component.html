@@ -6,7 +6,7 @@
         <div class="sf-ro-table">
             <table-viewer
                 [value]="entry.value"
-                [tableIndex]="tableIndex"
+                [tableIndex]="tableIndex ?? enclosingTableIndex(item)"
                 [declaredColumns]="item.tableColumns || []"
                 [formulaActions]="getTableFormulaActions(item)"
                 [title]="item.title || item.description || item.name"

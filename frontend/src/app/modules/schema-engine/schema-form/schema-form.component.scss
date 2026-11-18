@@ -533,6 +533,10 @@ form {
     }
 }
 
+table-field.table-field-locked {
+    opacity: 0.6;
+}
+
 *[readonly-field="true"] {
     pointer-events: none !important;
     opacity: 0.6 !important;

@@ -1,5 +1,5 @@
 import { ITableFormulaAction, ITableFormulaActions } from '../../common/table-dialog/table-formula-actions';
-import { FormulasTree, IFormulaConditionContext } from './formula-tree';
+import { FormulaItem, FormulasTree, IFormulaConditionContext } from './formula-tree';
 import { formulaTargetKey, IFormulaTarget } from './formula-target';
 
 export interface IFormulaFieldSource {
@@ -17,7 +17,8 @@ export class TableFormulas implements ITableFormulaActions {
     constructor(
         private readonly source: () => IFormulaFieldSource | null | undefined,
         columns: { key: string; name: string }[],
-        private readonly open: (source: IFormulaFieldSource & IFormulaTarget) => void
+        private readonly open: (source: IFormulaFieldSource & IFormulaTarget) => void,
+        private readonly lookup?: (target: IFormulaTarget) => readonly FormulaItem[]
     ) {
         this.columns = new Map(columns.map(column => [column.key, column.name]));
     }
@@ -33,7 +34,11 @@ export class TableFormulas implements ITableFormulaActions {
     private action(target: IFormulaTarget & { columnKey: string }): ITableFormulaAction | null {
         const source = this.source();
         const key = target.columnKey;
-        if ((target.rowIndex !== undefined && source?.origin === 'form') || !this.columns.has(key) || !source?.tree.get(source.schema, source.path, source.context, target).length) {
+        if (!source || !this.columns.has(key) || (target.rowIndex !== undefined && source.origin === 'form')) {
+            return null;
+        }
+        const items = this.lookup ? this.lookup(target) : source.tree.get(source.schema, source.path, source.context, target);
+        if (!items.length) {
             return null;
         }
         const cacheKey = formulaTargetKey('', target);

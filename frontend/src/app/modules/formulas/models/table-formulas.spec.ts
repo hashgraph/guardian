@@ -1,6 +1,7 @@
 import { FormulaItemType } from '@guardian/interfaces';
 import { FormulasTree } from './formula-tree';
 import { TableFormulas } from './table-formulas';
+import { FormFormulas } from './form-formulas';
 
 describe('TableFormulas', () => {
     it('opens both sources for the selected declared column with the current condition context', () => {
@@ -40,5 +41,37 @@ describe('TableFormulas grid cells', () => {
         expect(open).toHaveBeenCalledWith(expect.objectContaining({ columnKey: 'co2', rowIndex: 1, tableIndex: 0 }));
         source.origin = 'form';
         expect(actions.cell('co2', 1, 0)).toBeNull();
+    });
+});
+
+describe('TableFormulas request-form lookup', () => {
+    it('uses the shared form cache and respects condition invalidation and repeated-entry scopes', () => {
+        const tree = new FormulasTree();
+        tree.setFormulas([{ config: { formulas: [{ uuid: 'f', name: 'f', description: '', type: FormulaItemType.Formula,
+            link: { type: 'schema', entityId: '#s', item: 'records.table', columnKey: 'co2',
+                condition: { field: { name: 'mode', type: 'string' } as any, fieldPath: ['records', 'mode'], fieldValue: 'yes' } }
+        }] } }]);
+        tree.update();
+        const model = new FormFormulas(tree, '#s');
+        let entries = { records: 0 };
+        model.setData({ records: [{ mode: 'yes' }, { mode: 'no' }] });
+        const get = vi.spyOn(tree, 'get');
+        const open = vi.fn();
+        const actions = new TableFormulas(() => ({ tree, schema: '#s', path: 'records.table',
+            context: model.context(entries), origin: 'form' }), [{ key: 'co2', name: 'CO2' }], open,
+            target => model.get('#s/records.table', entries, target));
+        const action = actions.column('co2')!;
+        expect(action).not.toBeNull();
+        expect(actions.column('co2')).toBe(action);
+        action.open(new Event('click'));
+        expect(get).toHaveBeenCalledTimes(1);
+        expect(open).toHaveBeenLastCalledWith(expect.objectContaining({ context: expect.objectContaining({ entries: { records: 0 } }) }));
+        entries = { records: 1 };
+        expect(actions.column('co2')).toBeNull();
+        expect(actions.column('co2')).toBeNull();
+        expect(get).toHaveBeenCalledTimes(2);
+        model.setData({ records: [{ mode: 'yes' }, { mode: 'yes' }] });
+        expect(actions.column('co2')).toBe(action);
+        expect(get).toHaveBeenCalledTimes(3);
     });
 });

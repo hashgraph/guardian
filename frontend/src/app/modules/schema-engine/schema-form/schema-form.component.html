@@ -126,6 +126,7 @@
                     @if (item.customType === 'table') {
                       <table-field
                         class="table-field-container"
+                        [class.table-field-locked]="isEditMode && !item.isUpdatable"
                         [item]="item"
                         [formulaActions]="getTableFormulaActions(item)"
                         [required]="item.required"
@@ -474,6 +475,7 @@
                                 >
                                 <table-field
                                   class="table-field-container"
+                                  [class.table-field-locked]="isEditMode && !item.isUpdatable"
                                   [item]="$any(listItem)"
                                   [ownerField]="item.field"
                                   [formulaActions]="getTableFormulaActions(item)"

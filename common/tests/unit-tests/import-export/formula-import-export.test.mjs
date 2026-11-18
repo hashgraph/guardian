@@ -341,7 +341,7 @@ describe('FormulaImportExport table column outputs', () => {
         const items = generate([{ field: 'results', columns: { total: 'co2' } }]);
         const zip = await FormulaImportExport.generateZipFile({ formula: { config: { formulas: items } }, schemas: [] });
         const parsed = await FormulaImportExport.parseZipFile(await zip.generateAsync({ type: 'nodebuffer' }));
-        FormulaImportExport.replaceIds(parsed.formula.config, new Map([['#output', '#imported']]));
+        FormulaImportExport.replaceIds(parsed.formula.config, '#output', '#imported');
         const item = parsed.formula.config.formulas.find(item => item.name === 'co2');
         assert.equal(item.links[0].columnKey, 'total');
         assert.equal(item.links[0].entityId, '#imported');

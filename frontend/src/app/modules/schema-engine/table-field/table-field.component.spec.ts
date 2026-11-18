@@ -195,7 +195,7 @@ describe('TableFieldComponent', () => {
     });
 
     it('renders a clickable column Fx before a file is attached, including on a read-only form', () => {
-        build([TableFormulaButtonComponent]);
+        build([TableFormulaButtonComponent, TooltipModule]);
         const fixture = TestBed.createComponent(TableFieldComponent);
         const open = vi.fn();
         fixture.componentInstance.item = { name: 'table', field: { tableColumns: declared } } as any;

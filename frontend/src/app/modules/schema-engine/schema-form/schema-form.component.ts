@@ -253,7 +253,7 @@ export class SchemaFormComponent implements OnInit, DoCheck {
                 return field ? { ...field, context: this.formulas?.context(this.formulaEntries), origin: 'form' } : null;
             }, item.field?.tableColumns || item.tableColumns || [], data => {
                 this.dialog.open(FormulasViewDialog, { showHeader: false, width: '90%', styleClass: 'guardian-dialog', data });
-            });
+            }, target => this.formulas?.get(item.fullPath, this.formulaEntries, target) ?? EMPTY_FORMULAS);
             this.tableFormulaActions.set(item, actions);
         }
         return actions;

@@ -124,7 +124,7 @@ export class LinkDialog {
             ...field,
             fields: field.customType === 'table' && field.tableColumns?.length
                 ? [
-                    { path: field.path, description: 'Whole table' },
+                    { path: field.path, description: 'Link to the whole table' },
                     ...field.tableColumns.map(column => ({ path: field.path, columnKey: column.key, description: column.name }))
                 ]
                 : this.schemaLinkFields(field.fields || [])

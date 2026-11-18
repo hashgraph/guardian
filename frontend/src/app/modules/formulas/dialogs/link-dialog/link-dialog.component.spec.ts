@@ -17,7 +17,7 @@ describe('LinkDialog table columns', () => {
         const { dialog, ref } = build();
         const table = dialog.items!.findOne(field => field.path === 'table' && !field.columnKey)!;
         expect(table.expandable).toBe(true);
-        expect(table.children.map(child => child.data.description)).toEqual(['Whole table', 'CO2', 'Net']);
+        expect(table.children.map(child => child.data.description)).toEqual(['Link to the whole table', 'CO2', 'Net']);
         expect(dialog.items!.findOne(field => field.path === 'legacy')!.expandable).toBe(false);
         dialog.onSelectField(table.children[1]);
         dialog.onSubmit();

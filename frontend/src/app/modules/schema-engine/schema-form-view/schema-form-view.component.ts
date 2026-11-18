@@ -905,6 +905,18 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
         return entries;
     }
 
+    public enclosingTableIndex(item: IFieldControl): number | undefined {
+        let path: string = this.isFormulas(item)?.path || item.path || item.name;
+        for (let index = path.lastIndexOf('.'); index > 0; index = path.lastIndexOf('.')) {
+            path = path.slice(0, index);
+            const entry = this.formulaEntries?.[path];
+            if (entry !== undefined) {
+                return entry;
+            }
+        }
+        return undefined;
+    }
+
     public getTableFormulaActions(item: IFieldControl): TableFormulas {
         let actions = this.tableFormulaActions.get(item);
         if (!actions) {
