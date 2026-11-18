@@ -785,9 +785,9 @@ Three workflows run the suites, all on the same stack definition:
 
 | Workflow | File | Runs |
 |---|---|---|
-| **E2E Run** | `.github/workflows/e2e-run.yml` | Reusable (`workflow_call`), never triggered on its own. Starts a local Hiero network with Solo, the infrastructure and the Guardian services, optionally the frontend, runs Cypress, and publishes reports. |
-| **E2E Tests** | `.github/workflows/e2e-tests.yml` | The API and policy suites: `smoke` on every push, `api-all policy-all` nightly. |
-| **UI Tests** | `.github/workflows/ui-tests.yml` | The UI suite plus the disaster-recovery spec (`ui-all dr-all`), nightly and on demand. |
+| **Test Runner (Reusable)** | `.github/workflows/e2e-run.yml` | Reusable (`workflow_call`), never triggered on its own. Starts a local Hiero network with Solo, the infrastructure and the Guardian services, optionally the frontend, runs Cypress, and publishes reports. |
+| **E2E Tests** | `.github/workflows/e2e-tests.yml` | The API and policy suites: `smoke` on every push, `all` nightly, and on demand. |
+| **UI Tests** | `.github/workflows/ui-tests.yml` | The UI suite plus the disaster-recovery spec (`ui-all dr-all`) on every push, and on demand. |
 
 Both callers pass `suite`, `grep_tags`, and optionally `spec`, `with_frontend`, `solo_version` and `timeout_minutes` to `e2e-run.yml`. Anything about how the stack is started changes in `e2e-run.yml` only.
 
@@ -806,7 +806,7 @@ Both callers pass `suite`, `grep_tags`, and optionally `spec`, `with_frontend`, 
 - `spec` (UI Tests only, default: empty) - Narrows the run to a spec glob.
 - `solo_version` (default: empty, which uses `SOLO_VERSION` in `e2e-run.yml`) - Solo release passed to `hiero-ledger/hiero-solo-action`.
 
-Scheduled runs happen nightly at 03:00 UTC: E2E Tests runs `api-all policy-all`, UI Tests runs `ui-all dr-all`. Pushes to E2E Tests run `smoke`.
+Scheduled runs happen nightly at 03:00 UTC: E2E Tests runs `all`. Pushes to E2E Tests run `smoke`, to UI Tests run `ui-all dr-all`.
 
 ##### Workflow Features
 
