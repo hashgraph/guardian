@@ -1,6 +1,7 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EntityStatus, IPolicyLabelConfig, PolicyStatus, UserPermissions } from '@guardian/interfaces';
+import { isPolicyVersionShown } from '../../../common/models/policy-version';
+import { EntityStatus, IPolicyLabelConfig, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Observable, Subscription } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { SchemaService } from 'src/app/services/schema.service';
@@ -48,8 +49,7 @@ export class PolicyLabelConfigurationComponent implements OnInit {
     public readonly EntityStatus = EntityStatus;
 
     public get showPolicyVersion(): boolean {
-        const status = this.policy?.status;
-        return !!this.policy?.version && (status === PolicyStatus.PUBLISH || status === PolicyStatus.DISCONTINUED);
+        return isPolicyVersionShown(this.policy);
     }
 
     public get importsCount(): number {

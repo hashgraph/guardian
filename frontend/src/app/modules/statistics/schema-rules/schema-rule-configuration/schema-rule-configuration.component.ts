@@ -1,7 +1,8 @@
 import { restoreSchemaDefs } from '../../../common/models/schema-defs';
+import { isPolicyVersionShown } from '../../../common/models/policy-version';
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { DocumentFieldValidators, EntityStatus, FieldRuleResult, ISchemaRules, ISchemaRulesConfig, PolicyStatus, Schema, SchemaField, UserPermissions } from '@guardian/interfaces';
+import { DocumentFieldValidators, EntityStatus, FieldRuleResult, ISchemaRules, ISchemaRulesConfig, Schema, SchemaField, UserPermissions } from '@guardian/interfaces';
 import { debounceTime, forkJoin, Observable, of, Subject, Subscription, switchMap } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TreeGraphComponent } from '../../../common/tree-graph/tree-graph.component';
@@ -116,8 +117,7 @@ export class SchemaRuleConfigurationComponent implements OnInit {
     }
 
     public get showPolicyVersion(): boolean {
-        const status = this.policy?.status;
-        return !!this.policy?.version && (status === PolicyStatus.PUBLISH || status === PolicyStatus.DISCONTINUED);
+        return isPolicyVersionShown(this.policy);
     }
 
     public get roots(): SchemaNode[] {
