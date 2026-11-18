@@ -4,7 +4,7 @@ The `/e2e-tests` folder comprises the Guardian Cypress test automation framework
 
 ## Quickstart
 
-You need Node.js 24, Docker, `kind` and `kubectl`. From a fresh clone:
+You need Node.js 24, Docker, `kind`, `kubectl` and Chromium (or Chrome, with `CYPRESS_BROWSER=chrome`), the browser the suite runs on. From a fresh clone:
 
 ```bash
 cd e2e-tests
@@ -75,9 +75,11 @@ In the dev container, prefix the command with `NODE_OPTIONS=--use-system-ca` whe
 Unless specified otherwise, the tests are idempotent and can be run multiple times without side effects, and in any order. The only requirement is preparing the environment with a few accounts using the `preparing` tag, and ensuring the accounts have enough balance for the operations performed during the tests (especially the StandardRegistry):
 
 ```bash
-export CYPRESS_portApi=3000/api/v1
-TAG=preparing ./run-test-by-tag.sh
+TAG=preparing ./run-test-by-tag.sh                                # portApi from cypress.expose.json
+CYPRESS_portApi=3000/api/v1 CYPRESS_grepTags=preparing ./entrypoint.sh   # overriding it
 ```
+
+A `CYPRESS_<key>` variable only reaches `cy.env()`, so `npx cypress run` and `run-test-by-tag.sh` ignore an exported `CYPRESS_portApi`; `entrypoint.sh` turns the public ones into `--expose`.
 
 See [Running Tests with Tags](#running-tests-with-tags) below for more details.
 
@@ -100,6 +102,7 @@ The linter reports no finding, and CI keeps it that way. Rules worth knowing:
 - `cypress/unsafe-to-chain-command`: a command that changes the subject (`click`, `clear`, `type`, `blur`, `invoke`) must not be followed by another chained command; re-query instead (`cy.get(selector).clear(); cy.get(selector).type(value);`).
 - `cypress/no-assigning-return-values`: a Cypress command returns a chainable, not a value; use `.then()` or an alias (`.as()` and `cy.get('@name')`).
 - `cypress/no-unnecessary-waiting`: wait for the condition, never for a fixed time. Take budgets from `support/CustomHelpers/timeouts.js` (`TIMEOUTS.ui`, `TIMEOUTS.backend`, `TIMEOUTS.longOperation`), poll backend state with `pollUntil` (`support/checkingMethods.js`), wait for a policy block with `waitForBlockAvailable`, and for UI state use a retrying `cy.get(..., { timeout }).should(...)`. Polling loops pause `POLL_INTERVAL` between two reads; the only fixed pause left is the 1 s in `waitForTaskComplete`, silenced with a reason.
+- `no-restricted-properties`: `Cypress.env()` was removed in Cypress 16; read public values with `Cypress.expose()` and secrets with `cy.env()`.
 - `max-len` (360): build a long document as an object and `JSON.stringify` it (as `support/CustomHelpers/systemSchemas.js` does), or split the string.
 
 To check that a change adds no finding, compare with the findings of the last commit. Extract it with `git archive HEAD e2e-tests/cypress/e2e e2e-tests/cypress/support e2e-tests/eslint.config.mjs e2e-tests/package.json | tar -x -C <dir>`, symlink `node_modules` into it and run `npx eslint cypress` there. ESLint pads its columns to the longest message of each file, so squeeze repeated spaces before diffing the two outputs.
@@ -199,6 +202,7 @@ UI_GATEWAY_HOST=host.docker.internal UI_GATEWAY_PORT=3002 docker compose run --r
 ### Software Requirements
 
 - Node.js 24 and above
+- Chromium or Chrome
 - Docker and Docker Compose (for Docker-based test execution)
 - Follow steps from the [README](https://github.com/hashgraph/guardian/blob/main/README.md) to install and deploy the Guardian application.
 
@@ -285,6 +289,7 @@ UI_GATEWAY_ORIGIN=http://host.docker.internal:3002/ node scripts/serve-frontend.
 `ui`-tagged specs drive the real frontend in a persistent browser profile, and the backend state they create (users, tools, policies, tokens) survives the run. Suites 00–02 are idempotent — every spec passes on repeated runs against the same workspace; suite 03 uses the same per-run naming isolation; 04 and later are not converted yet. The patterns they share, worth knowing before extending a UI suite, live in `cypress/support/` and `ui-tests/pages/`:
 
 - **Clean boot** (`homePage.js` → `visit()`): the profile persists `accessToken` and `refreshToken` in `localStorage` (the app reads the username from the access token), so a failed run would auto-log the next one in and skip the login page the Sign Up / login flows depend on. `visit()` wipes those keys in `onBeforeLoad`, then waits for the app shell's loader to release before the first assertion.
+- **Logins through `cy.session`** (`homePage.js` → `login()`): a user signs in through the form once per run; every later `login()` of that user, in any spec (`cacheAcrossSpecs`), restores the cached `localStorage` after checking that the gateway still exchanges its refresh token, and the app boots signed in. `_loginThroughForm()` is the form login the session runs.
 - **Settled-phase waits** (`homePage.js` → `_settledUserProfilePhase()`): the user-profile view flashes through several render states as its first load settles, so a one-shot read mis-branches. The helper polls with a real timer until a terminal state (`wizard` or `ready`) has *held* for a short while, resolves with the settled phase, and rejects with the last phase seen on the deadline, so a stuck load fails loudly instead of hanging. The same idiom backs the Sign Up settle wait in `ensureAccount`, which always ends logged out on a known state.
 - **Task round trips** (`importFlow.js` → `waitForTaskRoundtrip()`): import, create, publish and dry-run actions run as backend tasks — the app navigates to `/task/:id` and redirects back on completion, and lists do not refresh on their own. Flows wait for the full round trip, then re-land with a fresh `cy.visit`.
 - **Import-preview tool checks** (`importFlow.js` → `settleToolRowChecks()` / `replaceInaccessibleTools()`): a preview row settles to valid/invalid when its per-row check request answers, but that request has no client-side timeout — one check the gateway never answers pins its row at `load`, which keeps the Import button disabled forever. The helper waits with a deadline, re-issues the checks for rows still loading (the row's change handler re-runs them), and after the last attempt fails the test with the stuck `messageIds`. Rows pointing at tool messages this gateway cannot resolve are re-pointed at the same-named workspace tool through the row's search picker — and the picker only lists *published* tools, which is why `toolsPage.js` → `ensureToolPublished()` imports the Methodology Library tools and publishes them on demand first (published ones are left alone, drafts are published, missing ones imported).
@@ -690,7 +695,7 @@ Two things change when it is set to anything else:
 
 ```bash
 # testnet, unchanged
-CYPRESS_grepTags="smoke" npx cypress run
+npx cypress run --expose "grepTags=smoke,grepFilterSpecs=true"
 
 # local Hiero network, native
 CYPRESS_hederaNet=localnode CYPRESS_grepTags="smoke" ./entrypoint.sh
@@ -786,8 +791,8 @@ Three workflows run the suites, all on the same stack definition:
 | Workflow | File | Runs |
 |---|---|---|
 | **Test Runner (Reusable)** | `.github/workflows/e2e-run.yml` | Reusable (`workflow_call`), never triggered on its own. Starts a local Hiero network with Solo, the infrastructure and the Guardian services, optionally the frontend, runs Cypress, and publishes reports. |
-| **E2E Tests** | `.github/workflows/e2e-tests.yml` | The API and policy suites: `smoke` on every push, `all` nightly, and on demand. |
-| **UI Tests** | `.github/workflows/ui-tests.yml` | The UI suite plus the disaster-recovery spec (`ui-all dr-all`) on every push, and on demand. |
+| **E2E Tests** | `.github/workflows/e2e-tests.yml` | The tests its tags select: `smoke` on every push, `all` (API, policy, UI and disaster recovery) nightly, and on demand. |
+| **UI Tests** | `.github/workflows/ui-tests.yml` | The UI suite plus the disaster-recovery spec (`ui-all dr-all`) on every push, and on demand. `all` in E2E Tests already includes them. |
 
 Both callers pass `suite`, `grep_tags`, and optionally `spec`, `with_frontend`, `solo_version` and `timeout_minutes` to `e2e-run.yml`. Anything about how the stack is started changes in `e2e-run.yml` only.
 
@@ -797,13 +802,13 @@ Both callers pass `suite`, `grep_tags`, and optionally `spec`, `with_frontend`, 
 2. Click **Run workflow**
 3. Enter parameters:
    - **Tags**: e.g., `all`, `smoke`, `preparing policies`, `api-all`, `policy-all` for E2E Tests; `ui-all dr-all` (the default) for UI Tests. `all` works in either and runs every test
-   - **Spec** (UI Tests only): a spec glob such as `cypress/e2e/ui-tests/specs/02_policies/*.cy.js`. The account seeding specs always run first, because every other spec needs the users and artefacts they create
+   - **Spec**: a spec glob such as `cypress/e2e/ui-tests/specs/02_policies/*.cy.js`. The account seeding specs always run first, because every other spec needs the users and artefacts they create
    - **Solo version**: optional, the Solo release that deploys the local Hiero network
 
 ##### Available Input Parameters
 
 - `tags` (E2E Tests default: `smoke`; UI Tests default: `ui-all dr-all`) - Test tags to run. For multiple tags, use spaces (e.g. `policies schemas`) or commas (e.g. `policies,schemas`). In CI, `preparing` is automatically prepended for feature-scoped runs (not for `all`, and not when `ui` is among the tags).
-- `spec` (UI Tests only, default: empty) - Narrows the run to a spec glob.
+- `spec` (default: empty) - Narrows the run to a spec glob; the account seeding specs still run first.
 - `solo_version` (default: empty, which uses `SOLO_VERSION` in `e2e-run.yml`) - Solo release passed to `hiero-ledger/hiero-solo-action`.
 
 Scheduled runs happen nightly at 03:00 UTC: E2E Tests runs `all`. Pushes to E2E Tests run `smoke`, to UI Tests run `ui-all dr-all`.
@@ -814,9 +819,9 @@ Scheduled runs happen nightly at 03:00 UTC: E2E Tests runs `all`. Pushes to E2E 
 - Builds Guardian services
 - Starts MongoDB, NATS, Valkey and Kubo as service containers, and the Guardian services natively
 - For UI runs, installs the frontend, builds it for production and serves the build with `scripts/serve-frontend.mjs` on `127.0.0.1:4200`, proxied to the gateway (`frontend/proxy.hostdocker.js`), the same way as the local recipe in "Preparing the app for UI tests"
-- Runs Cypress natively on the runner against that stack, with `STOP_POLICIES_BETWEEN_SUITES=1` so the policy processes of a spec folder are stopped before the next one starts
+- Installs Google Chrome and runs Cypress natively on the runner against that stack, on Chrome, with `STOP_POLICIES_BETWEEN_SUITES=1` so the policy processes of a spec folder are stopped before the next one starts
 - With the `ui_request_trace` input of a manual run (`UI Tests`, or `E2E Tests` with UI tags), the frontend server logs every request it proxies to the gateway (`UI_PROXY_LOG`), into `frontend-1.log` of the Guardian logs artifact. It is for diagnosing a UI failure, and the log is large
-- Publishes test results (one check per suite: `Test results · api`, `· policy`, `· ui`)
+- Publishes test results (one check per caller: `Test results · e2e`, `Test results · ui`)
 - Uploads HTML and JSON reports as artifacts, plus the Guardian (frontend included) and Solo logs when a run fails
 - Deletes the Solo kind cluster at the end of the run
 
