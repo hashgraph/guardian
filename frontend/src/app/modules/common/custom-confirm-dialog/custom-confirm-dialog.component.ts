@@ -21,8 +21,8 @@ export class CustomConfirmDialogComponent implements OnInit {
     public loading = true;
     public header: string;
     public text: string;
-    /** regular font weight for the text (it is medium by default) */
-    public regularText: boolean;
+    /** extra class for the text, for example `confirmation-text--regular` for the regular font weight (it is medium by default) */
+    public textClass?: string;
     public texts: string[];
     public details: string[];
     /** items listed with a colored type icon: `icon` is the name of a file in assets/images/icons, `type` sets the colors */
@@ -47,7 +47,7 @@ export class CustomConfirmDialogComponent implements OnInit {
     ) {
         this.header = this.config.data.header;
         this.text = this.config.data.text;
-        this.regularText = !!this.config.data.regularText;
+        this.textClass = this.config.data.textClass;
         this.texts = this.config.data.texts;
         this.details = this.config.data.details;
         this.typedItems = this.config.data.typedItems;
