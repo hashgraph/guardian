@@ -1,3 +1,4 @@
+import { formulaTargetKey, IFormulaTarget } from './formula-target';
 import { FormulaItem, FormulasTree, IFormulaConditionContext } from './formula-tree';
 
 const EMPTY: FormulaItem[] = [];
@@ -64,7 +65,7 @@ export class FormFormulas {
      */
     public get hasConditions(): boolean {
         return Object.values(this.fields).some((field) =>
-            this.tree.get(field.schema, field.path).some((item) => item.hasConditionOn(field.schema, field.path))
+            this.tree.hasConditions(field.schema, field.path)
         );
     }
 
@@ -77,15 +78,15 @@ export class FormFormulas {
         this.cache.clear();
     }
 
-    public get(fullPath: string, entries?: Record<string, number> | null): FormulaItem[] {
+    public get(fullPath: string, entries?: Record<string, number> | null, target?: IFormulaTarget): FormulaItem[] {
         const field = this.fields[fullPath];
         if (!field) {
             return EMPTY;
         }
-        const key = `${fullPath}|${this.entriesKey(entries)}`;
+        const key = `${formulaTargetKey(fullPath, target)}|${this.entriesKey(entries)}`;
         let result = this.cache.get(key);
         if (!result) {
-            const items = this.tree.get(field.schema, field.path, this.context(entries));
+            const items = this.tree.get(field.schema, field.path, this.context(entries), target);
             result = items.length ? items : EMPTY;
             this.cache.set(key, result);
         }

@@ -75,4 +75,17 @@ describe('TableDialogComponent', () => {
 
         expect(dataColumns(component).length).toBe(26);
     });
+    it('attaches a formula action to the ninth header while preserving read-only data and default sorting', () => {
+        const action = { label: 'Show formulas for Net', open: vi.fn() };
+        const columns = Array.from({ length: 10 }, (_, index) => ({ field: `column${index}`, headerName: `Column ${index}` }));
+        const component = build({ columnDefs: columns, rowData: [{ column8: '12' }], readOnly: true,
+            formulaActions: { column: (key: string) => key === 'column8' ? action : null } });
+        const def = dataColumns(component)[8];
+        expect(def.headerComponentParams.innerHeaderComponent).toBeDefined();
+        expect(def.headerComponentParams.innerHeaderComponentParams.formulaActions.column('column8')).toBe(action);
+        expect(def.editable).toBe(false);
+        expect(def.sortable).toBeUndefined();
+        expect(component.rowData[0].column8).toBe('12');
+    });
+
 });

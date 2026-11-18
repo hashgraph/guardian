@@ -1,3 +1,4 @@
+import { ITableFormulaActions } from '../../common/table-dialog/table-formula-actions';
 import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import { DialogService } from 'primeng/dynamicdialog';
 import { GuardianDialogService } from '../../../services/guardian-dialog.service';
@@ -34,6 +35,7 @@ export class TableFieldComponent implements OnInit, OnDestroy {
     @Input() policyId?: string = '';
     @Input() blockId: string = '';
     @Input() delimiter: string = ',';
+    @Input() formulaActions?: ITableFormulaActions | null;
 
     private hydrated = false;
     public previewError?: string;
@@ -82,6 +84,10 @@ export class TableFieldComponent implements OnInit, OnDestroy {
 
     public get hasDeclaredColumns(): boolean {
         return this.declaredColumns().length > 0;
+    }
+
+    public columnFormula(key: string) {
+        return this.declaredColumns().some(column => column.key === key) ? this.formulaActions?.column(key) ?? null : null;
     }
 
     public previewHeaderNameFor(columnKey: string, columnIndex: number): string {
@@ -491,13 +497,14 @@ export class TableFieldComponent implements OnInit, OnDestroy {
         }));
 
         const ref = this.dialog.open(TableDialogComponent, {
-            header: 'Edit table',
+            header: this.readonly ? 'View table' : 'Edit table',
             width: '90%',
-            data: { columnDefs, rowData: parsedRows, fixedColumns: this.hasDeclaredColumns },
+            data: { columnDefs, rowData: parsedRows, fixedColumns: this.hasDeclaredColumns, readOnly: this.readonly,
+                formulaActions: { column: (key: string) => this.columnFormula(key) } },
         })!;
 
         ref.onClose.subscribe(async (result: any) => {
-            if (!result) { return; }
+            if (!result || this.readonly) { return; }
 
             const nextColumnKeys: string[] =
                 (result.columnDefs || columnDefs)

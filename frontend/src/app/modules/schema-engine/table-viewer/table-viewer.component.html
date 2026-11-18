@@ -54,6 +54,7 @@
               class="table-viewer__cell table-viewer__cell--head"
               role="columnheader">
               {{ previewHeaderNameFor(columnKey, columnIndex) }}
+              <app-table-formula-button [action]="columnFormula(columnKey)"></app-table-formula-button>
             </div>
           }
         </div>

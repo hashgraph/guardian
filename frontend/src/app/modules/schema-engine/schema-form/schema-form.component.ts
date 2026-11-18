@@ -1,3 +1,5 @@
+import { TableFormulas } from '../../formulas/models/table-formulas';
+import { FormulasViewDialog } from '../../formulas/dialogs/formulas-view-dialog/formulas-view-dialog.component';
 import { ChangeDetectorRef, Component, DoCheck, EventEmitter, Input, OnInit, Output, QueryList, SimpleChanges, ViewChildren } from '@angular/core';
 import { UntypedFormArray } from '@angular/forms';
 import {
@@ -239,6 +241,22 @@ export class SchemaFormComponent implements OnInit, DoCheck {
             }
         }
         this.childForms?.forEach((form) => form.prepareOpenPreviewSections());
+    }
+
+    private tableFormulaActions = new WeakMap<object, TableFormulas>();
+
+    public getTableFormulaActions(item: IFieldControl<any>): TableFormulas {
+        let actions = this.tableFormulaActions.get(item);
+        if (!actions) {
+            actions = new TableFormulas(() => {
+                const field = this.formulas?.fields[item.fullPath];
+                return field ? { ...field, context: this.formulas?.context(this.formulaEntries), origin: 'form' } : null;
+            }, item.field?.tableColumns || item.tableColumns || [], data => {
+                this.dialog.open(FormulasViewDialog, { showHeader: false, width: '90%', styleClass: 'guardian-dialog', data });
+            });
+            this.tableFormulaActions.set(item, actions);
+        }
+        return actions;
     }
 
     public getFieldFormulas(item: IFieldControl<any>): FormulaItem[] {

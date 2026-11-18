@@ -1,3 +1,4 @@
+import { formulaTargetKey, IFormulaTarget } from './formula-target';
 import { IFormulaItem, IFormula, IFormulaLink, FormulaItemType, Schema, SchemaField, IVCDocument, ISchema, IVPDocument, IVC, IVP, ICredentialSubject, IFormulaFile, SchemaHelper, SchemaIfCondition, IFormulaSource } from "@guardian/interfaces";
 
 export interface IFormulaConditionContext {
@@ -165,12 +166,14 @@ export class SchemaItem {
     private _field: SchemaField | null;
     private _type: string | undefined;
     private _path: string | undefined;
+    private _columnName?: string;
 
-    constructor(schema: Schema | null, field: SchemaField | null) {
+    constructor(schema: Schema | null, field: SchemaField | null, target?: IFormulaTarget) {
         this._schema = schema;
         this._field = field;
         this._type = schema?.type;
-        this._path = field?.path;
+        this._path = target?.columnKey === undefined ? field?.path : undefined;
+        this._columnName = field?.tableColumns?.find(column => column.key === target?.columnKey)?.name;
     }
 
     public get name() {
@@ -182,7 +185,7 @@ export class SchemaItem {
     }
 
     public get field() {
-        return this._field?.description;
+        return this._columnName ? `${this._field?.description}: ${this._columnName}` : this._field?.description;
     }
 
     public get value() {
@@ -212,7 +215,7 @@ export class SchemaItem {
  * One link of a formula item, with the entity and the item it points to once resolved.
  */
 export class FormulaItemLink {
-    public readonly schemaLink: { schema: string, path: string } | null;
+    public readonly schemaLink: ({ schema: string, path: string } & IFormulaTarget) | null;
     public readonly formulaLink: { formula: string, variable: string } | null;
     public readonly condition: SchemaIfCondition | null;
 
@@ -224,7 +227,7 @@ export class FormulaItemLink {
         this.formulaLink = null;
         this.condition = link.type === 'schema' ? (link.condition ?? null) : null;
         if (link.type === 'schema') {
-            this.schemaLink = { schema: link.entityId, path: link.item };
+            this.schemaLink = { schema: link.entityId, path: link.item, columnKey: link.columnKey };
         }
         if (link.type === 'formula') {
             this.formulaLink = { formula: link.entityId, variable: link.item };
@@ -290,7 +293,7 @@ export class FormulaItemLink {
             if (schema) {
                 const field = schema.getField(this.schemaLink.path);
                 if (field) {
-                    this._linkItem = new SchemaItem(schema, field);
+                    this._linkItem = new SchemaItem(schema, field, this.schemaLink);
                 }
             } else {
                 this._linkItem = SchemaItem.empty();
@@ -390,18 +393,18 @@ export class FormulaItem {
     /**
      * True when a link of the item to the field has a display condition.
      */
-    public hasConditionOn(schema: string, path: string): boolean {
+    public hasConditionOn(schema: string, path: string, target?: IFormulaTarget): boolean {
         return this._itemLinks.some((e) =>
-            !!e.condition && e.schemaLink?.schema === schema && e.schemaLink?.path === path
+            !!e.condition && e.schemaLink?.schema === schema && formulaTargetKey(e.schemaLink?.path || '', e.schemaLink || undefined) === formulaTargetKey(path, target)
         );
     }
 
     /**
      * The item is shown on the field when any of its links to that field is visible.
      */
-    public isVisibleOn(schema: string, path: string, ctx?: IFormulaConditionContext): boolean {
+    public isVisibleOn(schema: string, path: string, ctx?: IFormulaConditionContext, target?: IFormulaTarget): boolean {
         return this._itemLinks.some((e) =>
-            e.schemaLink?.schema === schema && e.schemaLink?.path === path && e.isVisible(ctx)
+            e.schemaLink?.schema === schema && formulaTargetKey(e.schemaLink?.path || '', e.schemaLink || undefined) === formulaTargetKey(path, target) && e.isVisible(ctx)
         );
     }
 
@@ -538,12 +541,13 @@ export class FormulaTree {
                     continue;
                 }
                 const map = this._links.get(link.schema) || new Map<string, FormulaItem[]>();
-                const array = map.get(link.path) || [];
+                const key = formulaTargetKey(link.path, link);
+                const array = map.get(key) || [];
                 // an item with several links to one field is listed once
                 if (!array.includes(item)) {
                     array.push(item);
                 }
-                map.set(link.path, array);
+                map.set(key, array);
                 this._links.set(link.schema, map);
             }
             this._items.push(item);
@@ -584,12 +588,12 @@ export class FormulaTree {
         }
     }
 
-    public hasLink(schema: string, path: string): boolean {
-        return this._links.get(schema)?.has(path) || false;
+    public hasLink(schema: string, path: string, target?: IFormulaTarget): boolean {
+        return this._links.get(schema)?.has(formulaTargetKey(path, target)) || false;
     }
 
-    public getLink(schema: string, path: string): FormulaItem[] {
-        return this._links.get(schema)?.get(path) || [];
+    public getLink(schema: string, path: string, target?: IFormulaTarget): FormulaItem[] {
+        return this._links.get(schema)?.get(formulaTargetKey(path, target)) || [];
     }
 
     /**
@@ -671,16 +675,22 @@ export class FormulasTree {
         }
     }
 
-    public has(schema: string, path: string): boolean {
-        return this._links.get(schema)?.has(path) || false;
+    public has(schema: string, path: string, target?: IFormulaTarget): boolean {
+        return this._links.get(schema)?.has(formulaTargetKey(path, target)) || false;
     }
 
-    public get(schema: string, path: string, ctx?: IFormulaConditionContext): FormulaItem[] {
-        const items = this._links.get(schema)?.get(path) || [];
+    public get(schema: string, path: string, ctx?: IFormulaConditionContext, target?: IFormulaTarget): FormulaItem[] {
+        const items = this._links.get(schema)?.get(formulaTargetKey(path, target)) || [];
         if (!ctx) {
             return items;
         }
-        return items.filter((item) => item.isVisibleOn(schema, path, ctx));
+        return items.filter((item) => item.isVisibleOn(schema, path, ctx, target));
+    }
+
+    public hasConditions(schema: string, path: string): boolean {
+        return Array.from(this._links.get(schema)?.values() || []).some(items => items.some(item =>
+            item.schemaLinks.some(link => link.schemaLink?.schema === schema &&
+                link.schemaLink.path === path && !!link.condition)));
     }
 
     public getFiles(items: FormulaItem[]): FormulaFiles[] {
@@ -698,16 +708,21 @@ export class FormulasTree {
         if (schema) {
             const map = this._links.get(schema);
             if (map) {
-                for (const [path, items] of map.entries()) {
-                    if (ctx && !items.some((item) => item.isVisibleOn(schema, path, ctx))) {
-                        continue;
+                for (const items of map.values()) {
+                    for (const item of items) {
+                        for (const link of item.schemaLinks) {
+                            const target = link.schemaLink;
+                            if (!target || target.schema !== schema || (ctx && !link.isVisible(ctx))) {
+                                continue;
+                            }
+                            result[`${schema}/${target.path}`] = {
+                                tree: this,
+                                schema,
+                                path: target.path,
+                                context: ctx
+                            };
+                        }
                     }
-                    result[`${schema}/${path}`] = {
-                        tree: this,
-                        schema,
-                        path,
-                        context: ctx
-                    };
                 }
             }
         }

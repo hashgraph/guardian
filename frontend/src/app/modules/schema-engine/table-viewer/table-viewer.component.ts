@@ -1,3 +1,4 @@
+import { ITableFormulaActions } from '../../common/table-dialog/table-formula-actions';
 import { ChangeDetectorRef, Component, Input, NgZone, OnChanges, OnDestroy } from '@angular/core';
 import { DialogService } from 'primeng/dynamicdialog';
 import { GuardianDialogService } from '../../../services/guardian-dialog.service';
@@ -34,6 +35,8 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
     @Input()
     public title?: string;
     @Input() delimiter: string = ',';
+    @Input() formulaActions?: ITableFormulaActions | null;
+    @Input() declaredColumns: { key: string; name: string }[] = [];
 
     public isLoading: boolean = false;
     public isDownloading = false;
@@ -96,6 +99,10 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
 
         const list = (input as Record<string, unknown>)[property];
         return Array.isArray(list) ? list.map((entry) => String(entry)) : [];
+    }
+
+    public columnFormula(key: string) {
+        return (this.declaredColumns || []).some(column => column.key === key) ? this.formulaActions?.column(key) ?? null : null;
     }
 
     public previewHeaderNameFor(columnKey: string, columnIndex: number): string {
@@ -456,7 +463,8 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
             this.dialog.open(TableDialogComponent, {
                 header: 'View table',
                 width: '90%',
-                data: { columnDefs, rowData: parsed.rows, readOnly: true },
+                data: { columnDefs, rowData: parsed.rows, readOnly: true,
+                    formulaActions: { column: (key: string) => this.columnFormula(key) } },
             });
         } catch (error: any) {
             this.zone.run(() => {

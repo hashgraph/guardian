@@ -1,3 +1,5 @@
+import { ITableFormulaActions } from './table-formula-actions';
+import { TableFormulaHeaderComponent } from './table-formula-header.component';
 import {Component, Input, OnInit} from '@angular/core';
 import {
     BodyScrollEvent, CellEditingStoppedEvent, ColDef, GridApi, GridReadyEvent,
@@ -64,12 +66,23 @@ export class TableDialogComponent implements OnInit {
             rowData?: any[];
             readOnly?: boolean;
             fixedColumns?: boolean;
+            formulaActions?: ITableFormulaActions;
         };
 
         this.readOnly = !!data.readOnly;
 
         if (data.columnDefs?.length) {
-            this.dataColumnDefs = data.columnDefs.map(c => ({ ...c, editable: !this.readOnly }));
+            this.dataColumnDefs = data.columnDefs.map(c => ({
+                ...c,
+                editable: !this.readOnly,
+                ...(data.formulaActions?.column(String(c.field)) ? {
+                    headerComponentParams: {
+                        ...c.headerComponentParams,
+                        innerHeaderComponent: TableFormulaHeaderComponent,
+                        innerHeaderComponentParams: { formulaActions: data.formulaActions, columnKey: String(c.field) }
+                    }
+                } : {})
+            }));
         }
         if (data.rowData?.length) {
             this.rowData = data.rowData.map(r => ({ ...r }));

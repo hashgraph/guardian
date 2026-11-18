@@ -1,3 +1,4 @@
+import { TableFormulas } from '../../formulas/models/table-formulas';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Inject, Input, LOCALE_ID, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { formatDate } from '@angular/common';
 import { Subscription } from 'rxjs';
@@ -80,6 +81,7 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
     @Input() dryRun?: boolean = false;
     @Input() rules?: SchemaRuleValidateResult;
     @Input() formulas?: any;
+    @Input() formulaEntries?: Record<string, number> | null;
     @Input('discussion') discussionData?: any;
     @Input('discussion-action') discussionAction: boolean = false;
     @Input('discussion-view') discussionView: boolean = false;
@@ -882,6 +884,27 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
 
     public isRulesStatus(item: IFieldControl) {
         return this.rules?.[item.fullPath]?.status;
+    }
+
+    private tableFormulaActions = new WeakMap<object, TableFormulas>();
+
+    public tableEntryScope(item: IFieldControl, index: number): Record<string, number> {
+        const path = this.isFormulas(item)?.path || item.path || item.name;
+        return { ...this.formulaEntries, [path]: index };
+    }
+
+    public getTableFormulaActions(item: IFieldControl): TableFormulas {
+        let actions = this.tableFormulaActions.get(item);
+        if (!actions) {
+            actions = new TableFormulas(() => {
+                const source = this.isFormulas(item);
+                return source ? { ...source, context: { ...source.context, entries: this.formulaEntries } } : null;
+            }, item.tableColumns || [], data => {
+                this.dialogService.open(FormulasViewDialog, { showHeader: false, width: '90%', styleClass: 'guardian-dialog', data });
+            });
+            this.tableFormulaActions.set(item, actions);
+        }
+        return actions;
     }
 
     public isFormulas(item: IFieldControl) {

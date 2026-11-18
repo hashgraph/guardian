@@ -182,4 +182,15 @@ describe('TableFieldComponent', () => {
 
         expect(deleted).toEqual([]);
     });
+    it('exposes declared column actions before data exists and leaves undeclared columns without Fx', () => {
+        const component = build();
+        component.item = { name: 'table', field: { tableColumns: declared } } as any;
+        const action = { label: 'Show formulas for Year', open: vi.fn() };
+        component.formulaActions = { column: key => key === 'year' ? action : null };
+        expect(component.columnFormula('year')).toBe(action);
+        expect(component.columnFormula('co2_tonnes')).toBeNull();
+        component.item = { name: 'table', field: {} } as any;
+        expect(component.columnFormula('year')).toBeNull();
+    });
+
 });

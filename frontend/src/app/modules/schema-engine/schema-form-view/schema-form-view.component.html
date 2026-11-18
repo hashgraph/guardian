@@ -6,6 +6,8 @@
         <div class="sf-ro-table">
             <table-viewer
                 [value]="entry.value"
+                [declaredColumns]="item.tableColumns || []"
+                [formulaActions]="getTableFormulaActions(item)"
                 [title]="item.title || item.description || item.name"
             ></table-viewer>
         </div>
@@ -215,6 +217,7 @@
                             [values]="values && values[item.name]"
                             [rules]="rules"
                             [formulas]="formulas"
+                            [formulaEntries]="formulaEntries"
                             [link]="item.link"
                             [accordionLink]="item.accordionLink"
                             [preview]="preview"
@@ -356,6 +359,7 @@
                                                         [values]="row"
                                                         [rules]="rules"
                                                         [formulas]="formulas"
+                                                        [formulaEntries]="tableEntryScope(item, idx)"
                                                         [link]="item.link"
                                                         [accordionLink]="item.accordionLink"
                                                         [preview]="preview"

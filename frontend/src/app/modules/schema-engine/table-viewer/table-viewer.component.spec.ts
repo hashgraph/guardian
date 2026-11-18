@@ -79,4 +79,18 @@ describe('TableViewerComponent inline csv', () => {
         expect(viewer.inlineCsv).toBeNull();
         expect(viewer.hasData).toBe(false);
     });
+    it('passes column actions to the full read-only table, including columns outside the preview', async () => {
+        const viewer = create(inline);
+        viewer.declaredColumns = [{ key: 'year', name: 'Year' }, { key: 'area', name: 'Area' }];
+        const action = { label: 'Show formulas for Area', open: vi.fn() };
+        viewer.formulaActions = { column: (key: string) => key === 'area' ? action : null };
+        expect(viewer.columnFormula('area')).toBe(action);
+        await viewer.openDialog();
+        const config = vi.mocked(viewer.dialog.open).mock.lastCall![1];
+        expect(config.data.formulaActions.column('area')).toBe(action);
+        expect(config.data.readOnly).toBe(true);
+        viewer.declaredColumns = [];
+        expect(viewer.columnFormula('area')).toBeNull();
+    });
+
 });
