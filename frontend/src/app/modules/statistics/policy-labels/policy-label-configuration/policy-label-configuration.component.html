@@ -113,11 +113,11 @@
         </div>
       }
       <div class="view-segment">
-        <div class="view-segment-item" [class.active]="rulesConfig.view === 'schemas'" (click)="onRulesView('schemas')">
+        <div class="view-segment-item" [class.active]="rulesConfig.view === 'schemas'" (click)="rulesConfig.setView('schemas')">
           <svg-icon src="/assets/images/icons/16/tree.svg"></svg-icon>
           <span>Schemas</span>
         </div>
-        <div class="view-segment-item" [class.active]="rulesConfig.view === 'rules'" (click)="onRulesView('rules')">
+        <div class="view-segment-item" [class.active]="rulesConfig.view === 'rules'" (click)="rulesConfig.setView('rules')">
           <svg-icon src="/assets/images/icons/16/table.svg"></svg-icon>
           <span>Rules</span>
           <span class="seg-count">{{ rulesConfig.rulesCount }}</span>

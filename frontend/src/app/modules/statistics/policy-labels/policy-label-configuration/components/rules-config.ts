@@ -40,9 +40,15 @@ export class RulesConfig {
 
     public name: string;
     public type: string;
-    public typeLabel: string;
     public icon: string;
     public tag: string;
+
+    public get typeLabel(): string {
+        if (!this.type) {
+            return '';
+        }
+        return this.type === 'Statistic' ? 'Statistic rules' : 'Rules';
+    }
 
     private _selectTimeout1: any;
     private _selectTimeout2: any;
@@ -185,7 +191,6 @@ export class RulesConfig {
         this.readonly = clone.readonly || clone.freezed;
         this.name = clone.label;
         this.type = clone.blockType === 'statistic' ? 'Statistic' : 'Rule';
-        this.typeLabel = clone.blockType === 'statistic' ? 'Statistic rules' : 'Rules';
         this.icon = NavIcons[clone.blockType] || NavIcons['default'];
         this.tag = (clone.config as any)?.tag || '';
 

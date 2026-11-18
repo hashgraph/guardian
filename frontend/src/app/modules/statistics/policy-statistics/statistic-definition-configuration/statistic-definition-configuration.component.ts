@@ -178,7 +178,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
         this.subscription.add(
             this.overviewForm.valueChanges.subscribe(() => {
                 if (this.overviewForm.dirty) {
-                    this.dirty = true;
+                    this.markDirty();
                 }
             })
         );

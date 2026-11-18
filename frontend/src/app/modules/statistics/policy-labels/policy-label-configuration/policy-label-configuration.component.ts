@@ -223,12 +223,8 @@ export class PolicyLabelConfigurationComponent implements OnInit {
         }
         this.labelView = view;
         if (view === 'navigation') {
-            this.labelConfig.refreshNavigation();
+            this.labelConfig.updateSelected();
         }
-    }
-
-    public onRulesView(view: 'schemas' | 'rules') {
-        this.rulesConfig.setView(view);
     }
 
     public onPreview() {
@@ -287,7 +283,7 @@ export class PolicyLabelConfigurationComponent implements OnInit {
         this.rulesConfig.show = false;
         this.rulesConfig.onCancel();
         this.labelView = 'navigation';
-        this.labelConfig.refreshNavigation();
+        this.labelConfig.updateSelected();
     }
 
     public onSaveNavItem() {
