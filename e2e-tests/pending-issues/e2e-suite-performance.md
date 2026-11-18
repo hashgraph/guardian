@@ -133,3 +133,64 @@ Running in parallel also needs a policy stop limited to the shard's own processe
 
 1. Parallel runs (E7 gives 45 min instead of 93): check that the auth fix removes the 401s, make the specs above independent of global lists and counters, keep `006_settings` alone, and stop only the shard's own policy processes.
 2. Not measured yet: the queue pickup in a full run with E3 (about 12 min of waits in the baseline; the E8 task snapshots are in `.local/e8-tasks.jsonl`), tool import/publish cost in `policy-tests/cdm` (803 s), the double publish in `processFlowiRec3` (about 17 s each), and the 162 s of app bootstrap after `cy.visit` (logging in through the API instead of the UI form).
+
+## Cypress 16
+
+Migration of `e2e-tests` from Cypress 15.15.0 to 16.3.0 on Chromium (plan in `.local/plan-cypress-16.md`, branch `e2e-cypress-16`). Measured with the per-spec durations of the mochawesome JSONs, on the same stack, `STOP_POLICIES_BETWEEN_SUITES=1`, production frontend.
+
+### Baseline: Cypress 15.15.0 on Chromium 156 (2026-11-18)
+
+The pilot set (the `000_accounts_creating` prerequisite, the `smoke` API tag, the UI specs of `00_account_registration`, `05_modules`, `06_policy_schemas`, `09_tokens`, `02_policies/dryRunMint` and `02_policies/iREC5Group`, and `policy-tests/irec`), run twice in a row on a fresh stack (empty database, two consecutive runs on it). Chromium is used for the baseline too, so the comparison with 16.3 measures the Cypress version and not the browser.
+
+| Group | Run 1 | Run 2 |
+|---|---|---|
+| API (smoke) | 137.9 s | 138.8 s |
+| UI | 731.1 s | 743.5 s |
+| Policy (`irec`) | 153.8 s | 156.0 s |
+| Sum of the spec durations | 1022.8 s | 1038.3 s |
+| Wall clock of the run (with Cypress start-up for each phase) | 1197 s | 1189 s |
+| UI logins through the form (`POST /accounts/login` through the frontend proxy) | 134 | 132 |
+
+Failures, all known:
+
+- `06_policy_schemas/createPolicySchema` "import policy schema file" in both runs: a dialog mask covers the search field (see above, "Other test problems"). It failed on the first run on an empty database, so the note above ("passed on a fresh database") is not reliable.
+- `05_modules/createModule` "module ipfs import" in run 2 only (4 rows expected, 5 found): the flaky one listed above.
+- `008_artifacts/postArtifact` "Upload artifact" in run 2 only: `POST /artifacts/<id>` answered 422 on the second run over the same database. Not investigated.
+
+Per-spec durations of the UI and policy specs:
+
+| Spec | Run 1 (s) | Run 2 (s) | Failures run 1 / run 2 |
+|---|---|---|---|
+| policy-tests/irec/iRec.cy.js | 3.8 | 4.1 | 0 / 0 |
+| policy-tests/irec/iRec10.cy.js | 3.8 | 3.9 | 0 / 0 |
+| policy-tests/irec/iRec10NTC.cy.js | 3.8 | 3.9 | 0 / 0 |
+| policy-tests/irec/iRec10Source.cy.js | 3.7 | 4.0 | 0 / 0 |
+| policy-tests/irec/iRec2.cy.js | 74.4 | 75.0 | 0 / 0 |
+| policy-tests/irec/iRec3.cy.js | 3.7 | 3.8 | 0 / 0 |
+| policy-tests/irec/iRec4.cy.js | 3.6 | 3.8 | 0 / 0 |
+| policy-tests/irec/iRec4RM.cy.js | 3.7 | 3.8 | 0 / 0 |
+| policy-tests/irec/iRec5.cy.js | 3.7 | 3.8 | 0 / 0 |
+| policy-tests/irec/iRec6.cy.js | 3.8 | 3.8 | 0 / 0 |
+| policy-tests/irec/iRec7.cy.js | 3.7 | 3.7 | 0 / 0 |
+| policy-tests/irec/iRec8.1.cy.js | 3.7 | 3.8 | 0 / 0 |
+| policy-tests/irec/iRec8.2.cy.js | 3.8 | 3.8 | 0 / 0 |
+| policy-tests/irec/iRec9.cy.js | 3.8 | 3.8 | 0 / 0 |
+| policy-tests/irec/iRecNewRegistry.cy.js | 31.0 | 31.0 | 0 / 0 |
+| ui-tests/specs/00_account_registration/createAccount_Generate.cy.js | 26.8 | 26.9 | 0 / 0 |
+| ui-tests/specs/00_account_registration/createAccount_NonHappyFlows.cy.js | 27.6 | 27.9 | 0 / 0 |
+| ui-tests/specs/00_account_registration/createAccount_ProvideCredentials.cy.js | 27.8 | 27.7 | 0 / 0 |
+| ui-tests/specs/02_policies/dryRunMint.cy.js | 93.9 | 93.8 | 0 / 0 |
+| ui-tests/specs/02_policies/iREC5Group.cy.js | 177.0 | 168.1 | 0 / 0 |
+| ui-tests/specs/05_modules/createModule.cy.js | 20.3 | 34.2 | 0 / 1 |
+| ui-tests/specs/05_modules/deleteModule.cy.js | 9.0 | 9.0 | 0 / 0 |
+| ui-tests/specs/05_modules/exportModule.cy.js | 17.4 | 17.7 | 0 / 0 |
+| ui-tests/specs/05_modules/moduleTags.cy.js | 19.7 | 21.3 | 0 / 0 |
+| ui-tests/specs/05_modules/publishModule.cy.js | 23.5 | 22.3 | 0 / 0 |
+| ui-tests/specs/05_modules/verifyModulesUi.cy.js | 18.9 | 19.1 | 0 / 0 |
+| ui-tests/specs/06_policy_schemas/createPolicySchema.cy.js | 37.8 | 38.7 | 1 / 1 |
+| ui-tests/specs/06_policy_schemas/operationsPolicySchema.cy.js | 62.2 | 63.4 | 0 / 0 |
+| ui-tests/specs/06_policy_schemas/policySchemaTags.cy.js | 31.5 | 31.9 | 0 / 0 |
+| ui-tests/specs/09_tokens/createToken.cy.js | 47.6 | 47.9 | 0 / 0 |
+| ui-tests/specs/09_tokens/deleteToken.cy.js | 30.6 | 32.0 | 0 / 0 |
+| ui-tests/specs/09_tokens/editToken.cy.js | 35.5 | 37.0 | 0 / 0 |
+| ui-tests/specs/09_tokens/tagsTokens.cy.js | 23.9 | 24.5 | 0 / 0 |
