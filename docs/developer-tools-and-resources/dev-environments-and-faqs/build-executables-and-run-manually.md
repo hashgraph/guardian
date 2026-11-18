@@ -177,7 +177,7 @@ npm --workspace=notification-service run build
 
 Configure the service as previously described. Update **OPERATOR\_ID** and **OPERATOR\_KEY** values in `./guardian-service/configs/.env.worker` file as in the example above.
 
-To start the service (found on [http://localhost:3002](http://localhost:3002/)):
+To start the service:
 
 Yarn:
 
@@ -201,7 +201,7 @@ yarn workspace guardian-service run build
 
 Configure the service as previously described. Update **OPERATOR\_ID** and **OPERATOR\_KEY** values in `./guardian-service/configs/.env.worker` file as in the example above.
 
-To start the service (found on [http://localhost:3002](https://localhost:3002)):
+To start the service:
 
 ```
  yarn workspace guardian-service start
@@ -217,7 +217,7 @@ yarn workspace api-gateway run build
 
 Configure the service as previously described. Do not need special variables configuration.
 
-To start the service (found on [http://localhost:3002](https://localhost:3002)):
+To start the service (found on [http://localhost:3002](http://localhost:3002)):
 
 ```
 yarn workspace api-gateway start
@@ -285,4 +285,4 @@ To start the service (found on [http://localhost:4200](http://localhost:4200))
 npm start
 ```
 
-Browse to [http://localhost:3000](http://localhost:3000) and complete the setup. To get more info, please check: [Launching Guardian](launching-guardian.md)
+Browse to [http://localhost:4200](http://localhost:4200) and complete the setup. To get more info, please check: [Launching Guardian](launching-guardian.md)

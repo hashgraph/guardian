@@ -47,7 +47,7 @@ You can visit : http://localhost:3000/mrv-sender/
 
 On the docs site, checkout the [API Reference / guardian](https://app.gitbook.com/o/-LuC734MpqlgwA6zyhAO/s/qHzrfhYRf3qLjeOsZTmp/ "mention")
 
-When running via docker, navigate to [https://localhost/api/v1/api-docs](https://localhost/api/v1/api-docs).
+When running via docker, navigate to [http://localhost:3000/api-docs/v1/](http://localhost:3000/api-docs/v1/).
 
 **11. Why do I get the error INSUFFICENT\_TX\_FEE?**
 
