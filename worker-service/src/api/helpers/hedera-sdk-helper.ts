@@ -161,25 +161,18 @@ export class HederaSDKHelper {
     public static readonly REST_API_MAX_LIMIT: number = 100;
 
     /**
-     * Attempts allowed for the mirror node to ingest an account
+     * How long a read waits for the mirror node to ingest what was created moments ago, in milliseconds
      */
-    public static readonly MIRROR_NODE_INDEXING_ATTEMPTS: number = 10;
+    private static get mirrorNodeIndexingTimeout(): number {
+        return process.env.MIRROR_NODE_INDEXING_TIMEOUT ? parseInt(process.env.MIRROR_NODE_INDEXING_TIMEOUT, 10) : 10000;
+    }
 
     /**
-     * Delay between those attempts, in milliseconds
+     * Delay between the reads of something the mirror node has not ingested yet, in milliseconds
      */
-    public static readonly MIRROR_NODE_INDEXING_DELAY: number = 1000;
-
-    /**
-     * How long a read waits for the mirror node to ingest a topic message, in milliseconds:
-     * it usually takes well under a second, and a message missing after that does not exist
-     */
-    public static readonly MIRROR_NODE_MESSAGE_WAIT: number = 5000;
-
-    /**
-     * Delay between the reads of a topic message the mirror node has not ingested yet, in milliseconds
-     */
-    public static readonly MIRROR_NODE_MESSAGE_POLL_INTERVAL: number = 500;
+    private static get mirrorNodeIndexingPollInterval(): number {
+        return process.env.MIRROR_NODE_INDEXING_POLL_INTERVAL ? parseInt(process.env.MIRROR_NODE_INDEXING_POLL_INTERVAL, 10) : 500;
+    }
 
     /**
      * Callback
@@ -1106,56 +1099,61 @@ export class HederaSDKHelper {
     }
 
     /**
-     * Reads an entity from the mirror node, waiting for the mirror node to ingest it: an entity
-     * created moments ago answers 404 like a nonexistent one until then.
+     * Reads from the mirror node, waiting for it to ingest what was created moments ago: until then
+     * it answers as for something that does not exist, and `read` resolves to undefined.
      *
-     * @param {string} url - Mirror node REST url of the entity
-     * @param {string} notFoundError - Error thrown when it is still missing after every attempt
+     * @param read - Mirror node read, undefined while there is nothing yet
+     * @param notFoundError - Error thrown when there is still nothing once the wait is over
      *
-     * @returns {any} - response body
+     * @returns {T} - what `read` resolved to
      */
-    private static async getIndexedEntity(url: string, notFoundError: string): Promise<any> {
-        for (let attempt = 1; ; attempt++) {
-            try {
-                const res = await axios.get(url, { responseType: 'json' });
-                if (res && res.data) {
-                    return res.data;
-                }
-            } catch (error) {
-                // only a 404 is worth waiting on; auth/5xx/network will not resolve
-                if (error?.response?.status !== 404) {
-                    throw error;
-                }
+    private static async readIndexed<T>(read: () => Promise<T | undefined>, notFoundError: string): Promise<T> {
+        const deadline = Date.now() + HederaSDKHelper.mirrorNodeIndexingTimeout;
+        for (;;) {
+            const value = await read();
+            if (value !== undefined) {
+                return value;
             }
-            if (attempt >= HederaSDKHelper.MIRROR_NODE_INDEXING_ATTEMPTS) {
+            if (Date.now() >= deadline) {
                 throw new Error(notFoundError);
             }
-            await delay(HederaSDKHelper.MIRROR_NODE_INDEXING_DELAY);
+            await delay(HederaSDKHelper.mirrorNodeIndexingPollInterval);
         }
     }
 
     /**
-     * Reads a topic message, waiting a few seconds for the mirror node to ingest it: a message
-     * submitted moments ago answers 404 like a nonexistent one until then.
+     * Response body of a mirror node request, or undefined while the mirror node answers 404
      *
-     * @param read - Mirror node request of the message
+     * @param request - Mirror node request
      *
-     * @returns {T} - what the request returns
+     * @returns {any} - response body
      */
-    private static async readIndexedMessage<T>(read: () => Promise<T>): Promise<T> {
-        const deadline = Date.now() + HederaSDKHelper.MIRROR_NODE_MESSAGE_WAIT;
-        for (;;) {
-            try {
-                return await read();
-            } catch (error) {
-                // only a 404 is worth waiting on; auth/5xx/network will not resolve
-                const status = error?.response?.status ?? error?.status;
-                if (status !== 404 || Date.now() >= deadline) {
-                    throw error;
-                }
+    private static async bodyUnlessNotFound(request: () => Promise<AxiosResponse>): Promise<any> {
+        try {
+            const res = await request();
+            return res?.data || undefined;
+        } catch (error) {
+            // only a 404 is worth waiting on; auth/5xx/network will not resolve
+            if ((error?.response?.status ?? error?.status) === 404) {
+                return undefined;
             }
-            await delay(HederaSDKHelper.MIRROR_NODE_MESSAGE_POLL_INTERVAL);
+            throw error;
         }
+    }
+
+    /**
+     * Reads an entity from the mirror node, waiting for the mirror node to ingest it
+     *
+     * @param {string} url - Mirror node REST url of the entity
+     * @param {string} notFoundError - Error thrown when it is still missing once the wait is over
+     *
+     * @returns {any} - response body
+     */
+    private static async getIndexedEntity(url: string, notFoundError: string): Promise<any> {
+        return await HederaSDKHelper.readIndexed(
+            () => HederaSDKHelper.bodyUnlessNotFound(() => axios.get(url, { responseType: 'json' })),
+            notFoundError
+        );
     }
 
     /**
@@ -1196,23 +1194,27 @@ export class HederaSDKHelper {
             }
         }
 
-        const res = await HederaSDKHelper.readIndexedMessage(() => axiosGetWithRetry(
-            'Mirror node',
-            `${Environment.HEDERA_MESSAGE_API}/${timeStamp}`,
-            {
-                responseType: 'json',
-                timeout: process.env.REST_API_TIMEOUT ? parseInt(process.env.REST_API_TIMEOUT, 10) : 30000
-            }
-        ));
-        if (!res || !res.data || !res.data.message) {
+        // Dry-running or previewing reads a message moments after it was submitted.
+        const data = await HederaSDKHelper.readIndexed(
+            () => HederaSDKHelper.bodyUnlessNotFound(() => axiosGetWithRetry(
+                'Mirror node',
+                `${Environment.HEDERA_MESSAGE_API}/${timeStamp}`,
+                {
+                    responseType: 'json',
+                    timeout: process.env.REST_API_TIMEOUT ? parseInt(process.env.REST_API_TIMEOUT, 10) : 30000
+                }
+            )),
+            `Message '${timeStamp}' not found on the mirror node`
+        );
+        if (!data.message) {
             throw new Error(`Invalid message '${timeStamp}'`);
         }
-        const buffer = Buffer.from(res.data.message, 'base64').toString();
+        const buffer = Buffer.from(data.message, 'base64').toString();
         return {
-            id: res.data.consensus_timestamp,
-            payer_account_id: res.data.payer_account_id,
-            sequence_number: res.data.sequence_number,
-            topicId: res.data.topic_id,
+            id: data.consensus_timestamp,
+            payer_account_id: data.payer_account_id,
+            sequence_number: data.sequence_number,
+            topicId: data.topic_id,
             message: buffer
         }
     }
@@ -1369,16 +1371,16 @@ export class HederaSDKHelper {
         }
 
         const url = `${Environment.HEDERA_TOPIC_API}/${topicId}/messages/${index}`;
-        const res = await HederaSDKHelper.readIndexedMessage(() => axios.get(url, { responseType: 'json' }));
-        if (!res || !res.data || !res.data.message) {
+        const data = await HederaSDKHelper.getIndexedEntity(url, `Message ${index} of topic '${topicId}' not found on the mirror node`);
+        if (!data.message) {
             throw new Error(`Invalid message. TopicId: '${topicId}', index: '${index}'`);
         }
-        const buffer = Buffer.from(res.data.message, 'base64').toString();
+        const buffer = Buffer.from(data.message, 'base64').toString();
         return {
-            id: res.data.consensus_timestamp,
-            payer_account_id: res.data.payer_account_id,
-            sequence_number: res.data.sequence_number,
-            topicId: res.data.topic_id,
+            id: data.consensus_timestamp,
+            payer_account_id: data.payer_account_id,
+            sequence_number: data.sequence_number,
+            topicId: data.topic_id,
             message: buffer
         }
     }
@@ -2394,21 +2396,14 @@ export class HederaSDKHelper {
     public static async balance(
         accountId: string
     ): Promise<string> {
-        for (let attempt = 1; ; attempt++) {
+        return await HederaSDKHelper.readIndexed(async () => {
             const res = await axios.get(
                 `${Environment.HEDERA_BALANCES_API}?account.id=${accountId}`,
                 { responseType: 'json' }
             );
             const balances = res?.data?.balances;
-            if (balances && balances.length) {
-                const hbars = new Hbar(balances[0].balance, HbarUnit.Tinybar);
-                return hbars.toString();
-            }
-            if (attempt >= HederaSDKHelper.MIRROR_NODE_INDEXING_ATTEMPTS) {
-                throw new Error(`Invalid balance '${accountId}'`);
-            }
-            await delay(HederaSDKHelper.MIRROR_NODE_INDEXING_DELAY);
-        }
+            return balances?.length ? new Hbar(balances[0].balance, HbarUnit.Tinybar).toString() : undefined;
+        }, `Invalid balance '${accountId}'`);
     }
 
     /**

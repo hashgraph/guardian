@@ -4,7 +4,7 @@ import { HederaSDKHelper, NetworkOptions } from '../dist/api/helpers/hedera-sdk-
 import { Environment } from '@guardian/common/helpers/environment';
 
 // A message submitted moments ago answers 404 until the mirror node has ingested it (dry-running a
-// policy reads the topic message its import has just written). A read waits a few seconds for it.
+// policy reads the topic message its import has just written). A read waits for it, up to a limit.
 describe('Topic message the mirror node is still ingesting', () => {
     const TOPIC_ID = '0.0.901';
     const TIMESTAMP = '1795011385.514645643';
@@ -16,11 +16,16 @@ describe('Topic message the mirror node is still ingesting', () => {
         topic_id: TOPIC_ID,
         message: Buffer.from('{"type":"Topic"}').toString('base64'),
     };
+    const INDEXING_TIMEOUT = 300;
     let server;
     let answers;
     let requests;
+    let savedEnvironment;
 
     before(async () => {
+        savedEnvironment = { ...process.env };
+        process.env.MIRROR_NODE_INDEXING_TIMEOUT = String(INDEXING_TIMEOUT);
+        process.env.MIRROR_NODE_INDEXING_POLL_INTERVAL = '20';
         server = http.createServer((req, res) => {
             requests.push(req.url);
             const [status, body] = (typeof answers === 'function' ? answers() : answers.shift()) ?? [200, indexedMessage];
@@ -43,13 +48,13 @@ describe('Topic message the mirror node is still ingesting', () => {
 
     after(async () => {
         await new Promise((resolve) => server.close(resolve));
+        process.env = savedEnvironment;
         Environment.setMirrorNodes([]);
         Environment.setMirrorNodesBaseApi('');
         Environment.setNetwork('testnet');
     });
 
-    it('waits until the mirror node has indexed a message read by its timestamp', async function () {
-        this.timeout(10000);
+    it('waits until the mirror node has indexed a message read by its timestamp', async () => {
         answers = [NOT_FOUND, NOT_FOUND];
 
         const message = await HederaSDKHelper.getTopicMessage(TIMESTAMP, {});
@@ -58,8 +63,7 @@ describe('Topic message the mirror node is still ingesting', () => {
         assert.equal(requests.length, 3);
     });
 
-    it('waits until the mirror node has indexed a message read by its index in the topic', async function () {
-        this.timeout(10000);
+    it('waits until the mirror node has indexed a message read by its index in the topic', async () => {
         answers = [NOT_FOUND];
 
         const message = await HederaSDKHelper.getTopicMessageByIndex(TOPIC_ID, 1, {});
@@ -68,15 +72,14 @@ describe('Topic message the mirror node is still ingesting', () => {
         assert.equal(requests.length, 2);
     });
 
-    it('gives up after a few seconds when the message never shows up', async function () {
-        this.timeout(15000);
+    it('gives up once the indexing timeout is over when the message never shows up', async () => {
         answers = () => NOT_FOUND;
         const started = Date.now();
 
-        await assert.rejects(() => HederaSDKHelper.getTopicMessageByIndex(TOPIC_ID, 1, {}), /404/);
+        await assert.rejects(() => HederaSDKHelper.getTopicMessageByIndex(TOPIC_ID, 1, {}), /not found on the mirror node/);
 
         const waited = Date.now() - started;
-        assert.ok(waited >= 4000 && waited <= 6500, `waited ${waited} ms`);
+        assert.ok(waited >= INDEXING_TIMEOUT && waited < INDEXING_TIMEOUT + 500, `waited ${waited} ms`);
     });
 
     it('does not wait on an error that indexing cannot resolve', async () => {
