@@ -23,7 +23,7 @@ spec:
         - args:
             - --setParameter
             - allowDiskUseByDefault=true
-          image: mongo:6.0.3
+          image: mongo:9.0.8
           name: mongo
           ports:
             - containerPort: 27017

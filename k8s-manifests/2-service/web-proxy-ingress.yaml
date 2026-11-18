@@ -62,13 +62,6 @@ spec:
   rules:
     - http:
         paths:
-          - path: /mongo-admin/
-            pathType: Prefix
-            backend:
-              service:
-                name: mongo-express
-                port:
-                  number: 8081
           - path: /
             pathType: Prefix
             backend:

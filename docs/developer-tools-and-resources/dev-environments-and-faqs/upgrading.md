@@ -457,6 +457,80 @@ Three common deployment patterns are available for zero-downtime deployments:
 
 • **Blue-green deploys** — You create a parallel group of services (the green set), running the new version of the code; you progressively shift requests away from the old version (the blue set). This can work better than canaries in scenarios where service consumers are highly sensitive to error rates and can’t accept the risk of an unhealthy canary.
 
+## Upgrading MongoDB from 6 to 9
+
+Guardian releases that ship MongoDB 9 start with `mongo:9.0` on a fresh installation. Existing installations keep running MongoDB 6 until the database is upgraded. MongoDB cannot skip major versions, so the data has to pass through 7.0 and 8.0, raising the `featureCompatibilityVersion` (FCV) after each step. Use the Guardian release that ships MongoDB 9 for this upgrade; do not point an older release at a MongoDB 9 server.
+
+The `mongo-express` web panel (`/mongo-admin`) is no longer part of the Docker Compose and Kubernetes deployments. Use `mongosh` or MongoDB Compass to inspect the database.
+
+### Docker Compose
+
+1. Get the release that ships MongoDB 9 (for example `git pull` or checkout of the release tag). Keep your `.env` and `configs` files.
+2. From the folder of the installation, run the upgrade script with the compose file you start Guardian with:
+
+```bash
+./scripts/upgrade-mongodb.sh -f docker-compose.yml
+```
+
+> **Warning:** do not run `docker compose up` or `docker compose down` with the new release between pulling it and running the script. `up` starts MongoDB 9 on an empty volume, and `down` removes the container the script uses to find your data. The script can recover from both (see below), but it needs the `-V` option then.
+
+Options: `-p <project>` (compose project name, detected from the existing mongo container by default), `-b <dir>` (backup folder, `./mongo-backups` by default), `-V <volume>` (the Docker volume with the old data, see below), `-i <image>` (image used to read the old data when there is no old container, `mongo:6.0.28` by default) and `-y` (do not ask for confirmation).
+
+The script:
+
+1. checks that the new compose file uses MongoDB 9 and that the current server is on a supported version with a consistent FCV;
+2. stops the Guardian stack, so nothing can write to the database any more;
+3. starts the old MongoDB alone and takes a backup in `<backup dir>/<timestamp>/`: a `mongodump` archive (`mongo-dump.archive.gz`), the document count of every collection (`counts.txt`) and, after stopping it, a cold copy of the data volume (`mongo-volume.tar.gz`);
+4. copies the data from the old anonymous volume into the named volume `<project>_mongo_data` used by the new compose files;
+5. upgrades the data 6.0 → 7.0 → 8.0 → 9.0 and raises the FCV after each step;
+6. starts MongoDB 9 alone, compares the document counts with the backup, and then starts the rest of the stack.
+
+The old data volume and the backup are never deleted. If the script stops half way, fix the reported problem and run the same command again: it resumes from the last finished step. Plan for a maintenance window: Guardian is stopped during the upgrade, and the time depends on the database size. Make sure the backup folder has free space of at least the size of the database.
+
+**If the old container is gone** (`docker compose down` was run) the script stops with "no old mongo container found" and lists the volumes that look like MongoDB data. Pass the right one with `-V`:
+
+```bash
+./scripts/upgrade-mongodb.sh -f docker-compose.yml -V <old volume name>
+```
+
+**If MongoDB 9 was already started on an empty database** (`docker compose up -d` with the new release) the script stops with "its database is empty" instead of reporting that there is nothing to do. Run it with `-V <old volume name>`: it snapshots the empty `mongo_data` volume into the backup, replaces it with the old data and upgrades it. It refuses to do this if the MongoDB 9 database holds any documents.
+
+To roll back, stop the stack and check out the previous release. Its compose file has no volume for mongo, so mount the volume with the data using an override file, `docker-compose.rollback.yml`:
+
+```yaml
+services:
+  mongo:
+    volumes:
+      - mongo_rollback:/data/db
+volumes:
+  mongo_rollback:
+    external: true
+    name: <volume name>
+```
+
+* If the old data volume still exists (the script never removes it), use its name. It holds the data as it was before the upgrade, so everything written after the upgrade is lost.
+* Otherwise restore the cold backup into a new volume with a name that is not used yet, and use that name:
+
+```bash
+docker volume create guardian_mongo_restored
+docker run --rm --entrypoint tar -v guardian_mongo_restored:/dst -v "$PWD/mongo-backups/<timestamp>":/backup mongo:6.0.28 xzf /backup/mongo-volume.tar.gz -C /dst
+```
+
+Then start the previous release with `docker compose -f docker-compose.yml -f docker-compose.rollback.yml up -d`. The `mongo-dump.archive.gz` archive can be restored with `mongorestore --archive --gzip` into any MongoDB server.
+
+### Kubernetes
+
+The `mongo` StatefulSet in `k8s-manifests/3-controller/mongo-statefulset.yaml` uses `mongo:9.0.8`. For an existing cluster, upgrade the database by hand before applying the new manifests:
+
+1. Back up: `kubectl exec <mongo pod> -- mongodump --archive --gzip > mongo-dump.archive.gz` and take a snapshot of the volume of the mongo pod with the tools of your cluster.
+2. Scale the Guardian services down so nothing writes to the database.
+3. Check the FCV: `db.adminCommand({getParameter: 1, featureCompatibilityVersion: 1})` must be `6.0`.
+4. Change the image of the StatefulSet to `mongo:7.0.48`, wait for the pod to become ready and run `db.adminCommand({setFeatureCompatibilityVersion: "7.0", confirm: true})`.
+5. Repeat with `mongo:8.0.38` and FCV `8.0`, then with `mongo:9.0.8` and FCV `9.0`.
+6. Scale the Guardian services up and apply the rest of the new manifests (the `mongo-express` deployment, service and ingress rule are removed; delete them from the cluster).
+
+If you use a managed MongoDB service or a replica set, follow the official MongoDB upgrade procedure for it instead, and make sure every member is on 9.0 before the FCV is raised.
+
 ## Implementation : Upgrade Guide for Hedera Application
 
 The methodology that we follow to upgrade the system is the Blue-Green deployment. This allows us to upgrade while minimizing the downtime and the risks involved in the upgrade itself. We create a new instance of Guardian running the new version, the green instance, and in this instance we run all the tests, after which, we switch all the traffic on this. The current environment, the blues one, runs at the same time and continues the normal operative.
@@ -655,7 +729,7 @@ This command creates a .tar archive of the mongo db data directory (/data/db) an
 ```
 services:
  mongo:
-   image: mongo:6.0.3
+   image: mongo:9.0.8
    command: "--setParameter allowDiskUseByDefault=true"
    restart: always
    volumes:
