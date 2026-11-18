@@ -7,7 +7,7 @@ import { PinoLogger } from '@guardian/common/helpers/pino-logger';
 import { Policy } from '@guardian/common/entity/policy';
 import { Singleton } from '@guardian/common/decorators/singleton';
 import { Users } from '@guardian/common/helpers/users';
-import { GenerateUUIDv4, IUser, PolicyAvailability, PolicyEvents, PolicyStatus } from '@guardian/interfaces';
+import { BlockErrorActions, GenerateUUIDv4, IUser, PolicyAvailability, PolicyEvents, PolicyStatus } from '@guardian/interfaces';
 import { headers } from 'nats';
 import { Inject } from '../helpers/decorators/inject.js';
 import { IdleStop } from '../helpers/idle-stop.js';
@@ -379,17 +379,47 @@ export class BlockTreeGenerator extends NatsService {
 
         this.getPolicyMessages(PolicyEvents.MRV_DATA, policyId, async (msg: any) => {
             const { data } = msg;
+            const strict = data.strict === true && !data.syncEvents;
 
             const actionstep = new RecordActionStep((recordActionId, actionTimestemp) => RecordUtils.RecordExternalData(policyId, data.data, recordActionId, actionTimestemp), 0, data.syncEvents, data.history);
+            let received = false;
+            let errorCount = 0;
+            let blockError: string;
+            let retrying = false;
 
             for (const block of PolicyComponentsUtils.ExternalDataBlocks.values()) {
                 if (PolicyComponentsUtils.isAvailableReceiveData(block, policyId)) {
-                    await PolicyComponentsUtils.blockReceiveData(block, data.data, actionstep);
+                    received = true;
+                    if (strict && block.blockType === 'externalDataBlock' && 'receiveData' in block && typeof block.receiveData === 'function') {
+                        await block.receiveData(data.data, actionstep, { recorded: false });
+                    } else {
+                        await PolicyComponentsUtils.blockReceiveData(block, data.data, actionstep);
+                    }
+                    if (strict) {
+                        const errors = actionstep.getErrors();
+                        if (errors.length > errorCount) {
+                            if (block.options.onErrorAction === BlockErrorActions.RETRY) {
+                                retrying = true;
+                            } else {
+                                blockError ??= errors[errorCount].message;
+                            }
+                            errorCount = errors.length;
+                        }
+                    }
                 }
             }
 
             actionstep.finish();
 
+            if (strict) {
+                if (!received) {
+                    return new MessageError('Block not found', 404);
+                }
+                if (blockError !== undefined) {
+                    return new MessageError(blockError, 422);
+                }
+                return new MessageResponse(retrying ? { retrying: true } : {});
+            }
             if (data.syncEvents) {
                 const results = actionstep.getResults();
 
@@ -405,17 +435,32 @@ export class BlockTreeGenerator extends NatsService {
 
         this.getPolicyMessages(PolicyEvents.MRV_DATA_CUSTOM, policyId, async (msg: any) => {
             const { data } = msg;
+            const strict = data.strict === true && !data.syncEvents;
 
             const block = PolicyComponentsUtils.GetBlockByTag(policyId, data.blockTag);
 
             const actionstep = new RecordActionStep((recordActionId, actionTimestemp) => RecordUtils.RecordExternalData(policyId, data.data, recordActionId, actionTimestemp), 0, data.syncEvents, data.history);
 
             if (PolicyComponentsUtils.isAvailableReceiveData(block, policyId)) {
-                await PolicyComponentsUtils.blockReceiveData(block, data.data, actionstep);
+                if (strict && block.blockType === 'externalDataBlock' && 'receiveData' in block && typeof block.receiveData === 'function') {
+                    await block.receiveData(data.data, actionstep, { recorded: false });
+                } else {
+                    await PolicyComponentsUtils.blockReceiveData(block, data.data, actionstep);
+                }
+            } else if (strict) {
+                return new MessageError('Block not found', 404);
             }
 
             actionstep.finish();
 
+            if (strict) {
+                const error = actionstep.getErrors()[0];
+                if (error) {
+                    return block.options.onErrorAction === BlockErrorActions.RETRY
+                        ? new MessageResponse({ retrying: true })
+                        : new MessageError(error.message, 422);
+                }
+            }
             if (data.syncEvents) {
                 const results = actionstep.getResults();
 

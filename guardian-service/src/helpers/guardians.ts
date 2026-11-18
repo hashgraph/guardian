@@ -109,7 +109,7 @@ export class GuardiansService extends NatsService {
      * @param data
      * @param awaitInterval
      */
-    public async sendPolicyMessage<T>(subject: string, policyId: string, data: unknown, awaitInterval: number = 100000): Promise<T> {
+    public async sendPolicyMessage<T>(subject: string, policyId: string, data: unknown, awaitInterval: number = 100000, timeoutAsError: boolean = false): Promise<T> {
         const full = [policyId, subject].join('-');
         let startTried = false;
         for (; ;) {
@@ -123,6 +123,9 @@ export class GuardiansService extends NatsService {
                     }
                 }
                 // No host / slow -> null (soft contract); responder error propagates.
+                if (error?.code === 'REQUEST_TIMEOUT' && timeoutAsError) {
+                    throw error;
+                }
                 if (error?.code === 'NO_RESPONDERS' || error?.code === 'REQUEST_TIMEOUT') {
                     return null;
                 }

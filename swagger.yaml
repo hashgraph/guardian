@@ -6354,6 +6354,14 @@ paths:
           schema:
             example: external_data_block
             type: string
+        - name: strict
+          required: false
+          in: query
+          description: >-
+            Opt in to reporting the entry block first-attempt outcome. Defaults
+            to false; legacy replies and processing stay unchanged.
+          schema:
+            type: boolean
       requestBody:
         required: true
         description: Object that contains a VC Document.
@@ -6389,12 +6397,32 @@ paths:
                       jws: eyJhbGciOiJFZERTQSJ9..signature
       responses:
         '200':
-          description: Successful operation.
+          description: >-
+            Without strict=true, returns the legacy acknowledgement without
+            confirming delivery. With strict=true, the entry block completed its
+            first attempt without an error; later policy blocks are not
+            confirmed.
           content:
             application/json:
               schema:
                 type: boolean
               example: true
+        '202':
+          description: >-
+            Strict mode only: the entry block failed and retries automatically.
+            The final outcome is unknown. Do not resend; resending may create a
+            duplicate.
+          content:
+            application/json:
+              schema:
+                type: boolean
+              example: true
+        '404':
+          description: 'Strict mode only: Policy not found, or Block not found.'
+        '422':
+          description: >-
+            Strict mode only: the entry block failed without retrying. Returns
+            the block error text.
         '500':
           description: Internal server error.
           content:
@@ -6404,6 +6432,14 @@ paths:
               example:
                 statusCode: 500
                 message: Error message
+        '503':
+          description: >-
+            Strict mode only: Policy is not running, or its on-demand start
+            failed. The document was not processed.
+        '504':
+          description: >-
+            Strict mode only: the policy did not answer within 100 seconds.
+            Returns the timeout error text; the processing outcome is unknown.
       summary: Sends data from an external source.
       tags:
         - external
@@ -6411,7 +6447,15 @@ paths:
     post:
       description: Sends data from an external source.
       operationId: ExternalApi_receiveExternalData
-      parameters: []
+      parameters:
+        - name: strict
+          required: false
+          in: query
+          description: >-
+            Opt in to reporting the entry block first-attempt outcome. Defaults
+            to false; legacy replies and processing stay unchanged.
+          schema:
+            type: boolean
       requestBody:
         required: true
         description: Object that contains a VC Document.
@@ -6447,12 +6491,32 @@ paths:
                       jws: eyJhbGciOiJFZERTQSJ9..signature
       responses:
         '200':
-          description: Successful operation.
+          description: >-
+            Without strict=true, returns the legacy acknowledgement without
+            confirming delivery. With strict=true, the entry block completed its
+            first attempt without an error; later policy blocks are not
+            confirmed.
           content:
             application/json:
               schema:
                 type: boolean
               example: true
+        '202':
+          description: >-
+            Strict mode only: the entry block failed and retries automatically.
+            The final outcome is unknown. Do not resend; resending may create a
+            duplicate.
+          content:
+            application/json:
+              schema:
+                type: boolean
+              example: true
+        '404':
+          description: 'Strict mode only: Policy not found, or Block not found.'
+        '422':
+          description: >-
+            Strict mode only: the entry block failed without retrying. Returns
+            the block error text.
         '500':
           description: Internal server error.
           content:
@@ -6462,6 +6526,14 @@ paths:
               example:
                 statusCode: 500
                 message: Error message
+        '503':
+          description: >-
+            Strict mode only: Policy is not running, or its on-demand start
+            failed. The document was not processed.
+        '504':
+          description: >-
+            Strict mode only: the policy did not answer within 100 seconds.
+            Returns the timeout error text; the processing outcome is unknown.
       summary: Sends data from an external source.
       tags:
         - external

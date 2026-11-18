@@ -1004,34 +1004,56 @@ export class PolicyEngineService {
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA,
             async (msg: any) => {
+                const strict = msg.strict === true && !msg.syncEvents;
                 try {
                     const { data } = msg;
                     const policy = await DatabaseServer.getPolicyByTag(data?.policyTag);
-                    if (policy) {
-                        const policyId = policy.id.toString();
-                        new GuardiansService().sendPolicyMessage(PolicyEvents.MRV_DATA, policyId, {
-                            policyId,
-                            data: msg
-                        });
+                    if (!policy) {
+                        return strict
+                            ? new MessageError('Policy not found', 404)
+                            : new MessageResponse(true);
                     }
-                    return new MessageResponse(true);
+                    const policyId = policy.id.toString();
+                    const pending = new GuardiansService().sendPolicyMessage<{ retrying?: boolean }>(
+                        PolicyEvents.MRV_DATA, policyId, { policyId, data: msg }, 100000, strict
+                    );
+                    if (!strict) {
+                        pending.catch((error) => logger.error(error, ['GUARDIAN_SERVICE'], null));
+                        return new MessageResponse(true);
+                    }
+                    const result = await pending;
+                    if (result === null) {
+                        return new MessageError('Policy is not running', 503);
+                    }
+                    return new MessageResponse(result?.retrying === true ? { retrying: true } : true);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], null);
-                    return new MessageError(error, error.code);
+                    return new MessageError(error, strict && error.code === 'REQUEST_TIMEOUT' ? 504 : error.code);
                 }
             });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.RECEIVE_EXTERNAL_DATA_CUSTOM,
             async (msg: any) => {
+                const strict = msg.strict === true && !msg.syncEvents;
                 try {
-                    new GuardiansService().sendPolicyMessage(PolicyEvents.MRV_DATA_CUSTOM, msg.policyId, {
-                        policyId: msg.policyId,
-                        data: msg
-                    });
-                    return new MessageResponse(true);
+                    if (strict && !await DatabaseServer.getPolicyById(msg.policyId)) {
+                        return new MessageError('Policy not found', 404);
+                    }
+                    const pending = new GuardiansService().sendPolicyMessage<{ retrying?: boolean }>(
+                        PolicyEvents.MRV_DATA_CUSTOM, msg.policyId, { policyId: msg.policyId, data: msg }, 100000, strict
+                    );
+                    if (!strict) {
+                        pending.catch((error) => logger.error(error, ['GUARDIAN_SERVICE'], null));
+                        return new MessageResponse(true);
+                    }
+                    const result = await pending;
+                    if (result === null) {
+                        return new MessageError('Policy is not running', 503);
+                    }
+                    return new MessageResponse(result?.retrying === true ? { retrying: true } : true);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], null);
-                    return new MessageError(error, error.code);
+                    return new MessageError(error, strict && error.code === 'REQUEST_TIMEOUT' ? 504 : error.code);
                 }
             });
 

@@ -177,7 +177,20 @@ export class ExternalDataBlock {
         ]
     })
     @CatchErrors()
-    async receiveData(data: IPolicyDocument, actionStatus?: RecordActionStep) {
+    async receiveData(data: IPolicyDocument, actionStatus?: RecordActionStep, errorReport?: { recorded: boolean }) {
+        if (!errorReport || errorReport.recorded) {
+            return this.processData(data, actionStatus);
+        }
+        try {
+            return await this.processData(data, actionStatus);
+        } catch (error) {
+            errorReport.recorded = true;
+            actionStatus?.addError(error, PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this).blockType);
+            throw error;
+        }
+    }
+
+    private async processData(data: IPolicyDocument, actionStatus?: RecordActionStep) {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         let verify: boolean;
         try {

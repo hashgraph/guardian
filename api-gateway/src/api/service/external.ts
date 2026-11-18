@@ -1,8 +1,9 @@
 import { InternalException, PolicyEngine } from '#helpers';
 import { Examples, ExternalDocumentDTO, InternalServerErrorDTO, ObjectExamples, ResponseDTOWithSyncEvents } from '#middlewares';
 import { PinoLogger } from '@guardian/common/helpers/pino-logger';
-import { Body, Controller, DefaultValuePipe, HttpCode, HttpStatus, Param, ParseBoolPipe, Post, Query } from '@nestjs/common';
-import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, DefaultValuePipe, HttpCode, HttpStatus, Param, ParseBoolPipe, Post, Query, Res } from '@nestjs/common';
+import { ApiAcceptedResponse, ApiBody, ApiGatewayTimeoutResponse, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiServiceUnavailableResponse, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
+import type { FastifyReply } from 'fastify';
 
 @Controller('external')
 @ApiTags('external')
@@ -42,7 +43,7 @@ export class ExternalApi {
         example: 'external_data_block'
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
+        description: 'Without strict=true, returns the legacy acknowledgement without confirming delivery. With strict=true, the entry block completed its first attempt without an error; later policy blocks are not confirmed.',
         type: Boolean,
         example: true
     })
@@ -51,15 +52,37 @@ export class ExternalApi {
         type: InternalServerErrorDTO,
         example: { statusCode: 500, message: 'Error message' }
     })
+    @ApiQuery({
+        name: 'strict',
+        type: Boolean,
+        required: false,
+        description: 'Opt in to reporting the entry block first-attempt outcome. Defaults to false; legacy replies and processing stay unchanged.'
+    })
+    @ApiAcceptedResponse({
+        description: 'Strict mode only: the entry block failed and retries automatically. The final outcome is unknown. Do not resend; resending may create a duplicate.',
+        type: Boolean,
+        example: true
+    })
+    @ApiNotFoundResponse({ description: 'Strict mode only: Policy not found, or Block not found.' })
+    @ApiUnprocessableEntityResponse({ description: 'Strict mode only: the entry block failed without retrying. Returns the block error text.' })
+    @ApiServiceUnavailableResponse({ description: 'Strict mode only: Policy is not running, or its on-demand start failed. The document was not processed.' })
+    @ApiGatewayTimeoutResponse({ description: 'Strict mode only: the policy did not answer within 100 seconds. Returns the timeout error text; the processing outcome is unknown.' })
     @HttpCode(HttpStatus.OK)
     async receiveExternalDataCustom(
         @Param('policyId') policyId: string,
         @Param('blockTag') blockTag: string,
-        @Body() document: ExternalDocumentDTO
+        @Body() document: ExternalDocumentDTO,
+        @Query('strict', new DefaultValuePipe(false), ParseBoolPipe) strict: boolean = false,
+        @Res({ passthrough: true }) res?: FastifyReply
     ): Promise<any> {
         try {
             const engineService = new PolicyEngine();
-            return await engineService.receiveExternalDataCustom(document, policyId, blockTag);
+            const result = await engineService.receiveExternalDataCustom(document, policyId, blockTag, false, false, strict);
+            if (strict && result !== null && typeof result === 'object' && 'retrying' in result && result.retrying === true) {
+                res.code(HttpStatus.ACCEPTED);
+                return true;
+            }
+            return result;
         } catch (error) {
             await InternalException(error, this.logger, null);
         }
@@ -83,7 +106,7 @@ export class ExternalApi {
         }
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
+        description: 'Without strict=true, returns the legacy acknowledgement without confirming delivery. With strict=true, the entry block completed its first attempt without an error; later policy blocks are not confirmed.',
         type: Boolean,
         example: true
     })
@@ -92,13 +115,35 @@ export class ExternalApi {
         type: InternalServerErrorDTO,
         example: { statusCode: 500, message: 'Error message' }
     })
+    @ApiQuery({
+        name: 'strict',
+        type: Boolean,
+        required: false,
+        description: 'Opt in to reporting the entry block first-attempt outcome. Defaults to false; legacy replies and processing stay unchanged.'
+    })
+    @ApiAcceptedResponse({
+        description: 'Strict mode only: the entry block failed and retries automatically. The final outcome is unknown. Do not resend; resending may create a duplicate.',
+        type: Boolean,
+        example: true
+    })
+    @ApiNotFoundResponse({ description: 'Strict mode only: Policy not found, or Block not found.' })
+    @ApiUnprocessableEntityResponse({ description: 'Strict mode only: the entry block failed without retrying. Returns the block error text.' })
+    @ApiServiceUnavailableResponse({ description: 'Strict mode only: Policy is not running, or its on-demand start failed. The document was not processed.' })
+    @ApiGatewayTimeoutResponse({ description: 'Strict mode only: the policy did not answer within 100 seconds. Returns the timeout error text; the processing outcome is unknown.' })
     @HttpCode(HttpStatus.OK)
     async receiveExternalData(
-        @Body() document: ExternalDocumentDTO
+        @Body() document: ExternalDocumentDTO,
+        @Query('strict', new DefaultValuePipe(false), ParseBoolPipe) strict: boolean = false,
+        @Res({ passthrough: true }) res?: FastifyReply
     ): Promise<any> {
         try {
             const engineService = new PolicyEngine();
-            return await engineService.receiveExternalData(document);
+            const result = await engineService.receiveExternalData(document, false, false, strict);
+            if (strict && result !== null && typeof result === 'object' && 'retrying' in result && result.retrying === true) {
+                res.code(HttpStatus.ACCEPTED);
+                return true;
+            }
+            return result;
         } catch (error) {
             await InternalException(error, this.logger, null);
         }
