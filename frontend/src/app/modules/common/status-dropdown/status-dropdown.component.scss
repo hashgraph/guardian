@@ -91,5 +91,11 @@
 }
 
 .guardian-disabled-status {
+    box-sizing: border-box;
+    width: 140px;
+    height: 32px;
+    padding: 0 15px;
+    border: 1px solid currentColor;
+    vertical-align: middle;
     text-align: left;
 }
