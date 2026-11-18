@@ -2070,7 +2070,7 @@ export class SchemaApi {
     })
     @ApiExtraModels(SchemaDTO, SchemaImportDuplicatesRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async checkForDublicates(
+    async checkForDuplicates(
         @AuthUser() user: IAuthUser,
         @Body() body: SchemaImportDuplicatesRequestDTO,
     ) {
@@ -2078,7 +2078,7 @@ export class SchemaApi {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
 
-            return await guardians.getSchemasDublicates(body.schemaNames, owner, body.policyId, body.schemas);
+            return await guardians.getSchemasDuplicates(body.schemaNames, owner, body.policyId, body.schemas);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

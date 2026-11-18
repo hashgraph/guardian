@@ -1014,7 +1014,7 @@ export class Guardians extends NatsService {
     }
 
     /**
-     * Check schemas dublicates
+     * Check schemas duplicates
      *
      * @param {string[]} schemaNames
      * @param {IOwner} owner
@@ -1022,8 +1022,8 @@ export class Guardians extends NatsService {
      *
      * @returns {ISchema[]} Schema preview
      */
-    public async getSchemasDublicates(schemaNames: string[], owner?: IOwner, policyId?: string, schemas?: any[]) {
-        return await this.sendMessage(MessageAPI.SCHEMA_IMPORT_CHECK_FOR_DUBLICATES, { schemaNames, schemas, owner, policyId });
+    public async getSchemasDuplicates(schemaNames: string[], owner?: IOwner, policyId?: string, schemas?: any[]) {
+        return await this.sendMessage(MessageAPI.SCHEMA_IMPORT_CHECK_FOR_DUPLICATES, { schemaNames, schemas, owner, policyId });
     }
 
     /**

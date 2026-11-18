@@ -1502,7 +1502,7 @@ export class PoliciesComponent implements OnInit {
         })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (res) => {
             if (res) {
-                this.schemaService.checkForDublicates({
+                this.schemaService.checkForDuplicates({
                     policyId: topicId,
                     schemaNames: xlsx.schemas.map(({ name }: { name: string }) => name)
                 }).subscribe(

@@ -1303,7 +1303,7 @@ export class SchemaConfigComponent implements OnInit {
             }
             if (result && result.topicId) {
                 this.loading = true;
-                this.schemaService.checkForDublicates({
+                this.schemaService.checkForDuplicates({
                     policyId: result.topicId,
                     schemaNames: schemas.map(({ name }: { name: string }) => name),
                     schemas: schemas.map(({ name, document }: { name: string, document: any }) => ({ name, document }))
