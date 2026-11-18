@@ -290,6 +290,10 @@ tr.detailed-row {
         text-align: right;
     }
 
+    th help-icon + p-sorticon {
+        margin-left: 22px;
+    }
+
     th .p-sortable-column-icon {
         width: 12px;
         height: 12px;
