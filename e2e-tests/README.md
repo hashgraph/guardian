@@ -273,20 +273,18 @@ npx cypress run --env "grepTags=ui,grepFilterSpecs=true"
 
 ##### Preparing the app for UI tests
 
-UI tests drive the real frontend, so the app must be running where `CYPRESS_baseUrl` points:
+UI tests drive the real frontend, so the app must be running where `CYPRESS_baseUrl` points. Build the production frontend once, then serve it from `e2e-tests`:
 
 ```bash
-cd frontend
-UI_GATEWAY_ORIGIN=http://host.docker.internal:3002/ \
-  ng serve --configuration production --host 127.0.0.1 --port 4200 --proxy-config ./proxy.hostdocker.js
+(cd ../frontend && npx ng build --configuration production)
+UI_GATEWAY_ORIGIN=http://host.docker.internal:3002/ node scripts/serve-frontend.mjs
 ```
 
-- `--configuration production` serves the optimized build: the UI specs run about 20 % faster than on the development build, which bootstraps and renders more slowly. The first build takes about 40 s instead of 15.
-
-- `UI_GATEWAY_ORIGIN` is where the dev server proxies `/api/v1` and the WebSocket to. `yarn start` uses `proxy.conf.json`, which assumes a gateway on `localhost:3002`; `proxy.hostdocker.js` exists for the common case of running the suite in a container (or a VM) that reaches the host's Guardian stack through `host.docker.internal`.
+- `scripts/serve-frontend.mjs` serves `frontend/dist/guardian/browser` on `127.0.0.1:4200` and proxies `/api/v1` and the WebSocket to the gateway with `frontend/proxy.hostdocker.js`. Build again after changing the frontend sources.
+- Do not use `ng serve` for the UI specs: its dev server adds an inline source map of about 75 MB to `main.js`, and Cypress 16 cannot pass a response that large back to Chrome (the run stops without a word on the first `cy.visit`). The static build is 17 MB.
+- `UI_GATEWAY_ORIGIN` is where the proxy sends `/api/v1` and the WebSocket. `proxy.hostdocker.js` defaults to `host.docker.internal:3002`, the common case of running the suite in a container (or a VM) that reaches the host's Guardian stack; from the dev container with the services in it, use `http://127.0.0.1:3002/`.
 - Pass `CYPRESS_baseUrl=http://127.0.0.1:4200` to the Cypress run (the `entrypoint.sh` examples above do this).
-- The `[proxy]` lines the logger in `proxy.hostdocker.js` prints are the only request-level trace of a UI run — the Angular dev server does not log proxied requests even at `logLevel: "debug"`. See [Diagnosing a hung request](#diagnosing-a-hung-request-ui-runs).
-- If a suite keeps hitting odd bootstrap states (page stuck on a spinner even after the tests reload it), restart `ng serve` before re-running: a long-lived dev server accumulates state (stale incremental builds, dead WebSocket pairings) that a fresh one does not have.
+- The `[proxy]` lines the logger in `proxy.hostdocker.js` prints with `UI_PROXY_LOG=true` are the only request-level trace of a UI run. See [Diagnosing a hung request](#diagnosing-a-hung-request-ui-runs).
 
 ##### UI suite patterns (idempotent re-runs)
 
@@ -822,9 +820,9 @@ Scheduled runs happen nightly at 03:00 UTC: E2E Tests runs `api-all policy-all`,
 - Starts a local Hiero network with Solo, and uploads the contract bytecode to it
 - Builds Guardian services
 - Starts MongoDB, NATS, Valkey and Kubo as service containers, and the Guardian services natively
-- For UI runs, installs the frontend and serves its production build with `ng serve --configuration production` on `127.0.0.1:4200`, proxied to the gateway (`frontend/proxy.hostdocker.js`), the same way as the local recipe in "Preparing the app for UI tests"
+- For UI runs, installs the frontend, builds it for production and serves the build with `scripts/serve-frontend.mjs` on `127.0.0.1:4200`, proxied to the gateway (`frontend/proxy.hostdocker.js`), the same way as the local recipe in "Preparing the app for UI tests"
 - Runs Cypress natively on the runner against that stack, with `STOP_POLICIES_BETWEEN_SUITES=1` so the policy processes of a spec folder are stopped before the next one starts
-- With the `ui_request_trace` input of a manual run (`UI Tests`, or `E2E Tests` with UI tags), the dev server logs every request it proxies to the gateway (`UI_PROXY_LOG`), into `frontend-1.log` of the Guardian logs artifact. It is for diagnosing a UI failure, and the log is large
+- With the `ui_request_trace` input of a manual run (`UI Tests`, or `E2E Tests` with UI tags), the frontend server logs every request it proxies to the gateway (`UI_PROXY_LOG`), into `frontend-1.log` of the Guardian logs artifact. It is for diagnosing a UI failure, and the log is large
 - Publishes test results (one check per suite: `Test results · api`, `· policy`, `· ui`)
 - Uploads HTML and JSON reports as artifacts, plus the Guardian (frontend included) and Solo logs when a run fails
 - Deletes the Solo kind cluster at the end of the run

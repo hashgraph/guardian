@@ -24,7 +24,7 @@ on:
         default: ""
       ui_request_trace:
         type: boolean
-        description: Log every request the dev server proxies to the gateway (frontend-1.log in the guardian-logs artifact; large)
+        description: Log every request the frontend proxies to the gateway (frontend-1.log in the guardian-logs artifact; large)
         default: false
 
 permissions:

@@ -31,7 +31,7 @@ on:
       ui_request_trace:
         type: boolean
         default: false
-        description: Log every request the Angular dev server proxies to the gateway (UI_PROXY_LOG, frontend/proxy.hostdocker.js) into frontend-1.log of the guardian-logs artifact. It makes the log large; it is for diagnosing a UI failure
+        description: Log every request the frontend proxies to the gateway (UI_PROXY_LOG, frontend/proxy.hostdocker.js) into frontend-1.log of the guardian-logs artifact. It makes the log large; it is for diagnosing a UI failure
       timeout_minutes:
         type: number
         default: 120
@@ -444,9 +444,11 @@ jobs:
           start api-gateway
           wait_nats API_GATEWAY
 
-      # Started before the readiness gate so the Angular build overlaps with it. The dev
-      # server proxies /api/v1 and /ws to the gateway (frontend/proxy.hostdocker.js, with an
-      # explicit IPv4 target: `localhost` can resolve to ::1 on the runner).
+      # Started before the readiness gate so the Angular build overlaps with it. The production
+      # build is served statically, behind the proxy of frontend/proxy.hostdocker.js for /api/v1
+      # and /ws (with an explicit IPv4 target: `localhost` can resolve to ::1 on the runner).
+      # `ng serve` would add an inline source map of about 75 MB to main.js, which Cypress 16
+      # cannot pass back to Chrome.
       - name: Start frontend
         if: steps.params.outputs.frontend == 'true'
         shell: bash
@@ -458,12 +460,11 @@ jobs:
           CI: true
         run: |
           set -euo pipefail
-          # The production build makes the UI specs about 20 % faster than the development one.
-          (cd frontend && exec npx ng serve --configuration production --host 127.0.0.1 --port 4200 \
-            --proxy-config ./proxy.hostdocker.js) > "$GUARDIAN_LOG_DIR/frontend-1.log" 2>&1 &
+          (cd frontend && npx ng build --configuration production \
+            && exec node ../e2e-tests/scripts/serve-frontend.mjs) > "$GUARDIAN_LOG_DIR/frontend-1.log" 2>&1 &
           echo "$! frontend#1" >> "$GUARDIAN_LOG_DIR/pids"
           echo "started frontend (pid $!)"
-          # Cypress runs against the dev server; its presence also makes entrypoint.sh keep screenshots.
+          # Cypress runs against the frontend; its presence also makes entrypoint.sh keep screenshots.
           echo "CYPRESS_baseUrl=http://127.0.0.1:4200" >> "$GITHUB_ENV"
 
       # Replaces the old `sleep 15   # grace for backend NATS subscriptions`.
@@ -479,9 +480,9 @@ jobs:
           GUARDIAN_LOG_DIR: ${{ runner.temp }}/guardian-logs
         run: |
           set -euo pipefail
-          echo "Waiting for the frontend dev server on :4200 ..."
+          echo "Waiting for the frontend on :4200 ..."
           if ! timeout 600 bash -c 'until curl -fsS --max-time 5 http://127.0.0.1:4200/ >/dev/null; do sleep 3; done'; then
-            echo "::error::The frontend dev server (:4200) is not answering"
+            echo "::error::The frontend (:4200) is not answering"
             tail -n 60 "$GUARDIAN_LOG_DIR/frontend-1.log" || true
             exit 1
           fi
