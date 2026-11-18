@@ -115,9 +115,9 @@ Running in parallel also needs a policy stop limited to the shard's own processe
 
 ### Other test problems seen along the way
 
-- `ui-tests/specs/06_policy_schemas/createPolicySchema` "import policy schema file" fails on a database where it already ran (a dialog mask covers the search field); it passed on a fresh database. Not idempotent.
+- `ui-tests/specs/06_policy_schemas/createPolicySchema` "import policy schema file" imported the schema file into the first policy of the dropdown; when that policy already held a schema of the same name (`Lead User Details` is in the iRec policies), the app opened the "Schemas for replace" dialog and its mask covered the search field. It depended on which policies other folders had imported. Fixed: the spec imports into a draft policy of its own.
 - `ui-tests/specs/04_contracts/contractTags` "delete contract tag": the tag is deleted (`DELETE 200`) but `{esc}` does not close the tags dialog. Flaky.
-- `ui-tests/specs/05_modules/createModule` "module ipfs import" failed once on the production frontend (3 rows instead of 4) and passed on the rerun. Flaky.
+- `ui-tests/specs/05_modules/createModule` "module ipfs import" counted the imported rows on the first page of the module list (10 rows, newest first) before and after the import; past ten modules the new row pushes another off the page, so the count could stay the same. It failed on the second run over a database. Fixed: the import helpers check the module the import request created, and the specs delete exactly that module.
 
 ## Adopted
 
@@ -153,9 +153,9 @@ The pilot set (the `000_accounts_creating` prerequisite, the `smoke` API tag, th
 
 Failures, all known:
 
-- `06_policy_schemas/createPolicySchema` "import policy schema file" in both runs: a dialog mask covers the search field (see above, "Other test problems"). It failed on the first run on an empty database, so the note above ("passed on a fresh database") is not reliable.
-- `05_modules/createModule` "module ipfs import" in run 2 only (4 rows expected, 5 found): the flaky one listed above.
-- `008_artifacts/postArtifact` "Upload artifact" in run 2 only: `POST /artifacts/<id>` answered 422 on the second run over the same database. Not investigated.
+- `06_policy_schemas/createPolicySchema` "import policy schema file" in both runs: the import went to a policy that already held a schema of the same name (see above, "Other test problems").
+- `05_modules/createModule` "module ipfs import" in run 2 only (5 rows expected, 4 found): the first-page count (see above, "Other test problems").
+- `008_artifacts/postArtifact` "Upload artifact" in run 2 only: `POST /artifacts/<id>` answered 422. The spec uploaded to the newest policy in the list, which has to be a draft of the same registry. In that run `008_artifacts` was the first folder of the smoke run, right after the `policy-tests/irec` phase of run 1, which ends with `iRecNewRegistry` publishing a policy of another registry; the database has been dropped since, so which policy it was is not verified. Fixed: the spec uploads to a draft policy of its own.
 
 Per-spec durations of the UI and policy specs:
 
@@ -221,7 +221,7 @@ Same pilot set, same sequence (`000_accounts_creating`, `smoke`, UI, `policy-tes
 - UI: every spec but `dryRunMint` (−4 %) and `createAccount_Generate` (−5 %) is 11 to 34 % faster; the module, schema and token specs, which sign in in every test, gain 19 to 34 % (`createModule` 11 %).
 - API: no per-spec overhead. The difference is a few seconds on specs bound by the backend and Hedera (`postSettings` +3.2 s, `seedHederaArtefacts` +2.4 s, `dryRunPolicies` +1.8 s), within the spread of those specs.
 - Policy: unchanged, it is bound by the policy workflow.
-- Failures: the same three as the baseline (`createPolicySchema` in run 1, `createModule` and `postArtifact` in run 2), none from the migration. `createPolicySchema` also passed in a third UI run.
+- Failures: the same three as the baseline (`createPolicySchema` in run 1, `createModule` and `postArtifact` in run 2), none from the migration: each depended on data of other spec folders (above, "Other test problems" and the baseline). They are fixed; with them fixed, `05_modules`, `06_policy_schemas` and `008_artifacts` passed twice in a row, except `008_artifacts/deleteArtifact` on its second run (`artifact-upload-leaves-the-artifact-list-cached.md`). In run 2 `postArtifact` uploaded to `iRec_5`, published moments before by `seedHederaArtefacts` (`Policy is not in DRAFT status`).
 - A restored session reuses the refresh token its form login created, so a user gets one new refresh token per run instead of one per UI login.
 
 Per-spec durations of the UI specs and of the two long `irec` specs:
