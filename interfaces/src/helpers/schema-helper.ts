@@ -1582,9 +1582,7 @@ export class SchemaHelper {
         // An IF read through a list (or an unresolved hop) compiles to a vacuous `if`, so its
         // targets must not be wrapped in `items`: only the form pairs entries.
         const triggerCrossesList = (cond: SchemaCondition): boolean => {
-            const ic: any = cond.ifCondition;
-            if (!ic) { return false; }
-            const rows: any[] = Array.isArray(ic.AND) ? ic.AND : Array.isArray(ic.OR) ? ic.OR : [ic];
+            const rows: any[] = SchemaHelper.getConditionTriggerPredicates(cond.ifCondition);
             return rows.some(row => {
                 const path = row?.fieldPath;
                 if (!Array.isArray(path) || path.length < 2) { return false; }
