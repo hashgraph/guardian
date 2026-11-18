@@ -3,7 +3,7 @@ import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
 context('Schema', { tags: ['schema', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
 
     it('Export schema message', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {

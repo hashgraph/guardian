@@ -5,8 +5,8 @@ import * as Authorization from '../../../support/authorization';
 
 context('Get balance', { tags: ['accounts', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
-    const UserUsername = Cypress.env('User');
+    const SRUsername = Cypress.expose('SRUser');
+    const UserUsername = Cypress.expose('User');
     const balanceUrl = `${API.ApiServer}${API.Balance}`;
 
     const getBalanceWithAuth = (authorization) =>

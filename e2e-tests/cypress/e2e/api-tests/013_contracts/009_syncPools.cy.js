@@ -4,9 +4,9 @@ import * as Authorization from '../../../support/authorization';
 import * as Contracts from '../../../support/api/contracts';
 
 context('Contracts', { tags: ['contracts', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     const contractNameR = 'FirstAPIContractR';
-    const UserUsername = Cypress.env('User');
+    const UserUsername = Cypress.expose('User');
 
     let contractIdR;
 

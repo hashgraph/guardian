@@ -4,7 +4,7 @@ import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
 context('Put formula in Dry Run status and get formula data', { tags: ['formulas', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
 
     let firstFormula; let documentId;
 

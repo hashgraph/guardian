@@ -12,7 +12,7 @@ import { randomInt } from '../../../support/random';
 // (SchemaHelper.buildDocument): a root field required only while a condition holds, and a
 // sub-schema field that the condition requires in one branch and forbids in the other.
 context('Policies', { tags: ['policies', 'secondPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
 
     const run = randomInt(1000000000);
     const policyName = `conditionalValidation${run}`;

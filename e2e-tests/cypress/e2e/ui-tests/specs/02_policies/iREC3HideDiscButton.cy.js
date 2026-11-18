@@ -14,8 +14,8 @@ import { randomInt } from '../../../../support/random';
 
 context('Workflow iREC 3 Policy', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
-    const userUsername = Cypress.env('User');
+    const SRUsername = Cypress.expose('SRUser');
+    const userUsername = Cypress.expose('User');
     const runName = randomInt(1000000000) + 'testName';
 
     beforeEach(() => {

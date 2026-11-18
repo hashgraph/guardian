@@ -7,7 +7,7 @@ import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Modules', { tags: ['modules', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     const moduleName = 'APIModuleForPreview';
 
     const modulesUrl = `${API.ApiServer}${API.ListOfAllModules}`;

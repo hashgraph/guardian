@@ -4,7 +4,7 @@ import * as Authorization from '../../../support/authorization';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Delete role', { tags: ['permissions', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     const roleName = 'TestRole';
 
     let roleId;

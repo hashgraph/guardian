@@ -7,8 +7,8 @@ import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Create discuissons', { tags: ['comments', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
-    const UserUsername = Cypress.env('User');
+    const SRUsername = Cypress.expose('SRUser');
+    const UserUsername = Cypress.expose('User');
     const discussionName = 'TestDiscName';
     const discussionNameRole = 'TestDiscNameRole';
     const discussionNameUser = 'TestDiscNameUser';

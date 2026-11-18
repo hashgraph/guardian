@@ -38,6 +38,7 @@ export default defineConfig([
       'no-multiple-empty-lines': ['error', { max: 1 }],
       'new-parens': 'error',
       'max-len': ['error', { code: 360 }],
+      'no-restricted-properties': ['error', { object: 'Cypress', property: 'env', message: 'Cypress 16 removed Cypress.env(): read public values with Cypress.expose() and secrets with cy.env().' }],
     },
   },
   pluginCypress.configs.recommended,

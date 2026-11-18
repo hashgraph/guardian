@@ -15,7 +15,7 @@ const TOOL_REFS = {
 const TOOL_IMPORT_ORDER = ['Tool 03', 'Tool 07', 'Tool 10'];
 
 context('Policy autotest', { tags: ['policyAT', 'policy-all', 'all', 'all-no-mgs'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
 
     it('Import policy AMS-I.D', () => {
         return Authorization.getAccessToken(SRUsername).then((authorization) => {

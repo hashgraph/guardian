@@ -7,7 +7,7 @@ const homePage = new HomePage();
 
 context('Error Validation on schema fields', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     const name = randomInt(1000000000) + 'policyForValidation';
 
     before(() => {

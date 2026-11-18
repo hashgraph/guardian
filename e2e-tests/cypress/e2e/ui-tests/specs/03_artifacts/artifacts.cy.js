@@ -10,7 +10,7 @@ const policiesPage = new PoliciesPage();
 
 context('Artifacts', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     // A per-run policy keeps the artifacts table isolated, so re-runs are clean
     // even if rows left behind by earlier runs still exist.
     const runName = randomInt(1000000000) + 'testName';

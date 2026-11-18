@@ -8,7 +8,7 @@ import { randomInt } from '../../../../support/random';
 
 context('Import Policy', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     // each test imports its own copy of a fixed-name artifact and renames it,
     // so leftovers from earlier runs can never collide with the current run
     let runName = '';

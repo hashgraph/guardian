@@ -4,7 +4,7 @@ import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
 context('Logs', { tags: ['logs', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     let workerName;
 
     const logsUrl = `${API.ApiServer}${API.Logs}`;

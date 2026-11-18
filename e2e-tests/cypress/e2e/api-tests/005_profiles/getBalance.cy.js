@@ -3,7 +3,7 @@ import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
 context('Profiles', { tags: ['profiles', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
 
     it('Get Hedera account balance', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {

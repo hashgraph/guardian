@@ -3,7 +3,7 @@ import API from '../../../support/ApiUrls';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Profiles', { tags: ['profiles', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     let credentials;
 
     before(() => {

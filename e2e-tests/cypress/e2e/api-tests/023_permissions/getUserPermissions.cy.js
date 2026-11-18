@@ -3,8 +3,8 @@ import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
 context("Get user's permissions", { tags: ['permissions', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
-    const UserUsername = Cypress.env('User');
+    const SRUsername = Cypress.expose('SRUser');
+    const UserUsername = Cypress.expose('User');
 
     it('Get permission for user', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {

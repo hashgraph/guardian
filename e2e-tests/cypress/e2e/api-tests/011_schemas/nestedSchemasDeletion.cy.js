@@ -5,7 +5,7 @@ import { randomInt } from '../../../support/random';
 import { waitForTask } from '../../../support/CustomHelpers/tasks';
 
 context('Schema', { tags: ['schema', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     // policyTag is unique in the DB, so a hardcoded one makes every run after the first fail with a
     // duplicate key error
     const runId = randomInt(999999);

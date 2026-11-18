@@ -5,7 +5,7 @@ import * as Authorization from '../../../support/authorization';
 
 context('Demo', { tags: ['demo', 'secondPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     const randomKeyUrl = `${API.ApiServer}${API.RandomKey}`;
 
     const getRandomKeyWithAuth = (authorization) =>

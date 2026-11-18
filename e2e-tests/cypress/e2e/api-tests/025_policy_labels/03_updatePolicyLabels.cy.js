@@ -4,7 +4,7 @@ import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
 context('Update policy labels', { tags: ['policy_labels', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const UserUsername = Cypress.env('User');
+    const UserUsername = Cypress.expose('User');
     const labelConfigUUID = randomInt(99999).toString();
 
     let policyLabel; let issueSchema;

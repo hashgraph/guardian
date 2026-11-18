@@ -6,7 +6,7 @@ const CDM_ARCHIVE = '../Methodology Library/Clean Development Mechanism (CDM)/CD
 // The CDM AR-ACM0003 archive references no tools, so it imports cleanly
 // through the plain import route without any metadata remapping.
 context('Policy autotest', { tags: ['policyAT', 'policy-all', 'all', 'all-no-mgs'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
 
     it('Import policy CDM AR-ACM0003 Policy', () => {
         return Authorization.getAccessToken(SRUsername).then((authorization) => {

@@ -5,7 +5,7 @@ import { newestPolicyCopy } from '../../../support/cdmTools';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Start policy test', { tags: ['policies', 'secondPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-	const SRUsername = Cypress.env('SRUser');
+	const SRUsername = Cypress.expose('SRUser');
 	let policyId; let testId;
 
 	before('Get test id', () => {

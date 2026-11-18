@@ -8,7 +8,7 @@ import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('IPFS', { tags: ['ipfs', 'secondPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     const ipfsFileUrl = `${API.ApiServer}${API.IPFSFile}`;
 
     let cid;

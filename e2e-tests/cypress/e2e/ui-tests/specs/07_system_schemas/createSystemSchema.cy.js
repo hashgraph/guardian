@@ -15,7 +15,7 @@ const login = (username) => {
 
 context('System Schema Creation', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     // Unique per run: the schemas of earlier runs stay in the list.
     const schemaName = 'UISystemSchema' + randomInt(1000000000);
     const editorSchemaName = 'UIEditorSystemSchema' + randomInt(1000000000);

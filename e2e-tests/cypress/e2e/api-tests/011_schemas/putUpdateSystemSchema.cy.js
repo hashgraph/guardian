@@ -3,7 +3,7 @@ import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
 context('Schemas', { tags: ['schema', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
 
     it('Updates the system schema with the provided schema ID', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {

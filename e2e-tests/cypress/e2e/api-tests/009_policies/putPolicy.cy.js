@@ -6,8 +6,8 @@ import { randomInt } from '../../../support/random';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Policies', { tags: ['policies', 'secondPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
-    const UserUsername = Cypress.env('User');
+    const SRUsername = Cypress.expose('SRUser');
+    const UserUsername = Cypress.expose('User');
     const policyName = 'UpdatedPolicyName';
 
     const policiesUrl = `${API.ApiServer}${API.Policies}`;

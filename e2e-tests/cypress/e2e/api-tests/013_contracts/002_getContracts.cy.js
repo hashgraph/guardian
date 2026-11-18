@@ -4,8 +4,8 @@ import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/checkingMethods';
 
 context('Contracts', { tags: ['contracts', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
-    const UserUsername = Cypress.env('User');
+    const SRUsername = Cypress.expose('SRUser');
+    const UserUsername = Cypress.expose('User');
 
     const contractsUrl = `${API.ApiServer}${API.ListOfContracts}`;
 

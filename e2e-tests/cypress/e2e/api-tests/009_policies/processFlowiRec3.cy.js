@@ -6,8 +6,8 @@ import * as IpfsSeeding from '../../../support/CustomHelpers/ipfsSeeding';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Contracts', { tags: ['policies', 'comments', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
-    const UserUsername = Cypress.env('User');
+    const SRUsername = Cypress.expose('SRUser');
+    const UserUsername = Cypress.expose('User');
 
     const optionKey = 'option';
     const policyFixture = 'iRec_3_BtnFix.policy'; //iRec3

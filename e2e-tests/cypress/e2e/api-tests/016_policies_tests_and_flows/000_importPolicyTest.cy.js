@@ -5,7 +5,7 @@ import { newestPolicyCopy, parseImportResponse } from '../../../support/cdmTools
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Import policy test', { tags: ['policies', 'secondPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     let policyId;
 
     const importPolicyTest = (policyId, fileName, headers = {}) =>
