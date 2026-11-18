@@ -115,3 +115,167 @@ describe('SchemaHelper.buildDocument — buildCrossRequired optional-target guar
             'the optional target must also be forbidden in else, even though it was never required');
     });
 });
+
+describe('SchemaHelper cross-schema targets inside a repeatable sub-schema', () => {
+    // `properties` is only honoured on objects, so a target under an array-of-refs container must
+    // be wrapped in `items` or the compiled keyword enforces nothing for any entry.
+    const leaf = (over = {}) => field('leaf', over);
+    const list = (over = {}) => field('list', {
+        isArray: true, isRef: true, type: '#SubIri', fields: [leaf({ required: true })], ...over,
+    });
+    const conditionWith = (targets) => [{
+        ifCondition: { field: field('trigger'), fieldValue: 'x' },
+        thenFields: [],
+        elseFields: [],
+        thenTargets: targets,
+        elseTargets: [],
+    }];
+    const target = (over = {}) => ({ field: leaf({ required: true, ...over }), fieldPath: ['list', 'leaf'] });
+    const build = (rootList, targets) => SchemaHelper.buildDocument(
+        baseSchema(), [field('trigger'), rootList], conditionWith(targets)
+    );
+
+    it('wraps the required and forbidden constraints in items', () => {
+        const doc = build(list(), [target()]);
+
+        assert.deepEqual(doc.allOf[0].then.properties.list, { items: { required: ['leaf'] } });
+        assert.deepEqual(doc.allOf[0].else.properties.list, { items: { properties: { leaf: false } } });
+    });
+
+    it('keeps the required and forbidden keywords of one container side by side', () => {
+        // The then branch both requires one target and forbids the one the else side reveals.
+        const conditions = [{
+            ifCondition: { field: field('trigger'), fieldValue: 'x' },
+            thenFields: [],
+            elseFields: [],
+            thenTargets: [{ field: leaf({ required: true }), fieldPath: ['list', 'leaf'] }],
+            elseTargets: [{ field: field('other'), fieldPath: ['list', 'other'] }],
+        }];
+        const doc = SchemaHelper.buildDocument(baseSchema(), [field('trigger'), list()], conditions);
+
+        assert.deepEqual(doc.allOf[0].then.properties.list, {
+            items: { required: ['leaf'], properties: { other: false } },
+        });
+    });
+
+    it('leaves a container that is not repeatable unwrapped', () => {
+        const doc = build(list({ isArray: false }), [target()]);
+
+        assert.deepEqual(doc.allOf[0].then.properties.list, { required: ['leaf'] });
+    });
+
+    describe('a trigger inside a repeatable sub-schema', () => {
+        // The compiled IF is vacuous on an array, so wrapping would enforce the targets on every
+        // entry. These conditions keep the unwrapped shape; the form pairs entries.
+        const rows = (over = {}) => field('rows', {
+            isArray: true, isRef: true, type: '#RowIri', fields: [field('kind')], ...over,
+        });
+        const buildWithRowTrigger = (rowsField) => SchemaHelper.buildDocument(
+            baseSchema(),
+            [rowsField, list()],
+            [{
+                ifCondition: { field: field('kind'), fieldValue: 'full', fieldPath: ['rows', 'kind'] },
+                thenFields: [],
+                elseFields: [],
+                thenTargets: [target()],
+                elseTargets: [],
+            }]
+        );
+
+        it('keeps the targets unwrapped when the trigger path crosses a list', () => {
+            const doc = buildWithRowTrigger(rows());
+
+            assert.deepEqual(doc.allOf[0].then.properties.list, { required: ['leaf'] });
+            assert.deepEqual(doc.allOf[0].else.properties.list, { properties: { leaf: false } });
+        });
+
+        it('keeps the targets unwrapped when a hop of the trigger path is not loaded', () => {
+            // `a` has no loaded fields, so `rows` below it may be a list: do not wrap.
+            const unloaded = field('a', { isRef: true, type: '#AIri', fields: undefined });
+            const doc = SchemaHelper.buildDocument(
+                baseSchema(),
+                [unloaded, list()],
+                [{
+                    ifCondition: { field: field('kind'), fieldValue: 'full', fieldPath: ['a', 'rows', 'kind'] },
+                    thenFields: [],
+                    elseFields: [],
+                    thenTargets: [target()],
+                    elseTargets: [],
+                }]
+            );
+
+            assert.deepEqual(doc.allOf[0].then.properties.list, { required: ['leaf'] });
+        });
+
+        it('keeps wrapping when a loaded plain hop leads to a plain trigger', () => {
+            const loaded = field('a', { isRef: true, type: '#AIri', fields: [field('rows', { isRef: true, type: '#R', fields: [field('kind')] })] });
+            const doc = SchemaHelper.buildDocument(
+                baseSchema(),
+                [loaded, list()],
+                [{
+                    ifCondition: { field: field('kind'), fieldValue: 'full', fieldPath: ['a', 'rows', 'kind'] },
+                    thenFields: [],
+                    elseFields: [],
+                    thenTargets: [target()],
+                    elseTargets: [],
+                }]
+            );
+
+            assert.deepEqual(doc.allOf[0].then.properties.list, { items: { required: ['leaf'] } });
+        });
+
+        it('still wraps the targets when the trigger path crosses only plain sub-schemas', () => {
+            const doc = buildWithRowTrigger(rows({ isArray: false }));
+
+            assert.deepEqual(doc.allOf[0].then.properties.list, { items: { required: ['leaf'] } });
+            assert.deepEqual(doc.allOf[0].else.properties.list, { items: { properties: { leaf: false } } });
+        });
+    });
+
+    it('wraps only the repeatable hop of a nested path', () => {
+        const inner = field('inner', { isRef: true, type: '#InnerIri', fields: [leaf({ required: true })] });
+        const outer = list({ fields: [inner] });
+        const doc = build(outer, [{ field: leaf({ required: true }), fieldPath: ['list', 'inner', 'leaf'] }]);
+
+        assert.deepEqual(doc.allOf[0].then.properties.list, {
+            items: { properties: { inner: { required: ['leaf'] } } },
+        });
+    });
+
+    it('parses the wrapped shape back into the same targets', () => {
+        const rootFields = [field('trigger'), list()];
+        const doc = build(rootFields[1], [target()]);
+
+        const [cond] = SchemaHelper.parseConditions(doc, 'ctx:', rootFields, new Map());
+
+        assert.deepEqual(cond.thenTargets.map(t => t.fieldPath), [['list', 'leaf']]);
+        assert.equal(cond.thenTargets[0].field.name, 'leaf');
+        assert.equal(cond.elseTargets, undefined);
+    });
+
+    it('still parses a document saved before the items wrapper was emitted', () => {
+        const rootFields = [field('trigger'), list()];
+        const document = {
+            allOf: [{
+                if: { properties: { trigger: { const: 'x' } }, required: ['trigger'] },
+                then: { properties: { list: { required: ['leaf'] } } },
+                else: { properties: { list: { properties: { leaf: false } } } },
+            }],
+        };
+
+        const [cond] = SchemaHelper.parseConditions(document, 'ctx:', rootFields, new Map());
+
+        assert.deepEqual(cond.thenTargets.map(t => t.fieldPath), [['list', 'leaf']]);
+    });
+
+    it('round-trips a nested path through build and parse', () => {
+        const inner = field('inner', { isRef: true, type: '#InnerIri', fields: [leaf({ required: true })] });
+        const outer = list({ fields: [inner] });
+        const rootFields = [field('trigger'), outer];
+        const doc = build(outer, [{ field: leaf({ required: true }), fieldPath: ['list', 'inner', 'leaf'] }]);
+
+        const [cond] = SchemaHelper.parseConditions(doc, 'ctx:', rootFields, new Map());
+
+        assert.deepEqual(cond.thenTargets.map(t => t.fieldPath), [['list', 'inner', 'leaf']]);
+    });
+});

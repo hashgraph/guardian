@@ -1194,9 +1194,39 @@ function isCrossTargetWrapper(property: any): boolean {
     return !!property && typeof property === 'object' && property.type === undefined && property.$ref === undefined;
 }
 
+function hasUnwrappedTargetContent(wrapper: any): boolean {
+    return !!wrapper && typeof wrapper === 'object' &&
+        (Array.isArray(wrapper.required) || (!!wrapper.properties && typeof wrapper.properties === 'object'));
+}
+
+/**
+ * Older policy schemas hold a repeatable sub-schema target unwrapped, today's builder nests it
+ * under `items`. Re-nests the unwrapped side when its counterpart has `items`.
+ */
+function alignLegacyCrossTargetShape(wrapper: any, counterpart: any): any {
+    if (
+        wrapper && typeof wrapper === 'object' && wrapper.items === undefined &&
+        hasUnwrappedTargetContent(wrapper) &&
+        counterpart && typeof counterpart === 'object' && isCrossTargetWrapper(counterpart.items)
+    ) {
+        return { items: wrapper };
+    }
+    return wrapper;
+}
+
 function mergeCrossTargetWrapper(target: any, source: any): void {
     if (!target || typeof target !== 'object' || !source || typeof source !== 'object') {
         return;
+    }
+    source = alignLegacyCrossTargetShape(source, target);
+    if (
+        target.items === undefined && hasUnwrappedTargetContent(target) &&
+        source.items && typeof source.items === 'object'
+    ) {
+        const legacy: any = {};
+        if (target.required !== undefined) { legacy.required = target.required; delete target.required; }
+        if (target.properties !== undefined) { legacy.properties = target.properties; delete target.properties; }
+        target.items = legacy;
     }
     if (Array.isArray(source.required)) {
         target.required = Array.isArray(target.required) ? target.required : [];
@@ -1216,6 +1246,11 @@ function mergeCrossTargetWrapper(target: any, source: any): void {
             }
         }
     }
+    // A repeatable sub-schema nests its constraint under `items`.
+    if (source.items && typeof source.items === 'object') {
+        target.items = target.items || {};
+        mergeCrossTargetWrapper(target.items, source.items);
+    }
 }
 
 function hasCrossTargetWrapperContent(wrapper: any): boolean {
@@ -1223,7 +1258,8 @@ function hasCrossTargetWrapperContent(wrapper: any): boolean {
         typeof wrapper === 'object' &&
         (
             (Array.isArray(wrapper.required) && wrapper.required.length > 0) ||
-            (wrapper.properties && typeof wrapper.properties === 'object' && Object.keys(wrapper.properties).length > 0)
+            (wrapper.properties && typeof wrapper.properties === 'object' && Object.keys(wrapper.properties).length > 0) ||
+            hasCrossTargetWrapperContent(wrapper.items)
         );
 }
 
@@ -1234,6 +1270,8 @@ function subtractCrossTargetWrapper(source: any, baseline: any): any {
     if (!isCrossTargetWrapper(baseline)) {
         return cloneJson(source);
     }
+    source = alignLegacyCrossTargetShape(source, baseline);
+    baseline = alignLegacyCrossTargetShape(baseline, source);
     const result: any = {};
     if (Array.isArray(source.required)) {
         const baselineRequired = new Set(Array.isArray(baseline.required) ? baseline.required : []);
@@ -1263,6 +1301,12 @@ function subtractCrossTargetWrapper(source: any, baseline: any): any {
         }
         if (Object.keys(properties).length) {
             result.properties = properties;
+        }
+    }
+    if (isCrossTargetWrapper(source.items)) {
+        const items = subtractCrossTargetWrapper(source.items, baseline.items);
+        if (items) {
+            result.items = items;
         }
     }
     return hasCrossTargetWrapperContent(result) ? result : undefined;
