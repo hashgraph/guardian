@@ -1,8 +1,8 @@
-# Uploading an artifact leaves the cached artifact list stale (api-gateway)
+# Uploading or deleting an artifact leaves the cached artifact list stale (api-gateway)
 
 **Status:** open, product defect, reproduced on 18 Nov 2026 on a local stack.
 **Component:** `api-gateway` (`api/service/artifact.ts`, `POST /artifacts/:parentId`)
-**Severity:** medium — for up to 10 minutes after an upload, `GET /artifacts` answers without the new artifacts, to the user who uploaded them and to the UI
+**Severity:** medium — for up to 10 minutes after an upload, `GET /artifacts` answers without the new artifacts; the list the UI reads also keeps a deleted artifact
 **Found by:** running `api-tests/008_artifacts` twice in a row
 
 ## What was observed
@@ -16,9 +16,11 @@ Reproduced outside Cypress, as `StandardRegistry`:
 3. `GET /artifacts/` still answers the same 49, without the new artifact.
 4. `GET /artifacts/?policyId=<id>` (a URL not cached before) answers the new artifact.
 
+The UI reads the list as `GET /api/v1/artifacts?type=…&pageIndex=…&pageSize=…`, which reaches the gateway as `/artifacts?…`. The same check with that URL: after an upload the list misses the new artifact, and after `DELETE /artifacts/<id>` (200) the list still contains the deleted one.
+
 ## Cause
 
-`GET /artifacts/` is cached for 600 s (`@UseCache`, `CACHE.DEFAULT_TTL`), tagged with the request path (`/artifacts/`). The upload invalidates `` `/${PREFIXES.ARTIFACTS}` ``, and `PREFIXES.ARTIFACTS` is already `'/artifacts/'`, so the tag it drops is `//artifacts/`, which never exists. Deleting an artifact invalidates `PREFIXES.ARTIFACTS` and is not affected.
+`GET /artifacts` is cached for 600 s (`@UseCache`, `CACHE.DEFAULT_TTL`), tagged with the request path without the query: `/artifacts/` for the API specs, `/artifacts` for the UI. The upload invalidates `` `/${PREFIXES.ARTIFACTS}` ``, and `PREFIXES.ARTIFACTS` is already `'/artifacts/'`, so the tag it drops is `//artifacts/`, which never exists. The delete invalidates `/artifacts/`, which covers the API form of the list but not the UI one (`/artifacts`).
 
 ## How to reproduce
 
