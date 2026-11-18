@@ -209,6 +209,17 @@ jobs:
             libnss3 libnspr4 \
             libxss1 libxtst6 libasound2
 
+      # The browser the suite runs on. apt installs the dependencies the package declares.
+      - name: Install Google Chrome
+        shell: bash
+        run: |
+          SUDO=""
+          [ "$(id -u)" -eq 0 ] || SUDO=sudo
+          curl -fsSL -o /tmp/google-chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          $SUDO apt-get install -y --no-install-recommends /tmp/google-chrome.deb
+          rm /tmp/google-chrome.deb
+          google-chrome --version
+
       # `**/yarn.lock` also matches lockfiles inside dependencies; the root one is the
       # only input that matters. .yarnrc.yml is in the key because it decides where the
       # cache lives at all (see YARN_ENABLE_GLOBAL_CACHE above).
@@ -481,9 +492,8 @@ jobs:
         run: ./entrypoint.sh
         env:
           CYPRESS_portApi: 3002
-          CYPRESS_BROWSER: electron
-          # /dev/shm is 64 MB in this container, well under what Chromium expects
-          ELECTRON_EXTRA_LAUNCH_ARGS: --disable-dev-shm-usage
+          # Cypress launches Chrome with --disable-dev-shm-usage, so the 64 MB /dev/shm of this container is enough
+          CYPRESS_BROWSER: chrome
           CYPRESS_hederaNet: localnode
           CYPRESS_operatorId: ${{ steps.hedera.outputs.accountId }}
           CYPRESS_operatorKey: ${{ steps.hedera.outputs.privateKey }}

@@ -194,3 +194,13 @@ Per-spec durations of the UI and policy specs:
 | ui-tests/specs/09_tokens/deleteToken.cy.js | 30.6 | 32.0 | 0 / 0 |
 | ui-tests/specs/09_tokens/editToken.cy.js | 35.5 | 37.0 | 0 / 0 |
 | ui-tests/specs/09_tokens/tagsTokens.cy.js | 23.9 | 24.5 | 0 / 0 |
+
+### Cypress 16.3.0 on Chromium: what the probe confirmed (2026-11-18)
+
+A throwaway spec, run with `cypress run --browser chromium` on 16.3.0 in the dev container, printed what reaches the browser and how Chromium is launched:
+
+- `Cypress.env` still exists as a function, and every call throws "`Cypress.env()` was removed in Cypress version 16.0.0".
+- `Cypress.expose()` merges the `expose` config key, `--expose key=value` and what `setupNodeEvents` puts in `config.expose`. `CYPRESS_<key>` variables and `--env` go to `config.env` only. `CYPRESS_EXPOSE='<json>'` sets the whole `expose` object and replaces the config's `expose` key instead of merging with it.
+- `cy.env([...])` returns the requested keys found in `env` (`cypress.env.json`/config, `CYPRESS_*`, `--env`) and omits the missing ones without failing.
+- Defaults: `visibilityStrategy` is `modern`, `manageBrowserMemory` is `true`.
+- `Cypress.browser` reports `chromium` 156, headless (`--headless=new`). Cypress already launches Chromium with `--disable-dev-shm-usage` (and `--no-sandbox`, `--disable-gpu`), so the 64 MB `/dev/shm` of the CI container needs no launch argument of our own.

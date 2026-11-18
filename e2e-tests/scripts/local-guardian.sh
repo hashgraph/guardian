@@ -65,7 +65,7 @@ load_environment() {
 }
 
 export_service_environment() {
-  export GUARDIAN_LOG_DIR="$LOG_DIR" WORKER_COUNT E2E_ENV_FILE="$E2E_DIR/cypress.env.json"
+  export GUARDIAN_LOG_DIR="$LOG_DIR" WORKER_COUNT E2E_DIR
   export NODE_OPTIONS="--openssl-legacy-provider"
   export MQ_ADDRESS="$INFRA_HOST" DB_HOST="$INFRA_HOST" DB_LOGGER_HOST="$INFRA_HOST" HOST_CACHE="$INFRA_HOST"
   export NATS_MONITOR="http://$INFRA_HOST:8222"
@@ -271,7 +271,7 @@ run_tests() {                # run_tests <tags> [spec...]
   spec=$(IFS=,; echo "$*")
   cd "$E2E_DIR"
   STOP_POLICIES_NATS="$INFRA_HOST:4222" \
-  CYPRESS_portApi=3002 CYPRESS_BROWSER="${CYPRESS_BROWSER:-electron}" \
+  CYPRESS_portApi=3002 CYPRESS_BROWSER="${CYPRESS_BROWSER:-chromium}" \
     CYPRESS_minPasswordLength=4 CYPRESS_passwordComplexity=easy \
     CYPRESS_grepTags="$tags" CYPRESS_SPEC="$spec" ./entrypoint.sh
 }
