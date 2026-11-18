@@ -348,3 +348,34 @@ describe('FormulaImportExport table column outputs', () => {
         assert.deepEqual(item.link, item.links[0]);
     });
 });
+
+describe('FormulaImportExport table grid outputs', () => {
+    const generate = outputs => FormulaImportExport.generateByPolicy({ name: 'Grid outputs', config: {
+        blockType: 'mathBlock', inputSchema: '#input', outputSchema: '#output', expression: {
+            variables: [{ name: 'year', field: 'year' }],
+            formulas: [{ name: 'first', body: '1' }, { name: 'sum', body: '2' }], outputs
+        }
+    } }).config.formulas;
+
+    it('links grid formulas to their cells, without inventing column or whole-table links', () => {
+        const items = generate([{ field: 'grid', rows: [{ year: 'year', co2: 'first' }, { year: '', co2: 'sum' }, {}] }]);
+        assert.deepEqual(items.find(item => item.name === 'first').links, [
+            { type: 'schema', entityId: '#output', item: 'grid', columnKey: 'co2', rowIndex: 0 }
+        ]);
+        assert.deepEqual(items.find(item => item.name === 'sum').links, [
+            { type: 'schema', entityId: '#output', item: 'grid', columnKey: 'co2', rowIndex: 1 }
+        ]);
+        assert.equal(items.find(item => item.type === 'formula' && item.name === 'year').links[0].rowIndex, 0);
+        assert.equal(items.find(item => item.type === 'variable').link.item, 'year');
+    });
+
+    it('retains distinct table positions and every reused cell link through export/import', async () => {
+        const items = generate([{ field: 'grids', tables: [[{ co2: 'first' }], [{ co2: 'sum' }, { co2: 'first' }]] }]);
+        const zip = await FormulaImportExport.generateZipFile({ formula: { config: { formulas: items } }, schemas: [] });
+        const parsed = await FormulaImportExport.parseZipFile(await zip.generateAsync({ type: 'nodebuffer' }));
+        const first = parsed.formula.config.formulas.find(item => item.name === 'first');
+        assert.deepEqual(first.links.map(link => [link.tableIndex, link.rowIndex, link.columnKey]), [[0, 0, 'co2'], [1, 1, 'co2']]);
+        assert.deepEqual(first.link, first.links[0]);
+        assert.deepEqual(parsed.formula.config.formulas.find(item => item.name === 'sum').links.map(link => [link.tableIndex, link.rowIndex]), [[1, 0]]);
+    });
+});

@@ -10,7 +10,7 @@ import { ITableFormulaAction } from './table-formula-actions';
             (keydown)="$event.stopPropagation()" (click)="activate($event)">ƒx</button>
     }`,
     styles: [`
-        :host { display: inline-flex; vertical-align: middle; margin-left: 4px; }
+        :host { display: inline-flex; flex-shrink: 0; vertical-align: middle; margin-left: 4px; }
         .table-fx { display: inline-flex; align-items: center; justify-content: center; width: 24px;
             height: 24px; padding: 0; border: 0; border-radius: 4px; cursor: pointer; font-size: 12px;
             font-style: italic; background: transparent; color: var(--guardian-primary-color, #4169e2); }

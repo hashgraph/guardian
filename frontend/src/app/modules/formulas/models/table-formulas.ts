@@ -1,6 +1,6 @@
 import { ITableFormulaAction, ITableFormulaActions } from '../../common/table-dialog/table-formula-actions';
 import { FormulasTree, IFormulaConditionContext } from './formula-tree';
-import { IFormulaTarget } from './formula-target';
+import { formulaTargetKey, IFormulaTarget } from './formula-target';
 
 export interface IFormulaFieldSource {
     tree: FormulasTree;
@@ -23,22 +23,32 @@ export class TableFormulas implements ITableFormulaActions {
     }
 
     public column(key: string): ITableFormulaAction | null {
+        return this.action({ columnKey: key });
+    }
+
+    public cell(key: string, rowIndex: number, tableIndex?: number): ITableFormulaAction | null {
+        return this.action({ columnKey: key, rowIndex, ...(tableIndex === undefined ? {} : { tableIndex }) });
+    }
+
+    private action(target: IFormulaTarget & { columnKey: string }): ITableFormulaAction | null {
         const source = this.source();
-        if (!this.columns.has(key) || !source?.tree.get(source.schema, source.path, source.context, { columnKey: key }).length) {
+        const key = target.columnKey;
+        if ((target.rowIndex !== undefined && source?.origin === 'form') || !this.columns.has(key) || !source?.tree.get(source.schema, source.path, source.context, target).length) {
             return null;
         }
-        let action = this.actions.get(key);
+        const cacheKey = formulaTargetKey('', target);
+        let action = this.actions.get(cacheKey);
         if (!action) {
             action = {
-                label: `Show formulas for ${this.columns.get(key)}`,
+                label: `Show formulas for ${this.columns.get(key)}${target.rowIndex === undefined ? '' : `, row ${target.rowIndex + 1}`}`,
                 open: () => {
                     const current = this.source();
-                    if (current && this.column(key)) {
-                        this.open({ ...current, columnKey: key });
+                    if (current && this.action(target)) {
+                        this.open({ ...current, ...target });
                     }
                 }
             };
-            this.actions.set(key, action);
+            this.actions.set(cacheKey, action);
         }
         return action;
     }

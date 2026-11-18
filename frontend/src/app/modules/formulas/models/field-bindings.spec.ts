@@ -263,3 +263,15 @@ describe('column field bindings', () => {
         expect(result.config.formulas![0].links!.map(link => [link.item, link.columnKey])).toEqual([['renamed', 'co2'], ['renamed', 'net']]);
     });
 });
+
+describe('cell field bindings', () => {
+    it('keeps a cell binding separate from the column binding', () => {
+        const config: any = { formulas: [{ uuid: 'f', type: FormulaItemType.Formula, links: [
+            { type: 'schema', entityId: '#s', item: 'grid', columnKey: 'co2' },
+            { type: 'schema', entityId: '#s', item: 'grid', columnKey: 'co2', rowIndex: 0, tableIndex: 0 }
+        ] }] };
+        const result = applyFieldBindingOps(config, [{ type: 'unbind', formulaId: 'd', itemUuid: 'f', target: { schemaIri: '#s', fieldPath: 'grid', columnKey: 'co2' } }]);
+        expect(result.config.formulas![0].links).toHaveLength(1);
+        expect(result.config.formulas![0].links![0]).toMatchObject({ rowIndex: 0, tableIndex: 0 });
+    });
+});

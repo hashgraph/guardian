@@ -126,3 +126,19 @@ describe('FormulasTree column targets', () => {
         expect(target.get('#s', 'table', { data: { mode: 'b' } }, { columnKey: 'b' })).toHaveLength(1);
     });
 });
+
+describe('FormulasTree grid cell targets', () => {
+    it('isolates row zero, other rows, repeated tables, columns and the whole table', () => {
+        const target = new FormulasTree();
+        target.setFormulas([{ config: { formulas: [0, 1].flatMap(tableIndex => [0, 1].map(rowIndex => ({
+            uuid: `${tableIndex}-${rowIndex}`, name: 'cell', description: '', type: FormulaItemType.Formula,
+            link: { type: 'schema' as const, entityId: '#s', item: 'grid', columnKey: 'co2', tableIndex, rowIndex }
+        }))) } }]);
+        target.update();
+        expect(target.get('#s', 'grid')).toEqual([]);
+        expect(target.get('#s', 'grid', undefined, { columnKey: 'co2' })).toEqual([]);
+        expect(target.get('#s', 'grid', undefined, { columnKey: 'co2', tableIndex: 0, rowIndex: 0 }).map(item => item.uuid)).toEqual(['0-0']);
+        expect(target.get('#s', 'grid', undefined, { columnKey: 'co2', tableIndex: 1, rowIndex: 0 }).map(item => item.uuid)).toEqual(['1-0']);
+        expect(target.get('#s', 'grid', undefined, { columnKey: 'co2', tableIndex: 1, rowIndex: 1 }).map(item => item.uuid)).toEqual(['1-1']);
+    });
+});

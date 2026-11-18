@@ -14,7 +14,7 @@ interface ITableHeaderParams extends IHeaderParams {
     standalone: true,
     imports: [TableFormulaButtonComponent],
     template: `<span>{{ params.displayName }}</span><app-table-formula-button [action]="params.formulaActions.column(params.columnKey)"></app-table-formula-button>`,
-    styles: [':host { display: inline-flex; align-items: center; min-width: 0; }']
+    styles: [':host { display: inline-flex; align-items: center; min-width: 0; } span { overflow: hidden; text-overflow: ellipsis; }']
 })
 export class TableFormulaHeaderComponent implements IInnerHeaderAngularComp {
     public params: ITableHeaderParams;

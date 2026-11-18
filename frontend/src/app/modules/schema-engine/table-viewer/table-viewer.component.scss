@@ -149,3 +149,10 @@
 .table-viewer__cell--data {
     padding: 0 6px;
 }
+
+.table-viewer__text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

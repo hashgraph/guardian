@@ -1,3 +1,4 @@
+import { formulaTargetKey, IFormulaTarget } from './formula-target';
 import { EntityStatus, FormulaItemType, GenerateUUIDv4, IFormula, IFormulaConfig, IFormulaItem, IFormulaLink } from '@guardian/interfaces';
 
 /**
@@ -17,10 +18,9 @@ export const BINDABLE_ITEM_TYPES: ReadonlySet<string> = new Set<string>([
 /**
  * A schema field as stored in a formula link: the root schema iri and the field path in it.
  */
-export interface IFieldTarget {
+export interface IFieldTarget extends IFormulaTarget {
     schemaIri: string;
     fieldPath: string;
-    columnKey?: string;
 }
 
 /**
@@ -74,8 +74,7 @@ export function isLinkedTo(link: IFormulaLink | null | undefined, target: IField
     return !!link &&
         link.type === 'schema' &&
         link.entityId === target.schemaIri &&
-        link.item === target.fieldPath &&
-        link.columnKey === target.columnKey;
+        formulaTargetKey(link.item, link) === formulaTargetKey(target.fieldPath, target);
 }
 
 /**
@@ -90,6 +89,12 @@ export function moveLink(link: IFormulaLink | null | undefined, target: IFieldTa
     };
     if (target.columnKey !== undefined) {
         result.columnKey = target.columnKey;
+    }
+    if (target.rowIndex !== undefined) {
+        result.rowIndex = target.rowIndex;
+    }
+    if (target.tableIndex !== undefined) {
+        result.tableIndex = target.tableIndex;
     }
     if (link && link.type === 'schema' && link.entityId === target.schemaIri && link.condition) {
         result.condition = link.condition;
@@ -121,7 +126,7 @@ export function createStubItem(name: string, uuid: string = GenerateUUIDv4()): I
 }
 
 function isSameLink(a: IFormulaLink, b: IFormulaLink): boolean {
-    return a.type === b.type && a.entityId === b.entityId && a.item === b.item && a.columnKey === b.columnKey;
+    return a.type === b.type && a.entityId === b.entityId && formulaTargetKey(a.item, a) === formulaTargetKey(b.item, b);
 }
 
 function withLinks(item: IFormulaItem, links: IFormulaLink[]): IFormulaItem {
@@ -179,7 +184,8 @@ export function applyFieldBindingOps(
                     kept.push(link);
                     continue;
                 }
-                const next = moveLink(link, { ...op.target, columnKey: op.target.columnKey ?? link.columnKey });
+                const next = moveLink(link, { ...op.target, columnKey: op.target.columnKey ?? link.columnKey,
+                    rowIndex: op.target.rowIndex ?? link.rowIndex, tableIndex: op.target.tableIndex ?? link.tableIndex });
                 const taken = links.some((other) => !matchesFrom(other) && isSameLink(other, next)) ||
                     kept.some((other) => isSameLink(other, next));
                 if (!taken) {

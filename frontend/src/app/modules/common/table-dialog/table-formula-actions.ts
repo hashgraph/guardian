@@ -5,4 +5,5 @@ export interface ITableFormulaAction {
 
 export interface ITableFormulaActions {
     column(key: string): ITableFormulaAction | null;
+    cell?(key: string, rowIndex: number, tableIndex?: number): ITableFormulaAction | null;
 }

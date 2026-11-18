@@ -1,3 +1,5 @@
+import { FormulasTree } from '../../formulas/models/formula-tree';
+import { FormulaItemType } from '@guardian/interfaces';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { UnitSystem } from '@guardian/interfaces';
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
@@ -34,6 +36,24 @@ describe('SchemaFormViewComponent', () => {
         component = new SchemaFormViewComponent(ipfs as any, dialogService as any, cdr as any, preferences as any);
         component.hide = {};
         component.values = {};
+    });
+
+
+    it('uses the enclosing repeated entry when deciding whether a table column Fx is visible', () => {
+        const tree = new FormulasTree();
+        tree.setFormulas([{ config: { formulas: [{ uuid: 'f', name: 'f', description: '', type: FormulaItemType.Formula,
+            link: { type: 'schema', entityId: '#s', item: 'records.table', columnKey: 'co2',
+                condition: { field: { name: 'kind', type: 'string' } as any, fieldPath: ['records', 'kind'], fieldValue: 'yes' } }
+        }] } }]);
+        tree.update();
+        component.formulas = tree.getFields('#s', { data: { records: [{ kind: 'no' }, { kind: 'yes' }] }, anyEntry: true });
+        const field: any = { fullPath: '#s/records.table', tableColumns: [{ key: 'co2', name: 'CO2' }] };
+        component.formulaEntries = { records: 0 };
+        const actions = component.getTableFormulaActions(field);
+        expect(actions.column('co2')).toBeNull();
+        component.formulaEntries = { records: 1 };
+        actions.column('co2')!.open(new Event('click'));
+        expect(dialogService.open).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ data: expect.objectContaining({ columnKey: 'co2', context: expect.objectContaining({ entries: { records: 1 } }) }) }));
     });
 
     describe('loadImg caching', () => {

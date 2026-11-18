@@ -1,8 +1,9 @@
+import { TableFormulaCellComponent } from './table-formula-cell.component';
 import { ITableFormulaActions } from './table-formula-actions';
 import { TableFormulaHeaderComponent } from './table-formula-header.component';
 import {Component, Input, OnInit} from '@angular/core';
 import {
-    BodyScrollEvent, CellEditingStoppedEvent, ColDef, GridApi, GridReadyEvent,
+    BodyScrollEvent, CellEditingStoppedEvent, ColDef, GridApi, GridReadyEvent, ICellRendererParams,
     ModuleRegistry, AllCommunityModule, themeQuartz
 } from 'ag-grid-community';
 import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
@@ -75,6 +76,11 @@ export class TableDialogComponent implements OnInit {
             this.dataColumnDefs = data.columnDefs.map(c => ({
                 ...c,
                 editable: !this.readOnly,
+                ...(data.formulaActions?.cell ? {
+                    cellRendererSelector: (params: ICellRendererParams) => data.formulaActions?.cell?.(String(c.field), params.node.sourceRowIndex)
+                        ? { component: TableFormulaCellComponent, params: { formulaActions: data.formulaActions, columnKey: String(c.field) } }
+                        : undefined
+                } : {}),
                 ...(data.formulaActions?.column(String(c.field)) ? {
                     headerComponentParams: {
                         ...c.headerComponentParams,

@@ -53,7 +53,7 @@
             <div
               class="table-viewer__cell table-viewer__cell--head"
               role="columnheader">
-              {{ previewHeaderNameFor(columnKey, columnIndex) }}
+              <span class="table-viewer__text">{{ previewHeaderNameFor(columnKey, columnIndex) }}</span>
               <app-table-formula-button [action]="columnFormula(columnKey)"></app-table-formula-button>
             </div>
           }
@@ -70,7 +70,8 @@
               <div
                 class="table-viewer__cell table-viewer__cell--data"
                 [title]="row[columnKey] || ''">
-                {{ row[columnKey] || '' }}
+                <span class="table-viewer__text">{{ row[columnKey] || '' }}</span>
+                <app-table-formula-button [action]="cellFormula(columnKey, rowIndex)"></app-table-formula-button>
               </div>
             }
           </div>

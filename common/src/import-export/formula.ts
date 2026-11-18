@@ -324,13 +324,20 @@ export class FormulaImportExport {
             }
             const outputs = FormulaImportExport.getItems(expression?.outputs, []);
             const columnWrappers = new Map<string, any>();
-            const addColumnLink = (output: any, columnKey: string, rawName: unknown) => {
+            const tableItemsByName = new Map<string, any>();
+            const tableTargetKeys = new WeakMap<object, Set<string>>();
+            for (const item of items) {
+                if (!tableItemsByName.has(item.name)) {
+                    tableItemsByName.set(item.name, item);
+                }
+            }
+            const addTableLink = (output: any, columnKey: string, rawName: unknown, position?: { rowIndex: number; tableIndex?: number }) => {
                 const text = typeof rawName === 'string' ? rawName.trim() : '';
                 if (!(/^[A-Za-z]\w*(?:,\w+)*$/).test(text)) {
                     return;
                 }
                 const name = text.replace(/,/g, '_');
-                let target = items.find((entry) => entry.name === name);
+                let target = tableItemsByName.get(name);
                 if (!target) {
                     return;
                 }
@@ -350,11 +357,20 @@ export class FormulaImportExport {
                     }
                     target = wrapper;
                 }
-                const link = { entityId: outputSchema, item: output.field, type: 'schema', columnKey };
+                const link = { entityId: outputSchema, item: output.field, type: 'schema', columnKey, ...position };
                 const links = Array.isArray(target.links) ? target.links : (target.link ? [target.link] : []);
-                if (!links.some((entry: any) => entry.entityId === link.entityId &&
-                    entry.item === link.item && entry.columnKey === columnKey)) {
+                const linkKey = (entry: any) => JSON.stringify([
+                    entry.entityId, entry.item, entry.columnKey, entry.rowIndex, entry.tableIndex
+                ]);
+                let keys = tableTargetKeys.get(target);
+                if (!keys) {
+                    keys = new Set<string>(links.map(linkKey));
+                    tableTargetKeys.set(target, keys);
+                }
+                const key = linkKey(link);
+                if (!keys.has(key)) {
                     links.push(link);
+                    keys.add(key);
                 }
                 target.links = links;
                 target.link = links[0];
@@ -362,11 +378,23 @@ export class FormulaImportExport {
             for (const item of outputs) {
                 if (item.columns && typeof item.columns === 'object') {
                     for (const [key, name] of Object.entries(item.columns)) {
-                        addColumnLink(item, key, name);
+                        addTableLink(item, key, name);
                     }
                     continue;
                 }
                 if (Array.isArray(item.rows) || Array.isArray(item.tables)) {
+                    const grids = Array.isArray(item.tables) ? item.tables : [item.rows];
+                    grids.forEach((rows: Record<string, unknown>[], tableIndex: number) => {
+                        if (!Array.isArray(rows)) {
+                            return;
+                        }
+                        rows.forEach((row, rowIndex) => {
+                            for (const [key, name] of Object.entries(row || {})) {
+                                const position = Array.isArray(item.tables) ? { rowIndex, tableIndex } : { rowIndex };
+                                addTableLink(item, key, name, position);
+                            }
+                        });
+                    });
                     continue;
                 }
                 let link = items.find((e) => e.name === item.name);

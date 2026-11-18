@@ -1,4 +1,4 @@
-import { formulaTargetKey, IFormulaTarget } from './formula-target';
+import { formulaTargetKey, parseFormulaTargetKey, IFormulaTarget } from './formula-target';
 import { IFormulaItem, IFormula, IFormulaLink, FormulaItemType, Schema, SchemaField, IVCDocument, ISchema, IVPDocument, IVC, IVP, ICredentialSubject, IFormulaFile, SchemaHelper, SchemaIfCondition, IFormulaSource } from "@guardian/interfaces";
 
 export interface IFormulaConditionContext {
@@ -227,7 +227,7 @@ export class FormulaItemLink {
         this.formulaLink = null;
         this.condition = link.type === 'schema' ? (link.condition ?? null) : null;
         if (link.type === 'schema') {
-            this.schemaLink = { schema: link.entityId, path: link.item, columnKey: link.columnKey };
+            this.schemaLink = { schema: link.entityId, path: link.item, columnKey: link.columnKey, rowIndex: link.rowIndex, tableIndex: link.tableIndex };
         }
         if (link.type === 'formula') {
             this.formulaLink = { formula: link.entityId, variable: link.item };
@@ -340,6 +340,7 @@ export class FormulaItem {
     private _relationships: string[] | null;
 
     private _itemLinks: FormulaItemLink[];
+    private readonly _schemaTargets = new Map<string, FormulaItemLink[]>();
     private _parent: FormulaTree | null;
 
     private _relationshipItems: FormulaItem[];
@@ -358,6 +359,15 @@ export class FormulaItem {
 
         const links = Array.isArray(config.links) ? config.links : (config.link ? [config.link] : []);
         this._itemLinks = links.filter((e) => !!e).map((e) => new FormulaItemLink(e));
+        for (const link of this._itemLinks) {
+            const target = link.schemaLink;
+            if (target) {
+                const key = formulaTargetKey(JSON.stringify([target.schema, target.path]), target);
+                const list = this._schemaTargets.get(key) || [];
+                list.push(link);
+                this._schemaTargets.set(key, list);
+            }
+        }
 
         this._parent = null;
         this._relationshipItems = [];
@@ -394,18 +404,16 @@ export class FormulaItem {
      * True when a link of the item to the field has a display condition.
      */
     public hasConditionOn(schema: string, path: string, target?: IFormulaTarget): boolean {
-        return this._itemLinks.some((e) =>
-            !!e.condition && e.schemaLink?.schema === schema && formulaTargetKey(e.schemaLink?.path || '', e.schemaLink || undefined) === formulaTargetKey(path, target)
-        );
+        return this._schemaTargets.get(formulaTargetKey(JSON.stringify([schema, path]), target))
+            ?.some(link => !!link.condition) || false;
     }
 
     /**
      * The item is shown on the field when any of its links to that field is visible.
      */
     public isVisibleOn(schema: string, path: string, ctx?: IFormulaConditionContext, target?: IFormulaTarget): boolean {
-        return this._itemLinks.some((e) =>
-            e.schemaLink?.schema === schema && formulaTargetKey(e.schemaLink?.path || '', e.schemaLink || undefined) === formulaTargetKey(path, target) && e.isVisible(ctx)
-        );
+        return this._schemaTargets.get(formulaTargetKey(JSON.stringify([schema, path]), target))
+            ?.some(link => link.isVisible(ctx)) || false;
     }
 
     // The first link, for the views that show one link.
@@ -708,21 +716,12 @@ export class FormulasTree {
         if (schema) {
             const map = this._links.get(schema);
             if (map) {
-                for (const items of map.values()) {
-                    for (const item of items) {
-                        for (const link of item.schemaLinks) {
-                            const target = link.schemaLink;
-                            if (!target || target.schema !== schema || (ctx && !link.isVisible(ctx))) {
-                                continue;
-                            }
-                            result[`${schema}/${target.path}`] = {
-                                tree: this,
-                                schema,
-                                path: target.path,
-                                context: ctx
-                            };
-                        }
+                for (const [key, items] of map) {
+                    const { path, target } = parseFormulaTargetKey(key);
+                    if (ctx && !items.some(item => item.isVisibleOn(schema, path, ctx, target))) {
+                        continue;
                     }
+                    result[`${schema}/${path}`] = { tree: this, schema, path, context: ctx };
                 }
             }
         }

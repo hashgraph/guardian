@@ -888,9 +888,21 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
 
     private tableFormulaActions = new WeakMap<object, TableFormulas>();
 
+    private tableEntryScopes = new WeakMap<object, { parent: Record<string, number> | null | undefined; entries: Map<number, Record<string, number>> }>();
+
     public tableEntryScope(item: IFieldControl, index: number): Record<string, number> {
-        const path = this.isFormulas(item)?.path || item.path || item.name;
-        return { ...this.formulaEntries, [path]: index };
+        let scopes = this.tableEntryScopes.get(item);
+        if (!scopes || scopes.parent !== this.formulaEntries) {
+            scopes = { parent: this.formulaEntries, entries: new Map() };
+            this.tableEntryScopes.set(item, scopes);
+        }
+        let entries = scopes.entries.get(index);
+        if (!entries) {
+            const path = this.isFormulas(item)?.path || item.path || item.name;
+            entries = { ...this.formulaEntries, [path]: index };
+            scopes.entries.set(index, entries);
+        }
+        return entries;
     }
 
     public getTableFormulaActions(item: IFieldControl): TableFormulas {

@@ -1,3 +1,4 @@
+import { TableFormulaButtonComponent } from '../../common/table-dialog/table-formula-button.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
@@ -191,6 +192,21 @@ describe('TableFieldComponent', () => {
         expect(component.columnFormula('co2_tonnes')).toBeNull();
         component.item = { name: 'table', field: {} } as any;
         expect(component.columnFormula('year')).toBeNull();
+    });
+
+    it('renders a clickable column Fx before a file is attached, including on a read-only form', () => {
+        build([TableFormulaButtonComponent]);
+        const fixture = TestBed.createComponent(TableFieldComponent);
+        const open = vi.fn();
+        fixture.componentInstance.item = { name: 'table', field: { tableColumns: declared } } as any;
+        fixture.componentInstance.readonly = true;
+        fixture.componentInstance.formulaActions = { column: key => key === 'year' ? { label: 'Show Year formulas', open } : null };
+        fixture.detectChanges();
+        const buttons = fixture.nativeElement.querySelectorAll('app-table-formula-button button');
+        expect(buttons.length).toBe(1);
+        expect(buttons[0].disabled).toBe(false);
+        buttons[0].click();
+        expect(open).toHaveBeenCalledOnce();
     });
 
 });

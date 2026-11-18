@@ -35,6 +35,7 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
     @Input()
     public title?: string;
     @Input() delimiter: string = ',';
+    @Input() tableIndex?: number;
     @Input() formulaActions?: ITableFormulaActions | null;
     @Input() declaredColumns: { key: string; name: string }[] = [];
 
@@ -103,6 +104,11 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
 
     public columnFormula(key: string) {
         return (this.declaredColumns || []).some(column => column.key === key) ? this.formulaActions?.column(key) ?? null : null;
+    }
+
+    public cellFormula(key: string, rowIndex: number) {
+        return (this.declaredColumns || []).some(column => column.key === key)
+            ? this.formulaActions?.cell?.(key, rowIndex, this.tableIndex) ?? null : null;
     }
 
     public previewHeaderNameFor(columnKey: string, columnIndex: number): string {
@@ -464,7 +470,8 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
                 header: 'View table',
                 width: '90%',
                 data: { columnDefs, rowData: parsed.rows, readOnly: true,
-                    formulaActions: { column: (key: string) => this.columnFormula(key) } },
+                    formulaActions: { column: (key: string) => this.columnFormula(key),
+                        cell: (key: string, rowIndex: number) => this.cellFormula(key, rowIndex) } },
             });
         } catch (error: any) {
             this.zone.run(() => {
