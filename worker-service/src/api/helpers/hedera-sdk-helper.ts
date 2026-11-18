@@ -171,6 +171,17 @@ export class HederaSDKHelper {
     public static readonly MIRROR_NODE_INDEXING_DELAY: number = 1000;
 
     /**
+     * How long a read waits for the mirror node to ingest a topic message, in milliseconds:
+     * it usually takes well under a second, and a message missing after that does not exist
+     */
+    public static readonly MIRROR_NODE_MESSAGE_WAIT: number = 5000;
+
+    /**
+     * Delay between the reads of a topic message the mirror node has not ingested yet, in milliseconds
+     */
+    public static readonly MIRROR_NODE_MESSAGE_POLL_INTERVAL: number = 500;
+
+    /**
      * Callback
      * @private
      */
@@ -1124,6 +1135,30 @@ export class HederaSDKHelper {
     }
 
     /**
+     * Reads a topic message, waiting a few seconds for the mirror node to ingest it: a message
+     * submitted moments ago answers 404 like a nonexistent one until then.
+     *
+     * @param read - Mirror node request of the message
+     *
+     * @returns {T} - what the request returns
+     */
+    private static async readIndexedMessage<T>(read: () => Promise<T>): Promise<T> {
+        const deadline = Date.now() + HederaSDKHelper.MIRROR_NODE_MESSAGE_WAIT;
+        for (;;) {
+            try {
+                return await read();
+            } catch (error) {
+                // only a 404 is worth waiting on; auth/5xx/network will not resolve
+                const status = error?.response?.status ?? error?.status;
+                if (status !== 404 || Date.now() >= deadline) {
+                    throw error;
+                }
+            }
+            await delay(HederaSDKHelper.MIRROR_NODE_MESSAGE_POLL_INTERVAL);
+        }
+    }
+
+    /**
      * Returns topic message
      * @param timeStamp Message identifier
      * @param apiOptions API options
@@ -1161,14 +1196,14 @@ export class HederaSDKHelper {
             }
         }
 
-        const res = await axiosGetWithRetry(
+        const res = await HederaSDKHelper.readIndexedMessage(() => axiosGetWithRetry(
             'Mirror node',
             `${Environment.HEDERA_MESSAGE_API}/${timeStamp}`,
             {
                 responseType: 'json',
                 timeout: process.env.REST_API_TIMEOUT ? parseInt(process.env.REST_API_TIMEOUT, 10) : 30000
             }
-        );
+        ));
         if (!res || !res.data || !res.data.message) {
             throw new Error(`Invalid message '${timeStamp}'`);
         }
@@ -1334,7 +1369,7 @@ export class HederaSDKHelper {
         }
 
         const url = `${Environment.HEDERA_TOPIC_API}/${topicId}/messages/${index}`;
-        const res = await axios.get(url, { responseType: 'json' });
+        const res = await HederaSDKHelper.readIndexedMessage(() => axios.get(url, { responseType: 'json' }));
         if (!res || !res.data || !res.data.message) {
             throw new Error(`Invalid message. TopicId: '${topicId}', index: '${index}'`);
         }

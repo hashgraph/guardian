@@ -72,6 +72,7 @@ export async function axiosGetWithRetry(
     const reason = lastError?.message || 'Unknown error';
     const wrapped = new Error(`${source} request failed: ${reason}`);
     (wrapped as any).isTimeoutError = lastError?.isTimeoutError;
+    (wrapped as any).status = lastError?.response?.status;
     throw wrapped;
 }
 
