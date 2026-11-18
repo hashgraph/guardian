@@ -22,6 +22,7 @@ context('Workflow Module Creation', { tags: ['ui', 'ui-all', 'all'] }, () => {
     // already published, so it cannot be deleted and stays in the list.
     const moduleNameIPFSImported = 'ComparedModuleIPFS';
     const moduleNameFileImported = 'ComparedModuleFile';
+    let fileImportedModule;
 
     beforeEach(() => {
         login(SRUsername);
@@ -38,12 +39,16 @@ context('Workflow Module Creation', { tags: ['ui', 'ui-all', 'all'] }, () => {
     });
 
     it('module file import', () => {
-        modulesPage.importNewModuleFile('comparedModuleFile.module', moduleNameFileImported);
+        modulesPage.importNewModuleFile('comparedModuleFile.module', moduleNameFileImported).then((name) => {
+            fileImportedModule = name;
+        });
     });
 
     after(() => {
         modulesPage.openModulesTab();
         modulesPage.deleteModule(moduleName);
-        modulesPage.deleteModule(moduleNameFileImported);
+        if (fileImportedModule) {
+            modulesPage.deleteModule(fileImportedModule);
+        }
     });
 });

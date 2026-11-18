@@ -1,5 +1,7 @@
 import { randomInt } from '../../../../support/random';
 import { publishSchema } from '../../../../support/CustomHelpers/ipfsSeeding';
+import { createDraftPolicy, deleteDraftPolicy } from '../../../../support/api/policies';
+import * as Authorization from '../../../../support/authorization';
 import { SchemaPage } from '../../pages/schemaPage';
 const schemaPage = new SchemaPage();
 
@@ -24,6 +26,10 @@ context('Policy Schema Creation', { tags: ['ui', 'ui-all', 'all'] }, () => {
     const schemaNameImportedFile = 'Lead User Details';
     let schemaNameImportedIPFS;
     let schemaMessageId;
+    // The imports go to a draft policy of the spec's own: another policy may already hold a schema of the
+    // same name. Deleting the policy deletes the schemas imported into it.
+    const policyName = 'UIPolicyForSchemaImport' + randomInt(1000000000);
+    let policyId;
 
     // A schema published on Hedera by the run itself, so the IPFS import does not depend on a testnet message.
     before(() => {
@@ -31,6 +37,10 @@ context('Policy Schema Creation', { tags: ['ui', 'ui-all', 'all'] }, () => {
             schemaMessageId = messageId;
             schemaNameImportedIPFS = name;
         });
+        Authorization.getAccessToken(SRUsername).then((authorization) =>
+            createDraftPolicy(authorization, policyName).then((id) => {
+                policyId = id;
+            }));
     });
 
     beforeEach(() => {
@@ -42,16 +52,18 @@ context('Policy Schema Creation', { tags: ['ui', 'ui-all', 'all'] }, () => {
     });
 
     it('import policy schema IPFS', () => {
-        schemaPage.importPolicySchemaIPFS(schemaMessageId, schemaNameImportedIPFS);
+        schemaPage.importPolicySchemaIPFS(schemaMessageId, schemaNameImportedIPFS, policyName);
     });
 
     it('import policy schema file', () => {
-        schemaPage.importSchemaFile(schemaFileName, schemaNameImportedFile);
+        schemaPage.importSchemaFile(schemaFileName, schemaNameImportedFile, policyName);
     });
 
     after(() => {
         login(SRUsername);
         schemaPage.deleteSchema(schemaName);
-        schemaPage.deleteSchema(schemaNameImportedFile);
+        if (policyId) {
+            Authorization.getAccessToken(SRUsername).then((authorization) => deleteDraftPolicy(authorization, policyId));
+        }
     });
 });

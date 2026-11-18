@@ -21,7 +21,7 @@ context('Workflow Module Deletion', { tags: ['ui', 'ui-all', 'all'] }, () => {
     })
 
     it('module deletion', () => {
-        modulesPage.importNewModuleFile('comparedModuleFile.module', moduleNameFileImported);
-        modulesPage.deleteModule(moduleNameFileImported);
+        modulesPage.importNewModuleFile('comparedModuleFile.module', moduleNameFileImported)
+            .then((name) => modulesPage.deleteModule(name));
     });
 });

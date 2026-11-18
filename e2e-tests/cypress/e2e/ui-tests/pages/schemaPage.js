@@ -123,17 +123,19 @@ export class SchemaPage {
     }
 
     // Imports the schema into the first policy offered by the preview dialog.
-    _importFromPreview(schemaName) {
+    // The schemas go to `policyName`: importing them into a policy that already holds schemas of the
+    // same name opens the "Schemas for replace" dialog instead of importing.
+    _importFromPreview(schemaName, policyName) {
         cy.contains(List.dialog, 'Schema Import Preview', { timeout: TIMEOUTS.backend }).as('preview');
         cy.get('@preview').find(List.policyDropdown).click();
-        cy.get(List.option).first().click();
+        cy.contains(List.option, new RegExp(`^\\s*${policyName}\\s*$`)).click();
         cy.get('@preview').contains('button', 'Import').should('not.be.disabled').click();
         Checks.waitForTaskComplete();
         Checks.waitForLoading();
         this._row(schemaName).should('exist');
     }
 
-    importPolicySchemaIPFS(schemaMessageId, schemaName) {
+    importPolicySchemaIPFS(schemaMessageId, schemaName, policyName) {
         cy.get(List.toolbarButton('Import')).click();
         cy.contains(List.dialog, 'Select action').contains('Import from IPFS').click();
         // The field re-renders as soon as the typed text is a valid id and drops the remaining
@@ -141,14 +143,14 @@ export class SchemaPage {
         cy.get(List.ipfsInput).invoke('val', schemaMessageId).trigger('input');
         cy.get(List.ipfsInput).should('have.value', schemaMessageId);
         cy.contains(List.dialog, 'Select action').contains('button', 'Import').click();
-        this._importFromPreview(schemaName);
+        this._importFromPreview(schemaName, policyName);
     }
 
-    importSchemaFile(schemaFileName, schemaName) {
+    importSchemaFile(schemaFileName, schemaName, policyName) {
         cy.get(List.toolbarButton('Import')).click();
         cy.contains(List.dialog, 'Select action').contains('Import from File').click();
         dropFile(schemaFileName);
-        this._importFromPreview(schemaName);
+        this._importFromPreview(schemaName, policyName);
     }
 
     publishPolicySchema(name, version = '1.0.0') {
