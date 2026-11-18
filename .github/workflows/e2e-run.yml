@@ -11,7 +11,7 @@ on:
       suite:
         type: string
         required: true
-        description: Short suite name (api, policy, ui). Used in report and artifact names, so two jobs of one run do not collide
+        description: Short name of the caller (e2e, ui). Used in report, check and artifact names, so two runs do not collide
       grep_tags:
         type: string
         required: true
