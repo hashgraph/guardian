@@ -10,6 +10,9 @@ import { fileURLToPath } from 'node:url';
 const scriptsDir = path.dirname(fileURLToPath(import.meta.url));
 const STUBBED_COMMANDS = ['npm', 'npx', 'node', 'docker'];
 
+// A caller that has CYPRESS_* exported (a run in progress) must not change what the script under test hands to Cypress.
+const withoutCypressVariables = (environment) => Object.fromEntries(Object.entries(environment).filter(([name]) => !name.startsWith('CYPRESS_')));
+
 export function createSandbox(scriptName, {
     yarnrc = 'nodeLinker: node-modules\n\nyarnPath: .yarn/releases/yarn-9.9.9.cjs\n',
     scriptPath = path.join('scripts', scriptName),
@@ -39,7 +42,7 @@ exit 0
             fs.writeFileSync(`${commandLog}.env`, '');
             const result = spawnSync('bash', [script, ...args], {
                 encoding: 'utf8',
-                env: { ...process.env, ...env, PATH: `${path.join(root, 'bin')}:${process.env.PATH}`, COMMAND_LOG: commandLog, FAILING_COMMAND: failingCommand },
+                env: { ...withoutCypressVariables(process.env), ...env, PATH: `${path.join(root, 'bin')}:${process.env.PATH}`, COMMAND_LOG: commandLog, FAILING_COMMAND: failingCommand },
             });
             const lines = (file) => {
                 const logged = fs.readFileSync(file, 'utf8').trimEnd();
