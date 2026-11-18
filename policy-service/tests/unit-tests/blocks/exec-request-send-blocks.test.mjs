@@ -516,6 +516,74 @@ describe('@unit exec RequestVcDocumentBlock.checkPreset', () => {
         assert.equal((await check(block, { tags: ['a', 'b', 'c'] }, ref)).valid, true);
     });
 
+    describe('conditions inside a sub-schema', () => {
+        // applicant { has, name }: `name` is shown only when applicant.has == 'true'
+        const applicant = f('applicant', {
+            isRef: true,
+            fields: [f('has'), f('name')],
+            conditions: [{
+                ifCondition: { field: f('has'), fieldValue: 'true' },
+                thenFields: [f('name')],
+                elseFields: [],
+            }],
+        });
+        const schema = { iri: '#S', fields: [applicant], conditions: [] };
+        const preset = () => source({ applicant: { name: 'Ann' } });
+
+        it('accepts a readonly nested field that its sub-schema condition hides', async () => {
+            const block = mk([ro('applicant.name')], schema);
+            assert.equal((await check(block, { applicant: { has: 'false' } }, preset())).valid, true);
+        });
+
+        it('still rejects it when the condition shows the field and the value is missing or changed', async () => {
+            const block = mk([ro('applicant.name')], schema);
+            assert.equal((await check(block, { applicant: { has: 'true' } }, preset())).valid, false);
+            assert.equal((await check(block, { applicant: { has: 'true', name: 'Bob' } }, preset())).valid, false);
+            assert.equal((await check(block, { applicant: { has: 'true', name: 'Ann' } }, preset())).valid, true);
+        });
+
+        it('a readonly condition input can not be used to hide a readonly field', async () => {
+            // `has` is readonly too, so the preset value 'true' decides: `name` must be present and equal
+            const block = mk([ro('applicant.has'), ro('applicant.name')], schema);
+            const ref = source({ applicant: { has: 'true', name: 'Ann' } });
+            assert.equal((await check(block, { applicant: { has: 'false' } }, ref)).valid, false);
+            assert.equal((await check(block, { applicant: { has: 'true', name: 'Ann' } }, ref)).valid, true);
+        });
+
+        it('accepts when every entry of a repeatable sub-schema hides the field', async () => {
+            const list = f('applicants', { isRef: true, isArray: true, fields: applicant.fields, conditions: applicant.conditions });
+            const block = mk(
+                [{ name: 'applicants.name', value: 'src.name', readonly: true, nameLevel: 1, valueLevel: 1 }],
+                { iri: '#S', fields: [list], conditions: [] }
+            );
+            const ref = source({ src: [{ name: 'A' }, { name: 'B' }] });
+            const doc = { applicants: [{ has: 'false' }, { has: 'false' }] };
+            assert.equal((await check(block, doc, ref)).valid, true);
+        });
+
+        it('accepts a repeatable list where only some entries hide the field', async () => {
+            const list = f('applicants', { isRef: true, isArray: true, fields: applicant.fields, conditions: applicant.conditions });
+            const block = mk(
+                [{ name: 'applicants.name', value: 'src.name', readonly: true, nameLevel: 1, valueLevel: 1 }],
+                { iri: '#S', fields: [list], conditions: [] }
+            );
+            const ref = source({ src: [{ name: 'A' }, { name: 'B' }] });
+            assert.equal((await check(block, { applicants: [{ has: 'false' }, { has: 'true', name: 'B' }] }, ref)).valid, true);
+            assert.equal((await check(block, { applicants: [{ has: 'false' }, { has: 'true', name: 'X' }] }, ref)).valid, false);
+        });
+
+        it('rejects a repeatable entry that shows the field with a changed value', async () => {
+            const list = f('applicants', { isRef: true, isArray: true, fields: applicant.fields, conditions: applicant.conditions });
+            const block = mk(
+                [{ name: 'applicants.name', value: 'src.name', readonly: true, nameLevel: 1, valueLevel: 1 }],
+                { iri: '#S', fields: [list], conditions: [] }
+            );
+            const ref = source({ src: [{ name: 'A' }, { name: 'B' }] });
+            const doc = { applicants: [{ has: 'true', name: 'A' }, { has: 'true', name: 'X' }] };
+            assert.equal((await check(block, doc, ref)).valid, false);
+        });
+    });
+
     it('without ref the check is skipped, as before', async () => {
         const block = mk([ro('a')]);
         block.getSources = async () => [source({ a: 'orig' })];

@@ -271,6 +271,9 @@
                   @if (row.stale) {
                     <span class="preset-chip preset-chip-warning" pTooltip="This field is not in the block schema any more" tooltipPosition="top" tooltipStyleClass="preset-tooltip" [tooltipOptions]="{showDelay: 300}">missing</span>
                   }
+                  @if (row.sourceMissing) {
+                    <span class="preset-chip preset-chip-warning" pTooltip="The preset field of this mapping is not in the preset schema any more" tooltipPosition="top" tooltipStyleClass="preset-tooltip" [tooltipOptions]="{showDelay: 300}">preset field missing</span>
+                  }
                   <div class="preset-path" [pTooltip]="row.name" tooltipPosition="top" tooltipStyleClass="preset-tooltip" [tooltipOptions]="{showDelay: 300}">
                     <i class="pi pi-sitemap"></i>
                     @for (part of row.pathParts; track $index; let last = $last) {

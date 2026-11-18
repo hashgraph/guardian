@@ -173,6 +173,7 @@ export class RequestConfigComponent implements OnInit {
         }
 
         this.rootRows = rootRows;
+        this.refreshLevels();
         const mappedNames = new Set<string>(
             this.properties.presetFields.filter((e: any) => e.value).map((e: any) => e.name)
         );
@@ -210,8 +211,37 @@ export class RequestConfigComponent implements OnInit {
             level: node?.arrayLvl ?? 0,
             nested: name.includes('.'),
             pathParts: this.shortPath(name),
-            stale: !node
+            stale: !node,
+            sourceMissing: this.isSourceMissing(name)
         };
+    }
+
+    /**
+     * True if the row is mapped to a preset field that is not in the preset schema any more
+     * (renamed or removed). The special values of the user are not preset fields.
+     */
+    private isSourceMissing(name: string): boolean {
+        const value = this.properties.presetFields.find((e: any) => e.name === name)?.value;
+        if (!value || value === 'username' || value === 'hederaAccountId') {
+            return false;
+        }
+        return !!this.presetSchemaData?.getDeepFields && !this.sourceNodes.has(value);
+    }
+
+    /**
+     * Array levels are stored with the mapping, so they go stale when a schema gains or loses
+     * an array. Recomputes them for the nested mappings whose two fields still exist.
+     */
+    private refreshLevels() {
+        for (const entry of this.properties.presetFields) {
+            if (!entry?.value || !PresetPath.isNested(entry)) {
+                continue;
+            }
+            if (!this.targetNodes.has(entry.name) || !this.sources.some((e) => e.name === entry.value)) {
+                continue;
+            }
+            this.syncLevels(entry);
+        }
     }
 
     /**
@@ -241,19 +271,19 @@ export class RequestConfigComponent implements OnInit {
 
     /**
      * Options of a row's source dropdown, grouped by schema like the schema editor's field
-     * pickers. The root fields come first, exactly as before; nested paths follow, and only
-     * those with at least as many arrays as the target.
+     * pickers. A plain root row gets every root field, exactly as before. A nested row, and any nested
+     * path, only gets sources with at least as many arrays as the target.
      */
     public getSourceOptions(row: IPresetRow): IPresetGroup[] {
         const target = this.targetNodes.get(row.name)?.field;
-        const cacheKey = `${row.level}|${PresetPath.fieldKind(target)}`;
+        const cacheKey = `${row.level}|${row.nested}|${PresetPath.fieldKind(target)}`;
         let groups = this.optionsCache.get(cacheKey);
         if (!groups) {
             const preset = this.presetSchemaData;
             groups = preset?.getDeepFields
                 ? this.buildGroups(
                     preset,
-                    (node) => !node.path.includes('.') || (row.level === 0 ? node.arrayLvl === 0 : node.arrayLvl >= row.level),
+                    (node) => (!row.nested && !node.path.includes('.')) || (row.level === 0 ? node.arrayLvl === 0 : node.arrayLvl >= row.level),
                     (node) => !!target && !PresetPath.isTypeCompatible(target, node.field)
                 )
                 : [];
@@ -459,4 +489,5 @@ interface IPresetRow {
     pathParts: string[];
     /** The block schema has no such field any more. */
     stale: boolean;
+    sourceMissing: boolean;
 }

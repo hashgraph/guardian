@@ -129,12 +129,13 @@ export class PresetPath {
     ): any {
         const json: any = {};
         for (const mapping of mappings) {
-            if (mapping.value === 'username') {
-                json[mapping.name] = user.username;
-                continue;
-            }
-            if (mapping.value === 'hederaAccountId') {
-                json[mapping.name] = user.hederaAccountId;
+            if (mapping.value === 'username' || mapping.value === 'hederaAccountId') {
+                const value = mapping.value === 'username' ? user.username : user.hederaAccountId;
+                if (typeof mapping.name === 'string' && mapping.name.includes('.')) {
+                    PresetPath.write(json, fields, mapping.name, value);
+                } else {
+                    json[mapping.name] = value;
+                }
                 continue;
             }
             if (PresetPath.isNested(mapping)) {
@@ -144,7 +145,9 @@ export class PresetPath {
                 }
                 continue;
             }
-            json[mapping.name] = source[mapping.value];
+            // Objects are copied: a nested mapping into the same root writes into it
+            const plain = source[mapping.value];
+            json[mapping.name] = plain && typeof plain === 'object' ? JSON.parse(JSON.stringify(plain)) : plain;
         }
         return json;
     }
