@@ -272,12 +272,13 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 if (!policy || policy.status !== PolicyStatus.PUBLISH) {
                     return new MessageError('Item does not exist.');
                 }
-                const { schemas, toolSchemas } = await PolicyImportExport.loadAllSchemas(policy);
+                const [{ schemas, toolSchemas }, documentsSchemas] = await Promise.all([
+                    PolicyImportExport.loadAllSchemas(policy),
+                    DatabaseServer.getSchemas({ topicId: item.topicId })
+                ]);
                 const all = []
                     .concat(schemas, toolSchemas)
                     .filter((s) => s.status === SchemaStatus.PUBLISHED && s.entity !== 'EVC');
-
-                const documentsSchemas = await DatabaseServer.getSchemas({ topicId: item.topicId });
 
                 return new MessageResponse({
                     policy: pickRelationshipsPolicy(policy),
