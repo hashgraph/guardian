@@ -1,7 +1,7 @@
-import { restoreSchemaDefs } from '../../../common/models/schema-defs';
+import { buildSchemaNames } from '../../../common/models/schema-defs';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormulaEngine, GenerateUUIDv4, IStatistic, IVCDocument, Schema, UserPermissions } from '@guardian/interfaces';
+import { FormulaEngine, GenerateUUIDv4, IStatistic, IVCDocument, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { PolicyStatisticsService } from 'src/app/services/policy-statistics.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -61,7 +61,7 @@ export class StatisticAssessmentConfigurationComponent implements OnInit {
         tooltip: false
     }];
     public userColumns: any[] = [];
-    public schemas = new Map<string, Schema>();
+    public schemaNames = new Map<string, string>();
 
     private subscription = new Subscription();
 
@@ -181,16 +181,7 @@ export class StatisticAssessmentConfigurationComponent implements OnInit {
     ) {
         this.item = item;
         this.policy = relationships?.policy || {};
-        const schemas = restoreSchemaDefs(relationships?.schemas || []);
-        this.schemas.clear();
-        for (const item of schemas) {
-            try {
-                const schema = new Schema(item);
-                this.schemas.set(schema.iri || schema.id, schema);
-            } catch (error) {
-                console.log(error);
-            }
-        }
+        this.schemaNames = buildSchemaNames(relationships?.schemas || []);
 
         const config = this.item.config || {};
         const variables = config.variables || [];
@@ -280,7 +271,7 @@ export class StatisticAssessmentConfigurationComponent implements OnInit {
         for (const doc of this.documents) {
             doc.__id = doc.targetDocument.id;
             doc.__schemaId = doc.targetDocument.schema || '';
-            doc.__schemaName = this.schemas.get(doc.__schemaId)?.name || doc.__schemaId;
+            doc.__schemaName = this.schemaNames.get(doc.__schemaId) || doc.__schemaId;
             doc.__cols = new Map<IColumn, any>();
         }
     }

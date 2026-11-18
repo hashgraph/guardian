@@ -58,10 +58,6 @@ export class LabelConfig {
         this.policy = relationships?.policy || {};
     }
 
-    public refreshNavigation() {
-        this.updateSelected();
-    }
-
     public dragMenuStart(item: NavItem) {
         this.draggedMenuItem = item.clone();
         this.draggedMenuItem.setId(GenerateUUIDv4());

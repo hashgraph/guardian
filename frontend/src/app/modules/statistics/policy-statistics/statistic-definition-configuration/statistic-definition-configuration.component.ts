@@ -1,6 +1,6 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EntityStatus, IStatistic, PolicyStatus, Schema, UserPermissions } from '@guardian/interfaces';
+import { EntityStatus, IStatistic, Schema, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Observable, Subscription } from 'rxjs';
 import { PolicyStatisticsService } from 'src/app/services/policy-statistics.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -21,6 +21,7 @@ import { SchemaScore, SchemaScores } from '../../../common/models/schema-scores'
 import { SchemaRule, SchemaRules } from '../../../common/models/schema-rules';
 import { CustomConfirmDialogComponent } from '../../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { restoreSchemaDefs } from '../../../common/models/schema-defs';
+import { isPolicyVersionShown } from '../../../common/models/policy-version';
 
 @Component({
     selector: 'app-statistic-definition-configuration',
@@ -127,8 +128,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
     }
 
     public get showPolicyVersion(): boolean {
-        const status = this.policy?.status;
-        return !!this.policy?.version && (status === PolicyStatus.PUBLISH || status === PolicyStatus.DISCONTINUED);
+        return isPolicyVersionShown(this.policy);
     }
 
     public get roots(): SchemaNode[] {
@@ -178,7 +178,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
         this.subscription.add(
             this.overviewForm.valueChanges.subscribe(() => {
                 if (this.overviewForm.dirty) {
-                    this.dirty = true;
+                    this.markDirty();
                 }
             })
         );

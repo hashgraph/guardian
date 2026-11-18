@@ -1,5 +1,6 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { isPolicyVersionShown } from '../../common/models/policy-version';
 import { IFormulaItem, IFormulaSource, FormulaItemType, IFormulaLink, Schema, SchemaField, UserPermissions, EntityStatus, PolicyStatus } from '@guardian/interfaces';
 import { debounceTime, forkJoin, Observable, of, Subject, Subscription, switchMap } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -57,8 +58,7 @@ export class FormulaConfigurationComponent implements OnInit {
     }
 
     public get showPolicyVersion(): boolean {
-        const status = this.policy?.status;
-        return !!this.policy?.version && (status === PolicyStatus.PUBLISH || status === PolicyStatus.DISCONTINUED);
+        return isPolicyVersionShown(this.policy);
     }
 
     public config: Formulas = new Formulas();
@@ -394,7 +394,7 @@ export class FormulaConfigurationComponent implements OnInit {
             data: {
                 header: 'Apply methodology to all items',
                 text: `Set methodology "${value}" on all ${all.length} items? Items that already have a different methodology will be overwritten.`,
-                regularText: true,
+                textClass: 'confirmation-text--regular',
                 buttons: [{
                     name: 'Close',
                     class: 'secondary'
