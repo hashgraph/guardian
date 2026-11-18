@@ -1,6 +1,6 @@
 # ACM0010 - Submission Evidence (issue #5945)
 
-**Bounty:** hashgraph/guardian#5945 — **Repo:** guardian, branch `develop`, HEAD `089c11698`
+**Bounty:** hashgraph/guardian#5945 — **Repo:** guardian, branch `develop`, HEAD `52af20ea3` (PR #7402 head)
 **Outcome:** PARTIAL (offline implementation/test/build advanced; runtime/external gaps remain)
 
 ## Sources inspected (this session)
@@ -10,8 +10,8 @@
 - **TOOL14 v03.0** (EB 123 Annex 2, valid 7 Nov 2024) retrieved from `https://cdm.unfccc.int/methodologies/PAmethodologies/tools/am-tool-14-v3.pdf` and text-extracted.
 
 ## Reproducible results
-- `node build-policy.mjs` → `ACM0010.policy` **49,709 bytes**, 21 entries. **SHA-256:** `8D8619408970F9005439AC63EE8E6670C865DF7E16DE005F1FEC614298168567`.
-- `node --test (Get-ChildItem -Path "test" -Filter "*.test.mjs" | ForEach-Object { $_.FullName })` → **248 pass / 0 fail / 0 skip**.
+- `node build-policy.mjs` → `ACM0010.policy` **58,128 bytes**, 20 entries. **SHA-256:** `1363230E5522C75FA9A3BD0407707888E89AFE6CE70B00B665F3878ACF8051D6`.
+- `node --test test/*.test.mjs` → **250 pass / 0 fail / 0 skip**, exit 0.
 
 ## New/changed implementation (actual code)
 - `logic/calculate-baseline-ch4.js`: added explicit **VSLT Option 3 Eq(4) scaling** via `vsltOption3Eq4Scaling` (legacy `herdParameters` alias retained): `VSLT = (Wsite/Wdefault)*VSdefault*ndy` per-animal, annualized by `N_LT`; provenance recorded. v09 draft p.14 layout ambiguous (adjacent `VSdefault`/`VSrate,LT,y/1000`), so strict v09 rendering not claimed.
@@ -24,6 +24,12 @@
 - **TOOL14 conditional leakage:** Eq(6) monitored liquid pathway implemented (previously monitored/direct-only for that case).
 - **Audit:** PEAD/LEAD integration remains consistent with supported TOOL14 Eqs 1-5,7,8 and avoids AD-flare double counting in ER.
 
+## Validator results (Guardian compiled SchemaImportExportHelper, container run)
+- 8/8 packaged schemas passed `validateDefs` with original IRIs and with import-time UUID remapped IRIs.
+- Circular dependencies: 0 found.
+- Reference resolution: 4/4 refs resolved; 0 after remapping.
+- Negative tests: 7/7 passed (non-existent IRI, circular dep, unresolvable ref, empty schema, companion schema, cache hit, transitive circular).
+
 ## Still conditional / external (not invented)
 | Gap | Status | Reason |
 |---|---|---|
@@ -31,17 +37,17 @@
 | TOOL14 solid digestate Option 1 (TOOL04) and other external tool models/procedures | CONDITIONAL | Accept monitored/externally derived inputs; not fully reimplemented. |
 | VM0050 parity, live Guardian/Project Hub E2E, screenshots/video | BLOCKED | VM0050 absent in repo; SR unregistered (`confirmed=false`, no DID/Hedera), preview 422 `User is not registered`. No DID/import/Hedera/credential actions taken. |
 
-## How to reproduce
-```
-cd "Methodology Library/DLT Earth Methodology Bounty Program/ACM0010"
-node build-policy.mjs
-node --test (Get-ChildItem -Path "test" -Filter "*.test.mjs" | ForEach-Object { $_.FullName })
-```
-
 ## Guardian runtime (read-only evidence)
-- `127.0.0.1:3301` up. Session 200(null); test login 401; authorized SR bearer 200. SR profile `confirmed=false`, no DID/Hedera; Mongo `freshnondemo_testnet_undefined.did_document` 0.
+- `127.0.0.1:3301` up. Session 200(null); test login 401; authorized SR bearer 200. SR profile `confirmed=false`, no DID/Hedere; Mongo `freshnondemo_testnet_undefined.did_document` 0.
 - Policy preview (ACM0010/VM0010, raw zip, bearer) → **422 `User is not registered`** (`EntityOwner/importPolicyFromFilePreview`). No DID registration/import/Hedera tx performed.
 - **Owner approval required:** complete StandardRegistry profile/DID registration via supported Guardian flow (dedicated SR/account separation), then re-run preview/import and live E2E. **Security:** exposed operator key must not be used for new transactions (key rotation deferred ≠ authorization). No placeholder DID/DB bypass/password reset/account reuse.
+- Existing DRAFT policy `6afc85edcfeefebf926aaaf6` was preserved; no import/publish/delete/reset performed against it.
+
+## PR #7402 status
+- Head: `bounty/acm0010-5945` @ `52af20ea3`
+- Base: `develop` @ `6800a92a3` (develop has since moved to `24217a658`)
+- Mergeable: **CONFLICTING** — resolved locally by adopting develop's `api-gateway/package.json` (version 3.7.1, mikro-orm 6.6.17, ws 8.22.0, @types/node 24.19.1, @types/ws 8.18.2) while retaining the cross-platform build script.
+- Checks: Title Check SUCCESS, PR Formatting (DCO) ACTION_REQUIRED, PR Formatting (Assignee) FAILURE, Wiz SAST/Vulnerability/Data/IaC/Secret NEUTRAL, StepSecurity HARDENER SUCCESS, conventional-pr-title SUCCESS.
 
 ## How to reproduce
 ```

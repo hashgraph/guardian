@@ -1,7 +1,7 @@
 ﻿# ACM0010 - Issue #5945 Acceptance Matrix
 
 **Bounty:** hashgraph/guardian#5945 - "ACM0010: GHG emission reductions from manure management systems"
-**Repository:** guardian, branch `develop`, HEAD `089c11698`
+**Repository:** guardian, branch `develop`, HEAD `52af20ea3`
 **Slice dir:** `Methodology Library/DLT Earth Methodology Bounty Program/ACM0010`
 **Outcome:** PARTIAL - offline implementation/test/build advanced (BE_CH4, BE_N2O, PE_Aer, PE_N2O 1&2, LE_y Eqs 22-26,31-32, MD_y 35, ER_y 33/34, PE_flare/transport/elec-heat, VSLT Eq 3/4-scaling/5, TOOL14 v03.0 PEAD/LEAD with Eq1-5,6-monitored-liquid,7,8 supported paths). Remaining gaps require external confirmation/sources/runtime/profile authorization.
 
@@ -44,7 +44,22 @@ Legend: PASS = implemented + test-verified · PARTIAL = implemented but criterio
 | Project emissions from anaerobic digester | PEAD,y (TOOL14 v03.0 Eq 1-4) | PASS (supported paths) | `logic/calculate-pe-ad.js`; Step1 Opt2 Eq(2), Step2 Eq(3)/monitored/renewable-zero, Step3/5 monitored-direct as required, Step4 Eq(4); integrated in ER (AD flare double-count avoided) |
 | Leakage from anaerobic digester | LEAD,y (TOOL14 v03.0 Eq 5,7,8,6-monitored-liquid) | PASS (supported paths) | Eq(7)/(8) defaults, **Eq(6)** monitored liquid `Qstored*PCOD*B0*MCF*GWPCH4` (B0 default 0.25), LECOMP monitored/direct; integrated in leakage/ER |
 
-**Not implemented / conditional (not invented):**
+## Validator evidence (Guardian compiled SchemaImportExportHelper)
+
+All 8 packaged schemas validated against the actual compiled `SchemaImportExportHelper.validateDefs` in container `guardian-acm0010-fresh-nondemo-guardian-service-1`:
+
+| Check | Result |
+|---|---|
+| validateDefs, original IRIs (8 schemas) | **8/8 passed** |
+| validateDefs, import-time UUID remapped (8 schemas) | **8/8 passed** |
+| Circular dependency check | **0 found** |
+| Reference resolution (4 `$ref`s in pristine docs) | **4/4 resolved** |
+| Reference resolution after UUID remap | **0 failures** |
+| Negative tests (non-existent IRI, circular dep, unresolvable ref, empty schema, companion schema, cache hit, transitive circular) | **7/7 passed** |
+
+See `run-full-validator-v2.mjs` (container-local) for the validator execution.
+
+## Not implemented / conditional (not invented)
 
 | Gap | Status | Reason / evidence needed |
 |-----|--------|---------------------------|
@@ -60,15 +75,24 @@ Legend: PASS = implemented + test-verified · PARTIAL = implemented but criterio
 | Templates/data transformation end-to-end | BLOCKED | Runtime delivery unverified |
 | All quantification approaches validated | PARTIAL | Implemented set above validated; external gaps remain |
 | Docs/screenshots/video | PARTIAL/BLOCKED | Offline docs updated; live runtime evidence requires environment+auth/profile |
-| Guardian runtime integration (checked this session, read-only) | BLOCKED | Containers up incl. `guardian-acm0010-fresh-nondemo-web-proxy-1` (`127.0.0.1:3301->80`). `GET /api/v1/accounts/session` → 200 (null). `POST /api/v1/accounts/login` (test creds) → 401. Authorized SR bearer obtained via runtime env creds (not printed) → 200; `GET /api/v1/profiles/StandardRegistry` shows `confirmed=false`, no `did`, no `hederaAccountId`; `freshnondemo_testnet_undefined.did_document` count 0. `POST /api/v1/policies/import/file/preview` (raw zip, bearer) for ACM0010 and VM0010 → **422** with api-gateway log `HttpException: User is not registered` (`EntityOwner/importPolicyFromFilePreview`). No DID/profile registration, no Hedera transactions, no import performed (owner authorization required). |
+| Guardian runtime integration (checked this session, read-only) | BLOCKED | Containers up incl. `guardian-acm0010-fresh-nondemo-web-proxy-1` (`127.0.0.1:3301->80`). `GET /api/v1/accounts/session` → 200 (null). `POST /api/v1/accounts/login` (test creds) → 401. Authorized SR bearer obtained via runtime env creds (not printed) → 200; `GET /api/v1/profiles/StandardRegistry` shows `confirmed=false`, no `did`, no `hederaAccountId`; `freshnondemo_testnet_undefined.did_document` count 0. `POST /api/v1/policies/import/file/preview` (raw zip, bearer) for ACM0010 and VM0010 → **422** with api-gateway log `HttpException: User is not registered` (`EntityOwner/importPolicyFromFilePreview`). No DID/profile registration, no Hedera transactions, no import performed (owner authorization required). Existing DRAFT policy `6afc85edcfeefebf926aaaf6` preserved — not touched, not imported, not deleted. |
 
 ## Test results (reproducible, zero dependencies)
 
 Command:
 ```
 node build-policy.mjs
-node --test (Get-ChildItem -Path "test" -Filter "*.test.mjs" | ForEach-Object { $_.FullName })
+node --test test/*.test.mjs
 ```
-Result (this session): **248 tests, 248 pass, 0 fail, 0 skip**, exit code 0.
 
-Artifact: `ACM0010.policy` (49,709 bytes, 21 entries, 4 schemas + systemSchemas from VM0033). SHA-256: `8D8619408970F9005439AC63EE8E6670C865DF7E16DE005F1FEC614298168567`. New tests: `test/vslt-option3-eq4.test.mjs` (3), `test/calculate-pe-ad-eq6.test.mjs` (3).
+Result (this session): **250 tests, 250 pass, 0 fail, 0 skip**, exit code 0.
+
+Artifact: `ACM0010.policy` (58,128 bytes, 20 entries, 4 policy schemas + 4 companion subject schemas + 10 systemSchemas from VM0033). SHA-256: `1363230E5522C75FA9A3BD0407707888E89AFE6CE70B00B665F3878ACF8051D6`. New tests: `test/vslt-option3-eq4.test.mjs` (3), `test/calculate-pe-ad-eq6.test.mjs` (3).
+
+## PR #7402 status
+
+- **Mergeable:** CONFLICTING — conflict resolved locally in `api-gateway/package.json` (dependency version bumps from develop: mikro-orm 6.6.16→6.6.17, ws 8.21.3→8.22.0, @types/node 24.13.6→24.19.1, @types/ws 8.18.1→8.18.2; version 3.7.1-rc→3.7.1; cross-platform build script `node scripts/copy-env.mjs` retained).
+- **DCO:** ACTION_REQUIRED — needs `Signed-off-by` trailer on commit(s).
+- **Assignee Check:** FAILURE — needs PR assignee(s).
+- **Title Check:** SUCCESS.
+- All required CI checks passed except Assignee and DCO (both are metadata/administrative, not code).
