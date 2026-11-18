@@ -1037,7 +1037,8 @@
                     }
 
                     <!-- ── Settings pane ── -->
-                    <div class="sc-rp-pane" style="display:flex" [attr.aria-disabled]="selectedFieldLocked">
+                    <div class="sc-rp-pane" style="display:flex" [attr.aria-disabled]="selectedFieldLocked" tabindex="0">
+                        <div class="sc-rp-fields" [attr.inert]="selectedFieldLocked ? '' : null">
                         @if (selectedFieldErrors.length) {
                             <div class="sc-rp-errors">
                                 @for (err of selectedFieldErrors; track err) {
@@ -1823,6 +1824,7 @@
                                 }
                             </div>
                         }
+                        </div>
                     </div>
 
                 </aside>

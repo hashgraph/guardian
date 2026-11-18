@@ -734,6 +734,14 @@
     background: var(--color-grey-3, #e1e7ef);
 }
 
+.tool-status-tag {
+    box-sizing: border-box;
+    width: 130px;
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid currentColor;
+}
+
 .chip-color-grey {
     color: var(--color-grey-6, #848fa9);
     background: var(--color-grey-3, #e1e7ef);
