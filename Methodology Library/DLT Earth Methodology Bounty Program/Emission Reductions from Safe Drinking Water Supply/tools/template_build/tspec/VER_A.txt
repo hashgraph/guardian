@@ -1,0 +1,76 @@
+Cover | KV | Report details | Report ID ; Project name ; Project ID ; Verification period start ; Verification period end ; Document completion date ; Document version ; VCS Standard version used for verification ; Methodology ID and version ; Client name and contact ; Validation/verification body name and contact ; Approved by ; Team lead ; Team member(s) and technical reviewer(s)
+Cover | COLS | Document history | File name ; Description
+Cover | KV | Audit summary | Summary
+2.1 | KV | Schedule | Contract signed ; Strategic analysis and risk assessment completed ; Audit plan delivered to project proponent ; Notice of Validation/Verification Services (NOVS) Form submitted ; Opening meeting ; Closing meeting ; First CARs, CLs, or FARs issued ; All CARs, CLs, and FARs closed ; First draft report issued to project proponent
+2.2 | COLS | Document review details | Review start date ; Review completion date ; Number of days worked ; Description of review ; Audit team member(s)
+2.2 | COLS | Documents reviewed | Ref number ; Title, author(s), version, date ; Electronic filename ; Date provided to VVB
+2.3 | KV | Interview process | Description of interview process: project proponent ; Description of interview process: stakeholder groups ; Description of interview process: other groups
+2.3 | COLS | Interviewees | Interviewee details ; Interview details ; Interview topics
+2.4 | KV | Site visit | Site visit start date ; Site visit end date ; Site visit format ; Methods and objectives ; Location(s) of site visit ; Team members
+2.5 | KV | Resolution of findings | Process for resolution of CARs, CLs, and FARs ; Total CARs raised ; Total CLs raised ; Total FARs raised ; Total CARs, CLs, and FARs raised
+2.5 | COLS | Findings list | Reference number ; Type ; Related VCS Program rules
+3.1 | SUB | Methodology Deviations | Assessment conclusion ; Assessment process
+3.1 | SUBCOLS | Methodology Deviations | Evidence description and type ; Assessment process
+3.2 | SUB | Project Description Deviations | Assessment conclusion ; Assessment process
+3.2 | SUBCOLS | Project Description Deviations | Evidence description and type ; Assessment process
+3.3 | SUB | New Project Activity Instances in Grouped Projects | Assessment conclusion ; Assessment process
+3.3 | SUBCOLS | New Project Activity Instances in Grouped Projects | Evidence description and type ; Assessment process
+3.4 | SUB | Baseline Reassessment | Assessment conclusion ; Assessment process
+3.4 | SUBCOLS | Baseline Reassessment | Evidence description and type ; Assessment process
+4.1 | SUB | General Implementation Status | Assessment conclusion ; Assessment process
+4.1 | SUBCOLS | General Implementation Status | Evidence description and type ; Assessment process
+4.1 | SUB | Loss Events | Assessment conclusion ; Assessment process
+4.1 | SUBCOLS | Loss Events | Evidence description and type ; Assessment process
+4.2 | SUB | Audit History | Justification and assessment conclusion
+4.2 | SUB | Sectoral Scope and Project Classification | Assessment conclusion
+4.2 | SUB | Sensitive Information | Assessment conclusion
+4.2 | SUB | Core Carbon Principles Label Eligibility | Assessment conclusion
+4.2 | SUB | CORSIA Label Eligibility | Assessment conclusion
+4.2 | SUB | Project Location | Assessment conclusion ; Assessment process
+4.2 | SUBCOLS | Project Location | Evidence description and type ; Assessment process
+4.2 | SUB | No Double Issuance | Assessment conclusion ; Assessment process
+4.2 | SUBCOLS | No Double Issuance | Evidence description and type ; Assessment process
+4.2 | SUB | Registration with Other GHG Programs | Assessment conclusion ; Assessment process
+4.2 | SUBCOLS | Registration with Other GHG Programs | Evidence description and type ; Assessment process
+4.2 | SUB | No Double Claiming with Emissions Trading Programs or Binding Emission Limits | Assessment conclusion ; Assessment process
+4.2 | SUBCOLS | No Double Claiming with Emissions Trading Programs or Binding Emission Limits | Evidence description and type ; Assessment process
+4.2 | SUB | No Double Claiming with Other Forms of Environmental Credit | Assessment conclusion ; Assessment process
+4.2 | SUBCOLS | No Double Claiming with Other Forms of Environmental Credit | Evidence description and type ; Assessment process
+4.2 | SUB | Supply Chain (Scope 3) Emissions | Assessment conclusion ; Assessment process
+4.2 | SUBCOLS | Supply Chain (Scope 3) Emissions | Evidence description and type ; Assessment process
+4.2 | SUB | Sustainable Development Contributions | Assessment conclusion ; Assessment process
+4.2 | SUBCOLS | Sustainable Development Contributions | Evidence description and type ; Assessment process
+4.3 | SUBCOLS | Stakeholder Identification | Item ; Assessment conclusion and assessment process
+4.3 | SUBCOLS | Stakeholder Consultation and Ongoing Communication | Item ; Assessment conclusion and assessment process
+4.3 | SUBCOLS | Free, Prior, and Informed Consent | Item ; Assessment conclusion and assessment process
+4.3 | SUBCOLS | Grievance Redress Procedure | Item ; Assessment conclusion and assessment process
+4.3 | SUBCOLS | Public Comments | Comment received ; Assessment conclusion and assessment process
+4.3 | SUB | Management Experience | Assessment conclusion ; Assessment process
+4.3 | SUBCOLS | Management Experience | Evidence description and type ; Assessment process
+4.3 | SUBCOLS | Risks to Local Stakeholders and the Environment | Risk category ; Assessment conclusion and assessment process
+4.3 | SUBCOLS | Labor and Work | Risk category ; Assessment conclusion and assessment process
+4.3 | SUBCOLS | Human Rights | Human rights risks and mitigation measures ; Assessment conclusion and assessment process
+4.3 | SUBCOLS | Indigenous Peoples and Cultural Heritage | Indigenous Peoples and cultural heritage risks and mitigation measures ; Assessment conclusion and assessment process
+4.3 | SUBCOLS | Property Rights | Property rights risks and mitigation measures ; Assessment conclusion and assessment process
+4.3 | SUBCOLS | Benefit Sharing | Item ; Assessment conclusion and assessment process
+4.3 | SUBCOLS | Ecosystem Health | Risk category ; Assessment conclusion and assessment process
+4.3 | SUBCOLS | Rare, Threatened, and Endangered Species | Item ; Assessment conclusion and assessment process
+4.3 | SUBCOLS | Habitats and Habitat Connectivity Risks | Risk category ; Assessment conclusion and assessment process
+4.3 | SUBCOLS | Introduction of Species | Species introduced ; Assessment conclusion and assessment process
+4.3 | SUBCOLS | Existing Invasive Species | Existing invasive species ; Assessment conclusion and assessment process
+4.3 | SUBCOLS | Invasive Species Risks | Invasive species risks and mitigation measures ; Assessment conclusion and assessment process
+4.3 | SUBCOLS | Ecosystem Conversion | Ecosystem conversion risks and mitigation measures ; Assessment conclusion and assessment process
+4.4 | SUB | De Minimis Quantification | Assessment conclusion ; Assessment process
+4.4 | SUBCOLS | De Minimis Quantification | Evidence description and type ; Assessment process
+4.5 | REP | Data and parameters used | Data/Parameter ; Data unit ; Assessment process ; Assessment conclusion
+4.5 | SUB | Monitoring Plan | Assessment conclusion ; Assessment process
+4.5 | SUBCOLS | Monitoring Plan | Evidence description and type ; Assessment process
+5.1 | KV | Verification conclusion summary | Date of the opinion ; Project name ; GHG statement ; Objectives, scope, and criteria ; Non-permanence risk assessment ; Data and information supporting the GHG statement
+5.2 | KV | Verification period and verified total | Verification period start ; Verification period end ; Verified GHG emission reductions and carbon dioxide removals for the verification period (tCO2e)
+5.2 | COLS | Achieved reductions and removals (no non-permanence assessment) | Country ; Methodology ; Vintage period start ; Vintage period end ; Net baseline emissions (tCO2e) ; Net project emissions (tCO2e) ; Leakage emissions (tCO2e) ; Total net reductions (tCO2e) ; Total net removals (tCO2e) ; Total net reductions and removals (tCO2e)
+5.2 | COLS | Achieved reductions and removals minus buffer (non-permanence assessment required) | Country ; Methodology ; Vintage period start ; Vintage period end ; Net baseline emissions (tCO2e) ; Net project emissions (tCO2e) ; Leakage emissions (tCO2e) ; Total buffer pool allocation (tCO2e) ; Total net reductions minus buffer pool allocation (tCO2e) ; Total net removals minus buffer pool allocation (tCO2e) ; Total net reductions and removals minus buffer pool allocation (tCO2e)
+5.2 | COLS | Total reductions and removals by vintage | Vintage period start ; Vintage period end ; Total net reductions (minus buffer pool allocation) (tCO2e) ; Total net removals (minus buffer pool allocation) (tCO2e) ; Total net reductions and removals (minus buffer pool allocation) (tCO2e)
+5.3 | COLS | Ex-ante vs ex-post comparison | Vintage period start ; Vintage period end ; Ex-ante estimated reductions/ removals ; Achieved reductions/ removals ; Percent difference ; Explanation for the difference
+Appendix 1 | COLS | Sensitive information | Section number ; Information to be excluded ; Assessment process and conclusion
+Appendix 2 | REP | CAR, CL, or FAR | Finding ID ; Date raised ; Raised by ; Type of finding ; Document reference ; Summary of finding ; Assessment and conclusion
+Appendix 3 | REP | Team member competence | Name of team member or technical reviewer ; Role of team member or technical reviewer ; Summary of qualifications and technical competencies

@@ -1,0 +1,4446 @@
+{
+ "type": "request-vc-draft",
+ "version": "1.0.0",
+ "schema": "#9891e08d-c6ed-4645-9c5e-e111daaf37f5",
+ "policyId": "SET_FROM_YOUR_INSTANCE",
+ "blockId": "SET_FROM_YOUR_INSTANCE",
+ "document": {
+  "mrId": "MR-2028-001",
+  "periodRef": "MP-2028-01",
+  "ghgType": "Ex Post",
+  "monitoringPeriodStart": "2028-01-01",
+  "monitoringPeriodEnd": "2028-12-31",
+  "methodologyRecords": {
+   "periodDays": 366,
+   "sections": [
+    {
+     "sectionId": "S1",
+     "householdsServed": 750,
+     "P_y": 2955,
+     "qpwOption": "Option 1 - measured volume (flow meter / standard vessel)",
+     "waterQuantityOpt1": [
+      {
+       "unitId": "Z1-METERS (750 inline household meters, totalised)",
+       "measurementMethod": "Flow meter",
+       "measuredVolume": 3960000,
+       "daysMeasured": 365,
+       "salesReceiptCrossCheck": false
+      }
+     ],
+     "functionalityChecks": [
+      {
+       "applianceId": "Z1-0001",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": false
+      },
+      {
+       "applianceId": "Z1-0002",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": false
+      },
+      {
+       "applianceId": "Z1-0003",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": false
+      },
+      {
+       "applianceId": "Z1-0004",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": false
+      },
+      {
+       "applianceId": "Z1-0005",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": false
+      },
+      {
+       "applianceId": "Z1-0006",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 3,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0007",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 3,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0008",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0009",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0010",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0011",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0012",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0013",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0014",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0015",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0016",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0017",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0018",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0019",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0020",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0021",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0022",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0023",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0024",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0025",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0026",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0027",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0028",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0029",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0030",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0031",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0032",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0033",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0034",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0035",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0036",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0037",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0038",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0039",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0040",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0041",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0042",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0043",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0044",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0045",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0046",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0047",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0048",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0049",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0050",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0051",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0052",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0053",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0054",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0055",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0056",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0057",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0058",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0059",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0060",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0061",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0062",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0063",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0064",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0065",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0066",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0067",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0068",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0069",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0070",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0071",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0072",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0073",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0074",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0075",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0076",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0077",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0078",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0079",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0080",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0081",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0082",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0083",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0084",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0085",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0086",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0087",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0088",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0089",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0090",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0091",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0092",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0093",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0094",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0095",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0096",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0097",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0098",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0099",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z1-0100",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      }
+     ],
+     "networkChecks": [
+      {
+       "checkDate": "2028-11-15",
+       "networkExists": false,
+       "affectedBuildings": "None - no public piped safe-drinking-water network reaches the zone (checked with MUWSA and the ward office).",
+       "evidenceRef": "Annex 4 - District infrastructure register.",
+       "sectionId": "S1"
+      }
+     ],
+     "waterQualityChecks": [
+      {
+       "checkDate": "2028-11-20",
+       "samplingBasis": "Random sample of 10 operating filters in the zone, outlet water, ISO 9308-1 membrane filtration",
+       "meetsStandard": true,
+       "complianceRoute": "Tanzania drinking-water standard TZS 789 and WHO Guidelines (4th ed.) - all parameters within limits",
+       "testResults": "E. coli 0 cfu/100 ml in all 10 samples; turbidity 0.6 NTU (limit 5); arsenic 0.002 mg/L (limit 0.01); fluoride 0.4 mg/L (limit 1.5)",
+       "microbiologicalResult": 0,
+       "turbidityResult": 0.6,
+       "arsenicResult": 0.002,
+       "fluorideResult": 0.4
+      }
+     ],
+     "samplingResults": [
+      {
+       "parameter": "m",
+       "confidenceTargetPct": 90,
+       "precisionTargetPct": 10,
+       "sampleSize": 100,
+       "populationSize": 750,
+       "attainedPrecisionPct": 4.5,
+       "surveyYearInCP": 1,
+       "remedy": "Not needed - 90/10 met",
+       "expectedProportion": 0.9
+      }
+     ]
+    },
+    {
+     "sectionId": "S2",
+     "householdsServed": 750,
+     "P_y": 2955,
+     "qpwOption": "Option 1 - measured volume (flow meter / standard vessel)",
+     "waterQuantityOpt1": [
+      {
+       "unitId": "Z2-METERS (750 inline household meters, totalised)",
+       "measurementMethod": "Flow meter",
+       "measuredVolume": 3410000,
+       "daysMeasured": 365,
+       "salesReceiptCrossCheck": false
+      }
+     ],
+     "functionalityChecks": [
+      {
+       "applianceId": "Z2-0001",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": false
+      },
+      {
+       "applianceId": "Z2-0002",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": false
+      },
+      {
+       "applianceId": "Z2-0003",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": false
+      },
+      {
+       "applianceId": "Z2-0004",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": false
+      },
+      {
+       "applianceId": "Z2-0005",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": false
+      },
+      {
+       "applianceId": "Z2-0006",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 3,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0007",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 3,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0008",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0009",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0010",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0011",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0012",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0013",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0014",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0015",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0016",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0017",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0018",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0019",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0020",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0021",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0022",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0023",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0024",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0025",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0026",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0027",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0028",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0029",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0030",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0031",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0032",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0033",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0034",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0035",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0036",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0037",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0038",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0039",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0040",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0041",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0042",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0043",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0044",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0045",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0046",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0047",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0048",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0049",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0050",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0051",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0052",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0053",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0054",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0055",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0056",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0057",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0058",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0059",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0060",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0061",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0062",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0063",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0064",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0065",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0066",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0067",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0068",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0069",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0070",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0071",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0072",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0073",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0074",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0075",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0076",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0077",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0078",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0079",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0080",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0081",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0082",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0083",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0084",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0085",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0086",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0087",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0088",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0089",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0090",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0091",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0092",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0093",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0094",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0095",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0096",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0097",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0098",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0099",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z2-0100",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      }
+     ],
+     "networkChecks": [
+      {
+       "checkDate": "2028-11-15",
+       "networkExists": false,
+       "affectedBuildings": "None - no public piped safe-drinking-water network reaches the zone (checked with MUWSA and the ward office).",
+       "evidenceRef": "Annex 4 - District infrastructure register.",
+       "sectionId": "S2"
+      }
+     ],
+     "waterQualityChecks": [
+      {
+       "checkDate": "2028-11-20",
+       "samplingBasis": "Random sample of 10 operating filters in the zone, outlet water, ISO 9308-1 membrane filtration",
+       "meetsStandard": true,
+       "complianceRoute": "Tanzania drinking-water standard TZS 789 and WHO Guidelines (4th ed.) - all parameters within limits",
+       "testResults": "E. coli 0 cfu/100 ml in all 10 samples; turbidity 0.6 NTU (limit 5); arsenic 0.002 mg/L (limit 0.01); fluoride 0.4 mg/L (limit 1.5)",
+       "microbiologicalResult": 0,
+       "turbidityResult": 0.6,
+       "arsenicResult": 0.002,
+       "fluorideResult": 0.4
+      }
+     ],
+     "samplingResults": [
+      {
+       "parameter": "m",
+       "confidenceTargetPct": 90,
+       "precisionTargetPct": 10,
+       "sampleSize": 100,
+       "populationSize": 750,
+       "attainedPrecisionPct": 4.5,
+       "surveyYearInCP": 1,
+       "remedy": "Not needed - 90/10 met",
+       "expectedProportion": 0.9
+      }
+     ]
+    },
+    {
+     "sectionId": "S3",
+     "householdsServed": 750,
+     "P_y": 2955,
+     "qpwOption": "Option 1 - measured volume (flow meter / standard vessel)",
+     "waterQuantityOpt1": [
+      {
+       "unitId": "Z3-METERS (750 inline household meters, totalised)",
+       "measurementMethod": "Flow meter",
+       "measuredVolume": 2880000,
+       "daysMeasured": 320,
+       "salesReceiptCrossCheck": false
+      }
+     ],
+     "functionalityChecks": [
+      {
+       "applianceId": "Z3-0001",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": false
+      },
+      {
+       "applianceId": "Z3-0002",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": false
+      },
+      {
+       "applianceId": "Z3-0003",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": false
+      },
+      {
+       "applianceId": "Z3-0004",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": false
+      },
+      {
+       "applianceId": "Z3-0005",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": false
+      },
+      {
+       "applianceId": "Z3-0006",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 3,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0007",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 3,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0008",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0009",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0010",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0011",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0012",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0013",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0014",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0015",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0016",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0017",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0018",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0019",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0020",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0021",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0022",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0023",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0024",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0025",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0026",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0027",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0028",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0029",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0030",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0031",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0032",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0033",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0034",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0035",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0036",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0037",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0038",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0039",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0040",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0041",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0042",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0043",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0044",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0045",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0046",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0047",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0048",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0049",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0050",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0051",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0052",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0053",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0054",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0055",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0056",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0057",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0058",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0059",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0060",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0061",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0062",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0063",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0064",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0065",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0066",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0067",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0068",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0069",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0070",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0071",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0072",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0073",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0074",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0075",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0076",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0077",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0078",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0079",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0080",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0081",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0082",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0083",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0084",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0085",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0086",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0087",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0088",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0089",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0090",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0091",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0092",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0093",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0094",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0095",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0096",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0097",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0098",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0099",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z3-0100",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      }
+     ],
+     "networkChecks": [
+      {
+       "checkDate": "2028-11-15",
+       "networkExists": false,
+       "affectedBuildings": "None - no public piped safe-drinking-water network reaches the zone (checked with MUWSA and the ward office).",
+       "evidenceRef": "Annex 4 - District infrastructure register.",
+       "sectionId": "S3"
+      }
+     ],
+     "waterQualityChecks": [
+      {
+       "checkDate": "2028-11-20",
+       "samplingBasis": "Random sample of 10 operating filters in the zone, outlet water, ISO 9308-1 membrane filtration",
+       "meetsStandard": true,
+       "complianceRoute": "Tanzania drinking-water standard TZS 789 and WHO Guidelines (4th ed.) - all parameters within limits",
+       "testResults": "E. coli 0 cfu/100 ml in all 10 samples; turbidity 0.6 NTU (limit 5); arsenic 0.002 mg/L (limit 0.01); fluoride 0.4 mg/L (limit 1.5)",
+       "microbiologicalResult": 0,
+       "turbidityResult": 0.6,
+       "arsenicResult": 0.002,
+       "fluorideResult": 0.4
+      }
+     ],
+     "samplingResults": [
+      {
+       "parameter": "m",
+       "confidenceTargetPct": 90,
+       "precisionTargetPct": 10,
+       "sampleSize": 100,
+       "populationSize": 750,
+       "attainedPrecisionPct": 4.5,
+       "surveyYearInCP": 1,
+       "remedy": "Not needed - 90/10 met",
+       "expectedProportion": 0.9
+      }
+     ]
+    },
+    {
+     "sectionId": "S4",
+     "householdsServed": 750,
+     "P_y": 2955,
+     "qpwOption": "Option 1 - measured volume (flow meter / standard vessel)",
+     "waterQuantityOpt1": [
+      {
+       "unitId": "Z4-METERS (750 inline household meters, totalised)",
+       "measurementMethod": "Flow meter",
+       "measuredVolume": 2290000,
+       "daysMeasured": 320,
+       "salesReceiptCrossCheck": false
+      }
+     ],
+     "functionalityChecks": [
+      {
+       "applianceId": "Z4-0001",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": false
+      },
+      {
+       "applianceId": "Z4-0002",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": false
+      },
+      {
+       "applianceId": "Z4-0003",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": false
+      },
+      {
+       "applianceId": "Z4-0004",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": false
+      },
+      {
+       "applianceId": "Z4-0005",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": false
+      },
+      {
+       "applianceId": "Z4-0006",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 3,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0007",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 3,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0008",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0009",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0010",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0011",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0012",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0013",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0014",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0015",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0016",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0017",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0018",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0019",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0020",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0021",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0022",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0023",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0024",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0025",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0026",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0027",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0028",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0029",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0030",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0031",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0032",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0033",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0034",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0035",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0036",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0037",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0038",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0039",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0040",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0041",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0042",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0043",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0044",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0045",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0046",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0047",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0048",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0049",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0050",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0051",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0052",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0053",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0054",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0055",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0056",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0057",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0058",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0059",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0060",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0061",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0062",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0063",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0064",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0065",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0066",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0067",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0068",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0069",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0070",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0071",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0072",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0073",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0074",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0075",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0076",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0077",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0078",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0079",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0080",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0081",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0082",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0083",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0084",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0085",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0086",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0087",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0088",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0089",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0090",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0091",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0092",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0093",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0094",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0095",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0096",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0097",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0098",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0099",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      },
+      {
+       "applianceId": "Z4-0100",
+       "checkDate": "2028-11-15",
+       "meetsTechStandard": true,
+       "operatingOrReplaced": true,
+       "ecoliCfu": 0,
+       "ldlCfu": 1,
+       "laboratory": "Kilimanjaro Water Quality Laboratory (sample lab)"
+      }
+     ],
+     "networkChecks": [
+      {
+       "checkDate": "2028-11-15",
+       "networkExists": false,
+       "affectedBuildings": "None - no public piped safe-drinking-water network reaches the zone (checked with MUWSA and the ward office).",
+       "evidenceRef": "Annex 4 - District infrastructure register.",
+       "sectionId": "S4"
+      }
+     ],
+     "waterQualityChecks": [
+      {
+       "checkDate": "2028-11-20",
+       "samplingBasis": "Random sample of 10 operating filters in the zone, outlet water, ISO 9308-1 membrane filtration",
+       "meetsStandard": true,
+       "complianceRoute": "Tanzania drinking-water standard TZS 789 and WHO Guidelines (4th ed.) - all parameters within limits",
+       "testResults": "E. coli 0 cfu/100 ml in all 10 samples; turbidity 0.6 NTU (limit 5); arsenic 0.002 mg/L (limit 0.01); fluoride 0.4 mg/L (limit 1.5)",
+       "microbiologicalResult": 0,
+       "turbidityResult": 0.6,
+       "arsenicResult": 0.002,
+       "fluorideResult": 0.4
+      }
+     ],
+     "samplingResults": [
+      {
+       "parameter": "m",
+       "confidenceTargetPct": 90,
+       "precisionTargetPct": 10,
+       "sampleSize": 100,
+       "populationSize": 750,
+       "attainedPrecisionPct": 4.5,
+       "surveyYearInCP": 1,
+       "remedy": "Not needed - 90/10 met",
+       "expectedProportion": 0.9
+      }
+     ]
+    }
+   ],
+   "fnrbDeterminations": [
+    {
+     "determinationId": "FNRB-1",
+     "fuelType": "Woody biomass",
+     "option": "Option 3 - latest TOOL33 default (national Table 3 / regional Table 2)",
+     "tool33Value": 0.62,
+     "tool33Table": "Table 3 - national default",
+     "countryOrRegion": "United Republic of Tanzania",
+     "fNRBApplied": 0.62,
+     "validFrom": "2027-01-01",
+     "validTo": "2031-12-31"
+    }
+   ],
+   "interactiveEffectsSurvey": [
+    {
+     "surveyType": "Project survey",
+     "surveyRef": "PS-2027-01",
+     "questionIncluded": true,
+     "householdsSurveyed": 400,
+     "householdsWithInteractiveEffect": 0,
+     "proportionApplied": 0,
+     "treatment": "No interactive effect reported; no adjustment applied (VMR0015 s9.3(1))."
+    }
+   ]
+  },
+  "appendix2": {
+   "a22_1": {
+    "m": {
+     "dataParameter": "m",
+     "dataUnit": "fraction",
+     "description": "Proportion of appliances meeting the technical standard, operating, and giving E. coli < 1 cfu/100 ml",
+     "equationNumber": "VMR0015 Eq.(1); AMS-III.AV table 11",
+     "sourceOfData": "Annual functionality check on a random sample of 100 appliances per zone",
+     "measurementMethods": "Visit, visual check of the element and seals, and outlet sample for E. coli (membrane filtration)",
+     "frequency": "Annual",
+     "valueApplied": "0.93",
+     "valueBasis": "Single value",
+     "value": 0.93,
+     "monitoringEquipment": "Portable incubator; membrane filtration kit",
+     "qaqc": "90/10 sampling (CDM Sampling Standard v09.0); laboratory LDL <= 1 cfu/100 ml; 10% of visits re-checked by the Operations Manager",
+     "purposeOfData": "Calculation of baseline emissions"
+    },
+    "P_y": {
+     "dataParameter": "P_y",
+     "dataUnit": "persons",
+     "description": "Persons served by the project appliances",
+     "equationNumber": "AMS-III.AV para 18 (5.5 L cap)",
+     "sourceOfData": "Distribution register and household survey",
+     "measurementMethods": "Household register (persons per household) checked at each visit",
+     "frequency": "Annual",
+     "valueApplied": "11820",
+     "valueBasis": "Single value",
+     "value": 11820,
+     "qaqc": "Register cross-checked with village records",
+     "purposeOfData": "Calculation of baseline emissions"
+    },
+    "QPW_y": {
+     "dataParameter": "QPW_y",
+     "dataUnit": "L/yr",
+     "description": "Quantity of purified water used for drinking",
+     "equationNumber": "VMR0015 Eq.(1)",
+     "sourceOfData": "Totalised inline household flow meters (Option 1)",
+     "measurementMethods": "Monthly meter readings by zone technicians, summed per zone",
+     "frequency": "Monthly, aggregated annually",
+     "valueApplied": "1.254e+07",
+     "valueBasis": "Single value",
+     "value": 12540000,
+     "monitoringEquipment": "Inline flow meter, 1% accuracy",
+     "qaqc": "Meters calibrated before installation; outliers above 5.5 L/person/day capped by the calculation",
+     "purposeOfData": "Calculation of baseline emissions"
+    },
+    "SDW_network_check": {
+     "dataParameter": "SDW network check",
+     "dataUnit": "persons connected",
+     "description": "Persons connected to a public piped safe-drinking-water network (excluded)",
+     "equationNumber": "AMS-III.AV table 13",
+     "sourceOfData": "MUWSA network maps and ward office",
+     "measurementMethods": "Annual check with the utility and the ward office",
+     "frequency": "Annual",
+     "valueApplied": "0",
+     "valueBasis": "Single value",
+     "value": 0,
+     "qaqc": "Written confirmation from the utility filed",
+     "purposeOfData": "Applicability / eligibility"
+    },
+    "SDW_quality": {
+     "dataParameter": "SDW quality check",
+     "dataUnit": "pass (1) / fail (0)",
+     "description": "Water from the appliances meets the safe-drinking-water standard",
+     "equationNumber": "AMS-III.AV table 14",
+     "sourceOfData": "Accredited laboratory test report",
+     "measurementMethods": "Outlet samples tested against TZS 789 / WHO parameters",
+     "frequency": "At least once every two years (done annually)",
+     "valueApplied": "1",
+     "valueBasis": "Single value",
+     "value": 1,
+     "qaqc": "Accredited laboratory; chain-of-custody forms",
+     "purposeOfData": "Applicability / eligibility"
+    },
+    "WQ_fail_share": {
+     "dataParameter": "WQ fail share",
+     "dataUnit": "fraction",
+     "description": "Share of sampled appliances failing the E. coli test",
+     "equationNumber": "AMS-III.AV table 11 (10% gate)",
+     "sourceOfData": "Functionality check E. coli results",
+     "measurementMethods": "Failures / appliances with an E. coli result",
+     "frequency": "Annual",
+     "valueApplied": "0.0211",
+     "valueBasis": "Single value",
+     "value": 0.0211,
+     "qaqc": "More than 10% failing would void the period",
+     "purposeOfData": "Applicability / eligibility"
+    }
+   },
+   "a22_3": {
+    "EC_Grid_L": {
+     "dataParameter": "EC_Grid,L",
+     "dataUnit": "MWh/yr",
+     "description": "Grid electricity used by UV stages and booster pumps at the four service points",
+     "equationNumber": "VT0010 v1.1 Eq.(5), (7)-(9)",
+     "sourceOfData": "Sub-meters at each service point",
+     "measurementMethods": "Monthly sub-meter readings (8 kWh/day in total)",
+     "frequency": "Monthly",
+     "valueApplied": "2.92",
+     "valueBasis": "Single value",
+     "value": 2.92,
+     "monitoringEquipment": "Utility kWh sub-meter",
+     "qaqc": "Meters calibrated by the utility; readings photographed",
+     "purposeOfData": "Calculation of project emissions"
+    },
+    "TDL_PE_A_L": {
+     "dataParameter": "TDL_PE,A,L",
+     "dataUnit": "fraction",
+     "description": "Technical transmission and distribution losses of the grid",
+     "equationNumber": "VT0010 v1.1 Eq.(5)",
+     "sourceOfData": "Sample record: 8 % stands in for a grid-specific loss value from the national utility; where no such data are documented, the VT0010 v1.1 default of 20 % for project electricity consumption applies",
+     "measurementMethods": "Default value",
+     "frequency": "Fixed for the crediting period",
+     "valueApplied": "0.08",
+     "valueBasis": "Single value",
+     "value": 0.08,
+     "qaqc": "Default from the tool",
+     "purposeOfData": "Calculation of project emissions"
+    }
+   },
+   "a22_4": {
+    "f_NRB_i_y": {
+     "dataParameter": "fNRB,i,y",
+     "dataUnit": "fraction",
+     "description": "Fraction of non-renewable woody biomass",
+     "equationNumber": "VMR0015 Eq.(1), s9.2",
+     "sourceOfData": "Test value chosen for this sample (not the published TOOL33 figure for Tanzania); a real PD enters the current TOOL33 Table 3 value",
+     "measurementMethods": "Latest TOOL33 default looked up at each verification",
+     "frequency": "Each verification",
+     "valueApplied": "0.62",
+     "valueBasis": "Single value",
+     "value": 0.62,
+     "qaqc": "Real project: the VVB checks the value against the current TOOL33 table",
+     "purposeOfData": "Calculation of baseline emissions"
+    }
+   }
+  },
+  "mrImplementationSummary": {
+   "statusSummary": "Project fully operational throughout the monitoring period.",
+   "commissioningDates": "Zones 1-2 commissioned 01-January-2027; Zones 3-4 commissioned 15-February-2027."
+  },
+  "auditHistorySection": [
+   {
+    "auditType": "Verification",
+    "program": "VCS",
+    "vvbName": "Earthwise Verification Services Ltd.",
+    "dateOfOpeningMeeting": "2028-01-08",
+    "monitoringPeriodStart": "2028-01-01",
+    "monitoringPeriodEnd": "2028-12-31"
+   }
+  ],
+  "mrSectoralScope": {
+   "sectoralScope": "03 - Energy demand",
+   "projectCategory": "Not applicable (non-AFOLU project)",
+   "projectActivityType": "Low-GHG safe drinking water production (household point-of-use filters)"
+  },
+  "mrProjectProponent": {
+   "contacts": [
+    {
+     "orgName": "Rural Access Water Ltd.",
+     "contactPerson": "Amara Ndosi",
+     "title": "Managing Director",
+     "address": "Moshi, Kilimanjaro Region, Tanzania",
+     "telephone": "+255 22 000 0000",
+     "email": "contact@ruralaccesswater.co.tz"
+    }
+   ]
+  },
+  "mr15OtherEntitiesInvolvedInTheProject": [
+   {
+    "otherEntitiesUpdate": "No other entities involved this period; no change from the Project Description.",
+    "organizationName": "None",
+    "roleInTheProject": "Not applicable - no other entity is involved; Rural Access Water Ltd. is the sole project proponent and operator.",
+    "contactPerson": "Not applicable - no other entity is involved; Rural Access Water Ltd. is the sole project proponent and operator.",
+    "title": "Not applicable - no other entity is involved; Rural Access Water Ltd. is the sole project proponent and operator.",
+    "address": "Not applicable - no other entity is involved; Rural Access Water Ltd. is the sole project proponent and operator.",
+    "telephone": "Not applicable - no other entity is involved; Rural Access Water Ltd. is the sole project proponent and operator.",
+    "email": "Not applicable - no other entity is involved; Rural Access Water Ltd. is the sole project proponent and operator.",
+    "descriptionOfInvolvement": "Not applicable - no other entity is involved; Rural Access Water Ltd. is the sole project proponent and operator."
+   }
+  ],
+  "mrStartDate": {
+   "startDate": "2027-01-01",
+   "initialCreditingPeriodStartDate": "2027-01-01"
+  },
+  "mrCreditingPeriod": {
+   "creditingStartDate": "2027-01-01",
+   "creditingEndDate": "2031-12-31",
+   "creditingPeriodNumber": 1,
+   "creditingPeriodLength": "5 years (renewable)",
+   "maximumTotalProjectCreditingPeriodDurati": "5 years, renewable (VCS Standard v5.0)"
+  },
+  "mrProjectLocation": {
+   "countryRegion": "Tanzania - Kilimanjaro Region, Moshi Rural District",
+   "locations": [
+    {
+     "instanceId": "ZONE-1",
+     "adminArea": "Moshi Rural District, Kilimanjaro Region",
+     "latitude": -3.35,
+     "longitude": 37.34,
+     "boundaryDescription": "Zone 1 household cluster served by 900 filters",
+     "kmlFileRef": "zone1.kml"
+    }
+   ],
+   "regionStateProvince": "Kilimanjaro Region",
+   "communityMunicipalityCity": "Kibosho, Uru, Old Moshi and Mbokomu wards"
+  },
+  "mrOtherGhgPrograms": {
+   "doubleIssuanceControls": "Project is not registered under any other GHG programme.",
+   "reductionsAndRemovalsClaimedUnderAnother": [
+    {
+     "vintagePeriodStart": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+     "vintagePeriodEnd": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+     "volume": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+     "serialNumberS": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+     "otherRelevantIdentificationInformation": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme."
+    }
+   ],
+   "nameAndContactInformationOfProgramAdmini": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+   "detailsOfParticipation": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+   "evidenceOfNoDoubleCounting": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+   "nameOfOtherGHGProgram": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+   "projectID": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+   "dateOfProjectInactivity": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+   "evidenceThatTheProjectIsConsideredInacti": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme."
+  },
+  "mrOtherFormsOfCredit": {
+   "emissionsTradingProgramMR": "During this monitoring period the project was not within any emissions trading program or subject to a binding emission limit.",
+   "otherEnvironmentalCredit": "None sought or received.",
+   "scope3Controls": "Written statements obtained from all offtakers.",
+   "nameAndContactInformationOfProgramOrLimi": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+   "detailsOfParticipation": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+   "projectActivitiesIncluded": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+   "reductionsAndRemovalsIncluded": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+   "vintagePeriodS": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+   "evidenceOfNoDoubleCounting": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+   "nameAndContactInformationOfCreditSystemA": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+   "detailsOfParticipation2": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+   "vintagePeriodS2": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+   "projectActivityScope": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+   "otherInformation": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+   "evidenceOfNoDoubleCounting2": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+   "justification": "The project reduces household woodfuel use for boiling water; it does not change the emissions footprint of a product or service that a company buys or sells, so no Scope 3 double claiming arises.",
+   "justification2": "The project reduces household woodfuel use for boiling water; it does not change the emissions footprint of a product or service that a company buys or sells, so no Scope 3 double claiming arises."
+  },
+  "mrSdContributions": {
+   "sustainableDevelopmentContribution": [
+    {
+     "sdContributionNumber": "1",
+     "sdgTarget": "SDG 6.1 - safe and affordable drinking water for all",
+     "sdContributionIndicatorTypeAndName": "Outcome indicator: number of people using a project water filter",
+     "indicatorMetadata": "Count of people in households with a functioning filter (annual functionality survey, AMS-III.AV table 11)",
+     "actionsTakenAndContributionsDelivered": "3,000 filters distributed; 93% functional at the 2027 survey (about 11,800 people served)",
+     "relevantNationalSDGObjectives": "Tanzania Development Vision 2025: access to clean and safe water for all"
+    }
+   ]
+  },
+  "mr112AdditionalInformation": [
+   {
+    "sensitiveInfoMR": false,
+    "ccpLabelEligibilityMR": false,
+    "corsiaLabelEligibilityMR": false
+   }
+  ],
+  "mr113RightToOperateAndRightToReductionsA": [
+   {
+    "rightToOperateDemoMR": "Signed distribution agreements with all 3,000 participating households remain in force and assign the right to the emission reductions to Rural Access Water Ltd.",
+    "landRightsAnalysisMR": "No change this period. The filters are installed inside existing dwellings; no land or resource rights of any stakeholder are affected.",
+    "proponentChanged": false,
+    "newInfoAffectingRTO": false,
+    "rtoChangeDetail": "No change to the right to operate or the right to the emission reductions this period.",
+    "newInformationAndCircumstancesRelevantTo": "No new information or circumstances arose in the monitoring period.",
+    "evidenceOfRightToOperateAndRightToReduct": [
+     {
+      "typeOfEvidence": "Signed household user agreements; memorandum of understanding with Moshi District Council",
+      "typeOfRightDemonstrated": "Right to operate and right to the emission reductions",
+      "scopeOfTheEvidence": "All 3,000 participating households and the four service points"
+     }
+    ],
+    "newInformationAndCircumstancesRelevantTo2": "No new information or circumstances arose in the monitoring period.",
+    "formalTitleSearch": "Not applicable - the project installs portable household devices in existing homes and leases four small service points; it does not affect land, water-source or other resource rights, so no land tenure, customary rights or conflict analysis is needed.",
+    "landTenureCategories": "Not applicable - the project installs portable household devices in existing homes and leases four small service points; it does not affect land, water-source or other resource rights, so no land tenure, customary rights or conflict analysis is needed.",
+    "processToIdentifyCustomaryRights": "Not applicable - the project installs portable household devices in existing homes and leases four small service points; it does not affect land, water-source or other resource rights, so no land tenure, customary rights or conflict analysis is needed.",
+    "conclusion": "Not applicable - the project installs portable household devices in existing homes and leases four small service points; it does not affect land, water-source or other resource rights, so no land tenure, customary rights or conflict analysis is needed.",
+    "overlappingClaimsToLandOrResourceRights": "Not applicable - the project installs portable household devices in existing homes and leases four small service points; it does not affect land, water-source or other resource rights, so no land tenure, customary rights or conflict analysis is needed.",
+    "violentConflicts": "Not applicable - the project installs portable household devices in existing homes and leases four small service points; it does not affect land, water-source or other resource rights, so no land tenure, customary rights or conflict analysis is needed."
+   }
+  ],
+  "mr21StakeholderIdentification": [
+   {
+    "stakeholdersLeft": false,
+    "departureType": "Not applicable",
+    "deviationReferenceNumber": "Not applicable",
+    "newStakeholdersIdentified": false,
+    "newStakeholdersDescription": "No new stakeholders identified this period; engagement continued per the validated Project Description plan.",
+    "fileName": "PD-KSW-2027-001_MR_v1.0.pdf"
+   }
+  ],
+  "stakeholderEngagement": {
+   "stakeholderConsultationAndOngoingCommuni": [
+    {
+     "stakeholderGroup": "Participating households in the four zones",
+     "outcomesOfActivitiesToConsultAndCommunic": "Village meetings in each zone (October 2026) supported the programme; households asked for faster replacement of failed units, adopted as a 14-day replacement guarantee.",
+     "influenceOfWomenMarginalizedPeopleAndVul": "Separate women-only meetings were held; women, who collect and boil most drinking water, chose the service point locations.",
+     "prohibitionOfRetaliation": "The user agreement and the grievance channel prohibit retaliation; complaints can be made anonymously.",
+     "changesToThePlan": "No changes to the stakeholder engagement plan in the monitoring period."
+    }
+   ],
+   "freePriorAndInformedConsent": [
+    {
+     "stakeholderGroup": "Participating households",
+     "ongoingConsent": "Consent confirmed at the annual functionality survey.",
+     "influenceOfWomenMarginalizedPeopleAndVul": "Consent was obtained from the adult woman and man of each household.",
+     "changesToTheProjectImplementationAgreeme": "No changes.",
+     "changesToThePlanToObtainConsent": "No changes."
+    }
+   ]
+  },
+  "benefitSharing": {
+   "benefitSharingMechanism": [
+    {
+     "stakeholderGroup": "Participating households",
+     "mechanismImplementation": "Implemented as designed; replacement elements and repairs provided free of charge through the four service points.",
+     "financialInformation": "Carbon revenue funds the filters, replacement elements and maintenance (budget in Annex 9).",
+     "changesToTheMechanism": "No changes.",
+     "infrastructure": "Four service points for replacement elements and repairs."
+    }
+   ]
+  },
+  "stakeholderInputTracker": {
+   "stakeholderInputThisPeriod": "Two requests to speed up replacement were raised and addressed within the 14-day guarantee; no other input received."
+  },
+  "grievanceRedress": {
+   "grievancesReceived": "Two grievances regarding filter replacement timing; resolved within 14 days.",
+   "changesToTheGrievanceRedressMechanism": "No changes."
+  },
+  "esgRiskMonitoring": {
+   "managementExperience": {
+    "managementChangesThisPeriod": "No change to the management team this period."
+   },
+   "legalCompliance": {
+    "legalInquiryThisPeriod": false,
+    "legalInquiryDetailMR": "No legal or regulatory inquiry was received this period; nothing to disclose to Verra."
+   }
+  },
+  "mrMethodologyRef": {
+   "methodologyDetails": [
+    {
+     "type2": "Methodology",
+     "methodologyModuleOrToolIDNumber": "VMR0015",
+     "version": "1.0",
+     "name": "Revision to AMS-III.AV: Low Greenhouse Gas Emitting Safe Drinking Water Production Systems"
+    },
+    {
+     "type2": "Methodology",
+     "methodologyModuleOrToolIDNumber": "AMS-III.AV",
+     "version": "09.0",
+     "name": "Low greenhouse gas emitting safe drinking water production systems"
+    },
+    {
+     "type2": "Tool",
+     "methodologyModuleOrToolIDNumber": "VT0010",
+     "version": "1.1",
+     "name": "Emissions from Electricity Consumption and Generation"
+    },
+    {
+     "type2": "Tool",
+     "methodologyModuleOrToolIDNumber": "VT0008",
+     "version": "1.0",
+     "name": "Additionality Assessment"
+    },
+    {
+     "type2": "Tool",
+     "methodologyModuleOrToolIDNumber": "CDM TOOL03",
+     "version": "03.0",
+     "name": "Tool to calculate project or leakage CO2 emissions from fossil fuel combustion"
+    },
+    {
+     "type2": "Tool",
+     "methodologyModuleOrToolIDNumber": "CDM TOOL33",
+     "version": "03.0",
+     "name": "Default values for common parameters"
+    },
+    {
+     "type2": "Standard",
+     "methodologyModuleOrToolIDNumber": "CDM Sampling and surveys",
+     "version": "09.0",
+     "name": "Standard: Sampling and surveys for CDM project activities and programmes of activities"
+    }
+   ]
+  },
+  "implementationStatusSection": {
+   "generalStatus": {
+    "implementationStatus": "3,000 ceramic-membrane filters distributed across 4 zones. Zones 3-4 were commissioned on 15-February-2027, six weeks after zones 1-2. At the annual functionality check (random sample of 100 appliances per zone, 400 in total) 93 per zone met all three AMS-III.AV table 11 criteria (m = 0.93): 5 were not operating and 2 failed the E. coli test; all 7 were repaired or replaced within 14 days."
+   },
+   "lossEvents": {
+    "lossEventOccurred": false,
+    "lossEventStatement": "Not applicable - the project holds no carbon stock; emission reductions come from avoided combustion."
+   },
+   "generalImplementationStatus": [
+    {
+     "dateFrom": "2026-10-12",
+     "dateTo": "2026-10-16",
+     "milestoneOrAction": "Stakeholder consultation",
+     "description": "Village meetings in the four zones"
+    },
+    {
+     "dateFrom": "2026-11-20",
+     "dateTo": "2026-12-10",
+     "milestoneOrAction": "Validation",
+     "description": "Validation by Earthwise Verification Services Ltd. (sample VVB)"
+    },
+    {
+     "dateFrom": "2028-01-01",
+     "dateTo": "2028-03-31",
+     "milestoneOrAction": "Project start and distribution",
+     "description": "3,000 filters distributed and installed"
+    },
+    {
+     "dateFrom": "2028-01-01",
+     "dateTo": "2028-12-31",
+     "milestoneOrAction": "First monitoring period",
+     "description": "Metering, functionality survey and water-quality checks"
+    }
+   ],
+   "lossEvents2": [
+    {
+     "dateOfTheLossEvent": "Not applicable - the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply.",
+     "dateOfDiscovery": "Not applicable - the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply.",
+     "sizeHectaresImpacted": "Not applicable - the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply.",
+     "justification": "Not applicable - the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply."
+    }
+   ]
+  },
+  "groupedProjects": {
+   "groupedDesign": {
+    "groupedDesignStatement": "Not applicable - this is a single project, not a grouped project."
+   },
+   "newInstances": {
+    "isGroupedAddition": false,
+    "newInstancesDescription": "No new instances added this period."
+   },
+   "groupedProjectEligibilityAreas": [
+    {
+     "eligibilityAreaID": "Not applicable - the project is not a grouped project.",
+     "summaryOfCharacteristics": "Not applicable - the project is not a grouped project.",
+     "batchID": "Not applicable - the project is not a grouped project."
+    }
+   ]
+  },
+  "deviations": {
+   "methodologyDeviation": [
+    {
+     "referenceNumber": "Not applicable - no methodology deviation or project description deviation is applied.",
+     "titleOfDeviation": "Not applicable - no methodology deviation or project description deviation is applied.",
+     "methodologyModuleOrToolDetails": "Not applicable - no methodology deviation or project description deviation is applied.",
+     "descriptionOfDeviation": "Not applicable - no methodology deviation or project description deviation is applied.",
+     "justificationForTheDeviation": "Not applicable - no methodology deviation or project description deviation is applied.",
+     "conformanceToVCSProgramRules": "Not applicable - no methodology deviation or project description deviation is applied."
+    }
+   ],
+   "projectDescriptionDeviation": [
+    {
+     "referenceNumber": "Not applicable - no methodology deviation or project description deviation is applied.",
+     "titleOfDeviation": "Not applicable - no methodology deviation or project description deviation is applied.",
+     "monitoringPeriodStart": "Not applicable - no methodology deviation or project description deviation is applied.",
+     "monitoringPeriodEnd": "Not applicable - no methodology deviation or project description deviation is applied.",
+     "sectionNumbers": "Not applicable - no methodology deviation or project description deviation is applied.",
+     "revisedProjectDescription": "Not applicable - no methodology deviation or project description deviation is applied.",
+     "descriptionAndJustificationOfDeviation": "Not applicable - no methodology deviation or project description deviation is applied."
+    }
+   ]
+  },
+  "mr35BaselineReassessment": [
+   {
+    "reassessmentRequired": false,
+    "conformanceToVCSProgramRules": "Not applicable - first crediting period; no baseline reassessment is due.",
+    "applicationOfActiveMethodologiesModulesA": "Not applicable - first crediting period; no baseline reassessment is due.",
+    "demonstrationOfRegulatorySurplus": "Not applicable - first crediting period; no baseline reassessment is due.",
+    "updatedProjectDescription": "Not applicable - first crediting period; no baseline reassessment is due."
+   }
+  ],
+  "dataAndParameters": {
+   "summaryRows": [
+    {
+     "description": "Purified water used for drinking (metered)",
+     "valueApplied": "12,540,000 (four zones)",
+     "equationNumber": "VMR0015 Eq.(1)",
+     "monitoringFrequency": "Monthly, totalised annually",
+     "appendix2Table": "A2.2.1"
+    },
+    {
+     "description": "Share of sampled appliances meeting all three table 11 criteria",
+     "valueApplied": "0.93 in each zone (93 of 100 sampled)",
+     "equationNumber": "VMR0015 Eq.(1); AMS-III.AV table 11",
+     "monitoringFrequency": "Annual",
+     "appendix2Table": "A2.2.1"
+    },
+    {
+     "description": "Persons served",
+     "valueApplied": "11,820",
+     "equationNumber": "AMS-III.AV para 18 (cap)",
+     "monitoringFrequency": "Annual",
+     "appendix2Table": "A2.2.1"
+    },
+    {
+     "description": "Persons connected to a public safe-drinking-water network",
+     "valueApplied": "0 in all zones",
+     "equationNumber": "AMS-III.AV table 13",
+     "monitoringFrequency": "Annual",
+     "appendix2Table": "A2.2.1"
+    },
+    {
+     "description": "Outlet water meets the safe-drinking-water standard",
+     "valueApplied": "Pass in all zones (checks of 20-November-2027)",
+     "equationNumber": "AMS-III.AV table 14",
+     "monitoringFrequency": "At least biennial (done annually)",
+     "appendix2Table": "A2.2.1"
+    },
+    {
+     "description": "Share of E. coli-tested appliances failing",
+     "valueApplied": "0.021 (2 of 95 per zone)",
+     "equationNumber": "AMS-III.AV table 11 (10% gate)",
+     "monitoringFrequency": "Annual",
+     "appendix2Table": "A2.2.1"
+    },
+    {
+     "description": "Grid electricity used by UV stages and pumps",
+     "valueApplied": "2.92",
+     "equationNumber": "VT0010 v1.1 Eq.(5), (7)-(9)",
+     "monitoringFrequency": "Monthly",
+     "appendix2Table": "A2.2.3"
+    },
+    {
+     "description": "Grid technical losses",
+     "valueApplied": "0.08",
+     "equationNumber": "VT0010 v1.1 Eq.(5)",
+     "monitoringFrequency": "Fixed",
+     "appendix2Table": "A2.2.3"
+    },
+    {
+     "description": "Fraction of non-renewable woody biomass",
+     "valueApplied": "0.62 (sample test value; a real PD uses the TOOL33 Table 3 value)",
+     "equationNumber": "VMR0015 Eq.(1), s9.2",
+     "monitoringFrequency": "Each verification",
+     "appendix2Table": "A2.2.4"
+    }
+   ]
+  },
+  "monitoringPlan": {
+   "dataCollectionSystemSection": {
+    "dataCollectionSystem": "Zone technicians read flow meters monthly onto standard field forms; the Operations Manager enters readings centrally within 5 working days and archives records electronically for at least two years after the last crediting period (AMS-III.AV paragraph 28)."
+   },
+   "calibrationThisPeriodSection": {
+    "calibrationThisPeriod": "All four instance flow meters were calibrated in December 2026 by an accredited provider; certificates retained."
+   },
+   "monitoringPersonnelSection": {
+    "monitoringPersonnel": "Operations Manager (responsible for monitoring), four trained zone technicians (data collection), one data clerk (entry and reconciliation)."
+   },
+   "internalAuditingThisPeriodSection": {
+    "internalAuditingThisPeriod": "Quarterly internal audit of 10% of field records against the central register; no material discrepancies found."
+   },
+   "nonConformancesThisPeriodSection": {
+    "nonConformancesThisPeriod": "One missing monthly reading (Zone 3, July 2027) was logged, traced to a technician absence and corrected from the meter's cumulative register."
+   },
+   "samplingThisPeriodSection": {
+    "samplingThisPeriod": "Appliance functionality and water quality sampled per the CDM Standard: Sampling and Surveys (384 households for the annual survey; 40 households for the biennial water quality check)."
+   },
+   "monitoringPlanUpdatesSection": {
+    "monitoringPlanUpdates": "No updates to the monitoring plan this period."
+   }
+  },
+  "mrBaselineEmissions": {
+   "beEquation": "BE_y = QPW_y x m x X_boil x SEC x SUM_i BL_fuel,i x ((EF_CO2,i x fNRB,i) + EF_nonCO2,i) x 10^-9 x Adj_LE (VMR0015 Eq.(1)); fNRB = 1 for fossil fuels. SEC = [WH x (T_f - T_i) + 0.01 x WHE] / eta_wb (AMS-III.AV Eq.(4)) or 357.48 / eta_wb (Eq.(5)), as selected in Appendix 2."
+  },
+  "mrProjectEmissions": {
+   "peEquation": "PE_y = PE_FF,y + PE_EC,y (AMS-III.AV Eq.(6)). PE_FF,y = FC_i,y x COEF_i,y (CDM TOOL03 Eq.(1)), with COEF = w_C x 44/12 (Option A, mass, Eq.(2)), w_C x rho x 44/12 (Option A, volume, Eq.(3)) or NCV x EF_CO2 (Option B, Eq.(4)). PE_EC,y follows Verra VT0010 v1.1, which replaces CDM TOOL05 for this methodology (VMR0015 s8.2): PE_EC,y = PE_A + PE_B + PE_C, with PE_A = EC_PE,A x EF_A x (1 + TDL_A) (Eq.(5), (7)), EC_PE,B = MIN(EC_Grid ; EG_PBWA / (1 + TDL_B)) (Eq.(9)), PE_B per Eq.(8) and shared plants per Eq.(11), (13), (14). EC is in MWh/yr and EF in t CO2/MWh, so PE is in t CO2/yr."
+  },
+  "mrLeakage": {
+   "leakageEquation": "LE_y = 0 (VMR0015 Sec8.3: non-renewable biomass leakage is folded into BE_y via Adj_LE, not added separately)",
+   "leakageWorkedCalculation": "LE_y = 0 tCO2e. No separate additive leakage term; VMR0015 Sec8.3 folds non-renewable biomass leakage into BE_y via Adj_LE."
+  },
+  "otherQuantification": {
+   "nonPermanence": {
+    "nonPermanenceMRApplicable": false,
+    "nonPermanenceMRStatement": "Not applicable - no carbon stock and no reversal risk."
+   },
+   "bufferPool": {
+    "bufferPoolApplicable": false,
+    "bufferPoolStatement": "Not applicable - no non-permanence risk, so no buffer contribution."
+   },
+   "longTermAverage": {
+    "longTermAverageMRApplicable": false,
+    "longTermAverageMRStatement": "Not applicable - no carbon stock is created or harvested."
+   },
+   "deMinimis": {
+    "deMinimisQuantification": "None excluded - all AMS-III.AV sources are quantified."
+   },
+   "nonPermanenceRiskRating": [
+    {
+     "applicability": "Not applicable - the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply."
+    }
+   ],
+   "bufferPoolAllocationReductionsAndRemoval": [
+    {
+     "country": "Not applicable - the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply.",
+     "methodology": "Not applicable - the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply.",
+     "vintagePeriodStart": "Not applicable - the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply.",
+     "vintagePeriodEnd": "Not applicable - the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply.",
+     "bufferPoolAllocationReductions": "Not applicable - the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply.",
+     "bufferPoolAllocationRemovals": "Not applicable - the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply.",
+     "totalBufferPoolAllocation": "Not applicable - the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply."
+    }
+   ],
+   "hasTheLTABeenUpdatedBasedOnMonitoredData": "Not applicable - the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply.",
+   "isTheNumberOfGHGCreditsIssuedBelowTheLTA": "Not applicable - the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply.",
+   "deMinimisThresholdAndPeriod": "Not applicable - no GHG source or carbon pool is excluded as de minimis.",
+   "ghgSourceCarbonPools": "Not applicable - no GHG source or carbon pool is excluded as de minimis.",
+   "estimatedDeMinimisEmissionsIncreasesInGH": "Not applicable - no GHG source or carbon pool is excluded as de minimis.",
+   "estimatedReductionsAndRemovalsForTheDeMi": "Not applicable - no GHG source or carbon pool is excluded as de minimis.",
+   "resultAndJustification": "Not applicable - no GHG source or carbon pool is excluded as de minimis."
+  },
+  "emissionReductions": {
+   "quantificationNarrativeMR": "Reductions were quantified with AMS-III.AV Equations 1, 5, 6 and 7 as revised by VMR0015, using directly metered QPW for four instances. BE_y, PE_y, LE_y and ER_y are computed automatically by the monitoring engine and shown in the auto-calculated fields.",
+   "exAnteVsExPostComparison": [
+    {
+     "vintagePeriodStart": "2028-01-01",
+     "vintagePeriodEnd": "2028-12-31",
+     "exAnteEstimatedReductionsRemovals": "1666.620262",
+     "achievedReductionsRemovals": "1556.947181",
+     "percentageDifference": "-6.58 %",
+     "explanationForTheDifference": "Functionality 93% against 95% planned and 12.54 million litres metered against the planned volume (MR section 5.5)."
+    }
+   ]
+  },
+  "projectName": "Kilimanjaro Safe Water Project",
+  "documentCompletionDate": "2028-01-20",
+  "documentVersion": "1.0",
+  "vcsStandardVersionUsedForVerification": "VCS Standard v5.0",
+  "methodologyIDAndVersion": "VMR0015 v1.0 (revision of AMS-III.AV v09.0)",
+  "projectProponentNameAndContact": "Rural Access Water Ltd., Amara Ndosi, contact@ruralaccesswater.example",
+  "preparedBy": "Rural Access Water Ltd.",
+  "sensitiveInformation": [
+   {
+    "sectionNumber": "Not applicable - no information is excluded from the public version of this document.",
+    "informationToBeExcluded": "Not applicable - no information is excluded from the public version of this document.",
+    "descriptionAndExplanation": "Not applicable - no information is excluded from the public version of this document."
+   }
+  ],
+  "documentHistory": [
+   {
+    "fileName": "KSW-2027-001_MR_2028_v1.0.pdf",
+    "description": "Second monitoring report, 1 January to 31 December 2028"
+   }
+  ]
+ }
+}

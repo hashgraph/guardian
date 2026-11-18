@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VMR0015 Draft Builder</title>
+<style>
+  :root { --bg:#f6f7f5; --card:#fff; --ink:#1d2320; --muted:#5d6862; --line:#d9ded9; --accent:#1f6f5c; --ok:#1f6f5c; --bad:#a3312b; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#141816; --card:#1c211e; --ink:#e7ece8; --muted:#9aa59f; --line:#2e3531; --accent:#5cc2a3; --ok:#5cc2a3; --bad:#e58a82; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; }
+  main { max-width:760px; margin:0 auto; padding:32px 20px 48px; }
+  h1 { font-size:22px; margin:0 0 4px; }
+  p.lead { color:var(--muted); margin:0 0 24px; }
+  .step { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:18px 20px; margin-bottom:14px; }
+  .step h2 { font-size:15px; margin:0 0 6px; }
+  .step p { margin:0 0 10px; color:var(--muted); font-size:14px; }
+  input[type=file] { font:inherit; }
+  button { font:inherit; background:var(--accent); color:#fff; border:0; border-radius:8px; padding:10px 18px; cursor:pointer; }
+  button:disabled { opacity:.45; cursor:default; }
+  .status { margin-top:8px; font-size:14px; }
+  .ok { color:var(--ok); } .bad { color:var(--bad); }
+  code { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>VMR0015 Draft Builder</h1>
+  <p class="lead">Guardian gives each schema a new ID on every import, so a sample file only loads after its header matches your policy. This page copies the header from your blank draft onto the sample. Nothing leaves your computer.</p>
+
+  <div class="step">
+    <h2>1. Your blank draft from Guardian</h2>
+    <p>Open the form in Guardian, click <b>Save draft</b> (or download the draft) without filling anything, and choose that file here.</p>
+    <input type="file" id="blank" accept=".json">
+    <div class="status" id="blankStatus"></div>
+  </div>
+
+  <div class="step">
+    <h2>2. The matching sample file</h2>
+    <p>From <code>sample-data/</code>: PP account → <code>1_…</code>, VVB account → <code>2_…</code>, Project Description → <code>3_…</code>, Monitoring Report → <code>4_…</code>, Validation Report → <code>5_…</code>, Verification Report → <code>6_…</code>, VCU Issuance Request → <code>7_…</code>.</p>
+    <input type="file" id="sample" accept=".json">
+    <div class="status" id="sampleStatus"></div>
+  </div>
+
+  <div class="step">
+    <h2>3. Build and download</h2>
+    <p>Load the downloaded file into the form in Guardian with <b>Load draft</b>, check the fields listed in the Form Filling Guide, then submit.</p>
+    <button id="build" disabled>Build draft</button>
+    <div class="status" id="buildStatus"></div>
+  </div>
+</main>
+<script>
+  function parse(text) {
+    // Guardian drafts contain // comment lines; strip them before parsing
+    return JSON.parse(text.split('\n').filter(l => !/^\s*\/\//.test(l)).join('\n'));
+  }
+  const state = { blank: null, sample: null, blankName: '', sampleName: '' };
+  function read(inputId, key, statusId) {
+    document.getElementById(inputId).addEventListener('change', e => {
+      const f = e.target.files[0]; if (!f) return;
+      const r = new FileReader();
+      r.onload = () => {
+        const s = document.getElementById(statusId);
+        try {
+          const j = parse(r.result);
+          if (!j.document || !j.schema) throw new Error('not a Guardian draft (no "schema" or "document")');
+          state[key] = j; state[key + 'Name'] = f.name;
+          s.className = 'status ok';
+          s.textContent = 'Read ' + f.name + ' (schema ' + j.schema + ')';
+        } catch (err) { state[key] = null; s.className = 'status bad'; s.textContent = 'Could not read this file: ' + err.message; }
+        document.getElementById('build').disabled = !(state.blank && state.sample);
+      };
+      r.readAsText(f);
+    });
+  }
+  read('blank', 'blank', 'blankStatus');
+  read('sample', 'sample', 'sampleStatus');
+  document.getElementById('build').addEventListener('click', () => {
+    const out = {
+      type: state.blank.type || 'request-vc-draft',
+      version: state.blank.version || '1.0.0',
+      schema: state.blank.schema,
+      policyId: state.blank.policyId,
+      blockId: state.blank.blockId,
+      document: state.sample.document
+    };
+    const known = Object.keys(state.blank.document || {});
+    const extra = Object.keys(out.document).filter(k => known.length && !known.includes(k));
+    const blob = new Blob([JSON.stringify(out, null, 4)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'ready_' + state.sampleName.replace(/^\d+_/, '');
+    a.click();
+    const s = document.getElementById('buildStatus');
+    if (extra.length) { s.className = 'status bad'; s.textContent = 'Built, but these fields are not in your form: ' + extra.join(', ') + '. Check that the blank draft and the sample are the same form.'; }
+    else { s.className = 'status ok'; s.textContent = 'Built ' + a.download + ': header from your policy, content from the sample.'; }
+  });
+</script>
+</body>
+</html>

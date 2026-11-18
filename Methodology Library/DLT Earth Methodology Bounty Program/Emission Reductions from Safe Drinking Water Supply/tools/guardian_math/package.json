@@ -1,0 +1,14 @@
+{
+  "name": "vmr0015-guardian-math",
+  "private": true,
+  "type": "module",
+  "description": "Runs the VMR0015 policy mathBlocks through Guardian's own math-model and replays the whole workflow offline",
+  "dependencies": {
+    "@cortex-js/compute-engine": "0.27.0",
+    "mathjs": "15.2.0",
+    "@formulajs/formulajs": "4.6.1",
+    "ajv": "8.17.1",
+    "ajv-formats": "3.0.1",
+    "typescript": "5.8.3"
+  }
+}

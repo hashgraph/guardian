@@ -1,0 +1,82 @@
+Blocks: 219 vs 219; block tree identical: True
+Block settings other than mathBlock code: identical
+mathBlock pp_err_calculation_mr_vcs_ex_post: 5 line(s) removed, 24 added
+    @@ -122,4 +122,8 @@
+    -// f_NRB (VMR0015 s9.2): Option 2 = TOOL30 NRB/(NRB+RB) x 0.74 computed here (or the typed TOOL30 value x 0.74); Option 1 = fNRBApplied, else the UNFCCC
+    -// default value; Option 3 = fNRBApplied, else the TOOL33 value. A determination with no value for its own option gives fNRB = 0 for that fuel and a flag
+    -// (the parameter is not determined, so no non-renewable share is credited); it never falls back to the typed fNRB of the baseline fuel row.
+    -function fnrbOf(f) {
+    +// f_NRB (VMR0015 s9.2: "one of the following sources must be used"): the value comes from the source of the selected option.
+    +// Option 1 = the UNFCCC national default value; Option 2 = TOOL30 NRB/(NRB+RB) x 0.74 computed here (or the typed TOOL30 value x 0.74);
+    +// Option 3 = the TOOL33 default value. Where "f_NRB applied" is also given and differs from that source value by more than 0.005, the source
+    +// value is used and the difference flagged. For options 1 and 3, "f_NRB applied" is used only when the option's own source value is missing,
+    +// with a flag for the VVB. Option 2 never uses it (it may be entered before or after the 26 % discount). A determination with no value for its
+    +// own option gives fNRB = 0 for that fuel and a flag (the parameter is not determined, so no non-renewable share is credited); it never falls
+    +// back to the typed fNRB of the baseline fuel row.
+    +function fnrbSrc(f) {
+    @@ -132 +135,0 @@
+    -  if (N(f.fNRBApplied, 0) > 0) return N(f.fNRBApplied, 0);
+    @@ -134,0 +138,15 @@
+    +  return 0;
+    +}
+    +function fnrbOf(f) {
+    +  const opt = String(f.option || ''), src = fnrbSrc(f), ap = N(f.fNRBApplied, 0);
+    +  const id = 'fNRB ' + (f.fuelType || f.determinationId || 'fuel');
+    +  const srcName = opt.indexOf('Option 1') === 0 ? 'UNFCCC national default value' : (opt.indexOf('Option 2') === 0 ? 'TOOL30 value x 0.74' : 'TOOL33 default value');
+    +  const note = (m) => { if (flags.indexOf(m) < 0) flags.push(m); };
+    +  if (src > 0) {
+    +    if (ap > 0 && Math.abs(ap - src) > 0.005) note(id + ': f_NRB applied ' + ap + ' differs from the ' + srcName + ' ' + r6(src) + ' of the selected option (' + opt + '); the ' + srcName + ' is used 
+    +    return src;
+    +  }
+    +  if (ap > 0 && (opt.indexOf('Option 1') === 0 || opt.indexOf('Option 3') === 0)) {
+    +    note(id + ': the ' + srcName + ' of the selected option (' + opt + ') is not entered, so f_NRB applied ' + ap + ' is used; enter the ' + srcName + ' (VMR0015 s9.2). VVB to confirm the value again
+    +    return ap;
+    +  }
+    @@ -392,0 +411 @@
+    +    chk(id + ' UNFCCC value', f.unfcccValue, 0, 1);   // VMR0015 s9.2 gives the unit as 'Fraction or %': a percentage (62 for 0.62) is caught here
+mathBlock pp_err_calculation_pd_vcs_ex_ante: 5 line(s) removed, 24 added
+    @@ -122,4 +122,8 @@
+    -// f_NRB (VMR0015 s9.2): Option 2 = TOOL30 NRB/(NRB+RB) x 0.74 computed here (or the typed TOOL30 value x 0.74); Option 1 = fNRBApplied, else the UNFCCC
+    -// default value; Option 3 = fNRBApplied, else the TOOL33 value. A determination with no value for its own option gives fNRB = 0 for that fuel and a flag
+    -// (the parameter is not determined, so no non-renewable share is credited); it never falls back to the typed fNRB of the baseline fuel row.
+    -function fnrbOf(f) {
+    +// f_NRB (VMR0015 s9.2: "one of the following sources must be used"): the value comes from the source of the selected option.
+    +// Option 1 = the UNFCCC national default value; Option 2 = TOOL30 NRB/(NRB+RB) x 0.74 computed here (or the typed TOOL30 value x 0.74);
+    +// Option 3 = the TOOL33 default value. Where "f_NRB applied" is also given and differs from that source value by more than 0.005, the source
+    +// value is used and the difference flagged. For options 1 and 3, "f_NRB applied" is used only when the option's own source value is missing,
+    +// with a flag for the VVB. Option 2 never uses it (it may be entered before or after the 26 % discount). A determination with no value for its
+    +// own option gives fNRB = 0 for that fuel and a flag (the parameter is not determined, so no non-renewable share is credited); it never falls
+    +// back to the typed fNRB of the baseline fuel row.
+    +function fnrbSrc(f) {
+    @@ -132 +135,0 @@
+    -  if (N(f.fNRBApplied, 0) > 0) return N(f.fNRBApplied, 0);
+    @@ -134,0 +138,15 @@
+    +  return 0;
+    +}
+    +function fnrbOf(f) {
+    +  const opt = String(f.option || ''), src = fnrbSrc(f), ap = N(f.fNRBApplied, 0);
+    +  const id = 'fNRB ' + (f.fuelType || f.determinationId || 'fuel');
+    +  const srcName = opt.indexOf('Option 1') === 0 ? 'UNFCCC national default value' : (opt.indexOf('Option 2') === 0 ? 'TOOL30 value x 0.74' : 'TOOL33 default value');
+    +  const note = (m) => { if (flags.indexOf(m) < 0) flags.push(m); };
+    +  if (src > 0) {
+    +    if (ap > 0 && Math.abs(ap - src) > 0.005) note(id + ': f_NRB applied ' + ap + ' differs from the ' + srcName + ' ' + r6(src) + ' of the selected option (' + opt + '); the ' + srcName + ' is used 
+    +    return src;
+    +  }
+    +  if (ap > 0 && (opt.indexOf('Option 1') === 0 || opt.indexOf('Option 3') === 0)) {
+    +    note(id + ': the ' + srcName + ' of the selected option (' + opt + ') is not entered, so f_NRB applied ' + ap + ' is used; enter the ' + srcName + ' (VMR0015 s9.2). VVB to confirm the value again
+    +    return ap;
+    +  }
+    @@ -392,0 +411 @@
+    +    chk(id + ' UNFCCC value', f.unfcccValue, 0, 1);   // VMR0015 s9.2 gives the unit as 'Fraction or %': a percentage (62 for 0.62) is caught here
+schemas: 478 vs 478; different: 0
+systemSchemas: 14 vs 14; different: 0
+tokens: 1 vs 1; different: 0
+policy.json fields MGS assigns on import (not content):
+    hash: 'HgxizLfLuXQJNCi9VJvTXVRgchJQZKfh35KYmpa72JTo' -> 'DZe3MsYCRTTHBb9TRaXKn7DtYhFDgGqzfGkBeiTyW7QG'
+    id: '6ad7bd3b72c7fd6f7400e32b' -> '6ad9291272c7fd6f740182d7'
+    instanceTopicId: '0.0.1792530628276' -> '0.0.1792664544402'
+    name: 'VMR0015 Safe Drinking Water dMRV (VCS v5.0A)' -> 'VMR0015 Safe Drinking Water dMRV (VCS v5.0A)_1792616721930'
+    policyTag: 'Tag_1792523560070.3d826497' -> 'Tag_1792616706987.68d6cc36'
+    topicId: '0.0.11102314' -> '0.0.11118653'
+    uuid: '6ad7fcb1-e5f1-4ea6-9bb6-42212e292800' -> 'c43fa8d5-9536-42a5-9c03-59b0e820eb87'
+RESULT: only the mathBlock code and MGS-assigned fields differ
