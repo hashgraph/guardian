@@ -272,3 +272,23 @@ Failures, all explained:
 - First attempt: 234 of 278 failed. `PUT /profiles/StandardRegistry` (`create_accounts`) timed out because the Solo mirror node answered 502/503 for a few seconds right after the services restarted; every later spec depends on those accounts. `000_accounts_creating` run alone afterwards passed (12/12) and the second attempt, started when the mirror answered 200 to 15 requests in a row, passed everything but one spec. The cause inside Solo was not investigated; the failure is the stack's, not the migration's.
 - `ui-tests/specs/02_policies/editPolicy` "Modify Existing block…" failed three times in a row on Chrome (it passed in E8 on Electron). The editor selects the policy root when it finishes loading, `openEditingPolicy` returned while the editor was still under its loading overlay, and the spec's selection of `Block_1` was overridden: the Tag edit landed on the policy root, so `Block_12` was never saved. `openEditingPolicy` now waits for the overlay to go (`waitForPageSettled`), and the spec passed twice in a row. Checked first: waiting for the save request (`PUT /policies/:id`, 200) did not change the result.
 - `scripts/entrypoint.test.mjs` failed in the first attempt because the shell that started the run had `CYPRESS_*` variables exported and the sandbox passed them on to `entrypoint.sh`; the sandbox now drops them.
+
+### CI on the branch (2026-11-18)
+
+`E2E Tests` with `all` (278 specs, 1033 tests) and `UI Tests` with `ui-all dr-all` (54 specs, 133 tests), compared with the runs of the day before on the same workflows (Cypress 15.15, Electron, `ng serve`). Durations are the span from the first to the last spec start in the JUnit files, and the runner was not the same machine, so read them as an order of magnitude.
+
+| Run | Specs | Failures | Span |
+|---|---|---|---|
+| `E2E Tests` `all`, 2026-11-17 (15.15) | 277 | 3 | 93 min |
+| `E2E Tests` `all`, 2026-11-18 (16.3) | 278 | 2 | 66 min (−29 %) |
+| `UI Tests`, 2026-11-17 (15.15) | 53 | 1 | 61 min |
+| `UI Tests`, 2026-11-18 (16.3) | 54 | 0 | 39 min (−36 %) |
+
+The requests of the spec reports show `HeadlessChrome/158` on 16.3. `all` includes the UI specs, so the second workflow only repeats what the first already ran.
+
+The two failures of `E2E Tests` are the same kind of race, not the migration: a spec reads a Hedera message through the mirror node a fraction of a second after it was submitted, and the mirror answers 404.
+
+- `007_modules/13_postPreviewModuleMessage` "Preview the module from IPFS": the module was published at 14:07:54.994 and the preview asked for its message at 14:07:55.336 (`MESSAGE_NOT_FOUND`, mirror 404). The spec published the module in its own `before` hook, as it did on 15.15, where it passed.
+- `016_policies_tests_and_flows/dryRunPolicyFlowAndRecord` (`before all`, "Import policy and dry-run it"): `PUT /policies/:id/dry-run` answered 500 at 14:16:32; guardian-service read a topic message by index 100 ms after the import wrote it (`get-topic-message-by-index`, mirror 404).
+
+Both specs passed in the run of the day before. Mirror 404s on just-submitted messages appear in both runs' logs (13 and 18 in guardian-service); these two specs are the ones where nothing retries. Not fixed: a retry on the state (poll the preview until the mirror has the message) changes existing specs, and the dry-run case is guardian-service reading the mirror right after the import, which is a product timing question.
