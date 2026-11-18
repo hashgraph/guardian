@@ -1191,15 +1191,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cortex-js/compute-engine@npm:^0.187.1":
-  version: 0.187.1
-  resolution: "@cortex-js/compute-engine@npm:0.187.1"
+"@cortex-js/compute-engine@npm:^0.190.0":
+  version: 0.190.0
+  resolution: "@cortex-js/compute-engine@npm:0.190.0"
   dependencies:
     "@arnog/colors": "npm:^0.7.3"
     complex.js: "npm:^2.4.3"
   bin:
     epsil: dist/esm-min/cli/epsil.js
-  checksum: 10c0/71c142e88a2dcde7a14ece3d60203824f7d63eb836d337525943e914a6451ee940fa1a293751e3c974a17cf82c6048b0e48fbc081386a8e32f0a79188c954ea4
+  checksum: 10c0/841a26cc40294d442ebc9572ab78df9555a4d35978b562de1d703da6dfafb54531885bf2e5bc38b76da10316e757774c5374a43e3bc486b2819cd0cbcd3e74ba
   languageName: node
   linkType: hard
 
@@ -11985,7 +11985,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "policy-service@workspace:policy-service"
   dependencies:
-    "@cortex-js/compute-engine": "npm:^0.187.1"
+    "@cortex-js/compute-engine": "npm:^0.190.0"
     "@formulajs/formulajs": "npm:4.6.1"
     "@guardian/common": "workspace:*"
     "@guardian/hedera": "workspace:*"
