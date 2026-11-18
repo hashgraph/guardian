@@ -946,6 +946,7 @@ form {
         .form-issue-text {
             flex: 1 1 auto;
             min-width: 0;
+            overflow-wrap: anywhere;
 
             b {
                 font-size: 14px;
@@ -960,6 +961,7 @@ form {
         }
 
         .guardian-button {
+            flex-shrink: 0;
             height: 28px;
             padding: 0 10px;
             font-family: inherit;
