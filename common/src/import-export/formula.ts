@@ -322,9 +322,53 @@ export class FormulaImportExport {
                 }
                 item.relationships = relationships;
             }
-            // Outputs
             const outputs = FormulaImportExport.getItems(expression?.outputs, []);
+            const columnWrappers = new Map<string, any>();
+            const addColumnLink = (output: any, columnKey: string, rawName: unknown) => {
+                const text = typeof rawName === 'string' ? rawName.trim() : '';
+                if (!(/^[A-Za-z]\w*(?:,\w+)*$/).test(text)) {
+                    return;
+                }
+                const name = text.replace(/,/g, '_');
+                let target = items.find((entry) => entry.name === name);
+                if (!target) {
+                    return;
+                }
+                if (target.type === 'variable') {
+                    let wrapper = columnWrappers.get(name);
+                    if (!wrapper) {
+                        wrapper = {
+                            uuid: GenerateUUIDv4(),
+                            name,
+                            description: block.tag,
+                            type: 'formula',
+                            value: name,
+                            relationships: [target.uuid]
+                        };
+                        items.push(wrapper);
+                        columnWrappers.set(name, wrapper);
+                    }
+                    target = wrapper;
+                }
+                const link = { entityId: outputSchema, item: output.field, type: 'schema', columnKey };
+                const links = Array.isArray(target.links) ? target.links : (target.link ? [target.link] : []);
+                if (!links.some((entry: any) => entry.entityId === link.entityId &&
+                    entry.item === link.item && entry.columnKey === columnKey)) {
+                    links.push(link);
+                }
+                target.links = links;
+                target.link = links[0];
+            };
             for (const item of outputs) {
+                if (item.columns && typeof item.columns === 'object') {
+                    for (const [key, name] of Object.entries(item.columns)) {
+                        addColumnLink(item, key, name);
+                    }
+                    continue;
+                }
+                if (Array.isArray(item.rows) || Array.isArray(item.tables)) {
+                    continue;
+                }
                 let link = items.find((e) => e.name === item.name);
                 if (link) {
                     if (link.type === 'variable') {
@@ -335,14 +379,20 @@ export class FormulaImportExport {
                             type: 'formula',
                             value: item.name,
                             relationships: [link.uuid]
-                        }
+                        };
                         items.push(newTarget);
                         link = newTarget;
                     }
-                    link.link = {
+                    const target = {
                         entityId: outputSchema,
                         item: item.field,
                         type: 'schema'
+                    };
+                    if (Array.isArray(link.links)) {
+                        link.links.push(target);
+                        link.link = link.links[0];
+                    } else {
+                        link.link = target;
                     }
                 }
             }

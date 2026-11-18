@@ -278,3 +278,73 @@ describe('FormulaImportExport.generateZipFile', () => {
         assert.deepEqual(parsed.config.formulas.find((e) => e.uuid === 'm').relationships, ['a', 'b']);
     });
 });
+
+describe('FormulaImportExport table column outputs', () => {
+    const generate = (outputs, extra = {}) => FormulaImportExport.generateByPolicy({
+        name: 'Column outputs',
+        config: {
+            blockType: 'mathBlock', inputSchema: '#input', outputSchema: '#output', tag: 'Calculate',
+            expression: {
+                variables: [{ name: 'fuel', field: 'source.fuel' }],
+                formulas: [{ type: 'group', items: [{ name: 'co2', body: 'fuel * 2', relationships: ['fuel'] }] }],
+                outputs,
+                ...extra
+            }
+        }
+    }).config.formulas;
+
+    it('links one equation to every mapped column and mirrors its first link', () => {
+        const items = generate([{ type: 'group', items: [
+            { field: 'results', name: '', columns: { first: 'co2', second: 'co2', notes: '', bad: 'unknown' } },
+            { field: 'moreResults', name: '', columns: { total: 'co2' }, tableList: true }
+        ] }]);
+        const equation = items.find(item => item.name === 'co2');
+        assert.deepEqual(equation.links, [
+            { type: 'schema', entityId: '#output', item: 'results', columnKey: 'first' },
+            { type: 'schema', entityId: '#output', item: 'results', columnKey: 'second' },
+            { type: 'schema', entityId: '#output', item: 'moreResults', columnKey: 'total' }
+        ]);
+        assert.deepEqual(equation.link, equation.links[0]);
+        assert.deepEqual(equation.relationships, [items.find(item => item.name === 'fuel').uuid]);
+    });
+
+    it('wraps pass-through variables once and keeps their input link', () => {
+        const items = generate([{ field: 'results', columns: { a: 'fuel', b: 'fuel' } }]);
+        const input = items.find(item => item.type === 'variable');
+        const output = items.find(item => item.type === 'formula' && item.name === 'fuel');
+        assert.deepEqual(input.link, { type: 'schema', entityId: '#input', item: 'source.fuel' });
+        assert.equal(output.value, 'fuel');
+        assert.deepEqual(output.relationships, [input.uuid]);
+        assert.deepEqual(output.links.map(link => link.columnKey), ['a', 'b']);
+        assert.equal(items.filter(item => item.type === 'formula' && item.name === 'fuel').length, 1);
+    });
+
+    it('normalizes mapped names using the Math output naming rules', () => {
+        const items = generate([{ field: 'results', columns: { a: ' co2,i ', b: 'fuel + 1', c: ' ' } }], {
+            formulas: [{ name: 'co2_i', body: 'fuel * 2', relationships: ['fuel'] }]
+        });
+        assert.deepEqual(items.find(item => item.name === 'co2_i').links, [
+            { type: 'schema', entityId: '#output', item: 'results', columnKey: 'a' }
+        ]);
+    });
+
+    it('keeps the scalar target when an equation also supplies a table', () => {
+        const items = generate([
+            { name: 'co2', field: 'scalar' },
+            { field: 'results', columns: { total: 'co2' } }
+        ]);
+        const links = items.find(item => item.name === 'co2').links;
+        assert.deepEqual(links.map(link => [link.item, link.columnKey]), [['scalar', undefined], ['results', 'total']]);
+    });
+
+    it('round-trips column identity and replaces its schema id', async () => {
+        const items = generate([{ field: 'results', columns: { total: 'co2' } }]);
+        const zip = await FormulaImportExport.generateZipFile({ formula: { config: { formulas: items } }, schemas: [] });
+        const parsed = await FormulaImportExport.parseZipFile(await zip.generateAsync({ type: 'nodebuffer' }));
+        FormulaImportExport.replaceIds(parsed.formula.config, new Map([['#output', '#imported']]));
+        const item = parsed.formula.config.formulas.find(item => item.name === 'co2');
+        assert.equal(item.links[0].columnKey, 'total');
+        assert.equal(item.links[0].entityId, '#imported');
+        assert.deepEqual(item.link, item.links[0]);
+    });
+});
