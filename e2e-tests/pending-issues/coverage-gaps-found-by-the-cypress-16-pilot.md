@@ -13,7 +13,7 @@ Three specs failed in the pilot runs, on 15.15 and on 16.3 alike. Each depended 
 - `ui-tests/specs/05_modules/createModule` counted the imported rows on the first page of the module list (10 rows, newest first). Past ten modules the new row pushes another off the page, so the count could stay the same. The import helpers now check the module the import request created.
 - `api-tests/008_artifacts/postArtifact` uploaded to the newest policy in the list, which may be published or belong to another registry (422). It now uploads to a draft policy of its own.
 
-The features behind those failures (replacing schemas on import, list pagination) are not tested anywhere, and looking for the cause of a fourth failure found a product defect in the artifact list cache (`artifact-upload-leaves-the-artifact-list-cached.md`).
+The features behind those failures (replacing schemas on import, list pagination) are not tested anywhere, and looking for the cause of a fourth failure found a product defect in the artifact list cache: after an upload or a delete the gateway kept answering the old list for 10 minutes. It is fixed in `api-gateway/src/api/service/artifact.ts`, with the unit test `api-gateway/tests/service/artifact-cache-invalidation.test.mjs`.
 
 Why these defects show up only now and then: with `grepFilterSpecs` the order of the spec folders changes from one run to the next (seen on 15.15 and 16.3: `008_artifacts` was the first folder of the smoke run in one run and the fourth in another), so a spec that depends on what the folder before it left passes or fails by chance.
 
@@ -23,19 +23,15 @@ Why these defects show up only now and then: with `grepFilterSpecs` the order of
 |---|---|---|
 | "Schemas for replace": `POST /schemas/import/schemas/duplicates` and the import with `schemasIds` (replace) | none | `api-gateway/tests/helpers/guardians-schemas*.test.mjs` only check that the gateway forwards the arguments; no test of `SCHEMA_IMPORT_CHECK_FOR_DUBLICATES` in `guardian-service/src/api/schema.service.ts`; `frontend/src/app/views/schemas/schemas.component.ts` has no spec |
 | List pagination (page size, `x-total-count`, order, next page) | none: the specs pass `pageIndex`/`pageSize` only to read data (`011_schemas`, `009_policies/policyGridActions`), and `toolsPage` changes the page size only to find a row | `api-gateway/tests/service/module.test.mjs` checks that `pageIndex`/`pageSize` are forwarded; no test of the order and offset the services apply (`orderBy createDate DESC`, `limit`, `offset`) |
-| Artifact list cache invalidation after an upload or a delete | none on purpose; `008_artifacts/deleteArtifact` hits it only on a second run within 10 minutes | `api-gateway/tests/cache-invalidation.test.js` covers `getCacheKey`, not the invalidations of the artifact controller |
+| Artifact list cache invalidation after an upload or a delete | none of its own; `008_artifacts/deleteArtifact` reads the list after an upload | `api-gateway/tests/service/artifact-cache-invalidation.test.mjs` |
 
 ## Proposed tests
 
 Each at the lowest level that shows the behavior (AGENTS.md), test first.
 
-### A. Artifact list cache (product defect)
+### A. Artifact list cache
 
-1. `api-gateway` unit test: after `POST /artifacts/:parentId` and after `DELETE /artifacts/:artifactId`, the cache tags of both forms of the list are invalidated, `/artifacts/` (API clients) and `/artifacts` (the UI, `GET /api/v1/artifacts?type=…`). It fails today: the upload drops `//artifacts/`, the delete only `/artifacts/`.
-2. Fix in `api-gateway/src/api/service/artifact.ts` (the upload builds its tag as `` `/${PREFIXES.ARTIFACTS}` `` while `PREFIXES.ARTIFACTS` already starts with `/`; neither route invalidates `/artifacts`).
-3. API spec in `008_artifacts`: on a draft policy of its own, the list contains an artifact right after its upload, and no longer contains it right after its delete, both read with the URL the API specs use and with the one the UI uses.
-
-Until the fix, `008_artifacts/deleteArtifact` fails on a run less than 10 minutes after another read of the list. AGENTS.md asks to skip it with a pointer to `artifact-upload-leaves-the-artifact-list-cached.md`; the alternative proposed is to fix the gateway instead. Not decided yet.
+The defect is fixed and has its unit test. What is left, optional: an API spec in `008_artifacts` that, on a draft policy of its own, reads the list right after an upload and right after a delete, with the URL the API specs use (`/artifacts/`) and with the one the UI uses (`/artifacts?type=…`).
 
 ### B. Replacing schemas on import
 
@@ -52,4 +48,4 @@ Until the fix, `008_artifacts/deleteArtifact` fails on a run less than 10 minute
 
 ## How to resume
 
-Decide on A (fix the gateway, or skip `deleteArtifact` until it is fixed), then pick from B and C. Run every touched API folder twice in a row and on its own after `000_accounts_creating` (AGENTS.md, "Check"). Delete this note once the tests exist.
+Pick from A, B and C. Run every touched API folder twice in a row and on its own after `000_accounts_creating` (AGENTS.md, "Check"). Delete this note once the tests exist.
