@@ -286,10 +286,6 @@ tr.detailed-row {
         white-space: nowrap;
     }
 
-    th.col-actions {
-        text-align: right;
-    }
-
     th help-icon + p-sorticon {
         margin-left: 22px;
     }
@@ -339,10 +335,6 @@ tr.detailed-row {
     max-width: 100%;
 }
 
-td.col-actions .col-container {
-    justify-content: flex-end;
-}
-
 td.col-actions .col-container > div {
     width: auto !important;
 }
@@ -351,9 +343,13 @@ td.col-actions .col-container > div {
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: flex-start;
     gap: 8px;
     min-width: fit-content;
+}
+
+td .btn-field.link {
+    padding-inline: 0;
 }
 
 .comments-button {
@@ -490,6 +486,11 @@ tr.revoked td {
 }
 
 @container pv-content (max-width: 760px) {
+    .buttons,
+    td.col-actions .col-container {
+        justify-content: flex-end;
+    }
+
     .grid-filters {
         flex-direction: column;
         align-items: stretch;
