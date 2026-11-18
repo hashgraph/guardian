@@ -1154,6 +1154,106 @@ describe('preparePolicySchemaUpdate — condition-branch membership', () => {
         assert.deepEqual(target.document.allOf[0].else.properties.address, { items: { properties: { city: false } } });
     });
 
+    describe('legacy unwrapped targets on a repeatable sub-schema', () => {
+        // Policy schemas saved before targets were wrapped under `items` hold the plain shape
+        // (then.properties.address = { required: [...] }); the template snapshot is rebuilt with
+        // today's builder, so it holds { items: { required: [...] } }.
+        const legacyDocument = (names) => {
+            const trigger = field('status', { templateFieldId: 'tpl-status' });
+            const children = names.map((n) => field(n, { required: true }));
+            const address = field('address', { isArray: false, isRef: true, type: '#SubIri', fields: children });
+            const document = SchemaHelper.buildDocument(
+                baseSchema(),
+                [trigger, address],
+                [{
+                    ifCondition: { field: trigger, fieldValue: 'solar' },
+                    thenFields: [],
+                    elseFields: [],
+                    thenTargets: children.map((f) => ({ field: f, fieldPath: ['address', f.name] })),
+                }]
+            );
+            stripEnvelope(document);
+            delete document.properties.address;
+            return document;
+        };
+        const arraySnapshot = (names) => {
+            const trigger = field('status', { templateFieldId: 'tpl-status' });
+            const children = names.map((n) => field(n, { required: true }));
+            return {
+                templateSchemaId: 'tsid-1',
+                name: 'N',
+                description: 'D',
+                version: '1.0.0',
+                fields: [trigger, field('address', { isArray: true, isRef: true, type: '#SubIri', fields: children })],
+                conditions: [{
+                    ifCondition: { field: trigger, fieldValue: 'solar' },
+                    thenFields: [],
+                    elseFields: [],
+                    thenTargets: children.map((f) => ({ field: f, fieldPath: ['address', f.name] })),
+                }],
+            };
+        };
+        const templateSource = (names) => {
+            const trigger = field('status', { templateFieldId: 'tpl-status' });
+            const placeholder = field('placeholder', { templateFieldId: 'tpl-placeholder' });
+            const children = names.map((n) => field(n, { required: true }));
+            const address = field('address', { isArray: true, isRef: true, type: '#SubIri', fields: children });
+            const document = SchemaHelper.buildDocument(
+                baseSchema(),
+                [trigger, placeholder, address],
+                [{
+                    ifCondition: { field: trigger, fieldValue: 'solar' },
+                    thenFields: [placeholder],
+                    elseFields: [],
+                    thenTargets: children.map((f) => ({ field: f, fieldPath: ['address', f.name] })),
+                }]
+            );
+            delete document.properties.address;
+            return document;
+        };
+        const update = (targetDocument, sourceDocument, snapshot) => {
+            const target = asSchema(targetDocument);
+            preparePolicySchemaUpdate(
+                target,
+                asSchema(sourceDocument),
+                'template-1',
+                { customFieldsLocked: false, schemaSettingsLocked: false },
+                [],
+                new Map(),
+                snapshot
+            );
+            return target;
+        };
+
+        it('does not resurrect a template target the updated template dropped', () => {
+            const target = update(legacyDocument(['zip']), templateSource([]), arraySnapshot(['zip']));
+            const branch = target.document.allOf[0];
+            assert.equal(branch.then.properties.address, undefined,
+                'the template-owned legacy target must not be treated as policy-added');
+            assert.equal(branch.else?.properties?.address, undefined);
+        });
+
+        it('keeps a legacy policy-added target next to a template target on the same sub-schema', () => {
+            const target = update(
+                legacyDocument(['zip', 'city']),
+                templateSource(['zip']),
+                arraySnapshot(['zip'])
+            );
+            const branch = target.document.allOf[0];
+            assert.deepEqual(branch.then.properties.address.items.required.sort(), ['city', 'zip']);
+            assert.equal(branch.then.properties.address.required, undefined,
+                'the legacy target must be nested under items, not left beside it');
+            assert.deepEqual(Object.keys(branch.else.properties.address.items.properties).sort(), ['city', 'zip']);
+        });
+
+        it('restores a legacy policy-added target when the template has none on that sub-schema', () => {
+            const target = update(legacyDocument(['city']), templateSource([]), arraySnapshot([]));
+            const branch = target.document.allOf[0];
+            assert.deepEqual(branch.then.properties.address, { required: ['city'] },
+                'with no array counterpart to align to, the legacy shape is carried over as is');
+        });
+    });
+
     it('restores only policy-added cross-schema targets when snapshot also had targets', () => {
         const trigger = field('status', { templateFieldId: 'tpl-status' });
         const zip = field('zip', { required: true });
