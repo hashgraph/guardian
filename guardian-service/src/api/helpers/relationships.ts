@@ -75,6 +75,22 @@ export function buildRelationshipsSchemas(schemas: any[]): any[] {
         }
     }
 
+    // the document of a sub-schema without `$defs`, read once for every schema that refers to it
+    const subDocuments = new Map<string, any>();
+    const getSubDocument = (iri: string): any => {
+        if (!subDocuments.has(iri)) {
+            const sub = getDocument(byIri.get(iri));
+            if (sub) {
+                const { $defs, ...rest } = sub;
+                subDocuments.set(iri, rest);
+            } else {
+                subDocuments.set(iri, null);
+            }
+        }
+        return subDocuments.get(iri);
+    };
+
+    const defsOf = new Map<any, string[]>();
     const reachable = new Set<any>();
     const queue = schemas.filter((s) => s.entity === 'VC' || s.category === 'SYSTEM');
     while (queue.length) {
@@ -83,7 +99,9 @@ export function buildRelationshipsSchemas(schemas: any[]): any[] {
             continue;
         }
         reachable.add(schema);
-        for (const iri of getDefs(schema)) {
+        const keys = getDefs(schema);
+        defsOf.set(schema, keys);
+        for (const iri of keys) {
             const sub = byIri.get(iri);
             if (sub) {
                 queue.push(sub);
@@ -100,16 +118,12 @@ export function buildRelationshipsSchemas(schemas: any[]): any[] {
         // `id` is a getter on the entity, so the spread does not copy it
         item.id = schema.id;
         const document = getDocument(schema);
-        const defs = document?.$defs;
-        const keys = defs && typeof defs === 'object' ? Object.keys(defs) : [];
+        const keys = defsOf.get(schema);
         if (keys.length) {
+            const defs = document.$defs;
             const restorable = keys.every((iri) => {
-                const sub = getDocument(byIri.get(iri));
-                if (!sub) {
-                    return false;
-                }
-                const { $defs, ...rest } = sub;
-                return isDeepStrictEqual(rest, defs[iri]);
+                const rest = getSubDocument(iri);
+                return !!rest && isDeepStrictEqual(rest, defs[iri]);
             });
             if (restorable) {
                 const { $defs, ...rest } = document;

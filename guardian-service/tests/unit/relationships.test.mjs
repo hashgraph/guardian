@@ -58,4 +58,21 @@ describe('relationships', () => {
         assert.deepEqual(result.map((s) => s.iri), ['#root', '#s1', '#s2']);
         assert.equal(result[0].document.$defs, undefined);
     });
+
+    it('restores a sub-schema shared by several roots for each of them', () => {
+        const shared = { title: 'shared', properties: { a: { type: 'string' } } };
+        const root = (iri) => ({
+            iri, entity: 'VC', context: {}, defs: ['#shared'],
+            document: { title: iri, $defs: { '#shared': { ...shared } } },
+        });
+        const list = [root('#r1'), root('#r2'), root('#r3'), { iri: '#shared', entity: 'NONE', context: {}, defs: [], document: { ...shared } }];
+        const result = buildRelationshipsSchemas(list);
+        for (const iri of ['#r1', '#r2', '#r3']) {
+            const item = result.find((s) => s.iri === iri);
+            assert.deepEqual(item.defs, ['#shared']);
+            assert.equal(item.document.$defs, undefined);
+        }
+        const copy = (iri) => result.find((s) => s.iri === iri);
+        assert.notEqual(copy('#r1').document, copy('#r2').document);
+    });
 });
