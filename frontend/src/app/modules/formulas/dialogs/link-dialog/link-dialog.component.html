@@ -98,7 +98,7 @@
         @if (items && type==='schema') {
           <div class="field-tree">
             @for (item of items.data.items; track item) {
-              <div class="field-item" [attr.data-selected]="!item.expandable && item.data.path === itemId">
+              <div class="field-item" [attr.data-selected]="!item.expandable && fieldSelectionId(item.data) === selectionId">
                 <div class="field-offset"
                   [style.width.px]="24*item.lvl"
                 [style.min-width.px]="24*item.lvl"></div>
@@ -116,8 +116,8 @@
                   <div class="field-select" (click)="onSelectField(item)">
                     <p-radioButton
                       class="guardian-radio-button radio-button-24"
-                      [value]="item.data.path"
-                    [ngModel]="itemId"></p-radioButton>
+                      [value]="fieldSelectionId(item.data)"
+                    [ngModel]="selectionId"></p-radioButton>
                   </div>
                 }
                 <div class="field-name" (click)="onSelectField(item)">

@@ -589,7 +589,7 @@ export class FormulaConfigurationComponent implements OnInit {
             let link: IFormulaLink;
             if (result.type === 'schema') {
                 // keeps the display condition only when the link still points at the same schema
-                link = moveLink(current, { schemaIri: result.entityId, fieldPath: result.item });
+                link = moveLink(current, { schemaIri: result.entityId, fieldPath: result.item, columnKey: result.columnKey });
             } else {
                 delete result.condition;
                 link = result;
@@ -801,7 +801,11 @@ export class FormulaConfigurationComponent implements OnInit {
         if (link?.type !== 'schema') {
             return false;
         }
-        return !this.schemasMap.has(link.entityId) || !this.schemasFieldMap.has(`${link.entityId}.${link.item}`);
+        if (!this.schemasMap.has(link.entityId) || !this.schemasFieldMap.has(`${link.entityId}.${link.item}`)) {
+            return true;
+        }
+        return link.columnKey !== undefined && !this.findSchema(link.entityId)?.getField(link.item)
+            ?.tableColumns?.some(column => column.key === link.columnKey);
     }
 
     public getMissingSchemaText(link: IFormulaLink): string {
@@ -810,7 +814,10 @@ export class FormulaConfigurationComponent implements OnInit {
 
     public getFieldName(link: IFormulaLink): string {
         if (link.type === 'schema') {
-            return this.schemasFieldMap.get(`${link.entityId}.${link.item}`) || '';
+            const name = this.schemasFieldMap.get(`${link.entityId}.${link.item}`) || '';
+            const column = link.columnKey === undefined ? null : this.findSchema(link.entityId)?.getField(link.item)
+                ?.tableColumns?.find(column => column.key === link.columnKey);
+            return column ? `${name}: ${column.name}` : name;
         }
         if (link.type === 'formula') {
             if (link.entityId === this.item?.uuid) {

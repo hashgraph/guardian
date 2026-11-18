@@ -20,6 +20,7 @@ export const BINDABLE_ITEM_TYPES: ReadonlySet<string> = new Set<string>([
 export interface IFieldTarget {
     schemaIri: string;
     fieldPath: string;
+    columnKey?: string;
 }
 
 /**
@@ -73,7 +74,8 @@ export function isLinkedTo(link: IFormulaLink | null | undefined, target: IField
     return !!link &&
         link.type === 'schema' &&
         link.entityId === target.schemaIri &&
-        link.item === target.fieldPath;
+        link.item === target.fieldPath &&
+        link.columnKey === target.columnKey;
 }
 
 /**
@@ -86,6 +88,9 @@ export function moveLink(link: IFormulaLink | null | undefined, target: IFieldTa
         entityId: target.schemaIri,
         item: target.fieldPath
     };
+    if (target.columnKey !== undefined) {
+        result.columnKey = target.columnKey;
+    }
     if (link && link.type === 'schema' && link.entityId === target.schemaIri && link.condition) {
         result.condition = link.condition;
     }
@@ -116,7 +121,7 @@ export function createStubItem(name: string, uuid: string = GenerateUUIDv4()): I
 }
 
 function isSameLink(a: IFormulaLink, b: IFormulaLink): boolean {
-    return a.type === b.type && a.entityId === b.entityId && a.item === b.item;
+    return a.type === b.type && a.entityId === b.entityId && a.item === b.item && a.columnKey === b.columnKey;
 }
 
 function withLinks(item: IFormulaItem, links: IFormulaLink[]): IFormulaItem {
@@ -162,17 +167,20 @@ export function applyFieldBindingOps(
                 continue;
             }
             const from = { ...op.target, fieldPath: op.from };
-            if (!links.some((link) => isLinkedTo(link, from))) {
+            const matchesFrom = (link: IFormulaLink) => link.type === 'schema' &&
+                link.entityId === from.schemaIri && link.item === from.fieldPath &&
+                (from.columnKey === undefined || link.columnKey === from.columnKey);
+            if (!links.some(matchesFrom)) {
                 continue;
             }
             const kept: IFormulaLink[] = [];
             for (const link of links) {
-                if (!isLinkedTo(link, from)) {
+                if (!matchesFrom(link)) {
                     kept.push(link);
                     continue;
                 }
-                const next = moveLink(link, op.target);
-                const taken = links.some((other) => !isLinkedTo(other, from) && isSameLink(other, next)) ||
+                const next = moveLink(link, { ...op.target, columnKey: op.target.columnKey ?? link.columnKey });
+                const taken = links.some((other) => !matchesFrom(other) && isSameLink(other, next)) ||
                     kept.some((other) => isSameLink(other, next));
                 if (!taken) {
                     kept.push(next);

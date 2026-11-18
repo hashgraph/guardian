@@ -234,3 +234,32 @@ describe('field-bindings', () => {
         expect(buildFieldPath(['a', 'b'], 'c')).toBe('a.b.c');
     });
 });
+
+describe('column field bindings', () => {
+    const target = { schemaIri: '#s', fieldPath: 'table', columnKey: 'co2' };
+
+    it('retains column identity and its condition when moving a link on the same schema', () => {
+        expect(moveLink({ type: 'schema', entityId: '#s', item: 'old', condition: CONDITION }, target))
+            .toEqual({ type: 'schema', entityId: '#s', item: 'table', columnKey: 'co2', condition: CONDITION });
+    });
+
+    it('unbinds a column without removing the whole table or a neighbouring column', () => {
+        const config: any = { formulas: [{ uuid: 'f', type: FormulaItemType.Formula, links: [
+            { type: 'schema', entityId: '#s', item: 'table' },
+            { type: 'schema', entityId: '#s', item: 'table', columnKey: 'co2' },
+            { type: 'schema', entityId: '#s', item: 'table', columnKey: 'net' }
+        ] }] };
+        const result = applyFieldBindingOps(config, [{ type: 'unbind', formulaId: 'd', itemUuid: 'f', target }]);
+        expect(result.config.formulas![0].links!.map(link => link.columnKey)).toEqual([undefined, 'net']);
+        expect(config.formulas[0].links).toHaveLength(3);
+    });
+
+    it('moves all column links with a renamed table while preserving column keys', () => {
+        const config: any = { formulas: [{ uuid: 'f', type: FormulaItemType.Formula, links: [
+            { type: 'schema', entityId: '#s', item: 'table', columnKey: 'co2' },
+            { type: 'schema', entityId: '#s', item: 'table', columnKey: 'net' }
+        ] }] };
+        const result = applyFieldBindingOps(config, [{ type: 'move', formulaId: 'd', itemUuid: 'f', from: 'table', target: { schemaIri: '#s', fieldPath: 'renamed' } }]);
+        expect(result.config.formulas![0].links!.map(link => [link.item, link.columnKey])).toEqual([['renamed', 'co2'], ['renamed', 'net']]);
+    });
+});
