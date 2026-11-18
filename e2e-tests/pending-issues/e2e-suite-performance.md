@@ -204,3 +204,53 @@ A throwaway spec, run with `cypress run --browser chromium` on 16.3.0 in the dev
 - `cy.env([...])` returns the requested keys found in `env` (`cypress.env.json`/config, `CYPRESS_*`, `--env`) and omits the missing ones without failing.
 - Defaults: `visibilityStrategy` is `modern`, `manageBrowserMemory` is `true`.
 - `Cypress.browser` reports `chromium` 156, headless (`--headless=new`). Cypress already launches Chromium with `--disable-dev-shm-usage` (and `--no-sandbox`, `--disable-gpu`), so the 64 MB `/dev/shm` of the CI container needs no launch argument of our own.
+
+### Pilot set on Cypress 16.3 / Chromium 156, compared with the baseline (2026-11-18)
+
+Same pilot set, same sequence (`000_accounts_creating`, `smoke`, UI, `policy-tests/irec`), two runs in a row on a fresh database, `STOP_POLICIES_BETWEEN_SUITES=1`. What changed besides the Cypress version: the UI specs run on the static production build (`scripts/serve-frontend.mjs`) instead of `ng serve --configuration production`, logins go through `cy.session()`, and `00_account_registration` has the new `signIn` spec (9 s). The two frontends serve the same optimized code; `ng serve` adds a 75 MB inline source map to `main.js` (93 MB instead of 17 MB), which Cypress 16 cannot load at all on Chrome (below), so the UI gain mixes the frontend change, the sessions and Cypress 16.
+
+| Group | 15.15, `ng serve` (mean of 2) | 16.3, static build (mean of 2) | Change |
+|---|---|---|---|
+| API (smoke) | 138.4 s | 151.3 s | +9 % |
+| UI | 737.3 s | 610.4 s (601.3 s without `signIn`) | −17 % (−18 %) |
+| Policy (`irec`) | 154.9 s | 157.0 s | +1 % |
+| Sum of the spec durations | 1030.5 s | 918.7 s | −11 % |
+| Wall clock of the run | 1197 s / 1189 s | 1075 s / 1101 s | −9 % |
+| UI logins through the form | 67 / 66 | 8 / 7 | −89 % |
+
+- UI: every spec but `dryRunMint` (−4 %) and `createAccount_Generate` (−5 %) is 11 to 34 % faster; the module, schema and token specs, which sign in in every test, gain 19 to 34 % (`createModule` 11 %).
+- API: no per-spec overhead. The difference is a few seconds on specs bound by the backend and Hedera (`postSettings` +3.2 s, `seedHederaArtefacts` +2.4 s, `dryRunPolicies` +1.8 s), within the spread of those specs.
+- Policy: unchanged, it is bound by the policy workflow.
+- Failures: the same three as the baseline (`createPolicySchema` in run 1, `createModule` and `postArtifact` in run 2), none from the migration. `createPolicySchema` also passed in a third UI run.
+- A restored session reuses the refresh token its form login created, so a user gets one new refresh token per run instead of one per UI login.
+
+Per-spec durations of the UI specs and of the two long `irec` specs:
+
+| Spec | 15.15 (s, mean of 2) | 16.3 (s, mean of 2) | Change |
+|---|---|---|---|
+| policy-tests/irec/iRec2.cy.js | 74.7 | 74.9 | 0 % |
+| policy-tests/irec/iRecNewRegistry.cy.js | 31.0 | 31.2 | 1 % |
+| ui-tests/specs/00_account_registration/createAccount_Generate.cy.js | 26.9 | 25.4 | -5 % |
+| ui-tests/specs/00_account_registration/createAccount_NonHappyFlows.cy.js | 27.8 | 22.7 | -18 % |
+| ui-tests/specs/00_account_registration/createAccount_ProvideCredentials.cy.js | 27.8 | 23.6 | -15 % |
+| ui-tests/specs/00_account_registration/signIn.cy.js | - | 9.1 | - |
+| ui-tests/specs/02_policies/dryRunMint.cy.js | 93.8 | 90.1 | -4 % |
+| ui-tests/specs/02_policies/iREC5Group.cy.js | 172.5 | 142.7 | -17 % |
+| ui-tests/specs/05_modules/createModule.cy.js | 27.3 | 24.3 | -11 % |
+| ui-tests/specs/05_modules/deleteModule.cy.js | 9.0 | 6.2 | -31 % |
+| ui-tests/specs/05_modules/exportModule.cy.js | 17.6 | 12.6 | -29 % |
+| ui-tests/specs/05_modules/moduleTags.cy.js | 20.5 | 14.3 | -30 % |
+| ui-tests/specs/05_modules/publishModule.cy.js | 22.9 | 15.2 | -34 % |
+| ui-tests/specs/05_modules/verifyModulesUi.cy.js | 19.0 | 13.9 | -27 % |
+| ui-tests/specs/06_policy_schemas/createPolicySchema.cy.js | 38.2 | 30.6 | -20 % |
+| ui-tests/specs/06_policy_schemas/operationsPolicySchema.cy.js | 62.8 | 47.7 | -24 % |
+| ui-tests/specs/06_policy_schemas/policySchemaTags.cy.js | 31.7 | 22.7 | -28 % |
+| ui-tests/specs/09_tokens/createToken.cy.js | 47.8 | 38.6 | -19 % |
+| ui-tests/specs/09_tokens/deleteToken.cy.js | 31.3 | 24.6 | -21 % |
+| ui-tests/specs/09_tokens/editToken.cy.js | 36.3 | 28.4 | -22 % |
+| ui-tests/specs/09_tokens/tagsTokens.cy.js | 24.2 | 17.5 | -28 % |
+
+### Found while migrating
+
+- `ng serve` cannot serve the UI specs on Cypress 16 with Chrome. On Chrome, Cypress 16 rewrites the scripts of the page under test and hands them back to the browser through CDP (`Fetch.fulfillRequest`, base64). `main.js` from `ng serve` is 93 MB, 76.5 MB of it an inline source map the dev server adds; base64 makes it about 124 MB, over Chromium's 100 MB limit for a DevTools message (`Too large read data is pending: capacity=104857600`). Chromium closes the DevTools connection, Cypress does not reconnect, and the run waits forever on the first `cy.visit` with no timeout. Cypress 15 loaded the page through its own proxy and was not affected; Electron on 16.3 is not affected either. The static production build (`main.js` 17 MB) loads in 3 s.
+- Measuring needs a fresh database: on a database that kept the policies of earlier runs, `POST /settings` (`006_settings/postSettings`) re-initializes guardian-service for minutes (see "`POST /settings` restarts every published and dry-run policy" above), the next suite's `before:spec` stops policies in the middle of it and the run stops. That run also left the stack on the spec's throwaway operator, because its `after` hook never ran.
