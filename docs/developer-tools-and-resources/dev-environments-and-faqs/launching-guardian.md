@@ -5,7 +5,7 @@ tags:
 
 # How to launch Guardian after installation?
 
-Once [http://localhost:3000](http://localhost:3000) is launched, we need to first generate Operator ID and Operator Key by clicking on Generate button as shown below:
+Once Guardian is launched ([http://localhost:3000](http://localhost:3000) with Docker, [http://localhost:4200](http://localhost:4200) when built and run manually), we need to first generate Operator ID and Operator Key by clicking on Generate button as shown below:
 
 <figure><img src="../../.gitbook/assets/image (18) (3).png" alt=""><figcaption></figcaption></figure>
 
