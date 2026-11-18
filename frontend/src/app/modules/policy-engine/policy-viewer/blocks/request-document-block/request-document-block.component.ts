@@ -297,33 +297,13 @@ export class RequestDocumentBlockComponent
     private getJson(data: any, presetFields: any[]) {
         try {
             if (data) {
-                const json: any = {};
                 let cs: any = {};
                 if (Array.isArray(data.document.credentialSubject)) {
                     cs = data.document.credentialSubject[0];
                 } else {
                     cs = data.document.credentialSubject;
                 }
-                for (let i = 0; i < presetFields.length; i++) {
-                    const f = presetFields[i];
-                    if (f.value === 'username') {
-                        json[f.name] = this.user.username;
-                        continue;
-                    }
-                    if (f.value === 'hederaAccountId') {
-                        json[f.name] = this.user.hederaAccountId;
-                        continue;
-                    }
-                    if (PresetPath.isNested(f)) {
-                        // Nested path (object or array entries); plain names keep the line below
-                        if (PresetPath.isCompatible(f)) {
-                            PresetPath.write(json, this.schema?.fields, f.name, PresetPath.sourceValue(cs, f));
-                        }
-                        continue;
-                    }
-
-                    json[f.name] = cs[f.value];
-                }
+                const json = PresetPath.fill(cs, presetFields, this.schema?.fields, this.user);
                 return json;
             }
         } catch (error) {

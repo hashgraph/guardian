@@ -89,14 +89,17 @@ export class PresetPath {
 
     /**
      * True if the source can feed the target: a source with fewer arrays than the target
-     * has no entries to spread over, so it is not allowed.
+     * has no entries to spread over, and a target without arrays can not take an array.
      * @param mapping
      */
     public static isCompatible(mapping: IPresetFieldMapping): boolean {
         if (!Number.isInteger(mapping.nameLevel) || !Number.isInteger(mapping.valueLevel)) {
             return true;
         }
-        return (mapping.valueLevel as number) >= (mapping.nameLevel as number);
+        const from = mapping.valueLevel as number;
+        const to = mapping.nameLevel as number;
+        // A target without arrays holds one value: a source with arrays has no single value to give
+        return to === 0 ? from === 0 : from >= to;
     }
 
     /**
@@ -107,6 +110,86 @@ export class PresetPath {
     public static sourceValue(source: any, mapping: IPresetFieldMapping): any {
         const value = PresetPath.read(source, mapping.value);
         return PresetPath.flatten(value, mapping.valueLevel, mapping.nameLevel);
+    }
+
+    /**
+     * Builds the form data of a preset: one value per mapping, taken from the preset document.
+     * Plain mappings copy `source[value]` as before, nested ones are written into their objects
+     * and array entries. `username` and `hederaAccountId` take the value from the user.
+     * @param source preset credential subject
+     * @param mappings `presetFields` of the block
+     * @param fields fields of the block schema (they say which segments are arrays)
+     * @param user current user
+     */
+    public static fill(
+        source: any,
+        mappings: IPresetFieldMapping[],
+        fields: any[] | null | undefined,
+        user: { username?: string, hederaAccountId?: string }
+    ): any {
+        const json: any = {};
+        for (const mapping of mappings) {
+            if (mapping.value === 'username') {
+                json[mapping.name] = user.username;
+                continue;
+            }
+            if (mapping.value === 'hederaAccountId') {
+                json[mapping.name] = user.hederaAccountId;
+                continue;
+            }
+            if (PresetPath.isNested(mapping)) {
+                // Nested path (object or array entries); plain names keep the line below
+                if (PresetPath.isCompatible(mapping)) {
+                    PresetPath.write(json, fields, mapping.name, PresetPath.sourceValue(source, mapping));
+                }
+                continue;
+            }
+            json[mapping.name] = source[mapping.value];
+        }
+        return json;
+    }
+
+    /**
+     * Coarse kind of a schema field, used to tell whether a value of one field can fill another.
+     * @param field schema field
+     */
+    public static fieldKind(field: any): string {
+        if (!field) {
+            return '';
+        }
+        if (field.isRef) {
+            return (field.type === '#GeoJSON' || field.context?.type === 'GeoJSON') ? 'geojson' : 'object';
+        }
+        const custom = field.customType;
+        if (custom && custom !== 'enum') {
+            return String(custom);
+        }
+        if (custom === 'enum' || field.enum || field.remoteLink) {
+            return 'enum';
+        }
+        return String(field.type || '');
+    }
+
+    /**
+     * True if a value of the source field can fill the target field. This is only a hint for the
+     * editor: the same kind always fits, an integer fits a number, and plain values fit a string.
+     * Objects, GeoJSON, files and the like fit only the same kind.
+     * @param target field of the block schema
+     * @param source field of the preset schema
+     */
+    public static isTypeCompatible(target: any, source: any): boolean {
+        const to = PresetPath.fieldKind(target);
+        const from = PresetPath.fieldKind(source);
+        if (!to || !from || to === from) {
+            return true;
+        }
+        if (to === 'number') {
+            return from === 'integer';
+        }
+        if (to === 'string') {
+            return ['integer', 'number', 'boolean', 'enum', 'country', 'continent', 'state'].includes(from);
+        }
+        return false;
     }
 
     /**

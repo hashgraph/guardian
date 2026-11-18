@@ -90,6 +90,17 @@
 .preset-chip-warning {
     color: var(--guardian-warning-color);
     border-color: var(--guardian-warning-color);
+
+    .pi {
+        font-size: 10px;
+    }
+}
+
+.preset-opt-warn {
+    flex: 0 0 auto;
+    margin-left: 6px;
+    font-size: 12px;
+    color: var(--guardian-warning-color);
 }
 
 .preset-controls {

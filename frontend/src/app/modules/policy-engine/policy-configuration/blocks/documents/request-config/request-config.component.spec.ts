@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 import { Schema } from '@guardian/interfaces';
 import { RequestConfigComponent } from './request-config.component';
 
@@ -149,6 +150,110 @@ describe('RequestConfigComponent presets', () => {
         expect(values).toContain('title');
         const rootRow = { ...row, level: 0 };
         expect(component.getSourceOptions(rootRow).length).toBeGreaterThan(0);
+    });
+
+    it('offers only array free sources to a target without arrays', () => {
+        const { component } = create({ presetFields: [] });
+        component.addNestedTarget('projectLocations.details.code');
+        const nestedTarget = component.rows[0];
+        expect(nestedTarget.level).toBe(1);
+        const scalar = { ...nestedTarget, level: 0 };
+        const values = component.getSourceOptions(scalar).flatMap((g) => g.items.map((i) => i.value));
+        expect(values).toContain('title');
+        expect(values).not.toContain('places.title');
+        expect(values).not.toContain('places.groups.tag');
+    });
+
+    it('forgets picked fields when another block or other schemas are loaded', () => {
+        const { component, block } = create({ presetFields: [] });
+        component.addNestedTarget('owner');
+        expect(names(component)).toEqual(['owner']);
+        const other: any = { ...block, properties: { ...block.properties, presetFields: [] } };
+        component.load(other);
+        expect(names(component)).toEqual([]);
+        component.addNestedTarget('owner');
+        component.load(other);
+        expect(names(component)).toEqual(['owner']);
+        other.properties.presetSchema = '#Block';
+        component.load(other);
+        expect(names(component)).toEqual([]);
+    });
+
+    it('lists rows in the order of the saved mappings, picked fields last', () => {
+        const { component } = create({
+            presetFields: [
+                { name: 'projectLocations.location', title: 'location', value: 'places.title', readonly: false, nameLevel: 1, valueLevel: 1 },
+                { name: 'title', title: 'title', value: 'title', readonly: false }
+            ]
+        });
+        expect(names(component)).toEqual(['projectLocations.location', 'title']);
+        component.addNestedTarget('owner');
+        component.addNestedTarget('projectLocations.details.code');
+        expect(names(component)).toEqual(['projectLocations.location', 'title', 'owner', 'projectLocations.details.code']);
+        component.setSource(component.rows.find((r) => r.name === 'owner')!, 'name');
+        expect(names(component)).toEqual(['projectLocations.location', 'title', 'owner', 'projectLocations.details.code']);
+        const saved = component.rows.filter((r) => component.isMapped(r)).map((r) => r.name);
+        expect(saved).toEqual(['projectLocations.location', 'title', 'owner']);
+    });
+
+    it('flags a source of another type but still allows selecting it', () => {
+        const { component, block } = create({ presetFields: [] });
+        component.addNestedTarget('title');
+        const row = component.rows[0];
+        const options = component.getSourceOptions(row).flatMap((g) => g.items);
+        // a string target takes strings, an object (places) does not fit
+        expect(options.find((o) => o.value === 'title')!.mismatch).toBe(false);
+        expect(options.find((o) => o.value === 'places')!.mismatch).toBe(true);
+        expect(component.typeIssue(row)).toBeNull();
+
+        component.setSource(row, 'places');
+        expect(block.properties.presetFields[0].value).toBe('places');
+        expect(component.typeIssue(row)).toContain('Type mismatch');
+
+        component.setSource(row, 'name');
+        expect(component.typeIssue(row)).toBeNull();
+    });
+
+    it('flags a plain source for an object target', () => {
+        const { component } = create({ presetFields: [] });
+        component.addNestedTarget('projectLocations.details');
+        const row = component.rows[0];
+        component.setSource(row, 'title');
+        expect(component.typeIssue(row)).toContain('Type mismatch');
+        expect(component.getSourceOptions(row).flatMap((g) => g.items).find((o) => o.value === 'title')!.mismatch).toBe(true);
+    });
+
+    it('hides an old root entry without a source but keeps it in the JSON until the next change', () => {
+        const { component, block } = create({
+            presetFields: [
+                { name: 'owner', title: 'owner', value: '', readonly: false },
+                { name: 'title', title: 'title', value: 'title', readonly: false }
+            ]
+        });
+        expect(names(component)).toEqual(['title']);
+        expect(block.properties.presetFields.map((e: any) => e.name)).toEqual(['owner', 'title']);
+        component.setReadonly(component.rows[0], true);
+        component.setSource(component.rows[0], 'title');
+        expect(block.properties.presetFields.map((e: any) => e.name)).toEqual(['title']);
+    });
+
+    it('shows a nested entry without a source and ignores entries with a broken name', () => {
+        const { component } = create({
+            presetFields: [
+                { name: 'projectLocations.location', title: 'location', value: '', readonly: false },
+                { name: 42, title: 'broken', value: 'title', readonly: false },
+                { name: 'title', title: 'title', value: 'title', readonly: false }
+            ]
+        });
+        expect(names(component)).toEqual(['projectLocations.location', 'title']);
+    });
+
+    it('does not list a field twice when it is both saved and picked', () => {
+        const { component } = create({
+            presetFields: [{ name: 'title', title: 'title', value: 'title', readonly: false }]
+        });
+        component.addNestedTarget('title');
+        expect(names(component)).toEqual(['title']);
     });
 
     it('keeps a mapping whose target left the schema as a stale row', () => {

@@ -265,6 +265,9 @@
                   @if (row.type) {
                     <span class="preset-chip">{{ row.type }}</span>
                   }
+                  @if (typeIssue(row); as issue) {
+                    <span class="preset-chip preset-chip-warning" [pTooltip]="issue" tooltipPosition="top" tooltipStyleClass="preset-tooltip" [tooltipOptions]="{showDelay: 300}"><i class="pi pi-exclamation-triangle"></i> type mismatch</span>
+                  }
                   @if (row.stale) {
                     <span class="preset-chip preset-chip-warning" pTooltip="This field is not in the block schema any more" tooltipPosition="top" tooltipStyleClass="preset-tooltip" [tooltipOptions]="{showDelay: 300}">missing</span>
                   }
@@ -381,6 +384,9 @@
 <ng-template #optionRow let-option>
   <span class="sc-cond-opt-row">
     <span class="sc-cond-opt-label" [pTooltip]="option.fullLabel" tooltipPosition="top" tooltipStyleClass="preset-tooltip" [tooltipOptions]="{showDelay: 300}">{{ option.label }}</span>
+    @if (option.mismatch) {
+      <i class="pi pi-exclamation-triangle preset-opt-warn" pTooltip="The type differs from this field" tooltipPosition="top" tooltipStyleClass="preset-tooltip" [tooltipOptions]="{showDelay: 300}"></i>
+    }
     <span class="preset-opt-type">{{ option.type }}</span>
   </span>
 </ng-template>

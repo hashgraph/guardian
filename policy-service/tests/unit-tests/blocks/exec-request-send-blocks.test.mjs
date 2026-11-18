@@ -403,6 +403,15 @@ describe('@unit exec RequestVcDocumentBlockAddon.checkPreset', () => {
             assert.equal((await block.checkPreset(block, doc, preset, makeUser())).valid, true);
         });
 
+        it('incompatible mapping is not enforced', async () => {
+            const block = withSchema(
+                [{ name: 'a.b', value: 'src.x', readonly: true, nameLevel: 0, valueLevel: 1 }],
+                { iri: '#S', fields: [f('a', { isRef: true, fields: [f('b')] })], conditions: [] }
+            );
+            const preset = ref({ src: [{ x: 1 }, { x: 2 }] });
+            assert.equal((await block.checkPreset(block, { a: { b: 'any' } }, preset, makeUser())).valid, true);
+        });
+
         it('nested array path and flattening of a deeper source', async () => {
             const nested = withSchema(
                 [{ name: 'locs.name', value: 'places.title', readonly: true, nameLevel: 1, valueLevel: 1 }],
@@ -507,18 +516,9 @@ describe('@unit exec RequestVcDocumentBlock.checkPreset', () => {
         assert.equal((await check(block, { tags: ['a', 'b', 'c'] }, ref)).valid, true);
     });
 
-    it('without ref the server source is used, so the check can not be skipped', async () => {
+    it('without ref the check is skipped, as before', async () => {
         const block = mk([ro('a')]);
         block.getSources = async () => [source({ a: 'orig' })];
-        const res = await check(block, { a: 'changed' }, null);
-        assert.equal(res.valid, false);
-        assert.match(res.error, /can not be modified/);
-        assert.equal((await check(block, { a: 'orig' }, null)).valid, true);
-    });
-
-    it('without ref and without a server source the check passes as before', async () => {
-        const block = mk([ro('a')]);
-        block.getSources = async () => [];
         assert.equal((await check(block, { a: 'changed' }, null)).valid, true);
     });
 

@@ -1,5 +1,6 @@
-import { CheckResult, LocationType, PresetPath, removeObjectProperties, Schema, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
+import { CheckResult, LocationType, Schema, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { PolicyUtils } from '../helpers/utils.js';
+import { checkReadonlyPreset } from '../helpers/preset-check.js';
 import { BlockActionError } from '../errors/index.js';
 import { ActionCallback, StateField } from '../helpers/decorators/index.js';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyGetData, IPolicyRequestBlock, IPolicyValidatorBlock } from '../policy-engine.interface.js';
@@ -11,7 +12,6 @@ import { VcHelper } from '@guardian/hedera/vc-helper';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
-import deepEqual from 'deep-equal';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
 import { hydrateTablesInObject, loadFileTextById } from '../helpers/table-field.js';
 import { RecordActionStep } from '../record-action-step.js';
@@ -392,73 +392,7 @@ export class RequestVcDocumentBlock {
         user?: PolicyUser
     ): Promise<CheckResult> {
         const options = await ref.getOptions(user);
-
-        if (
-            options.presetFields &&
-            options.presetFields.length &&
-            options.presetSchema
-        ) {
-            const readonly = options.presetFields.filter(
-                (item: any) => item.readonly && item.value
-            );
-            // `ref` comes from the client and can simply be left out. The readonly values must still
-            // match the document the server showed to this user (the same one `getData` returns).
-            let presetSource: any = documentRef;
-            if (readonly.length && document && !presetSource) {
-                const sources = await (ref as IPolicyRequestBlock).getSources(user);
-                presetSource = (sources && sources.length) ? sources[0] : null;
-            }
-            if (!readonly.length || !document || !presetSource) {
-                return { valid: true };
-            }
-
-            const presetDocument =
-                PolicyUtils.getCredentialSubject(presetSource);
-            if (!presetDocument) {
-                return {
-                    error: 'Readonly preset fields can not be verified.',
-                    valid: false,
-                };
-            }
-
-            const presetDocumentCopy = removeObjectProperties(
-                ['@context'],
-                JSON.parse(JSON.stringify(presetDocument))
-            );
-            for (const field of readonly) {
-                const nested = PresetPath.isNested(field);
-                const actualRaw = nested
-                    ? PresetPath.read(document, field.name)
-                    : document[field.name];
-                const expectedRaw = nested
-                    ? PresetPath.sourceValue(presetDocumentCopy, field)
-                    : presetDocumentCopy[field.value];
-                // The submitted document is already stamped with this schema's `type`/`@context`
-                // on sub-schema objects, the preset has the other schema's: compare data only
-                const targetField = PresetPath.findField(this._schema?.fields, field.name);
-                const actual = PresetPath.withoutSystemKeys(actualRaw, targetField);
-                const expected = PresetPath.withoutSystemKeys(expectedRaw, targetField);
-                // A field hidden by a false condition is legitimately absent from the document
-                if (
-                    (actual === undefined || actual === null) &&
-                    SchemaHelper.isFieldHiddenByConditions(
-                        this._schema?.conditions,
-                        document,
-                        PresetPath.root(field.name)
-                    )
-                ) {
-                    continue;
-                }
-                if (!deepEqual(actual, expected)) {
-                    return {
-                        error: `Readonly preset field (${field.name}) can not be modified.`,
-                        valid: false,
-                    };
-                }
-            }
-        }
-
-        return { valid: true };
+        return checkReadonlyPreset(options, this._schema, document, documentRef);
     }
 
     private async prepareDocument(data: IPolicyDocument, actionStatus?: RecordActionStep): Promise<any> {

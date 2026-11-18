@@ -58,6 +58,11 @@ describe('PresetPath', () => {
         assert.equal(PresetPath.isCompatible({ name: 'a.b', value: 'c.d' }), true);
     });
 
+    it('rejects an array source for a target without arrays', () => {
+        assert.equal(PresetPath.isCompatible({ name: 'a.b', value: 'c.d', nameLevel: 0, valueLevel: 1 }), false);
+        assert.equal(PresetPath.isCompatible({ name: 'a.b', value: 'c.d', nameLevel: 0, valueLevel: 0 }), true);
+    });
+
     it('writes into array entries by index, creating them from the value', () => {
         const doc = {};
         const m = { name: 'dataAndParameters.location', value: 'projectLocations.location', nameLevel: 1, valueLevel: 1 };
@@ -132,3 +137,80 @@ describe('PresetPath.withoutSystemKeys', () => {
         assert.equal(PresetPath.findField([field], 'projectLocations.nope'), null);
     });
 });
+
+describe('PresetPath type compatibility', () => {
+    const f = (over) => ({ name: 'x', type: 'string', isRef: false, ...over });
+    const ok = (to, from) => PresetPath.isTypeCompatible(to, from);
+
+    it('names the kind of a field', () => {
+        assert.equal(PresetPath.fieldKind(f({})), 'string');
+        assert.equal(PresetPath.fieldKind(f({ type: 'integer' })), 'integer');
+        assert.equal(PresetPath.fieldKind(f({ isRef: true, type: '#Loc&1' })), 'object');
+        assert.equal(PresetPath.fieldKind(f({ isRef: true, type: '#GeoJSON' })), 'geojson');
+        assert.equal(PresetPath.fieldKind(f({ customType: 'enum' })), 'enum');
+        assert.equal(PresetPath.fieldKind(f({ enum: ['a'] })), 'enum');
+        assert.equal(PresetPath.fieldKind(f({ customType: 'file' })), 'file');
+        assert.equal(PresetPath.fieldKind(null), '');
+    });
+
+    it('same kind fits, an integer fits a number, plain values fit a string', () => {
+        assert.equal(ok(f({}), f({})), true);
+        assert.equal(ok(f({ type: 'number' }), f({ type: 'integer' })), true);
+        assert.equal(ok(f({}), f({ type: 'integer' })), true);
+        assert.equal(ok(f({}), f({ type: 'boolean' })), true);
+        assert.equal(ok(f({}), f({ customType: 'enum' })), true);
+        assert.equal(ok(f({ isRef: true, type: '#A&1' }), f({ isRef: true, type: '#B&1' })), true);
+    });
+
+    it('flags objects, GeoJSON and unrelated types', () => {
+        assert.equal(ok(f({ isRef: true, type: '#A&1' }), f({})), false);
+        assert.equal(ok(f({}), f({ isRef: true, type: '#A&1' })), false);
+        assert.equal(ok(f({}), f({ isRef: true, type: '#GeoJSON' })), false);
+        assert.equal(ok(f({ type: 'integer' }), f({})), false);
+        assert.equal(ok(f({ type: 'integer' }), f({ type: 'number' })), false);
+        assert.equal(ok(f({ type: 'boolean' }), f({})), false);
+        assert.equal(ok(f({ customType: 'file' }), f({})), false);
+    });
+
+    it('does not flag when a field is unknown', () => {
+        assert.equal(ok(null, f({})), true);
+        assert.equal(ok(f({}), undefined), true);
+    });
+});
+
+describe('PresetPath.fill', () => {
+    const user = { username: 'alice', hederaAccountId: '0.0.7' };
+    const f = (name, over = {}) => ({ name, isRef: false, isArray: false, fields: null, ...over });
+    const fields = [
+        f('title'),
+        f('locs', { isRef: true, isArray: true, fields: [f('name')] }),
+    ];
+
+    it('copies plain mappings and the user values as before', () => {
+        const json = PresetPath.fill({ a: 'x' }, [
+            { name: 'title', value: 'a' },
+            { name: 'owner', value: 'username' },
+            { name: 'acc', value: 'hederaAccountId' },
+        ], fields, user);
+        assert.deepEqual(json, { title: 'x', owner: 'alice', acc: '0.0.7' });
+    });
+
+    it('fills nested array targets from the preset document', () => {
+        const json = PresetPath.fill({ places: [{ t: 'A' }, { t: 'B' }] }, [
+            { name: 'locs.name', value: 'places.t', nameLevel: 1, valueLevel: 1 },
+        ], fields, user);
+        assert.deepEqual(json, { locs: [{ name: 'A' }, { name: 'B' }] });
+    });
+
+    it('skips an incompatible mapping', () => {
+        const json = PresetPath.fill({ places: [{ t: 'A' }] }, [
+            { name: 'locs.name', value: 'places.t', nameLevel: 0, valueLevel: 1 },
+        ], fields, user);
+        assert.deepEqual(json, {});
+    });
+
+    it('throws for a missing source, so the caller keeps its old catch', () => {
+        assert.throws(() => PresetPath.fill(undefined, [{ name: 'a', value: 'b' }], fields, user));
+    });
+});
+

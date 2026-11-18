@@ -35,6 +35,7 @@ export class RequestConfigComponent implements OnInit {
     /** One row per root field of the block schema, then nested and stale mappings. */
     public rows: IPresetRow[] = [];
     private rootRows: IPresetRow[] = [];
+    private sourceNodes = new Map<string, any>();
     public mappedCount = 0;
     /** Nested fields of the block schema that can still be added as preset targets, grouped by sub-schema. */
     public nestedTargetGroups: IPresetGroup[] = [];
@@ -44,7 +45,8 @@ export class RequestConfigComponent implements OnInit {
     private sources: IPresetSource[] = [];
     private targetNodes = new Map<string, any>();
     private extraNested = new Set<string>();
-    private optionsCache = new Map<number, IPresetGroup[]>();
+    private presetKey = '';
+    private optionsCache = new Map<string, IPresetGroup[]>();
 
     public idTypeOptions = [
         { label: 'None', value: '' },
@@ -83,6 +85,11 @@ export class RequestConfigComponent implements OnInit {
     }
 
     load(block: PolicyBlock) {
+        const key = `${block.properties?.schema}|${block.properties?.presetSchema}`;
+        if (this.item !== block || this.presetKey !== key) {
+            this.extraNested.clear();
+        }
+        this.presetKey = key;
         this.moduleVariables = block.moduleVariables;
         this.item = block;
         this.properties = block.properties;
@@ -132,9 +139,11 @@ export class RequestConfigComponent implements OnInit {
         this.optionsCache.clear();
 
         this.sources = [];
+        this.sourceNodes = new Map<string, any>();
         if (preset?.getDeepFields) {
             const walk = (nodes: any[]) => {
                 for (const node of nodes) {
+                    this.sourceNodes.set(node.path, node);
                     this.sources.push({
                         name: node.path,
                         title: node.field?.description || node.path,
@@ -167,18 +176,23 @@ export class RequestConfigComponent implements OnInit {
         const mappedNames = new Set<string>(
             this.properties.presetFields.filter((e: any) => e.value).map((e: any) => e.name)
         );
-        const stored: string[] = this.properties.presetFields.map((e: any) => e.name);
-        const shownRoots = rootRows.filter((row) => mappedNames.has(row.name) || this.extraNested.has(row.name));
         const rootNames = new Set<string>(rootRows.map((row) => row.name));
-        const otherNames = new Set<string>();
-        for (const name of [...this.extraNested, ...stored]) {
-            if (typeof name === 'string' && !rootNames.has(name)) {
-                otherNames.add(name);
+        const ordered = new Set<string>();
+        for (const entry of this.properties.presetFields) {
+            const name = entry.name;
+            if (typeof name !== 'string') {
+                continue;
             }
+            if (rootNames.has(name) && !entry.value && !this.extraNested.has(name)) {
+                continue;
+            }
+            ordered.add(name);
         }
-        const otherRows = Array.from(otherNames).map((name) => this.createRow(name));
+        for (const name of this.extraNested) {
+            ordered.add(name);
+        }
 
-        this.rows = [...shownRoots, ...otherRows];
+        this.rows = Array.from(ordered).map((name) => this.createRow(name));
         this.mappedCount = mappedNames.size;
 
         const used = new Set(this.rows.map((e) => e.name));
@@ -231,22 +245,42 @@ export class RequestConfigComponent implements OnInit {
      * those with at least as many arrays as the target.
      */
     public getSourceOptions(row: IPresetRow): IPresetGroup[] {
-        let groups = this.optionsCache.get(row.level);
+        const target = this.targetNodes.get(row.name)?.field;
+        const cacheKey = `${row.level}|${PresetPath.fieldKind(target)}`;
+        let groups = this.optionsCache.get(cacheKey);
         if (!groups) {
             const preset = this.presetSchemaData;
             groups = preset?.getDeepFields
-                ? this.buildGroups(preset, (node) => !node.path.includes('.') || node.arrayLvl >= row.level)
+                ? this.buildGroups(
+                    preset,
+                    (node) => !node.path.includes('.') || (row.level === 0 ? node.arrayLvl === 0 : node.arrayLvl >= row.level),
+                    (node) => !!target && !PresetPath.isTypeCompatible(target, node.field)
+                )
                 : [];
-            this.optionsCache.set(row.level, groups);
+            this.optionsCache.set(cacheKey, groups);
         }
         return groups;
+    }
+
+    /**
+     * Is the selected source not fit the field, or null. It is only a hint: the source
+     * can still be selected.
+     */
+    public typeIssue(row: IPresetRow): string | null {
+        const value = this.valueOf(row);
+        const target = this.targetNodes.get(row.name);
+        const source = value ? this.sourceNodes.get(value) : null;
+        if (!target || !source || PresetPath.isTypeCompatible(target.field, source.field)) {
+            return null;
+        }
+        return `Type mismatch: the source is "${source.type}", this field is "${target.type}". The value may not fit.`;
     }
 
     /**
      * Groups the fields of a schema the way the schema editor's reference picker does:
      * one group per (sub-)schema, with the field label, its full path and its type.
      */
-    private buildGroups(schema: any, accept: (node: any) => boolean): IPresetGroup[] {
+    private buildGroups(schema: any, accept: (node: any) => boolean, mismatch?: (node: any) => boolean): IPresetGroup[] {
         const groups: IPresetGroup[] = [];
         const add = (nodes: any[], trail: string[]) => {
             const items: IPresetOption[] = [];
@@ -259,7 +293,8 @@ export class RequestConfigComponent implements OnInit {
                     value: node.path,
                     label,
                     fullLabel: trail.length ? `${trail.join(' › ')} › ${label}` : label,
-                    type: node.type
+                    type: node.type,
+                    mismatch: mismatch ? mismatch(node) : false
                 });
             }
             if (items.length) {
@@ -396,6 +431,7 @@ interface IPresetOption {
     label: string;
     fullLabel: string;
     type: string;
+    mismatch: boolean;
 }
 
 interface IPresetGroup {
