@@ -2641,9 +2641,12 @@ $sc-accent: var(--guardian-schema-accent, var(--color-primary, #4169E2));
     &.active { display: flex; }
 }
 
+.sc-rp-fields {
+    display: contents;
+}
+
 .sc-right-panel--locked .sc-rp-pane {
     opacity: 0.58;
-    pointer-events: none;
 }
 
 .sc-rp-errors {
