@@ -27764,7 +27764,7 @@ paths:
       description: >-
         Previews list of schemas duplicates. Only users with the Standard
         Registry role are allowed to make the request.
-      operationId: SchemaApi_checkForDublicates
+      operationId: SchemaApi_checkForDuplicates
       parameters: []
       requestBody:
         required: true

@@ -3123,9 +3123,9 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
         });
 
     /**
-     * Check for schemas dublicates
+     * Check for schemas duplicates
      */
-    ApiResponse(MessageAPI.SCHEMA_IMPORT_CHECK_FOR_DUBLICATES,
+    ApiResponse(MessageAPI.SCHEMA_IMPORT_CHECK_FOR_DUPLICATES,
         async (msg: {
             schemaNames: string[];
             schemas?: ISchema[];

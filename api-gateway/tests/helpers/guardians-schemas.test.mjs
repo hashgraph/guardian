@@ -137,16 +137,16 @@ describe('Guardians schemas', () => {
         assert.equal(calls.length, 0);
     });
 
-    it('getSchemasDublicates forwards args', async () => {
+    it('getSchemasDuplicates forwards args', async () => {
         const { g, calls } = make();
-        await g.getSchemasDublicates(['n1'], owner, 'p1');
-        assert.deepEqual(calls[0], [MessageAPI.SCHEMA_IMPORT_CHECK_FOR_DUBLICATES, { schemaNames: ['n1'], schemas: undefined, owner, policyId: 'p1' }]);
+        await g.getSchemasDuplicates(['n1'], owner, 'p1');
+        assert.deepEqual(calls[0], [MessageAPI.SCHEMA_IMPORT_CHECK_FOR_DUPLICATES, { schemaNames: ['n1'], schemas: undefined, owner, policyId: 'p1' }]);
     });
 
-    it('getSchemasDublicates with only names', async () => {
+    it('getSchemasDuplicates with only names', async () => {
         const { g, calls } = make();
-        await g.getSchemasDublicates(['n1']);
-        assert.deepEqual(calls[0], [MessageAPI.SCHEMA_IMPORT_CHECK_FOR_DUBLICATES, { schemaNames: ['n1'], schemas: undefined, owner: undefined, policyId: undefined }]);
+        await g.getSchemasDuplicates(['n1']);
+        assert.deepEqual(calls[0], [MessageAPI.SCHEMA_IMPORT_CHECK_FOR_DUPLICATES, { schemaNames: ['n1'], schemas: undefined, owner: undefined, policyId: undefined }]);
     });
 
     it('createSchema forwards item and owner', async () => {
