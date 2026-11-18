@@ -66,9 +66,9 @@ export class HomePage {
 				['accessToken', 'refreshToken'].forEach((key) => win.localStorage.removeItem(key));
 			},
 		});
-		// A fresh browser must pull the whole app module graph through the dev server,
-		// which on a loaded container can exceed the default 10s command timeout
-		// (observed 25s); steps that race a mid-bootstrap app land on a blank page.
+		// A fresh browser must load the whole app bundle, which on a loaded container
+		// can exceed the default 10s command timeout; steps that race a mid-bootstrap
+		// app land on a blank page.
 		// The app shell flips opacity off the global loader once startup is done.
 		cy.get('app-root div.app', { timeout: TIMEOUTS.backend }).should('have.css', 'opacity', '1');
 	}

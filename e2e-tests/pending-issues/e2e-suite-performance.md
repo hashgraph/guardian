@@ -254,3 +254,21 @@ Per-spec durations of the UI specs and of the two long `irec` specs:
 
 - `ng serve` cannot serve the UI specs on Cypress 16 with Chrome. On Chrome, Cypress 16 rewrites the scripts of the page under test and hands them back to the browser through CDP (`Fetch.fulfillRequest`, base64). `main.js` from `ng serve` is 93 MB, 76.5 MB of it an inline source map the dev server adds; base64 makes it about 124 MB, over Chromium's 100 MB limit for a DevTools message (`Too large read data is pending: capacity=104857600`). Chromium closes the DevTools connection, Cypress does not reconnect, and the run waits forever on the first `cy.visit` with no timeout. Cypress 15 loaded the page through its own proxy and was not affected; Electron on 16.3 is not affected either. The static production build (`main.js` 17 MB) loads in 3 s.
 - Measuring needs a fresh database: on a database that kept the policies of earlier runs, `POST /settings` (`006_settings/postSettings`) re-initializes guardian-service for minutes (see "`POST /settings` restarts every published and dry-run policy" above), the next suite's `before:spec` stops policies in the middle of it and the run stops. That run also left the stack on the spec's throwaway operator, because its `after` hook never ran.
+
+### Full sequential run on Cypress 16.3 / Chromium 156 (2026-11-18)
+
+`npm run test:everything -- lint scripts cypress` on a fresh database, `STOP_POLICIES_BETWEEN_SUITES=1`, static production frontend, 278 specs (E8 ran 277): **1:13:02**, 1011 of 1033 tests passing, 20 pending, 1 failing, 1 skipped. E8 (Cypress 15.15, Electron, `ng serve`, same sequence) took 1:09:03 with 7 failing specs.
+
+| Group | E8 (15.15) | 16.3 |
+|---|---|---|
+| `api-tests` | 13.7 min | 13.4 min |
+| `ui-tests` | 36.8 min | 37.0 min |
+| `policy-tests` | 16.7 min | 20.7 min |
+
+The full run does not show the gain of the pilot set (UI -17 %, wall clock -9 %); the UI group is flat and `policy-tests` is 4 min slower, 3 min of it in six `policy-tests/cdm` specs (`cdmIC` 85 → 126 s, `cdmIE` 95 → 127 s, `cdmIIIH`, `cdmIIID`, `cdmIIIF`, `cdmIF`). Why is not known: the CDM specs are driven through the API and spend their time in the backend and on Hedera, the pilot's `policy-tests/irec` set is at parity (155 vs 157 s), and the Solo mirror node answered 502/503 for a few seconds after a restart of the services during the same session, so the stack was not as quiet as in the baseline. Not measured: the same run on 15.15 on today's stack. Until it is, the Cypress 16 gain is only what the pilot shows.
+
+Failures, all explained:
+
+- First attempt: 234 of 278 failed. `PUT /profiles/StandardRegistry` (`create_accounts`) timed out because the Solo mirror node answered 502/503 for a few seconds right after the services restarted; every later spec depends on those accounts. `000_accounts_creating` run alone afterwards passed (12/12) and the second attempt, started when the mirror answered 200 to 15 requests in a row, passed everything but one spec. The cause inside Solo was not investigated; the failure is the stack's, not the migration's.
+- `ui-tests/specs/02_policies/editPolicy` "Modify Existing block…" failed three times in a row on Chrome (it passed in E8 on Electron). The editor selects the policy root when it finishes loading, `openEditingPolicy` returned while the editor was still under its loading overlay, and the spec's selection of `Block_1` was overridden: the Tag edit landed on the policy root, so `Block_12` was never saved. `openEditingPolicy` now waits for the overlay to go (`waitForPageSettled`), and the spec passed twice in a row. Checked first: waiting for the save request (`PUT /policies/:id`, 200) did not change the result.
+- `scripts/entrypoint.test.mjs` failed in the first attempt because the shell that started the run had `CYPRESS_*` variables exported and the sandbox passed them on to `entrypoint.sh`; the sandbox now drops them.
