@@ -1,4 +1,6 @@
 import URL from '../../../support/GuardianUrls';
+import API from '../../../support/ApiUrls';
+import { METHOD } from '../../../support/api/api-const';
 import CommonElements from '../../../support/defaultUIElements';
 import { waitForTaskRoundtrip } from '../../../support/importFlow';
 import { waitForLocation, waitForLocationAwayFrom } from '../../../support/pageReadiness';
@@ -15,6 +17,16 @@ function sessionUsername(win) {
 	const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
 	const bytes = Uint8Array.from(win.atob(payload), (ch) => ch.charCodeAt(0));
 	return JSON.parse(new TextDecoder().decode(bytes)).username ?? null;
+}
+
+// A cached session is reused while the gateway still exchanges its refresh token for an access token.
+// Signing out only drops the access token in the browser, so the same session serves the next login.
+function validateStoredSession() {
+	return cy.getAllLocalStorage({ log: false }).then((storage) => {
+		const { refreshToken } = storage[new globalThis.URL(Cypress.config('baseUrl')).origin] ?? {};
+		expect(refreshToken, 'stored refresh token').to.be.a('string');
+		return cy.request({ method: METHOD.POST, url: API.ApiServer + API.AccessToken, body: { refreshToken }, log: false });
+	});
 }
 
 const HomePageLocators = {
@@ -61,10 +73,25 @@ export class HomePage {
 		cy.get('app-root div.app', { timeout: TIMEOUTS.backend }).should('have.css', 'opacity', '1');
 	}
 
-	// Signs in the way a user does: a fresh login page with no stored session, the form, the Log In
-	// button, then the app signed in as that user. Returns its chain, so a caller inside a .then()
-	// callback can return it instead of leaking a second login into the queue.
+	// Signs in as `username`. The login form runs once per user in a run: cy.session keeps the tokens it
+	// stored and restores them on the next login, in this spec or a later one, then the app boots signed in
+	// and goes to the user's home page. Returns its chain, so a caller inside a .then() callback can return
+	// it instead of leaking a second login into the queue.
 	login(username, password) {
+		cy.session(username, () => this._loginThroughForm(username, password), {
+			cacheAcrossSpecs: true,
+			validate: validateStoredSession,
+		});
+		cy.visit(URL.Root);
+		return cy.window({ timeout: TIMEOUTS.backend }).should((win) => {
+			expect(win.location.pathname, 'home page of the signed-in user').to.not.equal('/');
+			expect(sessionUsername(win), 'signed-in user').to.equal(username);
+		});
+	}
+
+	// Signs in the way a user does: a fresh login page with no stored session, the form, the Log In
+	// button, then the app signed in as that user.
+	_loginThroughForm(username, password) {
 		cy.visit(URL.Root + '/login', {
 			onBeforeLoad(win) {
 				win.localStorage.removeItem('accessToken');
@@ -86,6 +113,11 @@ export class HomePage {
 		});
 	}
 
+	// The header names the signed-in user once the app has rendered the workspace.
+	verifySignedInAs(username) {
+		cy.get('app-new-header .user-name', { timeout: TIMEOUTS.backend }).should('have.text', username);
+	}
+
 	logOut() {
 		// The whole header is only rendered while the session is alive (a 401 clears
 		// it and Angular re-renders the navbar), and the sign-out control is
@@ -93,9 +125,8 @@ export class HomePage {
 		// across runs: the expanded menu puts the sign-out icon in the DOM and
 		// leaves the hover flyout out of it, the collapsed one does the reverse,
 		// and the flyout only shows on a real :hover a test cannot produce.
-		// Branch on DOM presence then, not layout metrics (getClientRects reports
-		// 0 in the backgrounded electron window even for rendered elements), and
-		// expand a collapsed menu first rather than trying to hover it.
+		// Branch on DOM presence then, and expand a collapsed menu first rather
+		// than trying to hover it.
 		cy.window().its('document').then((doc) => {
 			if (doc.querySelector('app-new-header i.logout-icon')) {
 				return cy.get('app-new-header i.logout-icon', { timeout: TIMEOUTS.ui }).first().click();
