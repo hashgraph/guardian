@@ -142,9 +142,14 @@ jobs:
 
           : "${TAGS:?grep_tags must not be empty}"
 
-          # Tags are separated by spaces or commas; these are the ones that select a UI test.
+          # Callers may separate tags with commas, but entrypoint.sh rejects a comma in a
+          # public value, and for grepTags a comma means the same as a space.
+          read -ra TAG_LIST <<< "${TAGS//,/ }"
+          TAGS="${TAG_LIST[*]}"
+
+          # These are the tags that select a UI test.
           WITH_FRONTEND="$FORCE_FRONTEND"
-          for tag in ${TAGS//,/ }; do
+          for tag in "${TAG_LIST[@]}"; do
             case "$tag" in all|ui|ui-all|dr-all|@ui|@recovery) WITH_FRONTEND=true ;; esac
           done
 
