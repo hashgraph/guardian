@@ -199,15 +199,17 @@ export class TopicService {
 
     public static async saveRelationships(messages: MessageCache[], priorityOptions?: PriorityOptions) {
         try {
-            const { topics, tokens } = TopicService.findRelationships(messages, priorityOptions);
-            await TopicService.addTopics(topics, priorityOptions);
+            const { topics, tokens } = TopicService.findRelationships(messages);
+            // Child topics are always discovered, but only inherit the priority when the parent asks for it.
+            const childOptions = priorityOptions?.inheritPriority ? priorityOptions : undefined;
+            await TopicService.addTopics(topics, childOptions);
             await TokenService.addTokens(tokens);
         } catch (error) {
             await LogService.error(error, 'Save relationships');
         }
     }
 
-    public static findRelationships(messages: MessageCache[], priorityOptions?: PriorityOptions) {
+    public static findRelationships(messages: MessageCache[]) {
         const topics = new Set<string>();
         const tokens = new Set<string>();
         for (const message of messages) {
@@ -215,9 +217,7 @@ export class TopicService {
             if (json) {
                 if (Array.isArray(json.topics)) {
                     for (const topicId of json.topics) {
-                        if (!priorityOptions.priorityTimestamp || priorityOptions.inheritPriority) {
-                            topics.add(topicId);
-                        }
+                        topics.add(topicId);
                     }
                 }
                 if (Array.isArray(json.tokens)) {

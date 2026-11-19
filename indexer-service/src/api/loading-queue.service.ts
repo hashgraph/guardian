@@ -316,6 +316,9 @@ export class LoadingQueueService {
     }
 
     private async addTopic(topicId: string, priorityTimestamp: number = Date.now(), inheritPriority: boolean = false) {
+        if (await this.findTopic(topicId)) {
+            return;
+        }
         const em = DataBaseHelper.getEntityManager();
         await em.persistAndFlush(em.create(TopicCache, {
             topicId,
@@ -334,18 +337,21 @@ export class LoadingQueueService {
     private async tryUpdateTopic(topicId: string, priorityTimestamp: number = Date.now(), inheritPriority: boolean = false) {
         const em = DataBaseHelper.getEntityManager();
 
+        const topicData: any = {
+            priorityDate: new Date(),
+            priorityStatus: PriorityStatus.SCHEDULED,
+            priorityStatusDate: new Date(),
+            priorityTimestamp
+        };
+        if (inheritPriority) {
+            // The flag is only ever raised: a topic that already inherits keeps doing so.
+            topicData.inheritPriority = true;
+        }
+
         const topicResult = await em.nativeUpdate(TopicCache, {
             topicId,
             priorityTimestamp: { $ne: priorityTimestamp }
-        },
-            {
-                priorityDate: new Date(),
-                priorityStatus: PriorityStatus.SCHEDULED,
-                priorityStatusDate: new Date(),
-                priorityTimestamp,
-                inheritPriority
-            }
-        );
+        }, topicData);
 
         const messageResult = await em.nativeUpdate(MessageCache, {
             topicId,
@@ -392,8 +398,8 @@ export class LoadingQueueService {
             } as any,
         )
 
-        if (row) {
-            this.tryUpdateTopic(policyId, priorityTimestamp, true);
+        if (row.length > 0) {
+            let result = await this.tryUpdateTopic(policyId, priorityTimestamp, true);
 
             const policyInstances = await em.find(
                 Message,
@@ -403,12 +409,12 @@ export class LoadingQueueService {
                 } as any,
             )
 
-            let policyInstancesResult = false;
             for (const item of policyInstances) {
-                policyInstancesResult ||= await this.tryUpdatePolicyInstance(item.options.instanceTopicId, priorityTimestamp);
+                const instanceResult = await this.tryUpdatePolicyInstance(item.options.instanceTopicId, priorityTimestamp);
+                result = result || instanceResult;
             }
 
-            return policyInstancesResult;
+            return result;
         }
 
         return false;
@@ -449,7 +455,8 @@ export class LoadingQueueService {
             priorityDate,
             priorityStatus: PriorityStatus.SCHEDULED,
             priorityStatusDate: priorityDate,
-            priorityTimestamp
+            priorityTimestamp,
+            inheritPriority: true
         });
 
         const tokenResult = await em.nativeUpdate(TokenCache, { tokenId: { $in: Array.from(tokenIds) }, priorityTimestamp: { $ne: priorityTimestamp } }, {
@@ -491,36 +498,40 @@ export class LoadingQueueService {
             return true;
         }
 
-        const topicsFromHedera = await this.tryFindTopicFromHedera(entityId, priorityTimestamp);
-
-        const topicsArray = [...topicsFromHedera];
-        const lastParentExist = topicsArray.at(-1);
-        const parentsNonExists = topicsArray.slice(1, -1);
-
-        this.addTopic(entityId, priorityTimestamp, true);
-
-        for (const topicId of parentsNonExists) {
-            this.addTopic(topicId, priorityTimestamp, false);
+        const chain = await this.findTopicChainFromHedera(entityId);
+        if (!chain || chain.length < 2) {
+            return false;
         }
 
-        this.tryUpdateTopic(lastParentExist, priorityTimestamp, false);
+        const existingParent = chain[chain.length - 1];
+        const missingParents = chain.slice(1, -1);
+
+        await this.addTopic(entityId, priorityTimestamp, true);
+        for (const topicId of missingParents) {
+            await this.addTopic(topicId, priorityTimestamp, false);
+        }
+        await this.tryUpdateTopic(existingParent, priorityTimestamp, false);
 
         return true;
     }
 
-    private async tryFindTopicFromHedera(
+    /**
+     * Walks up the Hedera topic hierarchy until a topic that is already cached is found.
+     * Returns the chain [entityId, ...missing parents, first cached ancestor], or null when it cannot be resolved.
+     */
+    private async findTopicChainFromHedera(
         entityId: string,
-        priorityTimestamp: number,
         parentIds: Set<string> = new Set<string>(),
-        depth: number = 0): Promise<any> {
+        depth: number = 0
+    ): Promise<string[] | null> {
         if (depth >= 10) {
             console.log('Recursion limit reached: ', depth);
-            return false;
+            return null;
         }
 
         if (parentIds.has(entityId)) {
             console.log('Recursion already touched: ', entityId);
-            return false;
+            return null;
         }
 
         parentIds.add(entityId);
@@ -542,21 +553,18 @@ export class LoadingQueueService {
                     const message = this.parseMessage(data);
 
                     if (message && message.type === 'Topic' && message.parentId) {
-                        const cacheResult = await this.findTopic(message.parentId);
-                        if (cacheResult) {
-                            parentIds.add(message.parentId);
-                            return parentIds;
+                        if (await this.findTopic(message.parentId)) {
+                            return [...parentIds, message.parentId];
                         }
 
-                        return await this.tryFindTopicFromHedera(message.parentId, priorityTimestamp, parentIds, depth + 1);
+                        return await this.findTopicChainFromHedera(message.parentId, parentIds, depth + 1);
                     }
                 }
-            } else {
-                return false;
             }
+            return null;
         } catch (error) {
             console.log('Try set priority from Hedera error: ', entityId, error.message);
-            return await this.tryFindTopicFromHedera(entityId, priorityTimestamp, parentIds, depth + 1);
+            return null;
         }
     }
 
