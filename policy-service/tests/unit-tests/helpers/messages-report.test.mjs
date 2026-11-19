@@ -823,9 +823,9 @@ describe('@unit MessagesReport dry-run users and tokens', () => {
         assert.equal(report.toJson().tokens[0]?.decimals, 2);
     });
 
-    it('retains the token information returned by the existing worker', async () => {
+    it('outside dry-run, retains the token information returned by the worker', async () => {
         const { report, ref } = await reportHarness({
-            messages: [reportMessage('1.1')], files: new Map([['1.1', mintCredential()]]),
+            dryRun: null, messages: [reportMessage('1.1')], files: new Map([['1.1', mintCredential()]]),
             tokenRecords: [storedToken()],
             readToken: async () => ({ name: 'Original token', symbol: 'ORIG', token_id: '0.0.50',
                 type: 'NON_FUNGIBLE_UNIQUE', memo: 'original memo', decimals: 0 })
@@ -833,6 +833,33 @@ describe('@unit MessagesReport dry-run users and tokens', () => {
         await report.start(ref, '1.1', null);
         assert.equal(report.toJson().tokens[0].name, 'Original token');
         assert.equal(report.toJson().tokens[0].memo, 'original memo');
+    });
+
+    it('in dry-run, returns the stored token without asking the worker', async () => {
+        let workerCalls = 0;
+        const { report, ref } = await reportHarness({
+            messages: [reportMessage('1.1')], files: new Map([['1.1', mintCredential()]]),
+            tokenRecords: [storedToken()],
+            readToken: async () => {
+                workerCalls++;
+                return { name: 'Original token', symbol: 'ORIG', token_id: '0.0.50',
+                    type: 'NON_FUNGIBLE_UNIQUE', memo: 'original memo', decimals: 0 };
+            }
+        });
+        await report.start(ref, '1.1', null);
+        assert.equal(report.toJson().tokens[0].name, 'Project credits');
+        assert.equal(workerCalls, 0);
+    });
+
+    it('in dry-run, asks the worker for a token missing from both stores', async () => {
+        const { report, ref } = await reportHarness({
+            messages: [reportMessage('1.1')], files: new Map([['1.1', mintCredential()]]),
+            readToken: async () => ({ name: 'Network token', symbol: 'NET', token_id: '0.0.50',
+                type: 'FUNGIBLE_COMMON', memo: 'network memo', decimals: 2 })
+        });
+        await report.start(ref, '1.1', null);
+        assert.equal(report.toJson().tokens[0].name, 'Network token');
+        assert.equal(report.toJson().tokens[0].memo, 'network memo');
     });
 
     it('preserves published missing-token and missing-DID behavior without reading local fallback data', async () => {

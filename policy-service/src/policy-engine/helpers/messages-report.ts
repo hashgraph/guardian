@@ -480,9 +480,16 @@ export class MessagesReport {
         tokenId: string,
         userId: string | null
     ): Promise<any> {
+        // A dry-run token never reaches the mirror node, which would wait for it until the indexing timeout.
+        if (ref.dryRun) {
+            const storedToken = await this.getStoredToken(ref, tokenId);
+            if (storedToken) {
+                return storedToken;
+            }
+        }
         try {
             const workers = new Workers();
-            const info = await workers.addRetryableTask({
+            return await workers.addRetryableTask({
                 type: WorkerTaskType.GET_TOKEN_INFO,
                 data: {
                     tokenId,
@@ -493,29 +500,30 @@ export class MessagesReport {
                 dryRun: ref.dryRun,
                 mockId: ref.mockId,
             });
-            if (info || !ref.dryRun) {
-                return info;
-            }
         } catch (error) {
-            if (!ref.dryRun) {
-                return null;
-            }
+            return null;
         }
-        if (ref.dryRun) {
-            const token = await ref.databaseServer.getToken(tokenId, ref.dryRun)
-                || await DatabaseServer.getToken(tokenId);
-            if (token) {
-                return {
-                    name: token.tokenName,
-                    symbol: token.tokenSymbol,
-                    token_id: token.tokenId,
-                    type: token.tokenType === TokenType.NON_FUNGIBLE ? 'NON_FUNGIBLE_UNIQUE' : 'FUNGIBLE_COMMON',
-                    memo: '',
-                    decimals: token.decimals
-                };
-            }
+    }
+
+    /**
+     * Get token information from the dry-run or the global database
+     * @param ref
+     * @param tokenId
+     */
+    private async getStoredToken(ref: AnyBlockType, tokenId: string): Promise<any> {
+        const token = await ref.databaseServer.getToken(tokenId, ref.dryRun)
+            || await DatabaseServer.getToken(tokenId);
+        if (!token) {
+            return null;
         }
-        return null;
+        return {
+            name: token.tokenName,
+            symbol: token.tokenSymbol,
+            token_id: token.tokenId,
+            type: token.tokenType === TokenType.NON_FUNGIBLE ? 'NON_FUNGIBLE_UNIQUE' : 'FUNGIBLE_COMMON',
+            memo: '',
+            decimals: token.decimals
+        };
     }
 
     /**
