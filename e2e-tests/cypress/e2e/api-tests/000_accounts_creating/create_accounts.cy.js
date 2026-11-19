@@ -5,11 +5,10 @@ import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Prepare accounts for future tests', { tags: ['preparing', 'smoke', 'api-all', 'all', 'all-no-mgs', 'ui'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
-    const SR2Username = Cypress.env('SR2User');
-    const Installer = Cypress.env('Installer');
-    const userUsername = Cypress.env('User');
-    const password = Cypress.env('Password');
+    const SRUsername = Cypress.expose('SRUser');
+    const SR2Username = Cypress.expose('SR2User');
+    const Installer = Cypress.expose('Installer');
+    const userUsername = Cypress.expose('User');
 
     let SRDid;
 
@@ -21,18 +20,17 @@ context('Prepare accounts for future tests', { tags: ['preparing', 'smoke', 'api
             { username: userUsername, role: 'USER' },
         ];
 
-        const registerUser = (username, role) => {
-            return cy.request({
+        const registerUser = (username, role) =>
+            cy.env(['Password']).then(({ Password }) => cy.request({
                 method: METHOD.POST,
                 url: `${API.ApiServer}${API.AccountRegister}`,
                 body: {
                     username,
-                    password,
-                    password_confirmation: password,
+                    password: Password,
+                    password_confirmation: Password,
                     role,
                 }
-            });
-        };
+            }));
 
         cy.request({
             method: METHOD.GET,

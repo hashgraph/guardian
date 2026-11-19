@@ -12,7 +12,7 @@ import * as Authorization from '../../../support/authorization';
  *
  */
 context('Policy Grid Actions API', { tags: ['policies', 'gridActions', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
 
     let policyId;
     const nonExistentId = '000000000000000000000000';

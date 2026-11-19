@@ -31,7 +31,6 @@ const nameCellMatches = (name) => (_, row) => row.querySelector(List.nameCell)?.
 
 // Importing an archive whose name is taken adds a `_<timestamp>` suffix to the new module.
 // Each import of an already taken name appends another `_<number>`, and the seeded module may already carry one.
-const importedNameMatches = (name) => (_, row) => new RegExp(`^${name}(_\\d+)*$`).test(row.querySelector(List.nameCell)?.textContent.trim());
 
 const ModulesPageLocators = {
     createNewButton: 'Create a Module',
@@ -109,24 +108,26 @@ export class ModulesPage {
     }
 
     // The preview dialog that follows both imports: its footer holds the Import button that creates the module.
-    // Imported archives keep their own name, so success means one more row than before, not just a row.
-    _importAndExpectNewRow(name, startImport) {
-        const countRows = () => cy.get('body').then(($body) => $body.find(List.row).filter(importedNameMatches(name)).length);
-        countRows().then((rowsBefore) => {
-            this._openImportDialog();
-            startImport();
-            // The preview opens over the import dialog and both footers have an Import button: the preview is "Import module".
-            cy.contains(CommonElements.dialogWindow, 'Import module', { timeout: TIMEOUTS.backend })
-                .find(List.previewImportButton).should('not.be.disabled').click();
+    // An archive keeps its own name, with a timestamp appended when a module already has it, so the module
+    // created is the one the import request answers with. The list shows the newest first. Yields its name.
+    _importModule(archiveName, startImport) {
+        cy.intercept('POST', /\/modules\/import\/(message|file)$/).as('moduleImport');
+        this._openImportDialog();
+        startImport();
+        // The preview opens over the import dialog and both footers have an Import button: the preview is "Import module".
+        cy.contains(CommonElements.dialogWindow, 'Import module', { timeout: TIMEOUTS.backend })
+            .find(List.previewImportButton).should('not.be.disabled').click();
+        return cy.wait('@moduleImport', { timeout: TIMEOUTS.longOperation }).then(({ response }) => {
+            expect(response.statusCode, 'module import').to.be.within(200, 299);
+            const { name } = response.body;
+            expect(name, 'name of the imported module').to.match(new RegExp(`^${archiveName}(_\\d+)*$`));
             Checks.waitForLoading();
-            cy.get(List.row, { timeout: TIMEOUTS.backend }).should(($rows) => {
-                expect($rows.filter(importedNameMatches(name)).length).to.eq(rowsBefore + 1);
-            });
+            return this._row(name).should('exist').then(() => name);
         });
     }
 
-    importNewModuleIPFS(messageId, name) {
-        this._importAndExpectNewRow(name, () => {
+    importNewModuleIPFS(messageId, archiveName) {
+        return this._importModule(archiveName, () => {
             cy.get(CommonElements.dialogWindow).contains('Import from IPFS').click();
             // The field re-renders as soon as the typed text is a valid id and drops the rest of the
             // keystrokes, so set the whole value at once.
@@ -136,19 +137,17 @@ export class ModulesPage {
         });
     }
 
-    importNewModuleFile(fileName, name) {
-        this._importAndExpectNewRow(name, () => dropFile(fileName));
+    importNewModuleFile(fileName, archiveName) {
+        return this._importModule(archiveName, () => dropFile(fileName));
     }
 
+    // Deletes the draft module named exactly `moduleName` (only drafts can be deleted).
     deleteModule(moduleName) {
-        // Only drafts can be deleted, and imported archives may share their name with a published module.
-        const isDraft = (_, row) => row.querySelector(List.statusCell)?.textContent.trim() === 'Draft';
-        const draftRows = () => cy.get(List.row, { timeout: TIMEOUTS.backend }).filter(importedNameMatches(moduleName)).filter(isDraft);
-        draftRows().first().find(List.deleteIcon).click();
+        this._row(moduleName).find(List.deleteIcon).click();
         cy.get(List.dialog, { timeout: TIMEOUTS.ui }).find(List.deleteConfirm).click();
         Checks.waitForLoading();
         cy.get('body').should(($body) => {
-            expect($body.find(List.row).filter(importedNameMatches(moduleName)).filter(isDraft).length).to.eq(0);
+            expect($body.find(List.row).filter(nameCellMatches(moduleName)).length, `rows named ${moduleName}`).to.eq(0);
         });
     }
 

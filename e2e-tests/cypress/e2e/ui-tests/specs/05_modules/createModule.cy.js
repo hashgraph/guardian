@@ -15,13 +15,14 @@ const login = (username) => {
 
 context('Workflow Module Creation', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     // Unique per run: the modules of earlier runs stay in the list.
     const moduleName = 'UIModule' + randomInt(1000000000);
     // Imported archives keep the name they were exported with. The module imported from a Hedera message is
     // already published, so it cannot be deleted and stays in the list.
     const moduleNameIPFSImported = 'ComparedModuleIPFS';
     const moduleNameFileImported = 'ComparedModuleFile';
+    let fileImportedModule;
 
     beforeEach(() => {
         login(SRUsername);
@@ -38,12 +39,16 @@ context('Workflow Module Creation', { tags: ['ui', 'ui-all', 'all'] }, () => {
     });
 
     it('module file import', () => {
-        modulesPage.importNewModuleFile('comparedModuleFile.module', moduleNameFileImported);
+        modulesPage.importNewModuleFile('comparedModuleFile.module', moduleNameFileImported).then((name) => {
+            fileImportedModule = name;
+        });
     });
 
     after(() => {
         modulesPage.openModulesTab();
         modulesPage.deleteModule(moduleName);
-        modulesPage.deleteModule(moduleNameFileImported);
+        if (fileImportedModule) {
+            modulesPage.deleteModule(fileImportedModule);
+        }
     });
 });

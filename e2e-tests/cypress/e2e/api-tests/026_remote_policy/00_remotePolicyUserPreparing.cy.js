@@ -6,12 +6,19 @@ import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 // Skipped until the shared remote Guardian environment and its credentials are available: see pending-issues/folders-blocked-by-environment.md
 context.skip('Policies', { tags: ['remote_policy', 'secondPool', 'api-all', 'all'] }, () => {
 
-    const MainSRUsername = Cypress.env('MainSRUser');
-    const MainUserUsername = Cypress.env('MainUser');
-    const DepSRUsername = Cypress.env('DepSRUser');
-    const DepUserUsername = Cypress.env('DepUser');
-    const MGSAdminUsername = Cypress.env('MGSAdmin');
-    const password = Cypress.env('Password');
+    const MainSRUsername = Cypress.expose('MainSRUser');
+    const MainUserUsername = Cypress.expose('MainUser');
+    const DepSRUsername = Cypress.expose('DepSRUser');
+    const DepUserUsername = Cypress.expose('DepUser');
+    let MGSAdminUsername;
+    let password;
+
+    before(() => {
+        cy.env(['MGSAdmin', 'Password']).then((secrets) => {
+            MGSAdminUsername = secrets.MGSAdmin;
+            password = secrets.Password;
+        });
+    });
     const tenantName = 'testTenantFromOS';
     const email = 'apitestosnna@envisionblockchain.com';
 

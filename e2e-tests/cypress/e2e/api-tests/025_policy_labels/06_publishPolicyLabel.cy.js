@@ -4,7 +4,7 @@ import * as Authorization from '../../../support/authorization';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Publish policy label', { tags: ['policy_labels', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const UserUsername = Cypress.env('User');
+    const UserUsername = Cypress.expose('User');
 
     let policyLabel;
 

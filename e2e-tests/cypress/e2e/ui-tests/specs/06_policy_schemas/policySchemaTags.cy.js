@@ -15,7 +15,7 @@ const login = (username) => {
 
 context('Policy Schema Tags', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     const schemaName = 'UIPolicySchemaTags' + randomInt(1000000000);
     const tagName = 'tagTestName';
 

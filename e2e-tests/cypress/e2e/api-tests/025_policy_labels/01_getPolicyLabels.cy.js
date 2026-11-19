@@ -2,8 +2,8 @@ import { STATUS_CODE } from '../../../support/api/api-const';
 import * as Authorization from '../../../support/authorization';
 
 context('Get policy labels', { tags: ['policy_labels', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const UserUsername = Cypress.env('User');
-    const SRUsername = Cypress.env('SRUser');
+    const UserUsername = Cypress.expose('User');
+    const SRUsername = Cypress.expose('SRUser');
     const labelName = 'testPolicyLabelAPI';
 
     let policy; let did; let SRDid;

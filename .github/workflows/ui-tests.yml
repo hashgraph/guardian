@@ -6,8 +6,6 @@ on:
       - '.github/**'
       - 'docs/**'
       - '**/*.md'
-  schedule:
-    - cron: '0 3 * * *' # Run at 03:00 UTC every day (nightly)
   workflow_dispatch:
     inputs:
       tags:
@@ -24,7 +22,7 @@ on:
         default: ""
       ui_request_trace:
         type: boolean
-        description: Log every request the dev server proxies to the gateway (frontend-1.log in the guardian-logs artifact; large)
+        description: Log every request the frontend proxies to the gateway (frontend-1.log in the guardian-logs artifact; large)
         default: false
 
 permissions:
@@ -33,8 +31,8 @@ permissions:
 
 concurrency:
   group: ui-tests-${{ github.event_name }}-${{ github.ref }}
-  # A nightly or a hand-triggered run is not superseded by a later one.
-  cancel-in-progress: false
+  # Superseded pushes are pointless; a nightly or a hand-triggered run is not.
+  cancel-in-progress: ${{ github.event_name == 'push' }}
 
 jobs:
   ui:
@@ -47,4 +45,3 @@ jobs:
       spec: ${{ inputs.spec }}
       solo_version: ${{ inputs.solo_version }}
       ui_request_trace: ${{ inputs.ui_request_trace || false }}
-      timeout_minutes: 180

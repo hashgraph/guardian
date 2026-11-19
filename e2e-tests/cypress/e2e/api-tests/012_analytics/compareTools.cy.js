@@ -6,7 +6,7 @@ import { seededMessageId } from '../../../support/CustomHelpers/ipfsSeeding';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Analytics', { tags: ['analytics', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
 
     const URLS = {
         tools: `${API.ApiServer}${API.Tools}`,

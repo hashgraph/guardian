@@ -13,7 +13,7 @@ const IREC3_FILE = '../Methodology Library/International Renewable Energy Certif
 
 context('Dry run Policy', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     const runName = randomInt(1000000000) + 'testName';
 
     beforeEach(() => {

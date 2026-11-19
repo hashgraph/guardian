@@ -13,7 +13,7 @@ const login = (username) => {
 
 context('Workflow Module Deletion', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     const moduleNameFileImported = 'ComparedModuleFile';
 
     beforeEach(() => {
@@ -21,7 +21,7 @@ context('Workflow Module Deletion', { tags: ['ui', 'ui-all', 'all'] }, () => {
     })
 
     it('module deletion', () => {
-        modulesPage.importNewModuleFile('comparedModuleFile.module', moduleNameFileImported);
-        modulesPage.deleteModule(moduleNameFileImported);
+        modulesPage.importNewModuleFile('comparedModuleFile.module', moduleNameFileImported)
+            .then((name) => modulesPage.deleteModule(name));
     });
 });

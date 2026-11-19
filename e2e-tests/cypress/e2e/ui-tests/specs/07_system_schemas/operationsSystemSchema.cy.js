@@ -15,7 +15,7 @@ const login = (username) => {
 
 context('System Schema Operations', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     const runId = randomInt(1000000000);
     const schemaName = 'UISystemSchema' + runId;
     const schemaName2 = 'UISystemSchemaActive' + runId;

@@ -7,12 +7,22 @@ const require = createRequire(import.meta.url);
 const { snapshotHbarBalances } = require('../cypress/tasks/hbarBalances.js');
 
 // A gateway whose login works and whose balance endpoint answers with balanceBody, or never when it is undefined.
-function startGateway(balanceBody) {
+// The bodies of the logins it received are pushed to `logins`.
+function startGateway(balanceBody, logins = []) {
     const server = http.createServer((request, response) => {
         const reply = (body) => response.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify(body));
-        if (request.url === '/accounts/login/') return reply({ refreshToken: 'refresh' });
-        if (request.url === '/accounts/access-token/') return reply({ accessToken: 'access' });
-        if (request.url === '/accounts/balance' && balanceBody !== undefined) return reply(balanceBody);
+        if (request.url === '/accounts/login/') {
+            let body = '';
+            request.on('data', (chunk) => { body += chunk; });
+            request.on('end', () => { logins.push(JSON.parse(body)); reply({ refreshToken: 'refresh' }); });
+            return;
+        }
+        if (request.url === '/accounts/access-token/') {
+            return reply({ accessToken: 'access' });
+        }
+        if (request.url === '/accounts/balance' && balanceBody !== undefined) {
+            return reply(balanceBody);
+        }
         // Otherwise leave the request hanging, as a gateway does when a backend service is missing.
     });
     return new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve(server)));
@@ -31,7 +41,19 @@ describe('snapshotHbarBalances', () => {
         server.close();
     });
 
-    const configFor = (port) => ({ env: { apiServer: `http://127.0.0.1:${port}`, SRUser: 'StandardRegistry', Password: 'test' } });
+    const configFor = (port) => ({
+        expose: { apiServer: `http://127.0.0.1:${port}`, SRUser: 'StandardRegistry' },
+        env: { Password: 'test' },
+    });
+
+    it('logs in with the account names of expose and the password of env', async () => {
+        const logins = [];
+        server = await startGateway({ balance: '1 ℏ' }, logins);
+        const config = configFor(server.address().port);
+        config.env.SRUser = 'NotAnExposedAccount';
+        await snapshotHbarBalances(config);
+        assert.deepEqual(logins, [{ username: 'StandardRegistry', password: 'test' }]);
+    });
 
     it('reads the balance of every configured account', async () => {
         server = await startGateway({ balance: '42.5 ℏ' });

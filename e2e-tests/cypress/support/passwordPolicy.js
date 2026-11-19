@@ -1,5 +1,5 @@
-export const minPasswordLength = Math.max(Number(Cypress.env('minPasswordLength')) || 8, 1);
-export const passwordComplexity = Cypress.env('passwordComplexity') || 'medium';
+export const minPasswordLength = Math.max(Number(Cypress.expose('minPasswordLength')) || 8, 1);
+export const passwordComplexity = Cypress.expose('passwordComplexity') || 'medium';
 
 // Mirrors auth-service/src/constants/password.ts — keep in sync with PasswordError.
 export const expectedPasswordError = () => {

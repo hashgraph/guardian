@@ -32,7 +32,7 @@ const SEEDED_ARTEFACTS = [
 
 context('Seed the Hedera artefacts the suite imports from', { tags: ['preparing', 'smoke', 'api-all', 'all', 'all-no-mgs', 'ui'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
 
     const seededMessageIds = {};
 

@@ -7,7 +7,7 @@ import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Modules', { tags: ['modules', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     // Published modules cannot be deleted, so the name must be unique per run
     const moduleName = randomInt(999999) + 'APIModuleForPreview';
     const moduleDescription = `${moduleName} desc`;

@@ -4,7 +4,7 @@ import * as Authorization from '../../../support/authorization';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Policies', { tags: ['policies', 'secondPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
 
     it('Imports new policy and all associated artifacts from IPFS', { tags: ['analytics'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {

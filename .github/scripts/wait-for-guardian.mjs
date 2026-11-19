@@ -23,6 +23,8 @@
  *   GUARDIAN_LOG_DIR  where Start Guardian wrote <service>-<n>.log and `pids`
  *   WORKER_COUNT      default 5, how many worker-service processes to expect
  *   WAIT_TIMEOUT      per-gate timeout in seconds, default 300
+ *   E2E_DIR           the e2e-tests folder, whose cypress.expose.json (SRUser) and cypress.env.json
+ *                     (Password) give the demo login; default <GITHUB_WORKSPACE or cwd>/e2e-tests
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -321,7 +323,7 @@ function pollStatusOnce(wsUrl) {
 async function waitForDemoLogin() {
     const credentials = readDemoCredentials();
     if (!credentials) {
-        log('::warning::could not read SRUser/Password from cypress.env.json; skipping the login gate.');
+        log('::warning::could not read SRUser from cypress.expose.json and Password from cypress.env.json; skipping the login gate.');
         return;
     }
 
@@ -358,12 +360,12 @@ async function waitForDemoLogin() {
 }
 
 function readDemoCredentials() {
-    const file = process.env.E2E_ENV_FILE
-        || path.join(process.env.GITHUB_WORKSPACE || process.cwd(), 'e2e-tests', 'cypress.env.json');
+    const e2eDir = process.env.E2E_DIR || path.join(process.env.GITHUB_WORKSPACE || process.cwd(), 'e2e-tests');
     try {
-        const env = JSON.parse(fs.readFileSync(file, 'utf8'));
-        if (env.SRUser && env.Password) {
-            return { username: env.SRUser, password: env.Password };
+        const { SRUser } = JSON.parse(fs.readFileSync(path.join(e2eDir, 'cypress.expose.json'), 'utf8'));
+        const { Password } = JSON.parse(fs.readFileSync(path.join(e2eDir, 'cypress.env.json'), 'utf8'));
+        if (SRUser && Password) {
+            return { username: SRUser, password: Password };
         }
     } catch {
         return null;

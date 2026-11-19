@@ -7,8 +7,8 @@ const DID_FIELDS = ['did', 'owner', 'creator', 'parent'];
 // Cypress runs either on the host or inside the runner container, so fall back to the docker
 // host alias when `localhost` is not the MongoDB of the stack.
 function candidateUrls(config) {
-    return config.env.mongoUrl
-        ? [config.env.mongoUrl]
+    return config.expose.mongoUrl
+        ? [config.expose.mongoUrl]
         : ['mongodb://localhost:27017', 'mongodb://host.docker.internal:27017'];
 }
 

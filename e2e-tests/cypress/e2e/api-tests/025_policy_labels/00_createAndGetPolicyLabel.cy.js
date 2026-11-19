@@ -6,8 +6,8 @@ import { publishOwnPolicyCopy } from '../../../support/CustomHelpers/ipfsSeeding
 import { mintRegistrantTokens } from '../../../support/CustomHelpers/registrantApplication';
 
 context('Create policy labels', { tags: ['policy_labels', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const UserUsername = Cypress.env('User');
-    const SRUsername = Cypress.env('SRUser');
+    const UserUsername = Cypress.expose('User');
+    const SRUsername = Cypress.expose('SRUser');
     const labelName = 'testPolicyLabelAPI';
 
     let policy; let did; let SRDid; let labelId;

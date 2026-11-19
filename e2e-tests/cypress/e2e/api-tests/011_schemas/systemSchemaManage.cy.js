@@ -3,7 +3,7 @@ import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
 context('Schemas', { tags: ['schema', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     //A run interrupted before the deletion at the end leaves its schema behind, so the uuid is
     //drawn per run to keep the creation below free of collisions
     const schemaUUID = crypto.randomUUID();

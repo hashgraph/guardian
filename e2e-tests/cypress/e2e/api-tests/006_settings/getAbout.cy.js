@@ -5,7 +5,7 @@ import * as Authorization from '../../../support/authorization';
 
 context('Settings', { tags: ['settings', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     const settingsUrl = `${API.ApiServer}${API.SettingsAbout}`;
 
     const getSettingsWithAuth = (authorization) =>

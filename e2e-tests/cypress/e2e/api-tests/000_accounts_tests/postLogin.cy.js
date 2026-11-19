@@ -3,8 +3,8 @@ import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 
 context('Login', { tags: ['accounts', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-  const SRUsername = Cypress.env('SRUser');
-  const UserUsername = Cypress.env('User');
+  const SRUsername = Cypress.expose('SRUser');
+  const UserUsername = Cypress.expose('User');
   const loginUrl = `${API.ApiServer}${API.AccountsLogin}`;
   let credentials;
 

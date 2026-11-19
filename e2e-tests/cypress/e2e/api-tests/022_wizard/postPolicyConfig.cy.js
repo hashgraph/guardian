@@ -5,7 +5,7 @@ import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Create Policy by Wizard', { tags: ['wizard', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     const policyName = 'wizardPolicyEdited';
     let policyId;
 

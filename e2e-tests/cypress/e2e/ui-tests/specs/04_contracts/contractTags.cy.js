@@ -7,7 +7,7 @@ const homePage = new HomePage();
 
 context('Workflow Contract Tags', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     const runId = randomInt(1000000000);
     const wipeContract = 'wUIContract' + runId;
     const retireContract = 'rUIContract' + runId;

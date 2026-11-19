@@ -5,8 +5,8 @@ import { publishOwnPolicyCopy } from '../../../support/CustomHelpers/ipfsSeeding
 import { submitRegistrantApplication } from '../../../support/CustomHelpers/registrantApplication';
 
 context('Create formulas', { tags: ['formulas', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
-    const UserUsername = Cypress.env('User');
+    const SRUsername = Cypress.expose('SRUser');
+    const UserUsername = Cypress.expose('User');
     const formulaName = 'testFormulaAPI';
 
     let policyId; let policyTopicId; let policyInstanceTopicId;

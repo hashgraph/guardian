@@ -1,4 +1,4 @@
-name: E2E Run (Reusable)
+name: Test Runner (Reusable)
 
 # Reusable job that runs a Cypress suite against a throwaway local Hiero network and a
 # natively started Guardian stack. The callers (e2e-tests.yml, ui-tests.yml) decide what to
@@ -11,7 +11,7 @@ on:
       suite:
         type: string
         required: true
-        description: Short suite name (api, policy, ui). Used in report and artifact names, so two jobs of one run do not collide
+        description: Short name of the caller (e2e, ui). Used in report, check and artifact names, so two runs do not collide
       grep_tags:
         type: string
         required: true
@@ -31,7 +31,7 @@ on:
       ui_request_trace:
         type: boolean
         default: false
-        description: Log every request the Angular dev server proxies to the gateway (UI_PROXY_LOG, frontend/proxy.hostdocker.js) into frontend-1.log of the guardian-logs artifact. It makes the log large; it is for diagnosing a UI failure
+        description: Log every request the frontend proxies to the gateway (UI_PROXY_LOG, frontend/proxy.hostdocker.js) into frontend-1.log of the guardian-logs artifact. It makes the log large; it is for diagnosing a UI failure
       timeout_minutes:
         type: number
         default: 120
@@ -142,9 +142,14 @@ jobs:
 
           : "${TAGS:?grep_tags must not be empty}"
 
-          # Tags are separated by spaces or commas; these are the ones that select a UI test.
+          # Callers may separate tags with commas, but entrypoint.sh rejects a comma in a
+          # public value, and for grepTags a comma means the same as a space.
+          read -ra TAG_LIST <<< "${TAGS//,/ }"
+          TAGS="${TAG_LIST[*]}"
+
+          # These are the tags that select a UI test.
           WITH_FRONTEND="$FORCE_FRONTEND"
-          for tag in ${TAGS//,/ }; do
+          for tag in "${TAG_LIST[@]}"; do
             case "$tag" in all|ui|ui-all|dr-all|@ui|@recovery) WITH_FRONTEND=true ;; esac
           done
 
@@ -164,6 +169,33 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1
+
+      # This runner is a bare self-hosted container, so it provides none of what the
+      # cypress/included image used to. Xvfb is needed even for a headless API run,
+      # because `cypress verify` smoke-tests the Electron binary against a display.
+      # Package names are Ubuntu 22.04 (jammy); on 24.04+ libasound2 becomes libasound2t64.
+      - name: Install Cypress operating system dependencies
+        shell: bash
+        run: |
+          SUDO=""
+          [ "$(id -u)" -eq 0 ] || SUDO=sudo
+          $SUDO apt-get update
+          $SUDO apt-get install -y --no-install-recommends \
+            xvfb xauth \
+            libgtk-3-0 libgbm1 libnotify4 \
+            libnss3 libnspr4 \
+            libxss1 libxtst6 libasound2
+
+      # The browser the suite runs on. apt installs the dependencies the package declares.
+      - name: Install Google Chrome
+        shell: bash
+        run: |
+          SUDO=""
+          [ "$(id -u)" -eq 0 ] || SUDO=sudo
+          curl -fsSL -o /tmp/google-chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          $SUDO apt-get install -y --no-install-recommends /tmp/google-chrome.deb
+          rm /tmp/google-chrome.deb
+          google-chrome --version
 
       # A throwaway local network per run: no HBAR spent, no testnet dependency, an empty
       # ledger every time. The ports are the action's defaults (consensus node 35211, mirror
@@ -192,22 +224,6 @@ jobs:
       # then swapping the Node out leaves the shims pointing at the wrong runtime.
       - name: Enable Corepack
         run: corepack enable
-
-      # This runner is a bare self-hosted container, so it provides none of what the
-      # cypress/included image used to. Xvfb is needed even for a headless API run,
-      # because `cypress verify` smoke-tests the Electron binary against a display.
-      # Package names are Ubuntu 22.04 (jammy); on 24.04+ libasound2 becomes libasound2t64.
-      - name: Install Cypress operating system dependencies
-        shell: bash
-        run: |
-          SUDO=""
-          [ "$(id -u)" -eq 0 ] || SUDO=sudo
-          $SUDO apt-get update
-          $SUDO apt-get install -y --no-install-recommends \
-            xvfb xauth \
-            libgtk-3-0 libgbm1 libnotify4 \
-            libnss3 libnspr4 \
-            libxss1 libxtst6 libasound2
 
       # `**/yarn.lock` also matches lockfiles inside dependencies; the root one is the
       # only input that matters. .yarnrc.yml is in the key because it decides where the
@@ -433,9 +449,11 @@ jobs:
           start api-gateway
           wait_nats API_GATEWAY
 
-      # Started before the readiness gate so the Angular build overlaps with it. The dev
-      # server proxies /api/v1 and /ws to the gateway (frontend/proxy.hostdocker.js, with an
-      # explicit IPv4 target: `localhost` can resolve to ::1 on the runner).
+      # Started before the readiness gate so the Angular build overlaps with it. The production
+      # build is served statically, behind the proxy of frontend/proxy.hostdocker.js for /api/v1
+      # and /ws (with an explicit IPv4 target: `localhost` can resolve to ::1 on the runner).
+      # `ng serve` would add an inline source map of about 75 MB to main.js, which Cypress 16
+      # cannot pass back to Chrome.
       - name: Start frontend
         if: steps.params.outputs.frontend == 'true'
         shell: bash
@@ -447,12 +465,11 @@ jobs:
           CI: true
         run: |
           set -euo pipefail
-          # The production build makes the UI specs about 20 % faster than the development one.
-          (cd frontend && exec npx ng serve --configuration production --host 127.0.0.1 --port 4200 \
-            --proxy-config ./proxy.hostdocker.js) > "$GUARDIAN_LOG_DIR/frontend-1.log" 2>&1 &
+          (cd frontend && npx ng build --configuration production \
+            && exec node ../e2e-tests/scripts/serve-frontend.mjs) > "$GUARDIAN_LOG_DIR/frontend-1.log" 2>&1 &
           echo "$! frontend#1" >> "$GUARDIAN_LOG_DIR/pids"
           echo "started frontend (pid $!)"
-          # Cypress runs against the dev server; its presence also makes entrypoint.sh keep screenshots.
+          # Cypress runs against the frontend; its presence also makes entrypoint.sh keep screenshots.
           echo "CYPRESS_baseUrl=http://127.0.0.1:4200" >> "$GITHUB_ENV"
 
       # Replaces the old `sleep 15   # grace for backend NATS subscriptions`.
@@ -468,9 +485,9 @@ jobs:
           GUARDIAN_LOG_DIR: ${{ runner.temp }}/guardian-logs
         run: |
           set -euo pipefail
-          echo "Waiting for the frontend dev server on :4200 ..."
+          echo "Waiting for the frontend on :4200 ..."
           if ! timeout 600 bash -c 'until curl -fsS --max-time 5 http://127.0.0.1:4200/ >/dev/null; do sleep 3; done'; then
-            echo "::error::The frontend dev server (:4200) is not answering"
+            echo "::error::The frontend (:4200) is not answering"
             tail -n 60 "$GUARDIAN_LOG_DIR/frontend-1.log" || true
             exit 1
           fi
@@ -481,9 +498,8 @@ jobs:
         run: ./entrypoint.sh
         env:
           CYPRESS_portApi: 3002
-          CYPRESS_BROWSER: electron
-          # /dev/shm is 64 MB in this container, well under what Chromium expects
-          ELECTRON_EXTRA_LAUNCH_ARGS: --disable-dev-shm-usage
+          # Cypress launches Chrome with --disable-dev-shm-usage, so the 64 MB /dev/shm of this container is enough
+          CYPRESS_BROWSER: chrome
           CYPRESS_hederaNet: localnode
           CYPRESS_operatorId: ${{ steps.hedera.outputs.accountId }}
           CYPRESS_operatorKey: ${{ steps.hedera.outputs.privateKey }}

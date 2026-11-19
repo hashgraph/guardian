@@ -24,6 +24,9 @@ import { pageHeader, Examples, InternalServerErrorDTO, ArtifactDTOItem, UpsertFi
 import { ARTIFACT_REQUIRED_PROPS, PREFIXES } from '#constants'
 import { FastifyReply } from 'fastify';
 
+// GET /artifacts is cached under its path as received: '/artifacts/' from API clients, '/artifacts' from the frontend.
+const ARTIFACT_LIST_CACHE_TAGS = [PREFIXES.ARTIFACTS, PREFIXES.ARTIFACTS.replace(/\/$/, '')];
+
 @Controller('artifacts')
 @ApiTags('artifacts')
 export class ArtifactApi {
@@ -347,8 +350,7 @@ export class ArtifactApi {
                     uploadedArtifacts.push(result);
                 }
             }
-            const invalidedCacheKeys = [`/${PREFIXES.ARTIFACTS}`]
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+            await this.cacheService.invalidate(getCacheKey([req.url, ...ARTIFACT_LIST_CACHE_TAGS], user))
 
             return uploadedArtifacts;
         } catch (error) {
@@ -393,8 +395,7 @@ export class ArtifactApi {
     ): Promise<boolean> {
         try {
             const guardian = new Guardians();
-            const invalidedCacheTags = [PREFIXES.ARTIFACTS];
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+            await this.cacheService.invalidate(getCacheKey([req.url, ...ARTIFACT_LIST_CACHE_TAGS], user));
 
             return await guardian.deleteArtifact(artifactId, new EntityOwner(user));
         } catch (error) {

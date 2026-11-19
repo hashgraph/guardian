@@ -5,7 +5,7 @@ import * as Authorization from '../../../support/authorization';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Tags', { tags: ['tags', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     const tagName = 'tagSchemaAPI';
     const tagId = 'd0e99e70-3511-486668e-bf6f-10041e9a0cb7' + randomInt(999999);
     let schemaId; let schemaCreator; let schemaUuid;

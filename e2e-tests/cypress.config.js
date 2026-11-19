@@ -14,7 +14,7 @@ let hbarBalancesAtStart = new Map();
 async function checkSrUserHbarBalance(config) {
     hbarBalancesAtStart = await snapshotHbarBalances(config);
 
-    const username = config.env.SRUser;
+    const username = config.expose.SRUser;
     const hbarBalance = hbarBalancesAtStart.get(username);
 
     if (hbarBalance === undefined) {
@@ -66,6 +66,7 @@ async function reportHbarSpend(config) {
 }
 
 module.exports = defineConfig({
+    expose: require('./cypress.expose.json'),
     video: false,
     watchForFileChanges: false,
     defaultCommandTimeout: 10000,
@@ -120,40 +121,10 @@ module.exports = defineConfig({
             configFile: 'reporter-config.js',
         },
         setupNodeEvents(on, config) {
-            // Normalize `grepTags` / `grepFilterSpecs` from CLI / Docker env.
-            if (typeof config.env.grepTags === 'string') {
-                config.env.grepTags = config.env.grepTags
-                    .replace(/,/g, ' ')
-                    .replace(/\s+/g, ' ')
-                    .trim();
-            }
-            if (typeof config.env.grepFilterSpecs === 'string') {
-                config.env.grepFilterSpecs = config.env.grepFilterSpecs.toLowerCase() === 'true';
-            }
-
-            // @cypress/grep v6 reads its options from `config.expose`, not `config.env`.
-            // CI/Docker still pass them via CYPRESS_grepTags/--env, so forward them here.
-            config.expose = {
-                ...config.expose,
-                grep: config.env.grep,
-                grepTags: config.env.grepTags,
-                grepFilterSpecs: config.env.grepFilterSpecs,
-                grepOmitFiltered: config.env.grepOmitFiltered,
-            };
-
             require('@cypress/grep/plugin').plugin(config);
-            //Cypress keeps a single handler per run event, so registering `before:run`/`after:run`
-            //here replaces the ones cypress-mochawesome-reporter's plugin installs: its hooks are
-            //called by hand below instead of loading that plugin, which would only be overwritten.
-            const { beforeRunHook, afterRunHook } = require('cypress-mochawesome-reporter/lib');
-            on('before:run', async (details) => {
-                await beforeRunHook(details);
-                await checkSrUserHbarBalance(config);
-            });
-            on('after:run', async (results) => {
-                await afterRunHook(results);
-                await reportHbarSpend(config);
-            });
+            require('cypress-mochawesome-reporter/plugin')(on);
+            on('before:run', () => checkSrUserHbarBalance(config));
+            on('after:run', () => reportHbarSpend(config));
             if (process.env.STOP_POLICIES_BETWEEN_SUITES === '1') {
                 const natsServer = process.env.STOP_POLICIES_NATS;
                 if (!natsServer) {
@@ -170,7 +141,7 @@ module.exports = defineConfig({
             on('task', {
                 checkFile(partialName) {
                     const fs = require('fs');
-                    const files = fs.readdirSync(config.env.downloadFolder);
+                    const files = fs.readdirSync(config.expose.downloadFolder);
                     const matchingFiles = files.filter(file => file.includes(partialName));
                     return matchingFiles.length > 0;
                 },
@@ -198,8 +169,5 @@ module.exports = defineConfig({
             });
             return config;
         },
-        env: {
-            downloadFolder: 'cypress/downloads/'
-        }
     }
 });

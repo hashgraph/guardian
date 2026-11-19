@@ -6,7 +6,7 @@ import * as Authorization from '../../../support/authorization';
 
 context('Edit Module', { tags: ['modules', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 
-  const SRUsername = Cypress.env('SRUser');
+  const SRUsername = Cypress.expose('SRUser');
   const moduleName = 'FirstAPIModule';
   const tagBlock = 'APIBlockModule1';
   const tagBlock2 = 'APIBlockModule2';

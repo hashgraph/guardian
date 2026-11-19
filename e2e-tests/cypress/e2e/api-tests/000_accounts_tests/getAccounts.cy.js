@@ -6,8 +6,8 @@ import { registerUser } from '../../../support/api/accounts';
 
 context('Get accounts', { tags: ['accounts', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
-    const UserUsername = Cypress.env('User');
+    const SRUsername = Cypress.expose('SRUser');
+    const UserUsername = Cypress.expose('User');
     const accountsUrl = API.ApiServer + API.Accounts;
 
     const getAccounts = ({ authorization, failOnStatusCode = true } = {}) =>

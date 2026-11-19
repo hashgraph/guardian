@@ -115,9 +115,9 @@ Running in parallel also needs a policy stop limited to the shard's own processe
 
 ### Other test problems seen along the way
 
-- `ui-tests/specs/06_policy_schemas/createPolicySchema` "import policy schema file" fails on a database where it already ran (a dialog mask covers the search field); it passed on a fresh database. Not idempotent.
+- `ui-tests/specs/06_policy_schemas/createPolicySchema` "import policy schema file" imported the schema file into the first policy of the dropdown; when that policy already held a schema of the same name (`Lead User Details` is in the iRec policies), the app opened the "Schemas for replace" dialog and its mask covered the search field. It depended on which policies other folders had imported. Fixed: the spec imports into a draft policy of its own.
 - `ui-tests/specs/04_contracts/contractTags` "delete contract tag": the tag is deleted (`DELETE 200`) but `{esc}` does not close the tags dialog. Flaky.
-- `ui-tests/specs/05_modules/createModule` "module ipfs import" failed once on the production frontend (3 rows instead of 4) and passed on the rerun. Flaky.
+- `ui-tests/specs/05_modules/createModule` "module ipfs import" counted the imported rows on the first page of the module list (10 rows, newest first) before and after the import; past ten modules the new row pushes another off the page, so the count could stay the same. It failed on the second run over a database. Fixed: the import helpers check the module the import request created, and the specs delete exactly that module.
 
 ## Adopted
 
@@ -133,3 +133,162 @@ Running in parallel also needs a policy stop limited to the shard's own processe
 
 1. Parallel runs (E7 gives 45 min instead of 93): check that the auth fix removes the 401s, make the specs above independent of global lists and counters, keep `006_settings` alone, and stop only the shard's own policy processes.
 2. Not measured yet: the queue pickup in a full run with E3 (about 12 min of waits in the baseline; the E8 task snapshots are in `.local/e8-tasks.jsonl`), tool import/publish cost in `policy-tests/cdm` (803 s), the double publish in `processFlowiRec3` (about 17 s each), and the 162 s of app bootstrap after `cy.visit` (logging in through the API instead of the UI form).
+
+## Cypress 16
+
+Migration of `e2e-tests` from Cypress 15.15.0 to 16.3.0 on Chromium (plan in `.local/plan-cypress-16.md`, branch `e2e-cypress-16`). Measured with the per-spec durations of the mochawesome JSONs, on the same stack, `STOP_POLICIES_BETWEEN_SUITES=1`, production frontend.
+
+### Baseline: Cypress 15.15.0 on Chromium 156 (2026-11-18)
+
+The pilot set (the `000_accounts_creating` prerequisite, the `smoke` API tag, the UI specs of `00_account_registration`, `05_modules`, `06_policy_schemas`, `09_tokens`, `02_policies/dryRunMint` and `02_policies/iREC5Group`, and `policy-tests/irec`), run twice in a row on a fresh stack (empty database, two consecutive runs on it). Chromium is used for the baseline too, so the comparison with 16.3 measures the Cypress version and not the browser.
+
+| Group | Run 1 | Run 2 |
+|---|---|---|
+| API (smoke) | 137.9 s | 138.8 s |
+| UI | 731.1 s | 743.5 s |
+| Policy (`irec`) | 153.8 s | 156.0 s |
+| Sum of the spec durations | 1022.8 s | 1038.3 s |
+| Wall clock of the run (with Cypress start-up for each phase) | 1197 s | 1189 s |
+| UI logins through the form (`POST /accounts/login` through the frontend proxy; the proxy log has a request and a response line for each, and the comparison script counted both: 134 and 132 lines) | 67 | 66 |
+
+Failures, all known:
+
+- `06_policy_schemas/createPolicySchema` "import policy schema file" in both runs: the import went to a policy that already held a schema of the same name (see above, "Other test problems").
+- `05_modules/createModule` "module ipfs import" in run 2 only (5 rows expected, 4 found): the first-page count (see above, "Other test problems").
+- `008_artifacts/postArtifact` "Upload artifact" in run 2 only: `POST /artifacts/<id>` answered 422. The spec uploaded to the newest policy in the list, which has to be a draft of the same registry. In that run `008_artifacts` was the first folder of the smoke run, right after the `policy-tests/irec` phase of run 1, which ends with `iRecNewRegistry` publishing a policy of another registry; the database has been dropped since, so which policy it was is not verified. Fixed: the spec uploads to a draft policy of its own.
+
+Per-spec durations of the UI and policy specs:
+
+| Spec | Run 1 (s) | Run 2 (s) | Failures run 1 / run 2 |
+|---|---|---|---|
+| policy-tests/irec/iRec.cy.js | 3.8 | 4.1 | 0 / 0 |
+| policy-tests/irec/iRec10.cy.js | 3.8 | 3.9 | 0 / 0 |
+| policy-tests/irec/iRec10NTC.cy.js | 3.8 | 3.9 | 0 / 0 |
+| policy-tests/irec/iRec10Source.cy.js | 3.7 | 4.0 | 0 / 0 |
+| policy-tests/irec/iRec2.cy.js | 74.4 | 75.0 | 0 / 0 |
+| policy-tests/irec/iRec3.cy.js | 3.7 | 3.8 | 0 / 0 |
+| policy-tests/irec/iRec4.cy.js | 3.6 | 3.8 | 0 / 0 |
+| policy-tests/irec/iRec4RM.cy.js | 3.7 | 3.8 | 0 / 0 |
+| policy-tests/irec/iRec5.cy.js | 3.7 | 3.8 | 0 / 0 |
+| policy-tests/irec/iRec6.cy.js | 3.8 | 3.8 | 0 / 0 |
+| policy-tests/irec/iRec7.cy.js | 3.7 | 3.7 | 0 / 0 |
+| policy-tests/irec/iRec8.1.cy.js | 3.7 | 3.8 | 0 / 0 |
+| policy-tests/irec/iRec8.2.cy.js | 3.8 | 3.8 | 0 / 0 |
+| policy-tests/irec/iRec9.cy.js | 3.8 | 3.8 | 0 / 0 |
+| policy-tests/irec/iRecNewRegistry.cy.js | 31.0 | 31.0 | 0 / 0 |
+| ui-tests/specs/00_account_registration/createAccount_Generate.cy.js | 26.8 | 26.9 | 0 / 0 |
+| ui-tests/specs/00_account_registration/createAccount_NonHappyFlows.cy.js | 27.6 | 27.9 | 0 / 0 |
+| ui-tests/specs/00_account_registration/createAccount_ProvideCredentials.cy.js | 27.8 | 27.7 | 0 / 0 |
+| ui-tests/specs/02_policies/dryRunMint.cy.js | 93.9 | 93.8 | 0 / 0 |
+| ui-tests/specs/02_policies/iREC5Group.cy.js | 177.0 | 168.1 | 0 / 0 |
+| ui-tests/specs/05_modules/createModule.cy.js | 20.3 | 34.2 | 0 / 1 |
+| ui-tests/specs/05_modules/deleteModule.cy.js | 9.0 | 9.0 | 0 / 0 |
+| ui-tests/specs/05_modules/exportModule.cy.js | 17.4 | 17.7 | 0 / 0 |
+| ui-tests/specs/05_modules/moduleTags.cy.js | 19.7 | 21.3 | 0 / 0 |
+| ui-tests/specs/05_modules/publishModule.cy.js | 23.5 | 22.3 | 0 / 0 |
+| ui-tests/specs/05_modules/verifyModulesUi.cy.js | 18.9 | 19.1 | 0 / 0 |
+| ui-tests/specs/06_policy_schemas/createPolicySchema.cy.js | 37.8 | 38.7 | 1 / 1 |
+| ui-tests/specs/06_policy_schemas/operationsPolicySchema.cy.js | 62.2 | 63.4 | 0 / 0 |
+| ui-tests/specs/06_policy_schemas/policySchemaTags.cy.js | 31.5 | 31.9 | 0 / 0 |
+| ui-tests/specs/09_tokens/createToken.cy.js | 47.6 | 47.9 | 0 / 0 |
+| ui-tests/specs/09_tokens/deleteToken.cy.js | 30.6 | 32.0 | 0 / 0 |
+| ui-tests/specs/09_tokens/editToken.cy.js | 35.5 | 37.0 | 0 / 0 |
+| ui-tests/specs/09_tokens/tagsTokens.cy.js | 23.9 | 24.5 | 0 / 0 |
+
+### Cypress 16.3.0 on Chromium: what the probe confirmed (2026-11-18)
+
+A throwaway spec, run with `cypress run --browser chromium` on 16.3.0 in the dev container, printed what reaches the browser and how Chromium is launched:
+
+- `Cypress.env` still exists as a function, and every call throws "`Cypress.env()` was removed in Cypress version 16.0.0".
+- `Cypress.expose()` merges the `expose` config key, `--expose key=value` and what `setupNodeEvents` puts in `config.expose`. `CYPRESS_<key>` variables and `--env` go to `config.env` only. `CYPRESS_EXPOSE='<json>'` sets the whole `expose` object and replaces the config's `expose` key instead of merging with it.
+- `cy.env([...])` returns the requested keys found in `env` (`cypress.env.json`/config, `CYPRESS_*`, `--env`) and omits the missing ones without failing.
+- Defaults: `visibilityStrategy` is `modern`, `manageBrowserMemory` is `true`.
+- `Cypress.browser` reports `chromium` 156, headless (`--headless=new`). Cypress already launches Chromium with `--disable-dev-shm-usage` (and `--no-sandbox`, `--disable-gpu`), so the 64 MB `/dev/shm` of the CI container needs no launch argument of our own.
+
+### Pilot set on Cypress 16.3 / Chromium 156, compared with the baseline (2026-11-18)
+
+Same pilot set, same sequence (`000_accounts_creating`, `smoke`, UI, `policy-tests/irec`), two runs in a row on a fresh database, `STOP_POLICIES_BETWEEN_SUITES=1`. What changed besides the Cypress version: the UI specs run on the static production build (`scripts/serve-frontend.mjs`) instead of `ng serve --configuration production`, logins go through `cy.session()`, and `00_account_registration` has the new `signIn` spec (9 s). The two frontends serve the same optimized code; `ng serve` adds a 75 MB inline source map to `main.js` (93 MB instead of 17 MB), which Cypress 16 cannot load at all on Chrome (below), so the UI gain mixes the frontend change, the sessions and Cypress 16.
+
+| Group | 15.15, `ng serve` (mean of 2) | 16.3, static build (mean of 2) | Change |
+|---|---|---|---|
+| API (smoke) | 138.4 s | 151.3 s | +9 % |
+| UI | 737.3 s | 610.4 s (601.3 s without `signIn`) | −17 % (−18 %) |
+| Policy (`irec`) | 154.9 s | 157.0 s | +1 % |
+| Sum of the spec durations | 1030.5 s | 918.7 s | −11 % |
+| Wall clock of the run | 1197 s / 1189 s | 1075 s / 1101 s | −9 % |
+| UI logins through the form | 67 / 66 | 8 / 7 | −89 % |
+
+- UI: every spec but `dryRunMint` (−4 %) and `createAccount_Generate` (−5 %) is 11 to 34 % faster; the module, schema and token specs, which sign in in every test, gain 19 to 34 % (`createModule` 11 %).
+- API: no per-spec overhead. The difference is a few seconds on specs bound by the backend and Hedera (`postSettings` +3.2 s, `seedHederaArtefacts` +2.4 s, `dryRunPolicies` +1.8 s), within the spread of those specs.
+- Policy: unchanged, it is bound by the policy workflow.
+- Failures: the same three as the baseline (`createPolicySchema` in run 1, `createModule` and `postArtifact` in run 2), none from the migration: each depended on data of other spec folders (above, "Other test problems" and the baseline). They are fixed; with them fixed, `05_modules`, `06_policy_schemas` and `008_artifacts` passed twice in a row, except `008_artifacts/deleteArtifact` on its second run: the gateway kept the artifact list cached after an upload, fixed since in `api-gateway/src/api/service/artifact.ts`. In run 2 `postArtifact` uploaded to `iRec_5`, published moments before by `seedHederaArtefacts` (`Policy is not in DRAFT status`).
+- A restored session reuses the refresh token its form login created, so a user gets one new refresh token per run instead of one per UI login.
+
+Per-spec durations of the UI specs and of the two long `irec` specs:
+
+| Spec | 15.15 (s, mean of 2) | 16.3 (s, mean of 2) | Change |
+|---|---|---|---|
+| policy-tests/irec/iRec2.cy.js | 74.7 | 74.9 | 0 % |
+| policy-tests/irec/iRecNewRegistry.cy.js | 31.0 | 31.2 | 1 % |
+| ui-tests/specs/00_account_registration/createAccount_Generate.cy.js | 26.9 | 25.4 | -5 % |
+| ui-tests/specs/00_account_registration/createAccount_NonHappyFlows.cy.js | 27.8 | 22.7 | -18 % |
+| ui-tests/specs/00_account_registration/createAccount_ProvideCredentials.cy.js | 27.8 | 23.6 | -15 % |
+| ui-tests/specs/00_account_registration/signIn.cy.js | - | 9.1 | - |
+| ui-tests/specs/02_policies/dryRunMint.cy.js | 93.8 | 90.1 | -4 % |
+| ui-tests/specs/02_policies/iREC5Group.cy.js | 172.5 | 142.7 | -17 % |
+| ui-tests/specs/05_modules/createModule.cy.js | 27.3 | 24.3 | -11 % |
+| ui-tests/specs/05_modules/deleteModule.cy.js | 9.0 | 6.2 | -31 % |
+| ui-tests/specs/05_modules/exportModule.cy.js | 17.6 | 12.6 | -29 % |
+| ui-tests/specs/05_modules/moduleTags.cy.js | 20.5 | 14.3 | -30 % |
+| ui-tests/specs/05_modules/publishModule.cy.js | 22.9 | 15.2 | -34 % |
+| ui-tests/specs/05_modules/verifyModulesUi.cy.js | 19.0 | 13.9 | -27 % |
+| ui-tests/specs/06_policy_schemas/createPolicySchema.cy.js | 38.2 | 30.6 | -20 % |
+| ui-tests/specs/06_policy_schemas/operationsPolicySchema.cy.js | 62.8 | 47.7 | -24 % |
+| ui-tests/specs/06_policy_schemas/policySchemaTags.cy.js | 31.7 | 22.7 | -28 % |
+| ui-tests/specs/09_tokens/createToken.cy.js | 47.8 | 38.6 | -19 % |
+| ui-tests/specs/09_tokens/deleteToken.cy.js | 31.3 | 24.6 | -21 % |
+| ui-tests/specs/09_tokens/editToken.cy.js | 36.3 | 28.4 | -22 % |
+| ui-tests/specs/09_tokens/tagsTokens.cy.js | 24.2 | 17.5 | -28 % |
+
+### Found while migrating
+
+- `ng serve` cannot serve the UI specs on Cypress 16 with Chrome. On Chrome, Cypress 16 rewrites the scripts of the page under test and hands them back to the browser through CDP (`Fetch.fulfillRequest`, base64). `main.js` from `ng serve` is 93 MB, 76.5 MB of it an inline source map the dev server adds; base64 makes it about 124 MB, over Chromium's 100 MB limit for a DevTools message (`Too large read data is pending: capacity=104857600`). Chromium closes the DevTools connection, Cypress does not reconnect, and the run waits forever on the first `cy.visit` with no timeout. Cypress 15 loaded the page through its own proxy and was not affected; Electron on 16.3 is not affected either. The static production build (`main.js` 17 MB) loads in 3 s.
+- Measuring needs a fresh database: on a database that kept the policies of earlier runs, `POST /settings` (`006_settings/postSettings`) re-initializes guardian-service for minutes (see "`POST /settings` restarts every published and dry-run policy" above), the next suite's `before:spec` stops policies in the middle of it and the run stops. That run also left the stack on the spec's throwaway operator, because its `after` hook never ran.
+
+### Full sequential run on Cypress 16.3 / Chromium 156 (2026-11-18)
+
+`npm run test:everything -- lint scripts cypress` on a fresh database, `STOP_POLICIES_BETWEEN_SUITES=1`, static production frontend, 278 specs (E8 ran 277): **1:13:02**, 1011 of 1033 tests passing, 20 pending, 1 failing, 1 skipped. E8 (Cypress 15.15, Electron, `ng serve`, same sequence) took 1:09:03 with 7 failing specs.
+
+| Group | E8 (15.15) | 16.3 |
+|---|---|---|
+| `api-tests` | 13.7 min | 13.4 min |
+| `ui-tests` | 36.8 min | 37.0 min |
+| `policy-tests` | 16.7 min | 20.7 min |
+
+The full run does not show the gain of the pilot set (UI -17 %, wall clock -9 %); the UI group is flat and `policy-tests` is 4 min slower, 3 min of it in six `policy-tests/cdm` specs (`cdmIC` 85 → 126 s, `cdmIE` 95 → 127 s, `cdmIIIH`, `cdmIIID`, `cdmIIIF`, `cdmIF`). Why is not known: the CDM specs are driven through the API and spend their time in the backend and on Hedera, the pilot's `policy-tests/irec` set is at parity (155 vs 157 s), and the Solo mirror node answered 502/503 for a few seconds after a restart of the services during the same session, so the stack was not as quiet as in the baseline. Not measured: the same run on 15.15 on today's stack. Until it is, the Cypress 16 gain is only what the pilot shows.
+
+Failures, all explained:
+
+- First attempt: 234 of 278 failed. `PUT /profiles/StandardRegistry` (`create_accounts`) timed out because the Solo mirror node answered 502/503 for a few seconds right after the services restarted; every later spec depends on those accounts. `000_accounts_creating` run alone afterwards passed (12/12) and the second attempt, started when the mirror answered 200 to 15 requests in a row, passed everything but one spec. The cause inside Solo was not investigated; the failure is the stack's, not the migration's.
+- `ui-tests/specs/02_policies/editPolicy` "Modify Existing block…" failed three times in a row on Chrome (it passed in E8 on Electron). The editor selects the policy root when it finishes loading, `openEditingPolicy` returned while the editor was still under its loading overlay, and the spec's selection of `Block_1` was overridden: the Tag edit landed on the policy root, so `Block_12` was never saved. `openEditingPolicy` now waits for the overlay to go (`waitForPageSettled`), and the spec passed twice in a row. Checked first: waiting for the save request (`PUT /policies/:id`, 200) did not change the result.
+- `scripts/entrypoint.test.mjs` failed in the first attempt because the shell that started the run had `CYPRESS_*` variables exported and the sandbox passed them on to `entrypoint.sh`; the sandbox now drops them.
+
+### CI on the branch (2026-11-18)
+
+`E2E Tests` with `all` (278 specs, 1033 tests) and `UI Tests` with `ui-all dr-all` (54 specs, 133 tests), compared with the runs of the day before on the same workflows (Cypress 15.15, Electron, `ng serve`). Durations are the span from the first to the last spec start in the JUnit files, and the runner was not the same machine, so read them as an order of magnitude.
+
+| Run | Specs | Failures | Span |
+|---|---|---|---|
+| `E2E Tests` `all`, 2026-11-17 (15.15) | 277 | 3 | 93 min |
+| `E2E Tests` `all`, 2026-11-18 (16.3) | 278 | 2 | 66 min (−29 %) |
+| `UI Tests`, 2026-11-17 (15.15) | 53 | 1 | 61 min |
+| `UI Tests`, 2026-11-18 (16.3) | 54 | 0 | 39 min (−36 %) |
+
+The requests of the spec reports show `HeadlessChrome/158` on 16.3. `all` includes the UI specs, so the second workflow only repeats what the first already ran.
+
+The two failures of `E2E Tests` are the same kind of race, not the migration: a spec reads a Hedera message through the mirror node a fraction of a second after it was submitted, and the mirror answers 404.
+
+- `007_modules/13_postPreviewModuleMessage` "Preview the module from IPFS": the module was published at 14:07:54.994 and the preview asked for its message at 14:07:55.336 (`MESSAGE_NOT_FOUND`, mirror 404). The spec published the module in its own `before` hook, as it did on 15.15, where it passed.
+- `016_policies_tests_and_flows/dryRunPolicyFlowAndRecord` (`before all`, "Import policy and dry-run it"): `PUT /policies/:id/dry-run` answered 500 at 14:16:32; guardian-service read a topic message by index 100 ms after the import wrote it (`get-topic-message-by-index`, mirror 404).
+
+Both specs passed in the run of the day before. Mirror 404s on just-submitted messages appear in both runs' logs (13 and 18 in guardian-service). Fixed since in worker-service: reading a topic message (by timestamp or by its index in the topic) waits for the mirror node to ingest it, as reading an account, a token or a balance does: one helper, up to 10 s, polling every 500 ms (`MIRROR_NODE_INDEXING_TIMEOUT`, `MIRROR_NODE_INDEXING_POLL_INTERVAL`).

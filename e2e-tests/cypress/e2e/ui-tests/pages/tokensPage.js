@@ -120,7 +120,7 @@ export class TokensPage {
             .invoke('text')
             .then((tokenId) => {
                 expect(tokenId.trim(), 'token id cell').to.not.be.empty;
-                Cypress.env('runTokenId', tokenId.trim());
+                this.runTokenId = tokenId.trim();
             });
     }
 
@@ -134,7 +134,7 @@ export class TokensPage {
      */
     associatePolicyToken() {
         cy.then(() => {
-            const tokenId = Cypress.env('runTokenId');
+            const tokenId = this.runTokenId;
             expect(tokenId, 'call storeTokenId (as SR) before associatePolicyToken')
                 .to.be.a('string').and.not.be.empty;
             cy.visit(`${URL.Root}${URL.TokensUser}?tokenId=${btoa(tokenId)}`);

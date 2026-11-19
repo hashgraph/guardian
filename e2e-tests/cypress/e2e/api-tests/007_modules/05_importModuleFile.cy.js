@@ -5,7 +5,7 @@ import * as Authorization from '../../../support/authorization';
 
 context('Export Module from File', { tags: ['modules', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     const moduleName = 'FirstAPIModule';
 
     let originalModule; let exportedModuleFile; let importedModule;

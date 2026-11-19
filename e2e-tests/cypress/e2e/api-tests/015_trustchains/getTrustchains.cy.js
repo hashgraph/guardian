@@ -4,7 +4,7 @@ import * as Authorization from '../../../support/authorization';
 import { publishOwnPolicyCopy } from '../../../support/CustomHelpers/ipfsSeeding';
 
 context('Trustchains', { tags: ['trustchains', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     let policyId;
 
     const getTrustChain = (headers = {}, policyId) =>

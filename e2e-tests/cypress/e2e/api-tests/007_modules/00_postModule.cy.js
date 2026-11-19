@@ -6,7 +6,7 @@ import * as Authorization from '../../../support/authorization';
 
 context('Create Module', { tags: ['modules', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     const moduleName = 'FirstAPIModule';
 
     const profilesUrl = `${API.ApiServer}${API.Profiles}`;

@@ -3,7 +3,7 @@ import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
 context('Get policy label relationships', { tags: ['policy_labels', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const UserUsername = Cypress.env('User');
+    const UserUsername = Cypress.expose('User');
     let policyLabel; let policy;
 
     const getPolicyLabels = (headers = {}) =>

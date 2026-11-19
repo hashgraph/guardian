@@ -8,24 +8,24 @@ import * as Authorization from '../../../support/authorization';
 const testOperatorId = '0.0.999999999';
 const testOperatorKey = '302e020100300506032b6570042204206d8024debb71d43324e4b59d879765875493039e647e2850e653b4b2dd27cc20';
 
-// Required by the API, but unused while IPFS_PROVIDER=local.
-const ipfsStorageApiKey = Cypress.env('ipfsStorageApiKey') || 'local-ipfs-node-unused';
-
 // POST /settings replaces the operator for the whole Guardian instance. Without a real
 // operator to put back afterwards this spec would strand every later spec on the throwaway
 // account, so it is skipped instead of run.
-const realOperatorId = Cypress.env('operatorId');
-const realOperatorKey = Cypress.env('operatorKey');
-const operatorConfigured = Boolean(realOperatorId && realOperatorKey);
+const realOperatorId = Cypress.expose('operatorId');
 
 context('Settings', { tags: ['settings', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
+    let secrets = {};
+    const operatorConfigured = () => Boolean(realOperatorId && secrets.operatorKey);
 
     before(function () {
-        if (!operatorConfigured) {
-            cy.log('Skipping: CYPRESS_operatorId / CYPRESS_operatorKey are not set');
-            this.skip();
-        }
+        cy.env(['operatorKey', 'ipfsStorageApiKey']).then((values) => {
+            secrets = values;
+            if (!operatorConfigured()) {
+                cy.log('Skipping: CYPRESS_operatorId / CYPRESS_operatorKey are not set');
+                this.skip();
+            }
+        });
     });
 
     const setSettings = (authorization, operatorId, operatorKey) =>
@@ -38,7 +38,8 @@ context('Settings', { tags: ['settings', 'thirdPool', 'api-all', 'all', 'all-no-
             body: {
                 operatorId,
                 operatorKey,
-                ipfsStorageApiKey,
+                // Required by the API, but unused while IPFS_PROVIDER=local.
+                ipfsStorageApiKey: secrets.ipfsStorageApiKey || 'local-ipfs-node-unused',
             }
         }).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.SUCCESS)
@@ -61,11 +62,11 @@ context('Settings', { tags: ['settings', 'thirdPool', 'api-all', 'all', 'all-no-
     })
 
     after('Restore the real operator', () => {
-        if (!operatorConfigured) {
+        if (!operatorConfigured()) {
             return;
         }
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            setSettings(authorization, realOperatorId, realOperatorKey)
+            setSettings(authorization, realOperatorId, secrets.operatorKey)
         })
     })
 })

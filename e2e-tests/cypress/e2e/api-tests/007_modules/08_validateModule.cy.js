@@ -5,7 +5,7 @@ import * as Authorization from '../../../support/authorization';
 
 context('Modules', { tags: ['modules', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 
-  const SRUsername = Cypress.env('SRUser');
+  const SRUsername = Cypress.expose('SRUser');
   const moduleName = Modules.uniqueModuleName('APIModuleForValidate');
 
   let moduleToValidate;

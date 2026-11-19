@@ -14,7 +14,7 @@ const login = (username) => {
 
 context('Token Tags', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     const tagName = 'UITokenTag';
     const tokenName = 'FTDraftUITokenName' + randomInt(1000000000);
 

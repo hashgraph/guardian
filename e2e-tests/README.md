@@ -4,7 +4,7 @@ The `/e2e-tests` folder comprises the Guardian Cypress test automation framework
 
 ## Quickstart
 
-You need Node.js 24, Docker, `kind` and `kubectl`. From a fresh clone:
+You need Node.js 24, Docker, `kind`, `kubectl` and Chromium (or Chrome, with `CYPRESS_BROWSER=chrome`), the browser the suite runs on. From a fresh clone:
 
 ```bash
 cd e2e-tests
@@ -48,7 +48,7 @@ npm run guardian:services:down   # restart the services without touching the inf
 npm run guardian:infra:down      # on the host: removes the containers
 ```
 
-`INFRA_HOST` is where the services reach the infra and the Hedera network: `127.0.0.1` by default, `host.docker.internal` when `/.dockerenv` exists. Export it to override the detection. The dev container has its own network namespace, so point Cypress at `http://127.0.0.1:3002` there (`--env apiServer=http://127.0.0.1:3002`).
+`INFRA_HOST` is where the services reach the infra and the Hedera network: `127.0.0.1` by default, `host.docker.internal` when `/.dockerenv` exists. Export it to override the detection. The dev container has its own network namespace, so point Cypress at `http://127.0.0.1:3002` there (`--expose apiServer=http://127.0.0.1:3002`).
 
 ## Running every test
 
@@ -75,9 +75,11 @@ In the dev container, prefix the command with `NODE_OPTIONS=--use-system-ca` whe
 Unless specified otherwise, the tests are idempotent and can be run multiple times without side effects, and in any order. The only requirement is preparing the environment with a few accounts using the `preparing` tag, and ensuring the accounts have enough balance for the operations performed during the tests (especially the StandardRegistry):
 
 ```bash
-export CYPRESS_portApi=3000/api/v1
-TAG=preparing ./run-test-by-tag.sh
+TAG=preparing ./run-test-by-tag.sh                                # portApi from cypress.expose.json
+CYPRESS_portApi=3000/api/v1 CYPRESS_grepTags=preparing ./entrypoint.sh   # overriding it
 ```
+
+A `CYPRESS_<key>` variable only reaches `cy.env()`, so `npx cypress run` and `run-test-by-tag.sh` ignore an exported `CYPRESS_portApi`; `entrypoint.sh` turns the public ones into `--expose`.
 
 See [Running Tests with Tags](#running-tests-with-tags) below for more details.
 
@@ -100,6 +102,7 @@ The linter reports no finding, and CI keeps it that way. Rules worth knowing:
 - `cypress/unsafe-to-chain-command`: a command that changes the subject (`click`, `clear`, `type`, `blur`, `invoke`) must not be followed by another chained command; re-query instead (`cy.get(selector).clear(); cy.get(selector).type(value);`).
 - `cypress/no-assigning-return-values`: a Cypress command returns a chainable, not a value; use `.then()` or an alias (`.as()` and `cy.get('@name')`).
 - `cypress/no-unnecessary-waiting`: wait for the condition, never for a fixed time. Take budgets from `support/CustomHelpers/timeouts.js` (`TIMEOUTS.ui`, `TIMEOUTS.backend`, `TIMEOUTS.longOperation`), poll backend state with `pollUntil` (`support/checkingMethods.js`), wait for a policy block with `waitForBlockAvailable`, and for UI state use a retrying `cy.get(..., { timeout }).should(...)`. Polling loops pause `POLL_INTERVAL` between two reads; the only fixed pause left is the 1 s in `waitForTaskComplete`, silenced with a reason.
+- `no-restricted-properties`: `Cypress.env()` was removed in Cypress 16; read public values with `Cypress.expose()` and secrets with `cy.env()`.
 - `max-len` (360): build a long document as an object and `JSON.stringify` it (as `support/CustomHelpers/systemSchemas.js` does), or split the string.
 
 To check that a change adds no finding, compare with the findings of the last commit. Extract it with `git archive HEAD e2e-tests/cypress/e2e e2e-tests/cypress/support e2e-tests/eslint.config.mjs e2e-tests/package.json | tar -x -C <dir>`, symlink `node_modules` into it and run `npx eslint cypress` there. ESLint pads its columns to the longest message of each file, so squeeze repeated spaces before diffing the two outputs.
@@ -199,6 +202,7 @@ UI_GATEWAY_HOST=host.docker.internal UI_GATEWAY_PORT=3002 docker compose run --r
 ### Software Requirements
 
 - Node.js 24 and above
+- Chromium or Chrome
 - Docker and Docker Compose (for Docker-based test execution)
 - Follow steps from the [README](https://github.com/hashgraph/guardian/blob/main/README.md) to install and deploy the Guardian application.
 
@@ -216,16 +220,16 @@ npm ci
 
 #### Environment Variables
 
-If you built the Guardian in Docker, set the `portApi` variable in `cypress.env.json` file. The configuration supports the following variables:
+Cypress 16 splits the settings in two. Public values (user names, ports, the Hedera network, pinned message ids, the grep options) live in `cypress.expose.json`; a run overrides them with `--expose key=value,...`, and specs read them with `Cypress.expose('<key>')`. Secrets (the password, the operator key, API keys) live in `cypress.env.json` or in `CYPRESS_<key>` variables, and specs read them with `cy.env(['<key>'])`. `Cypress.env()` no longer exists, and ESLint rejects it. If you built the Guardian in Docker, set `portApi` in `cypress.expose.json`. The configuration supports the following variables:
 
 - `portApi` - API port (default: `4200/api/v1`)
 - `baseUrl` - Base URL for the application (default: `http://localhost:4200`)
-- `operatorId` - Hedera operator ID (empty by default – must be supplied)
-- `operatorKey` - Hedera operator key (empty by default – must be supplied)
-- `ipfsStorageApiKey` - IPFS storage API key (empty by default; only needed for a non-local `IPFS_PROVIDER`)
+- `operatorId` - Hedera operator ID (public, empty by default – must be supplied)
+- `operatorKey` - Hedera operator key (secret, empty by default – must be supplied)
+- `ipfsStorageApiKey` (secret) - IPFS storage API key (empty by default; only needed for a non-local `IPFS_PROVIDER`)
 - `mongoUrl` - MongoDB of the Guardian stack (default: `mongodb://localhost:27017`, then `mongodb://host.docker.internal:27017`). Only the disaster-recovery spec uses it: it removes the original registry from `guardian_db` and `auth_db` before restoring it, as on a new, empty instance
-- `MGSAdmin` - MGS tenant name
-- `MGSIndexerAPIToken` - MGS Indexer API token
+- `MGSAdmin` - MGS tenant name (secret)
+- `MGSIndexerAPIToken` - MGS Indexer API token (secret)
 
 ### Usage
 
@@ -239,24 +243,18 @@ npx cypress open
 
 #### Local Command Line Execution
 
-The project pins Cypress 15 (`package.json`). `--env` takes either `key=value` pairs separated by commas or a JSON object, so separate several tags with spaces, not commas (see [--env and "Cannot parse as valid JSON"](#--env-and-cannot-parse-as-valid-json) below).
+The project pins Cypress 16 (`package.json`) and runs on Chromium (`--browser chromium`; Chrome works too). `--expose` takes `key=value` pairs separated by commas, so separate several tags with spaces, not commas (see [--expose and commas](#--expose-and-commas) below). Variables set with `CYPRESS_<key>` or `--env` only reach `cy.env()`, so pass public values with `--expose`.
 
 ##### Run all API tests (most basic)
 
 ```bash
-npx cypress run --browser chrome --env "grepTags=api-all,grepFilterSpecs=true"
+npx cypress run --browser chrome --expose "grepTags=api-all,grepFilterSpecs=true"
 ```
 
 ##### Run with specific tags (sanity testing with user preparation)
 
 ```bash
-npx cypress run --browser chrome --headed --env "grepTags=preparing policies,grepFilterSpecs=true"
-```
-
-The same with a JSON object:
-
-```bash
-npx cypress run --browser chrome --headed --env '{"grepTags":"preparing policies","grepFilterSpecs":true}'
+npx cypress run --browser chrome --headed --expose "grepTags=preparing policies,grepFilterSpecs=true"
 ```
 
 ##### Run single test file
@@ -268,35 +266,34 @@ npx cypress run --spec "path/to/file.cy.js"
 ##### Run all UI tests
 
 ```bash
-npx cypress run --env "grepTags=ui,grepFilterSpecs=true"
+npx cypress run --expose "grepTags=ui,grepFilterSpecs=true"
 ```
 
 ##### Preparing the app for UI tests
 
-UI tests drive the real frontend, so the app must be running where `CYPRESS_baseUrl` points:
+UI tests drive the real frontend, so the app must be running where `CYPRESS_baseUrl` points. Build the production frontend once, then serve it from `e2e-tests`:
 
 ```bash
-cd frontend
-UI_GATEWAY_ORIGIN=http://host.docker.internal:3002/ \
-  ng serve --configuration production --host 127.0.0.1 --port 4200 --proxy-config ./proxy.hostdocker.js
+(cd ../frontend && npx ng build --configuration production)
+UI_GATEWAY_ORIGIN=http://host.docker.internal:3002/ node scripts/serve-frontend.mjs
 ```
 
-- `--configuration production` serves the optimized build: the UI specs run about 20 % faster than on the development build, which bootstraps and renders more slowly. The first build takes about 40 s instead of 15.
-
-- `UI_GATEWAY_ORIGIN` is where the dev server proxies `/api/v1` and the WebSocket to. `yarn start` uses `proxy.conf.json`, which assumes a gateway on `localhost:3002`; `proxy.hostdocker.js` exists for the common case of running the suite in a container (or a VM) that reaches the host's Guardian stack through `host.docker.internal`.
+- `scripts/serve-frontend.mjs` serves `frontend/dist/guardian/browser` on `127.0.0.1:4200` and proxies `/api/v1` and the WebSocket to the gateway with `frontend/proxy.hostdocker.js`. Build again after changing the frontend sources.
+- Do not use `ng serve` for the UI specs: its dev server adds an inline source map of about 75 MB to `main.js`, and Cypress 16 cannot pass a response that large back to Chrome (the run stops without a word on the first `cy.visit`). The static build is 17 MB.
+- `UI_GATEWAY_ORIGIN` is where the proxy sends `/api/v1` and the WebSocket. `proxy.hostdocker.js` defaults to `host.docker.internal:3002`, the common case of running the suite in a container (or a VM) that reaches the host's Guardian stack; from the dev container with the services in it, use `http://127.0.0.1:3002/`.
 - Pass `CYPRESS_baseUrl=http://127.0.0.1:4200` to the Cypress run (the `entrypoint.sh` examples above do this).
-- The `[proxy]` lines the logger in `proxy.hostdocker.js` prints are the only request-level trace of a UI run — the Angular dev server does not log proxied requests even at `logLevel: "debug"`. See [Diagnosing a hung request](#diagnosing-a-hung-request-ui-runs).
-- If a suite keeps hitting odd bootstrap states (page stuck on a spinner even after the tests reload it), restart `ng serve` before re-running: a long-lived dev server accumulates state (stale incremental builds, dead WebSocket pairings) that a fresh one does not have.
+- The `[proxy]` lines the logger in `proxy.hostdocker.js` prints with `UI_PROXY_LOG=true` are the only request-level trace of a UI run. See [Diagnosing a hung request](#diagnosing-a-hung-request-ui-runs).
 
 ##### UI suite patterns (idempotent re-runs)
 
 `ui`-tagged specs drive the real frontend in a persistent browser profile, and the backend state they create (users, tools, policies, tokens) survives the run. Suites 00–02 are idempotent — every spec passes on repeated runs against the same workspace; suite 03 uses the same per-run naming isolation; 04 and later are not converted yet. The patterns they share, worth knowing before extending a UI suite, live in `cypress/support/` and `ui-tests/pages/`:
 
 - **Clean boot** (`homePage.js` → `visit()`): the profile persists `accessToken` and `refreshToken` in `localStorage` (the app reads the username from the access token), so a failed run would auto-log the next one in and skip the login page the Sign Up / login flows depend on. `visit()` wipes those keys in `onBeforeLoad`, then waits for the app shell's loader to release before the first assertion.
+- **Logins through `cy.session`** (`homePage.js` → `login()`): a user signs in through the form once per run; every later `login()` of that user, in any spec (`cacheAcrossSpecs`), restores the cached `localStorage` after checking that the gateway still exchanges its refresh token, and the app boots signed in. `_loginThroughForm()` is the form login the session runs.
 - **Settled-phase waits** (`homePage.js` → `_settledUserProfilePhase()`): the user-profile view flashes through several render states as its first load settles, so a one-shot read mis-branches. The helper polls with a real timer until a terminal state (`wizard` or `ready`) has *held* for a short while, resolves with the settled phase, and rejects with the last phase seen on the deadline, so a stuck load fails loudly instead of hanging. The same idiom backs the Sign Up settle wait in `ensureAccount`, which always ends logged out on a known state.
 - **Task round trips** (`importFlow.js` → `waitForTaskRoundtrip()`): import, create, publish and dry-run actions run as backend tasks — the app navigates to `/task/:id` and redirects back on completion, and lists do not refresh on their own. Flows wait for the full round trip, then re-land with a fresh `cy.visit`.
 - **Import-preview tool checks** (`importFlow.js` → `settleToolRowChecks()` / `replaceInaccessibleTools()`): a preview row settles to valid/invalid when its per-row check request answers, but that request has no client-side timeout — one check the gateway never answers pins its row at `load`, which keeps the Import button disabled forever. The helper waits with a deadline, re-issues the checks for rows still loading (the row's change handler re-runs them), and after the last attempt fails the test with the stuck `messageIds`. Rows pointing at tool messages this gateway cannot resolve are re-pointed at the same-named workspace tool through the row's search picker — and the picker only lists *published* tools, which is why `toolsPage.js` → `ensureToolPublished()` imports the Methodology Library tools and publishes them on demand first (published ones are left alone, drafts are published, missing ones imported).
-- **Background-window visibility** (`homePage.js` → `logOut()`): `getClientRects()` and `getBoundingClientRect()` can report zero for genuinely rendered elements in the backgrounded electron window, so branch signals must be DOM presence, not layout metrics. The new header renders the sign-out icon and the hover flyout in mutually exclusive `@if` states (and the flyout only shows on a real `:hover` a test cannot produce), so `logOut()` branches on which of the two is in the DOM and expands a collapsed menu first rather than trying to hover it.
+- **Background-window visibility** (`homePage.js` → `logOut()`): `getClientRects()` and `getBoundingClientRect()` can report zero for genuinely rendered elements in the backgrounded browser window, so branch signals must be DOM presence, not layout metrics. The new header renders the sign-out icon and the hover flyout in mutually exclusive `@if` states (and the flyout only shows on a real `:hover` a test cannot produce), so `logOut()` branches on which of the two is in the DOM and expands a collapsed menu first rather than trying to hover it.
 - **Wizard navigation without position assumptions** (`wizardSteps.js`): a policy opens on whichever step the viewer last visited for that user, and step bodies may contain nested tab containers. `clickButtonInWizardSteps` probes the visible step body for the control, then walks the visible tabs, then the step items — throwing a listing of everything it explored when the control is nowhere — and `clickWizardTab` steers a flow to a named tab.
 - **Dialogs drop keystrokes while they re-render** (tag create, contract import, token edit): `type()` into such a field can lose characters, so set the value in one step with `cy.get(sel).invoke('val', value).trigger('input')` and assert it with `should('have.value', value)`.
 - **Row action icons have `pointer-events: none`**: click their wrapper (`div.guardian-icon-button`, `.select-menu-item`), not the icon.
@@ -308,12 +305,12 @@ Product bugs surfaced while making the suites idempotent are documented in [`pen
 ##### Run smoke tests
 
 ```bash
-npx cypress run --env "grepTags=smoke,grepFilterSpecs=true"
+npx cypress run --expose "grepTags=smoke,grepFilterSpecs=true"
 ```
 
 #### Running Tests with Tags
 
-Tags allow you to run specific test subsets. For local CLI runs using `--env "grepTags=..."`, pass multiple tags as a **space-separated** list. For Docker runs, `CYPRESS_grepTags` accepts both spaces and commas (the entrypoint normalizes them).
+Tags allow you to run specific test subsets. For local CLI runs using `--expose "grepTags=..."`, pass multiple tags as a **space-separated** list. For Docker runs, `CYPRESS_grepTags` accepts both spaces and commas (the entrypoint normalizes them).
 
 Tests are tagged on the Mocha context object: `context('...', { tags: ['ui', 'smoke'] }, ...)`. A tag on the context covers every test in it; there is no per-`it()` tagging in this suite, and title-text `@tag` markers are not matched.
 
@@ -322,19 +319,19 @@ Tests are tagged on the Mocha context object: `context('...', { tags: ['ui', 'sm
 **All API tests (basic run):**
 
 ```bash
-npx cypress run --browser chrome --env "grepTags=api-all,grepFilterSpecs=true"
+npx cypress run --browser chrome --expose "grepTags=api-all,grepFilterSpecs=true"
 ```
 
 **Sanity run (preparing + specific feature, e.g. policies):**
 
 ```bash
-npx cypress run --browser chrome --headed --env "grepTags=preparing policies,grepFilterSpecs=true"
+npx cypress run --browser chrome --headed --expose "grepTags=preparing policies,grepFilterSpecs=true"
 ```
 
 ##### Single Tag
 
 ```bash
-npx cypress run --browser chrome --env "grepTags=accounts,grepFilterSpecs=true"
+npx cypress run --browser chrome --expose "grepTags=accounts,grepFilterSpecs=true"
 ```
 
 ##### Multiple Tags (OR operation)
@@ -342,14 +339,14 @@ npx cypress run --browser chrome --env "grepTags=accounts,grepFilterSpecs=true"
 Tags separated by spaces select the specs that have **any** of them:
 
 ```bash
-npx cypress run --browser chrome --env "grepTags=preparing policies,grepFilterSpecs=true"
+npx cypress run --browser chrome --expose "grepTags=preparing policies,grepFilterSpecs=true"
 ```
 
 To select only the specs that have **every** tag, join them with `+` (`grepTags=policies+smoke`).
 
 **Important**:
 
-- **Local CLI (`--env "..."`)**: use spaces, e.g. `preparing policies`. A comma separates two `--env` entries, so `grepTags=preparing,policies` is not a tag list
+- **Local CLI (`--expose "..."`)**: use spaces, e.g. `preparing policies`. A comma starts the next key, so `grepTags=preparing,policies` is not a tag list
 - **Docker (`CYPRESS_grepTags=...`)**: spaces or commas are accepted, e.g. `preparing policies` or `preparing,policies`
 
 ##### Available Tags
@@ -548,11 +545,11 @@ When running Docker tests, most variables are prefixed with `CYPRESS_` (the repo
 | CYPRESS_baseUrl | - | Base URL for UI tests. When using `docker compose run cypress-tests`, set `CYPRESS_UI_BASEURL` (it maps to `CYPRESS_baseUrl`) e.g. `http://host.docker.internal:4200`. When using `docker compose run cypress-ui`, it is set automatically to `http://ui`. |
 | CYPRESS_grepTags | all | Tag filter; for multiple tags use spaces (e.g. `preparing policies`). Commas are also accepted. |
 | CYPRESS_grepFilterSpecs | true | Enable tag filtering |
-| CYPRESS_operatorId | - | Hedera operator ID. Required by the `settings` specs; no value is bundled in `cypress.env.json`. Falls back to `OPERATOR_ID`. |
-| CYPRESS_operatorKey | - | Hedera operator key. Required by the `settings` specs; no value is bundled in `cypress.env.json`. Falls back to `OPERATOR_KEY`. |
+| CYPRESS_operatorId | - | Hedera operator ID. Required by the `settings` specs; no value is bundled in the repository. Falls back to `OPERATOR_ID`. |
+| CYPRESS_operatorKey | - | Hedera operator key. Required by the `settings` specs; no value is bundled in the repository. Falls back to `OPERATOR_KEY`. |
 | CYPRESS_ipfsStorageApiKey | - | IPFS storage API key sent by the `settings` specs. Falls back to `IPFS_STORAGE_API_KEY`, then to a placeholder – the value is unused while `IPFS_PROVIDER=local`. |
-| CYPRESS_hederaNet | testnet | Which Hedera network the Guardian stack under test is on. Anything other than `testnet` makes the suite publish its own Hedera artefacts instead of importing the testnet messages pinned in `cypress.env.json`. Falls back to `HEDERA_NET`. See [Running against a local Hiero network](#running-against-a-local-hiero-network). |
-| CYPRESS_BROWSER | chromium | Browser: `chromium`, `electron`, or `firefox` (must exist in the image) |
+| CYPRESS_hederaNet | testnet | Which Hedera network the Guardian stack under test is on. Anything other than `testnet` makes the suite publish its own Hedera artefacts instead of importing the testnet messages pinned in `cypress.expose.json`. Falls back to `HEDERA_NET`. See [Running against a local Hiero network](#running-against-a-local-hiero-network). |
+| CYPRESS_BROWSER | chromium | Browser: `chromium` or `firefox` (must exist in the image). The entrypoint passes the public `CYPRESS_*` values to Cypress with `--expose`; the secrets stay in the environment for `cy.env()` |
 | CYPRESS_apiServer | - | Optional full API origin override (useful on Docker Desktop). Examples: `http://host.docker.internal:3002/` (direct API gateway) or `http://host.docker.internal:4200/api/v1/` (if using Angular proxy) |
 | CYPRESS_SPEC | `cypress/e2e/api-tests/**/*.cy.js` in `cypress-api` | Optional default spec pattern used by the Docker entrypoint when `--spec` is not provided |
 | CYPRESS_API_WAIT_TIMEOUT | 60 | API readiness wait timeout (seconds) |
@@ -606,7 +603,7 @@ When running `docker compose` from `e2e-tests/`, we also load `../guardian-servi
 
 Parameter summary:
 
-- **Mandatory (typical runs):** `OPERATOR_ID` + `OPERATOR_KEY` (or `CYPRESS_operatorId` + `CYPRESS_operatorKey`). No operator credentials are committed to `cypress.env.json`, so the `settings` specs fail without them. This is the only Hedera account the suite needs – specs that require their own funded account request one at runtime via `cy.getHederaKeys()` (`GET /demo/random-key`).
+- **Mandatory (typical runs):** `OPERATOR_ID` + `OPERATOR_KEY` (or `CYPRESS_operatorId` + `CYPRESS_operatorKey`). No operator credentials are committed to the repository, so the `settings` specs fail without them. This is the only Hedera account the suite needs – specs that require their own funded account request one at runtime via `cy.getHederaKeys()` (`GET /demo/random-key`).
 - **Mandatory only for MGS/remote-policy tests:** `CYPRESS_MGSAdmin` + `CYPRESS_MGSIndexerAPIToken`.
 - **Optional:** `ReportName`, `CYPRESS_apiServer`, `CYPRESS_baseUrl`, `CYPRESS_grepTags`, `CYPRESS_grepFilterSpecs`, `CYPRESS_SPEC`.
 
@@ -656,7 +653,6 @@ Remove-Item Env:CYPRESS_grepFilterSpecs
 #### Available Browsers in Docker
 
 - **Chromium** (default via `CYPRESS_BROWSER=chromium`) - Full browser, typical CI path
-- **Electron** - Lightweight, fast fallback
 - **Firefox** - Alternative browser option (use: --browser firefox)
 
 #### Switching Browsers
@@ -665,7 +661,7 @@ Set `CYPRESS_BROWSER`; the browser must be installed in the image:
 
 ```bash
 CYPRESS_BROWSER=chromium docker-compose up
-CYPRESS_BROWSER=electron docker run ... 
+CYPRESS_BROWSER=firefox docker run ... 
 ```
 
 #### Extracting Test Results from Docker
@@ -685,12 +681,12 @@ The suite defaults to Hedera testnet, and nothing below is needed for that. A lo
 
 #### The `hederaNet` parameter
 
-`hederaNet` tells the suite which network the Guardian stack under test is on. It defaults to `testnet` in `cypress.env.json`, so an existing invocation keeps behaving exactly as it does today.
+`hederaNet` tells the suite which network the Guardian stack under test is on. It defaults to `testnet` in `cypress.expose.json`, so an existing invocation keeps behaving exactly as it does today.
 
 Two things change when it is set to anything else:
 
 - `006_settings/getSettingsEnv` asserts that `GET /settings/environment` reports that network.
-- `000_accounts_creating/seedHederaArtefacts` runs. `cypress.env.json` pins Hedera message IDs that
+- `000_accounts_creating/seedHederaArtefacts` runs. `cypress.expose.json` pins Hedera message IDs that
   were published on testnet and resolve nowhere else, so that spec publishes the same artefacts from local fixtures and records the resulting message IDs in `cypress/fixtures/seededMessages.json`. Every consuming spec asks `seededMessageId(<key>)` (`cypress/support/CustomHelpers/ipfsSeeding.js`) for the ID and stays network-agnostic; that resolver is the only place the branch lives.
 
   The seven seeded keys are `irec_policy`, `policy_with_artifacts`, `policy_for_compare1/2`, `module_for_import` and `tool_for_compare1/2`. Two more are pinned but not seeded: `schema_for_import`, which only a UI spec uses, and `contract_for_import`, which no spec references at all.
@@ -699,7 +695,7 @@ Two things change when it is set to anything else:
 
 ```bash
 # testnet, unchanged
-CYPRESS_grepTags="smoke" npx cypress run
+npx cypress run --expose "grepTags=smoke,grepFilterSpecs=true"
 
 # local Hiero network, native
 CYPRESS_hederaNet=localnode CYPRESS_grepTags="smoke" ./entrypoint.sh
@@ -794,9 +790,9 @@ Three workflows run the suites, all on the same stack definition:
 
 | Workflow | File | Runs |
 |---|---|---|
-| **E2E Run** | `.github/workflows/e2e-run.yml` | Reusable (`workflow_call`), never triggered on its own. Starts a local Hiero network with Solo, the infrastructure and the Guardian services, optionally the frontend, runs Cypress, and publishes reports. |
-| **E2E Tests** | `.github/workflows/e2e-tests.yml` | The API and policy suites: `smoke` on every push, `api-all policy-all` nightly. |
-| **UI Tests** | `.github/workflows/ui-tests.yml` | The UI suite plus the disaster-recovery spec (`ui-all dr-all`), nightly and on demand. |
+| **Test Runner (Reusable)** | `.github/workflows/e2e-run.yml` | Reusable (`workflow_call`), never triggered on its own. Starts a local Hiero network with Solo, the infrastructure and the Guardian services, optionally the frontend, runs Cypress, and publishes reports. |
+| **E2E Tests** | `.github/workflows/e2e-tests.yml` | The tests its tags select: `smoke` on every push, `all` (API, policy, UI and disaster recovery) nightly, and on demand. |
+| **UI Tests** | `.github/workflows/ui-tests.yml` | The UI suite plus the disaster-recovery spec (`ui-all dr-all`) on every push, and on demand. `all` in E2E Tests already includes them. |
 
 Both callers pass `suite`, `grep_tags`, and optionally `spec`, `with_frontend`, `solo_version` and `timeout_minutes` to `e2e-run.yml`. Anything about how the stack is started changes in `e2e-run.yml` only.
 
@@ -806,26 +802,26 @@ Both callers pass `suite`, `grep_tags`, and optionally `spec`, `with_frontend`, 
 2. Click **Run workflow**
 3. Enter parameters:
    - **Tags**: e.g., `all`, `smoke`, `preparing policies`, `api-all`, `policy-all` for E2E Tests; `ui-all dr-all` (the default) for UI Tests. `all` works in either and runs every test
-   - **Spec** (UI Tests only): a spec glob such as `cypress/e2e/ui-tests/specs/02_policies/*.cy.js`. The account seeding specs always run first, because every other spec needs the users and artefacts they create
+   - **Spec**: a spec glob such as `cypress/e2e/ui-tests/specs/02_policies/*.cy.js`. The account seeding specs always run first, because every other spec needs the users and artefacts they create
    - **Solo version**: optional, the Solo release that deploys the local Hiero network
 
 ##### Available Input Parameters
 
 - `tags` (E2E Tests default: `smoke`; UI Tests default: `ui-all dr-all`) - Test tags to run. For multiple tags, use spaces (e.g. `policies schemas`) or commas (e.g. `policies,schemas`). In CI, `preparing` is automatically prepended for feature-scoped runs (not for `all`, and not when `ui` is among the tags).
-- `spec` (UI Tests only, default: empty) - Narrows the run to a spec glob.
+- `spec` (default: empty) - Narrows the run to a spec glob; the account seeding specs still run first.
 - `solo_version` (default: empty, which uses `SOLO_VERSION` in `e2e-run.yml`) - Solo release passed to `hiero-ledger/hiero-solo-action`.
 
-Scheduled runs happen nightly at 03:00 UTC: E2E Tests runs `api-all policy-all`, UI Tests runs `ui-all dr-all`. Pushes to E2E Tests run `smoke`.
+Scheduled runs happen nightly at 03:00 UTC: E2E Tests runs `all`. Pushes to E2E Tests run `smoke`, to UI Tests run `ui-all dr-all`.
 
 ##### Workflow Features
 
 - Starts a local Hiero network with Solo, and uploads the contract bytecode to it
 - Builds Guardian services
 - Starts MongoDB, NATS, Valkey and Kubo as service containers, and the Guardian services natively
-- For UI runs, installs the frontend and serves its production build with `ng serve --configuration production` on `127.0.0.1:4200`, proxied to the gateway (`frontend/proxy.hostdocker.js`), the same way as the local recipe in "Preparing the app for UI tests"
-- Runs Cypress natively on the runner against that stack, with `STOP_POLICIES_BETWEEN_SUITES=1` so the policy processes of a spec folder are stopped before the next one starts
-- With the `ui_request_trace` input of a manual run (`UI Tests`, or `E2E Tests` with UI tags), the dev server logs every request it proxies to the gateway (`UI_PROXY_LOG`), into `frontend-1.log` of the Guardian logs artifact. It is for diagnosing a UI failure, and the log is large
-- Publishes test results (one check per suite: `Test results · api`, `· policy`, `· ui`)
+- For UI runs, installs the frontend, builds it for production and serves the build with `scripts/serve-frontend.mjs` on `127.0.0.1:4200`, proxied to the gateway (`frontend/proxy.hostdocker.js`), the same way as the local recipe in "Preparing the app for UI tests"
+- Installs Google Chrome and runs Cypress natively on the runner against that stack, on Chrome, with `STOP_POLICIES_BETWEEN_SUITES=1` so the policy processes of a spec folder are stopped before the next one starts
+- With the `ui_request_trace` input of a manual run (`UI Tests`, or `E2E Tests` with UI tags), the frontend server logs every request it proxies to the gateway (`UI_PROXY_LOG`), into `frontend-1.log` of the Guardian logs artifact. It is for diagnosing a UI failure, and the log is large
+- Publishes test results (one check per caller: `Test results · e2e`, `Test results · ui`)
 - Uploads HTML and JSON reports as artifacts, plus the Guardian (frontend included) and Solo logs when a run fails
 - Deletes the Solo kind cluster at the end of the run
 
@@ -897,13 +893,13 @@ API specs load no page, so their failures carry no such block.
 
 ```bash
 npm ci
-npx cypress run --browser chrome --env "grepTags=all,grepFilterSpecs=true"
+npx cypress run --browser chrome --expose "grepTags=all,grepFilterSpecs=true"
 ```
 
 #### Pattern 2: Sanity Testing (Prepare Users + Run Policies Tests)
 
 ```bash
-npx cypress run --browser chrome --headed --env "grepTags=preparing policies,grepFilterSpecs=true"
+npx cypress run --browser chrome --headed --expose "grepTags=preparing policies,grepFilterSpecs=true"
 ```
 
 #### Pattern 3: Docker-based Full Test Suite
@@ -920,21 +916,20 @@ docker run --network host \
 #### Pattern 4: Running Multiple Feature Tags
 
 ```bash
-npx cypress run --browser chrome --env "grepTags=preparing policies schemas artifacts,grepFilterSpecs=true"
+npx cypress run --browser chrome --expose "grepTags=preparing policies schemas artifacts,grepFilterSpecs=true"
 ```
 
 ### Troubleshooting
 
-#### --env and "Cannot parse as valid JSON"
+#### --expose and commas
 
-Cypress reads `--env` as `key=value` pairs separated by commas, and falls back to JSON when a part is not a pair. A comma between two tags makes such a part (in `--env "grepTags=all,policies,grepFilterSpecs=true"`, `policies` is not a pair), so Cypress stops with **"Cannot parse as valid JSON"**. Separate the tags with spaces, or pass a JSON object:
+Cypress reads `--expose` as `key=value` pairs separated by commas, so a comma inside a value starts another key. A comma between two tags (`--expose "grepTags=all,policies,grepFilterSpecs=true"`) turns `policies` into a key with no value. Separate the tags with spaces:
 
 ```bash
-npx cypress run --browser chrome --env "grepTags=preparing policies,grepFilterSpecs=true"
-npx cypress run --browser chrome --env '{"grepTags":"preparing policies","grepFilterSpecs":true}'
+npx cypress run --browser chrome --expose "grepTags=preparing policies,grepFilterSpecs=true"
 ```
 
-`CYPRESS_grepTags` (Docker, `entrypoint.sh`) is not parsed that way: there, commas and spaces both separate tags.
+`CYPRESS_grepTags` (Docker, `entrypoint.sh`) is not parsed that way: there, commas and spaces both separate tags, and the entrypoint refuses any other public value that contains a comma.
 
 #### Common Issues
 
@@ -993,7 +988,7 @@ When the stuck page makes a test fail, the [failure diagnostics](#failure-diagno
 To run tests with more verbose output:
 
 ```bash
-npx cypress run --browser chrome --env "grepTags=all,grepFilterSpecs=true" --headed
+npx cypress run --browser chrome --expose "grepTags=all,grepFilterSpecs=true" --headed
 ```
 
 ### Screenshots

@@ -358,6 +358,8 @@ export class PoliciesPage {
     openEditingPolicy(name) {
         this._row(name).find(L.editIcon, { timeout: TIMEOUTS.backend }).click();
         waitForPageReady(L.editorViews);
+        // The editor selects the policy root when its load ends, which would undo a block selected before that.
+        waitForPageSettled(L.loadingOverlay);
     }
 
     // ---- Viewer approvals (wizard steps) ----

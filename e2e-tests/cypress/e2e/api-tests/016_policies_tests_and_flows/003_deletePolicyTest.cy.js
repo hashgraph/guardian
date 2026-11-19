@@ -6,8 +6,8 @@ import { deleteDryRunPolicy } from '../../../support/CustomHelpers/policyTests';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Delete policy test', { tags: ['policies', 'secondPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
-    const UserUsername = Cypress.env('User');
+    const SRUsername = Cypress.expose('SRUser');
+    const UserUsername = Cypress.expose('User');
     let policyId; let testId;
 
     before('Get test id', () => {

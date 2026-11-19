@@ -5,7 +5,7 @@ import * as Authorization from '../../../support/authorization';
 import { waitForTask } from '../../../support/CustomHelpers/tasks';
 
 context('Schemas', { tags: ['schema', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     const schemaUUID = ('0000b23a-b1ea-408f-a573' + randomInt(999999) + 'a2060a');
     let topicUid;
 

@@ -3,8 +3,8 @@ import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
 
 context('Import policy label', { tags: ['policy_labels', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const UserUsername = Cypress.env('User');
-    const SRUsername = Cypress.env('SRUser');
+    const UserUsername = Cypress.expose('User');
+    const SRUsername = Cypress.expose('SRUser');
 
     const labelName = 'testPolicyLabelAPI';
 

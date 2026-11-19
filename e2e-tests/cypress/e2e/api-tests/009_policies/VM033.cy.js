@@ -9,9 +9,9 @@ import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Policies', { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
-    const PPUser = Cypress.env('PPUser');
-    const VVBUser = Cypress.env('VVBUser');
+    const SRUsername = Cypress.expose('SRUser');
+    const PPUser = Cypress.expose('PPUser');
+    const VVBUser = Cypress.expose('VVBUser');
 
     // The policy under test is the fixture in this repository, imported from file.
     //

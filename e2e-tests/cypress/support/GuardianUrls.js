@@ -1,5 +1,5 @@
 const BASE_URL = Cypress.config('baseUrl');
-const PORT = Cypress.env('portWeb') || 4200;
+const PORT = Cypress.expose('portWeb') || 4200;
 
 function withoutTrailingSlash(url) {
 	if (!url) {return url;}

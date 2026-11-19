@@ -6,7 +6,7 @@ import { seededMessageId } from '../../../support/CustomHelpers/ipfsSeeding';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Policies', { tags: ['policies', 'secondPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     const importMsgUrl = `${API.ApiServer}${API.PolicisImportMsg}`;
     const policiesUrl = `${API.ApiServer}${API.Policies}`;
     const dryRunBase = (policyId) => `${policiesUrl}${policyId}/${API.DryRun}`;

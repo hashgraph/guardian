@@ -5,7 +5,7 @@ import * as Authorization from '../../../support/authorization';
 
 context('Publish Module', { tags: ['modules', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     // A published module stays in the list, so the name must be unique per run
     const moduleName = Modules.uniqueModuleName('APIModuleForPublish');
     const invalidModuleName = Modules.uniqueModuleName('APIModuleForPublishInvalid');

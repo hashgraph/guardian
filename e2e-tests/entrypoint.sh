@@ -171,16 +171,10 @@ fi
 if [[ -z "${CYPRESS_ipfsStorageApiKey:-}" && -n "${IPFS_STORAGE_API_KEY:-}" ]]; then
   export CYPRESS_ipfsStorageApiKey="$IPFS_STORAGE_API_KEY"
 fi
-# Defaults to `testnet` in cypress.env.json. Pointing the suite at a stack started with
+# Defaults to `testnet` in cypress.expose.json. Pointing the suite at a stack started with
 # HEDERA_NET=localnode then needs no extra flag: the Guardian env file is enough.
-# An empty value has to be dropped rather than exported: Cypress would take it as an explicit
-# `hederaNet: ""` and shadow the default.
-if [[ -z "${CYPRESS_hederaNet:-}" ]]; then
-  if [[ -n "${HEDERA_NET:-}" ]]; then
-    export CYPRESS_hederaNet="$HEDERA_NET"
-  else
-    unset CYPRESS_hederaNet
-  fi
+if [[ -z "${CYPRESS_hederaNet:-}" && -n "${HEDERA_NET:-}" ]]; then
+  export CYPRESS_hederaNet="$HEDERA_NET"
 fi
 
 if [[ -n "${CYPRESS_apiServer:-}" ]]; then
@@ -191,8 +185,27 @@ if [[ -n "${CYPRESS_baseUrl:-}" ]]; then
   wait_for_http_ok "$(ensure_trailing_slash "$CYPRESS_baseUrl")" "${CYPRESS_UI_WAIT_TIMEOUT:-90}" "${CYPRESS_UI_WAIT_INTERVAL:-2}"
 fi
 
-BROWSER="${CYPRESS_BROWSER:-electron}"
+# The specs read these with Cypress.expose(), which `CYPRESS_*` variables do not reach: they go to Cypress as
+# --expose, and leave the environment. Secrets (Password, operatorKey, ipfsStorageApiKey, MGSAdmin,
+# MGSIndexerAPIToken) stay `CYPRESS_*` variables, which cy.env() reads.
+EXPOSED_KEYS=(apiServer apiIndexer portApi portIndexer portWeb mongoUrl hederaNet operatorId minPasswordLength passwordComplexity grepTags grepFilterSpecs)
+exposed=()
+for key in "${EXPOSED_KEYS[@]}"; do
+  variable="CYPRESS_$key"
+  value="${!variable:-}"
+  if [[ "$value" == *,* ]]; then
+    echo "$variable contains a comma, which --expose reads as the start of another key: '$value'" >&2
+    exit 2
+  fi
+  [[ -n "$value" ]] && exposed+=("$key=$value")
+  unset "$variable"
+done
+
+BROWSER="${CYPRESS_BROWSER:-chromium}"
 cmd=(npx cypress run --config-file cypress.config.js --browser "$BROWSER")
+if (( ${#exposed[@]} )); then
+  cmd+=(--expose "$(IFS=,; echo "${exposed[*]}")")
+fi
 
 if [[ -n "${CYPRESS_SPEC:-}" ]] && ! has_flag "--spec" "$@"; then
   cmd+=(--spec "$CYPRESS_SPEC")

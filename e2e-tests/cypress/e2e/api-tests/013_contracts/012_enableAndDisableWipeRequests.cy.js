@@ -7,8 +7,8 @@ import * as Contracts from '../../../support/api/contracts';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Contracts', { tags: ['policy_labels', 'formulas', 'trustchains', 'contracts', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-	const SRUsername = Cypress.env('SRUser');
-	const UserUsername = Cypress.env('User');
+	const SRUsername = Cypress.expose('SRUser');
+	const UserUsername = Cypress.expose('User');
 	const contractNameR = 'FirstAPIContractR';
 	const contractNameW = 'FirstAPIContractW';
 

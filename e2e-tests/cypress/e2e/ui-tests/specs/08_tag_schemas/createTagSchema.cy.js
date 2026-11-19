@@ -14,7 +14,7 @@ const login = (username, schemasTab) => {
 
 context('Tag Schema Creation', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     const schemaName = 'UITagSchema' + randomInt(1000000000);
 
     beforeEach(() => {

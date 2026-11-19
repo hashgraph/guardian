@@ -5,8 +5,8 @@ import * as Checks from '../../../support/checkingMethods';
 import * as Contracts from '../../../support/api/contracts';
 
 context('Contracts', { tags: ['contracts', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
-    const SR2Username = Cypress.env('SR2User');
+    const SRUsername = Cypress.expose('SRUser');
+    const SR2Username = Cypress.expose('SR2User');
     const contractNameR = 'FirstAPIContractR';
     const contractNameW = 'FirstAPIContractW';
 

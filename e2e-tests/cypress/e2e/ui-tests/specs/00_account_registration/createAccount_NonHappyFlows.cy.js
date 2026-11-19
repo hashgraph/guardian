@@ -4,8 +4,8 @@ const homepage = new HomePage();
 
 context('Create User Accounts_Non Happy Scenarios', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
-    const userUsername = Cypress.env('User');
+    const SRUsername = Cypress.expose('SRUser');
+    const userUsername = Cypress.expose('User');
     const SRNameNew = 'TestSRUI' + randomInt(9999);
     const userNameNew = 'TestUserUI' + randomInt(9999);
 

@@ -2,7 +2,7 @@ import { STATUS_CODE } from '../../../support/api/api-const';
 import * as Authorization from '../../../support/authorization';
 
 context('Tags', { tags: ['tags', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
 
     it('Get a list of all published schemas', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {

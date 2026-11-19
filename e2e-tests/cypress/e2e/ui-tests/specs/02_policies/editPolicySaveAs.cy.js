@@ -3,7 +3,7 @@
 //TBD: doesn't work
 // context("Edit Policy. Save As flow", { tags: ['ui', 'ui-all', 'all'] }, () => {
 
-//     const SRUsername = Cypress.env('SRUser');
+//     const SRUsername = Cypress.expose('SRUser');
 //     const name = Math.floor(Math.random() * 999) + "testName";
 
 //     beforeEach(() => {

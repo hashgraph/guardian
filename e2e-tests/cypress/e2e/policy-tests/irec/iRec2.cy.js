@@ -8,7 +8,7 @@ const POLICY_ARCHIVE = '../Methodology Library/International Renewable Energy Ce
 const RECORD_FIXTURE = 'iRecFullFlow.record';
 
 context('Policy autotest', { tags: ['policyAT', 'policy-all', 'all', 'all-no-mgs'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     let policyId;
 
     after(() => {

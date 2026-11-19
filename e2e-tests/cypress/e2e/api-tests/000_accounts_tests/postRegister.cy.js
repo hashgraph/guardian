@@ -7,7 +7,7 @@ import { expectedPasswordError } from '../../../support/passwordPolicy';
 context('Register', { tags: ['accounts', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     // NODE: using a fixed name until a cleanup via DELETE account is implemented in the API
     const name = `TestUserRegistration2_${randomInt(99999)}`;
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     let credentials;
 
     before(() => {

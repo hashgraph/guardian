@@ -6,7 +6,7 @@ const logs = new LogsPage();
 
 context('Check logs page', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
 
     beforeEach(() => {
         cy.viewport(1920, 1080);

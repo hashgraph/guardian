@@ -4,7 +4,7 @@ import * as Authorization from '../../../support/authorization';
 
 context('Set branding', { tags: ['branding', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
 
     it('Set branding', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {

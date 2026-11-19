@@ -7,7 +7,7 @@ const homePage = new HomePage();
 
 context('Workflow Contract Creation', { tags: ['ui', 'ui-all', 'all'] }, () => {
 
-    const SRUsername = Cypress.env('SRUser');
+    const SRUsername = Cypress.expose('SRUser');
     // Unique per run: the contracts of earlier runs stay in the list.
     const runId = randomInt(1000000000);
     const wipeContract = 'wUIContract' + runId;

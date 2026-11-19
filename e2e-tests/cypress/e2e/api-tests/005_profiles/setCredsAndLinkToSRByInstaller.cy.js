@@ -4,7 +4,7 @@ import * as Authorization from '../../../support/authorization';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Profiles', { tags: ['profiles', 'thirdPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
-    const Installer = Cypress.env('Installer');
+    const Installer = Cypress.expose('Installer');
 
     it('Set Hedera credentials for the Installer', () => {
         Authorization.getAccessToken(Installer).then((authorization) => {
