@@ -14,8 +14,10 @@ export { pollUntil };
  *   therefore carries a unique `cacheBust` parameter, so a listing taken before a
  *   mutation is never replayed after it.
  * - contract events reach Guardian through a synchronization task that polls the Hedera
- *   mirror node once a minute, so a request raised on-chain surfaces in the API tens of
- *   seconds later, and how long exactly depends on where in that minute the call landed.
+ *   mirror node (every five seconds in the e2e environment, which sets
+ *   `RETIRE_CONTRACT_SYNC_MASK` and `WIPE_CONTRACT_SYNC_MASK`; once a minute by default), so a
+ *   request raised on-chain surfaces in the API some seconds later, depending on where in the
+ *   cycle the call landed.
  *   Everything that waits for one polls until it appears and fails loudly on timeout,
  *   rather than sleeping for a fixed span that is either too short or wasted.
  */
@@ -87,12 +89,13 @@ export const waitForWipeRequest = (authorization, contractId, { token, timeout =
  * Asserts that no wipe request shows up on `contractId` for the whole of `window`.
  *
  * Absence cannot be observed the instant a pool is set: the request would be raised on-chain
- * and only surface on the next run of the once-a-minute synchronization task. The window has
- * to span at least one full sync cycle for the assertion to mean anything, and the listing is
+ * and only surface on the next run of the synchronization task. The window has to span at
+ * least one full sync cycle for the assertion to mean anything (it spans three in the e2e
+ * environment), and the listing is
  * re-read throughout it rather than only at the end, so a request that appears and is removed
  * again is still caught.
  */
-export const expectNoWipeRequest = (authorization, contractId, { token, window: waitWindow = 90000 } = {}) => {
+export const expectNoWipeRequest = (authorization, contractId, { token, window: waitWindow = 15000 } = {}) => {
     const attempt = (deadline) => cy.request(wipeRequestsRequest(authorization, contractId)).then((response) => {
         expect(response.status).to.eql(STATUS_CODE.OK);
         const unexpected = (response.body ?? []).filter((request) => !token || request.token === token);

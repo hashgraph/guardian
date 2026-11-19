@@ -137,6 +137,16 @@ export class UserUtils {
         return UserUtils.updateUserFields(user, prop);
     }
 
+    /**
+     * Add a refresh token id to the user in place, so concurrent logins do not overwrite each other's ids.
+     */
+    public static async addRefreshToken(user: User, tokenId: string): Promise<void> {
+        const entityRepository = new DatabaseServer();
+        // $push fails on a null field, so turn a null or missing list into an empty one first.
+        await entityRepository.updateEntity(User, { $set: { refreshToken: [] } }, { _id: user._id, refreshToken: null });
+        await entityRepository.updateEntity(User, { $push: { refreshToken: tokenId } }, { _id: user._id });
+    }
+
     public static async getUsers(filters: any, prop: UserProp): Promise<User[]> {
         const users = await new DatabaseServer().find(User, filters);
         return UserUtils.updateUsersFields(users, prop);

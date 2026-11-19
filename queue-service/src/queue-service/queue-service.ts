@@ -19,6 +19,11 @@ export class QueueService extends NatsService {
     private readonly workerSendTaskTimeout = parseInt(process.env.WORKER_SEND_TASK_TIMEOUT, 10) || 5 * 1000; // 5s
 
     /**
+     * How long each dispatch round collects the replies of free workers before handing out tasks.
+     */
+    private readonly workerFreeResponseWindow = parseInt(process.env.WORKER_FREE_RESPONSE_WINDOW, 10) || 300; // 300ms
+
+    /**
      * The flat ack timeout above is only correct for payloads that travel inline over NATS.
      * Anything above MQ_MAX_PAYLOAD is shipped as a `directLink` (see ZipCodec.encode) and the
      * worker only acks *after* it has HTTP-fetched and parsed the whole payload - which for tens
@@ -41,7 +46,7 @@ export class QueueService extends NatsService {
      * Worker subjects with a dispatch currently in flight. A worker claims `isInUse` atomically
      * before decoding an incoming task (see `claimIfFree` in worker-service/src/api/worker.ts),
      * so it stops answering GET_FREE_WORKERS the moment a send lands - but our own free-worker
-     * report can still be up to a refresh tick + the 300ms getFreeWorkers window stale by the
+     * report can still be up to a refresh tick + the getFreeWorkers window stale by the
      * time we act on it. Without this, that staleness lets the same worker get claimed again on
      * the next refresh tick before its first busy report arrives, and the second task is then
      * invisible to genuinely free workers. Tracking our own in-flight dispatches lets the loop
@@ -199,6 +204,8 @@ export class QueueService extends NatsService {
         const te = dataBaseServer.create(TaskEntity, this.iTaskToTaskEntity(task));
         te.processedTime = null;
         await dataBaseServer.save(TaskEntity, te);
+        // Dispatch right away rather than on the next refresh tick; the round is single-flight.
+        this.refreshAndReassignTasks().catch((error) => console.error('Error while dispatching a new task:', error));
     }
 
     async completeTaskInQueue(taskId: string, data: any, error: any): Promise<void> {
@@ -325,7 +332,7 @@ export class QueueService extends NatsService {
             if (r && r.result === false) {
                 // `{ result: false }` means the worker's SEND_TASK_TO_WORKER handler found
                 // `isInUse` true - it was busy, not a failed hand-off. This happens routinely:
-                // a worker reported free by getFreeWorkers() (up to 300ms + one refresh tick
+                // a worker reported free by getFreeWorkers() (up to its reply window + one refresh tick
                 // earlier) can already be occupied by the time the send actually reaches it.
                 // Routing this through releaseOrParkTask would burn the dead-letter budget on
                 // healthy tasks under normal load, so just release the claim.
@@ -545,7 +552,7 @@ export class QueueService extends NatsService {
             setTimeout(() => {
                 subscription.unsubscribe();
                 resolve(workers);
-            }, 300);
+            }, this.workerFreeResponseWindow);
         })
     }
 

@@ -18,11 +18,8 @@ context('Get tokens for policy label', { tags: ['policy_labels', 'firstPool', 'a
                 },
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                response.body.forEach(element => {
-                    if (element.status === 'PUBLISHED') {
-                        policyLabel = element;
-                    }
-                })
+                //newest first: the label 06 has just published, on the policy copy 00 minted a token in
+                policyLabel = response.body.find((element) => element.status === 'PUBLISHED');
                 cy.request({
                     method: METHOD.GET,
                     url: API.ApiServer + API.PolicyLabels + policyLabel.id + '/' + API.ListOfTokens,

@@ -1,6 +1,8 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { publishOwnPolicyCopy } from '../../../support/CustomHelpers/ipfsSeeding';
+import { approveRegistrantApplication, submitDevice, submitRegistrantApplication } from '../../../support/CustomHelpers/registrantApplication';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Create discuissons', { tags: ['comments', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
@@ -41,34 +43,21 @@ context('Create discuissons', { tags: ['comments', 'firstPool', 'api-all', 'all'
         });
     };
 
-    before('Get policy, document id', () => {
-        Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies,
-                headers: {
-                    authorization,
-                },
-                timeout: TIMEOUTS.backend
-            }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.OK);
-                //The iRec 3 flow imports its policy from a fixture, and the import suffixes the
-                //name of every copy after the first, so the published copies are matched on the
-                //common prefix and the most recent one is taken
-                const policy = response.body
-                    .filter((element) => String(element.name).startsWith('iRec_3')
-                        && element.status === 'PUBLISH')
-                    .sort((a, b) => String(b.createDate).localeCompare(String(a.createDate)))
-                    .at(0);
-                expect(policy, 'a published iRec_3 policy').to.not.be.undefined;
-                policyId = policy.id;
+    // The rest of the folder takes the newest published iRec_3 copy, this one, and comments on its
+    // application and on its device
+    before('Publish a copy of the policy with an application and a device', () => {
+        publishOwnPolicyCopy(SRUsername, 'iRec_3_BtnFix.policy').then((policy) => {
+            policyId = policy.id;
+            submitRegistrantApplication(SRUsername, UserUsername, policyId);
+            approveRegistrantApplication(SRUsername, UserUsername, policyId);
+            submitDevice(UserUsername, policyId);
+            Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.getBlockByTag(authorization, policyId, 'registrants_grid').then((response) => {
                     documentId = response.body.data.at(0).id;
                     userDid = response.body.data.at(0).owner;
-                })
-
-            })
-        })
+                });
+            });
+        });
     })
 
     it('Create discussion by SR', () => {

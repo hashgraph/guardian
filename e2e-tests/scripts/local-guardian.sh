@@ -10,6 +10,7 @@
 #   scripts/local-guardian.sh status         # checks the network, the infra and the services, one line each
 #   scripts/local-guardian.sh test [SPEC...] # Cypress, every test; SPECs limit it to spec files or globs
 #   scripts/local-guardian.sh smoke          # Cypress, only the tests tagged smoke
+#   scripts/local-guardian.sh stop-policies  # stops the policy processes the services forked (about 280 MB each)
 #   scripts/local-guardian.sh services-down  # stops the services
 #   scripts/local-guardian.sh infra-down     # removes the infra containers
 #   scripts/local-guardian.sh down           # services-down + infra-down
@@ -22,7 +23,9 @@
 # Infra (MongoDB, NATS, Valkey, Kubo) is recreated on every `up`: the ledger is empty after each
 # solo:up, so a database left over from an earlier run would point at accounts that no longer exist.
 # Logs and pids are in e2e-tests/.local/logs/. `test` and `smoke` run the `status` checks first and stop
-# when one fails, rather than leaving Cypress waiting on a stack that does not answer. Credentials: the JWT keys come from
+# when one fails, rather than leaving Cypress waiting on a stack that does not answer. With
+# STOP_POLICIES_BETWEEN_SUITES=1 the policy processes are stopped each time the run moves to another spec
+# folder, and once Cypress ends, whatever its result. Credentials: the JWT keys come from
 # configs/.env.quickstart.guardian.system, the operator and network settings from .solo/solo.env.
 set -euo pipefail
 
@@ -71,6 +74,10 @@ export_service_environment() {
   export IPFS_TIMEOUT=720 ACCESS_TOKEN_UPDATE_INTERVAL=600000
   export INITIAL_BALANCE=10000 INITIAL_STANDARD_REGISTRY_BALANCE=100000
   export MIN_PASSWORD_LENGTH=4 PASSWORD_COMPLEXITY=easy
+  # Each queue dispatch round waits this long for free workers; the 300 ms default adds up over a run.
+  export WORKER_FREE_RESPONSE_WINDOW=50
+  # Contract events are synchronized from the mirror node every 5 s instead of every minute.
+  export RETIRE_CONTRACT_SYNC_MASK='*/5 * * * * *' WIPE_CONTRACT_SYNC_MASK='*/5 * * * * *'
   # Large NATS replies are fetched from this host, and a laptop's hostname often does not resolve.
   export DIRECT_MESSAGE_HOST=127.0.0.1
   # solo.env points at the network through the loopback of the machine that runs it.
@@ -244,11 +251,26 @@ stop_services() {
   rm -f "$PID_FILE"
 }
 
+# A policy process stops on its DELETE_POLICY event; killed by a signal it is respawned by policy-service.
+stop_policies() {
+  node "$E2E_DIR/scripts/stop-policies.mjs" "$LOG_DIR" "$INFRA_HOST:4222"
+}
+
+# Exits with the status of Cypress, stopping the processes the last suite started when asked to
+# (cypress.config.js stops the earlier suites' ones as each new suite begins).
+finish_tests() {             # finish_tests <cypress status>
+  if [[ "${STOP_POLICIES_BETWEEN_SUITES:-}" == 1 ]]; then
+    stop_policies
+  fi
+  exit "$1"
+}
+
 run_tests() {                # run_tests <tags> [spec...]
   local tags=$1 spec
   shift
   spec=$(IFS=,; echo "$*")
   cd "$E2E_DIR"
+  STOP_POLICIES_NATS="$INFRA_HOST:4222" \
   CYPRESS_portApi=3002 CYPRESS_BROWSER="${CYPRESS_BROWSER:-electron}" \
     CYPRESS_minPasswordLength=4 CYPRESS_passwordComplexity=easy \
     CYPRESS_grepTags="$tags" CYPRESS_SPEC="$spec" ./entrypoint.sh
@@ -280,12 +302,19 @@ case "${1:-}" in
     check_stack || fail "the stack is not ready, see the checks above"
     load_environment
     shift
-    run_tests all "$@"
+    status=0
+    run_tests all "$@" || status=$?
+    finish_tests "$status"
     ;;
   smoke)
     check_stack || fail "the stack is not ready, see the checks above"
     load_environment
-    run_tests smoke
+    status=0
+    run_tests smoke || status=$?
+    finish_tests "$status"
+    ;;
+  stop-policies)
+    stop_policies
     ;;
   services-down)
     stop_services
@@ -298,6 +327,6 @@ case "${1:-}" in
     stop_infra
     ;;
   *)
-    fail "usage: local-guardian.sh build [PKG...]|infra-up|services-up|up|status|test [SPEC...]|smoke|services-down|infra-down|down"
+    fail "usage: local-guardian.sh build [PKG...]|infra-up|services-up|up|status|test [SPEC...]|smoke|stop-policies|services-down|infra-down|down"
     ;;
 esac

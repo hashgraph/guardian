@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# One entry point for every test of the repository that is not a service unit test run by main.yml:
+# One entry point for every test of the repository that is not a service unit test run by component-tests.yml:
 #
 #   npm run test:everything                  # every group below, in this order
 #   npm run test:everything -- lint scripts  # only the groups named

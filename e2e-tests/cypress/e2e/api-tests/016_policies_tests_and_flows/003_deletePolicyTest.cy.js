@@ -1,6 +1,8 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { newestPolicyCopy } from '../../../support/cdmTools';
+import { deleteDryRunPolicy } from '../../../support/CustomHelpers/policyTests';
 import { TIMEOUTS } from '../../../support/CustomHelpers/timeouts';
 
 context('Delete policy test', { tags: ['policies', 'secondPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
@@ -19,9 +21,8 @@ context('Delete policy test', { tags: ['policies', 'secondPool', 'api-all', 'all
                 timeout: TIMEOUTS.backend
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
-                //The same copy the import spec works on: iterating and keeping the last match
-                //picks a different one as soon as the instance holds more than one
-                const policy = response.body.find((element) => element.name === 'iRecDRF');
+                //The copy 000_importPolicyTest imported and put in dry run: the newest one
+                const policy = newestPolicyCopy(response.body, 'iRecDRF');
                 expect(policy, 'the iRecDRF policy').to.not.be.undefined;
                 policyId = policy.id;
                 cy.request({
@@ -37,6 +38,11 @@ context('Delete policy test', { tags: ['policies', 'secondPool', 'api-all', 'all
                 })
             })
         })
+    });
+
+    // The last spec of the folder that uses the copy 000_importPolicyTest imported
+    after('Delete the copy of the policy', () => {
+        Authorization.getAccessToken(SRUsername).then((authorization) => deleteDryRunPolicy(authorization, policyId));
     });
 
     it('Deletes the policy with the provided ID by user - Negative', () => {

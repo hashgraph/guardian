@@ -339,7 +339,7 @@ Cypress.Commands.add('getOrCreateSchemaId', (authorization) => {
  * Yields the published `iRec_4` policy, importing it from its Hedera message and publishing it when
  * the instance does not hold it yet.
  *
- * Several API specs (contracts, trustchains, formulas, policy labels) are written against this
+ * Several API specs (contracts, policy labels) are written against this
  * policy, and no API spec creates it: it is imported here so those folders run on their own and
  * keep working across runs, reusing the policy already present instead of importing a second copy.
  *

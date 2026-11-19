@@ -1,6 +1,11 @@
 name: UI Tests
 run-name: UI Tests · ${{ inputs.tags || 'ui-all dr-all' }}
 on:
+  push:
+    paths-ignore:
+      - '.github/**'
+      - 'docs/**'
+      - '**/*.md'
   schedule:
     - cron: '0 3 * * *' # Run at 03:00 UTC every day (nightly)
   workflow_dispatch:

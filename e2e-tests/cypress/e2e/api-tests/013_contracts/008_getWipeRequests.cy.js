@@ -14,7 +14,7 @@ context('Contracts', { tags: ['contracts', 'firstPool', 'api-all', 'all', 'all-n
             Contracts.getContractByDescription(authorization, 'WIPE', contractNameW).then((contract) => {
                 contractUuidW = contract.contractId;
                 //The pool the previous spec set raised the request on-chain; Guardian picks it up
-                //from the mirror node on a once-a-minute synchronization task, so it is polled for
+                //from the mirror node on a periodic synchronization task, so it is polled for
                 //rather than read once
                 Contracts.waitForWipeRequest(authorization, contractUuidW);
             });

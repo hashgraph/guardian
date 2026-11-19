@@ -53,6 +53,12 @@ const TOOL_SUB_REFS = {
 // A re-import of an existing name is renamed with a `_timestamp` suffix.
 export const namePattern = (name) => new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(_\\d+)?$`);
 
+// The last imported copy of a policy, among the original and its renamed re-imports.
+export const newestPolicyCopy = (policies, name) => policies
+    .filter((policy) => namePattern(name).test(policy?.name ?? ''))
+    .sort((a, b) => String(b.createDate ?? '').localeCompare(String(a.createDate ?? '')))
+    .at(0);
+
 // Chromium's FormData rejects a three-argument append whose value is a string
 // (the filename is only valid on a blob part), so metadata parts are wrapped
 // in a native blob.

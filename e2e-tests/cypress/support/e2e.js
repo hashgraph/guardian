@@ -29,6 +29,9 @@ registerCypressGrep()
 
 require('cy-verify-downloads').addCustomCommand();
 
+// A failed test's message also describes the page: overlays still loading, unanswered requests, console errors.
+require('./failureDiagnostics').registerFailureDiagnostics(Cypress);
+
 beforeEach('Time logging', () => {
     cy.task('log', Cypress.currentTest.title + ' started on:')
     cy.task('log', new Date(Date.now()))

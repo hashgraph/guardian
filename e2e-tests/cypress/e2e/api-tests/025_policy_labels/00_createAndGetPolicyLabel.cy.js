@@ -2,6 +2,8 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { publishOwnPolicyCopy } from '../../../support/CustomHelpers/ipfsSeeding';
+import { mintRegistrantTokens } from '../../../support/CustomHelpers/registrantApplication';
 
 context('Create policy labels', { tags: ['policy_labels', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const UserUsername = Cypress.env('User');
@@ -27,9 +29,12 @@ context('Create policy labels', { tags: ['policy_labels', 'firstPool', 'api-all'
             failOnStatusCode,
         });
 
-    before('Get policy ids and did', () => {
-        cy.getOrCreateIRec4Policy(SRUsername).then((createdPolicy) => {
+    // The later specs of the folder read the label's tokens (07, 08) and look its policy up among
+    // the user's ones (02), so the copy is assigned to the user and has minted a token.
+    before('Publish a copy of the policy with a minted token, and get the did', () => {
+        publishOwnPolicyCopy(SRUsername, 'iRec_4.policy').then((createdPolicy) => {
             policy = createdPolicy;
+            mintRegistrantTokens(SRUsername, UserUsername, policy.id);
         });
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             cy.request({

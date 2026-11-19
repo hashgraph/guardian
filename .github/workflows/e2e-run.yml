@@ -1,7 +1,7 @@
 name: E2E Run (Reusable)
 
 # Reusable job that runs a Cypress suite against a throwaway local Hiero network and a
-# natively started Guardian stack. The callers (e2e-tests.yml, ui-manual.yml) decide what to
+# natively started Guardian stack. The callers (e2e-tests.yml, ui-tests.yml) decide what to
 # run; everything about how the stack is started lives here, once.
 #
 # The caller has to grant `contents: read` and `checks: write` (publish-unit-test-result-action).
@@ -389,6 +389,11 @@ jobs:
           IPFS_PUBLIC_GATEWAY: http://127.0.0.1:8080/ipfs/{cid}
           IPFS_TIMEOUT: 720
           ACCESS_TOKEN_UPDATE_INTERVAL: 600000
+          # Each queue dispatch round waits this long for free workers; the 300 ms default adds up over a run.
+          WORKER_FREE_RESPONSE_WINDOW: 50
+          # Contract events are synchronized from the mirror node every 5 s instead of every minute.
+          RETIRE_CONTRACT_SYNC_MASK: '*/5 * * * * *'
+          WIPE_CONTRACT_SYNC_MASK: '*/5 * * * * *'
           # HBAR is free on the local network, and token creation alone costs about $1 (8 HBAR at
           # Solo's 12 cents), so the testnet-era 20 HBAR left accounts short.
           INITIAL_BALANCE: 10000
@@ -442,7 +447,8 @@ jobs:
           CI: true
         run: |
           set -euo pipefail
-          (cd frontend && exec npx ng serve --host 127.0.0.1 --port 4200 \
+          # The production build makes the UI specs about 20 % faster than the development one.
+          (cd frontend && exec npx ng serve --configuration production --host 127.0.0.1 --port 4200 \
             --proxy-config ./proxy.hostdocker.js) > "$GUARDIAN_LOG_DIR/frontend-1.log" 2>&1 &
           echo "$! frontend#1" >> "$GUARDIAN_LOG_DIR/pids"
           echo "started frontend (pid $!)"
@@ -489,6 +495,12 @@ jobs:
           ReportName: ${{ steps.params.outputs.report_name }}
           CYPRESS_minPasswordLength: ${{ env.MIN_PASSWORD_LENGTH }}
           CYPRESS_passwordComplexity: ${{ env.PASSWORD_COMPLEXITY }}
+          # Every published or dry-run policy keeps a process of about 280 MB, about 55 in a full run:
+          # stop the previous suite's ones before each new spec folder (cypress.config.js).
+          STOP_POLICIES_BETWEEN_SUITES: 1
+          STOP_POLICIES_NATS: 127.0.0.1:4222
+          # Where the policy-service logs map each policy process to its policy.
+          GUARDIAN_LOG_DIR: ${{ runner.temp }}/guardian-logs
 
       # Cypress writes straight into the workspace now, so there is nothing to copy
       # out; just make sure the steps below always find the directories.

@@ -1,18 +1,23 @@
 import { METHOD, STATUS_CODE } from '../../../support/api/api-const';
 import API from '../../../support/ApiUrls';
 import * as Authorization from '../../../support/authorization';
+import { publishOwnPolicyCopy } from '../../../support/CustomHelpers/ipfsSeeding';
+import { submitRegistrantApplication } from '../../../support/CustomHelpers/registrantApplication';
 
 context('Create formulas', { tags: ['formulas', 'firstPool', 'api-all', 'all', 'all-no-mgs'] }, () => {
     const SRUsername = Cypress.env('SRUser');
+    const UserUsername = Cypress.env('User');
     const formulaName = 'testFormulaAPI';
 
     let policyId; let policyTopicId; let policyInstanceTopicId;
 
-    before('Get policy ids', () => {
-        cy.getOrCreateIRec4Policy(SRUsername).then((policy) => {
+    // dryRunFormula and getData read the formula data of the application submitted here
+    before('Publish a copy of the policy with an application', () => {
+        publishOwnPolicyCopy(SRUsername, 'iRec_4.policy').then((policy) => {
             policyId = policy.id;
             policyTopicId = policy.topicId;
             policyInstanceTopicId = policy.instanceTopicId;
+            submitRegistrantApplication(SRUsername, UserUsername, policyId);
         });
     })
 

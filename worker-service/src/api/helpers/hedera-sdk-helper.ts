@@ -1087,14 +1087,40 @@ export class HederaSDKHelper {
                 return mockData;
             }
         }
-        const res = await axios.get(
+        // SET_RETIRE_POOLS and other callers read a token moments after creating it.
+        return await HederaSDKHelper.getIndexedEntity(
             `${Environment.HEDERA_TOKENS_API}/${tokenId}`,
-            { responseType: 'json' }
+            `Invalid token info: '${tokenId}'`
         );
-        if (!res || !res.data) {
-            throw new Error(`Invalid token info: '${tokenId}'`);
+    }
+
+    /**
+     * Reads an entity from the mirror node, waiting for the mirror node to ingest it: an entity
+     * created moments ago answers 404 like a nonexistent one until then.
+     *
+     * @param {string} url - Mirror node REST url of the entity
+     * @param {string} notFoundError - Error thrown when it is still missing after every attempt
+     *
+     * @returns {any} - response body
+     */
+    private static async getIndexedEntity(url: string, notFoundError: string): Promise<any> {
+        for (let attempt = 1; ; attempt++) {
+            try {
+                const res = await axios.get(url, { responseType: 'json' });
+                if (res && res.data) {
+                    return res.data;
+                }
+            } catch (error) {
+                // only a 404 is worth waiting on; auth/5xx/network will not resolve
+                if (error?.response?.status !== 404) {
+                    throw error;
+                }
+            }
+            if (attempt >= HederaSDKHelper.MIRROR_NODE_INDEXING_ATTEMPTS) {
+                throw new Error(notFoundError);
+            }
+            await delay(HederaSDKHelper.MIRROR_NODE_INDEXING_DELAY);
         }
-        return res.data;
     }
 
     /**
@@ -1213,7 +1239,7 @@ export class HederaSDKHelper {
 
         const messageMap = new Map<string, any[]>();
         while (goNext) {
-            const res = await axios.get(url, params);
+            const res = await axiosGetWithRetry('Mirror node', url, params);
             delete params.params;
 
             if (!res || !res.data || !res.data.messages) {
@@ -2366,7 +2392,7 @@ export class HederaSDKHelper {
     ): AsyncGenerator<any> {
         let next = query;
         while (next !== null) {
-            const res = await axios.get(`${url}${next}`, { responseType: 'json' });
+            const res = await axiosGetWithRetry('Mirror node', `${url}${next}`, { responseType: 'json' });
             if (!res || !res.data) {
                 throw new Error(error);
             }
@@ -2452,32 +2478,16 @@ export class HederaSDKHelper {
             }
         }
 
-        // a not-yet-ingested account 404s like a nonexistent one, and
-        // ONBOARD_USER_ASYNC validates moments after creating - same retry as balance()
-        for (let attempt = 1; ; attempt++) {
-            try {
-                const res = await axios.get(
-                    `${Environment.HEDERA_ACCOUNT_API}/${accountId}`,
-                    { responseType: 'json' }
-                );
-                if (res && res.data) {
-                    return {
-                        account: res.data.account,
-                        balance: res.data.balance?.balance,
-                        key: res.data.key,
-                    };
-                }
-            } catch (error) {
-                // only a 404 is worth waiting on; auth/5xx/network will not resolve
-                if (error?.response?.status !== 404) {
-                    throw error;
-                }
-            }
-            if (attempt >= HederaSDKHelper.MIRROR_NODE_INDEXING_ATTEMPTS) {
-                throw new Error(`Invalid account '${accountId}'`);
-            }
-            await delay(HederaSDKHelper.MIRROR_NODE_INDEXING_DELAY);
-        }
+        // ONBOARD_USER_ASYNC validates the account moments after creating it.
+        const account = await HederaSDKHelper.getIndexedEntity(
+            `${Environment.HEDERA_ACCOUNT_API}/${accountId}`,
+            `Invalid account '${accountId}'`
+        );
+        return {
+            account: account.account,
+            balance: account.balance?.balance,
+            key: account.key,
+        };
     }
 
     /**

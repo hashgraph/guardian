@@ -32,7 +32,11 @@ npm run guardian:test        # the whole suite
 npm run guardian:test -- cypress/e2e/api-tests/001_demo/getRandomKey.cy.js   # a single spec
 npm run guardian:test -- 'cypress/e2e/api-tests/010_tokens/*.cy.js' cypress/e2e/api-tests/001_demo/getRandomKey.cy.js   # several specs or globs
 npm run guardian:down        # stops the services and removes the containers
+npm run guardian:stop-policies                      # stops the policy processes, keeping the services and the database
+STOP_POLICIES_BETWEEN_SUITES=1 npm run guardian:test   # the same, between suites and at the end
 ```
+
+Every published or dry-run policy runs in its own process (about 280 MB), which stays up until the services stop: a full run leaves about 55 of them, 13 GB. `guardian:stop-policies` sends each one the `DELETE_POLICY` event, so it exits cleanly and is not respawned (a process killed by a signal is respawned by policy-service after 10 s). It removes nothing from the database. A suite is a spec folder (`api-tests/003_ipfs`, `ui-tests/specs/02_policies`, `policy-tests/cdm`); suites do not depend on each other and publish what they need, so a suite does not need the processes of the ones before it. With `STOP_POLICIES_BETWEEN_SUITES=1`, `guardian:test`, `guardian:test:smoke` and `test:everything` stop them before each new suite starts (Cypress `before:spec`) and once Cypress ends, whatever its result, keeping the Cypress exit status. When you run Cypress yourself (`entrypoint.sh`, `npx cypress run`), set `STOP_POLICIES_NATS` to the NATS `host:port` and `GUARDIAN_LOG_DIR` to the folder of the `policy-service-*.log` files, as the e2e workflow does; the scripts set both.
 
 The two halves can run in different places, for example when the tests are driven from a dev container that has no docker:
 
@@ -48,7 +52,7 @@ npm run guardian:infra:down      # on the host: removes the containers
 
 ## Running every test
 
-`npm run test:everything` runs, one group after the other, everything the repository tests outside the service unit tests of `main.yml`: the linter on the specs, the tests of the helper scripts, the frontend unit specs and the whole Cypress suite. A group that fails does not stop the others; the summary at the end lists each one and the exit code is non-zero when any failed. Name the groups to run only those:
+`npm run test:everything` runs, one group after the other, everything the repository tests outside the service unit tests of `component-tests.yml`: the linter on the specs, the tests of the helper scripts, the frontend unit specs and the whole Cypress suite. A group that fails does not stop the others; the summary at the end lists each one and the exit code is non-zero when any failed. Name the groups to run only those:
 
 ```bash
 npm run test:everything                       # lint, scripts, frontend, cypress
@@ -274,8 +278,10 @@ UI tests drive the real frontend, so the app must be running where `CYPRESS_base
 ```bash
 cd frontend
 UI_GATEWAY_ORIGIN=http://host.docker.internal:3002/ \
-  ng serve --host 127.0.0.1 --port 4200 --proxy-config ./proxy.hostdocker.js
+  ng serve --configuration production --host 127.0.0.1 --port 4200 --proxy-config ./proxy.hostdocker.js
 ```
+
+- `--configuration production` serves the optimized build: the UI specs run about 20 % faster than on the development build, which bootstraps and renders more slowly. The first build takes about 40 s instead of 15.
 
 - `UI_GATEWAY_ORIGIN` is where the dev server proxies `/api/v1` and the WebSocket to. `yarn start` uses `proxy.conf.json`, which assumes a gateway on `localhost:3002`; `proxy.hostdocker.js` exists for the common case of running the suite in a container (or a VM) that reaches the host's Guardian stack through `host.docker.internal`.
 - Pass `CYPRESS_baseUrl=http://127.0.0.1:4200` to the Cypress run (the `entrypoint.sh` examples above do this).
@@ -748,6 +754,7 @@ npm run guardian:test        # the whole suite
 npm run guardian:test:smoke  # only the tests tagged smoke
 npm run guardian:test -- cypress/e2e/api-tests/001_demo/getRandomKey.cy.js   # a single spec
 npm run guardian:test -- 'cypress/e2e/api-tests/010_tokens/*.cy.js' cypress/e2e/api-tests/001_demo/getRandomKey.cy.js   # several specs or globs
+npm run guardian:stop-policies   # stops the policy processes, see the Quickstart
 npm run guardian:down        # stops the services and removes the containers
 ```
 
@@ -757,7 +764,12 @@ npm run guardian:down        # stops the services and removes the containers
 
 `scripts/local-guardian.sh` loads `.solo/solo.env` for you and takes the JWT keys from `configs/.env.quickstart.guardian.system`, so nothing has to be configured. Service logs and the pids of the services it started are in `e2e-tests/.local/logs`. The infra containers are recreated on every `guardian:up`, because the ledger is empty after each `solo:up` and an older database would point at accounts that no longer exist. Stop a running `guardian-quickstart` first: they use the same ports.
 
-To start the services yourself instead, load the variables in every shell that starts one, and in the one that runs the suite:
+`local-guardian.sh` and the e2e workflow also give the services two settings the suite relies on:
+
+- `RETIRE_CONTRACT_SYNC_MASK` and `WIPE_CONTRACT_SYNC_MASK` set to `'*/5 * * * * *'`: contract events are synchronized from the mirror node every 5 s instead of once a minute. `expectNoWipeRequest` (`cypress/support/api/contracts.js`) watches for 15 s, three sync cycles, so with the default mask it can end before any sync has run and pass without having checked anything.
+- `WORKER_FREE_RESPONSE_WINDOW=50`: each queue dispatch round waits 50 ms for the free workers to answer instead of 300.
+
+To start the services yourself instead, export these two settings and load the variables in every shell that starts one, and in the one that runs the suite:
 
 ```bash
 set -a; source e2e-tests/.solo/solo.env; set +a
@@ -784,7 +796,7 @@ Three workflows run the suites, all on the same stack definition:
 |---|---|---|
 | **E2E Run** | `.github/workflows/e2e-run.yml` | Reusable (`workflow_call`), never triggered on its own. Starts a local Hiero network with Solo, the infrastructure and the Guardian services, optionally the frontend, runs Cypress, and publishes reports. |
 | **E2E Tests** | `.github/workflows/e2e-tests.yml` | The API and policy suites: `smoke` on every push, `api-all policy-all` nightly. |
-| **UI Tests** | `.github/workflows/ui-manual.yml` | The UI suite plus the disaster-recovery spec (`ui-all dr-all`), nightly and on demand. |
+| **UI Tests** | `.github/workflows/ui-tests.yml` | The UI suite plus the disaster-recovery spec (`ui-all dr-all`), nightly and on demand. |
 
 Both callers pass `suite`, `grep_tags`, and optionally `spec`, `with_frontend`, `solo_version` and `timeout_minutes` to `e2e-run.yml`. Anything about how the stack is started changes in `e2e-run.yml` only.
 
@@ -810,8 +822,8 @@ Scheduled runs happen nightly at 03:00 UTC: E2E Tests runs `api-all policy-all`,
 - Starts a local Hiero network with Solo, and uploads the contract bytecode to it
 - Builds Guardian services
 - Starts MongoDB, NATS, Valkey and Kubo as service containers, and the Guardian services natively
-- For UI runs, installs the frontend and serves it with `ng serve` on `127.0.0.1:4200`, proxied to the gateway (`frontend/proxy.hostdocker.js`), the same way as the local recipe in "Preparing the app for UI tests"
-- Runs Cypress natively on the runner against that stack
+- For UI runs, installs the frontend and serves its production build with `ng serve --configuration production` on `127.0.0.1:4200`, proxied to the gateway (`frontend/proxy.hostdocker.js`), the same way as the local recipe in "Preparing the app for UI tests"
+- Runs Cypress natively on the runner against that stack, with `STOP_POLICIES_BETWEEN_SUITES=1` so the policy processes of a spec folder are stopped before the next one starts
 - With the `ui_request_trace` input of a manual run (`UI Tests`, or `E2E Tests` with UI tags), the dev server logs every request it proxies to the gateway (`UI_PROXY_LOG`), into `frontend-1.log` of the Guardian logs artifact. It is for diagnosing a UI failure, and the log is large
 - Publishes test results (one check per suite: `Test results · api`, `· policy`, `· ui`)
 - Uploads HTML and JSON reports as artifacts, plus the Guardian (frontend included) and Solo logs when a run fails
@@ -867,6 +879,17 @@ The HTML report includes:
 - Screenshots from failures
 - Test duration and timing
 - Detailed error messages and stack traces
+
+#### Failure diagnostics
+
+When a test that loaded the app fails, its error message ends with a `Failure diagnostics` block (`cypress/support/failureDiagnostics.js`), so it shows in the console output, the JUnit files and the HTML report of local and CI runs alike:
+
+- the page URL;
+- each loading overlay (`div.loading`) or block placeholder (`.empty-component`) still in the page, with the Angular components it sits in; a policy block is named by its tag (`… > render-block[evident_workflow] > button-block`), read from the policy the viewer loaded (`GET /policies/<id>`), since the page only carries the block's uuid and the uuids change at every publish;
+- the HTTP requests of the page that had not been answered, with how long they had been waiting;
+- the last 20 browser console errors and warnings.
+
+API specs load no page, so their failures carry no such block.
 
 ### Common Usage Patterns
 
@@ -934,6 +957,8 @@ Start the app with the `proxy.hostdocker.js` logger (see [Preparing the app for 
 - `(auth)` / `(NO-AUTH)` is the presence of the `Authorization` header, so a tokenless call stands out.
 - A request that is logged as sent but **never gets a `<- <status>` line** was accepted by the gateway and is still open. In the UI this shows as a page stuck on a spinner.
 - `WS-UPGRADE` lines without a follow-up indicate the WebSocket was accepted but never used by the app.
+
+When the stuck page makes a test fail, the [failure diagnostics](#failure-diagnostics) in its error message already list the requests without an answer and the blocks still loading, in CI too.
 
 ##### The services run old code after a pull
 
