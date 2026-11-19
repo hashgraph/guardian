@@ -1,5 +1,5 @@
 import { restoreSchemaDefs } from '../../../common/models/schema-defs';
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GenerateUUIDv4, IValidatorStep, LabelValidators, Schema, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
@@ -14,7 +14,7 @@ import { VCViewerDialog } from '../../../schema-engine/vc-dialog/vc-dialog.compo
 import { PolicyLabelsService } from 'src/app/services/policy-labels.service';
 import { IRailCard } from '../../../schema-engine/schema-form-rail/schema-form-rail.component';
 import { IOverviewCard, IOverviewTile } from '../../../schema-engine/schema-form-nav/schema-form-overview.component';
-import { buildLabelChecks, ILabelCheck } from './policy-label-document-checks';
+import { buildLabelChecks, buildLabelGroups, checkStatus, ILabelCheck, ILabelGroup } from './policy-label-document-checks';
 
 @Component({
     selector: 'app-policy-label-document-view',
@@ -62,6 +62,9 @@ export class PolicyLabelDocumentViewComponent implements OnInit {
 
     /** The rule and statistic validators of the label, one page each. */
     public checks: ILabelCheck[] = [];
+    /** The groups of the label and the result of the label itself. */
+    public groups: ILabelGroup[] = [];
+    public labelStatus: 'ok' | 'bad' | 'none' = 'none';
     public screen: 'overview' | 'section' = 'overview';
     public activeIndex = 0;
     public overviewTiles: IOverviewTile[] = [];
@@ -85,7 +88,8 @@ export class PolicyLabelDocumentViewComponent implements OnInit {
         private policyLabelsService: PolicyLabelsService,
         private dialogService: DialogService,
         private router: Router,
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        private host: ElementRef<HTMLElement>
     ) {
 
     }
@@ -234,6 +238,8 @@ export class PolicyLabelDocumentViewComponent implements OnInit {
 
     private updateChecks() {
         this.checks = buildLabelChecks(this.steps);
+        this.groups = buildLabelGroups(this.steps);
+        this.labelStatus = checkStatus(this.validator.status);
         const count = (status: string) => this.checks.filter((check) => check.status === status).length;
         this.overviewTiles = [
             { value: String(count('ok')), label: 'Passed', tone: 'ok' },
@@ -294,7 +300,7 @@ export class PolicyLabelDocumentViewComponent implements OnInit {
 
     /** A new page starts at its head, not where the previous one was scrolled to. */
     private scrollToTop() {
-        document.querySelector('.nav-body-container')?.scrollTo({ top: 0 });
+        this.host.nativeElement.querySelector('.nav-body-container')?.scrollTo({ top: 0 });
     }
 
     public onNavSelect(target: number | 'overview') {
@@ -306,7 +312,7 @@ export class PolicyLabelDocumentViewComponent implements OnInit {
     }
 
     public onNavCard(card: IRailCard) {
-        document
+        this.host.nativeElement
             .querySelector(`[data-part="${card.id}"]`)
             ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }

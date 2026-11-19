@@ -45,3 +45,25 @@ export function buildLabelChecks(steps: IValidatorStep[] | undefined): ILabelChe
     flush();
     return checks;
 }
+
+/** A group of the label: it has no page, only a result that follows its rule ("all" or "one of"). */
+export interface ILabelGroup {
+    id: string;
+    prefix?: string;
+    title: string;
+    status: 'ok' | 'bad' | 'none';
+}
+
+/** The `validate` steps of the items that have no variables, scores or formulas: the groups. */
+export function buildLabelGroups(steps: IValidatorStep[] | undefined): ILabelGroup[] {
+    const list = steps || [];
+    const checked = new Set(list.filter((step) => PART_TYPES.includes(step.type)).map((step) => step.item));
+    return list
+        .filter((step) => step.type === 'validate' && !checked.has(step.item))
+        .map((step) => ({
+            id: step.item.id,
+            prefix: step.prefix,
+            title: step.title,
+            status: checkStatus(step.item.status)
+        }));
+}

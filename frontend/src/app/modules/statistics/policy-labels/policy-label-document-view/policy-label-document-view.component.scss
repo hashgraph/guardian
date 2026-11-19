@@ -276,6 +276,33 @@ app-schema-form-nav {
     margin-bottom: 16px;
 }
 
+.sf-lv-label-status {
+    margin-top: 12px;
+}
+
+.sf-lv-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0 0 16px;
+    padding: 0;
+    list-style: none;
+}
+
+.sf-lv-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 12px;
+    border: 1px solid var(--guardian-border-color);
+    border-radius: 8px;
+    background: var(--guardian-background);
+    font-family: Inter;
+    font-size: 13.5px;
+    color: var(--guardian-font-color);
+}
+
 .sf-lv-prefix {
     margin-right: 4px;
     font-family: ui-monospace, Menlo, monospace;

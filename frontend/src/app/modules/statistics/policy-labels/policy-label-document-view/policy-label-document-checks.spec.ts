@@ -1,5 +1,5 @@
 import { IValidatorStep } from '@guardian/interfaces';
-import { buildLabelChecks } from './policy-label-document-checks';
+import { buildLabelChecks, buildLabelGroups } from './policy-label-document-checks';
 
 const item = (id: string, status?: boolean): any => ({ id, status });
 const step = (validator: any, type: string, name: string, prefix = '1.1', title = 'Check'): IValidatorStep =>
@@ -51,5 +51,21 @@ describe('buildLabelChecks', () => {
             step(item('none'), 'variables', 'Overview')
         ]);
         expect(checks.map((check) => check.status)).toEqual(['ok', 'bad', 'none']);
+    });
+});
+
+describe('buildLabelGroups', () => {
+    it('returns the validate-only steps with their result and not the checks', () => {
+        const rule = item('rule', true);
+        const groups = buildLabelGroups([
+            step(item('group', false), 'validate', 'Group', '1', 'Group'),
+            step(rule, 'variables', 'Overview', '1.1', 'Rule'),
+            step(rule, 'validate', 'Rule', '1.1', 'Rule')
+        ]);
+        expect(groups).toEqual([{ id: 'group', prefix: '1', title: 'Group', status: 'bad' }]);
+    });
+
+    it('returns nothing without steps', () => {
+        expect(buildLabelGroups(undefined)).toEqual([]);
     });
 });

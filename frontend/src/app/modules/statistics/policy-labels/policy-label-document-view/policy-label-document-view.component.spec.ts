@@ -17,9 +17,10 @@ describe('PolicyLabelDocumentViewComponent', () => {
     let component: PolicyLabelDocumentViewComponent;
     const all = (selector: string) => Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll(selector));
 
-    const load = (steps: any[]) => {
+    const load = (steps: any[], labelStatus?: boolean) => {
         component.definition = { name: 'My label' };
         component.steps = steps;
+        (component as any).validator = { status: labelStatus };
         (component as any).updateChecks();
         component.loading = false;
         fixture.detectChanges();
@@ -29,7 +30,7 @@ describe('PolicyLabelDocumentViewComponent', () => {
     const failed = item('failed', false);
     const pending = item('pending');
     const steps = () => [
-        step(item('group'), 'validate', 'Group', null, '1', 'Group'),
+        step(item('group', true), 'validate', 'Group', null, '1', 'Group'),
         step(passed, 'variables', 'Overview', [{ fieldDescription: 'Area', value: 12 }], '1.1', 'Area rule'),
         step(passed, 'scores', 'Scores', [{
             id: 's', description: 'Pick one', value: 2, _relationships: [],
@@ -71,6 +72,21 @@ describe('PolicyLabelDocumentViewComponent', () => {
     it('does not count the group node as a check', () => {
         load(steps());
         expect(component.checks.length).toBe(3);
+    });
+
+    it('shows the result of the label and of each group on the Overview', () => {
+        load(steps(), true);
+        expect(fixture.nativeElement.querySelector('.sf-lv-label-status').textContent).toContain('Label: Passed');
+        const groups = all('.sf-lv-group');
+        expect(groups.length).toBe(1);
+        expect(groups[0].textContent).toContain('Group');
+        expect(groups[0].textContent).toContain('Passed');
+    });
+
+    it('shows a failed label even when one check of a "one of" group passed', () => {
+        load(steps(), false);
+        expect(component.labelStatus).toBe('bad');
+        expect(fixture.nativeElement.querySelector('.sf-lv-label-status').textContent).toContain('Label: Failed');
     });
 
     it('opens a check page with its parts as the rail cards', () => {
