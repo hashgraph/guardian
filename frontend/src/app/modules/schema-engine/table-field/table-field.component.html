@@ -3,7 +3,7 @@
     <p-button
       (click)="openModal()"
       class="primary-btn"
-      [disabled]="readonly || isImporting || isTooLargeForPreview"
+      [disabled]="isImporting || isTooLargeForPreview"
       [attr.title]="isTooLargeForPreview ? 'File is too large for preview. Use Download CSV instead.' : null">
       <span>Open Table</span>
     </p-button>
@@ -92,6 +92,7 @@
               tooltipPosition="top"
               tooltipStyleClass="guardian-tooltip">
               <span class="table-field__head-text">{{ previewHeaderNameFor(columnKey, columnIndex) }}</span>
+              <app-table-formula-button [action]="columnFormula(columnKey)"></app-table-formula-button>
             </div>
           }
         </div>

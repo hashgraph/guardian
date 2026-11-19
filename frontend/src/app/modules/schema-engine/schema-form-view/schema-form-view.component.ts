@@ -1,3 +1,4 @@
+import { TableFormulas } from '../../formulas/models/table-formulas';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Inject, Input, LOCALE_ID, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { formatDate } from '@angular/common';
 import { Subscription } from 'rxjs';
@@ -80,6 +81,7 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
     @Input() dryRun?: boolean = false;
     @Input() rules?: SchemaRuleValidateResult;
     @Input() formulas?: any;
+    @Input() formulaEntries?: Record<string, number> | null;
     @Input('discussion') discussionData?: any;
     @Input('discussion-action') discussionAction: boolean = false;
     @Input('discussion-view') discussionView: boolean = false;
@@ -882,6 +884,51 @@ export class SchemaFormViewComponent implements OnInit, OnChanges, OnDestroy {
 
     public isRulesStatus(item: IFieldControl) {
         return this.rules?.[item.fullPath]?.status;
+    }
+
+    private tableFormulaActions = new WeakMap<object, TableFormulas>();
+
+    private tableEntryScopes = new WeakMap<object, { parent: Record<string, number> | null | undefined; entries: Map<number, Record<string, number>> }>();
+
+    public tableEntryScope(item: IFieldControl, index: number): Record<string, number> {
+        let scopes = this.tableEntryScopes.get(item);
+        if (!scopes || scopes.parent !== this.formulaEntries) {
+            scopes = { parent: this.formulaEntries, entries: new Map() };
+            this.tableEntryScopes.set(item, scopes);
+        }
+        let entries = scopes.entries.get(index);
+        if (!entries) {
+            const path = this.isFormulas(item)?.path || item.path || item.name;
+            entries = { ...this.formulaEntries, [path]: index };
+            scopes.entries.set(index, entries);
+        }
+        return entries;
+    }
+
+    public enclosingTableIndex(item: IFieldControl): number | undefined {
+        let path: string = this.isFormulas(item)?.path || item.path || item.name;
+        for (let index = path.lastIndexOf('.'); index > 0; index = path.lastIndexOf('.')) {
+            path = path.slice(0, index);
+            const entry = this.formulaEntries?.[path];
+            if (entry !== undefined) {
+                return entry;
+            }
+        }
+        return undefined;
+    }
+
+    public getTableFormulaActions(item: IFieldControl): TableFormulas {
+        let actions = this.tableFormulaActions.get(item);
+        if (!actions) {
+            actions = new TableFormulas(() => {
+                const source = this.isFormulas(item);
+                return source ? { ...source, context: { ...source.context, entries: this.formulaEntries } } : null;
+            }, item.tableColumns || [], data => {
+                this.dialogService.open(FormulasViewDialog, { showHeader: false, width: '90%', styleClass: 'guardian-dialog', data });
+            });
+            this.tableFormulaActions.set(item, actions);
+        }
+        return actions;
     }
 
     public isFormulas(item: IFieldControl) {

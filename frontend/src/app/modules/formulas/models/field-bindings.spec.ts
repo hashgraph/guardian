@@ -234,3 +234,56 @@ describe('field-bindings', () => {
         expect(buildFieldPath(['a', 'b'], 'c')).toBe('a.b.c');
     });
 });
+
+describe('column field bindings', () => {
+    const target = { schemaIri: '#s', fieldPath: 'table', columnKey: 'co2' };
+
+    it('retains column identity and its condition when moving a link on the same schema', () => {
+        expect(moveLink({ type: 'schema', entityId: '#s', item: 'old', condition: CONDITION }, target))
+            .toEqual({ type: 'schema', entityId: '#s', item: 'table', columnKey: 'co2', condition: CONDITION });
+    });
+
+    it('unbinds a column without removing the whole table or a neighbouring column', () => {
+        const config: any = { formulas: [{ uuid: 'f', type: FormulaItemType.Formula, links: [
+            { type: 'schema', entityId: '#s', item: 'table' },
+            { type: 'schema', entityId: '#s', item: 'table', columnKey: 'co2' },
+            { type: 'schema', entityId: '#s', item: 'table', columnKey: 'net' }
+        ] }] };
+        const result = applyFieldBindingOps(config, [{ type: 'unbind', formulaId: 'd', itemUuid: 'f', target }]);
+        expect(result.config.formulas![0].links!.map(link => link.columnKey)).toEqual([undefined, 'net']);
+        expect(config.formulas[0].links).toHaveLength(3);
+    });
+
+    it('removes every column and cell link of a deleted field, but nothing on other fields or schemas', () => {
+        const config: any = { formulas: [{ uuid: 'f', type: FormulaItemType.Formula, links: [
+            { type: 'schema', entityId: '#s', item: 'table' },
+            { type: 'schema', entityId: '#s', item: 'table', columnKey: 'co2' },
+            { type: 'schema', entityId: '#s', item: 'table', columnKey: 'co2', rowIndex: 1 },
+            { type: 'schema', entityId: '#s', item: 'other', columnKey: 'co2' },
+            { type: 'schema', entityId: '#other', item: 'table', columnKey: 'co2' }
+        ] }] };
+        const result = applyFieldBindingOps(config, [{ type: 'unbind', formulaId: 'd', itemUuid: 'f', target: { schemaIri: '#s', fieldPath: 'table' }, wholeField: true }]);
+        expect(result.config.formulas![0].links!.map(link => [link.entityId, link.item])).toEqual([['#s', 'other'], ['#other', 'table']]);
+    });
+
+    it('moves all column links with a renamed table while preserving column keys', () => {
+        const config: any = { formulas: [{ uuid: 'f', type: FormulaItemType.Formula, links: [
+            { type: 'schema', entityId: '#s', item: 'table', columnKey: 'co2' },
+            { type: 'schema', entityId: '#s', item: 'table', columnKey: 'net' }
+        ] }] };
+        const result = applyFieldBindingOps(config, [{ type: 'move', formulaId: 'd', itemUuid: 'f', from: 'table', target: { schemaIri: '#s', fieldPath: 'renamed' } }]);
+        expect(result.config.formulas![0].links!.map(link => [link.item, link.columnKey])).toEqual([['renamed', 'co2'], ['renamed', 'net']]);
+    });
+});
+
+describe('cell field bindings', () => {
+    it('keeps a cell binding separate from the column binding', () => {
+        const config: any = { formulas: [{ uuid: 'f', type: FormulaItemType.Formula, links: [
+            { type: 'schema', entityId: '#s', item: 'grid', columnKey: 'co2' },
+            { type: 'schema', entityId: '#s', item: 'grid', columnKey: 'co2', rowIndex: 0, tableIndex: 0 }
+        ] }] };
+        const result = applyFieldBindingOps(config, [{ type: 'unbind', formulaId: 'd', itemUuid: 'f', target: { schemaIri: '#s', fieldPath: 'grid', columnKey: 'co2' } }]);
+        expect(result.config.formulas![0].links).toHaveLength(1);
+        expect(result.config.formulas![0].links![0]).toMatchObject({ rowIndex: 0, tableIndex: 0 });
+    });
+});

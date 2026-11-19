@@ -126,14 +126,13 @@
                     @if (item.customType === 'table') {
                       <table-field
                         class="table-field-container"
+                        [class.table-field-locked]="isEditMode && !item.isUpdatable"
                         [item]="item"
+                        [formulaActions]="getTableFormulaActions(item)"
                         [required]="item.required"
-                        [readonly]="readonly?.[item.fullPath]"
+                        [readonly]="readonly?.[item.fullPath] || (isEditMode && !item.isUpdatable)"
                         [policyId]="policyId"
                         [blockId]="blockId"
-                            [attr.readonly-field]="
-                                isEditMode && !item.isUpdatable
-                            "
                       ></table-field>
                     }
                     @if (isGeoLocation(item)) {
@@ -476,15 +475,14 @@
                                 >
                                 <table-field
                                   class="table-field-container"
+                                  [class.table-field-locked]="isEditMode && !item.isUpdatable"
                                   [item]="$any(listItem)"
                                   [ownerField]="item.field"
+                                  [formulaActions]="getTableFormulaActions(item)"
                                   [required]="item.required"
-                                  [readonly]="readonly?.[item.fullPath]"
+                                  [readonly]="readonly?.[item.fullPath] || (isEditMode && !item.isUpdatable)"
                                   [policyId]="policyId"
                                   [blockId]="blockId"
-                                    [attr.readonly-field]="
-                                        isEditMode && !item.isUpdatable
-                                    "
                                 ></table-field>
                               </ng-container>
                             }

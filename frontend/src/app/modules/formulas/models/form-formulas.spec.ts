@@ -305,3 +305,19 @@ describe('FormFormulas of a drilled-into sub-schema', () => {
         expect(model.get(`${SUB}/row.value`, { row: 1 }).map((i) => i.uuid)).toEqual(['a']);
     });
 });
+
+describe('FormFormulas column targets', () => {
+    it('finds a column-only field and invalidates scoped condition results when values change', () => {
+        const column = item('column', 'records.table', pred('kind', 'yes', ['records', 'kind']));
+        column.link.columnKey = 'co2';
+        const model = new FormFormulas(buildTree([formula('f', [column])]), '#child', undefined, { schema: SCHEMA, prefix: ['records'] });
+        model.setData({ kind: 'yes' });
+        expect(model.hasConditions).toBe(true);
+        expect(model.get('#child/table')).toEqual([]);
+        const first = model.get('#child/table', undefined, { columnKey: 'co2' });
+        expect(first.map(value => value.uuid)).toEqual(['column']);
+        expect(model.get('#child/table', undefined, { columnKey: 'co2' })).toBe(first);
+        model.setData({ kind: 'no' });
+        expect(model.get('#child/table', undefined, { columnKey: 'co2' })).toEqual([]);
+    });
+});

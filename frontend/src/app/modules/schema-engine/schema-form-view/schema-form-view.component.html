@@ -1,11 +1,14 @@
 <!-- The value of one field, or of one entry of a simple array -->
-<ng-template #scalar let-item let-entry="entry" let-key="key">
+<ng-template #scalar let-item let-entry="entry" let-key="key" let-tableIndex="tableIndex">
     @if (isEmptyValue(entry.value)) {
         <span class="sf-empty">Not provided</span>
     } @else if (item.customType === 'table') {
         <div class="sf-ro-table">
             <table-viewer
                 [value]="entry.value"
+                [tableIndex]="tableIndex ?? enclosingTableIndex(item)"
+                [declaredColumns]="item.tableColumns || []"
+                [formulaActions]="getTableFormulaActions(item)"
                 [title]="item.title || item.description || item.name"
             ></table-viewer>
         </div>
@@ -215,6 +218,7 @@
                             [values]="values && values[item.name]"
                             [rules]="rules"
                             [formulas]="formulas"
+                            [formulaEntries]="formulaEntries"
                             [link]="item.link"
                             [accordionLink]="item.accordionLink"
                             [preview]="preview"
@@ -282,7 +286,7 @@
                                     <div class="sf-ro-chips">
                                         @for (listItem of getItemsPage(item); track $index; let li = $index) {
                                             <span class="sf-ro-chip" [attr.index]="rowIndex(item, li)">
-                                                <ng-container *ngTemplateOutlet="scalar; context: { $implicit: item, entry: listItem, key: item.fullPath + '#' + rowIndex(item, li) }"></ng-container>
+                                                <ng-container *ngTemplateOutlet="scalar; context: { $implicit: item, entry: listItem, tableIndex: rowIndex(item, li), key: item.fullPath + '#' + rowIndex(item, li) }"></ng-container>
                                             </span>
                                         }
                                     </div>
@@ -290,7 +294,7 @@
                                     <ul class="sf-ro-list" [class.sf-ro-plain]="isIPFS(item)">
                                         @for (listItem of getItemsPage(item); track $index; let li = $index) {
                                             <li [attr.index]="rowIndex(item, li)">
-                                                <ng-container *ngTemplateOutlet="scalar; context: { $implicit: item, entry: listItem, key: item.fullPath + '#' + rowIndex(item, li) }"></ng-container>
+                                                <ng-container *ngTemplateOutlet="scalar; context: { $implicit: item, entry: listItem, tableIndex: rowIndex(item, li), key: item.fullPath + '#' + rowIndex(item, li) }"></ng-container>
                                             </li>
                                         }
                                     </ul>
@@ -356,6 +360,7 @@
                                                         [values]="row"
                                                         [rules]="rules"
                                                         [formulas]="formulas"
+                                                        [formulaEntries]="tableEntryScope(item, idx)"
                                                         [link]="item.link"
                                                         [accordionLink]="item.accordionLink"
                                                         [preview]="preview"

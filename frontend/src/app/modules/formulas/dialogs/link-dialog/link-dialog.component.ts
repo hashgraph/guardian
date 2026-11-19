@@ -1,8 +1,9 @@
+import { formulaTargetKey } from '../../models/formula-target';
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { TreeListData, TreeListItem, TreeListView } from 'src/app/modules/common/tree-graph/tree-list';
 import { FieldData } from 'src/app/modules/common/models/schema-node';
-import { IFormulaLink } from '@guardian/interfaces';
+import { IFormulaLink, SchemaField } from '@guardian/interfaces';
 
 @Component({
     selector: 'link-dialog',
@@ -18,6 +19,7 @@ export class LinkDialog {
     public step: number = 1;
     public entityId: string;
     public itemId: string | null;
+    public columnKey?: string;
     public items: TreeListView<any> | null;
     public isLargeSize: boolean = true;
     private original: IFormulaLink | null = null;
@@ -42,6 +44,7 @@ export class LinkDialog {
             this.type = link.type;
             this.entityId = link.entityId;
             this.itemId = link.item;
+            this.columnKey = link.columnKey;
             this.original = link;
             const exists = link.type === 'schema'
                 ? this.schemas.some((s) => s.iri === link.entityId)
@@ -75,6 +78,7 @@ export class LinkDialog {
             && this.original.type === this.type
             && this.original.entityId === this.entityId;
         this.itemId = same ? this.original!.item : null;
+        this.columnKey = same ? this.original?.columnKey : undefined;
     }
 
     public onSelectEntity(item: any) {
@@ -96,7 +100,7 @@ export class LinkDialog {
         this.items = null;
         if (this.type === 'schema') {
             const schema = this.schemas.find((s) => s.iri === this.entityId);
-            const fields = TreeListData.fromObject<FieldData>(schema, 'fields');
+            const fields = TreeListData.fromObject({ fields: this.schemaLinkFields(schema.fields) }, 'fields');
             this.items = TreeListView.createView(fields, (s) => { return !s.parent });
         }
         if (this.type === 'formula') {
@@ -107,12 +111,32 @@ export class LinkDialog {
         this.revealSelected();
     }
 
+    public get selectionId(): string {
+        return formulaTargetKey(this.itemId || '', { columnKey: this.columnKey });
+    }
+
+    public fieldSelectionId(field: { path: string; columnKey?: string }): string {
+        return formulaTargetKey(field.path, field);
+    }
+
+    private schemaLinkFields(fields: SchemaField[]): any[] {
+        return (fields || []).map(field => ({
+            ...field,
+            fields: field.customType === 'table' && field.tableColumns?.length
+                ? [
+                    { path: field.path, description: 'Link to the whole table' },
+                    ...field.tableColumns.map(column => ({ path: field.path, columnKey: column.key, description: column.name }))
+                ]
+                : this.schemaLinkFields(field.fields || [])
+        }));
+    }
+
     private revealSelected() {
         if (!this.items || !this.itemId) {
             return;
         }
         const selected = this.items.findItem((e) => this.type === 'schema'
-            ? e.data.path === this.itemId
+            ? !e.expandable && this.fieldSelectionId(e.data) === this.selectionId
             : e.data.uuid === this.itemId);
         if (!selected) {
             return;
@@ -144,6 +168,7 @@ export class LinkDialog {
             return;
         }
         this.itemId = item.data.path;
+        this.columnKey = item.data.columnKey;
     }
 
     public onSelectVariable(item: TreeListItem<any>) {
@@ -152,6 +177,7 @@ export class LinkDialog {
             return;
         }
         this.itemId = item.data.uuid;
+        this.columnKey = undefined;
     }
 
     public onSubmit(): void {
@@ -160,6 +186,9 @@ export class LinkDialog {
                 type: this.type,
                 entityId: this.entityId,
                 item: this.itemId
+            }
+            if (this.type === 'schema' && this.columnKey !== undefined) {
+                result.columnKey = this.columnKey;
             }
             this.ref.close(result);
         }

@@ -28,7 +28,16 @@ export type SchemaFieldPaths = Map<string, Set<string>>;
  * @param schema
  */
 export function getSchemaFieldPaths(schema: ISchema): Set<string> {
-    return new Set(new Schema(schema).getFields().map((field) => field.path));
+    const paths = new Set<string>();
+    for (const field of new Schema(schema).getFields()) {
+        paths.add(field.path);
+        if (field.customType === 'table') {
+            for (const column of field.tableColumns || []) {
+                paths.add(`${field.path}[${JSON.stringify(column.key)}]`);
+            }
+        }
+    }
+    return paths;
 }
 
 function getLinks(item: any): any[] {
@@ -51,7 +60,11 @@ function getPredicatePath(predicate: SchemaFieldPredicate): string {
 function getLinkPaths(link: any): Map<string, string> {
     const paths = new Map<string, string>();
     if (link.item) {
-        paths.set(link.item, 'field');
+        if (link.columnKey === undefined) {
+            paths.set(link.item, 'field');
+        } else {
+            paths.set(`${link.item}[${JSON.stringify(link.columnKey)}]`, 'table column');
+        }
     }
     for (const predicate of SchemaHelper.getConditionTriggerPredicates(link.condition)) {
         const path = getPredicatePath(predicate);

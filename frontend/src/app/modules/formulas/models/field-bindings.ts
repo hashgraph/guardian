@@ -1,3 +1,4 @@
+import { formulaTargetKey, IFormulaTarget } from './formula-target';
 import { EntityStatus, FormulaItemType, GenerateUUIDv4, IFormula, IFormulaConfig, IFormulaItem, IFormulaLink } from '@guardian/interfaces';
 
 /**
@@ -17,7 +18,7 @@ export const BINDABLE_ITEM_TYPES: ReadonlySet<string> = new Set<string>([
 /**
  * A schema field as stored in a formula link: the root schema iri and the field path in it.
  */
-export interface IFieldTarget {
+export interface IFieldTarget extends IFormulaTarget {
     schemaIri: string;
     fieldPath: string;
 }
@@ -27,7 +28,7 @@ export interface IFieldTarget {
  */
 export type FieldBindingOp =
     { type: 'bind'; formulaId: string; itemUuid: string; target: IFieldTarget } |
-    { type: 'unbind'; formulaId: string; itemUuid: string; target: IFieldTarget } |
+    { type: 'unbind'; formulaId: string; itemUuid: string; target: IFieldTarget; wholeField?: boolean } |
     { type: 'move'; formulaId: string; itemUuid: string; target: IFieldTarget; from: string } |
     { type: 'create'; formulaId: string; item: IFormulaItem; target: IFieldTarget };
 
@@ -73,7 +74,7 @@ export function isLinkedTo(link: IFormulaLink | null | undefined, target: IField
     return !!link &&
         link.type === 'schema' &&
         link.entityId === target.schemaIri &&
-        link.item === target.fieldPath;
+        formulaTargetKey(link.item, link) === formulaTargetKey(target.fieldPath, target);
 }
 
 /**
@@ -86,6 +87,15 @@ export function moveLink(link: IFormulaLink | null | undefined, target: IFieldTa
         entityId: target.schemaIri,
         item: target.fieldPath
     };
+    if (target.columnKey !== undefined) {
+        result.columnKey = target.columnKey;
+    }
+    if (target.rowIndex !== undefined) {
+        result.rowIndex = target.rowIndex;
+    }
+    if (target.tableIndex !== undefined) {
+        result.tableIndex = target.tableIndex;
+    }
     if (link && link.type === 'schema' && link.entityId === target.schemaIri && link.condition) {
         result.condition = link.condition;
     }
@@ -116,7 +126,7 @@ export function createStubItem(name: string, uuid: string = GenerateUUIDv4()): I
 }
 
 function isSameLink(a: IFormulaLink, b: IFormulaLink): boolean {
-    return a.type === b.type && a.entityId === b.entityId && a.item === b.item;
+    return a.type === b.type && a.entityId === b.entityId && formulaTargetKey(a.item, a) === formulaTargetKey(b.item, b);
 }
 
 function withLinks(item: IFormulaItem, links: IFormulaLink[]): IFormulaItem {
@@ -162,25 +172,35 @@ export function applyFieldBindingOps(
                 continue;
             }
             const from = { ...op.target, fieldPath: op.from };
-            if (!links.some((link) => isLinkedTo(link, from))) {
+            const matchesFrom = (link: IFormulaLink) => link.type === 'schema' &&
+                link.entityId === from.schemaIri && link.item === from.fieldPath &&
+                (from.columnKey === undefined || link.columnKey === from.columnKey);
+            if (!links.some(matchesFrom)) {
                 continue;
             }
             const kept: IFormulaLink[] = [];
             for (const link of links) {
-                if (!isLinkedTo(link, from)) {
+                if (!matchesFrom(link)) {
                     kept.push(link);
                     continue;
                 }
-                const next = moveLink(link, op.target);
-                const taken = links.some((other) => !isLinkedTo(other, from) && isSameLink(other, next)) ||
+                const next = moveLink(link, { ...op.target, columnKey: op.target.columnKey ?? link.columnKey,
+                    rowIndex: op.target.rowIndex ?? link.rowIndex, tableIndex: op.target.tableIndex ?? link.tableIndex });
+                const taken = links.some((other) => !matchesFrom(other) && isSameLink(other, next)) ||
                     kept.some((other) => isSameLink(other, next));
                 if (!taken) {
                     kept.push(next);
                 }
             }
             formulas[index] = withLinks(item, kept);
-        } else if (links.some((link) => isLinkedTo(link, op.target))) {
-            formulas[index] = withLinks(item, links.filter((link) => !isLinkedTo(link, op.target)));
+        } else {
+            const target = op.target;
+            const matches = op.wholeField
+                ? (link: IFormulaLink) => link.type === 'schema' && link.entityId === target.schemaIri && link.item === target.fieldPath
+                : (link: IFormulaLink) => isLinkedTo(link, target);
+            if (links.some(matches)) {
+                formulas[index] = withLinks(item, links.filter((link) => !matches(link)));
+            }
         }
     }
     return { config: result, skipped };

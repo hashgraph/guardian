@@ -278,3 +278,145 @@ describe('FormulaImportExport.generateZipFile', () => {
         assert.deepEqual(parsed.config.formulas.find((e) => e.uuid === 'm').relationships, ['a', 'b']);
     });
 });
+
+describe('FormulaImportExport table column outputs', () => {
+    const generate = (outputs, extra = {}) => FormulaImportExport.generateByPolicy({
+        name: 'Column outputs',
+        config: {
+            blockType: 'mathBlock', inputSchema: '#input', outputSchema: '#output', tag: 'Calculate',
+            expression: {
+                variables: [{ name: 'fuel', field: 'source.fuel' }],
+                formulas: [{ type: 'group', items: [{ name: 'co2', body: 'fuel * 2', relationships: ['fuel'] }] }],
+                outputs,
+                ...extra
+            }
+        }
+    }).config.formulas;
+
+    it('links one equation to every mapped column and mirrors its first link', () => {
+        const items = generate([{ type: 'group', items: [
+            { field: 'results', name: '', columns: { first: 'co2', second: 'co2', notes: '', bad: 'unknown' } },
+            { field: 'moreResults', name: '', columns: { total: 'co2' }, tableList: true }
+        ] }]);
+        const equation = items.find(item => item.name === 'co2');
+        assert.deepEqual(equation.links, [
+            { type: 'schema', entityId: '#output', item: 'results', columnKey: 'first' },
+            { type: 'schema', entityId: '#output', item: 'results', columnKey: 'second' },
+            { type: 'schema', entityId: '#output', item: 'moreResults', columnKey: 'total' }
+        ]);
+        assert.deepEqual(equation.link, equation.links[0]);
+        assert.deepEqual(equation.relationships, [items.find(item => item.name === 'fuel').uuid]);
+    });
+
+    it('wraps pass-through variables once and keeps their input link', () => {
+        const items = generate([{ field: 'results', columns: { a: 'fuel', b: 'fuel' } }]);
+        const input = items.find(item => item.type === 'variable');
+        const output = items.find(item => item.type === 'formula' && item.name === 'fuel');
+        assert.deepEqual(input.link, { type: 'schema', entityId: '#input', item: 'source.fuel' });
+        assert.equal(output.value, 'fuel');
+        assert.deepEqual(output.relationships, [input.uuid]);
+        assert.deepEqual(output.links.map(link => link.columnKey), ['a', 'b']);
+        assert.equal(items.filter(item => item.type === 'formula' && item.name === 'fuel').length, 1);
+    });
+
+    it('normalizes mapped names using the Math output naming rules', () => {
+        const items = generate([{ field: 'results', columns: { a: ' co2,i ', b: 'fuel + 1', c: ' ' } }], {
+            formulas: [{ name: 'co2_i', body: 'fuel * 2', relationships: ['fuel'] }]
+        });
+        assert.deepEqual(items.find(item => item.name === 'co2_i').links, [
+            { type: 'schema', entityId: '#output', item: 'results', columnKey: 'a' }
+        ]);
+    });
+
+    it('links equations saved with the editor notation of their name', () => {
+        const items = generate([{ field: 'results', columns: { a: 'co2,i', b: 'co2_i', c: 'net' } }], {
+            formulas: [{ name: 'co2,i', body: 'fuel * 2' }, { name: ' net ', body: 'fuel' }]
+        });
+        assert.deepEqual(items.find(item => item.name === 'co2,i').links, [
+            { type: 'schema', entityId: '#output', item: 'results', columnKey: 'a' },
+            { type: 'schema', entityId: '#output', item: 'results', columnKey: 'b' }
+        ]);
+        assert.deepEqual(items.find(item => item.name === ' net ').links, [
+            { type: 'schema', entityId: '#output', item: 'results', columnKey: 'c' }
+        ]);
+    });
+
+    it('wraps pass-through variables saved with the editor notation of their name', () => {
+        const items = generate([{ field: 'results', columns: { a: 'fuel_j', b: ' fuel,j ' } }], {
+            variables: [{ name: ' fuel,j ', field: 'source.fuel' }]
+        });
+        const input = items.find(item => item.type === 'variable');
+        const outputs = items.filter(item => item.type === 'formula' && item.relationships.includes(input.uuid) && item.links);
+        assert.deepEqual(input.link, { type: 'schema', entityId: '#input', item: 'source.fuel' });
+        assert.equal(outputs.length, 1);
+        assert.equal(outputs[0].name, 'fuel,j');
+        assert.deepEqual(outputs[0].links.map(link => link.columnKey), ['a', 'b']);
+    });
+
+    it('keeps the scalar target when an equation also supplies a table', () => {
+        const items = generate([
+            { name: 'co2', field: 'scalar' },
+            { field: 'results', columns: { total: 'co2' } }
+        ]);
+        const links = items.find(item => item.name === 'co2').links;
+        assert.deepEqual(links.map(link => [link.item, link.columnKey]), [['scalar', undefined], ['results', 'total']]);
+    });
+
+    it('round-trips column identity and replaces its schema id', async () => {
+        const items = generate([{ field: 'results', columns: { total: 'co2' } }]);
+        const zip = await FormulaImportExport.generateZipFile({ formula: { config: { formulas: items } }, schemas: [] });
+        const parsed = await FormulaImportExport.parseZipFile(await zip.generateAsync({ type: 'nodebuffer' }));
+        FormulaImportExport.replaceIds(parsed.formula.config, '#output', '#imported');
+        const item = parsed.formula.config.formulas.find(item => item.name === 'co2');
+        assert.equal(item.links[0].columnKey, 'total');
+        assert.equal(item.links[0].entityId, '#imported');
+        assert.deepEqual(item.link, item.links[0]);
+    });
+});
+
+describe('FormulaImportExport table grid outputs', () => {
+    const generate = outputs => FormulaImportExport.generateByPolicy({ name: 'Grid outputs', config: {
+        blockType: 'mathBlock', inputSchema: '#input', outputSchema: '#output', expression: {
+            variables: [{ name: 'year', field: 'year' }],
+            formulas: [{ name: 'first', body: '1' }, { name: 'sum', body: '2' }], outputs
+        }
+    } }).config.formulas;
+
+    it('links grid formulas to their cells, without inventing column or whole-table links', () => {
+        const items = generate([{ field: 'grid', rows: [{ year: 'year', co2: 'first' }, { year: '', co2: 'sum' }, {}] }]);
+        assert.deepEqual(items.find(item => item.name === 'first').links, [
+            { type: 'schema', entityId: '#output', item: 'grid', columnKey: 'co2', rowIndex: 0 }
+        ]);
+        assert.deepEqual(items.find(item => item.name === 'sum').links, [
+            { type: 'schema', entityId: '#output', item: 'grid', columnKey: 'co2', rowIndex: 1 }
+        ]);
+        assert.equal(items.find(item => item.type === 'formula' && item.name === 'year').links[0].rowIndex, 0);
+        assert.equal(items.find(item => item.type === 'variable').link.item, 'year');
+    });
+
+    it('links grid cells to equations and inputs saved with the editor notation of their name', () => {
+        const items = FormulaImportExport.generateByPolicy({ name: 'Grid outputs', config: {
+            blockType: 'mathBlock', inputSchema: '#input', outputSchema: '#output', expression: {
+                variables: [{ name: 'year,k', field: 'year' }],
+                formulas: [{ name: ' sum,t ', body: '2' }],
+                outputs: [{ field: 'grid', rows: [{ year: 'year,k', co2: 'sum_t' }] }]
+            }
+        } }).config.formulas;
+        assert.deepEqual(items.find(item => item.name === ' sum,t ').links, [
+            { type: 'schema', entityId: '#output', item: 'grid', columnKey: 'co2', rowIndex: 0 }
+        ]);
+        assert.deepEqual(items.find(item => item.type === 'formula' && item.name === 'year,k').links, [
+            { type: 'schema', entityId: '#output', item: 'grid', columnKey: 'year', rowIndex: 0 }
+        ]);
+    });
+
+    it('retains distinct table positions and every reused cell link through export/import', async () => {
+        const items = generate([{ field: 'grids', tables: [[{ co2: 'first' }], [{ co2: 'sum' }, { co2: 'first' }]] }]);
+        const zip = await FormulaImportExport.generateZipFile({ formula: { config: { formulas: items } }, schemas: [] });
+        const parsed = await FormulaImportExport.parseZipFile(await zip.generateAsync({ type: 'nodebuffer' }));
+        const first = parsed.formula.config.formulas.find(item => item.name === 'first');
+        assert.deepEqual(first.links.map(link => [link.tableIndex, link.rowIndex, link.columnKey]), [[0, 0, 'co2'], [1, 1, 'co2']]);
+        assert.deepEqual(first.link, first.links[0]);
+        assert.deepEqual(parsed.formula.config.formulas.find(item => item.name === 'sum').links.map(link => [link.tableIndex, link.rowIndex]), [[1, 0]]);
+    });
+});

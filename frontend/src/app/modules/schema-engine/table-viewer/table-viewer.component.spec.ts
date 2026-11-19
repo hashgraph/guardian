@@ -1,4 +1,8 @@
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { CsvService } from 'src/app/services/csv.service';
+import { TableDialogComponent } from '../../common/table-dialog/table-dialog.component';
 import { TableViewerComponent } from './table-viewer.component';
 
 describe('TableViewerComponent inline csv', () => {
@@ -79,4 +83,42 @@ describe('TableViewerComponent inline csv', () => {
         expect(viewer.inlineCsv).toBeNull();
         expect(viewer.hasData).toBe(false);
     });
+    it('passes column actions to the full read-only table, including columns outside the preview', async () => {
+        const viewer = create(inline);
+        viewer.declaredColumns = [{ key: 'year', name: 'Year' }, { key: 'area', name: 'Area' }];
+        const action = { label: 'Show formulas for Area', open: vi.fn() };
+        viewer.formulaActions = { column: (key: string) => key === 'area' ? action : null };
+        expect(viewer.columnFormula('area')).toBe(action);
+        await viewer.openDialog();
+        const config = vi.mocked(viewer.dialog.open).mock.lastCall![1];
+        expect(config.data.formulaActions.column('area')).toBe(action);
+        expect(config.data.readOnly).toBe(true);
+        viewer.declaredColumns = [];
+        expect(viewer.columnFormula('area')).toBeNull();
+    });
+
+    it('keeps the declared columns and their Fx in the full table of a result with no rows', async () => {
+        const viewer = create(JSON.stringify({ type: 'table', csv: 'CO2', columnKeys: ['co2'], columnNames: ['CO2'] }));
+        viewer.declaredColumns = [{ key: 'co2', name: 'CO2' }];
+        const action = { label: 'Show formulas for CO2', open: vi.fn() };
+        viewer.formulaActions = { column: (key: string) => key === 'co2' ? action : null };
+        await viewer.openDialog();
+        const config = vi.mocked(viewer.dialog.open).mock.lastCall![1];
+        TestBed.configureTestingModule({
+            declarations: [TableDialogComponent],
+            providers: [
+                { provide: DynamicDialogRef, useValue: { close: () => {} } },
+                { provide: DynamicDialogConfig, useValue: config },
+            ],
+            schemas: [CUSTOM_ELEMENTS_SCHEMA],
+        });
+        const dialog = TestBed.createComponent(TableDialogComponent).componentInstance;
+        dialog.ngOnInit();
+        const columns = dialog.columnDefs.filter((def) => def.colId !== '__row__');
+        expect(columns.map((def) => def.field)).toEqual(['co2']);
+        expect(columns[0].headerName).toBe('CO2');
+        expect(columns[0].headerComponentParams.innerHeaderComponentParams.formulaActions.column('co2')).toBe(action);
+        expect(dialog.rowData).toEqual([]);
+    });
+
 });

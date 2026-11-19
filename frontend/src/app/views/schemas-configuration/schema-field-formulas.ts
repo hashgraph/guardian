@@ -85,6 +85,7 @@ interface IPendingBinding {
     scope: IFieldScope;
     fieldPath?: string;
     basePath?: string;
+    wholeField?: boolean;
 }
 
 function isAssignment(p: IPendingBinding): boolean {
@@ -332,7 +333,7 @@ export class SchemaFieldFormulas {
         }
         const target = this.target(scope);
         const apply = () => {
-            const index = this.pending.findIndex((p) => this.isPendingOp(p, itemUuid, target, true));
+            const index = this.pending.findIndex((p) => p.scope.field === scope.field && this.isPendingOp(p, itemUuid, target, true));
             if (index !== -1) {
                 this.pending.splice(index, 1);
             } else {
@@ -356,9 +357,7 @@ export class SchemaFieldFormulas {
         } else {
             const moved = this.pending.find((p) => p.type === 'move' && p.formulaId === row.formulaId && p.itemUuid === row.itemUuid &&
                 this.targetOf(p).fieldPath === target.fieldPath);
-            const fieldPath = moved?.fieldPath || target.fieldPath;
-            this.pending = this.pending.filter((p) => p !== moved);
-            this.pending.push({ type: 'unbind', policyId: this.policy.id, formulaId: row.formulaId, itemUuid: row.itemUuid, scope: this.copyScope(scope), fieldPath });
+            this.pending.push({ type: 'unbind', policyId: this.policy.id, formulaId: row.formulaId, itemUuid: row.itemUuid, scope: this.copyScope(scope), fieldPath: moved ? undefined : target.fieldPath });
         }
         this.version++;
     }
@@ -390,7 +389,8 @@ export class SchemaFieldFormulas {
                 formulaId,
                 itemUuid,
                 scope: this.copyScope(scope),
-                fieldPath: path
+                fieldPath: path,
+                wholeField: true
             });
         }
         this.version++;
@@ -408,11 +408,10 @@ export class SchemaFieldFormulas {
         const basePath = this.savedPath(scope);
         for (const { formula, item, path } of links) {
             const same = (p: IPendingBinding) => p.formulaId === String(formula.id) && p.itemUuid === item.uuid && p.fieldPath === path;
-            if (this.pending.some((p) => (p.type === 'unbind' || (p.type === 'move' && p.basePath!.length >= basePath.length)) && same(p))) {
+            if (this.pending.some((p) => ((p.type === 'unbind' && p.wholeField) || (p.type === 'move' && p.basePath!.length >= basePath.length)) && same(p))) {
                 continue;
             }
-            this.pending = this.pending.filter((p) => p.type !== 'move' || !same(p));
-            this.pending.push({
+            const move: IPendingBinding = {
                 type: 'move',
                 policyId: this.policy.id,
                 formulaId: String(formula.id),
@@ -420,7 +419,14 @@ export class SchemaFieldFormulas {
                 scope: this.copyScope(scope),
                 fieldPath: path,
                 basePath
-            });
+            };
+            const index = this.pending.findIndex((p) => p.type === 'move' && same(p));
+            if (index === -1) {
+                this.pending.push(move);
+            } else {
+                this.pending[index] = move;
+                this.pending = this.pending.filter((p, i) => i === index || p.type !== 'move' || !same(p));
+            }
         }
     }
 
@@ -514,7 +520,7 @@ export class SchemaFieldFormulas {
                     // an item with several links to one field counts once
                     const paths = new Set<string>();
                     for (const link of getItemLinks(item)) {
-                        if (link.type === 'schema' && link.entityId === iri) {
+                        if (link.type === 'schema' && link.entityId === iri && link.columnKey === undefined) {
                             paths.add(link.item);
                         }
                     }
@@ -673,6 +679,9 @@ export class SchemaFieldFormulas {
         }
         if (p.type === 'create') {
             return { type: 'create', formulaId: p.formulaId, item: p.item!, target };
+        }
+        if (p.type === 'unbind' && p.wholeField) {
+            return { type: 'unbind', formulaId: p.formulaId, itemUuid: p.itemUuid, target, wholeField: true };
         }
         return { type: p.type, formulaId: p.formulaId, itemUuid: p.itemUuid, target };
     }

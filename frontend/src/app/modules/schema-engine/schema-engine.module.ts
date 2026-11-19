@@ -1,3 +1,4 @@
+import { TableFormulaButtonComponent } from '../common/table-dialog/table-formula-button.component';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -103,6 +104,7 @@ import { HideNotProvidedToggleComponent } from './hide-not-provided-toggle/hide-
         HideNotProvidedToggleComponent
     ],
     imports: [
+        TableFormulaButtonComponent,
         CommonModule,
         FormsModule,
         ReactiveFormsModule,

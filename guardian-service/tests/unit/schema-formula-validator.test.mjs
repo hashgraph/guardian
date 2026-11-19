@@ -116,3 +116,24 @@ describe('condition field path', () => {
         assert.deepEqual(res.map((r) => r.path), ['x']);
     });
 });
+
+describe('table column formula warnings', () => {
+    it('reports a removed column independently of the table and skips an already broken link', () => {
+        const items = [{ name: 'I', links: [
+            { type: 'schema', entityId: IRI, item: 'table', columnKey: 'co2' },
+            { type: 'schema', entityId: IRI, item: 'table' },
+            { type: 'schema', entityId: IRI, item: 'table', columnKey: 'old' }
+        ] }];
+        const result = findBrokenFormulaLinks(formula(items), schemas('table', 'table["net"]'), schemas('table', 'table["co2"]'));
+        assert.deepEqual(result.map(warning => warning.path), ['table["co2"]']);
+    });
+
+    it('includes schema-declared columns in the validation targets', () => {
+        const document = { $id: IRI, type: 'object', properties: {
+            table: { type: 'string', title: 'Table', $comment: JSON.stringify({ customType: 'table', tableColumns: [{ key: 'co2', name: 'CO2' }] }) }
+        } };
+        const paths = getSchemaFieldPaths({ iri: IRI, document });
+        assert.ok(paths.has('table["co2"]'));
+        assert.ok(paths.has('table'));
+    });
+});

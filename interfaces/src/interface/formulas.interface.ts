@@ -12,6 +12,9 @@ export interface IFormulaLink {
     type: 'formula' | 'schema';
     entityId: string;
     item: string;
+    columnKey?: string;
+    rowIndex?: number;
+    tableIndex?: number;
     /**
      * Optional display condition, meaningful when type === 'schema'.
      * Predicate paths are relative to the root schema (`entityId`).
