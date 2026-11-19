@@ -147,7 +147,7 @@ describe('RequestConfigComponent presets', () => {
         const values = component.getSourceOptions(row).flatMap((g) => g.items.map((i) => i.value));
         expect(values).toContain('places.title');
         expect(values).toContain('places.groups.tag');
-        expect(values).toContain('title');
+        expect(values).not.toContain('title');
         const rootRow = { ...row, level: 0 };
         expect(component.getSourceOptions(rootRow).length).toBeGreaterThan(0);
     });
@@ -218,9 +218,9 @@ describe('RequestConfigComponent presets', () => {
         const { component } = create({ presetFields: [] });
         component.addNestedTarget('projectLocations.details');
         const row = component.rows[0];
-        component.setSource(row, 'title');
+        component.setSource(row, 'places.title');
         expect(component.typeIssue(row)).toContain('Type mismatch');
-        expect(component.getSourceOptions(row).flatMap((g) => g.items).find((o) => o.value === 'title')!.mismatch).toBe(true);
+        expect(component.getSourceOptions(row).flatMap((g) => g.items).find((o) => o.value === 'places.title')!.mismatch).toBe(true);
     });
 
     it('hides an old root entry without a source but keeps it in the JSON until the next change', () => {
