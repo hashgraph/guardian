@@ -243,7 +243,8 @@ export class TrustChainsApi {
             const users = new Users();
             const allUsers = (await users.getUsersByIds(DIDs, authUser.id)) || [];
             const userMap = allUsers.map((user: IAuthUser) => {
-                return { username: user.username, did: user.did }
+                // a remote user has no username
+                return { username: user.username || user.did, did: user.did }
             })
 
             return { chain, userMap };

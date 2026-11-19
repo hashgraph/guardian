@@ -63,6 +63,15 @@
                           {{ getStatusName(row) }}
                         </div>
                       }
+                      @case ('participation') {
+                        <div
+                          class="policy-status participation-status {{getJoinStatusClass(row.types[0])}}"
+                          [pTooltip]="getJoinStatusTooltip(row.types[0])"
+                          [tooltipDisabled]="!getJoinStatusTooltip(row.types[0])"
+                          tooltipPosition="top">
+                          {{ getJoinStatusName(row.types[0]) }}
+                        </div>
+                      }
                       @case ('topicId') {
                         <span class="text-truncate">
                           <hedera-explorer

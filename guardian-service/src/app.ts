@@ -73,6 +73,7 @@ import { policyLabelsAPI } from './api/policy-labels.service.js';
 import { initMathjs } from './utils/formula.js';
 import { formulasAPI } from './api/formulas.service.js';
 import { externalPoliciesAPI } from './api/external-policies.service.js';
+import { remoteParticipantsAPI } from './api/remote-participants.service.js';
 import { policyDataAPI } from './api/policy-data.service.js';
 import { schemaTemplatesAPI } from './api/schema-template.service.js';
 
@@ -194,6 +195,7 @@ Promise.all([
         await policyLabelsAPI(logger);
         await formulasAPI(logger);
         await externalPoliciesAPI(logger);
+        await remoteParticipantsAPI(logger);
         await schemaTemplatesAPI(logger);
         await credentialAPI(logger);
         await policyDataAPI(dataBaseServer, logger);

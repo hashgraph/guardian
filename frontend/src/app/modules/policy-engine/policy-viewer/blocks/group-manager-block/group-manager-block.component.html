@@ -87,7 +87,7 @@
             </ng-template>
             <ng-template pTemplate="body" let-element>
               <tr class="body">
-                <td class="mat-cell">{{ element.username }}</td>
+                <td class="mat-cell">{{ element.username || element.did }}</td>
                 <td class="mat-cell">{{ element.role }}</td>
                 <td class="mat-cell">{{ element.type }}</td>
                 <td class="mat-cell">

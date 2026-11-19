@@ -13,3 +13,7 @@ export { checkHederaKey } from './utils.js';
 export { VcHelper } from './vc-helper.js';
 export { RemoteDidLoader } from './remote-did-loader.js';
 export * from './remote-user-proof.js';
+export * from './published-did-document.js';
+export * from './remote-policy-join.js';
+export * from './remote-policy-join-reply.js';
+export * from './did-identifier.js';

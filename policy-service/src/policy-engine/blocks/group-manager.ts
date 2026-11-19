@@ -190,7 +190,8 @@ export class GroupManagerBlock {
         const members = (await ref.databaseServer.getAllMembersByGroup(group)).map(member => {
             return {
                 did: member.did,
-                username: member.username,
+                // a remote user has no username
+                username: member.username || member.did,
                 role: member.role,
                 type: member.did === member.owner ? 'Owner' : 'Member',
                 current: member.did === user.did
