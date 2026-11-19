@@ -293,3 +293,22 @@
         font-size: 12.5px;
     }
 }
+
+// The cell, label row and value of a read-only field, for hosts that lay them out in a grid
+@mixin sf-ro-cells {
+    .sf-ro-cell {
+        min-width: 0;
+
+        &.sf-full {
+            @include sf-full-row;
+        }
+    }
+
+    .sf-ro-label {
+        @include sf-ro-label;
+    }
+
+    .sf-ro-value {
+        @include sf-ro-value;
+    }
+}

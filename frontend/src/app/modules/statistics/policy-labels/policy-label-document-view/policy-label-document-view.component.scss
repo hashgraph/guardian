@@ -318,21 +318,7 @@ app-schema-form-nav {
         user-select: text;
     }
 
-    .sf-ro-cell {
-        min-width: 0;
-
-        &.sf-full {
-            @include form-grid.sf-full-row;
-        }
-    }
-
-    .sf-ro-label {
-        @include form-grid.sf-ro-label;
-    }
-
-    .sf-ro-value {
-        @include form-grid.sf-ro-value;
-    }
+    @include form-grid.sf-ro-cells;
 
     .sf-lv-na {
         color: var(--color-grey-4);
