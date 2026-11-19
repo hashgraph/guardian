@@ -1,5 +1,5 @@
 import { restoreSchemaDefs } from '../../../common/models/schema-defs';
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GenerateUUIDv4, IValidatorStep, LabelValidators, Schema, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
@@ -12,6 +12,9 @@ import { DocumentNode, SchemaData } from '../../../common/models/schema-node';
 import { TreeNode } from '../../../common/tree-graph/tree-node';
 import { VCViewerDialog } from '../../../schema-engine/vc-dialog/vc-dialog.component';
 import { PolicyLabelsService } from 'src/app/services/policy-labels.service';
+import { IRailCard } from '../../../schema-engine/schema-form-rail/schema-form-rail.component';
+import { IOverviewCard, IOverviewTile } from '../../../schema-engine/schema-form-nav/schema-form-overview.component';
+import { buildLabelChecks, buildLabelGroups, checkStatus, ILabelCheck, ILabelGroup } from './policy-label-document-checks';
 
 @Component({
     selector: 'app-policy-label-document-view',
@@ -57,6 +60,17 @@ export class PolicyLabelDocumentViewComponent implements OnInit {
 
     public steps: IValidatorStep[];
 
+    /** The rule and statistic validators of the label, one page each. */
+    public checks: ILabelCheck[] = [];
+    /** The groups of the label and the result of the label itself. */
+    public groups: ILabelGroup[] = [];
+    public labelStatus: 'ok' | 'bad' | 'none' = 'none';
+    public screen: 'overview' | 'section' = 'overview';
+    public activeIndex = 0;
+    public overviewTiles: IOverviewTile[] = [];
+    public overviewCards: IOverviewCard[] = [];
+    public railCards: IRailCard[] = [];
+
     private subscription = new Subscription();
 
     public get zoom(): number {
@@ -74,7 +88,8 @@ export class PolicyLabelDocumentViewComponent implements OnInit {
         private policyLabelsService: PolicyLabelsService,
         private dialogService: DialogService,
         private router: Router,
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        private host: ElementRef<HTMLElement>
     ) {
 
     }
@@ -163,6 +178,7 @@ export class PolicyLabelDocumentViewComponent implements OnInit {
         this.steps = this.validator.getDocument();
         this.validator.setData(this.relationships);
         this.validator.setVp(this.document);
+        this.updateChecks();
 
         //
         this.schemasMap = new Map<string, Schema>();
@@ -218,6 +234,87 @@ export class PolicyLabelDocumentViewComponent implements OnInit {
             this.tree.setData(this.source);
             this.tree.move(18, 46);
         }
+    }
+
+    private updateChecks() {
+        this.checks = buildLabelChecks(this.steps);
+        this.groups = buildLabelGroups(this.steps);
+        this.labelStatus = checkStatus(this.validator.status);
+        const count = (status: string) => this.checks.filter((check) => check.status === status).length;
+        this.overviewTiles = [
+            { value: String(count('ok')), label: 'Passed', tone: 'ok' },
+            { value: String(count('bad')), label: 'Failed', tone: 'bad' },
+            { value: String(count('none')), label: 'Not evaluated' }
+        ];
+        this.overviewCards = this.checks.map((check) => ({
+            id: check.id,
+            title: check.title,
+            prefix: check.prefix,
+            meta: check.parts.map((part) => part.name).join(' · '),
+            status: check.status,
+            pill: { text: this.statusText(check.status) },
+            action: 'Open'
+        }));
+        this.screen = 'overview';
+        this.activeIndex = 0;
+        this.railCards = [];
+    }
+
+    public statusText(status: 'ok' | 'bad' | 'none'): string {
+        return status === 'ok' ? 'Passed' : status === 'bad' ? 'Failed' : 'Not evaluated';
+    }
+
+    public get check(): ILabelCheck | undefined {
+        return this.screen === 'section' ? this.checks[this.activeIndex] : undefined;
+    }
+
+    public get barLabel(): string {
+        return this.screen === 'section' ? `Check ${this.activeIndex + 1} of ${this.checks.length}` : 'Label document';
+    }
+
+    public get firstCheckLink(): string | null {
+        const first = this.checks[0];
+        return first ? [first.prefix, first.title].filter(Boolean).join(' ') : null;
+    }
+
+    public partId(check: ILabelCheck, part: IValidatorStep): string {
+        return `${check.id}:${part.name}`;
+    }
+
+    public openOverview() {
+        this.screen = 'overview';
+        this.railCards = [];
+        this.scrollToTop();
+    }
+
+    public openCheck(index: number) {
+        const check = this.checks[index];
+        if (!check) {
+            return;
+        }
+        this.screen = 'section';
+        this.activeIndex = index;
+        this.railCards = check.parts.map((part) => ({ id: this.partId(check, part), title: part.name }));
+        this.scrollToTop();
+    }
+
+    /** A new page starts at its head, not where the previous one was scrolled to. */
+    private scrollToTop() {
+        this.host.nativeElement.querySelector('.nav-body-container')?.scrollTo({ top: 0 });
+    }
+
+    public onNavSelect(target: number | 'overview') {
+        if (target === 'overview') {
+            this.openOverview();
+        } else {
+            this.openCheck(target);
+        }
+    }
+
+    public onNavCard(card: IRailCard) {
+        this.host.nativeElement
+            .querySelector(`[data-part="${card.id}"]`)
+            ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     public getVariableValue(value: any): any {

@@ -1,3 +1,10 @@
+@use '../../../schema-engine/form-grid' as form-grid;
+@use '../../../schema-engine/sections' as sections;
+
+:host {
+    @include sections.sf-vars;
+}
+
 .guardian-page {
     position: relative;
     padding: 0px;
@@ -18,103 +25,6 @@
         padding: 24px 48px 24px 48px;
         overflow: auto;
         position: relative;
-
-        .step-body-container {
-            display: flex;
-            width: 100%;
-            min-height: 100px;
-            height: fit-content;
-            border-radius: 8px;
-            box-shadow: 0px 4px 8px 0px var(--guardian-shadow, #00000014);
-            background: var(--guardian-background, #FFFFFF);
-            padding: 24px;
-            flex-direction: column;
-            margin-bottom: 16px;
-
-            .step-body-header {
-                font-size: 24px;
-                font-weight: 600;
-                line-height: 32px;
-                text-align: left;
-                color: var(--guardian-font-color, #23252E);
-                margin-bottom: 24px;
-            }
-        }
-    }
-
-    .node-container {
-        .node-header {
-            font-size: 24px;
-            font-weight: 600;
-            line-height: 32px;
-            text-align: left;
-            color: var(--guardian-font-color, #23252E);
-            margin-bottom: 4px;
-
-            .node-prefix {
-                margin-right: 12px;
-            }
-        }
-
-        .node-sub-header {
-            font-size: 20px;
-            font-weight: 600;
-            line-height: 32px;
-            text-align: left;
-            color: var(--guardian-font-color, #23252E);
-            margin-bottom: 4px;
-        }
-
-        .node-status {
-            width: 8px;
-            height: 8px;
-            overflow: hidden;
-            border-radius: 50%;
-            background: var(--guardian-grey-color-3, #AAB7C4);
-            display: inline-block;
-            margin: 3px 12px 3px 0px;
-
-            &[status="true"] {
-                background: var(--guardian-success-color, #19BE47);
-            }
-
-            &[status="false"] {
-                background: var(--guardian-failure-color, #FF432A);
-            }
-        }
-
-        .node-body {
-            padding-top: 12px;
-            padding-bottom: 16px;
-        }
-
-        .field-container {
-            margin-bottom: 16px;
-
-            .field-name {
-                font-family: Inter;
-                font-size: 12px;
-                font-weight: 500;
-                line-height: 14px;
-                color: var(--guardian-font-color, #181818);
-                margin-bottom: 6px;
-            }
-
-            .field-value {
-                width: 100%;
-                height: 40px;
-                border-radius: 8px;
-                border: 1px solid var(--guardian-border-color, #E1E7EF);
-                background: var(--guardian-grey-background, #F9FAFC);
-                padding: 12px 16px;
-                font-family: Inter;
-                font-size: 14px;
-                font-weight: 400;
-                line-height: 14px;
-                color: var(--guardian-font-color, #23252E);
-                margin-bottom: 8px;
-            }
-        }
     }
 
     .fields-container {
@@ -147,65 +57,6 @@
                 overflow: hidden;
                 text-overflow: ellipsis;
                 user-select: text;
-            }
-
-            .field-value-array {
-                .field-value {
-                    margin-bottom: 16px;
-
-                    &:last-child {
-                        margin-bottom: 0px;
-                    }
-                }
-            }
-        }
-    }
-
-    .scores-container {
-        .score-container {
-            border: 1px solid var(--guardian-grey-color-3, #AAB7C4);
-            padding: 24px;
-            border-radius: 8px;
-            margin-bottom: 24px;
-
-            .score-name {
-                font-family: Inter;
-                font-size: 14px;
-                font-weight: 700;
-                line-height: 18px;
-                text-align: left;
-                color: var(--guardian-font-color, #23252E);
-                margin-bottom: 16px;
-                padding: 8px 0px;
-            }
-        }
-    }
-
-    .options-container {
-        .option-container {
-            display: flex;
-            flex-direction: row;
-
-            border-radius: 6px;
-
-            .option-checkbox {
-                cursor: default;
-                min-height: 40px;
-                width: 42px;
-                min-width: 42px;
-                display: flex;
-                justify-content: flex-start;
-                align-items: center;
-                padding-left: 4px;
-            }
-
-            .option-name {
-                cursor: default;
-                min-height: 40px;
-                width: 100%;
-                display: flex;
-                justify-content: flex-start;
-                align-items: center;
             }
         }
     }
@@ -400,4 +251,175 @@
             margin-top: 10px;
         }
     }
+}
+
+// The label checks, drawn with the shared navigation: the rail and the page share one frame
+// The rail is flush to the left and to the top and bottom of the scroll area, like the policy
+// navigation; the page keeps its own padding
+.guardian-page .nav-body-container.sf-lv-flush {
+    padding: 0;
+}
+
+app-schema-form-nav {
+    --sf-content-pad: 24px;
+    width: 100%;
+    min-height: 100%;
+}
+
+// Projected into the nav and the Overview, so styled here
+@include sections.sf-overview-text;
+@include sections.sf-section-head;
+@include sections.sf-section-links;
+@include sections.sf-badges;
+
+.sf-lv-head {
+    margin-bottom: 16px;
+}
+
+.sf-lv-label-status {
+    margin-top: 12px;
+}
+
+.sf-lv-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0 0 16px;
+    padding: 0;
+    list-style: none;
+}
+
+.sf-lv-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 12px;
+    border: 1px solid var(--guardian-border-color);
+    border-radius: 8px;
+    background: var(--guardian-background);
+    font-family: Inter;
+    font-size: 13.5px;
+    color: var(--guardian-font-color);
+}
+
+.sf-lv-prefix {
+    margin-right: 4px;
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 11.5px;
+    font-weight: 400;
+    color: var(--sf-text-3);
+}
+
+.sf-chip {
+    @include form-grid.sf-chip;
+}
+
+@include form-grid.sf-ro-chips;
+
+.sf-lv-card {
+    border: 1px solid var(--guardian-border-color);
+    border-radius: 10px;
+    background: var(--guardian-background);
+
+    .sf-lv-part {
+        padding: 14px 16px;
+        scroll-margin-top: 64px;
+
+        & + .sf-lv-part {
+            border-top: 1px dashed var(--guardian-border-color);
+        }
+    }
+
+    .sf-lv-part-head {
+        margin-bottom: 10px;
+        font-family: Inter;
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 18px;
+        color: var(--guardian-font-color);
+    }
+
+    .sf-lv-grid {
+        @include form-grid.sf-field-grid;
+        user-select: text;
+    }
+
+    @include form-grid.sf-ro-cells;
+
+    .sf-lv-na {
+        color: var(--color-grey-4);
+        font-style: italic;
+    }
+
+    .sf-lv-fx {
+        display: inline-flex;
+        flex-shrink: 0;
+
+        svg-icon {
+            display: flex;
+            width: 14px;
+            height: 14px;
+        }
+
+        // The icon is 24px by default and would hang below the label
+        ::ng-deep svg {
+            width: 14px;
+            height: 14px;
+        }
+    }
+
+    .sf-lv-options {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .sf-lv-option {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        font-family: Inter;
+        font-size: 13.5px;
+        line-height: 20px;
+        color: var(--sf-text-2);
+
+        .pi {
+            flex-shrink: 0;
+            color: var(--sf-disabled);
+        }
+
+        &.sf-lv-option-on {
+            border-color: var(--color-primary);
+            background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+            color: var(--guardian-font-color);
+            font-weight: 500;
+
+            .pi {
+                color: var(--color-primary);
+            }
+        }
+    }
+
+    .sf-lv-sr {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+}
+
+.sf-lv-empty {
+    width: 100%;
+    padding: 32px;
+    text-align: center;
+    color: var(--color-grey-5);
 }

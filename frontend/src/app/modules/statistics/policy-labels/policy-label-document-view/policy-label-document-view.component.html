@@ -85,124 +85,163 @@
     }
 
     @if (view === 'document') {
-      <div class="nav-body-container">
-        <div class="step-body-container">
-          @for (current of steps; track current) {
-            <div class="node-container">
-              @if (current.type === 'validate') {
-                <div class="node-header">
-                  <span class="node-status" [attr.status]="current.item.status"></span>
-                  @if (current.prefix) {
-                    <span class="node-prefix">{{current.prefix}}</span>
-                  }
-                  <span>{{current.title}}</span>
+      <div class="nav-body-container sf-lv-flush">
+        @if (checks.length) {
+          <app-schema-form-nav
+            mode="view"
+            title="Label checks"
+            [sections]="checks"
+            [screen]="screen"
+            [activeIndex]="activeIndex"
+            [cards]="railCards"
+            [barLabel]="barLabel"
+            (sectionSelect)="onNavSelect($event)"
+            (selectCard)="onNavCard($event)"
+            >
+            @if (screen === 'overview') {
+              <app-schema-form-overview
+                [tiles]="overviewTiles"
+                [cards]="overviewCards"
+                [footerLink]="firstCheckLink"
+                (open)="openCheck($event)"
+                (footer)="openCheck(0)"
+                >
+                <div overviewHead class="sf-lv-head">
+                  <div class="sf-eyebrow">Overview · Label document</div>
+                  <h2 class="sf-overview-title">{{ definition?.name }}</h2>
+                  <p class="sf-lead">Results of each label check for this document.</p>
+                  <span
+                    class="sf-chip sf-lv-label-status"
+                    [class.sf-chip-ok]="labelStatus === 'ok'"
+                    [class.sf-chip-err]="labelStatus === 'bad'"
+                    >Label: {{ statusText(labelStatus) }}</span>
                 </div>
-              }
-              @if (current.type !== 'validate') {
-                <div class="node-body">
-                  <div class="node-sub-header">
+                @if (groups.length) {
+                  <ul overviewExtra class="sf-lv-groups">
+                    @for (group of groups; track group.id) {
+                      <li class="sf-lv-group">
+                        <span class="sf-lv-group-name">
+                          @if (group.prefix) {
+                            <span class="sf-lv-prefix">{{ group.prefix }}</span>
+                          }{{ group.title }}
+                        </span>
+                        <span
+                          class="sf-chip"
+                          [class.sf-chip-ok]="group.status === 'ok'"
+                          [class.sf-chip-err]="group.status === 'bad'"
+                          >{{ statusText(group.status) }}</span>
+                      </li>
+                    }
+                  </ul>
+                }
+              </app-schema-form-overview>
+            } @else {
+              @if (check; as current) {
+                <div class="sf-section-head">
+                  <h2 class="sf-section-title">
                     @if (current.prefix) {
-                      <span class="node-prefix">{{current.name}}</span>
-                    }
-                  </div>
-                  @if (current.type === 'variables') {
-                    @for (variable of current.config; track variable) {
-                      <div class="field-container">
-                        <div class="field-name">
-                          {{variable.fieldDescription}}
-                        </div>
-                        @if (variable.isArray) {
-                          <div class="field-value-array">
-                            @for (v of variable.value; track v) {
-                              <div class="field-value">
-                                {{getVariableValue(v)}}
-                              </div>
-                            }
-                          </div>
+                      <span class="sf-lv-prefix">{{ current.prefix }}</span>
+                    }{{ current.title }}
+                  </h2>
+                  <span
+                    class="sf-chip"
+                    [class.sf-chip-ok]="current.status === 'ok'"
+                    [class.sf-chip-err]="current.status === 'bad'"
+                    >{{ statusText(current.status) }}</span>
+                </div>
+                <section class="sf-lv-card">
+                  @for (part of current.parts; track part.name) {
+                    <div class="sf-lv-part" [attr.data-part]="partId(current, part)">
+                      <div class="sf-lv-part-head">{{ part.name }}</div>
+                      <div class="sf-lv-grid">
+                        @if (part.type === 'variables') {
+                          @for (variable of part.config; track variable) {
+                            <ng-container *ngTemplateOutlet="variableCell; context: { $implicit: variable }"></ng-container>
+                          }
                         }
-                        @if (!variable.isArray) {
-                          <div class="field-value">
-                            {{getVariableValue(variable.value)}}
-                          </div>
-                        }
-                      </div>
-                    }
-                  }
-                  @if (current.type === 'scores') {
-                    @for (score of current.config; track score) {
-                      <div class="score-container">
-                        @if (score.relationships) {
-                          <div class="fields-container">
+                        @if (part.type === 'scores') {
+                          @for (score of part.config; track score) {
                             @for (variable of score._relationships; track variable) {
-                              <div class="field-container">
-                                <div class="field-name">
-                                  {{variable.fieldDescription}}
-                                </div>
-                                @if (variable.isArray) {
-                                  <div class="field-value-array">
-                                    @for (v of variable.value; track v) {
-                                      <div class="field-value">
-                                        {{getVariableValue(v)}}
-                                      </div>
+                              <ng-container *ngTemplateOutlet="variableCell; context: { $implicit: variable }"></ng-container>
+                            }
+                            <div class="sf-ro-cell sf-full">
+                              <div class="sf-ro-label"><span class="sf-ro-lt">{{ score.description }}</span></div>
+                              <ul class="sf-lv-options">
+                                @for (option of score._options; track option) {
+                                  <li class="sf-lv-option" [class.sf-lv-option-on]="option.value === score.value">
+                                    <i
+                                      class="pi"
+                                      [class.pi-check-circle]="option.value === score.value"
+                                      [class.pi-circle]="option.value !== score.value"
+                                      aria-hidden="true"
+                                    ></i>
+                                    <span>{{ option.description }}</span>
+                                    @if (option.value === score.value) {
+                                      <span class="sf-lv-sr">Selected</span>
                                     }
-                                  </div>
+                                  </li>
                                 }
-                                @if (!variable.isArray) {
-                                  <div class="field-value">
-                                    {{getVariableValue(variable.value)}}
-                                  </div>
-                                }
-                              </div>
-                            }
-                          </div>
+                              </ul>
+                            </div>
+                          }
                         }
-                        <div class="score-name">
-                          {{score.description}}
-                        </div>
-                        @if (score._options) {
-                          <div class="options-container">
-                            @for (option of score._options; track option) {
-                              <div class="option-container">
-                                <div class="option-checkbox">
-                                  <p-radioButton
-                                    class="guardian-radio-button radio-button-24"
-                                    [name]="score.id"
-                                    [value]="option.value"
-                                    [(ngModel)]="score.value"
-                                    [inputId]="option.id"
-                                    readonly="true"
-                                    disabled="true"
-                                  ></p-radioButton>
-                                </div>
-                                <label class="option-name" [for]="option.id">
-                                  {{option.description}}
-                                </label>
+                        @if (part.type === 'formulas') {
+                          @for (formula of part.config; track formula) {
+                            <div class="sf-ro-cell">
+                              <div class="sf-ro-label">
+                                <span class="sf-lv-fx" aria-hidden="true"><svg-icon src="/assets/images/icons/function.svg" svgClass="icon-color-primary"></svg-icon></span>
+                                <span class="sf-ro-lt">{{ formula.description }}</span>
                               </div>
-                            }
-                          </div>
+                              <div class="sf-ro-value">{{ formula.value }}</div>
+                            </div>
+                          }
                         }
                       </div>
-                    }
+                    </div>
                   }
-                  @if (current.type === 'formulas') {
-                    @for (formula of current.config; track formula) {
-                      <div class="field-container">
-                        <div class="field-name">
-                          {{formula.description}}
-                        </div>
-                        <div class="field-value">
-                          {{formula.value}}
-                        </div>
-                      </div>
-                    }
+                </section>
+                <div class="sf-section-links">
+                  @if (activeIndex > 0) {
+                    <button type="button" class="sf-section-link" (click)="openCheck(activeIndex - 1)">
+                      <i class="pi pi-arrow-left" aria-hidden="true"></i>
+                      {{ checks[activeIndex - 1].title }}
+                    </button>
+                  } @else {
+                    <button type="button" class="sf-section-link" (click)="openOverview()">
+                      <i class="pi pi-arrow-left" aria-hidden="true"></i>
+                      Overview
+                    </button>
+                  }
+                  @if (activeIndex < checks.length - 1) {
+                    <button type="button" class="sf-section-link" (click)="openCheck(activeIndex + 1)">
+                      {{ checks[activeIndex + 1].title }}
+                      <i class="pi pi-arrow-right" aria-hidden="true"></i>
+                    </button>
                   }
                 </div>
               }
-            </div>
-          }
-        </div>
+            }
+          </app-schema-form-nav>
+        } @else {
+          <div class="sf-lv-empty">This label has no checks to show.</div>
+        }
       </div>
     }
+
+    <ng-template #variableCell let-variable>
+      <div class="sf-ro-cell">
+        <div class="sf-ro-label"><span class="sf-ro-lt">{{ variable.fieldDescription }}</span></div>
+        @if (variable.isArray) {
+          <div class="sf-ro-value sf-ro-chips">
+            @for (v of variable.value; track $index) {
+              <span class="sf-ro-chip" [class.sf-lv-na]="v === undefined">{{ getVariableValue(v) }}</span>
+            }
+          </div>
+        } @else {
+          <div class="sf-ro-value" [class.sf-lv-na]="variable.value === undefined">{{ getVariableValue(variable.value) }}</div>
+        }
+      </div>
+    </ng-template>
     @if (view === 'relationships') {
       <div class="nav-body-container">
         <div class="tree-container">
