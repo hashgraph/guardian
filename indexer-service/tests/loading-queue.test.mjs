@@ -8,35 +8,53 @@ const b64 = (obj) => Buffer.from(JSON.stringify(obj)).toString('base64');
 describe('LoadingQueueService.addEntity', () => {
     let originalGetEntityManager;
     let originalAxiosGet;
-    let cachedTopics;
-    let created;
-    let updates;
+    let topics;
+    let onInsert;
     let service;
+    let mirrorCalls;
+
+    const mirror = (parents) => {
+        axios.get = async (url) => {
+            mirrorCalls.push(url);
+            const id = url.split('/topics/')[1].split('/')[0];
+            const messages = parents[id]
+                ? [{ message: b64({ type: 'Topic', parentId: parents[id] }) }]
+                : [];
+            return { data: { messages } };
+        };
+    };
 
     beforeEach(() => {
-        cachedTopics = new Set();
-        created = [];
-        updates = [];
+        topics = new Map();
+        onInsert = null;
+        mirrorCalls = [];
         service = new LoadingQueueService();
         LoadingQueueService.mirrorNodeUrl = 'http://mirror/';
 
         originalGetEntityManager = DataBaseHelper.getEntityManager;
         DataBaseHelper.getEntityManager = () => ({
             find: async () => [],
-            count: async (_entity, filter) => (cachedTopics.has(filter.topicId) ? 1 : 0),
+            count: async (_entity, filter) => (topics.has(filter.topicId) ? 1 : 0),
             nativeUpdate: async (entity, filter, data) => {
-                updates.push({ entity: entity.name, filter, data });
-                return entity.name === 'TopicCache' && cachedTopics.has(filter.topicId) ? 1 : 0;
-            },
-            create: (_entity, data) => {
-                created.push(data);
-                return data;
-            },
-            persistAndFlush: async (row) => {
-                if (cachedTopics.has(row.topicId)) {
-                    throw new Error('duplicate topic');
+                if (entity.name !== 'TopicCache' || typeof filter.topicId !== 'string') {
+                    return 0;
                 }
-                cachedTopics.add(row.topicId);
+                const row = topics.get(filter.topicId);
+                if (!row || row.priorityTimestamp === filter.priorityTimestamp.$ne) {
+                    return 0;
+                }
+                Object.assign(row, data);
+                return 1;
+            },
+            create: (_entity, data) => ({ ...data }),
+            persistAndFlush: async (row) => {
+                if (onInsert) {
+                    onInsert(row);
+                }
+                if (topics.has(row.topicId)) {
+                    throw Object.assign(new Error('E11000 duplicate key'), { code: 11000 });
+                }
+                topics.set(row.topicId, row);
             },
         });
         originalAxiosGet = axios.get;
@@ -47,11 +65,11 @@ describe('LoadingQueueService.addEntity', () => {
         axios.get = originalAxiosGet;
     });
 
-    it('returns false instead of throwing when the Hedera lookup finds no parent', async () => {
-        axios.get = async () => ({ data: { messages: [] } });
+    it('returns false when the mirror node has no parent topic', async () => {
+        mirror({});
 
         assert.equal(await service.addEntity('0.0.500', 1), false);
-        assert.equal(created.length, 0);
+        assert.equal(topics.size, 0);
     });
 
     it('returns false when the mirror node request fails', async () => {
@@ -60,41 +78,55 @@ describe('LoadingQueueService.addEntity', () => {
         };
 
         assert.equal(await service.addEntity('0.0.500', 1), false);
+        assert.equal(topics.size, 0);
     });
 
-    it('adds the unknown topic and its missing parents and re-prioritises the cached ancestor', async () => {
-        cachedTopics.add('0.0.300');
-        const parents = { '0.0.500': '0.0.400', '0.0.400': '0.0.300' };
-        axios.get = async (url) => {
-            const id = url.split('/topics/')[1].split('/')[0];
-            return { data: { messages: [{ message: b64({ type: 'Topic', parentId: parents[id] }) }] } };
+    it('stores the unknown topic and its missing parents and prioritises the cached ancestor', async () => {
+        topics.set('0.0.300', { topicId: '0.0.300', priorityTimestamp: 1 });
+        mirror({ '0.0.500': '0.0.400', '0.0.400': '0.0.300' });
+
+        assert.equal(await service.addEntity('0.0.500', 7), true);
+
+        assert.equal(topics.get('0.0.500').inheritPriority, true);
+        assert.equal(topics.get('0.0.500').priorityTimestamp, 7);
+        assert.equal(topics.get('0.0.400').inheritPriority, false);
+        assert.equal(topics.get('0.0.400').priorityTimestamp, 7);
+        assert.equal(topics.get('0.0.300').priorityTimestamp, 7);
+    });
+
+    it('prioritises an already cached topic without asking the mirror node or inserting it again', async () => {
+        topics.set('0.0.600', { topicId: '0.0.600', priorityTimestamp: 1, inheritPriority: false });
+
+        assert.equal(await service.addEntity('0.0.600', 5), true);
+
+        assert.equal(mirrorCalls.length, 0);
+        assert.equal(topics.size, 1);
+        assert.equal(topics.get('0.0.600').priorityTimestamp, 5);
+        assert.equal(topics.get('0.0.600').inheritPriority, true);
+    });
+
+    it('keeps inheritPriority of a cached parent when a deeper topic is prioritised', async () => {
+        topics.set('0.0.300', { topicId: '0.0.300', priorityTimestamp: 1, inheritPriority: true });
+        mirror({ '0.0.500': '0.0.300' });
+
+        assert.equal(await service.addEntity('0.0.500', 7), true);
+
+        assert.equal(topics.get('0.0.300').priorityTimestamp, 7);
+        assert.equal(topics.get('0.0.300').inheritPriority, true);
+    });
+
+    it('prioritises the existing row when the worker caches the topic between the check and the insert', async () => {
+        topics.set('0.0.300', { topicId: '0.0.300', priorityTimestamp: 1 });
+        mirror({ '0.0.500': '0.0.300' });
+        onInsert = (row) => {
+            if (row.topicId === '0.0.500') {
+                topics.set('0.0.500', { topicId: '0.0.500', priorityTimestamp: null });
+            }
         };
 
         assert.equal(await service.addEntity('0.0.500', 7), true);
 
-        const byId = Object.fromEntries(created.map((row) => [row.topicId, row]));
-        assert.equal(byId['0.0.500'].inheritPriority, true);
-        assert.equal(byId['0.0.400'].inheritPriority, false);
-        assert.equal(byId['0.0.500'].priorityTimestamp, 7);
-        const parentUpdate = updates.find((u) => u.entity === 'TopicCache' && u.filter.topicId === '0.0.300');
-        assert.equal(parentUpdate.data.priorityTimestamp, 7);
-        assert.equal('inheritPriority' in parentUpdate.data, false);
-    });
-
-    it('does not insert a duplicate when the topic is already cached', async () => {
-        cachedTopics.add('0.0.600');
-
-        await service.addTopic('0.0.600', 1, true);
-
-        assert.equal(created.length, 0);
-    });
-
-    it('does not lower inheritPriority of an existing topic', async () => {
-        cachedTopics.add('0.0.300');
-
-        await service.tryUpdateTopic('0.0.300', 9, false);
-
-        const topicUpdate = updates.find((u) => u.entity === 'TopicCache');
-        assert.equal('inheritPriority' in topicUpdate.data, false);
+        assert.equal(topics.get('0.0.500').priorityTimestamp, 7);
+        assert.equal(topics.get('0.0.500').inheritPriority, true);
     });
 });

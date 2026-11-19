@@ -320,18 +320,26 @@ export class LoadingQueueService {
             return;
         }
         const em = DataBaseHelper.getEntityManager();
-        await em.persistAndFlush(em.create(TopicCache, {
-            topicId,
-            status: MessageStatus.NONE,
-            lastUpdate: 0,
-            messages: 0,
-            hasNext: false,
-            priorityDate: new Date(),
-            priorityStatus: PriorityStatus.SCHEDULED,
-            priorityStatusDate: new Date(),
-            priorityTimestamp,
-            inheritPriority
-        }));
+        try {
+            await em.persistAndFlush(em.create(TopicCache, {
+                topicId,
+                status: MessageStatus.NONE,
+                lastUpdate: 0,
+                messages: 0,
+                hasNext: false,
+                priorityDate: new Date(),
+                priorityStatus: PriorityStatus.SCHEDULED,
+                priorityStatusDate: new Date(),
+                priorityTimestamp,
+                inheritPriority
+            }));
+        } catch (error) {
+            if (error?.code !== 11000) {
+                throw error;
+            }
+            // The worker cached the topic between the check and the insert: prioritise the existing row instead.
+            await this.tryUpdateTopic(topicId, priorityTimestamp, inheritPriority);
+        }
     }
 
     private async tryUpdateTopic(topicId: string, priorityTimestamp: number = Date.now(), inheritPriority: boolean = false) {
