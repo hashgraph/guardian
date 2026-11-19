@@ -5,6 +5,8 @@ import { PolicyEngineService } from "src/app/services/policy-engine.service";
 import { CID } from 'multiformats/cid';
 import { isGeoFileLink, isGeoJsonValue } from 'src/app/services/geo-file-persistence.service';
 
+const FILEBASE_IPFS_GATEWAY_TEMPLATE = 'https://ipfs.filebase.io/ipfs/{cid}';
+
 interface DocumentData {
     document: any;
     params: any;
@@ -38,7 +40,7 @@ export class IpfsTransformationUIAddonCode {
         private dryRun: boolean
     ) {
         this.transformationType = this.config.transformationType;
-        this.ipfsGatewayTemplate = this.config.ipfsGatewayTemplate;
+        this.ipfsGatewayTemplate = this.resolveGatewayTemplate(this.config.ipfsGatewayTemplate);
         this.mockId = config.mockId;
     }
 
@@ -228,6 +230,14 @@ export class IpfsTransformationUIAddonCode {
         }
 
         return ipfsString;
+    }
+
+    private resolveGatewayTemplate(template: string): string {
+        try {
+            return new URL(template).hostname === 'ipfs.io' ? FILEBASE_IPFS_GATEWAY_TEMPLATE : template;
+        } catch {
+            return template;
+        }
     }
 
     private convertToIpfsGateway(cid: string): any {
