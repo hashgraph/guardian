@@ -190,21 +190,7 @@
     }
 }
 
-.sf-ro-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-
-.sf-ro-chip {
-    display: inline-flex;
-    align-items: center;
-    padding: 1px 10px;
-    border: 1px solid var(--guardian-border-color);
-    border-radius: 999px;
-    background: var(--guardian-background);
-    font-size: 12.5px;
-}
+@include form-grid.sf-ro-chips;
 
 .sf-ro-list {
     margin: 0;
