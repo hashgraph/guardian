@@ -516,6 +516,35 @@ describe('@unit exec RequestVcDocumentBlock.checkPreset', () => {
         assert.equal((await check(block, { tags: ['a', 'b', 'c'] }, ref)).valid, true);
     });
 
+    describe('two mappings into one target array from sources of different length', () => {
+        const block = () => mk([
+            { name: 'a.b', value: 's.b', readonly: true, nameLevel: 1, valueLevel: 1 },
+            { name: 'a.c', value: 't.c', readonly: true, nameLevel: 1, valueLevel: 1 },
+        ], {
+            iri: '#S',
+            fields: [f('a', { isRef: true, isArray: true, fields: [f('b'), f('c')] })],
+            conditions: [],
+        });
+        const ref = source({ s: [{ b: 1 }, { b: 2 }, { b: 3 }], t: [{ c: 'x' }, { c: 'y' }] });
+
+        it('the padding entry the form creates for the shorter source is accepted', async () => {
+            const doc = { a: [{ b: 1, c: 'x' }, { b: 2, c: 'y' }, { b: 3 }] };
+            assert.equal((await check(block(), doc, ref)).valid, true);
+        });
+
+        it('a value put into the padding entry is rejected', async () => {
+            const doc = { a: [{ b: 1, c: 'x' }, { b: 2, c: 'y' }, { b: 3, c: 'z' }] };
+            const res = await check(block(), doc, ref);
+            assert.equal(res.valid, false);
+            assert.match(res.error, /\(a\.c\)/);
+        });
+
+        it('a removed entry is still rejected', async () => {
+            const doc = { a: [{ b: 1, c: 'x' }, { b: 2 }, { b: 3 }] };
+            assert.equal((await check(block(), doc, ref)).valid, false);
+        });
+    });
+
     describe('conditions inside a sub-schema', () => {
         // applicant { has, name }: `name` is shown only when applicant.has == 'true'
         const applicant = f('applicant', {

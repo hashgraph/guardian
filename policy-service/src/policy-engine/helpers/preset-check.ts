@@ -69,7 +69,7 @@ export function checkReadonlyPreset(
         // This is decided per entry, so one hidden row does not excuse the others
         const mask = hiddenMask(schema?.conditions, schema?.fields, hiddenCheckDocument, field.name);
         const expectedChecked = alignHidden(actual, expected, mask);
-        if (!deepEqual(actual, expectedChecked)) {
+        if (!deepEqual(trimPadding(actual, expectedChecked), expectedChecked)) {
             return {
                 error: `Readonly preset field (${field.name}) can not be modified.`,
                 valid: false,
@@ -159,4 +159,21 @@ function alignHidden(actual: any, expected: any, mask: any): any {
         );
     }
     return expected;
+}
+
+/**
+ * Drops the trailing missing entries of the submitted value beyond the expected length.
+ * Two mappings into one target array from sources of different length make the form create
+ * as many entries as the longer source, so the shorter one reads as missing there.
+ * A value in such an entry is kept, so it is still compared (and rejected).
+ */
+function trimPadding(actual: any, expected: any): any {
+    if (!Array.isArray(actual) || !Array.isArray(expected)) {
+        return actual;
+    }
+    let end = actual.length;
+    while (end > expected.length && isEmpty(actual[end - 1])) {
+        end--;
+    }
+    return actual.slice(0, end).map((item, index) => trimPadding(item, expected[index]));
 }
