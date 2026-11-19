@@ -128,27 +128,31 @@ export class PresetPath {
         user: { username?: string, hederaAccountId?: string }
     ): any {
         const json: any = {};
-        for (const mapping of mappings) {
+        const writesInside = (mapping: IPresetFieldMapping) => typeof mapping.name === 'string' && mapping.name.includes('.');
+        const apply = (mapping: IPresetFieldMapping) => {
             if (mapping.value === 'username' || mapping.value === 'hederaAccountId') {
                 const value = mapping.value === 'username' ? user.username : user.hederaAccountId;
-                if (typeof mapping.name === 'string' && mapping.name.includes('.')) {
+                if (writesInside(mapping)) {
                     PresetPath.write(json, fields, mapping.name, value);
                 } else {
                     json[mapping.name] = value;
                 }
-                continue;
+                return;
             }
             if (PresetPath.isNested(mapping)) {
-                // Nested path (object or array entries); plain names keep the line below
+                // Nested path (object or array entries); plain names keep the code below
                 if (PresetPath.isCompatible(mapping)) {
                     PresetPath.write(json, fields, mapping.name, PresetPath.sourceValue(source, mapping));
                 }
-                continue;
+                return;
             }
             // Objects are copied: a nested mapping into the same root writes into it
             const plain = source[mapping.value];
             json[mapping.name] = plain && typeof plain === 'object' ? JSON.parse(JSON.stringify(plain)) : plain;
-        }
+        };
+        const inside = (mapping: IPresetFieldMapping) => PresetPath.isNested(mapping) || writesInside(mapping);
+        mappings.filter((mapping) => !inside(mapping)).forEach(apply);
+        mappings.filter(inside).forEach(apply);
         return json;
     }
 

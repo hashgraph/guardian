@@ -209,6 +209,18 @@ describe('PresetPath.fill', () => {
         assert.deepEqual(json, {});
     });
 
+    it('a plain mapping into a root does not wipe a nested mapping written before it', () => {
+        const source = { places: [{ t: 'A' }], whole: [{ name: 'old' }] };
+        const nestedFirst = [
+            { name: 'locs.name', value: 'places.t', nameLevel: 1, valueLevel: 1 },
+            { name: 'locs', value: 'whole' },
+        ];
+        const plainFirst = [...nestedFirst].reverse();
+        const expected = { locs: [{ name: 'A' }] };
+        assert.deepEqual(PresetPath.fill(source, nestedFirst, fields, user), expected);
+        assert.deepEqual(PresetPath.fill(source, plainFirst, fields, user), expected);
+    });
+
     it('throws for a missing source, so the caller keeps its old catch', () => {
         assert.throws(() => PresetPath.fill(undefined, [{ name: 'a', value: 'b' }], fields, user));
     });
