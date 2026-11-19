@@ -405,8 +405,8 @@ export class TagsApi {
             owner: Examples.DID,
             messageId: Examples.MESSAGE_ID,
             category: 'TAG',
-            documentURL: 'https://ipfs.io/ipfs/example',
-            contextURL: 'https://ipfs.io/ipfs/example',
+            documentURL: 'ipfs://example',
+            contextURL: 'ipfs://example',
             document: {},
             context: {}
         }]
@@ -494,8 +494,8 @@ export class TagsApi {
             owner: Examples.DID,
             messageId: Examples.MESSAGE_ID,
             category: 'TAG',
-            documentURL: 'https://ipfs.io/ipfs/example',
-            contextURL: 'https://ipfs.io/ipfs/example',
+            documentURL: 'ipfs://example',
+            contextURL: 'ipfs://example',
             document: {},
             context: {}
         }]
@@ -739,8 +739,8 @@ export class TagsApi {
             owner: Examples.DID,
             messageId: Examples.MESSAGE_ID,
             category: 'TAG',
-            documentURL: 'https://ipfs.io/ipfs/example',
-            contextURL: 'https://ipfs.io/ipfs/example',
+            documentURL: 'ipfs://example',
+            contextURL: 'ipfs://example',
             document: {},
             context: {}
         }]
@@ -824,8 +824,8 @@ export class TagsApi {
             owner: Examples.DID,
             messageId: Examples.MESSAGE_ID,
             category: 'TAG',
-            documentURL: 'https://ipfs.io/ipfs/example',
-            contextURL: 'https://ipfs.io/ipfs/example',
+            documentURL: 'ipfs://example',
+            contextURL: 'ipfs://example',
             document: {},
             context: {}
         }]
@@ -896,8 +896,8 @@ export class TagsApi {
             owner: Examples.DID,
             messageId: Examples.MESSAGE_ID,
             category: 'TAG',
-            documentURL: 'https://ipfs.io/ipfs/example',
-            contextURL: 'https://ipfs.io/ipfs/example',
+            documentURL: 'ipfs://example',
+            contextURL: 'ipfs://example',
             document: {},
             context: {}
         }]

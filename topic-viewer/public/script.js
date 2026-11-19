@@ -102,7 +102,7 @@ async function getTopicMessage(topicId, index) {
 
 async function getIPFS(cid) {
     try {
-        const result = await fetch(`https://ipfs.io/ipfs/${cid}`);
+        const result = await fetch(`https://ipfs.filebase.io/ipfs/${cid}`);
         if (result.status === 200) {
             return await result.json();
         } else {
