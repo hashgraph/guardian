@@ -1,5 +1,7 @@
-import { Component, Input, SimpleChanges } from '@angular/core';
-import { SettingsService } from 'src/app/services/settings.service';
+import { Component, Input } from '@angular/core';
+import { IPFSService } from 'src/app/services/ipfs.service';
+import { ToastService } from 'src/app/services/toast.service';
+import { openIpfsFile } from 'src/app/utils/open-ipfs-file';
 
 /**
  * Hedera explorer.
@@ -11,21 +13,15 @@ import { SettingsService } from 'src/app/services/settings.service';
     standalone: false
 })
 export class FileExplorer {
-    url: string;
-
     @Input('type') type!: string;
     @Input('params') params!: string | null;
 
-    constructor(private settingsService: SettingsService) {
-        this.url = '';
-    }
+    constructor(private ipfs: IPFSService, private toast: ToastService) {}
 
-    ngOnChanges(changes: SimpleChanges): void {
+    public openFile(event: Event): void {
         if (this.type === 'ipfs' && typeof this.params === 'string') {
-            const cid = this.params.startsWith('ipfs://') ? this.params.substring(7) : this.params;
-            this.url = `https://ipfs.io/ipfs/${cid}`;
-        } else {
-            this.url = '';
+            event.preventDefault();
+            openIpfsFile(this.ipfs, this.toast, this.params);
         }
     }
 }

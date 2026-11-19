@@ -302,11 +302,12 @@ describe('SchemaFormViewComponent', () => {
             expect(links).toEqual(['https://example.com', 'mailto:a@b.com']);
         });
 
-        it('shows an IPFS file with its CID and an Open link', () => {
+        it('shows an IPFS file with its CID and an Open button', () => {
             const cid = 'QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG';
             const fixture = render([field('file', { pattern: '^ipfs://.+', customType: 'file' })], { file: `ipfs://${cid}` });
             expect(texts(fixture, '.sf-ro-url')).toEqual([`ipfs://${cid}`]);
-            expect(fixture.nativeElement.querySelector('a.sf-ro-open').getAttribute('href')).toBe(`https://ipfs.io/ipfs/${cid}`);
+            expect(fixture.nativeElement.querySelector('button.sf-ro-open').textContent).toContain('Open');
+            expect(fixture.nativeElement.querySelector('ipfs-link [href]')).toBeNull();
             const copies = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.sf-ro-file-links sf-copy'));
             expect(copies.map((node) => node.getAttribute('tip'))).toEqual(['Copy link', 'Copy CID']);
         });

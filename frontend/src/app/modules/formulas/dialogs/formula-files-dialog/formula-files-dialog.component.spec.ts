@@ -43,10 +43,10 @@ for (const dialog of [FormulaFilesDialog, FormulasViewDialog]) {
         it('shows the unchanged URL text and shared actions for each file', () => {
             const urls = [`ipfs://${cid}`, 'https://example.com/doc.pdf'];
             const root = build(urls.map((url) => ({ name: 'Document', type: 'pdf', url })));
-            const links = Array.from(root.querySelectorAll<HTMLAnchorElement>('ipfs-link a'));
+            const links = Array.from(root.querySelectorAll<HTMLButtonElement>('ipfs-link button.sf-ro-open'));
             expect(links.map((link) => link.textContent?.trim())).toEqual(['Open', 'Open']);
-            expect(links.map((link) => link.getAttribute('href'))).toEqual([`https://ipfs.io/ipfs/${cid}`, urls[1]]);
-            expect(links.every((link) => link.target === '_blank')).toBe(true);
+            expect(links.every((link) => link.type === 'button')).toBe(true);
+            expect(root.querySelector('ipfs-link [href]')).toBeNull();
             expect(root.textContent).toContain(urls[0]);
             expect(root.textContent).not.toContain('Ipfs://Bafy');
             expect(Array.from(root.querySelectorAll<HTMLButtonElement>('button[aria-label="Copy CID"]')).map((button) => button.disabled)).toEqual([false, true]);
