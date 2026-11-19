@@ -21,14 +21,13 @@ import {
     Schema,
     SchemaHelper,
     CheckResult,
-    removeObjectProperties,
     LocationType,
     SchemaEntity,
 } from '@guardian/interfaces';
 import { BlockActionError } from '../errors/block-action-error.js';
 import { PolicyUtils } from '../helpers/utils.js';
+import { checkReadonlyPreset } from '../helpers/preset-check.js';
 import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/policy-event-type.js';
-import deepEqual from 'deep-equal';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
 import { hydrateTablesInObject, loadFileTextById } from '../helpers/table-field.js';
 import { GeospatialFileValidator } from '../helpers/geospatial-file-validator.js';
@@ -354,47 +353,6 @@ export class RequestVcDocumentBlockAddon {
         user?: PolicyUser
     ): Promise<CheckResult> {
         const options = await ref.getOptions(user);
-
-        if (
-            options.presetFields &&
-            options.presetFields.length &&
-            options.presetSchema
-        ) {
-            const readonly = options.presetFields.filter(
-                (item: any) => item.readonly && item.value
-            );
-            if (!readonly.length || !document || !documentRef) {
-                return { valid: true };
-            }
-
-            const presetDocument =
-                PolicyUtils.getCredentialSubject(documentRef);
-            if (!presetDocument) {
-                return {
-                    error: 'Readonly preset fields can not be verified.',
-                    valid: false,
-                };
-            }
-
-            const presetDocumentCopy = removeObjectProperties(
-                ['@context'],
-                JSON.parse(JSON.stringify(presetDocument))
-            );
-            for (const field of readonly) {
-                if (
-                    !deepEqual(
-                        document[field.name],
-                        presetDocumentCopy[field.value]
-                    )
-                ) {
-                    return {
-                        error: `Readonly preset field (${field.name}) can not be modified.`,
-                        valid: false,
-                    };
-                }
-            }
-        }
-
-        return { valid: true };
+        return checkReadonlyPreset(options, this._schema, document, documentRef);
     }
 }

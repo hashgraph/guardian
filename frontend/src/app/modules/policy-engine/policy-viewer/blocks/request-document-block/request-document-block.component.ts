@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild, inject } from '@angular/core';
-import { DocumentGenerator, ISchema, LocationType, Schema } from '@guardian/interfaces';
+import { DocumentGenerator, ISchema, LocationType, PresetPath, Schema } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
@@ -297,26 +297,13 @@ export class RequestDocumentBlockComponent
     private getJson(data: any, presetFields: any[]) {
         try {
             if (data) {
-                const json: any = {};
                 let cs: any = {};
                 if (Array.isArray(data.document.credentialSubject)) {
                     cs = data.document.credentialSubject[0];
                 } else {
                     cs = data.document.credentialSubject;
                 }
-                for (let i = 0; i < presetFields.length; i++) {
-                    const f = presetFields[i];
-                    if (f.value === 'username') {
-                        json[f.name] = this.user.username;
-                        continue;
-                    }
-                    if (f.value === 'hederaAccountId') {
-                        json[f.name] = this.user.hederaAccountId;
-                        continue;
-                    }
-
-                    json[f.name] = cs[f.value];
-                }
+                const json = PresetPath.fill(cs, presetFields, this.schema?.fields, this.user);
                 return json;
             }
         } catch (error) {

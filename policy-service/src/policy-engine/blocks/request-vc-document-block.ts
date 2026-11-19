@@ -1,5 +1,6 @@
-import { CheckResult, LocationType, removeObjectProperties, Schema, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
+import { CheckResult, LocationType, Schema, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { PolicyUtils } from '../helpers/utils.js';
+import { checkReadonlyPreset } from '../helpers/preset-check.js';
 import { BlockActionError } from '../errors/index.js';
 import { ActionCallback, StateField } from '../helpers/decorators/index.js';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyGetData, IPolicyRequestBlock, IPolicyValidatorBlock } from '../policy-engine.interface.js';
@@ -11,7 +12,6 @@ import { VcHelper } from '@guardian/hedera/vc-helper';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
-import deepEqual from 'deep-equal';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
 import { hydrateTablesInObject, loadFileTextById } from '../helpers/table-field.js';
 import { RecordActionStep } from '../record-action-step.js';
@@ -392,48 +392,7 @@ export class RequestVcDocumentBlock {
         user?: PolicyUser
     ): Promise<CheckResult> {
         const options = await ref.getOptions(user);
-
-        if (
-            options.presetFields &&
-            options.presetFields.length &&
-            options.presetSchema
-        ) {
-            const readonly = options.presetFields.filter(
-                (item: any) => item.readonly && item.value
-            );
-            if (!readonly.length || !document || !documentRef) {
-                return { valid: true };
-            }
-
-            const presetDocument =
-                PolicyUtils.getCredentialSubject(documentRef);
-            if (!presetDocument) {
-                return {
-                    error: 'Readonly preset fields can not be verified.',
-                    valid: false,
-                };
-            }
-
-            const presetDocumentCopy = removeObjectProperties(
-                ['@context'],
-                JSON.parse(JSON.stringify(presetDocument))
-            );
-            for (const field of readonly) {
-                if (
-                    !deepEqual(
-                        document[field.name],
-                        presetDocumentCopy[field.value]
-                    )
-                ) {
-                    return {
-                        error: `Readonly preset field (${field.name}) can not be modified.`,
-                        valid: false,
-                    };
-                }
-            }
-        }
-
-        return { valid: true };
+        return checkReadonlyPreset(options, this._schema, document, documentRef);
     }
 
     private async prepareDocument(data: IPolicyDocument, actionStatus?: RecordActionStep): Promise<any> {

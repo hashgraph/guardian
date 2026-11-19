@@ -1,3 +1,279 @@
 .properties .propHeader .request-section-header {
     gap: 4px !important;
 }
+
+.preset-schema-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    .preset-schema-select {
+        flex: 1;
+        min-width: 0;
+    }
+}
+
+.presetCell {
+    padding: 4px 8px 10px 0;
+}
+
+.preset-hint {
+    padding: 8px 2px;
+    font-size: 12px;
+    color: var(--guardian-font-color-secondary);
+}
+
+.preset-summary {
+    padding: 2px 2px 6px;
+    font-size: 12px;
+    color: var(--guardian-font-color-secondary);
+}
+
+.preset-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.preset-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px 10px;
+    border: 1px solid var(--guardian-border-color);
+    border-left-width: 3px;
+    border-radius: 8px;
+    background: var(--guardian-background);
+
+    &.mapped {
+        border-left-color: var(--guardian-primary-color);
+        background: var(--guardian-primary-background);
+    }
+
+    &.stale {
+        border-left-color: var(--guardian-warning-color);
+        background: var(--guardian-warning-background);
+    }
+}
+
+.preset-target {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px 6px;
+    min-width: 0;
+}
+
+.preset-title {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--guardian-font-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.preset-chip {
+    padding: 0 6px;
+    border-radius: 10px;
+    border: 1px solid var(--guardian-border-color);
+    font-size: 11px;
+    line-height: 18px;
+    color: var(--guardian-font-color-secondary);
+    white-space: nowrap;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.preset-chip-warning {
+    color: var(--guardian-warning-color);
+    border-color: var(--guardian-warning-color);
+
+    .pi {
+        font-size: 10px;
+    }
+}
+
+.preset-opt-warn {
+    flex: 0 0 auto;
+    margin-left: 6px;
+    font-size: 12px;
+    color: var(--guardian-warning-color);
+}
+
+.preset-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+p-select.preset-select {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+}
+
+.preset-readonly {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    color: var(--guardian-font-color-secondary);
+    cursor: pointer;
+}
+
+.preset-icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--guardian-font-color-secondary);
+    cursor: pointer;
+
+    &:hover {
+        background: var(--guardian-hover);
+        color: var(--guardian-failure-color);
+    }
+}
+
+.preset-add {
+    margin-top: 8px;
+}
+
+// Dropdown rows, same look as the schema editor's field pickers
+.sc-cond-opt-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+    height: 22px;
+}
+
+.sc-cond-opt-label {
+    display: block;
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sc-cond-group-row {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.sc-cond-group-name {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sc-cond-group-parents {
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--guardian-font-color-secondary);
+}
+
+.preset-opt-type {
+    flex: 0 0 auto;
+    margin-left: auto;
+    padding: 0 6px;
+    border-radius: 10px;
+    border: 1px solid var(--guardian-border-color);
+    font-size: 11px;
+    line-height: 16px;
+    color: var(--guardian-font-color-secondary);
+    white-space: nowrap;
+}
+
+// Selected value inside the select's label area (not a dropdown row)
+.preset-selected {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+    height: 26px;
+    line-height: 26px;
+}
+
+.preset-selected-label {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.preset-selected .preset-opt-type {
+    margin-left: 0;
+    line-height: 16px;
+}
+
+// Path of a nested field: a breadcrumb line under the title, readable even when long
+.preset-path {
+    display: flex;
+    align-items: center;
+    flex: 1 0 100%;
+    gap: 4px;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--guardian-font-color-secondary);
+
+    i {
+        flex: 0 0 auto;
+        font-size: 12px;
+        color: var(--guardian-primary-color);
+    }
+}
+
+.preset-path-part {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.preset-path-last {
+    flex-shrink: 0;
+    max-width: 60%;
+    font-weight: 600;
+    color: var(--guardian-font-color);
+}
+
+.preset-path-sep {
+    flex: 0 0 auto;
+    color: var(--guardian-grey-color-3, var(--guardian-font-color-secondary));
+}
+
+::ng-deep .preset-tooltip {
+    max-width: min(640px, 90vw);
+
+    .p-tooltip-text {
+        white-space: normal;
+        word-break: break-word;
+    }
+}

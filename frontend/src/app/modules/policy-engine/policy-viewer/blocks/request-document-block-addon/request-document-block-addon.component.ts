@@ -6,7 +6,7 @@ import {
     inject,
 } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
-import { DocumentGenerator, ISchema, IUser, Schema, PolicyStatus } from '@guardian/interfaces';
+import { DocumentGenerator, ISchema, IUser, PresetPath, Schema, PolicyStatus } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -196,27 +196,13 @@ export class RequestDocumentBlockAddonComponent
     private getJson(data: any, presetFields: any[]) {
         try {
             if (data) {
-                const json: any = {};
                 let cs: any = {};
                 if (Array.isArray(data.document.credentialSubject)) {
                     cs = data.document.credentialSubject[0];
                 } else {
                     cs = data.document.credentialSubject;
                 }
-                // tslint:disable-next-line:prefer-for-of
-                for (let i = 0; i < presetFields.length; i++) {
-                    const f = presetFields[i];
-                    if (f.value === 'username') {
-                        json[f.name] = this.user.username;
-                        continue;
-                    }
-                    if (f.value === 'hederaAccountId') {
-                        json[f.name] = this.user.hederaAccountId;
-                        continue;
-                    }
-
-                    json[f.name] = cs[f.value];
-                }
+                const json = PresetPath.fill(cs, presetFields, this.schema?.fields, this.user);
                 return json;
             }
         } catch (error) {
