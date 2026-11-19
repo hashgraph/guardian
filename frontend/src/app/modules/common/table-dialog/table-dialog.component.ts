@@ -106,7 +106,7 @@ export class TableDialogComponent implements OnInit {
             return;
         }
 
-        if (!this.dataColumnDefs.length || !this.rowData.length) {
+        if (!this.dataColumnDefs.length || (!this.rowData.length && !this.readOnly)) {
             this.initBlank(this.initRows, this.initCols);
         }
     }

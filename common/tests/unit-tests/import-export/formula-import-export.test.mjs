@@ -328,6 +328,31 @@ describe('FormulaImportExport table column outputs', () => {
         ]);
     });
 
+    it('links equations saved with the editor notation of their name', () => {
+        const items = generate([{ field: 'results', columns: { a: 'co2,i', b: 'co2_i', c: 'net' } }], {
+            formulas: [{ name: 'co2,i', body: 'fuel * 2' }, { name: ' net ', body: 'fuel' }]
+        });
+        assert.deepEqual(items.find(item => item.name === 'co2,i').links, [
+            { type: 'schema', entityId: '#output', item: 'results', columnKey: 'a' },
+            { type: 'schema', entityId: '#output', item: 'results', columnKey: 'b' }
+        ]);
+        assert.deepEqual(items.find(item => item.name === ' net ').links, [
+            { type: 'schema', entityId: '#output', item: 'results', columnKey: 'c' }
+        ]);
+    });
+
+    it('wraps pass-through variables saved with the editor notation of their name', () => {
+        const items = generate([{ field: 'results', columns: { a: 'fuel_j', b: ' fuel,j ' } }], {
+            variables: [{ name: ' fuel,j ', field: 'source.fuel' }]
+        });
+        const input = items.find(item => item.type === 'variable');
+        const outputs = items.filter(item => item.type === 'formula' && item.relationships.includes(input.uuid) && item.links);
+        assert.deepEqual(input.link, { type: 'schema', entityId: '#input', item: 'source.fuel' });
+        assert.equal(outputs.length, 1);
+        assert.equal(outputs[0].name, 'fuel,j');
+        assert.deepEqual(outputs[0].links.map(link => link.columnKey), ['a', 'b']);
+    });
+
     it('keeps the scalar target when an equation also supplies a table', () => {
         const items = generate([
             { name: 'co2', field: 'scalar' },
@@ -367,6 +392,22 @@ describe('FormulaImportExport table grid outputs', () => {
         ]);
         assert.equal(items.find(item => item.type === 'formula' && item.name === 'year').links[0].rowIndex, 0);
         assert.equal(items.find(item => item.type === 'variable').link.item, 'year');
+    });
+
+    it('links grid cells to equations and inputs saved with the editor notation of their name', () => {
+        const items = FormulaImportExport.generateByPolicy({ name: 'Grid outputs', config: {
+            blockType: 'mathBlock', inputSchema: '#input', outputSchema: '#output', expression: {
+                variables: [{ name: 'year,k', field: 'year' }],
+                formulas: [{ name: ' sum,t ', body: '2' }],
+                outputs: [{ field: 'grid', rows: [{ year: 'year,k', co2: 'sum_t' }] }]
+            }
+        } }).config.formulas;
+        assert.deepEqual(items.find(item => item.name === ' sum,t ').links, [
+            { type: 'schema', entityId: '#output', item: 'grid', columnKey: 'co2', rowIndex: 0 }
+        ]);
+        assert.deepEqual(items.find(item => item.type === 'formula' && item.name === 'year,k').links, [
+            { type: 'schema', entityId: '#output', item: 'grid', columnKey: 'year', rowIndex: 0 }
+        ]);
     });
 
     it('retains distinct table positions and every reused cell link through export/import', async () => {

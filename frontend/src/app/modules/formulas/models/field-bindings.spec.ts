@@ -254,6 +254,18 @@ describe('column field bindings', () => {
         expect(config.formulas[0].links).toHaveLength(3);
     });
 
+    it('removes every column and cell link of a deleted field, but nothing on other fields or schemas', () => {
+        const config: any = { formulas: [{ uuid: 'f', type: FormulaItemType.Formula, links: [
+            { type: 'schema', entityId: '#s', item: 'table' },
+            { type: 'schema', entityId: '#s', item: 'table', columnKey: 'co2' },
+            { type: 'schema', entityId: '#s', item: 'table', columnKey: 'co2', rowIndex: 1 },
+            { type: 'schema', entityId: '#s', item: 'other', columnKey: 'co2' },
+            { type: 'schema', entityId: '#other', item: 'table', columnKey: 'co2' }
+        ] }] };
+        const result = applyFieldBindingOps(config, [{ type: 'unbind', formulaId: 'd', itemUuid: 'f', target: { schemaIri: '#s', fieldPath: 'table' }, wholeField: true }]);
+        expect(result.config.formulas![0].links!.map(link => [link.entityId, link.item])).toEqual([['#s', 'other'], ['#other', 'table']]);
+    });
+
     it('moves all column links with a renamed table while preserving column keys', () => {
         const config: any = { formulas: [{ uuid: 'f', type: FormulaItemType.Formula, links: [
             { type: 'schema', entityId: '#s', item: 'table', columnKey: 'co2' },

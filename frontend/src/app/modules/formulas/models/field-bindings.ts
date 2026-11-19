@@ -28,7 +28,7 @@ export interface IFieldTarget extends IFormulaTarget {
  */
 export type FieldBindingOp =
     { type: 'bind'; formulaId: string; itemUuid: string; target: IFieldTarget } |
-    { type: 'unbind'; formulaId: string; itemUuid: string; target: IFieldTarget } |
+    { type: 'unbind'; formulaId: string; itemUuid: string; target: IFieldTarget; wholeField?: boolean } |
     { type: 'move'; formulaId: string; itemUuid: string; target: IFieldTarget; from: string } |
     { type: 'create'; formulaId: string; item: IFormulaItem; target: IFieldTarget };
 
@@ -193,8 +193,14 @@ export function applyFieldBindingOps(
                 }
             }
             formulas[index] = withLinks(item, kept);
-        } else if (links.some((link) => isLinkedTo(link, op.target))) {
-            formulas[index] = withLinks(item, links.filter((link) => !isLinkedTo(link, op.target)));
+        } else {
+            const target = op.target;
+            const matches = op.wholeField
+                ? (link: IFormulaLink) => link.type === 'schema' && link.entityId === target.schemaIri && link.item === target.fieldPath
+                : (link: IFormulaLink) => isLinkedTo(link, target);
+            if (links.some(matches)) {
+                formulas[index] = withLinks(item, links.filter((link) => !matches(link)));
+            }
         }
     }
     return { config: result, skipped };

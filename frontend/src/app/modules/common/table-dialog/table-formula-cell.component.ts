@@ -13,7 +13,8 @@ interface ITableCellParams extends ICellRendererParams {
     selector: 'app-table-formula-cell',
     standalone: true,
     imports: [TableFormulaButtonComponent],
-    template: `<span>{{ value }}</span><app-table-formula-button [action]="action"></app-table-formula-button>`
+    template: `<span>{{ value }}</span><app-table-formula-button [action]="action"></app-table-formula-button>`,
+    styles: [':host { display: flex; align-items: center; height: 100%; min-width: 0; max-width: 100%; overflow: hidden; } span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }']
 })
 export class TableFormulaCellComponent implements ICellRendererAngularComp {
     public value: unknown;

@@ -1,4 +1,4 @@
-import { NEVER, of } from 'rxjs';
+import { NEVER, firstValueFrom, of } from 'rxjs';
 import { EntityStatus, FormulaItemType, IFormula } from '@guardian/interfaces';
 import { IFieldScope, SchemaFieldFormulas } from './schema-field-formulas';
 
@@ -124,6 +124,18 @@ describe('SchemaFieldFormulas', () => {
         expect(model.count(schema, ['risks'], 'G7')).toBe(1);
     });
 
+    it('counts only the formulas the field card lists, not those linked to its columns', () => {
+        const doc = createDoc();
+        (doc.config as any).formulas[1].links = [
+            { type: 'schema', entityId: '#root', item: 'risks.T', columnKey: 'co2' },
+            { type: 'schema', entityId: '#root', item: 'risks.T', columnKey: 'co2', rowIndex: 0 }
+        ];
+        const { model } = create(doc);
+        const schema: any = { id: 's1', iri: '#root' };
+        expect(model.count(schema, ['risks'], 'T')).toBe(0);
+        expect(model.view(scope(['risks'], 'T'), true, false).rows).toEqual([]);
+    });
+
     it('counts the formulas of a field, pending changes included', () => {
         const { model } = create();
         const schema: any = { id: 's1', iri: '#root' };
@@ -187,6 +199,67 @@ describe('SchemaFieldFormulas', () => {
                 expect(updates[0].config.formulas[0].link).toBeNull();
                 ;
             });
+        });
+
+        it('unbinds the whole-table, column and cell links of a deleted table, keeping other fields', async () => {
+            const doc = createDoc();
+            (doc.config as any).formulas[0].link = null;
+            (doc.config as any).formulas[0].links = [
+                { type: 'schema', entityId: '#root', item: 'risks.G6' },
+                { type: 'schema', entityId: '#root', item: 'risks.G6', columnKey: 'co2' },
+                { type: 'schema', entityId: '#root', item: 'risks.G6', columnKey: 'co2', rowIndex: 0 },
+                { type: 'schema', entityId: '#root', item: 'risks.G7', columnKey: 'co2' }
+            ];
+            const { model, updates } = create(doc);
+            model.release(savedScope());
+            expect(await firstValueFrom(model.save())).toBe(true);
+            expect(updates[0].config.formulas[0].links).toEqual([{ type: 'schema', entityId: '#root', item: 'risks.G7', columnKey: 'co2' }]);
+            expect(model.hasPending).toBe(false);
+        });
+
+        it('still unbinds only the whole-table link when it is removed from the field card', async () => {
+            const doc = createDoc();
+            (doc.config as any).formulas[0].link = null;
+            (doc.config as any).formulas[0].links = [
+                { type: 'schema', entityId: '#root', item: 'risks.G6' },
+                { type: 'schema', entityId: '#root', item: 'risks.G6', columnKey: 'co2' }
+            ];
+            const { model, updates } = create(doc);
+            const s = savedScope();
+            const row = model.view(s, true, false).rows[0];
+            model.unbind(s, row);
+            expect(await firstValueFrom(model.save())).toBe(true);
+            expect(updates[0].config.formulas[0].links).toEqual([{ type: 'schema', entityId: '#root', item: 'risks.G6', columnKey: 'co2' }]);
+        });
+
+        function tableAndColumnDoc(): IFormula {
+            const doc = createDoc();
+            (doc.config as any).formulas[0].link = null;
+            (doc.config as any).formulas[0].links = [
+                { type: 'schema', entityId: '#root', item: 'risks.G6' },
+                { type: 'schema', entityId: '#root', item: 'risks.G6', columnKey: 'co2' }
+            ];
+            return doc;
+        }
+
+        it('moves the column link of a renamed table when its whole-table link is removed afterwards', async () => {
+            const { model, updates } = create(tableAndColumnDoc());
+            const s = savedScope();
+            model.rename(s);
+            s.field.name = 'G9';
+            model.unbind(s, model.view(s, true, false).rows[0]);
+            expect(await firstValueFrom(model.save())).toBe(true);
+            expect(updates[0].config.formulas[0].links).toEqual([{ type: 'schema', entityId: '#root', item: 'risks.G9', columnKey: 'co2' }]);
+        });
+
+        it('moves the column link of a table renamed after its whole-table link was removed', async () => {
+            const { model, updates } = create(tableAndColumnDoc());
+            const s = savedScope();
+            model.unbind(s, model.view(s, true, false).rows[0]);
+            model.rename(s);
+            s.field.name = 'G9';
+            expect(await firstValueFrom(model.save())).toBe(true);
+            expect(updates[0].config.formulas[0].links).toEqual([{ type: 'schema', entityId: '#root', item: 'risks.G9', columnKey: 'co2' }]);
         });
 
         it('queues nothing for a published schema', () => {
@@ -360,6 +433,142 @@ describe('SchemaFieldFormulas', () => {
             });
         });
 
+        describe('pending change combinations on a nested table', () => {
+            const whole = (item: string) => ({ type: 'schema', entityId: '#root', item });
+            const column = (item: string) => ({ type: 'schema', entityId: '#root', item, columnKey: 'co2' });
+            const other = { type: 'schema', entityId: '#other', item: 'G.X.a', columnKey: 'co2' };
+
+            function linkedDoc(links: any[]): IFormula {
+                const doc = createDoc();
+                (doc.config as any).formulas[0].link = null;
+                (doc.config as any).formulas[0].links = links;
+                return doc;
+            }
+
+            function tree() {
+                const g: any = { name: 'G' };
+                const x: any = { name: 'X' };
+                const a: any = { name: 'a' };
+                const schema: any = { id: 's1', iri: '#root', status: 'DRAFT', fields: [g] };
+                const fields: any[] = [a];
+                const scopeOf = (field: any): IFieldScope => ({ schema, field, prefix: [g.name, x.name], ancestors: [g, x], fields });
+                return {
+                    g, x, a, fields, scopeOf,
+                    gScope: (): IFieldScope => ({ schema, field: g, prefix: [], fields: [g] }),
+                    xScope: (): IFieldScope => ({ schema, field: x, prefix: [g.name], ancestors: [g], fields: [x] }),
+                    aScope: () => scopeOf(a)
+                };
+            }
+
+            async function savedLinks(model: any, updates: any[]): Promise<any[]> {
+                expect(await firstValueFrom(model.save())).toBe(true);
+                expect(model.hasPending).toBe(false);
+                return updates[updates.length - 1].config.formulas[0].links;
+            }
+
+            function removeFromCard(model: any, scope: IFieldScope): void {
+                const row = model.view(scope, true, false).rows.find((r: any) => r.itemUuid === 'v1');
+                expect(row).toBeDefined();
+                model.unbind(scope, row);
+            }
+
+            const renameField = (model: any, scope: IFieldScope, field: any, name: string) => {
+                model.rename(scope);
+                field.name = name;
+            };
+
+            it('parent rename, removal, child rename, grandparent rename: only the column link moves', async () => {
+                for (const [links, expected] of [
+                    [[whole('G.X.a'), column('G.X.a'), whole('Q'), other], [column('H.Y.b'), whole('Q'), other]],
+                    [[whole('G.X.a'), whole('Q')], [whole('Q')]]
+                ]) {
+                    const { model, updates } = create(linkedDoc(links));
+                    const t = tree();
+                    renameField(model, t.xScope(), t.x, 'Y');
+                    removeFromCard(model, t.aScope());
+                    renameField(model, t.aScope(), t.a, 'b');
+                    renameField(model, t.gScope(), t.g, 'H');
+                    expect(await savedLinks(model, updates)).toEqual(expected);
+                }
+            });
+
+            it('removal first, then child, parent and grandparent renames: only the column link moves', async () => {
+                for (const [links, expected] of [
+                    [[whole('G.X.a'), column('G.X.a'), whole('Q'), other], [column('H.Y.b'), whole('Q'), other]],
+                    [[whole('G.X.a'), whole('Q')], [whole('Q')]]
+                ]) {
+                    const { model, updates } = create(linkedDoc(links));
+                    const t = tree();
+                    removeFromCard(model, t.aScope());
+                    renameField(model, t.aScope(), t.a, 'b');
+                    renameField(model, t.xScope(), t.x, 'Y');
+                    renameField(model, t.gScope(), t.g, 'H');
+                    expect(await savedLinks(model, updates)).toEqual(expected);
+                }
+            });
+
+            it('renamed several times and back to the saved name, with a removal in between', async () => {
+                const { model, updates } = create(linkedDoc([whole('G.X.a'), column('G.X.a'), whole('Q'), other]));
+                const t = tree();
+                renameField(model, t.aScope(), t.a, 'b');
+                removeFromCard(model, t.aScope());
+                renameField(model, t.aScope(), t.a, 'c');
+                renameField(model, t.aScope(), t.a, 'a');
+                expect(await savedLinks(model, updates)).toEqual([column('G.X.a'), whole('Q'), other]);
+            });
+
+            it('deleted after a rename and a removal: no link of the table is left', async () => {
+                const { model, updates } = create(linkedDoc([whole('G.X.a'), column('G.X.a'), whole('Q'), other]));
+                const t = tree();
+                renameField(model, t.xScope(), t.x, 'Y');
+                removeFromCard(model, t.aScope());
+                renameField(model, t.aScope(), t.a, 'b');
+                model.release(t.aScope());
+                expect(await savedLinks(model, updates)).toEqual([whole('Q'), other]);
+            });
+
+            it('parent deleted after a child removal: no link of the table is left', async () => {
+                const { model, updates } = create(linkedDoc([whole('G.X.a'), column('G.X.a'), whole('Q'), other]));
+                const t = tree();
+                removeFromCard(model, t.aScope());
+                renameField(model, t.aScope(), t.a, 'b');
+                model.release(t.xScope());
+                expect(await savedLinks(model, updates)).toEqual([whole('Q'), other]);
+            });
+
+            it('removed and assigned again on the same field: nothing changes', async () => {
+                const { model, updates } = create(linkedDoc([whole('G.X.a'), column('G.X.a')]));
+                const t = tree();
+                removeFromCard(model, t.aScope());
+                model.assign(t.aScope(), 'd1|v1');
+                expect(model.hasPending).toBe(false);
+                expect(await firstValueFrom(model.save())).toBe(true);
+                expect(updates).toEqual([]);
+            });
+
+            it('deleted, recreated under the same key and assigned: only the new whole-table link', async () => {
+                for (const links of [[column('G.X.a'), whole('Q'), other], [whole('G.X.a'), column('G.X.a'), whole('Q'), other]]) {
+                    const { model, updates } = create(linkedDoc(links));
+                    const t = tree();
+                    model.release(t.aScope());
+                    const recreated: any = { name: 'a' };
+                    t.fields.splice(0, 1, recreated);
+                    model.assign(t.scopeOf(recreated), 'd1|v1');
+                    expect(await savedLinks(model, updates)).toEqual([whole('Q'), other, whole('G.X.a')]);
+                }
+            });
+
+            it('deleted and recreated under another key and assigned: the old links do not follow', async () => {
+                const { model, updates } = create(linkedDoc([whole('G.X.a'), column('G.X.a'), whole('Q'), other]));
+                const t = tree();
+                model.release(t.aScope());
+                const recreated: any = { name: 'b' };
+                t.fields.splice(0, 1, recreated);
+                model.assign(t.scopeOf(recreated), 'd1|v1');
+                expect(await savedLinks(model, updates)).toEqual([whole('Q'), other, whole('G.X.b')]);
+            });
+        });
+
         describe('fields inside a sub-schema field', () => {
             function nestedDoc(): IFormula {
                 const doc = createDoc();
@@ -385,6 +594,19 @@ describe('SchemaFieldFormulas', () => {
                     expect(updates[0].config.formulas[0].link).toBeNull();
                     ;
                 });
+            });
+
+            it('unbinds the column links of a table inside the field when it is deleted', async () => {
+                const doc = createDoc();
+                (doc.config as any).formulas[0].link = null;
+                (doc.config as any).formulas[0].links = [
+                    { type: 'schema', entityId: '#root', item: 'risks.G6.table', columnKey: 'co2' },
+                    { type: 'schema', entityId: '#root', item: 'risks.G7', columnKey: 'co2' }
+                ];
+                const { model, updates } = create(doc);
+                model.release(savedScope());
+                expect(await firstValueFrom(model.save())).toBe(true);
+                expect(updates[0].config.formulas[0].links).toEqual([{ type: 'schema', entityId: '#root', item: 'risks.G7', columnKey: 'co2' }]);
             });
 
             it('leaves the links of a field with a similar key alone', () => {

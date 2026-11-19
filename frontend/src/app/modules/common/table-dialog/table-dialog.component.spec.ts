@@ -70,6 +70,20 @@ describe('TableDialogComponent', () => {
         expect(dataColumns(component)[26].field).toBe('C27');
     });
 
+    it('still opens a blank sheet for an editable table that has columns but no rows', () => {
+        const component = build({ columnDefs: declaredDefs });
+
+        expect(dataColumns(component).length).toBe(26);
+        expect(component.rowData.length).toBeGreaterThan(0);
+    });
+
+    it('keeps the handed-in columns of a read-only table with no rows', () => {
+        const component = build({ columnDefs: declaredDefs, readOnly: true });
+
+        expect(dataColumns(component).map((def) => def.field)).toEqual(['year', 'co2_tonnes']);
+        expect(component.rowData).toEqual([]);
+    });
+
     it('ignores the fixed flag when no columns were handed in', () => {
         const component = build({ fixedColumns: true });
 

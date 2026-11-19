@@ -326,17 +326,21 @@ export class FormulaImportExport {
             const columnWrappers = new Map<string, any>();
             const tableItemsByName = new Map<string, any>();
             const tableTargetKeys = new WeakMap<object, Set<string>>();
+            const tableName = (value: unknown): string => {
+                const text = typeof value === 'string' ? value.trim() : '';
+                return (/^[A-Za-z]\w*(?:,\w+)*$/).test(text) ? text.replace(/,/g, '_') : '';
+            };
             for (const item of items) {
-                if (!tableItemsByName.has(item.name)) {
-                    tableItemsByName.set(item.name, item);
+                const key = tableName(item.name);
+                if (key && !tableItemsByName.has(key)) {
+                    tableItemsByName.set(key, item);
                 }
             }
             const addTableLink = (output: any, columnKey: string, rawName: unknown, position?: { rowIndex: number; tableIndex?: number }) => {
-                const text = typeof rawName === 'string' ? rawName.trim() : '';
-                if (!(/^[A-Za-z]\w*(?:,\w+)*$/).test(text)) {
+                const name = tableName(rawName);
+                if (!name) {
                     return;
                 }
-                const name = text.replace(/,/g, '_');
                 let target = tableItemsByName.get(name);
                 if (!target) {
                     return;
@@ -346,10 +350,10 @@ export class FormulaImportExport {
                     if (!wrapper) {
                         wrapper = {
                             uuid: GenerateUUIDv4(),
-                            name,
+                            name: target.name.trim(),
                             description: block.tag,
                             type: 'formula',
-                            value: name,
+                            value: target.name.trim(),
                             relationships: [target.uuid]
                         };
                         items.push(wrapper);
