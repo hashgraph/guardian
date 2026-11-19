@@ -170,6 +170,33 @@ jobs:
         with:
           fetch-depth: 1
 
+      # This runner is a bare self-hosted container, so it provides none of what the
+      # cypress/included image used to. Xvfb is needed even for a headless API run,
+      # because `cypress verify` smoke-tests the Electron binary against a display.
+      # Package names are Ubuntu 22.04 (jammy); on 24.04+ libasound2 becomes libasound2t64.
+      - name: Install Cypress operating system dependencies
+        shell: bash
+        run: |
+          SUDO=""
+          [ "$(id -u)" -eq 0 ] || SUDO=sudo
+          $SUDO apt-get update
+          $SUDO apt-get install -y --no-install-recommends \
+            xvfb xauth \
+            libgtk-3-0 libgbm1 libnotify4 \
+            libnss3 libnspr4 \
+            libxss1 libxtst6 libasound2
+
+      # The browser the suite runs on. apt installs the dependencies the package declares.
+      - name: Install Google Chrome
+        shell: bash
+        run: |
+          SUDO=""
+          [ "$(id -u)" -eq 0 ] || SUDO=sudo
+          curl -fsSL -o /tmp/google-chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          $SUDO apt-get install -y --no-install-recommends /tmp/google-chrome.deb
+          rm /tmp/google-chrome.deb
+          google-chrome --version
+
       # A throwaway local network per run: no HBAR spent, no testnet dependency, an empty
       # ledger every time. The ports are the action's defaults (consensus node 35211, mirror
       # REST 38081); Guardian reaches them through the OVERRIDE_* variables below, not the
@@ -197,33 +224,6 @@ jobs:
       # then swapping the Node out leaves the shims pointing at the wrong runtime.
       - name: Enable Corepack
         run: corepack enable
-
-      # This runner is a bare self-hosted container, so it provides none of what the
-      # cypress/included image used to. Xvfb is needed even for a headless API run,
-      # because `cypress verify` smoke-tests the Electron binary against a display.
-      # Package names are Ubuntu 22.04 (jammy); on 24.04+ libasound2 becomes libasound2t64.
-      - name: Install Cypress operating system dependencies
-        shell: bash
-        run: |
-          SUDO=""
-          [ "$(id -u)" -eq 0 ] || SUDO=sudo
-          $SUDO apt-get update
-          $SUDO apt-get install -y --no-install-recommends \
-            xvfb xauth \
-            libgtk-3-0 libgbm1 libnotify4 \
-            libnss3 libnspr4 \
-            libxss1 libxtst6 libasound2
-
-      # The browser the suite runs on. apt installs the dependencies the package declares.
-      - name: Install Google Chrome
-        shell: bash
-        run: |
-          SUDO=""
-          [ "$(id -u)" -eq 0 ] || SUDO=sudo
-          curl -fsSL -o /tmp/google-chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-          $SUDO apt-get install -y --no-install-recommends /tmp/google-chrome.deb
-          rm /tmp/google-chrome.deb
-          google-chrome --version
 
       # `**/yarn.lock` also matches lockfiles inside dependencies; the root one is the
       # only input that matters. .yarnrc.yml is in the key because it decides where the
