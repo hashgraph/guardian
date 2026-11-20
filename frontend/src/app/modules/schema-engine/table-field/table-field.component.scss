@@ -23,6 +23,20 @@
     color: var(--primary-color);
 }
 
+:host ::ng-deep .table-field__actions .p-button {
+    height: 32px;
+    padding: 0 12px;
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 16px;
+    color: var(--primary-color);
+}
+
+:host ::ng-deep .table-field__actions .primary-btn .p-button {
+    color: var(--color-background);
+}
+
 .table-field__import-btn.p-disabled {
     opacity: .6;
     pointer-events: none;
