@@ -4,7 +4,7 @@ export interface ArrayGroupValidationError {
     instancePath: string;
     schemaPath: string;
     message: string;
-    keyword: 'arrayGroupLength' | 'arrayGroupMapping';
+    keyword: 'arrayGroupLength' | 'arrayGroupMapping' | 'arrayGroupCondition';
     params: Record<string, never>;
 }
 
