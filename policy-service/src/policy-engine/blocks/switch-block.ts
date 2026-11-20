@@ -280,7 +280,7 @@ export class SwitchBlock {
                 curUser = await PolicyUtils.getPolicyUser(ref, issuer, group, event?.user?.userId);
             }
 
-            ref.log(`check condition: ${curUser?.id}, ${type},  ${value},  ${result}, ${JSON.stringify(scope)}`);
+            ref.log(`check condition: ${curUser?.id}, ${type},  ${value},  ${result}`);
 
             if (result) {
                 await ref.triggerEvents(tag, curUser, event.data, event.actionStatus);
