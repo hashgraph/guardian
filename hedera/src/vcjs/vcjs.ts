@@ -5,7 +5,7 @@ import { Ed25519Signature2018 } from '@digitalbazaar/ed25519-signature-2018';
 import { Ed25519VerificationKey2018 } from '@digitalbazaar/ed25519-verification-key-2018';
 import { PrivateKey } from '@hiero-ledger/sdk';
 import { SchemaValidationResult } from './schema-validation-result.js';
-import { GenerateUUIDv4, ICredentialSubject, ISchemaArrayDependency, IVC, Schema, SchemaField, SchemaHelper, SignatureType } from '@guardian/interfaces';
+import { GenerateUUIDv4, ICredentialSubject, ISchemaArrayDependency, IVC, Schema, SchemaCondition, SchemaField, SchemaHelper, SignatureType } from '@guardian/interfaces';
 import { VcDocument } from './vc-document.js';
 import { VpDocument } from './vp-document.js';
 import { VcSubject } from './vc-subject.js';
@@ -21,6 +21,7 @@ import { BbsBlsSignature2020, BbsBlsSignatureProof2020, Bls12381G2KeyPair, KeyPa
 import { CommonDidDocument, HederaBBSMethod, HederaDidDocument, HederaEd25519Method } from './did/index.js';
 import { validateGeoConsistency } from './geo-validator.js';
 import { ArrayGroupValidationError, validateArrayGroups } from './array-group-validator.js';
+import { collectConditionsFromRoot, validateLinkedArrayConditions } from './linked-array-condition-validator.js';
 
 import * as jsigV7Module from 'jsonld-signatures-v7';
 import { ContextHelper } from './context-helper.js';
@@ -317,7 +318,9 @@ export class VCJS {
 
         // prepareSchema/coerceConditionConsts rewrite the document in place; the loader may
         // hand back a cached instance shared with other callers, so validate against a copy.
-        const schema = JSON.parse(JSON.stringify(loadedSchema));
+        const text = JSON.stringify(loadedSchema);
+        const schema = JSON.parse(text);
+        const linkedSource = text.includes('arrayDependencies') ? JSON.parse(text) : null;
 
         const ajv = new Ajv({
             loadSchema: this.loadSchema
@@ -328,6 +331,7 @@ export class VCJS {
         this.coerceConditionConsts(schema);
 
         const schemaObject = Schema.fromVc(schema);
+        const linkedConditions = this.readLinkedConditions(linkedSource, Schema.fromVc);
 
         // Every subject needs its ref-field type/@context restored before validation,
         // not just the first - otherwise a multi-subject VC only gets subject[0]
@@ -340,8 +344,12 @@ export class VCJS {
         const valid = validate(vcObject);
         let errors = this.enhanceConditionErrors(validate.errors as any[], schema);
         const geoErrors = validateGeoConsistency(subject, schemaObject?.fields || []);
-        const groupErrors = validateArrayGroups(subject, schemaObject
-            ? SchemaHelper.collectArrayDependencies(schemaObject.document, schemaObject.arrayDependencies) : []);
+        const dependencies = schemaObject
+            ? SchemaHelper.collectArrayDependencies(schemaObject.document, schemaObject.arrayDependencies) : [];
+        const groupErrors = [
+            ...validateArrayGroups(subject, dependencies),
+            ...validateLinkedArrayConditions(subject, linkedConditions, dependencies)
+        ];
         const conditionErrors = VCJS.conditionErrors(subject, schemaObject);
         errors = [...(errors || []), ...geoErrors, ...groupErrors, ...conditionErrors];
 
@@ -840,7 +848,9 @@ export class VCJS {
 
         // prepareSchema/coerceConditionConsts rewrite the document in place; the loader may
         // hand back a cached instance shared with other callers, so validate against a copy.
-        const schema = JSON.parse(JSON.stringify(loadedSchema));
+        const text = JSON.stringify(loadedSchema);
+        const schema = JSON.parse(text);
+        const linkedSource = text.includes('arrayDependencies') ? JSON.parse(text) : null;
 
         const ajv = new Ajv({
             loadSchema: this.loadSchema
@@ -851,12 +861,17 @@ export class VCJS {
         this.coerceConditionConsts(schema);
 
         const schemaObject = Schema.fromDocument(schema);
+        const linkedConditions = this.readLinkedConditions(linkedSource, Schema.fromDocument);
 
         const validate = await ajv.compileAsync(schema);
         const valid = validate(subject);
         let errors = this.enhanceConditionErrors(validate.errors as any[], schema);
         const geoErrors = validateGeoConsistency(subject, schemaObject?.fields || []);
-        const groupErrors = validateArrayGroups(subject, this.readArrayDependencies(schema));
+        const dependencies = this.readArrayDependencies(schema);
+        const groupErrors = [
+            ...validateArrayGroups(subject, dependencies),
+            ...validateLinkedArrayConditions(subject, linkedConditions, dependencies)
+        ];
         const conditionErrors = VCJS.conditionErrors(subject, schemaObject);
         errors = [...(errors || []), ...geoErrors, ...groupErrors, ...conditionErrors];
 
@@ -950,6 +965,20 @@ export class VCJS {
                 params: {} as Record<string, never>,
             });
         }
+    }
+
+    /**
+     * Conditions of a schema that has repeatable links
+     * @param source untouched copy of the loaded schema, null when it has no links
+     * @param parse parser matching the schema kind
+     */
+    private readLinkedConditions(source: any, parse: (document: any) => Schema): SchemaCondition[] {
+        if (!source) {
+            return [];
+        }
+        this.coerceConditionConsts(source);
+        const parsed = parse(source);
+        return collectConditionsFromRoot(parsed?.conditions || [], parsed?.fields || []);
     }
 
     /**
