@@ -132,6 +132,8 @@
       * [Formulas Graphical View](guardian/workspace/policies/formula-linked-definitions/formulas-graphical-view.md)
     * [Export Project Data & Documents to CSV](guardian/workspace/policies/export-documents-in-csv-using-ui.md)
     * [Testing/Debugging code for Calculate and Custom Logic Block](guardian/workspace/policies/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui.md)
+    * [Calculation Preview](guardian/workspace/policies/calculation-preview/README.md)
+      * [Preview Calculations Before Submitting](guardian/workspace/policies/calculation-preview/preview-calculations.md)
     * [Python Implementation in Guardian](guardian/workspace/policies/python-implementation-in-guardian.md)
     * [Integrating 3rd Party Data Resources](guardian/workspace/policies/integrating-3rd-party-data-resources/README.md)
       * [Supported Global Forest Watch API methods](guardian/workspace/policies/integrating-3rd-party-data-resources/supported-global-forest-watch-api-methods/README.md)
