@@ -4,7 +4,7 @@ import { SynchronizationTask } from '../synchronization-task.js';
 import { Collection } from 'mongodb';
 import { textSearch } from '../text-search-options.js';
 import { parseFormulaFile } from '../parsers/index.js';
-import { loadFiles } from '../load-files.js';
+import { fastLoadFilesBuffer } from '../load-files.js';
 
 export class SynchronizationFormulas extends SynchronizationTask {
     public readonly name: string = 'formulas';
@@ -56,8 +56,8 @@ export class SynchronizationFormulas extends SynchronizationTask {
         console.log(`Sync VCs: load policies`)
         const policyMap = await this.loadPolicies(collection);
 
-        console.log(`Sync formulas: load files`)
-        const fileMap = await loadFiles(fileIds, true);
+        console.log(`Sync formulas: load files`, fileIds.size);
+        const fileMap = await fastLoadFilesBuffer(fileIds);
 
         console.log(`Sync formulas: update data`)
         for (const document of needUpdate) {
@@ -68,6 +68,7 @@ export class SynchronizationFormulas extends SynchronizationTask {
 
         console.log(`Sync formulas: flush`)
         await em.flush();
+        await em.clear();
     }
 
     private async createAnalytics(

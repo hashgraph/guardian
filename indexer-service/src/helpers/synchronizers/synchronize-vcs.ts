@@ -2,9 +2,11 @@ import { DataBaseHelper, Message } from '@indexer/common';
 import { MessageType, MessageAction } from '@indexer/interfaces';
 import { textSearch } from '../text-search-options.js';
 import { SynchronizationTask } from '../synchronization-task.js';
-import { loadFiles } from '../load-files.js';
+import { fastLoadFiles } from '../load-files.js';
 import { SchemaFileHelper } from '../../helpers/schema-file-helper.js';
 import { TableFieldHelper } from '../../helpers/table-field-helper.js';
+import { BatchLoadHelper } from '../batch-load-helper.js';
+import { PrepareRecordHelper } from '../prepare-record-helper.js';
 
 export class SynchronizationVCs extends SynchronizationTask {
     public readonly name: string = 'vcs';
@@ -14,6 +16,9 @@ export class SynchronizationVCs extends SynchronizationTask {
     }
 
     public override async sync(): Promise<void> {
+
+        await PrepareRecordHelper.prepareVCMessages();
+
         const em = DataBaseHelper.getEntityManager();
         const collection = em.getCollection<Message>('message');
 
@@ -48,23 +53,12 @@ export class SynchronizationVCs extends SynchronizationTask {
             sort: { analyticsUpdate: 1 },
             limit: 100000
         });
-        const allDocuments: Message[] = [];
-        const fileIds: Set<string> = new Set<string>();
-        while (await documents.hasNext()) {
-            const document = await documents.next();
-            allDocuments.push(document);
-            fileIds.add(document.files?.[0]);
-        }
 
-        console.log(`Sync VCs: load schemas`)
+        console.log(`Sync VCs: load schemas map`);
         const schemaMap = new Map<string, Message>();
-        const schemas = collection.find({ type: MessageType.SCHEMA });
+        const schemas = collection.find({ type: MessageType.SCHEMA, files: { $exists: true, $not: { $size: 0 } } });
         while (await schemas.hasNext()) {
             const schema = await schemas.next();
-            const documentCID = SchemaFileHelper.getDocumentFile(schema);
-            if (documentCID) {
-                fileIds.add(documentCID);
-            }
             if (schema.files && schema.files[0]) {
                 schemaMap.set(schema.files[0], schema);
             }
@@ -72,26 +66,65 @@ export class SynchronizationVCs extends SynchronizationTask {
                 schemaMap.set(schema.files[1], schema);
             }
         }
-
-        console.log(`Sync VCs: load files`)
-        const fileMap = await loadFiles(fileIds, false);
+        await em.flush();
+        await em.clear();
 
         const tableHelper = new TableFieldHelper();
 
-        console.log(`Sync VCs: update data`);
-        for (const document of allDocuments) {
-            const row = em.getReference(Message, document._id);
-            row.analytics = this.createAnalytics(document, policyMap, topicMap, schemaMap, fileMap);
+        await BatchLoadHelper.load<Message>(documents, BatchLoadHelper.DEFAULT_BATCH_SIZE, async (rows, counter) => {
+            console.log(`Sync VCs: batch ${counter.batchIndex} start. Loaded ${counter.loadedTotal}`)
 
-            await tableHelper.attachTableFilesAnalytics(row, document, fileMap);
-            await tableHelper.attachGeoFilesAnalytics(row, document, fileMap);
-            await tableHelper.attachRichTextImagesAnalytics(row, document, fileMap);
+            const allDocuments: Message[] = [];
+            const fileIds: Set<string> = new Set<string>();
+            for (const document of rows) {
+                allDocuments.push(document);
+                fileIds.add(document.files?.[0]);
+            }
 
-            row.analyticsUpdate = Date.now();
-            em.persist(row);
-        }
-        console.log(`Sync VCs: flush`)
-        await em.flush();
+            //Get only related schemas files
+            const schemaFileIds: Set<string> = new Set<string>();
+            for (const row of rows) {
+                if (!row.parsedContextId) {
+                    continue;
+                }
+                const schemaMessage = SchemaFileHelper.findInMap(schemaMap, row.parsedContextId);
+                const schemaDocumentCID = schemaMessage && SchemaFileHelper.getDocumentFile(schemaMessage);
+                if (schemaDocumentCID) {
+                    schemaFileIds.add(schemaDocumentCID);
+                }
+            }
+
+            console.log(`Sync VCs: load vc files`, fileIds.size)
+            const fileMap = await fastLoadFiles(fileIds);
+
+            console.log('Sync VCs: load schemas files', schemaFileIds.size);
+            const schemaFileMap = await fastLoadFiles(schemaFileIds);
+            schemaFileMap.forEach((value, key) => fileMap.set(key, value));
+
+            //Analitics use document.files.[0] + files[] from documents
+
+            console.log(`Sync VCs: update data`);
+            for (const document of allDocuments) {
+                try {
+                    const row = em.getReference(Message, document._id);
+                    row.analytics = this.createAnalytics(document, policyMap, topicMap, schemaMap, fileMap);
+
+                    await tableHelper.attachTableFilesAnalytics(row, document, fileMap);
+                    await tableHelper.attachGeoFilesAnalytics(row, document, fileMap);
+                    await tableHelper.attachRichTextImagesAnalytics(row, document, fileMap);
+
+                    row.analyticsUpdate = Date.now();
+                    em.persist(row);
+                } catch (e) {
+                    console.error(`Sync VCs: ${document._id}: error ${e.message}`)
+                }
+            }
+
+            console.log(`Sync VCs: flush batch`)
+            await em.flush();
+            await em.clear();
+        });
+
     }
 
     private createAnalytics(

@@ -5,6 +5,21 @@ import { MessageType } from '@indexer/interfaces';
 import { ProjectCoordinatesMigration } from '../dist/migrations/v3-7-1-project-coordinates.js';
 import { SynchronizationProjects } from '../dist/helpers/synchronizers/synchronize-projects.js';
 
+// Rows the fake database returns for the queries of the projects synchronizer:
+// one schema with a GeoJSON field, and the documents for the project query only.
+const messageRows = (name, filter, documents) => {
+    if (name !== 'message') {
+        return [];
+    }
+    if (filter?.type === MessageType.SCHEMA && filter.parsedHasGeoJson === true) {
+        return [{ files: ['schema-document', 'schema-context'] }];
+    }
+    if (filter?.type === MessageType.VC_DOCUMENT && filter.consensusTimestamp) {
+        return documents;
+    }
+    return [];
+};
+
 describe('Project coordinates shared centers', () => {
     it('declares uniqueness by coordinate and document together', () => {
         const metadata = MetadataStorage.getMetadataFromDecorator(ProjectCoordinates);
@@ -71,10 +86,8 @@ describe('Project coordinates shared centers', () => {
         const manager = {
             getCollection: name => name === 'project_coordinates'
                 ? { distinct: async () => [...new Set(rows.map(row => row.projectId))] }
-                : { find: filter => cursor(name === 'message' && filter?.type === MessageType.VC_DOCUMENT
-                    ? documents.filter(document =>
-                        !filter.consensusTimestamp.$nin.includes(document.consensusTimestamp))
-                    : []) },
+                : { find: filter => cursor(messageRows(name, filter, documents.filter(document =>
+                        !filter?.consensusTimestamp?.$nin.includes(document.consensusTimestamp)))) },
             create: (entity, value) => value,
             persistAndFlush: async row => {
                 if (rows.some(existing => existing.coordinates === row.coordinates &&
@@ -86,6 +99,7 @@ describe('Project coordinates shared centers', () => {
             getReference: () => ({}),
             persist: () => undefined,
             flush: async () => undefined,
+            clear: () => undefined,
         };
         const migration = Object.create(ProjectCoordinatesMigration.prototype);
         migration.getCollection = () => ({
@@ -130,8 +144,7 @@ describe('Project coordinates shared centers', () => {
         const manager = {
             getCollection: name => name === 'project_coordinates'
                 ? { distinct: async () => [] }
-                : { find: filter => cursor(name === 'message' && filter?.type === MessageType.VC_DOCUMENT
-                    ? documents : []) },
+                : { find: filter => cursor(messageRows(name, filter, documents)) },
             create: (entity, value) => {
                 assert.equal(entity, ProjectCoordinates);
                 return value;
@@ -140,6 +153,7 @@ describe('Project coordinates shared centers', () => {
             getReference: () => ({}),
             persist: () => undefined,
             flush: async () => undefined,
+            clear: () => undefined,
         };
         const original = DataBaseHelper.getEntityManager;
         DataBaseHelper.getEntityManager = () => manager;

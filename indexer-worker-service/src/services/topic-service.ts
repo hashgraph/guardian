@@ -32,7 +32,7 @@ export class TopicService {
                     priorityTimestamp: row.priorityTimestamp,
                     inheritPriority: row.inheritPriority
                 }
-                
+
                 const rowMessages = await TopicService.saveMessages(data.messages, priorityOptions);
                 if (rowMessages) {
                     const compressed = await TopicService.compressMessages(rowMessages);
@@ -104,64 +104,44 @@ export class TopicService {
     }
 
     private static async randomTopic(em: MongoEntityManager<MongoDriver>): Promise<TopicCache> {
-        const delay = Date.now() - TopicService.CYCLE_TIME;
+        const now = Date.now();
+        const delay = now - TopicService.CYCLE_TIME;
 
-        const rows = await em.find(TopicCache,
-            {
-                $or: [
-                    { priorityDate: { $ne: null } },
-                    { lastUpdate: { $lt: delay } },
-                    { hasNext: true }
-                ]
-            },
-            {
-                orderBy: [
-                    { priorityDate: 'DESC' },
-                ],
-                limit: 50
-            }
+        const setParams = {
+            lastUpdate: now,
+            hasNext: false
+        };
+
+        const collection = await em.getCollection(TopicCache);
+
+        // Try to get priority topics first
+        const priorityTopic = await collection.findOneAndUpdate(
+            { priorityDate: { $ne: null }},
+            { $set: setParams },
+            { sort: { priorityDate: -1 }, returnDocument: 'after' }
         );
 
-        if (!rows || rows.length <= 0) {
-            return null;
+        if (priorityTopic) {
+            return em.map(TopicCache, priorityTopic);
         }
 
-        let row: any;
-        if (rows[0].priorityDate) {
-            row = rows[0]
-        } else {
-            const index = Math.min(Math.floor(Math.random() * rows.length), rows.length - 1);
-            row = rows[index];
-        }
+        // Selection from new topics and topics with more data
+        let topic = await collection.findOneAndUpdate(
+            { $or: [{ lastUpdate: 0 }, { hasNext: true }] },
+            { $set: setParams },
+            { sort: { lastUpdate: 1 } , returnDocument: 'after' }
+        );
 
-        if (!row) {
-            return null;
-        }
-
-        const now = Date.now();
-        const count = await em.nativeUpdate(TopicCache, {
-            topicId: row.topicId,
-            $or: [
-                { priorityDate: { $ne: null } },
+        // Selection from all eligible topics
+        if (!topic) {
+            topic = await collection.findOneAndUpdate(
                 { lastUpdate: { $lt: delay } },
-                { hasNext: true }
-            ]
-        }, {
-            messages: row.messages,
-            lastUpdate: now,
-            hasNext: false,
-        });
-
-        if (count) {
-            return row;
-        } else {
-            return null;
+                { $set: setParams },
+                { sort: { lastUpdate: 1 }, returnDocument: 'after' }
+            );
         }
 
-        // const ref = em.getReference(TopicCache, row._id);
-        // ref.lastUpdate = Date.now();
-        // ref.hasNext = false;
-        // await em.flush();
+        return topic ? em.map(TopicCache, topic) : null;
     }
 
     public static async saveMessages(messages: TopicMessage[], priorityOptions?: PriorityOptions): Promise<MessageCache[]> {

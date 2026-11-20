@@ -2,8 +2,10 @@ import { DataBaseHelper, Message, ProjectCoordinates } from '@indexer/common';
 import { safetyRunning } from '../../utils/safety-running.js';
 import { MessageType, MessageAction, IPFS_CID_PATTERN } from '@indexer/interfaces';
 import { SynchronizationTask } from '../synchronization-task.js';
-import { loadFiles } from '../load-files.js';
+import { fastLoadFiles } from '../load-files.js';
 import { SchemaFileHelper } from '../../helpers/schema-file-helper.js';
+import { BatchLoadHelper } from '../batch-load-helper.js';
+import { PrepareRecordHelper } from '../prepare-record-helper.js';
 
 interface ICoord {
     coordinates: string,
@@ -23,78 +25,119 @@ export class SynchronizationProjects extends SynchronizationTask {
         super('projects', mask);
     }
 
+    /** Mark schemas that contain a GeoJSON field, so the sync reads only the VCs that can have coordinates */
+    private async prepareSchemas(): Promise<void> {
+        console.log(`Preprocess schemas: start`);
+        const em = DataBaseHelper.getEntityManager();
+        const collection = em.getCollection<Message>('message');
+        const schemas = collection.find({
+            type: MessageType.SCHEMA,
+            files: { $exists: true, $not: { $size: 0 } },
+            loaded: true,
+            parsedHasGeoJson: { $exists: false },
+        });
+
+        await BatchLoadHelper.load<Message>(schemas, BatchLoadHelper.DEFAULT_BATCH_SIZE, async (rows, counter) => {
+            console.log(`Preprocess schemas: batch ${counter.batchIndex} start. Loaded ${counter.loadedTotal}`);
+            const cids = new Set<string>();
+            for (const schema of rows) {
+                const cid = SchemaFileHelper.getContextFile(schema);
+                if (cid) {
+                    cids.add(cid);
+                }
+            }
+            const fileMap = await fastLoadFiles(cids);
+            for (const schema of rows) {
+                const cid = SchemaFileHelper.getContextFile(schema);
+                const context = cid ? this.parseFile(fileMap.get(cid)) : null;
+                if (!context) {
+                    // The context file is not readable yet, try again on the next run
+                    continue;
+                }
+                const row = em.getReference(Message, schema._id);
+                row.parsedHasGeoJson = this.schemaHasGeoJson(context);
+                em.persist(row);
+            }
+            await em.flush();
+            em.clear();
+        });
+    }
+
     public override async sync(): Promise<void> {
+        await this.prepareSchemas();
+        await PrepareRecordHelper.prepareVCMessages();
+
         const em = DataBaseHelper.getEntityManager();
         const projectLocations = await em
             .getCollection('project_coordinates')
             .distinct('projectId');
 
         const collection = em.getCollection<Message>('message');
+
+        console.log(`Sync projects: load schemas`)
+        const contextIds: Set<string> = new Set<string>();
+        const schemas = collection.find({
+            type: MessageType.SCHEMA,
+            parsedHasGeoJson: true
+        });
+        while (await schemas.hasNext()) {
+            const schema = await schemas.next();
+            const contextCID = SchemaFileHelper.getContextFile(schema);
+            if (contextCID) {
+                contextIds.add(contextCID);
+            }
+        }
+        if (contextIds.size === 0) {
+            console.log(`Sync projects: no schemas with geoJson`);
+            return;
+        }
+        const contextFileMap = await fastLoadFiles(contextIds);
+
         const documents = collection.find({
             type: MessageType.VC_DOCUMENT,
             action: MessageAction.CreateVC,
             consensusTimestamp: { $nin: projectLocations },
+            files: { $exists: true, $not: { $size: 0 } },
+            loaded: true,
+            'parsedContextId.context': { $in: Array.from(contextIds) },
         }, {
             sort: { coordUpdate: 1 },
             limit: 100000
         });
 
-        console.log(`Sync projects: load documents`)
-        const allDocuments: Message[] = [];
-        const fileIds: Set<string> = new Set<string>();
-        while (await documents.hasNext()) {
-            const document = await documents.next();
-            if (
-                Array.isArray(document.files) &&
-                document.files.length !== 0
-            ) {
-                allDocuments.push(document);
+        await BatchLoadHelper.load<Message>(documents, BatchLoadHelper.DEFAULT_BATCH_SIZE, async (rows, counter) => {
+            console.log(`Sync projects: batch ${counter.batchIndex} start. Loaded ${counter.loadedTotal}`)
+            const fileIds: Set<string> = new Set<string>();
+            for (const document of rows) {
                 fileIds.add(document.files[Files.DOCUMENT_FILE]);
             }
-        }
+            const fileMap = await fastLoadFiles(fileIds);
+            contextFileMap.forEach((value, key) => fileMap.set(key, value));
 
-        console.log(`Sync projects: load schemas`)
-        const schemas = collection.find({ type: MessageType.SCHEMA });
-        while (await schemas.hasNext()) {
-            const schema = await schemas.next();
-            const contextCID = SchemaFileHelper.getContextFile(schema);
-
-            if (contextCID) {
-                fileIds.add(contextCID);
-            }
-        }
-
-        console.log(`Sync projects: load files`)
-        const fileMap = await loadFiles(fileIds, false);
-
-        console.log(`Sync projects: update data`)
-        for (const document of allDocuments) {
-            const coords = this.updateGeoCoordinates(document, fileMap);
-            if (coords) {
-                const savedCoordinates = new Set<string>();
-                for (const coord of coords) {
-                    if (savedCoordinates.has(coord.coordinates)) {
-                        continue;
+            console.log(`Sync projects: update data`)
+            for (const document of rows) {
+                const coords = this.updateGeoCoordinates(document, fileMap);
+                if (coords) {
+                    const savedCoordinates = new Set<string>();
+                    for (const coord of coords) {
+                        if (savedCoordinates.has(coord.coordinates)) {
+                            continue;
+                        }
+                        savedCoordinates.add(coord.coordinates);
+                        const coordinates = em.create(ProjectCoordinates, coord);
+                        await safetyRunning(async () => {
+                            await em.persistAndFlush(coordinates);
+                        });
                     }
-                    savedCoordinates.add(coord.coordinates);
-                    const row = em.create(ProjectCoordinates, coord);
-                    await safetyRunning(async () => {
-                        await em.persistAndFlush(row);
-                    });
-                    // em.persist(row);
                 }
+                const row = em.getReference(Message, document._id);
+                row.coordUpdate = Date.now();
+                em.persist(row);
             }
-        }
-        // await em.flush();
-
-        console.log(`Sync VCs: update data`);
-        for (const document of allDocuments) {
-            const row = em.getReference(Message, document._id);
-            row.coordUpdate = Date.now();
-            em.persist(row);
-        }
-        console.log(`Sync VCs: flush`)
-        await em.flush();
+            console.log(`Sync projects: flush batch`)
+            await em.flush();
+            em.clear();
+        });
     }
 
     private updateGeoCoordinates(

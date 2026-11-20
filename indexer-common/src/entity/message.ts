@@ -10,6 +10,10 @@ import { ObjectId } from '@mikro-orm/mongodb';
 @Index({ name: 'files', properties: ['files'] })
 @Index({ name: 'last_update', properties: ['lastUpdate'] })
 @Index({ name: 'loaded', properties: ['loaded'] })
+@Index({ name: 'uuid_type', properties: ['uuid', 'type'] })
+@Index({ name: 'loaded_lastUpdate', properties: ['loaded', 'lastUpdate'] })
+@Index({ name: 'type_action', properties: ['type', 'action'] })
+@Index({ name: 'parsedHasGeoJson', properties: ['parsedHasGeoJson'] })
 export class Message implements IMessage {
     @PrimaryKey()
     _id: ObjectId;
@@ -115,4 +119,16 @@ export class Message implements IMessage {
 
     @Property({ nullable: true })
     loaded: boolean;
+
+    @Property({ nullable: true, })
+    parsedHasGeoJson: boolean;
+
+    @Property({ nullable: true, })
+    parsedSchemaIds: string[];
+
+    @Property({ nullable: true, })
+    parsedContextId: { context: string, type: string }
+
+    @Property({ nullable: true, })
+    parsedLinkedContextIds: { context: string, type: string }[]
 }

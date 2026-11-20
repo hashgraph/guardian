@@ -170,6 +170,7 @@ describe('TableFieldHelper rich-text image cache', () => {
             getReference: () => row,
             persist: () => undefined,
             flush: async () => undefined,
+            clear: () => undefined,
         };
         const originalManager = DataBaseHelper.getEntityManager;
         const methods = ['attachTableFilesAnalytics', 'attachGeoFilesAnalytics', 'attachRichTextImagesAnalytics'];
