@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ArtifactService } from 'src/app/services/artifact.service';
 import { CsvService } from 'src/app/services/csv.service';
@@ -1157,6 +1158,63 @@ describe('MathEditorDialogComponent rendered Testing table', () => {
         const renderedRows = tableOutput.querySelectorAll('tbody tr');
         expect(renderedRows.length).toBe(20);
         expect(renderedRows[19].textContent).toContain('2019');
+    });
+});
+
+describe('MathEditorDialogComponent rendered Table output by columns', () => {
+    it('renders each column as a label above its own input', async () => {
+        vi.spyOn(MathEditorDialogComponent.prototype, 'ngOnInit').mockImplementation(() => {
+        });
+        vi.spyOn(MathEditorDialogComponent.prototype, 'ngAfterContentInit').mockImplementation(() => {
+        });
+        await TestBed.configureTestingModule({
+            declarations: [MathEditorDialogComponent],
+            imports: [CommonModule, FormsModule],
+            providers: [
+                { provide: DynamicDialogRef, useValue: {} },
+                { provide: DialogService, useValue: {} },
+                { provide: DynamicDialogConfig, useValue: { data: {} } },
+                { provide: ArtifactService, useValue: {} },
+                { provide: GzipService, useValue: {} },
+                { provide: CsvService, useValue: {} },
+                { provide: IndexedDbRegistryService, useValue: {} },
+            ],
+            schemas: [NO_ERRORS_SCHEMA],
+        }).compileComponents();
+
+        const fixture = TestBed.createComponent(MathEditorDialogComponent);
+        const dialog: any = fixture.componentInstance;
+        const output = FieldLink.from({
+            type: MathItemType.LINK,
+            name: '',
+            description: '',
+            field: 'results',
+            schema: '#out',
+            columns: { year: 'years', co2: 'total' }
+        })!;
+        output.update();
+        dialog.loading = false;
+        dialog.inputSchema = {};
+        dialog.step = 'step_3';
+        dialog.fieldWarnings = new Map();
+        dialog.tableColumnsMode = {};
+        dialog.engine = { outputs: { view: [output], pages: [], current: null } };
+        dialog.outputSchemaFieldMap = new Map([['results', {
+                    arrayLvl: 0,
+                    field: {
+                        description: 'Results',
+                        customType: 'table',
+                        tableColumns: [{ name: 'Year', key: 'year' }, { name: 'CO2 (t)', key: 'co2' }]
+                    }
+                }]]);
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        const tableOutput: HTMLElement = fixture.nativeElement.querySelector('.table-output');
+        expect(tableOutput.querySelector('table')).toBeNull();
+        const columns = Array.from(tableOutput.querySelectorAll('.table-output-column'));
+        expect(columns.map((column) => column.querySelector('.form-label')?.textContent?.trim())).toEqual(['Year', 'CO2 (t)']);
+        expect(columns.map((column) => column.querySelector('input')?.value)).toEqual(['years', 'total']);
     });
 });
 

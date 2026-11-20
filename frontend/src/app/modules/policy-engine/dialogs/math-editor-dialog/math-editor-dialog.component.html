@@ -98,31 +98,19 @@
     }
   </ng-template>
   <ng-template #tableColumnsGrid let-item="item">
-    <div class="table-output-grid">
-      <table>
-        <thead>
-          <tr>
-            @for (column of getTableColumns(item); track column.key) {
-              <th>{{column.name}}</th>
-            }
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            @for (column of getTableColumns(item); track column.key) {
-              <td>
-                <input
-                  [(ngModel)]="item.columns[column.key]"
-                  pInputText
-                  type="text"
-                  placeholder="Name"
-                  [readOnly]="readonly"
-                  (change)="item.update()"/>
-              </td>
-            }
-          </tr>
-        </tbody>
-      </table>
+    <div class="table-output-columns">
+      @for (column of getTableColumns(item); track column.key) {
+        <div class="table-output-column">
+          <label class="form-label">{{column.name}}</label>
+          <input
+            [(ngModel)]="item.columns[column.key]"
+            pInputText
+            type="text"
+            placeholder="Name"
+            [readOnly]="readonly"
+            (change)="item.update()"/>
+        </div>
+      }
     </div>
   </ng-template>
   <ng-template #tableValues let-item="item" let-values="values" let-title="title">
