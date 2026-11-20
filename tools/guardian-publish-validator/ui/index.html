@@ -1,0 +1,1198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#ffffff" id="meta-theme-color" />
+<script>
+  // Apply the persisted theme BEFORE the body paints to avoid a flash.
+  // Light is the default if nothing is stored.
+  (function () {
+    try {
+      const t = localStorage.getItem('gtv-theme') || 'light';
+      if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+    } catch {}
+  })();
+</script>
+<title>Guardian Methodology Library Validator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* Light theme is the default; dark theme activates when
+     <html data-theme="dark"> is set. Toggle persists via localStorage. */
+  :root {
+    --bg: #ffffff;
+    --surface: #f7f7f7;
+    --surface-light: #efefef;
+    --surface-hover: #e8e8e8;
+    --accent: #15a87e;
+    --accent-bright: #2dd4a8;
+    --accent-on: #ffffff;
+    --resilient: #0891b2;
+    --resilient-bg: rgba(8, 145, 178, 0.10);
+    --warning: #b8741c;
+    --warning-bg: rgba(184, 116, 28, 0.10);
+    --danger: #b91c1c;
+    --danger-bg: rgba(185, 28, 28, 0.08);
+    --healthy-bg: rgba(21, 168, 126, 0.10);
+    --text: #0a0a0a;
+    --text-secondary: #404040;
+    --text-muted: #737373;
+    --border: rgba(0, 0, 0, 0.08);
+    --border-strong: rgba(0, 0, 0, 0.15);
+    --shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    --modal-backdrop: rgba(0, 0, 0, 0.4);
+    --code-bg: #f1f1f1;
+    --recommendation-healthy-bg: rgba(21, 168, 126, 0.06);
+    --recommendation-healthy-border: rgba(21, 168, 126, 0.25);
+    --recommendation-broken-bg: rgba(185, 28, 28, 0.06);
+    --recommendation-broken-border: rgba(185, 28, 28, 0.25);
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --surface-light: #161616;
+    --surface-hover: #1c1c1c;
+    --accent: #2dd4a8;
+    --accent-bright: #5eebc0;
+    --accent-on: #0a0a0a;
+    --resilient: #22d3ee;
+    --resilient-bg: rgba(34, 211, 238, 0.12);
+    --warning: #f0c674;
+    --warning-bg: rgba(240, 198, 116, 0.12);
+    --danger: #f87171;
+    --danger-bg: rgba(248, 113, 113, 0.12);
+    --healthy-bg: rgba(45, 212, 168, 0.12);
+    --text: #fafafa;
+    --text-secondary: #a1a1a1;
+    --text-muted: #525252;
+    --border: rgba(255, 255, 255, 0.06);
+    --border-strong: rgba(255, 255, 255, 0.12);
+    --shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+    --modal-backdrop: rgba(0, 0, 0, 0.65);
+    --code-bg: #050505;
+    --recommendation-healthy-bg: rgba(45, 212, 168, 0.06);
+    --recommendation-healthy-border: rgba(45, 212, 168, 0.25);
+    --recommendation-broken-bg: rgba(248, 113, 113, 0.06);
+    --recommendation-broken-border: rgba(248, 113, 113, 0.25);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  code, .mono { font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+  .page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+
+  /* Header */
+  header.top {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  header.top .titleblock {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1 1 auto;
+    min-width: 260px;
+  }
+  header.top .actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .btn {
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    color: var(--text);
+    padding: 10px 16px;
+    border-radius: 100px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-decoration: none;
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .btn:hover { background: var(--surface-hover); border-color: var(--accent); }
+  .btn.primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent-bright));
+    color: var(--accent-on);
+    border-color: transparent;
+  }
+  .btn.primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(21, 168, 126, 0.25); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn .glyph { font-size: 14px; line-height: 1; }
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  h1 {
+    font-size: clamp(28px, 4vw, 36px);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin: 0;
+  }
+  .meta-line {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+  .meta-line .kv { display: inline-flex; gap: 6px; align-items: baseline; }
+  .meta-line .k {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .meta-line .v { font-family: 'Geist Mono', monospace; font-size: 12px; }
+
+  /* Summary cards */
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 22px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat .label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .stat .value {
+    font-size: 44px;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin: 8px 0 4px 0;
+  }
+  .stat .pct {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 300;
+  }
+  .stat.healthy .value { color: var(--accent); }
+  .stat.resilient .value { color: var(--resilient); }
+  .stat.fragile .value { color: var(--warning); }
+  .stat.broken .value { color: var(--danger); }
+  .stat.total .value { color: var(--text); }
+  .stat .desc {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.45;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border);
+  }
+
+  /* Modal */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: var(--modal-backdrop);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 20px;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
+    padding: 28px 28px 22px;
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal h2 {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 6px 0;
+  }
+  .modal .modal-sub {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0 0 20px 0;
+  }
+  .modal label {
+    display: block;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 12px 0 6px 0;
+  }
+  .modal input[type="text"], .modal select {
+    width: 100%;
+    background: var(--surface-light);
+    border: 1px solid var(--border-strong);
+    color: var(--text);
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+  }
+  .modal input:focus, .modal select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .modal .row { display: flex; gap: 12px; }
+  .modal .row > * { flex: 1; }
+  .modal .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+  .modal .checkbox-row input[type="checkbox"] { width: auto; }
+  .modal .field-help {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin: 4px 0 0 0;
+  }
+  .modal .field-help code {
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .modal details {
+    margin-top: 16px;
+    border-top: 1px dashed var(--border);
+    padding-top: 14px;
+  }
+  .modal summary {
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    user-select: none;
+  }
+  .modal summary:hover { color: var(--text-secondary); }
+  .modal .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 24px;
+  }
+  .modal-log {
+    margin-top: 20px;
+    padding: 14px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    color: var(--text-secondary);
+    max-height: 260px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    color: var(--text);
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-size: 13px;
+    z-index: 200;
+    box-shadow: var(--shadow);
+  }
+  .toast.error { border-color: var(--danger); color: var(--danger); }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+    align-items: center;
+  }
+  .pill {
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    color: var(--text-secondary);
+    padding: 8px 14px;
+    border-radius: 100px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s ease;
+  }
+  .pill:hover { background: var(--surface-hover); color: var(--text); }
+  .pill.active {
+    background: var(--accent);
+    color: var(--accent-on);
+    border-color: var(--accent);
+  }
+  .pill .count {
+    margin-left: 8px;
+    font-weight: 300;
+    opacity: 0.7;
+  }
+  .pill.active .count { opacity: 0.7; }
+  .search-input {
+    flex: 1;
+    min-width: 240px;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    color: var(--text);
+    padding: 10px 16px;
+    border-radius: 100px;
+    font-family: inherit;
+    font-size: 13px;
+  }
+  .search-input:focus { outline: none; border-color: var(--accent); }
+
+  /* Table */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead th {
+    text-align: left;
+    padding: 14px 18px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    background: var(--surface-light);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+  }
+  thead th:hover { color: var(--text-secondary); }
+  thead th .arrow { opacity: 0.4; margin-left: 4px; font-size: 9px; }
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.1s ease;
+  }
+  tbody tr:hover { background: var(--surface-hover); }
+  tbody tr.expanded { background: var(--surface-light); }
+  tbody td {
+    padding: 14px 18px;
+    vertical-align: middle;
+  }
+  tbody td.name { font-weight: 500; }
+  tbody td.muted { color: var(--text-muted); }
+  tbody td.mono { font-family: 'Geist Mono', monospace; font-size: 11.5px; }
+
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .status .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .status.ok { background: var(--healthy-bg); color: var(--accent); }
+  .status.ok .dot { background: var(--accent); }
+  .status.resilient { background: var(--resilient-bg); color: var(--resilient); }
+  .status.resilient .dot { background: var(--resilient); }
+  .status.fragile { background: var(--warning-bg); color: var(--warning); }
+  .status.fragile .dot { background: var(--warning); }
+  .status.broken { background: var(--danger-bg); color: var(--danger); }
+  .status.broken .dot { background: var(--danger); }
+
+  .type-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    background: var(--surface-light);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+  }
+
+  /* Detail panel */
+  .detail-row td {
+    padding: 0 !important;
+    background: var(--bg);
+  }
+  .detail-inner {
+    padding: 22px 24px 26px;
+    border-top: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+  }
+  .detail-section h3 {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 12px 0;
+  }
+  .field {
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+    font-size: 12.5px;
+    margin-bottom: 6px;
+  }
+  .field .label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    width: 80px;
+    flex-shrink: 0;
+  }
+  .field .value {
+    color: var(--text-secondary);
+    font-family: 'Geist Mono', monospace;
+    font-size: 12px;
+    word-break: break-all;
+  }
+  .gateway-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .gateway-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 12px;
+    background: var(--surface);
+    border-radius: 6px;
+    font-size: 12px;
+    border: 1px solid var(--border);
+  }
+  .gateway-name { font-family: 'Geist Mono', monospace; }
+  .gateway-name.local { color: var(--accent); font-weight: 500; }
+  .gateway-status { font-size: 11px; color: var(--text-muted); }
+  .gateway-row.ok .gateway-status { color: var(--accent); }
+  .gateway-row.fail .gateway-status { color: var(--danger); }
+  .gateway-elapsed { font-family: 'Geist Mono', monospace; font-size: 10px; color: var(--text-muted); margin-left: 8px; }
+
+  .occurrences {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .occurrence {
+    font-family: 'Geist Mono', monospace;
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    padding: 4px 0;
+  }
+  .occurrence .loc { color: var(--text-muted); margin-left: 6px; }
+  .occurrence a, .field a {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px dotted color-mix(in srgb, var(--accent) 50%, transparent);
+    transition: border-color 0.15s ease;
+  }
+  .occurrence a:hover, .field a:hover { border-bottom-color: var(--accent); }
+
+  .recommendation {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    background: var(--recommendation-healthy-bg);
+    border: 1px solid var(--recommendation-healthy-border);
+    font-size: 12.5px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .recommendation strong { color: var(--accent); }
+  .recommendation.broken {
+    background: var(--recommendation-broken-bg);
+    border-color: var(--recommendation-broken-border);
+  }
+  .recommendation.broken strong { color: var(--danger); }
+
+  .empty {
+    padding: 60px 24px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 24px;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  .err {
+    padding: 20px;
+    background: rgba(248, 113, 113, 0.08);
+    border: 1px solid rgba(248, 113, 113, 0.25);
+    border-radius: 12px;
+    color: var(--danger);
+    font-size: 13px;
+  }
+
+  @media (max-width: 720px) {
+    .detail-inner { grid-template-columns: 1fr; gap: 18px; }
+    tbody td:nth-child(4), tbody td:nth-child(5),
+    thead th:nth-child(4), thead th:nth-child(5) { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page" id="root">
+  <div class="loading">Loading report…</div>
+</div>
+
+<!-- Scan-options modal. Hidden until "Run new scan" is clicked. -->
+<div class="modal-backdrop" id="scan-modal">
+  <div class="modal">
+    <h2>Run a new scan</h2>
+    <p class="modal-sub">The validator walks Hedera Guardian's official methodology library, checks every tool and policy on Hedera, and probes IPFS gateways. Takes a few minutes.</p>
+
+    <div class="row">
+      <div>
+        <label for="scan-network">Network</label>
+        <select id="scan-network">
+          <option value="testnet">testnet</option>
+          <option value="mainnet">mainnet</option>
+          <option value="previewnet">previewnet</option>
+        </select>
+        <p class="field-help">Which Hedera network's consensus messages to check. Testnet timestamps and mainnet timestamps are different — testnet content also disappears after testnet resets, which is the main reason this tool exists.</p>
+      </div>
+      <div>
+        <label for="scan-concurrency">Concurrency</label>
+        <input type="text" id="scan-concurrency" value="4" />
+        <p class="field-help">How many checks to run in parallel. Higher is faster but can trigger rate-limits on the mirror node. <code>2</code>–<code>6</code> is the sweet spot.</p>
+      </div>
+    </div>
+
+    <label for="scan-filter">Filter (optional)</label>
+    <input type="text" id="scan-filter" placeholder='e.g. "CDM" or "Verra"' />
+    <p class="field-help">Substring match scoping the scan. Useful for spot-checking one framework instead of all 167 archives. Leave blank to scan everything.</p>
+
+    <label for="scan-local-gateway">Your local Kubo gateway URL (optional)</label>
+    <input type="text" id="scan-local-gateway" placeholder="https://your-kubo/ipfs/${cid}" />
+    <p class="field-help">Your own IPFS node. Use <code>${cid}</code> as the placeholder. CIDs served here count as <strong>Healthy</strong> instead of <strong>Fragile</strong>. Leave blank to probe only public gateways (ipfs.io, dweb.link, pinata, w3s.link).</p>
+
+    <div class="checkbox-row">
+      <input type="checkbox" id="scan-skip-ipfs" />
+      <label for="scan-skip-ipfs" style="margin: 0; letter-spacing: 0; text-transform: none; font-size: 13px; color: var(--text-secondary);">Skip IPFS check (Hedera-only, faster)</label>
+    </div>
+    <p class="field-help" style="margin-top: 6px;">Checks only whether the Hedera consensus message still exists. Skips the IPFS gateway probes. Useful for a fast first pass — finishes in seconds instead of minutes.</p>
+
+    <details>
+      <summary>Advanced</summary>
+      <label for="scan-library">Methodology library path (optional override)</label>
+      <input type="text" id="scan-library" placeholder="Default: auto-cloned hashgraph/guardian@main" />
+      <p class="field-help">Leave blank to use the official upstream library. The validator will auto-clone <code>hashgraph/guardian</code> into <code>~/.cache/guardian-tool-validator/</code> and refresh it on each scan. Override with a path to a local clone (e.g., your own fork or work-in-progress branch).</p>
+
+      <div class="row">
+        <div>
+          <label for="scan-repo">GitHub repo for occurrence links</label>
+          <input type="text" id="scan-repo" value="hashgraph/guardian" />
+          <p class="field-help">Where "Open in GitHub →" links point. Also determines what gets auto-cloned if the path above is blank.</p>
+        </div>
+        <div>
+          <label for="scan-branch">Branch</label>
+          <input type="text" id="scan-branch" value="main" />
+          <p class="field-help">Branch in the linked repo. Use <code>develop</code> if you want to validate work-in-progress library state.</p>
+        </div>
+      </div>
+    </details>
+
+    <div class="modal-log" id="scan-log" style="display: none;"></div>
+
+    <div class="modal-actions">
+      <button class="btn" id="scan-cancel">Close</button>
+      <button class="btn primary" id="scan-start">Start scan</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" style="display: none;"></div>
+
+<script>
+const root = document.getElementById('root');
+
+// Four-bucket grouping. Mirrors the bucket() function in bin/validator.js —
+// must stay in sync because CI gates, the UI summary, and downstream
+// analytics all flow off these names.
+function statusGroup(status) {
+  if (status === 'ok' || status === 'ipfs-ok-local') return 'healthy';
+  if (status === 'ipfs-resilient') return 'resilient';
+  // Older reports used 'ipfs-ok-external' for both resilient and fragile;
+  // we map those to fragile to be conservative.
+  if (status === 'ipfs-fragile' || status === 'ipfs-ok-external') return 'fragile';
+  return 'broken';
+}
+function statusLabel(status) {
+  return ({
+    'ok': 'Healthy',
+    'ipfs-ok-local': 'Healthy (local)',
+    'ipfs-resilient': 'Resilient',
+    'ipfs-fragile': 'Fragile',
+    'ipfs-ok-external': 'Fragile (legacy)',
+    'ipfs-unreachable': 'IPFS unreachable',
+    'hedera-message-missing': 'Hedera message missing',
+    'hedera-topic-not-found': 'Hedera topic missing',
+    'hedera-error': 'Hedera error',
+    'no-topic-id': 'No topic ID',
+    'multi-chunk': 'Multi-chunk (unsupported)',
+    'ok-no-cid': 'Hedera ok (no CID)',
+  })[status] || status;
+}
+
+function statusBadge(status) {
+  const group = statusGroup(status);
+  return `<span class="status ${group}"><span class="dot"></span>${statusLabel(status)}</span>`;
+}
+
+function recommendation(ref) {
+  const s = ref.status;
+  if (s === 'ok' || s === 'ipfs-ok-local') {
+    return `<div class="recommendation"><strong>Healthy.</strong> Hedera anchor alive AND a local Kubo node serves the IPFS bytes. No external dependency at retrieval time. No action needed.</div>`;
+  }
+  if (s === 'ipfs-resilient') {
+    return `<div class="recommendation"><strong>Resilient.</strong> Reachable from ${ref.publicHits || 'multiple'} independent public gateways. Any one of them can go dark without breaking consumers. This is the ideal state for upstream library content.</div>`;
+  }
+  if (s === 'ipfs-fragile' || s === 'ipfs-ok-external') {
+    return `<div class="recommendation"><strong>Fragile.</strong> Content currently retrievable from only one gateway. Single point of failure. Suggested fix: re-pin to additional gateways or a local Kubo. After the proposed multi-gateway fallback ships in Guardian's <code>getFile()</code>, opportunistic local caching also helps.</div>`;
+  }
+  if (s === 'ipfs-unreachable') {
+    return `<div class="recommendation broken"><strong>Action needed: re-pin.</strong> Hedera anchor is alive but the IPFS bytes are gone from every gateway probed. If the bytes still live inside the .policy archive in the library, the republisher can extract and re-pin them (preserving the original CID, no new Hedera transaction needed).</div>`;
+  }
+  if (s === 'hedera-message-missing' || s === 'hedera-topic-not-found') {
+    return `<div class="recommendation broken"><strong>Action needed: full republish.</strong> The Hedera consensus message itself is gone (likely a testnet reset wiped it). Requires uploading content to IPFS and submitting a new consensus message. Provenance considerations apply for mainnet content.</div>`;
+  }
+  if (s === 'no-topic-id') {
+    return `<div class="recommendation broken"><strong>No topic ID.</strong> The reference doesn't carry a topic, so we can't directly resolve the message. May need to look it up via the transactions endpoint.</div>`;
+  }
+  return `<div class="recommendation broken"><strong>${statusLabel(s)}.</strong> Investigate manually.</div>`;
+}
+
+function renderGatewayRow(g) {
+  const cls = g.ok ? 'ok' : 'fail';
+  const nameCls = g.kind === 'local' ? 'gateway-name local' : 'gateway-name';
+  return `<div class="gateway-row ${cls}">
+    <div><span class="${nameCls}">${g.gateway}</span></div>
+    <div>
+      <span class="gateway-status">${g.ok ? 'reachable' : g.status}</span>
+      <span class="gateway-elapsed">${g.elapsedMs}ms</span>
+    </div>
+  </div>`;
+}
+
+function renderOccurrences(occs, report) {
+  if (!occs || !occs.length) return '<div class="occurrence" style="color: var(--text-muted)">(no occurrences recorded)</div>';
+  return occs.map(o => {
+    // The occurrence row always links to the document that REFERENCES the
+    // entity (the README markdown file or the .policy archive). That path
+    // is always valid inside the repo. The README's claimed "link to source
+    // file" is shown separately in the Source-file row above.
+    const src = o.source || o.archive || '(unknown)';
+    const loc = o.location || '';
+    const url = githubUrl(report, src);
+    const srcMarkup = url
+      ? `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(src)}</a>`
+      : escapeHtml(src);
+    return `<div class="occurrence"><span>${srcMarkup}</span><span class="loc">${escapeHtml(loc)}</span></div>`;
+  }).join('');
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+}
+
+// Build an absolute GitHub URL for a path inside the methodology library.
+// The report carries `githubRepo`, `githubBranch`, and `githubBase` (set by
+// the validator via --repo / --branch / --repo-base flags, defaulting to
+// hashgraph/guardian@main + "Methodology Library"). Paths get URL-encoded
+// segment by segment to preserve directory structure but escape spaces,
+// parentheses, etc.
+function githubUrl(report, relPath) {
+  if (!relPath) return null;
+  // Fall back to upstream defaults if the report was produced before the
+  // --repo/--branch flags were added.
+  const repo = (report && report.githubRepo) || 'hashgraph/guardian';
+  const branch = (report && report.githubBranch) || 'main';
+  const base = ((report && report.githubBase) || 'Methodology Library').replace(/(^\/|\/$)/g, '');
+  const parts = relPath.split('/').map(encodeURIComponent).join('/');
+  const baseParts = base ? base.split('/').map(encodeURIComponent).join('/') + '/' : '';
+  return `https://github.com/${repo}/blob/${encodeURIComponent(branch)}/${baseParts}${parts}`;
+}
+
+// Some occurrence sources point at README markdown files rather than the
+// asset itself; in those cases we still link to the README so the user can
+// see the table row that documents this entity.
+function occurrenceUrl(report, occ) {
+  if (!occ) return null;
+  if (occ.link) return occ.link; // README extractor sometimes captured the absolute link directly
+  const source = occ.source || occ.archive;
+  return githubUrl(report, source);
+}
+
+function renderDetail(ref, report) {
+  // Two distinct GitHub links per entity:
+  //   1. "Documented file" — the link captured from the README (if any).
+  //      Honors what upstream docs claim; can be stale if upstream links bit-rotted.
+  //   2. "Documentation" — the README itself or the .policy archive that
+  //      references this entity. Always a valid path inside the repo.
+  // Showing both lets the user fall back to the README when (1) 404s.
+  const firstOcc = ref.occurrences?.[0];
+  const documentedLink = ref.occurrences?.map(o => o.link).find(Boolean) || null;
+  const documentationLink = firstOcc ? githubUrl(report, firstOcc.source || firstOcc.archive) : null;
+
+  const linkRows = [];
+  if (documentedLink) {
+    linkRows.push(`<div class="field"><span class="label">Source file</span><span class="value"><a href="${escapeHtml(documentedLink)}" target="_blank" rel="noopener noreferrer">Open in GitHub →</a></span></div>`);
+  }
+  if (documentationLink && documentationLink !== documentedLink) {
+    linkRows.push(`<div class="field"><span class="label">Documented in</span><span class="value"><a href="${escapeHtml(documentationLink)}" target="_blank" rel="noopener noreferrer">${escapeHtml((firstOcc?.source || firstOcc?.archive || '').split('/').slice(-2).join('/'))} →</a></span></div>`);
+  }
+  return `
+    <div class="detail-inner">
+      <div class="detail-section">
+        <h3>Identifiers</h3>
+        <div class="field"><span class="label">Name</span><span class="value">${escapeHtml(ref.name || '(unnamed)')}</span></div>
+        <div class="field"><span class="label">Type</span><span class="value">${escapeHtml(ref.type || '-')}</span></div>
+        <div class="field"><span class="label">Topic</span><span class="value">${escapeHtml(ref.topicId || '-')}</span></div>
+        <div class="field"><span class="label">Message</span><span class="value">${escapeHtml(ref.messageId)}</span></div>
+        <div class="field"><span class="label">CID</span><span class="value">${escapeHtml(ref.cid || '-')}</span></div>
+        ${linkRows.join('')}
+        ${recommendation(ref)}
+      </div>
+      <div class="detail-section">
+        <h3>Gateway probes (${ref.ipfsGateways?.length || 0})</h3>
+        <div class="gateway-list">
+          ${(ref.ipfsGateways || []).map(renderGatewayRow).join('') || '<div class="occurrence" style="color: var(--text-muted)">(no IPFS probe results — Hedera lookup failed or skipped)</div>'}
+        </div>
+        <h3 style="margin-top: 18px;">Occurrences (${ref.occurrences?.length || 0})</h3>
+        <div class="occurrences">${renderOccurrences(ref.occurrences, report)}</div>
+      </div>
+    </div>
+  `;
+}
+
+let allRefs = [];
+let activeFilter = 'all';
+let searchQuery = '';
+let sortField = 'name';
+let sortDir = 'asc';
+let expandedRow = null;
+
+function applyFilters() {
+  let rows = allRefs.slice();
+  if (activeFilter === 'healthy') rows = rows.filter(r => statusGroup(r.status) === 'healthy');
+  if (activeFilter === 'resilient') rows = rows.filter(r => statusGroup(r.status) === 'resilient');
+  if (activeFilter === 'fragile') rows = rows.filter(r => statusGroup(r.status) === 'fragile');
+  if (activeFilter === 'broken') rows = rows.filter(r => statusGroup(r.status) === 'broken');
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    rows = rows.filter(r =>
+      (r.name || '').toLowerCase().includes(q) ||
+      (r.messageId || '').includes(q) ||
+      (r.cid || '').toLowerCase().includes(q) ||
+      (r.topicId || '').includes(q) ||
+      (r.type || '').toLowerCase().includes(q)
+    );
+  }
+  const dir = sortDir === 'asc' ? 1 : -1;
+  rows.sort((a, b) => {
+    const va = (a[sortField] || '').toString().toLowerCase();
+    const vb = (b[sortField] || '').toString().toLowerCase();
+    if (va < vb) return -1 * dir;
+    if (va > vb) return 1 * dir;
+    return 0;
+  });
+  return rows;
+}
+
+function renderApp(report) {
+  const total = report.scanned.uniqueToolRefs;
+  // New four-bucket summary fields; fall back to legacy fields if the loaded
+  // report is from an older validator build that didn't emit resilient/fragile
+  // separately.
+  const healthy = report.summary.healthy ?? report.summary.ok ?? 0;
+  const resilient = report.summary.resilient ?? 0;
+  const fragile = report.summary.fragile ?? (report.summary.okOnlyOnExternalGateway ?? 0);
+  const broken = report.summary.broken ?? 0;
+  const pct = (n) => total ? `${Math.round((n / total) * 100)}%` : '—';
+
+  const rows = applyFilters();
+
+  root.innerHTML = `
+    <header class="top">
+      <div class="titleblock">
+        <span class="eyebrow">Hedera Guardian · Methodology Tooling</span>
+        <h1>Methodology Library Validator</h1>
+        <div class="meta-line">
+          <span class="kv"><span class="k">Network</span><span class="v">${escapeHtml(report.network)}</span></span>
+          <span class="kv"><span class="k">Repo</span><span class="v"><a href="https://github.com/${escapeHtml(report.githubRepo || 'hashgraph/guardian')}/tree/${escapeHtml(report.githubBranch || 'main')}/${encodeURIComponent(report.githubBase || 'Methodology Library')}" target="_blank" rel="noopener noreferrer">${escapeHtml(report.githubRepo || 'hashgraph/guardian')}@${escapeHtml(report.githubBranch || 'main')}</a></span></span>
+          ${report.filter ? `<span class="kv"><span class="k">Filter</span><span class="v">${escapeHtml(report.filter)}</span></span>` : ''}
+          <span class="kv"><span class="k">Loaded</span><span class="v">${new Date(report._loadedAt).toLocaleString()}</span></span>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="btn-scan"><span class="glyph">⟳</span> Run new scan</button>
+        <button class="btn" id="btn-refresh"><span class="glyph">↻</span> Reload report</button>
+        <a class="btn" href="/api/export.csv"><span class="glyph">↓</span> Export CSV</a>
+        <button class="btn" id="btn-theme" title="Toggle theme"><span class="glyph" id="theme-glyph">◐</span> <span id="theme-label">Dark mode</span></button>
+      </div>
+    </header>
+
+    <div class="summary">
+      <div class="stat total">
+        <div class="label">Total scanned</div>
+        <div class="value">${total}</div>
+        <div class="pct">across ${report.scanned.archives} archive${report.scanned.archives === 1 ? '' : 's'}</div>
+        <div class="desc">Every published policy, standalone tool, and tool reference discovered across the library and its README tables.</div>
+      </div>
+      <div class="stat healthy">
+        <div class="label">Healthy</div>
+        <div class="value">${healthy}</div>
+        <div class="pct">${pct(healthy)}</div>
+        <div class="desc">Hedera anchor alive AND IPFS payload retrievable from a local Kubo node you control. No external dependency at retrieval time.</div>
+      </div>
+      <div class="stat resilient">
+        <div class="label">Resilient</div>
+        <div class="value">${resilient}</div>
+        <div class="pct">${pct(resilient)}</div>
+        <div class="desc">Reachable from ≥2 independent public gateways. Any one of them can go dark without breaking consumers — the ideal state for upstream library content.</div>
+      </div>
+      <div class="stat fragile">
+        <div class="label">Fragile</div>
+        <div class="value">${fragile}</div>
+        <div class="pct">${pct(fragile)}</div>
+        <div class="desc">Reachable from exactly one gateway. Works today, single point of failure long-term. If that one gateway drops the pin, content silently breaks.</div>
+      </div>
+      <div class="stat broken">
+        <div class="label">Broken</div>
+        <div class="value">${broken}</div>
+        <div class="pct">${pct(broken)}</div>
+        <div class="desc">No gateway has the IPFS bytes, or the Hedera message itself is gone. Needs the republisher to re-pin (bytes exist) or full republish (Hedera anchor missing).</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="pill ${activeFilter==='all'?'active':''}" data-filter="all">All <span class="count">${allRefs.length}</span></div>
+      <div class="pill ${activeFilter==='healthy'?'active':''}" data-filter="healthy">Healthy <span class="count">${healthy}</span></div>
+      <div class="pill ${activeFilter==='resilient'?'active':''}" data-filter="resilient">Resilient <span class="count">${resilient}</span></div>
+      <div class="pill ${activeFilter==='fragile'?'active':''}" data-filter="fragile">Fragile <span class="count">${fragile}</span></div>
+      <div class="pill ${activeFilter==='broken'?'active':''}" data-filter="broken">Broken <span class="count">${broken}</span></div>
+      <input class="search-input" type="search" placeholder="Search name, CID, topic, message…" value="${escapeHtml(searchQuery)}" id="search" />
+    </div>
+
+    <div class="table-wrap">
+      ${rows.length ? `
+        <table>
+          <thead>
+            <tr>
+              <th data-sort="name">Name ${sortField==='name'?`<span class="arrow">${sortDir==='asc'?'▲':'▼'}</span>`:''}</th>
+              <th data-sort="type">Type ${sortField==='type'?`<span class="arrow">${sortDir==='asc'?'▲':'▼'}</span>`:''}</th>
+              <th data-sort="status">Status ${sortField==='status'?`<span class="arrow">${sortDir==='asc'?'▲':'▼'}</span>`:''}</th>
+              <th data-sort="topicId">Topic ${sortField==='topicId'?`<span class="arrow">${sortDir==='asc'?'▲':'▼'}</span>`:''}</th>
+              <th data-sort="messageId">Message ${sortField==='messageId'?`<span class="arrow">${sortDir==='asc'?'▲':'▼'}</span>`:''}</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map((r, i) => {
+              const expanded = expandedRow === r.messageId;
+              return `
+                <tr class="row ${expanded?'expanded':''}" data-msgid="${escapeHtml(r.messageId)}">
+                  <td class="name">${escapeHtml(r.name || '(unnamed)')}</td>
+                  <td><span class="type-tag">${escapeHtml(r.type || '-')}</span></td>
+                  <td>${statusBadge(r.status)}</td>
+                  <td class="muted mono">${escapeHtml(r.topicId || '-')}</td>
+                  <td class="muted mono">${escapeHtml(r.messageId)}</td>
+                </tr>
+                ${expanded ? `<tr class="detail-row"><td colspan="5">${renderDetail(r, report)}</td></tr>` : ''}
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      ` : `<div class="empty">No entries match the current filter.</div>`}
+    </div>
+  `;
+
+  // Wire up interactions
+  root.querySelectorAll('.pill[data-filter]').forEach(el => {
+    el.addEventListener('click', () => {
+      activeFilter = el.dataset.filter;
+      expandedRow = null;
+      renderApp(report);
+    });
+  });
+  root.querySelectorAll('thead th[data-sort]').forEach(el => {
+    el.addEventListener('click', () => {
+      const field = el.dataset.sort;
+      if (sortField === field) {
+        sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortField = field;
+        sortDir = 'asc';
+      }
+      renderApp(report);
+    });
+  });
+  root.querySelectorAll('tbody tr.row').forEach(el => {
+    el.addEventListener('click', () => {
+      const msgid = el.dataset.msgid;
+      expandedRow = expandedRow === msgid ? null : msgid;
+      renderApp(report);
+    });
+  });
+  const search = document.getElementById('search');
+  if (search) {
+    search.addEventListener('input', (e) => {
+      searchQuery = e.target.value;
+      expandedRow = null;
+      // Re-render but keep the input focused
+      const start = e.target.selectionStart;
+      renderApp(report);
+      const newInput = document.getElementById('search');
+      if (newInput) {
+        newInput.focus();
+        newInput.setSelectionRange(start, start);
+      }
+    });
+  }
+}
+
+function loadReport(showEmptyIfMissing = false) {
+  return fetch('/api/report')
+    .then(r => r.json().then(j => ({ status: r.status, body: j })))
+    .then(({ status, body }) => {
+      if (status === 404 && showEmptyIfMissing) {
+        root.innerHTML = `
+          <div class="empty" style="padding: 100px 24px;">
+            <div style="font-size: 14px; margin-bottom: 16px;">${escapeHtml(body.error || 'No report yet.')}</div>
+            <button class="btn primary" onclick="document.getElementById('btn-scan-stub')?.click()">Run a scan</button>
+          </div>
+          <button id="btn-scan-stub" style="display:none" onclick="openScanModal()"></button>
+        `;
+        return;
+      }
+      if (body.error) {
+        root.innerHTML = `<div class="err">Failed to load report: ${escapeHtml(body.error)}</div>`;
+        return;
+      }
+      allRefs = body.refs || [];
+      renderApp(body);
+      wireHeaderButtons();
+    })
+    .catch(err => {
+      root.innerHTML = `<div class="err">Failed to load report: ${escapeHtml(err.message)}</div>`;
+    });
+}
+
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (isError ? ' error' : '');
+  t.style.display = 'block';
+  setTimeout(() => { t.style.display = 'none'; }, 4500);
+}
+
+function openScanModal() {
+  const m = document.getElementById('scan-modal');
+  document.getElementById('scan-log').style.display = 'none';
+  document.getElementById('scan-log').textContent = '';
+  document.getElementById('scan-start').disabled = false;
+  document.getElementById('scan-start').textContent = 'Start scan';
+  m.classList.add('open');
+}
+function closeScanModal() {
+  document.getElementById('scan-modal').classList.remove('open');
+}
+
+function applyTheme(theme) {
+  if (theme === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+  }
+  // Keep mobile browser title bar / safari chrome in sync.
+  const meta = document.getElementById('meta-theme-color');
+  if (meta) meta.setAttribute('content', theme === 'dark' ? '#0a0a0a' : '#ffffff');
+  // Toggle button label always tells the user which mode they're about to switch TO.
+  const label = document.getElementById('theme-label');
+  const glyph = document.getElementById('theme-glyph');
+  if (label) label.textContent = theme === 'dark' ? 'Light mode' : 'Dark mode';
+  if (glyph) glyph.textContent = theme === 'dark' ? '☀' : '◐';
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+  const next = current === 'dark' ? 'light' : 'dark';
+  try { localStorage.setItem('gtv-theme', next); } catch {}
+  applyTheme(next);
+}
+
+function wireHeaderButtons() {
+  const scanBtn = document.getElementById('btn-scan');
+  const refreshBtn = document.getElementById('btn-refresh');
+  const themeBtn = document.getElementById('btn-theme');
+  if (scanBtn) scanBtn.onclick = openScanModal;
+  if (refreshBtn) refreshBtn.onclick = () => {
+    loadReport().then(() => showToast('Report reloaded'));
+  };
+  if (themeBtn) themeBtn.onclick = toggleTheme;
+  // Initial label/glyph sync (the preload script in <head> set data-theme).
+  const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+  applyTheme(current);
+}
+
+// Modal interactions (wired once at page load — modal is in the DOM permanently).
+document.getElementById('scan-cancel').addEventListener('click', closeScanModal);
+document.getElementById('scan-modal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('scan-modal')) closeScanModal();
+});
+document.getElementById('scan-start').addEventListener('click', async () => {
+  const startBtn = document.getElementById('scan-start');
+  const logEl = document.getElementById('scan-log');
+  const body = {
+    // Empty libraryPath = auto-fetch upstream. The validator handles this.
+    libraryPath: document.getElementById('scan-library').value.trim() || null,
+    network: document.getElementById('scan-network').value,
+    concurrency: document.getElementById('scan-concurrency').value.trim() || '4',
+    filter: document.getElementById('scan-filter').value.trim() || null,
+    repo: document.getElementById('scan-repo').value.trim() || 'hashgraph/guardian',
+    branch: document.getElementById('scan-branch').value.trim() || 'main',
+    skipIpfs: document.getElementById('scan-skip-ipfs').checked,
+    localGateways: document.getElementById('scan-local-gateway').value.trim(),
+  };
+  startBtn.disabled = true;
+  startBtn.textContent = 'Scanning…';
+  logEl.style.display = 'block';
+  logEl.textContent = 'Starting scan…\n';
+
+  let jobId;
+  try {
+    const res = await fetch('/api/scan', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    jobId = data.jobId;
+    logEl.textContent = `Job ${jobId} started.\n`;
+  } catch (err) {
+    logEl.textContent = `Failed to start scan: ${err.message}\n`;
+    startBtn.disabled = false;
+    startBtn.textContent = 'Start scan';
+    return;
+  }
+
+  // Poll for completion every 2 seconds.
+  const pollInterval = 2000;
+  while (true) {
+    await new Promise(r => setTimeout(r, pollInterval));
+    let status;
+    try {
+      const res = await fetch(`/api/scan/${jobId}/status`);
+      status = await res.json();
+    } catch (err) {
+      logEl.textContent += `\n[poll error: ${err.message}]\n`;
+      continue;
+    }
+    logEl.textContent = status.log || '';
+    logEl.scrollTop = logEl.scrollHeight;
+    if (status.status === 'done') {
+      logEl.textContent += '\n\nScan complete. Reloading report…\n';
+      startBtn.textContent = 'Done';
+      await loadReport();
+      showToast('Scan complete — report updated');
+      setTimeout(closeScanModal, 800);
+      return;
+    }
+    if (status.status === 'failed') {
+      logEl.textContent += `\n\nScan failed (exit code ${status.exitCode}).\n`;
+      startBtn.disabled = false;
+      startBtn.textContent = 'Start scan';
+      showToast('Scan failed — see log for details', true);
+      return;
+    }
+  }
+});
+
+// Initial load
+loadReport(true);
+</script>
+</body>
+</html>
