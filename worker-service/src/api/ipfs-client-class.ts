@@ -26,7 +26,7 @@ export class IpfsClientClass {
      * IPFS public gateway
      * @private
      */
-    private readonly IPFS_PUBLIC_GATEWAY = process.env.IPFS_PUBLIC_GATEWAY || 'https://ipfs.filebase.io/ipfs/{cid}';
+    private readonly IPFS_PUBLIC_GATEWAY = process.env.IPFS_PUBLIC_GATEWAY || 'http://localhost:8080/ipfs/{cid}';
 
     /**
      * IPFS client instance

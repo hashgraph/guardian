@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import esmock from 'esmock';
 import CID from 'cids';
 
-describe('IPFS client public gateway', function () {
+describe('IPFS client gateway', function () {
     this.timeout(60000);
     const cid = 'bafybeiavprz5ld3ktizv4gsqos3dg7nbexcrhvtswzvoatgmea5ncvr3di';
     const bytes = Buffer.from('stored file');
@@ -39,7 +39,7 @@ describe('IPFS client public gateway', function () {
 
     for (const provider of ['filebase', 'local']) {
         for (const gateway of [undefined, '']) {
-            it(`reads through Filebase for ${provider} when the gateway is ${gateway === undefined ? 'unset' : 'empty'}`, async () => {
+            it(`reads through the own node for ${provider} when the gateway is ${gateway === undefined ? 'unset' : 'empty'}`, async () => {
                 process.env.IPFS_PROVIDER = provider;
                 if (gateway === undefined) {
                     delete process.env.IPFS_PUBLIC_GATEWAY;
@@ -50,7 +50,7 @@ describe('IPFS client public gateway', function () {
                 assert.equal(await client.getFile(cid), bytes);
                 assert.deepEqual(requests, [{
                     service: 'IPFS gateway',
-                    url: `https://ipfs.filebase.io/ipfs/${cid}`,
+                    url: `http://localhost:8080/ipfs/${cid}`,
                     options: { responseType: 'arraybuffer', timeout: 30000 },
                 }]);
             });
@@ -74,6 +74,6 @@ describe('IPFS client public gateway', function () {
         const client = new IpfsClientClass();
         assert.equal(await client.getFile(legacyCid), bytes);
         assert.equal(requests.length, 1);
-        assert.equal(requests[0].url, `https://ipfs.filebase.io/ipfs/${normalized}`);
+        assert.equal(requests[0].url, `http://localhost:8080/ipfs/${normalized}`);
     });
 });
