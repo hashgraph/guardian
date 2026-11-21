@@ -1,0 +1,16 @@
+curl --location 'https://<YOUR_GUARDIAN_HOST>/api/v1/policies/<POLICY_ID>/blocks/<BLOCK_ID>' \
+--header 'Authorization: Bearer <YOUR_GUARDIAN_API_TOKEN>' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "document": {
+        "project_title": "SMEC Example Wood Stove Programme (SYNTHETIC FIXTURE)",
+        "activity_type": "Community Service Activity",
+        "project_scale": "Small Scale",
+        "methodology_applied": "Simplified Methodology for Clean and Efficient Cookstoves v4.0",
+        "product_requirements": "GHG Emissions Reduction & Sequestration",
+        "project_cycle": "Regular",
+        "methodology_method": "smec_v4.0",
+        "project_fuel": "wood",
+        "host_countries": "Example Country"
+    }
+}'
