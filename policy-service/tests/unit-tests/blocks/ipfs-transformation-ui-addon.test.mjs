@@ -11,13 +11,13 @@ describe('IPFS transformation addon gateway configuration', () => {
         PolicyComponentsUtils.GetBlockUniqueOptionsObject = originalOptions;
     });
 
-    it('offers Filebase as the default gateway template for a new block', () => {
+    it('offers an IPFS URI as the default gateway template for a new block', () => {
         const property = IpfsTransformationUIAddon.about.properties.find((item) => item.name === 'ipfsGatewayTemplate');
         assert.exists(property);
-        assert.equal(property.default, 'https://ipfs.filebase.io/ipfs/{cid}');
+        assert.equal(property.default, 'ipfs://{cid}');
     });
 
-    for (const template of ['https://ipfs.io/ipfs/{cid}', 'https://mgs.example/api/v1/ipfs/file/{cid}']) {
+    for (const template of ['https://ipfs.io/ipfs/{cid}', 'https://ipfs.guardianservice.app/ipfs/{cid}']) {
         it(`returns the saved template ${template} without rewriting policy data`, async () => {
             const options = { transformationType: 'ipfsGateway', ipfsGatewayTemplate: template };
             PolicyComponentsUtils.GetBlockRef = () => ({ uuid: 'block', blockType: 'ipfsTransformationUIAddon', actionType: 'remote' });

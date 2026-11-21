@@ -398,64 +398,44 @@ describe('IpfsTransformationUIAddonCode', () => {
     });
 
     const gatewayCid = 'bafybeiavprz5ld3ktizv4gsqos3dg7nbexcrhvtswzvoatgmea5ncvr3di';
-    for (const template of [
-        'https://ipfs.io/ipfs/{cid}',
-        'https://ipfs.io/ipfs',
-        'http://ipfs.io/ipfs/{cid}',
-        'https://IPFS.IO:443/ipfs/{cid}',
+    for (const [template, expected] of [
+        ['ipfs://{cid}', `ipfs://${gatewayCid}`],
+        ['https://ipfs.io/ipfs/{cid}', `https://ipfs.io/ipfs/${gatewayCid}`],
+        ['https://ipfs.io/ipfs', `https://ipfs.io/ipfs/${gatewayCid}`],
+        ['https://ipfs.guardianservice.app/ipfs/{cid}', `https://ipfs.guardianservice.app/ipfs/${gatewayCid}`],
+        ['/api/v1/ipfs/file/{cid}', `/api/v1/ipfs/file/${gatewayCid}`],
     ]) {
-        it(`substitutes the retired gateway in saved template ${template}`, async () => {
+        it(`uses the saved template ${template} without substitution`, async () => {
             const config = { transformationType: 'ipfsGateway', ipfsGatewayTemplate: template };
             const addon = createAddon(config);
             const document: any = { file: `ipfs://${gatewayCid}` };
             await addon.run({ document, params: {}, history: [] });
-            expect(document.file).toEqual({ resourceUrl: `https://ipfs.filebase.io/ipfs/${gatewayCid}` });
+            expect(document.file).toEqual({ resourceUrl: expected });
             expect(config.ipfsGatewayTemplate).toBe(template);
         });
     }
 
-    for (const template of [
-        'https://mgs.example/api/v1/ipfs/file/{cid}',
-        'https://mgs.example/api/v1/ipfs/file',
-        'https://myipfs.io.example/ipfs/{cid}',
-        'https://ipfs.io.example/ipfs/{cid}',
-        'https://example.com/ipfs.io/{cid}',
-        'https://ipfs.io@example.com/ipfs/{cid}',
-        '/custom/ipfs/{cid}',
-    ]) {
-        it(`preserves custom template ${template}`, async () => {
-            const addon = createAddon({ transformationType: 'ipfsGateway', ipfsGatewayTemplate: template });
-            const document: any = { file: `ipfs://${gatewayCid}` };
-            await addon.run({ document, params: {}, history: [] });
-            const expected = template.includes('{cid}')
-                ? template.replace('{cid}', gatewayCid)
-                : `${template}/${gatewayCid}`;
-            expect(document.file).toEqual({ resourceUrl: expected });
-        });
-    }
-
-    it('substitutes saved gateway templates for table, geo and markdown references', async () => {
-        const addon = createAddon({ transformationType: 'ipfsGateway', ipfsGatewayTemplate: 'https://ipfs.io/ipfs/{cid}' });
+    it('uses the IPFS URI template for table, geo and markdown references', async () => {
+        const addon = createAddon({ transformationType: 'ipfsGateway', ipfsGatewayTemplate: 'ipfs://{cid}' });
         const document: any = {
             table: tableValue({ cid: gatewayCid }),
             geo: geoValue({ cid: gatewayCid }),
             markdown: `Report ![file](ipfs://${gatewayCid})`,
         };
         await addon.run({ document, params: {}, history: [] });
-        const expected = `https://ipfs.filebase.io/ipfs/${gatewayCid}`;
+        const expected = `ipfs://${gatewayCid}`;
         expect(document.table.resourceUrl).toBe(expected);
         expect(document.geo.geoFile.resourceUrl).toBe(expected);
         expect(document.markdown).toBe(`Report ![file](${expected})`);
     });
 
-    it('keeps Base64 output unchanged with a saved retired gateway template', async () => {
+    it('keeps Base64 output unchanged with the IPFS URI template', async () => {
         const getFile = vi.fn().mockReturnValue(of(gzipHeader.buffer));
-        const addon = createAddon({ transformationType: 'base64', ipfsGatewayTemplate: 'https://ipfs.io/ipfs/{cid}' }, { getFile });
+        const addon = createAddon({ transformationType: 'base64', ipfsGatewayTemplate: 'ipfs://{cid}' }, { getFile });
         const document: any = { file: `ipfs://${gatewayCid}` };
         await addon.run({ document, params: {}, history: [] });
         expect(document.file.base64String).toContain('data:application/gzip;base64,');
         expect(document.file.resourceUrl).toBeUndefined();
         expect(getFile).toHaveBeenCalledExactlyOnceWith(gatewayCid);
     });
-
 });
