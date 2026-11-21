@@ -1,0 +1,617 @@
+{
+    "name": "ACM0010 Project Description",
+    "description": "Slice-scoped ACM0010 project description. Carries the inputs required by the BE_CH4,y slice and the fields mapped to the Verra Project Hub CUSTOM template.",
+    "entity": "VC",
+    "system": false,
+    "sourceVersion": "1.0.0",
+    "document": {
+        "$id": "#acm0010-project-description",
+        "title": "ACM0010 Project Description",
+        "type": "object",
+        "required": [
+            "@context",
+            "type",
+            "credentialSubject"
+        ],
+        "properties": {
+            "@context": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                },
+                "readOnly": true
+            },
+            "type": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                },
+                "readOnly": true
+            },
+            "credentialSubject": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                    "$ref": "#acm0010-project-description-subject"
+                }
+            }
+        },
+        "defs": {
+            "acm0010-project-description-subject": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "projectName",
+                    "monitoringYear",
+                    "baselineAwms",
+                    "livestock",
+                    "parameters"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "title": "Project ID",
+                        "minLength": 1
+                    },
+                    "projectName": {
+                        "type": "string",
+                        "title": "Project Name",
+                        "minLength": 1
+                    },
+                    "projectDescription": {
+                        "type": "string",
+                        "title": "Project Description"
+                    },
+                    "website": {
+                        "type": "string",
+                        "title": "Website"
+                    },
+                    "projectStartDate": {
+                        "type": "string",
+                        "title": "Project Start Date"
+                    },
+                    "creditPeriodStart": {
+                        "type": "string",
+                        "title": "Crediting Period Start"
+                    },
+                    "creditPeriodEnd": {
+                        "type": "string",
+                        "title": "Crediting Period End"
+                    },
+                    "projectProponents": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "title": "Project Proponents"
+                    },
+                    "projectProponentsWithDetails": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        },
+                        "title": "Project Proponents With Details"
+                    },
+                    "locations": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        },
+                        "title": "Project Locations"
+                    },
+                    "standardTemplate": {
+                        "type": "string",
+                        "title": "Standard Template"
+                    },
+                    "standardTemplateName": {
+                        "type": "string",
+                        "title": "Standard Template Name"
+                    },
+                    "methodologyTemplateTitle": {
+                        "type": "string",
+                        "title": "Methodology Template Title"
+                    },
+                    "methodologyTemplate": {
+                        "type": "string",
+                        "title": "Methodology Template"
+                    },
+                    "vcsProjectValidatorId": {
+                        "type": "string",
+                        "title": "VCS Project Validator ID"
+                    },
+                    "ccbProjectValidatorId": {
+                        "type": "string",
+                        "title": "CCB Project Validator ID"
+                    },
+                    "ccbStandardName": {
+                        "type": "string",
+                        "title": "CCB Standard Name"
+                    },
+                    "ccbDistinctions": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "title": "CCB Distinctions"
+                    },
+                    "monitoringYear": {
+                        "type": "integer",
+                        "title": "Monitoring Year",
+                        "minimum": 1900,
+                        "maximum": 2200
+                    },
+                    "baselineAwms": {
+                        "type": "object",
+                        "title": "Baseline AWMS",
+                        "required": [
+                            "name",
+                            "methaneConversionFactor"
+                        ],
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "title": "AWMS Name",
+                                "minLength": 1
+                            },
+                            "methaneConversionFactor": {
+                                "type": "number",
+                                "title": "Methane Conversion Factor",
+                                "minimum": 0,
+                                "maximum": 1
+                            },
+                            "stages": {
+                                "type": "array",
+                                "title": "Baseline AWMS Stages",
+                                "description": "Ordered baseline treatment chain. When present and non-empty the BE_CH4,y calculation sums across these stages with volatile solids decay. When absent the single AWMS above is treated as a one-stage chain with zero reduction.",
+                                "minItems": 1,
+                                "items": {
+                                    "type": "object",
+                                    "required": [
+                                        "name",
+                                        "methaneConversionFactor",
+                                        "volatileSolidsReductionFraction"
+                                    ],
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "title": "Stage Name",
+                                            "minLength": 1
+                                        },
+                                        "methaneConversionFactor": {
+                                            "type": "number",
+                                            "title": "Methane Conversion Factor",
+                                            "minimum": 0,
+                                            "maximum": 1
+                                        },
+                                        "volatileSolidsReductionFraction": {
+                                            "type": "number",
+                                            "title": "Volatile Solids Reduction Fraction",
+                                            "description": "Fraction of volatile solids removed by this stage, carried forward to later stages.",
+                                            "minimum": 0,
+                                            "maximum": 1
+                                        },
+                                        "relativeNitrogenReduction": {
+                                            "type": "number",
+                                            "title": "Relative Nitrogen Reduction Fraction (RN)",
+                                            "description": "RN. Fraction of nitrogen removed by this stage, carried forward to later stages. Physically distinct from volatileSolidsReductionFraction and never derived from it. Optional: when absent, no nitrogen reduction is applied by this stage and the stage is recorded as not supplied. No default is assumed on the proponent's behalf.",
+                                            "minimum": 0,
+                                            "maximum": 1
+                                        },
+                                        "manureFraction": {
+                                            "type": "number",
+                                            "title": "Fraction of Manure Handled in Baseline System",
+                                            "description": "MS%_Bl,j. Fraction of manure handled in this baseline treatment system. Used only by the baseline N2O calculation.",
+                                            "minimum": 0,
+                                            "maximum": 1
+                                        },
+                                        "directN2OEmissionFactorKgN2ONPerKgN": {
+                                            "type": "number",
+                                            "title": "Direct N2O Emission Factor (kg N2O-N/kg N)",
+                                            "description": "EF_N2O,D,j. Used only by the baseline N2O calculation.",
+                                            "minimum": 0
+                                        },
+                                        "projectManureFraction": {
+                                            "type": "number",
+                                            "title": "Fraction of Manure Handled in Project System",
+                                            "description": "MS%_j. Fraction of manure handled in this treatment system in the project activity. Used only by the PE_N2O,y Option 1 calculation.",
+                                            "minimum": 0,
+                                            "maximum": 1
+                                        },
+                                        "projectDirectN2OEmissionFactorKgN2ONPerKgN": {
+                                            "type": "number",
+                                            "title": "Project Direct N2O Emission Factor (kg N2O-N/kg N)",
+                                            "description": "EF_N2O,D,j for the project system. Used only by the PE_N2O,y Option 1 calculation.",
+                                            "minimum": 0
+                                        },
+                                        "projectIndirectN2OEmissionFactorKgN2ONPerKgN": {
+                                            "type": "number",
+                                            "title": "Project Indirect N2O Emission Factor (kg N2O-N/kg NH3-N and NOx-N)",
+                                            "description": "EF_N2O,ID,j for the project system. Used only by the PE_N2O,y Option 1 calculation.",
+                                            "minimum": 0
+                                        },
+                                        "projectEffluentMonthlyVolumeM3": {
+                                            "type": "array",
+                                            "title": "Monthly Effluent Volume Entering Project System (m3/month)",
+                                            "description": "V_m,j for m = 1..12. Twelve monthly values, January first. Used only by the PE_N2O,y Option 2 calculation, which is measurement based and therefore does not use manure fractions, animal counts or the nitrogen reduction chain.",
+                                            "minItems": 12,
+                                            "maxItems": 12,
+                                            "items": {
+                                                "type": "number",
+                                                "minimum": 0
+                                            }
+                                        },
+                                        "projectEffluentNitrogenConcentrationKgNPerM3": {
+                                            "type": "array",
+                                            "title": "Monthly Total Nitrogen Concentration of Effluent (kg N/m3)",
+                                            "description": "[TN]_m,j for m = 1..12, paired positionally with projectEffluentMonthlyVolumeM3. Used only by the PE_N2O,y Option 2 calculation.",
+                                            "minItems": 12,
+                                            "maxItems": 12,
+                                            "items": {
+                                                "type": "number",
+                                                "minimum": 0
+                                            }
+                                        },
+                                        "aerobicTreatment": {
+                                            "type": "boolean",
+                                            "title": "Aerobic AWMS Treatment",
+                                            "description": "Flags this stage as aerobic treatment. At most one stage may be flagged. Enables PE_Aer,y."
+                                        },
+                                        "volatileSolidsDirectedToAerobicFraction": {
+                                            "type": "number",
+                                            "title": "Fraction of Volatile Solids Directed to Aerobic System",
+                                            "description": "F_Aer. Required when aerobicTreatment is true.",
+                                            "minimum": 0,
+                                            "maximum": 1
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "livestock": {
+                        "type": "array",
+                        "title": "Livestock",
+                        "minItems": 1,
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "type",
+                                "maxMethaneProducingCapacity"
+                            ],
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "title": "Livestock Type",
+                                    "minLength": 1
+                                },
+                                "annualVolatileSolids": {
+                                    "type": "number",
+                                    "title": "Annual Volatile Solids (kg VS/yr)",
+                                    "description": "Direct annual VS (kg dm/yr) or precomputed total. If omitted, derived from vsltOption2 (Eq 3), vsltOption4 (Eq 5), or herdParameters (existing Option 3-style scaling path).",
+                                    "minimum": 0
+                                },
+                                "maxMethaneProducingCapacity": {
+                                    "type": "number",
+                                    "title": "Maximum Methane Producing Capacity (m3 CH4/kg VS)",
+                                    "minimum": 0
+                                },
+                                "vsltAnnualAverageAnimals": {
+                                    "type": "number",
+                                    "title": "Annual Average Number of Animals (N_LT) for VSLT Options 2/4",
+                                    "description": "Used to convert per-animal VSLT (Eq 3 or Eq 5) to annual VS. If omitted, derived from herdParameters daysAliveInYear*animalsProducedAnnually/365 when provided.",
+                                    "minimum": 0
+                                },
+                                "vsltOption2": {
+                                    "type": "object",
+                                    "title": "VSLT Option 2 (Dietary Intake, Eq 3)",
+                                    "description": "ACM0010 v09 draft Eq (3): VSLT,y = [GE_LT*(1-DE_LT/100)+(UE*GE_LT)]*[(1-ASH)/ED_LT]*nd_y (kg dm/animal/yr).",
+                                    "required": [
+                                        "dailyAverageGrossEnergyIntakeMjPerAnimalDay",
+                                        "digestibleEnergyPercent",
+                                        "urinaryEnergyFractionOfGe",
+                                        "ashContentFractionOfDryMatterFeedIntake",
+                                        "energyDensityOfFeedMjPerKgDm",
+                                        "operationalDaysPerYear"
+                                    ],
+                                    "properties": {
+                                        "dailyAverageGrossEnergyIntakeMjPerAnimalDay": {
+                                            "type": "number",
+                                            "minimum": 0
+                                        },
+                                        "digestibleEnergyPercent": {
+                                            "type": "number",
+                                            "minimum": 0,
+                                            "maximum": 100
+                                        },
+                                        "urinaryEnergyFractionOfGe": {
+                                            "type": "number",
+                                            "minimum": 0,
+                                            "maximum": 1
+                                        },
+                                        "ashContentFractionOfDryMatterFeedIntake": {
+                                            "type": "number",
+                                            "minimum": 0,
+                                            "exclusiveMaximum": 1
+                                        },
+                                        "energyDensityOfFeedMjPerKgDm": {
+                                            "type": "number",
+                                            "exclusiveMinimum": 0
+                                        },
+                                        "operationalDaysPerYear": {
+                                            "type": "number",
+                                            "minimum": 0,
+                                            "maximum": 365
+                                        }
+                                    }
+                                },
+                                "vsltOption4": {
+                                    "type": "object",
+                                    "title": "VSLT Option 4 (IPCC Rate Form, Eq 5)",
+                                    "description": "ACM0010 v09 draft Eq (5): VSLT,y = VSrate,LT,y/1000 * W_LT,y * nd_y (kg dm/animal/yr).",
+                                    "required": [
+                                        "vsRateKgPer1000KgAnimalMassPerDay",
+                                        "averageAnimalWeightKg",
+                                        "operationalDaysPerYear"
+                                    ],
+                                    "properties": {
+                                        "vsRateKgPer1000KgAnimalMassPerDay": {
+                                            "type": "number",
+                                            "minimum": 0
+                                        },
+                                        "averageAnimalWeightKg": {
+                                            "type": "number",
+                                            "exclusiveMinimum": 0
+                                        },
+                                        "operationalDaysPerYear": {
+                                            "type": "number",
+                                            "minimum": 0,
+                                            "maximum": 365
+                                        }
+                                    }
+                                },
+                                "vsltOption3Eq4Scaling": {
+                                    "type": "object",
+                                    "title": "VSLT Option 3 (Eq 4 scaling form)",
+                                    "description": "ACM0010 Option 3 scaling: VSLT,y = (Wsite,LT/Wdefault,LT)*VSdefault*nd_y (kg dm/animal/yr), aligned with v03/v04 Eq(4) and unit-consistent with v09 Option 3 intent; v09 draft p.14 Eq(4) layout is ambiguous in extracted text. Use when average animal weight is monitored (site-specific scaling of default VS).",
+                                    "required": [
+                                        "averageWeightSiteKg",
+                                        "defaultWeightKg",
+                                        "volatileSolidsDefaultKgDmPerDay",
+                                        "operationalDaysPerYear",
+                                        "daysAliveInYear",
+                                        "animalsProducedAnnually"
+                                    ],
+                                    "properties": {
+                                        "averageWeightSiteKg": { "type": "number", "title": "Average Animal Weight at Site Wsite,LT (kg)", "exclusiveMinimum": 0 },
+                                        "defaultWeightKg": { "type": "number", "title": "Default Average Animal Weight Wdefault,LT (kg)", "exclusiveMinimum": 0 },
+                                        "volatileSolidsDefaultKgDmPerDay": { "type": "number", "title": "Default VS Excretion VSdefault (kg dm/animal/day)", "minimum": 0 },
+                                        "operationalDaysPerYear": { "type": "number", "title": "Days Operational nd_y", "minimum": 0, "maximum": 365 },
+                                        "daysAliveInYear": { "type": "number", "title": "Days Alive on Farm in Year", "minimum": 0, "maximum": 365 },
+                                        "animalsProducedAnnually": { "type": "number", "title": "Animals Produced Annually", "minimum": 0 }
+                                    }
+                                },
+                                "herdParameters": {
+                                    "type": "object",
+                                    "title": "Herd Parameters (legacy alias of Option 3 Eq 4 scaling)",
+                                    "description": "Legacy alias for vsltOption3Eq4Scaling: VSLT_per_animal=(W_site/W_default)*VS_default*nd_y, N_LT=daysAlive*animalsProduced/365. Same as ACM0010 v03/v04 Eq(4) scaling form; v09 draft Eq(4) layout ambiguous in extracted text.",
+                                    "required": [
+                                        "averageWeightSiteKg",
+                                        "defaultWeightKg",
+                                        "volatileSolidsDefaultKgDmPerDay",
+                                        "operationalDaysPerYear",
+                                        "daysAliveInYear",
+                                        "animalsProducedAnnually"
+                                    ],
+                                    "properties": {
+                                        "averageWeightSiteKg": { "type": "number", "title": "Average Animal Weight at Site (kg)", "exclusiveMinimum": 0 },
+                                        "defaultWeightKg": { "type": "number", "title": "Default Average Animal Weight (kg)", "exclusiveMinimum": 0 },
+                                        "volatileSolidsDefaultKgDmPerDay": { "type": "number", "title": "Default VS Excretion Rate (kg dm/animal/day)", "minimum": 0 },
+                                        "operationalDaysPerYear": { "type": "number", "title": "Days Operational in Year", "minimum": 0, "maximum": 365 },
+                                        "daysAliveInYear": { "type": "number", "title": "Days Alive on Farm in Year", "minimum": 0, "maximum": 365 },
+                                        "animalsProducedAnnually": { "type": "number", "title": "Animals Produced Annually", "minimum": 0 }
+                                    }
+                                },
+                                "nitrogenExcretionKgNPerAnimalYear": {
+                                    "type": "number",
+                                    "title": "Annual Average Nitrogen Excretion (kg N/animal/yr)",
+                                    "description": "N_EX_LT,y. Used only by the baseline N2O calculation.",
+                                    "minimum": 0
+                                }
+                            }
+                        }
+                    },
+                    "parameters": {
+                        "type": "object",
+                        "title": "Parameters",
+                        "required": [
+                            "globalWarmingPotentialCh4"
+                        ],
+                        "properties": {
+                            "globalWarmingPotentialCh4": {
+                                "type": "number",
+                                "title": "GWP of CH4",
+                                "exclusiveMinimum": 0
+                            },
+                            "globalWarmingPotentialN2O": {
+                                "type": "number",
+                                "title": "GWP of N2O",
+                                "description": "Supplying this enables the baseline N2O calculation. When absent, baseline N2O is not evaluated.",
+                                "exclusiveMinimum": 0
+                            },
+                            "projectN2OOption": {
+                                "type": "string",
+                                "title": "PE_N2O,y Calculation Option",
+                                "description": "Selects the project N2O estimation option. 'option1' uses per-stage manure fractions and emission factors; 'option2' uses measured monthly effluent volume and nitrogen concentration and is the methodology's preferred option. ACM0010 requires the selected option to be declared in the PDD and used consistently throughout the crediting period. When absent, no project N2O is calculated.",
+                                "enum": [
+                                    "option1",
+                                    "option2"
+                                ]
+                            },
+                            "projectIndirectN2OEmissionFactorKgN2ONPerKgN": {
+                                "type": "number",
+                                "title": "Project Indirect N2O Emission Factor for Option 2 (kg N2O-N/kg NH3-N and NOx-N)",
+                                "description": "EF_N2O in PE_N2O,y Option 2, equation 20. Option 2 applies a single indirect factor to the total measured nitrogen, unlike Option 1 which uses a per-stage EF_N2O,ID,j.",
+                                "minimum": 0
+                            },
+                            "indirectN2OEmissionFactorKgN2ONPerKgN": {
+                                "type": "number",
+                                "title": "Indirect N2O Emission Factor (kg N2O-N/kg N)",
+                                "minimum": 0
+                            },
+                            "fractionNitrogenVolatilised": {
+                                "type": "number",
+                                "title": "Fraction of Managed Manure Nitrogen Volatilising as NH3 and NOx",
+                                "description": "F_gas,m.",
+                                "minimum": 0,
+                                "maximum": 1
+                            }
+                        }
+                    },
+                    "anaerobicDigesterActivity": {
+                        "type": "object",
+                        "title": "Anaerobic Digester Activity (TOOL14 v03.0 / ACM0010 PEAD,y, LEAD,y)",
+                        "description": "Inputs for TOOL14 v03.0 project and leakage emissions from anaerobic digesters. Optional; when absent PEAD/LEAD from AD not computed. Sources: TOOL14 v03.0 Eqs 1-5,7,8 and default tables; ACM0010 v09 draft 5.4.1/5.5.4. AD flare/electricity accounted here must not be double-counted in separate flare/energy activities.",
+                        "properties": {
+                            "monitoredQCh4TonnesPerYear": {
+                                "type": "number",
+                                "minimum": 0,
+                                "description": "QCH4,y (t CH4/yr). Monitored/TOOL08 Step 1 Option 1 or direct."
+                            },
+                            "biogasVolumeM3PerYearAtReference": {
+                                "type": "number",
+                                "minimum": 0,
+                                "description": "Qbiogas,y (m3/yr) at reference conditions for Step 1 Option 2 Eq(2)."
+                            },
+                            "fCh4BiogasFraction": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1,
+                                "description": "Fraction CH4 in biogas (m3/m3). Default 0.6 if omitted for Option 2."
+                            },
+                            "electricityGeneratedOnSiteRenewableBiomassWindHydroGeothermal": {
+                                "type": "boolean",
+                                "description": "If true, PEEC,y=0 per TOOL14 Step 2."
+                            },
+                            "noElectricityConsumption": {
+                                "type": "boolean"
+                            },
+                            "monitoredPeEcTCo2": {
+                                "type": "number",
+                                "minimum": 0,
+                                "description": "PEEC,y (t CO2) from TOOL05/monitored."
+                            },
+                            "monitoredElectricityKwhPerYear": {
+                                "type": "number",
+                                "minimum": 0
+                            },
+                            "electricityEmissionFactorTCo2PerMwh": {
+                                "type": "number",
+                                "minimum": 0,
+                                "description": "EF for electricity (t CO2/MWh); defaults to 1.3 for Option 2 if omitted."
+                            },
+                            "digesterElectricityType": {
+                                "type": "string",
+                                "enum": [
+                                    "covered_anaerobic_lagoon_gravity_fed_or_conventional",
+                                    "uasb_filter_bed_fluidized_bed_wastewater",
+                                    "conventional_cstr_wastewater",
+                                    "any_ad_solid_waste_with_preprocessing",
+                                    "gravity_fed_no_recirculation_no_electrical"
+                                ],
+                                "description": "TOOL14 Table 5 FEC,default selection for Step 2 Option 2 Eq(3)."
+                            },
+                            "usesFossilFuels": {
+                                "type": "boolean"
+                            },
+                            "monitoredPeFcTCo2": {
+                                "type": "number",
+                                "minimum": 0,
+                                "description": "PEFC,y (t CO2) from TOOL03/direct."
+                            },
+                            "efCh4LeakFraction": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1,
+                                "description": "EFCH4,default/fraction CH4 produced that leaks (Step 4 Eq4)."
+                            },
+                            "digesterPhysicalLeakType": {
+                                "type": "string",
+                                "enum": [
+                                    "steel_lined_concrete_fiberglass_gas_holder_monolithic",
+                                    "uasb_floating_gas_holder_no_external_water_seal",
+                                    "unlined_concrete_ferrocement_brick_masonry_fixed_dome_covered_lagoon",
+                                    "unknown"
+                                ],
+                                "description": "TOOL14 Table 3 EFCH4,default selection."
+                            },
+                            "flareOfBiogas": {
+                                "type": "boolean"
+                            },
+                            "monitoredPeFlareTCo2e": {
+                                "type": "number",
+                                "minimum": 0,
+                                "description": "PEflare,y (t CO2e) from TOOL06/direct for AD biogas (TOOL14 Step 5)."
+                            },
+                            "flareAccountedInSeparatePeFlareActivity": {
+                                "type": "boolean",
+                                "description": "If true, AD flare excluded from PEAD aggregation to avoid double counting with separate PE_flare activity."
+                            },
+                            "monitoredLeStorageTCo2e": {
+                                "type": "number",
+                                "minimum": 0,
+                                "description": "LEstorage,y (t CO2e) monitored/TOOL04/Eq6-derived direct input."
+                            },
+                            "liquidDigestateStorage": {
+                                "type": "object",
+                                "properties": {
+                                    "anaerobicStorage": {
+                                        "type": "boolean",
+                                        "description": "Un-aerated lagoon depth>1m or SWDS-like anaerobic conditions per TOOL14 6.2.1."
+                                    },
+                                    "fwwCh4DefaultType": {
+                                        "type": "string",
+                                        "enum": [
+                                            "covered_anaerobic_lagoon",
+                                            "uasb_anaerobic_filter_fluidized_bed",
+                                            "conventional_digester",
+                                            "two_stage_digester"
+                                        ],
+                                        "description": "TOOL14 Table 8 for Eq(7) Option 2."
+                                    },
+                                    "qStoredM3PerYear": { "type": "number", "minimum": 0, "description": "Qstored,y (m3) for TOOL14 Eq(6) monitored path." },
+                                    "pCodTonnesPerM3": { "type": "number", "minimum": 0, "description": "PCOD,y (t COD/m3) for Eq(6)." },
+                                    "b0TCh4PerTCod": { "type": "number", "minimum": 0, "description": "B0 (t CH4/t COD) for Eq(6); default 0.25 (TOOL14 Table 7) if omitted." },
+                                    "mcf": { "type": "number", "minimum": 0, "maximum": 1, "description": "MCF for Eq(6): 0.8 depth>=2m, 0.2 for 1m<=depth<2m, 0 for <1m (TOOL14 Table 10)." }
+                                }
+                            },
+                            "solidDigestateStorage": {
+                                "type": "object",
+                                "properties": {
+                                    "disposedInSwdsOrAnaerobic": {
+                                        "type": "boolean"
+                                    },
+                                    "fsdCh4DefaultType": {
+                                        "type": "string",
+                                        "enum": [
+                                            "two_phase_digester",
+                                            "all_other_technologies"
+                                        ],
+                                        "description": "TOOL14 Table 9 for Eq(8) Option 2."
+                                    }
+                                }
+                            },
+                            "digestateComposted": {
+                                "type": "boolean"
+                            },
+                            "monitoredLeCompTCo2e": {
+                                "type": "number",
+                                "minimum": 0,
+                                "description": "LECOMP,y (t CO2e) from TOOL13/direct."
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
