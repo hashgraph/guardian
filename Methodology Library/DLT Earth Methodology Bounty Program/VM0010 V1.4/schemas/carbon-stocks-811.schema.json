@@ -1,0 +1,118 @@
+{
+    "name": "VM0010 Section 8.1.1 Carbon Stocks",
+    "description": "Slice-scoped output of logic/calculate-carbon-stocks-811.js. Carries Eq (3) C_HB,j,i|BSL and Eq (4) C_EX,j,i|BSL only, in tC per hectare.",
+    "entity": "VC",
+    "system": false,
+    "sourceVersion": "1.0.0",
+    "document": {
+        "$id": "#carbon-stocks-811",
+        "title": "VM0010 Section 8.1.1 Carbon Stocks",
+        "type": "object",
+        "required": ["@context", "type", "credentialSubject"],
+        "properties": {
+            "@context": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "type": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "credentialSubject": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "$ref": "#carbon-stocks-811-subject" }
+            }
+        },
+        "defs": {
+            "carbon-stocks-811-subject": {
+                "type": "object",
+                "required": [
+                    "ref",
+                    "year",
+                    "strata",
+                    "totalCHbJiBsl",
+                    "totalCExJiBsl"
+                ],
+                "properties": {
+                    "ref": { "type": "string", "title": "Project ID" },
+                    "year": { "type": "integer", "title": "Monitoring Year" },
+                    "strata": {
+                        "type": "array",
+                        "title": "Per Species and Stratum Results",
+                        "minItems": 1,
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "species",
+                                "stratum",
+                                "vExJiBsl",
+                                "vExInfJiBsl",
+                                "extractedVolume",
+                                "bcefR",
+                                "dJ",
+                                "cfJ",
+                                "cHbJiBsl",
+                                "cExJiBsl"
+                            ],
+                            "properties": {
+                                "species": {
+                                    "type": "integer",
+                                    "title": "j (Tree Species)",
+                                    "minimum": 1,
+                                    "maximum": 3
+                                },
+                                "stratum": {
+                                    "type": "integer",
+                                    "title": "i (Stratum)",
+                                    "minimum": 1,
+                                    "maximum": 3
+                                },
+                                "vExJiBsl": {
+                                    "type": "number",
+                                    "title": "V_EX,j,i|BSL (m3/ha)",
+                                    "minimum": 0
+                                },
+                                "vExInfJiBsl": {
+                                    "type": "number",
+                                    "title": "V_EX,INF,j,i|BSL (m3/ha)",
+                                    "minimum": 0
+                                },
+                                "extractedVolume": {
+                                    "type": "number",
+                                    "title": "V_EX,j,i|BSL + V_EX,INF,j,i|BSL (m3/ha)"
+                                },
+                                "bcefR": {
+                                    "type": "number",
+                                    "title": "BCEF_R (t.d.m/m3)",
+                                    "exclusiveMinimum": 0
+                                },
+                                "dJ": {
+                                    "type": "number",
+                                    "title": "D_j (t.d.m/m3)",
+                                    "exclusiveMinimum": 0
+                                },
+                                "cfJ": {
+                                    "type": "number",
+                                    "title": "CF_j (tC/t.d.m)",
+                                    "exclusiveMinimum": 0,
+                                    "maximum": 1
+                                },
+                                "cHbJiBsl": {
+                                    "type": "number",
+                                    "title": "C_HB,j,i|BSL (tC/ha) - Equation 3"
+                                },
+                                "cExJiBsl": {
+                                    "type": "number",
+                                    "title": "C_EX,j,i|BSL (tC/ha) - Equation 4"
+                                }
+                            }
+                        }
+                    },
+                    "totalCHbJiBsl": {
+                        "type": "number",
+                        "title": "Sum of C_HB,j,i|BSL across species/strata (tC/ha)"
+                    },
+                    "totalCExJiBsl": {
+                        "type": "number",
+                        "title": "Sum of C_EX,j,i|BSL across species/strata (tC/ha)"
+                    }
+                }
+            }
+        }
+    }
+}

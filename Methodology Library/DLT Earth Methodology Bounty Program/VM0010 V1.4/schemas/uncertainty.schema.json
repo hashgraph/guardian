@@ -1,0 +1,49 @@
+{
+    "name": "VM0010 Combined Uncertainty",
+    "description": "Slice-scoped output of logic/calculate-uncertainty-85.js. Carries Equation (42) combined scenario uncertainty: U_total|LtPF = SQRT(U_PRJ^2 + U_BSL^2), dimensionless.",
+    "entity": "VC",
+    "system": false,
+    "sourceVersion": "1.0.0",
+    "document": {
+        "$id": "#uncertainty",
+        "title": "VM0010 Combined Uncertainty",
+        "type": "object",
+        "required": ["@context", "type", "credentialSubject"],
+        "properties": {
+            "@context": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "type": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "credentialSubject": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "$ref": "#uncertainty-subject" }
+            }
+        },
+        "defs": {
+            "uncertainty-subject": {
+                "type": "object",
+                "required": ["ref", "year", "uPrj", "uBsl", "uTotal"],
+                "properties": {
+                    "ref": { "type": "string", "title": "Project ID", "minLength": 1 },
+                    "year": { "type": "integer", "title": "Monitoring Year", "minimum": 1900, "maximum": 2200 },
+                    "uPrj": {
+                        "type": "number",
+                        "title": "U_PRJ project scenario uncertainty estimate",
+                        "minimum": 0,
+                        "maximum": 1
+                    },
+                    "uBsl": {
+                        "type": "number",
+                        "title": "U_BSL baseline scenario uncertainty estimate",
+                        "minimum": 0,
+                        "maximum": 1
+                    },
+                    "uTotal": {
+                        "type": "number",
+                        "title": "U_total|LtPF combined scenario uncertainty, dimensionless",
+                        "minimum": 0
+                    }
+                }
+            }
+        }
+    }
+}

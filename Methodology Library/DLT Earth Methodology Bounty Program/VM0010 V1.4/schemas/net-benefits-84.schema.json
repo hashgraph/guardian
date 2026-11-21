@@ -1,0 +1,40 @@
+{
+    "name": "VM0010 Net Benefits (Emission Reductions and Removals)",
+    "description": "Slice-scoped output of logic/calculate-net-benefits-84.js. Carries Eqs (40)-(41) ER_t* and CR_t* corrected net emission reductions and removals.",
+    "entity": "VC",
+    "system": false,
+    "sourceVersion": "1.0.0",
+    "document": {
+        "$id": "#net-benefits-84",
+        "title": "VM0010 Net Benefits",
+        "type": "object",
+        "required": ["@context", "type", "credentialSubject"],
+        "properties": {
+            "@context": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "type": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "credentialSubject": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "$ref": "#net-benefits-84-subject" }
+            }
+        },
+        "defs": {
+            "net-benefits-84-subject": {
+                "type": "object",
+                "required": ["ref", "year", "erTco2e", "crTco2e"],
+                "properties": {
+                    "ref": { "type": "string", "title": "Project ID" },
+                    "year": { "type": "integer", "title": "Monitoring Year" },
+                    "erTco2e": {
+                        "type": "number",
+                        "title": "Eq (40) Corrected Net Emission Reductions ER_t* (tCO2e)"
+                    },
+                    "crTco2e": {
+                        "type": "number",
+                        "title": "Eq (41) Corrected Net Removals CR_t* (tCO2e)"
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,101 @@
+{
+    "name": "VM0010 Section 8.1.3 Wood Products",
+    "description": "Slice-scoped output of logic/calculate-woodproducts-813.js. Carries Equation (11) dC_WP100,i,p|BSL only, in tC per hectare, with no decay applied.",
+    "entity": "VC",
+    "system": false,
+    "sourceVersion": "1.0.0",
+    "document": {
+        "$id": "#wood-products-813",
+        "title": "VM0010 Section 8.1.3 Wood Products",
+        "type": "object",
+        "required": ["@context", "type", "credentialSubject"],
+        "properties": {
+            "@context": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "type": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "credentialSubject": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "$ref": "#wood-products-813-subject" }
+            }
+        },
+        "defs": {
+            "wood-products-813-subject": {
+                "type": "object",
+                "required": ["ref", "year", "rows", "section91OfDefaults", "section91OfRegions", "totalDCWp100TCo2eHa"],
+                "properties": {
+                    "ref": { "type": "string", "title": "Project ID" },
+                    "year": { "type": "integer", "title": "Monitoring Year" },
+                    "rows": {
+                        "type": "array",
+                        "title": "Per Stratum and Parcel Results",
+                        "minItems": 1,
+                        "items": {
+                            "type": "object",
+                            "required": ["stratum", "parcel", "cWpJiBsl", "classes", "dCWp100JiPBsl"],
+                            "properties": {
+                                "stratum": { "type": "integer", "title": "i (Stratum)", "minimum": 1, "maximum": 3 },
+                                "parcel": { "type": "integer", "title": "p (Land Parcel)", "minimum": 1 },
+                                "cWpJiBsl": {
+                                    "type": "number",
+                                    "title": "C_WP,i|BSL (tC/ha)",
+                                    "description": "Input. Derived by Equation (10), which is not implemented in this slice.",
+                                    "minimum": 0
+                                },
+                                "classes": {
+                                    "type": "array",
+                                    "title": "Wood Product Class Terms (k)",
+                                    "minItems": 1,
+                                    "items": {
+                                        "type": "object",
+                                        "required": ["productClass", "ofK", "termTCo2eHa"],
+                                        "properties": {
+                                            "productClass": {
+                                                "type": "string",
+                                                "title": "k (Wood Product Class)",
+                                                "enum": [
+                                                    "sawnwood",
+                                                    "woodbasePanels",
+                                                    "otherIndustrialRoundwood",
+                                                    "paperAndPaperboard"
+                                                ]
+                                            },
+                                            "ofK": {
+                                                "type": "number",
+                                                "title": "OF_k (dimensionless)",
+                                                "description": "Section 9.1 p.69 default. Inputs must not exceed the tabulated regional maximum.",
+                                                "minimum": 0,
+                                                "maximum": 1
+                                            },
+                                            "termTCo2eHa": {
+                                                "type": "number",
+                                                "title": "C_WP,i|BSL x OF_k (tC/ha)"
+                                            }
+                                        }
+                                    }
+                                },
+                                "dCWp100JiPBsl": {
+                                    "type": "number",
+                                    "title": "dC_WP100,i,p|BSL (tC/ha) - Equation 11"
+                                }
+                            }
+                        }
+                    },
+                    "totalDCWp100TCo2eHa": {
+                        "type": "number",
+                        "title": "Sum of dC_WP100,i,p|BSL across all rows (tC/ha)"
+                    },
+                    "section91OfDefaults": {
+                        "type": "object",
+                        "title": "Section 9.1 OF Defaults for Traceability",
+                        "description": "Reported for audit only. Not used to constrain OF_k inputs; the methodology presents these as defaults and permits project-specific data selection."
+                    },
+                    "section91OfRegions": {
+                        "type": "array",
+                        "title": "Forest Regions in the Section 9.1 OF Table",
+                        "items": { "type": "string" }
+                    }
+                }
+            }
+        }
+    }
+}

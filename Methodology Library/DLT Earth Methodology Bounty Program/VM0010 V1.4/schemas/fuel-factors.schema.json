@@ -1,0 +1,87 @@
+{
+    "name": "VM0010 Appendix 2 Fuel Factors and Emission Factors",
+    "description": "Slice-scoped output of logic/calculate-fuel-factors.js. Carries Eq (48) EF_FUEL-GHG = EF_IPCC-FUEL * HV_FUEL * rho_FUEL / 1000 and A03 assembly EF_total = EF_CO2 + EF_nonCO2.",
+    "entity": "VC",
+    "system": false,
+    "sourceVersion": "1.0.0",
+    "document": {
+        "$id": "#fuel-factors",
+        "title": "VM0010 Appendix 2 Fuel Factors",
+        "type": "object",
+        "required": ["@context", "type", "credentialSubject"],
+        "properties": {
+            "@context": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "type": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "credentialSubject": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "$ref": "#fuel-factors-subject" }
+            }
+        },
+        "defs": {
+            "fuel-factors-subject": {
+                "type": "object",
+                "required": ["ref", "year", "efFuelGhg", "efTotal", "fuelFactorsDetails"],
+                "properties": {
+                    "ref": { "type": "string", "title": "Project ID" },
+                    "year": { "type": "integer", "title": "Monitoring Year" },
+                    "efFuelGhg": {
+                        "type": "number",
+                        "title": "EF_FUEL-GHG (tCO2e per kL fuel)",
+                        "minimum": 0
+                    },
+                    "efTotal": {
+                        "type": "number",
+                        "title": "EF_total = EF_CO2 + EF_nonCO2 (tCO2e)",
+                        "minimum": 0
+                    },
+                    "fuelFactorsDetails": {
+                        "type": "array",
+                        "title": "Per-Fuel-Row Details",
+                        "minItems": 1,
+                        "items": {
+                            "type": "object",
+                            "required": ["activityId", "efIcc", "hvFuel", "rhoFuel", "efFuelGhgRow", "efCo2Row", "efNonCo2Row"],
+                            "properties": {
+                                "activityId": {
+                                    "type": "string",
+                                    "title": "Activity Identifier"
+                                },
+                                "efIcc": {
+                                    "type": "number",
+                                    "title": "IPCC Emission Factor EF_IPCC-FUEL (tCO2e/TJ)",
+                                    "minimum": 0
+                                },
+                                "hvFuel": {
+                                    "type": "number",
+                                    "title": "Fuel Heating Value HV_FUEL (MJ/kL)",
+                                    "minimum": 0
+                                },
+                                "rhoFuel": {
+                                    "type": "number",
+                                    "title": "Fuel Density rho_FUEL (kg/m3)",
+                                    "minimum": 0
+                                },
+                                "efFuelGhgRow": {
+                                    "type": "number",
+                                    "title": "Calculated EF_FUEL-GHG for this row (tCO2e/kL)",
+                                    "minimum": 0
+                                },
+                                "efCo2Row": {
+                                    "type": "number",
+                                    "title": "CO2 Component EF_CO2 (tCO2e/kL)",
+                                    "minimum": 0
+                                },
+                                "efNonCo2Row": {
+                                    "type": "number",
+                                    "title": "Non-CO2 Component EF_nonCO2 (tCO2e/kL)",
+                                    "minimum": 0
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,76 @@
+{
+    "name": "VM0010 Section 8.1.2 Residual Stand Damage",
+    "description": "Slice-scoped output of logic/calculate-rsd-812.js. Carries Equation (6) C_RSD,j,i|BSL only, in tC per hectare.",
+    "entity": "VC",
+    "system": false,
+    "sourceVersion": "1.0.0",
+    "document": {
+        "$id": "#rsd-812",
+        "title": "VM0010 Section 8.1.2 Residual Stand Damage",
+        "type": "object",
+        "required": ["@context", "type", "credentialSubject"],
+        "properties": {
+            "@context": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "type": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "credentialSubject": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "$ref": "#rsd-812-subject" }
+            }
+        },
+        "defs": {
+            "rsd-812-subject": {
+                "type": "object",
+                "required": ["ref", "year", "rows", "section91FRsdValueAppliedTable"],
+                "properties": {
+                    "ref": { "type": "string", "title": "Project ID" },
+                    "year": { "type": "integer", "title": "Monitoring Year" },
+                    "rows": {
+                        "type": "array",
+                        "title": "Per Species and Stratum Results",
+                        "minItems": 1,
+                        "items": {
+                            "type": "object",
+                            "required": ["species", "stratum", "cExJiBsl", "fRsdBsl", "cRsdJiBsl"],
+                            "properties": {
+                                "species": { "type": "integer", "title": "j (Tree Species)", "minimum": 1, "maximum": 3 },
+                                "stratum": { "type": "integer", "title": "i (Stratum)", "minimum": 1, "maximum": 3 },
+                                "cExJiBsl": {
+                                    "type": "number",
+                                    "title": "C_EX,j,i|BSL (tC/ha)",
+                                    "description": "Input. Expected to carry the Section 8.1.1 Equation (4) result for the same species j and stratum i.",
+                                    "minimum": 0
+                                },
+                                "fRsdBsl": {
+                                    "type": "number",
+                                    "title": "F_RSD|BSL (Section 9.1 declares dimensionless)",
+                                    "description": "Input, project-specific, from peer-reviewed literature per Section 9.1 p.56. Deliberately NOT capped at 1: every tabulated Section 9.1 value exceeds 1 and the row's own unit is tC_damaged / tC_extracted.",
+                                    "minimum": 0
+                                },
+                                "cRsdJiBsl": {
+                                    "type": "number",
+                                    "title": "C_RSD,j,i|BSL (tC/ha) - Equation 6"
+                                }
+                            }
+                        }
+                    },
+                    "section91FRsdValueAppliedTable": {
+                        "type": "array",
+                        "title": "Section 9.1 p.56 F_RSD Value Applied Table",
+                        "description": "Reported for traceability only. Not used as the operative value.",
+                        "items": {
+                            "type": "object",
+                            "required": ["fRsd", "commercialLogLengthM", "country", "reference"],
+                            "properties": {
+                                "fRsd": { "type": "number", "title": "F_RSD (tC_damaged / tC_extracted)" },
+                                "commercialLogLengthM": { "type": "number", "title": "Commercial Log Length (m)" },
+                                "country": { "type": "string", "title": "Country" },
+                                "reference": { "type": "string", "title": "Reference" }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

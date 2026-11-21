@@ -1,0 +1,48 @@
+{
+    "name": "VM0010 VCU Buffer and Issuance Arithmetic",
+    "description": "Slice-scoped output of logic/calculate-vcus-86.js. Carries Eqs (43)-(46) buffer quantities and VCU-equivalent values before registry issuance handling.",
+    "entity": "VC",
+    "system": false,
+    "sourceVersion": "1.0.0",
+    "document": {
+        "$id": "#vcus-86",
+        "title": "VM0010 VCU Buffer and VCUs",
+        "type": "object",
+        "required": ["@context", "type", "credentialSubject"],
+        "properties": {
+            "@context": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "type": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "credentialSubject": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "$ref": "#vcus-86-subject" }
+            }
+        },
+        "defs": {
+            "vcus-86-subject": {
+                "type": "object",
+                "required": ["ref", "year", "buCrTco2e", "buErTco2e", "vcuCrTco2e", "vcuErTco2e"],
+                "properties": {
+                    "ref": { "type": "string", "title": "Project ID" },
+                    "year": { "type": "integer", "title": "Monitoring Year" },
+                    "buCrTco2e": {
+                        "type": "number",
+                        "title": "Eq (43) Removals Buffer Bu_CR,t* (tCO2e)"
+                    },
+                    "buErTco2e": {
+                        "type": "number",
+                        "title": "Eq (44) Reductions Buffer Bu_ER,t* (tCO2e)"
+                    },
+                    "vcuCrTco2e": {
+                        "type": "number",
+                        "title": "Eq (45) Removals VCUs VCU_CR,t* (tCO2e)"
+                    },
+                    "vcuErTco2e": {
+                        "type": "number",
+                        "title": "Eq (46) Reductions VCUs VCU_ER,t* (tCO2e)"
+                    }
+                }
+            }
+        }
+    }
+}
