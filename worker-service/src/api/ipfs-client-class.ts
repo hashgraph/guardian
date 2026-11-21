@@ -1,7 +1,10 @@
 import { axiosGetWithRetry } from './helpers/utils.js';
+import { readHeliaFile } from './helpers/helia-reader.js';
 import { create } from 'kubo-rpc-client'
 import { FilebaseClient } from '@filebase/client';
 import CID from 'cids';
+
+let invalidReaderWarned = false;
 
 /**
  * Providers enum, add a new provider enum type here.
@@ -155,6 +158,14 @@ export class IpfsClientClass {
      */
     public async getFile(cid: string): Promise<any> {
         const _cid = this.parseCID(cid);
+        const reader = process.env.IPFS_READER || 'kubo';
+        if (reader === 'helia') {
+            return readHeliaFile(_cid);
+        }
+        if (reader !== 'kubo' && !invalidReaderWarned) {
+            invalidReaderWarned = true;
+            console.warn(`Unknown IPFS_READER "${reader}", using kubo.`);
+        }
         const fileRes = await axiosGetWithRetry(
             'IPFS gateway',
             this.IPFS_PUBLIC_GATEWAY

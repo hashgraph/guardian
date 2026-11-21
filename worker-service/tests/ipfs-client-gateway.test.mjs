@@ -22,7 +22,8 @@ describe('IPFS client gateway', function () {
     });
 
     beforeEach(() => {
-        saved = Object.fromEntries(['IPFS_PUBLIC_GATEWAY', 'IPFS_PROVIDER', 'IPFS_TIMEOUT'].map((key) => [key, process.env[key]]));
+        saved = Object.fromEntries(['IPFS_PUBLIC_GATEWAY', 'IPFS_PROVIDER', 'IPFS_TIMEOUT', 'IPFS_READER'].map((key) => [key, process.env[key]]));
+        delete process.env.IPFS_READER;
         requests.length = 0;
         process.env.IPFS_TIMEOUT = '30';
     });
