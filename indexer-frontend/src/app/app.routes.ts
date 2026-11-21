@@ -52,6 +52,8 @@ import { FormulaDetailsComponent } from '@views/details/formula-details/formula-
 import { PriorityQueueComponent } from '@views/priority-queue/priority-queue.component';
 import { SchemasPackagesComponent } from '@views/collections/schemas-packages/schemas-packages.component';
 import { SchemasPackageDetailsComponent } from '@views/details/schemas-packages-details/schemas-packages-details.component';
+import { MintTokensComponent } from '@views/collections/mint-tokens/mint-tokens.component';
+import { ProjectPracticesComponent } from '@views/collections/project-practices/project-practices.component';
 
 export const routes: Routes = [
     // _DEV
@@ -87,6 +89,8 @@ export const routes: Routes = [
     { path: 'statistic-documents', component: StatisticDocumentsComponent },
     { path: 'formulas', component: FormulasComponent },
     { path: 'schemas-packages', component: SchemasPackagesComponent },
+    { path: 'mint-tokens', component: MintTokensComponent },
+    { path: 'project-practices', component: ProjectPracticesComponent },
 
     //Details
     { path: 'registries/:id', component: RegistryDetailsComponent },
@@ -109,4 +113,6 @@ export const routes: Routes = [
     { path: 'statistic-documents/:id', component: VcDocumentDetailsComponent },
     { path: 'formulas/:id', component: FormulaDetailsComponent },
     { path: 'schemas-packages/:id', component: SchemasPackageDetailsComponent },
+    { path: 'mint-tokens/:id', component: VpDocumentDetailsComponent },
+    { path: 'project-practices/:id', component: VcDocumentDetailsComponent },
 ];
