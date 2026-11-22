@@ -1789,7 +1789,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@helia/delegated-routing-v1-http-api-client@npm:^9.0.0":
+"@helia/delegated-routing-v1-http-api-client@npm:9.0.2":
   version: 9.0.2
   resolution: "@helia/delegated-routing-v1-http-api-client@npm:9.0.2"
   dependencies:
@@ -1806,6 +1806,26 @@ __metadata:
     race-signal: "npm:^2.0.2"
     uint8arrays: "npm:^6.1.1"
   checksum: 10c0/0c70d5089660f38a4a18104ff210ab5101a821b6155e2820bf18a2067f118f5122d78e8a979c0e2a097c6eace37deb8f5022ea48ff9ede6cd6fd5c254753981c
+  languageName: node
+  linkType: hard
+
+"@helia/delegated-routing-v1-http-api-client@patch:@helia/delegated-routing-v1-http-api-client@npm%3A9.0.2#~/.yarn/patches/@helia-delegated-routing-v1-http-api-client-npm-9.0.2-6de9c71dd5.patch":
+  version: 9.0.2
+  resolution: "@helia/delegated-routing-v1-http-api-client@patch:@helia/delegated-routing-v1-http-api-client@npm%3A9.0.2#~/.yarn/patches/@helia-delegated-routing-v1-http-api-client-npm-9.0.2-6de9c71dd5.patch::version=9.0.2&hash=328f4f"
+  dependencies:
+    "@libp2p/interface": "npm:^3.2.2"
+    "@libp2p/peer-id": "npm:^6.0.9"
+    "@libp2p/utils": "npm:^7.2.2"
+    "@multiformats/multiaddr": "npm:^13.0.3"
+    any-signal: "npm:^4.2.0"
+    browser-readablestream-to-it: "npm:^2.0.12"
+    it-first: "npm:^3.0.11"
+    it-map: "npm:^3.1.6"
+    it-ndjson: "npm:^2.0.0"
+    multiformats: "npm:^14.0.0"
+    race-signal: "npm:^2.0.2"
+    uint8arrays: "npm:^6.1.1"
+  checksum: 10c0/aabbc42cc1d387888b642cb3d25599a34702605446698351b4d85095a6b5e2f30be8ec97f3aeb9c79e3e7bbb628690b374c5b9c2e244ad82df3d700c567f9e4a
   languageName: node
   linkType: hard
 

@@ -11,7 +11,8 @@
     "resolutions": {
         "@mattrglobal/bls12381-key-pair": "2.0.0",
         "@mattrglobal/bbs-signatures": "2.0.0",
-        "protobufjs": "8.6.6"
+        "protobufjs": "8.6.6",
+        "@helia/delegated-routing-v1-http-api-client@npm:^9.0.0": "patch:@helia/delegated-routing-v1-http-api-client@npm%3A9.0.2#~/.yarn/patches/@helia-delegated-routing-v1-http-api-client-npm-9.0.2-6de9c71dd5.patch"
     },
     "scripts": {
         "clean": "find . -type d \\( -name dist -o -name node_modules \\) -prune -exec rm -rf {} +",

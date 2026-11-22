@@ -1,0 +1,62 @@
+diff --git a/dist/src/client.js b/dist/src/client.js
+index 4e36c6f1522973d3276d6cf70fb5101a3c144eaf..ca5a710a3d16dec3dfb3b4796a05c076f446f364 100644
+--- a/dist/src/client.js
++++ b/dist/src/client.js
+@@ -135,7 +135,7 @@ export class DelegatedRoutingV1HttpApiClient {
+             }
+             else if (contentType.includes('application/x-ndjson')) {
+                 signal.addEventListener('abort', () => {
+-                    res?.body?.cancel();
++                    res?.body?.cancel()?.catch(() => { });
+                 });
+                 for await (const provider of ndjson(toIt(res.body))) {
+                     const record = this.#conformToPeerSchema(provider);
+@@ -205,7 +205,7 @@ export class DelegatedRoutingV1HttpApiClient {
+             }
+             else {
+                 signal.addEventListener('abort', () => {
+-                    res.body?.cancel();
++                    res.body?.cancel()?.catch(() => { });
+                 });
+                 for await (const peer of ndjson(toIt(res.body))) {
+                     const record = this.#conformToPeerSchema(peer);
+@@ -281,7 +281,7 @@ export class DelegatedRoutingV1HttpApiClient {
+             }
+             else {
+                 signal.addEventListener('abort', () => {
+-                    res.body?.cancel();
++                    res.body?.cancel()?.catch(() => { });
+                 });
+                 for await (const peer of ndjson(toIt(res.body))) {
+                     const record = this.#conformToPeerSchema(peer);
+diff --git a/src/client.ts b/src/client.ts
+index 9290029778a72e5c89c13ebdd03b89a88337866b..0e251a0d99ce602b6cb16cc80801ec9aaa5e2266 100644
+--- a/src/client.ts
++++ b/src/client.ts
+@@ -165,7 +165,7 @@ export class DelegatedRoutingV1HttpApiClient implements DelegatedRoutingV1HttpAp
+         }
+       } else if (contentType.includes('application/x-ndjson')) {
+         signal.addEventListener('abort', () => {
+-          res?.body?.cancel()
++          res?.body?.cancel()?.catch(() => {})
+         })
+ 
+         for await (const provider of ndjson(toIt(res.body))) {
+@@ -244,7 +244,7 @@ export class DelegatedRoutingV1HttpApiClient implements DelegatedRoutingV1HttpAp
+         }
+       } else {
+         signal.addEventListener('abort', () => {
+-          res.body?.cancel()
++          res.body?.cancel()?.catch(() => {})
+         })
+ 
+         for await (const peer of ndjson(toIt(res.body))) {
+@@ -330,7 +330,7 @@ export class DelegatedRoutingV1HttpApiClient implements DelegatedRoutingV1HttpAp
+         }
+       } else {
+         signal.addEventListener('abort', () => {
+-          res.body?.cancel()
++          res.body?.cancel()?.catch(() => {})
+         })
+ 
+         for await (const peer of ndjson(toIt(res.body))) {
