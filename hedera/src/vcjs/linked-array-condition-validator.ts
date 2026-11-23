@@ -19,7 +19,7 @@ function isPresent(value: any): boolean {
 }
 
 /**
- * Arrays tied together by repeatable links, so that entry N of one belongs with entry N of the rest.
+ * Groups the arrays that repeatable links tie together.
  */
 function buildGroups(dependencies: ISchemaArrayDependency[]): Map<string, string[]> {
     const parent = new Map<string, string>();
@@ -61,6 +61,25 @@ function arrayOf(path: string[], members: string[]): string[] | null {
 }
 
 /**
+ * Entry index for every repeatable field a trigger reads: the group's arrays and any other repeatable
+ * field on the trigger paths all read their entry `index`.
+ */
+function entriesAt(subject: any, paths: string[][], members: string[], index: number): Record<string, number> {
+    const entries: Record<string, number> = Object.fromEntries(members.map(key => [key, index]));
+    for (const path of paths) {
+        let node = subject;
+        for (let position = 0; position < path.length - 1; position++) {
+            node = node?.[path[position]];
+            if (Array.isArray(node)) {
+                entries[keyOf(path.slice(0, position + 1))] = index;
+                node = node[index];
+            }
+        }
+    }
+    return entries;
+}
+
+/**
  * Show a path with the entry index after its array: `child2[1].field_1`.
  */
 function describePath(path: string[], array: string[], index: number): string {
@@ -72,8 +91,7 @@ function describePath(path: string[], array: string[], index: number): string {
 const MAX_NESTING = 12;
 
 /**
- * Put a sub-schema's path in front of the paths of its condition, so they read from the document root
- * the same way its repeatable links do.
+ * Puts a sub-schema's path in front of the trigger and target paths of its condition.
  */
 function withPrefix(condition: SchemaCondition, prefix: string[]): SchemaCondition {
     const predicate = (item: any): any => ({
@@ -95,9 +113,8 @@ function withPrefix(condition: SchemaCondition, prefix: string[]): SchemaConditi
 }
 
 /**
- * Conditions of a schema and of its single (non-repeatable) sub-schemas, all with paths from the
- * document root. This is where `collectArrayDependencies` looks for links, so a condition and the
- * links it relies on are found together.
+ * Collects the conditions of a schema and of its single (non-repeatable) sub-schemas, with paths from
+ * the document root.
  * @param conditions conditions of the schema
  * @param fields fields of the schema
  * @param prefix path of the schema from the document root
@@ -120,12 +137,8 @@ export function collectConditionsFromRoot(
 }
 
 /**
- * Validate conditions whose trigger sits in a repeatable field that is linked to the repeatable
- * field holding their cross-schema target.
- *
- * Linked entries belong together, so entry N of the trigger decides what entry N of the target must
- * hold. JSON Schema cannot pair entries of two arrays, so the compiled `if` does not do this and
- * the form's per-entry rule has to be applied here too.
+ * Validates, entry by entry, conditions whose trigger and cross-schema target sit in linked repeatable
+ * fields: entry N of the trigger decides what entry N of the target must hold.
  * @param subject credential subject
  * @param conditions conditions of the schema
  * @param dependencies repeatable links of the schema
@@ -141,7 +154,7 @@ export function validateLinkedArrayConditions(
     }
 
     for (const members of buildGroups(dependencies).values()) {
-        // Different lengths are reported by the length check, and there is nothing to pair then.
+        // Skip groups whose arrays differ in length.
         const lengths = members.map(key => {
             const value = readByPath(subject, key.split('.'));
             return value === undefined ? 0 : Array.isArray(value) ? value.length : null;
@@ -153,11 +166,12 @@ export function validateLinkedArrayConditions(
 
         for (const condition of conditions) {
             const predicates = SchemaHelper.getConditionTriggerPredicates(condition?.ifCondition);
-            const triggers = predicates
+            const paths = predicates
                 .map(predicate => (predicate?.fieldPath?.length || 0) > 1
                     ? predicate.fieldPath as string[]
                     : [predicate?.field?.name])
-                .filter(path => path[0])
+                .filter(path => path[0]);
+            const triggers = paths
                 .map(path => ({ path, array: arrayOf(path, members) }))
                 .filter(trigger => trigger.array);
             if (!triggers.length) {
@@ -176,7 +190,7 @@ export function validateLinkedArrayConditions(
             const triggerPath = triggers[0].path;
             const triggerArray = triggers[0].array as string[];
             for (let index = 0; index < count; index++) {
-                const entries = Object.fromEntries(members.map(key => [key, index]));
+                const entries = entriesAt(subject, paths, members, index);
                 const matched = SchemaHelper.evaluateIfCondition(
                     condition.ifCondition, subject, undefined, { entries }
                 );

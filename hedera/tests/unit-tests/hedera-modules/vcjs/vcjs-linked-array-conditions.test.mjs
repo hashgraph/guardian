@@ -154,3 +154,76 @@ describe('VCJS validates conditions across linked arrays declared in a sub-schem
         assert.ok(result.error.details.some(error => error.keyword === 'arrayGroupLength'));
     });
 });
+
+// A condition that reads two separate linked groups.
+const twoGroups = () => ({
+    $id: '#root',
+    $comment: JSON.stringify({ '@id': 'schema:root#root', term: 'root', arrayDependencies: [
+        { field: ['field_2'], on: ['field_1'], kind: 'array' }, { field: ['field_4'], on: ['field_3'], kind: 'array' }] }),
+    title: 'Root', description: '', type: 'object',
+    properties: { field_1: list('field_1', 'c1', 0), field_2: list('field_2', 'c2', 1), field_3: list('field_3', 'o1', 2), field_4: list('field_4', 'o2', 3) },
+    required: ['field_1', 'field_2', 'field_3', 'field_4'], additionalProperties: false,
+    allOf: [{
+        if: { allOf: [
+            { properties: { field_1: { properties: { check: { const: 1 } }, required: ['check'] } }, required: ['field_1'] },
+            { properties: { field_3: { properties: { kind: { const: 'y' } }, required: ['kind'] } }, required: ['field_3'] }] },
+        then: { properties: { field_2: { required: ['value'] } } },
+        else: { properties: { field_2: { properties: { value: false } } } }
+    }],
+    $defs: {
+        '#c1': { $id: '#c1', $comment: comment('c1'), title: 'c1', description: '', type: 'object',
+            properties: { check: { ...text('check', 0), type: 'integer' } }, required: ['check'], additionalProperties: false },
+        '#c2': { $id: '#c2', $comment: comment('c2'), title: 'c2', description: '', type: 'object',
+            properties: { value: text('value', 0) }, required: ['value'], additionalProperties: false },
+        '#o1': { $id: '#o1', $comment: comment('o1'), title: 'o1', description: '', type: 'object',
+            properties: { kind: text('kind', 0) }, required: ['kind'], additionalProperties: false },
+        '#o2': { $id: '#o2', $comment: comment('o2'), title: 'o2', description: '', type: 'object',
+            properties: { note: text('note', 0) }, required: [], additionalProperties: false }
+    }
+});
+
+describe('VCJS validates a condition over two linked groups entry by entry', () => {
+    async function verify(field1, field2, field3) {
+        const vcjs = new VCJS();
+        vcjs.schemaLoader = async () => twoGroups();
+        return vcjs.verifySubject({
+            field_1: field1, field_2: field2, field_3: field3, field_4: field3.map(() => ({}))
+        });
+    }
+    const conditionErrors = (result) => (result.error?.details || [])
+        .filter(error => error.keyword === 'arrayGroupCondition').map(error => error.instancePath);
+
+    it('accepts both parts true with the value filled', async () => {
+        const result = await verify([{ check: 1 }], [{ value: 'a' }], [{ kind: 'y' }]);
+        assert.deepEqual(conditionErrors(result), []);
+        assert.equal(result.ok, true);
+    });
+
+    it('rejects both parts true with the value missing', async () => {
+        const result = await verify([{ check: 1 }], [{}], [{ kind: 'y' }]);
+        assert.equal(result.ok, false);
+        assert.deepEqual(conditionErrors(result), ['/field_2/0/value']);
+    });
+
+    it('rejects a filled value when the second part is false', async () => {
+        const result = await verify([{ check: 1 }], [{ value: 'a' }], [{ kind: 'test' }]);
+        assert.equal(result.ok, false);
+        assert.deepEqual(conditionErrors(result), ['/field_2/0/value']);
+    });
+
+    it('accepts two entries that follow the condition', async () => {
+        const result = await verify([{ check: 1 }, { check: 2 }], [{ value: 'a' }, {}], [{ kind: 'y' }, { kind: 'y' }]);
+        assert.deepEqual(conditionErrors(result), []);
+        assert.equal(result.ok, true);
+    });
+
+    it('rejects only the entry whose condition does not apply', async () => {
+        const result = await verify([{ check: 1 }, { check: 2 }], [{ value: 'a' }, { value: 'b' }], [{ kind: 'y' }, { kind: 'y' }]);
+        assert.deepEqual(conditionErrors(result), ['/field_2/1/value']);
+    });
+
+    it('still reports a length mismatch of either group', async () => {
+        const result = await verify([{ check: 1 }, { check: 2 }], [{ value: 'a' }], [{ kind: 'y' }]);
+        assert.ok(result.error.details.some(error => error.keyword === 'arrayGroupLength'));
+    });
+});

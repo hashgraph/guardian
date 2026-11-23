@@ -86,6 +86,68 @@ describe('validateLinkedArrayConditions', () => {
     });
 });
 
+describe('validateLinkedArrayConditions - condition that reads another repeatable field', () => {
+    const second = { field: { name: 'kind' }, fieldPath: ['other', 'kind'], fieldValue: 'y' };
+    const first = { field: trigger, fieldPath: ['child1', 'field_1', 'check'], fieldValue: 1 };
+    const otherLink = { field: ['other2'], on: ['other'], kind: 'array' };
+    const links = [link, otherLink];
+    const subject = (value, kind) => ({
+        child1: [one(1)], child2: [two(value)], other: [{ kind }], other2: [{}]
+    });
+
+    it('applies an AND over two groups when both parts are true', () => {
+        const and = condition({ ifCondition: { AND: [first, second] } });
+        assert.deepEqual(validateLinkedArrayConditions(subject('a', 'y'), [and], links), []);
+        assert.deepEqual(paths(validateLinkedArrayConditions(subject(undefined, 'y'), [and], links)),
+            ['/child2/0/field_1/value']);
+    });
+
+    it('does not apply an AND over two groups when one part is false', () => {
+        const and = condition({ ifCondition: { AND: [first, second] } });
+        assert.deepEqual(paths(validateLinkedArrayConditions(subject('a', 'test'), [and], links)),
+            ['/child2/0/field_1/value']);
+        assert.deepEqual(validateLinkedArrayConditions(subject(undefined, 'test'), [and], links), []);
+    });
+
+    it('applies an OR over two groups when one part is true', () => {
+        const or = condition({ ifCondition: { OR: [first, second] } });
+        assert.deepEqual(paths(validateLinkedArrayConditions(
+            { child1: [one(2)], child2: [two()], other: [{ kind: 'y' }], other2: [{}] }, [or], links)),
+        ['/child2/0/field_1/value']);
+        assert.deepEqual(validateLinkedArrayConditions(subject('a', 'n'), [or], links).length, 0);
+    });
+
+    it('reads every repeatable field at the same entry number', () => {
+        const and = condition({ ifCondition: { AND: [first, second] } });
+        const data = {
+            child1: [one(1), one(1)], child2: [two('a'), two('b')],
+            other: [{ kind: 'y' }, { kind: 'n' }], other2: [{}, {}]
+        };
+        assert.deepEqual(paths(validateLinkedArrayConditions(data, [and], links)), ['/child2/1/field_1/value']);
+    });
+
+    it('reads a repeatable field that is not linked at the same entry number', () => {
+        const and = condition({ ifCondition: { AND: [first, second] } });
+        assert.deepEqual(paths(validateLinkedArrayConditions(subject('a', 'test'), [and], [link])),
+            ['/child2/0/field_1/value']);
+    });
+
+    it('treats a missing entry of the other repeatable field as a false part', () => {
+        const and = condition({ ifCondition: { AND: [first, second] } });
+        const data = { child1: [one(1)], child2: [two('a')], other: [], other2: [] };
+        assert.deepEqual(paths(validateLinkedArrayConditions(data, [and], links)), ['/child2/0/field_1/value']);
+    });
+
+    it('checks an AND whose other part is a plain root field', () => {
+        const plain = { field: { name: 'mode' }, fieldValue: 'on' };
+        const and = condition({ ifCondition: { AND: [first, plain] } });
+        assert.deepEqual(paths(validateLinkedArrayConditions(
+            { mode: 'on', child1: [one(1)], child2: [two()] }, [and], [link])), ['/child2/0/field_1/value']);
+        assert.equal(validateLinkedArrayConditions(
+            { mode: 'off', child1: [one(1)], child2: [two('a')] }, [and], [link]).length, 1);
+    });
+});
+
 describe('collectConditionsFromRoot', () => {
     const inner = {
         ifCondition: { field: { name: 'kind' }, fieldPath: ['sources', 'kind'], fieldValue: 'full' },
