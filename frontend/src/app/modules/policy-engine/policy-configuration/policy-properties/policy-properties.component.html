@@ -129,6 +129,7 @@
               <p-select
                 panelStyleClass="pc-select-panel pc-drawer-panel"
                 [(ngModel)]="sectoralScopeSelected"
+                [showClear]="true"
                 [options]="allCategories.sectoralScopeOptions"
                 optionLabel="name"
                 (onChange)="onCategoriesChanged()"
@@ -159,6 +160,7 @@
               <p-select
                 panelStyleClass="pc-select-panel pc-drawer-panel"
                 [(ngModel)]="projectScaleSelected"
+                [showClear]="true"
                 [options]="allCategories?.projectScaleOptions"
                 optionLabel="name"
                 [disabled]="!allCategories"
@@ -189,10 +191,12 @@
               <p-select
                 panelStyleClass="pc-select-panel pc-drawer-panel"
                 [(ngModel)]="appliedTechnologyTypeSelected"
+                [showClear]="true"
                 [options]="allCategories?.appliedTechnologyTypeOptions"
                 optionLabel="name"
                 [disabled]="!allCategories"
                 placeholder="Select a technology type"
+                (onChange)="onCategoriesChanged()"
                 [appendTo]="'body'"
                 >
                 <ng-template pTemplate="selectedItem" let-selectedItem>
