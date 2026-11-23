@@ -1,18 +1,11 @@
 import {
     getPolicyDocumentationIssues,
+    isPolicyDocumentationEditable,
     IPolicyDocumentationEntry,
-    LocationType,
     PolicyDocumentationIssueCode,
     PolicyStatus
 } from '@guardian/interfaces';
 import { buildDocumentationUrls } from './build-documentation-urls.js';
-
-const EDITABLE_STATUSES: string[] = [
-    PolicyStatus.DRAFT,
-    PolicyStatus.DRY_RUN,
-    PolicyStatus.PUBLISH,
-    PolicyStatus.DISCONTINUED,
-];
 
 /**
  * Validates documentation entries for a stand-alone update of a policy and
@@ -28,15 +21,15 @@ export function preparePolicyDocumentation(
     if (!Array.isArray(entries)) {
         throw new Error('Policy documentation must be an array.');
     }
-    if (policy.locationType === LocationType.REMOTE || !EDITABLE_STATUSES.includes(policy.status)) {
+    if (!isPolicyDocumentationEditable(policy)) {
         throw new Error('Policy documentation cannot be changed for this policy.');
     }
     const built = buildDocumentationUrls(policy.id, entries);
-    // A draft config can still change before the policy is saved, so targets are only enforced once it is fixed
+    // A draft config can still change before the policy is saved, so a missing target is only enforced once it is fixed.
+    // A changed block type only warns.
     const issues = getPolicyDocumentationIssues(policy.config, built).filter((issue) =>
-        issue.code === PolicyDocumentationIssueCode.INVALID_METHOD ||
-        issue.code === PolicyDocumentationIssueCode.DUPLICATE_ALIAS ||
-        (issue.code === PolicyDocumentationIssueCode.TARGET_NOT_FOUND && policy.status !== PolicyStatus.DRAFT)
+        issue.code !== PolicyDocumentationIssueCode.BLOCK_TYPE_CHANGED &&
+        !(issue.code === PolicyDocumentationIssueCode.TARGET_NOT_FOUND && policy.status === PolicyStatus.DRAFT)
     );
     if (issues.length) {
         throw new Error(issues.map((issue) => issue.message).join(' '));

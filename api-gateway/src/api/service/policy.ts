@@ -1714,20 +1714,20 @@ export class PolicyApi {
         type: PolicyDocumentationDTO,
     })
     @ApiOkResponse({
-        description: 'Updated policy.',
-        type: PolicyDTO,
+        description: 'Saved documentation: policy id, status and the entries with generated URLs.',
+        type: Object,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(PolicyDocumentationDTO, PolicyDTO, InternalServerErrorDTO)
+    @ApiExtraModels(PolicyDocumentationDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async updatePolicyDocumentation(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
         @Body() body: PolicyDocumentationDTO,
-    ): Promise<PolicyDTO> {
+    ): Promise<any> {
         try {
             const engineService = new PolicyEngine();
             return await engineService.savePolicyDocumentation(policyId, body.entries, new EntityOwner(user));

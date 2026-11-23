@@ -257,10 +257,10 @@ export class PolicyApiConfigDialogComponent {
         if (!block) {
             return 'Block no longer exists in the policy. This endpoint is not accessible anymore, select another block or remove it';
         }
-        if (block && this.isSkippedBlock(block)) {
+        if (this.isSkippedBlock(block)) {
             return 'Selected block cannot be exposed via API';
         }
-        if (!block || !about || (!about.get && !about.post)) {
+        if (!about || (!about.get && !about.post)) {
             return 'Selected block does not support API aliases';
         }
         if (entry.method === 'GET' && !about.get) {

@@ -1550,21 +1550,21 @@ export class PolicyEngineService {
             });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.SAVE_POLICY_DOCUMENTATION,
-            async (msg: { policyId: string, entries: IPolicyDocumentationEntry[], owner: IOwner }): Promise<IMessageResponse<Policy>> => {
+            async (msg: { policyId: string, entries: IPolicyDocumentationEntry[], owner: IOwner }): Promise<IMessageResponse<any>> => {
                 try {
                     const { policyId, entries, owner } = msg;
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, owner, 'update');
 
                     const prepared = preparePolicyDocumentation(policy, entries);
-                    const result = await DatabaseServer.updatePolicyDocumentation(policyId, prepared);
+                    await DatabaseServer.updatePolicyDocumentation(policy, prepared);
 
                     await logger.info(
                         `Policy documentation updated (${prepared.length} entries, status ${policy.status})`,
                         ['GUARDIAN_SERVICE'],
                         owner?.id
                     );
-                    return new MessageResponse(result);
+                    return new MessageResponse({ id: policy.id, status: policy.status, policyDocumentation: prepared });
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                     return new MessageError(error);

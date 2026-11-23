@@ -1,4 +1,6 @@
 import { IPolicyDocumentationEntry } from '../interface/policy.interface.js';
+import { LocationType } from '../type/location.type.js';
+import { PolicyStatus } from '../type/policy-status.type.js';
 
 /**
  * Kind of a problem found in a policy documentation entry
@@ -65,7 +67,7 @@ export function getPolicyDocumentationIssues(
     const blocks = new Map<string, any>();
     collectBlocks(config, blocks);
 
-    const seen: { alias: string, method: string, index: number }[] = [];
+    const seen: { alias: string, method: string }[] = [];
     entries.forEach((entry, index) => {
         const alias = entry?.alias;
         if (!METHODS.includes(entry?.method)) {
@@ -96,7 +98,24 @@ export function getPolicyDocumentationIssues(
                 message: `API alias "${alias}" is declared more than once for the same method; only the first one is reachable.`
             });
         }
-        seen.push({ alias, method: entry?.method, index });
+        seen.push({ alias, method: entry?.method });
     });
     return issues;
+}
+
+const EDITABLE_STATUSES: string[] = [
+    PolicyStatus.DRAFT,
+    PolicyStatus.DRY_RUN,
+    PolicyStatus.PUBLISH,
+    PolicyStatus.DISCONTINUED,
+];
+
+/**
+ * Whether the API documentation of the policy can be saved
+ * @param policy policy status and location
+ */
+export function isPolicyDocumentationEditable(
+    policy: { status?: string, locationType?: string }
+): boolean {
+    return policy.locationType !== LocationType.REMOTE && EDITABLE_STATUSES.includes(policy.status);
 }

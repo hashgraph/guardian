@@ -194,11 +194,11 @@
   padding: 8px 12px;
   border-radius: 6px;
   font-size: 13px;
-  background: var(--guardian-grey-color-1, #f2f4f8);
+  background: var(--guardian-grey-background);
 }
 
 .warn-banner {
-  background: var(--guardian-warning-color-background, #fff4e5);
+  background: var(--guardian-warning-background);
 }
 
 .entries-container.readonly {

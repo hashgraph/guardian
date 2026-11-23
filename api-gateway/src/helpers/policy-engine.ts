@@ -201,7 +201,7 @@ export class PolicyEngine extends NatsService {
         policyId: string,
         entries: any[],
         owner: IOwner
-    ): Promise<PolicyDTO> {
+    ): Promise<any> {
         return await this.sendMessage(PolicyEngineEvents.SAVE_POLICY_DOCUMENTATION, { policyId, entries, owner });
     }
 

@@ -2,7 +2,7 @@ import { CdkDragDrop, CdkDropList, moveItemInArray } from '@angular/cdk/drag-dro
 import { ChangeDetectorRef, Component, HostListener, Inject, OnInit, ViewChild } from '@angular/core';
 import { CodemirrorComponent } from '@ctrl/ngx-codemirror';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ContractType, IContract, LocationType, getPolicyDocumentationIssues, PolicyAvailability, PolicyCategoryType, PolicyStatus, Schema, SchemaHelper, TagType, Token, UserPermissions } from '@guardian/interfaces';
+import { ContractType, IContract, LocationType, getPolicyDocumentationIssues, isPolicyDocumentationEditable, PolicyAvailability, PolicyCategoryType, PolicyStatus, Schema, SchemaHelper, TagType, Token, UserPermissions } from '@guardian/interfaces';
 import * as yaml from 'js-yaml';
 import { DialogService } from 'primeng/dynamicdialog';
 import { forkJoin, Observable, of, Subject } from 'rxjs';
@@ -2136,7 +2136,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 root: this.policyTemplate,
                 entries: this.policyTemplate.policyDocumentation || [],
                 live: this.policyTemplate.status !== PolicyStatus.DRAFT,
-                readonly: this.policyTemplate.status === PolicyStatus.VIEW || !this.user.POLICIES_POLICY_UPDATE,
+                readonly: !isPolicyDocumentationEditable(this.policyTemplate) || !this.user.POLICIES_POLICY_UPDATE,
             },
         })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result: any) => {
@@ -2153,7 +2153,7 @@ export class PolicyConfigurationComponent implements OnInit {
             .pipe(takeUntil(this._destroy$))
             .subscribe((policy: any) => {
                 // the server generates the urls, take the saved entries
-                this.policyTemplate.setPolicyDocumentation(policy?.policyDocumentation ?? entries);
+                this.policyTemplate.setPolicyDocumentation(policy.policyDocumentation);
                 this.saveState();
                 this.loading = false;
             }, (e) => {

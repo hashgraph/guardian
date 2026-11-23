@@ -43,11 +43,6 @@ export class PolicyValidator {
      */
     private readonly warnings: string[];
     /**
-     * API documentation entries
-     * @private
-     */
-    private readonly policyDocumentation: any[];
-    /**
      * Permissions
      * @private
      */
@@ -110,7 +105,6 @@ export class PolicyValidator {
         this.tags = new Map();
         this.errors = [];
         this.warnings = [];
-        this.policyDocumentation = policy.policyDocumentation || [];
         this.permissions = ['NO_ROLE', 'ANY_ROLE', 'OWNER'];
         this.topicId = policy.topicId;
         this.policyTokens = policy.policyTokens || [];
@@ -143,7 +137,7 @@ export class PolicyValidator {
             await this.registerBlock(policy.config);
 
             // Broken API aliases do not block publishing, they only warn
-            for (const issue of getPolicyDocumentationIssues(policy.config, this.policyDocumentation)) {
+            for (const issue of getPolicyDocumentationIssues(policy.config, policy.policyDocumentation)) {
                 this.warnings.push(issue.message);
             }
 

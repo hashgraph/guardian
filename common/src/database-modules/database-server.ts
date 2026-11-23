@@ -5505,13 +5505,15 @@ export class DatabaseServer extends AbstractDatabaseServer {
 
     /**
      * Update only the policy documentation entries
-     * @param policyId
+     * Writes the single field, so the policy files (config, hash map) are not read or uploaded again
+     * @param policy
      * @param policyDocumentation
      */
-    public static async updatePolicyDocumentation(policyId: string, policyDocumentation: any[]): Promise<Policy> {
-        const model = await new DataBaseHelper(Policy).findOne(policyId);
-        model.policyDocumentation = policyDocumentation;
-        return await new DataBaseHelper(Policy).save(model);
+    public static async updatePolicyDocumentation(policy: Policy, policyDocumentation: any[]): Promise<void> {
+        await new DataBaseHelper(Policy).updateManyRaw(
+            { _id: policy._id },
+            { $set: { policyDocumentation, updateDate: new Date() } }
+        );
     }
 
     /**
