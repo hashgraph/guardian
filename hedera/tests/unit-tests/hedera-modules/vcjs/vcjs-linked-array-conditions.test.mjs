@@ -324,3 +324,23 @@ describe('VCJS treats a trigger field hidden by its own entry condition as empty
         assert.deepEqual(conditionErrors(result), ['/section/targets/0/reference']);
     });
 });
+
+describe('VCJS keeps verifying when the linked conditions cannot be read', () => {
+    it('falls back to the length and schema checks', async () => {
+        const vcjs = new VCJS();
+        const document = hiddenTriggerSchema();
+        vcjs.schemaLoader = async () => document;
+        const original = vcjs.readLinkedConditions;
+        vcjs.readLinkedConditions = (source, parse) => original.call(vcjs, source, () => { throw new Error('unreadable'); });
+        const ctx = (type) => ({ '@context': ['schema:x'], type });
+        const result = await vcjs.verifySubject({
+            ...ctx('Root'),
+            section: {
+                ...ctx('Section'),
+                sources: [{ ...ctx('Source'), mode: 'advanced', kind: 'other' }],
+                targets: [{ ...ctx('Target') }]
+            }
+        });
+        assert.ok(!(result.error?.details || []).some(error => error.keyword === 'arrayGroupCondition'));
+    });
+});

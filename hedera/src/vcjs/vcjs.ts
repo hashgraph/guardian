@@ -318,9 +318,7 @@ export class VCJS {
 
         // prepareSchema/coerceConditionConsts rewrite the document in place; the loader may
         // hand back a cached instance shared with other callers, so validate against a copy.
-        const text = JSON.stringify(loadedSchema);
-        const schema = JSON.parse(text);
-        const linkedSource = text.includes('arrayDependencies') ? JSON.parse(text) : null;
+        const { schema, linkedSource } = this.copySchema(loadedSchema);
 
         const ajv = new Ajv({
             loadSchema: this.loadSchema
@@ -848,9 +846,7 @@ export class VCJS {
 
         // prepareSchema/coerceConditionConsts rewrite the document in place; the loader may
         // hand back a cached instance shared with other callers, so validate against a copy.
-        const text = JSON.stringify(loadedSchema);
-        const schema = JSON.parse(text);
-        const linkedSource = text.includes('arrayDependencies') ? JSON.parse(text) : null;
+        const { schema, linkedSource } = this.copySchema(loadedSchema);
 
         const ajv = new Ajv({
             loadSchema: this.loadSchema
@@ -968,6 +964,19 @@ export class VCJS {
     }
 
     /**
+     * Copies a loaded schema for validation
+     * @param loadedSchema loaded schema
+     * @returns the copy to validate and a second untouched copy, null when the schema has no repeatable links
+     */
+    private copySchema(loadedSchema: any): { schema: any, linkedSource: any } {
+        const text = JSON.stringify(loadedSchema);
+        return {
+            schema: JSON.parse(text),
+            linkedSource: text.includes('arrayDependencies') ? JSON.parse(text) : null
+        };
+    }
+
+    /**
      * Conditions of a schema that has repeatable links
      * @param source untouched copy of the loaded schema, null when it has no links
      * @param parse parser matching the schema kind
@@ -976,9 +985,13 @@ export class VCJS {
         if (!source) {
             return [];
         }
-        this.coerceConditionConsts(source);
-        const parsed = parse(source);
-        return collectConditionsFromRoot(parsed?.conditions || [], parsed?.fields || []);
+        try {
+            this.coerceConditionConsts(source);
+            const parsed = parse(source);
+            return collectConditionsFromRoot(parsed?.conditions || [], parsed?.fields || []);
+        } catch (error) {
+            return [];
+        }
     }
 
     /**

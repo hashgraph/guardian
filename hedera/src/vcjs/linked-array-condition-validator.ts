@@ -103,7 +103,7 @@ function withPrefix(condition: SchemaCondition, prefix: string[]): SchemaConditi
         : Array.isArray(ifCondition?.OR) ? { OR: ifCondition.OR.map(predicate) }
             : predicate(ifCondition);
     const target = (item: SchemaConditionTarget): SchemaConditionTarget =>
-        ({ ...item, fieldPath: [...prefix, ...item.fieldPath] });
+        item?.fieldPath ? { ...item, fieldPath: [...prefix, ...item.fieldPath] } : item;
     return {
         ...condition,
         ifCondition: shifted,

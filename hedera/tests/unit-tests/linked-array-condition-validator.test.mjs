@@ -178,6 +178,13 @@ describe('collectConditionsFromRoot', () => {
         assert.deepEqual(many.ifCondition.AND.map(item => item.fieldPath), [['section', 'sources', 'kind'], ['section', 'kind']]);
     });
 
+    it('leaves a target without a path as it is', () => {
+        const bare = { ...inner, thenTargets: [{ field: { name: 'reference' } }] };
+        const nested = { name: 'section', isRef: true, isArray: false, conditions: [bare], fields: [] };
+        const [shifted] = collectConditionsFromRoot([], [nested]);
+        assert.deepEqual(shifted.thenTargets, [{ field: { name: 'reference' } }]);
+    });
+
     it('walks nested sub-schemas and skips repeatable ones', () => {
         const outer = { name: 'outer', isRef: true, isArray: false, conditions: [], fields: [section] };
         const repeatable = { ...section, name: 'rows', isArray: true };
