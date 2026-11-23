@@ -177,3 +177,30 @@ describe('@unit ToolValidator', () => {
         }
     });
 });
+
+describe('PolicyValidator: API documentation warnings', () => {
+    const docEntry = (target, alias) => ({ name: 'n', description: '', target, method: 'POST', alias, url: '', dmrvUrl: '' });
+    const run = async (entries) => {
+        const policy = { ...policyWithBlocks(), policyDocumentation: entries };
+        const validator = new PolicyValidator(policy);
+        await validator.build(policy);
+        await validator.validate();
+        return validator.getSerializedErrors();
+    };
+
+    it('warns, without invalidating the policy, about an alias whose block no longer exists', async () => {
+        const base = await run([]);
+        const result = await run([docEntry('removed_block', 'monitoring/create')]);
+        assert.ok(result.warnings.some((w) => /monitoring\/create/.test(w) && /removed_block/.test(w)));
+        assert.equal(result.isValid, base.isValid);
+        assert.deepEqual(result.errors, base.errors);
+    });
+
+    it('adds no warning for an alias that points to an existing block', async () => {
+        const policy = policyWithBlocks();
+        const tag = policy.config.children.find((c) => c.tag)?.tag;
+        assert.ok(tag, 'fixture has a tagged child');
+        const result = await run([docEntry(tag, 'create')]);
+        assert.ok(!result.warnings.some((w) => /API alias/.test(w)));
+    });
+});

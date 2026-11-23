@@ -68,6 +68,7 @@ import {
     PoliciesValidationDTO,
     PolicyCategoryDTO,
     PolicyDTO,
+    PolicyDocumentationDTO,
     PolicyImportantParametersDTO,
     BasePolicyDTO,
     PolicyPreviewDTO,
@@ -1685,6 +1686,51 @@ export class PolicyApi {
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
             return await engineService.savePolicy(model, new EntityOwner(user), policyId);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Updates policy API documentation
+     */
+    @Put('/:policyId/documentation')
+    @Auth(
+        Permissions.POLICIES_POLICY_UPDATE,
+    )
+    @ApiOperation({
+        summary: 'Updates policy API documentation.',
+        description: 'Updates only the API documentation entries of the policy. Unlike the policy update, it is also allowed for published, discontinued and dry-run policies; remote policies cannot be changed.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiBody({
+        description: 'API documentation entries.',
+        type: PolicyDocumentationDTO,
+    })
+    @ApiOkResponse({
+        description: 'Saved documentation: policy id, status and the entries with generated URLs.',
+        type: Object,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(PolicyDocumentationDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async updatePolicyDocumentation(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() body: PolicyDocumentationDTO,
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.savePolicyDocumentation(policyId, body.entries, new EntityOwner(user));
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

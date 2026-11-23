@@ -188,3 +188,20 @@
     gap: 16px;
     margin-right: auto;
 }
+
+.info-banner {
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  background: var(--guardian-grey-background);
+}
+
+.warn-banner {
+  background: var(--guardian-warning-background);
+}
+
+.entries-container.readonly {
+  pointer-events: none;
+  opacity: 0.8;
+}

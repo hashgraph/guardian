@@ -310,6 +310,10 @@ export class PolicyEngineService {
         return this.http.get<any[]>(`${this.url}/${policyId}/about`);
     }
 
+    public updatePolicyDocumentation(policyId: string, entries: any[]): Observable<any> {
+        return this.http.put<any>(`${this.url}/${policyId}/documentation`, { entries });
+    }
+
     public getVirtualUsers(policyId: string, savepointIds: string[] | null): Observable<any[]> {
         let params = new HttpParams();
 

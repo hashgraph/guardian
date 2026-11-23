@@ -724,6 +724,8 @@ export class PolicyImportExport {
         delete components.policy.locationType;
         delete components.policy.originalMessageId;
         delete components.policy.policyNavigation;
+        // API documentation is off-chain gateway metadata and may be edited after publish
+        delete components.policy.policyDocumentation;
 
         PolicyImportExport.removeField(components.policy, 'id');
         PolicyImportExport.removeField(components, 'guardianVersion');

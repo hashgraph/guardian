@@ -62,8 +62,7 @@ import {
     MigrationRunStatus,
     MintTransactionStatus,
     TokenType,
-    IPolicyDocumentationEntry,
-    POLICY_ALIAS_REGEX
+    IPolicyDocumentationEntry
 } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 import { NatsConnection } from 'nats';
@@ -86,35 +85,8 @@ import { getFormulaWarnings } from '../helpers/import-helpers/schema/schema-form
 import { PolicyCommentsUtils } from './policy-comments-utils.js';
 import { getRemoteRequestDocument, getRemoteRequests, getRemoteRequestsCount } from './helpers/remote-requests.js';
 import { PersistStepPayload, RecordPersistService } from './helpers/record-persist.service.js';
-
-/**
- * Build technical and DMRV URLs for user-configured documentation entries.
- * Called on policy save to enrich entries with generated URLs.
- */
-function buildDocumentationUrls(
-    policyId: string,
-    entries: IPolicyDocumentationEntry[]
-): IPolicyDocumentationEntry[] {
-    if (!Array.isArray(entries)) {
-        return [];
-    }
-    return entries.map((entry) => {
-        const tag = entry.target;
-        const alias = entry.alias;
-        if (!alias || !POLICY_ALIAS_REGEX.test(alias)) {
-            throw new Error(
-                `Invalid alias "${alias}" — only lowercase letters, digits, hyphens; segments separated by '/'.`
-            );
-        }
-        const technicalUrl = `/api/v1/policies/${policyId}/tag/${tag}/blocks`;
-        const dmrvUrl = `/api/v1/dmrv/${policyId}/${alias}`;
-        return {
-            ...entry,
-            url: technicalUrl,
-            dmrvUrl,
-        };
-    });
-}
+import { buildDocumentationUrls } from './helpers/build-documentation-urls.js';
+import { preparePolicyDocumentation } from './helpers/prepare-policy-documentation.js';
 
 /**
  * PolicyEngineChannel
@@ -1571,6 +1543,28 @@ export class PolicyEngineService {
                         }
                     }
                     return new MessageResponse(result);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.SAVE_POLICY_DOCUMENTATION,
+            async (msg: { policyId: string, entries: IPolicyDocumentationEntry[], owner: IOwner }): Promise<IMessageResponse<any>> => {
+                try {
+                    const { policyId, entries, owner } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, owner, 'update');
+
+                    const prepared = preparePolicyDocumentation(policy, entries);
+                    await DatabaseServer.updatePolicyDocumentation(policy, prepared);
+
+                    await logger.info(
+                        `Policy documentation updated (${prepared.length} entries, status ${policy.status})`,
+                        ['GUARDIAN_SERVICE'],
+                        owner?.id
+                    );
+                    return new MessageResponse({ id: policy.id, status: policy.status, policyDocumentation: prepared });
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                     return new MessageError(error);

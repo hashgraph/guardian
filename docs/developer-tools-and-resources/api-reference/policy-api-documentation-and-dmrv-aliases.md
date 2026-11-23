@@ -14,8 +14,8 @@ Policy authors can define clean, human-readable API endpoint aliases for their p
 
 ### 1.1. Open the Configuration Dialog
 
-1. Open any policy in **Draft** status in the Policy Configurator.
-2. Click the **API** button in the top toolbar.
+1. Open the policy in the Policy Configurator. The documentation can be edited in any status except for remote (view-only) policies, including after the policy is published.
+2. Open the **⋯** menu in the top toolbar and select **API Documentation**.
 
 <figure><img src="../../.gitbook/assets/image (5) (1).png" alt=""><figcaption></figcaption></figure>
 
@@ -55,10 +55,19 @@ Errors appear below the corresponding row.
 
 ### 1.5. Save
 
-1. Click **Save** in the modal to apply changes locally.
-2. Click **Save** in the toolbar to persist the policy to the database.
+Click **Save** in the modal. The entries are saved immediately and only the API documentation of the policy changes: the policy configuration is not touched, and a published policy does not have to be republished. The new aliases work as soon as the dialog closes.
 
-> **Note:** URL generation (both technical and DMRV) happens server-side on policy save.
+> **Note:** URL generation (both technical and DMRV) happens server-side on save.
+
+For a published, discontinued or dry-run policy the following also applies:
+
+* Each **Block** must exist in the policy configuration.
+* Renaming or removing an alias breaks external systems that still call it. The dialog shows a warning about this.
+* The API documentation is not part of the policy hash, so changing it does not make a published policy differ from its published version.
+
+### 1.6. Broken aliases
+
+If a block that has an alias is removed from a draft policy, or its tag or type changes, the alias is no longer accessible. Guardian warns about this in three places: a notification after **Save**, the result of **Validate**, and the **API Documentation** dialog, which marks the affected rows. The warnings do not block publishing; remove the alias or select another block to resolve them.
 
 ***
 

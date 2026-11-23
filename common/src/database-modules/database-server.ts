@@ -5504,6 +5504,19 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
+     * Update only the policy documentation entries
+     * Writes the single field, so the policy files (config, hash map) are not read or uploaded again
+     * @param policy
+     * @param policyDocumentation
+     */
+    public static async updatePolicyDocumentation(policy: Policy, policyDocumentation: any[]): Promise<void> {
+        await new DataBaseHelper(Policy).updateManyRaw(
+            { _id: policy._id },
+            { $set: { policyDocumentation, updateDate: new Date() } }
+        );
+    }
+
+    /**
      * Get policy tests
      * @param test
      *

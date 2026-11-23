@@ -178,6 +178,8 @@ const API = {
     Savepoint: 'savepoints/',
     SavepointDelete: 'savepoints/delete',
     PolicyDocumentation: (policyId) => `${API.ApiServer}policies/${policyId}/about`,
+    PolicyDocumentationUpdate: (policyId) => `${API.ApiServer}policies/${policyId}/documentation`,
+    DmrvByAlias: (policyId, alias) => `${API.ApiServer}dmrv/${policyId}/${alias}`,
     BlockByTag: (policyId, tag) => `${API.ApiServer}policies/${policyId}/tag/${tag}/blocks`,
 
     //Records
