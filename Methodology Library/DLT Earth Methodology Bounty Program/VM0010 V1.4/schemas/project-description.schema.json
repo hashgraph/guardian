@@ -1,0 +1,299 @@
+{
+    "name": "VM0010 Project Description",
+    "description": "Slice-scoped VM0010 v1.4 project description. Carries the IFM baseline activity and the fossil fuel inputs required by the C_FUEL slice (Section 8.1.4, Appendix 2).",
+    "entity": "VC",
+    "system": false,
+    "sourceVersion": "1.0.0",
+    "document": {
+        "$id": "#project-description",
+        "title": "VM0010 Project Description",
+        "type": "object",
+        "required": ["@context", "type", "credentialSubject"],
+        "properties": {
+            "@context": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "type": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "credentialSubject": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "$ref": "#vm0010-project-description-subject" }
+            }
+        },
+        "defs": {
+            "vm0010-project-description-subject": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "projectName",
+                    "monitoringYear",
+                    "baselineActivity",
+                    "fuelInputs",
+                    "infrastructureBiomass",
+                    "residualStandDamage",
+                    "woodProducts",
+                    "deadWood",
+                    "strata"
+                ],
+                "properties": {
+                    "id": { "type": "string", "title": "Project ID", "minLength": 1 },
+                    "projectName": { "type": "string", "title": "Project Name", "minLength": 1 },
+                    "projectDescription": { "type": "string", "title": "Project Description" },
+                    "website": { "type": "string", "title": "Website" },
+                    "projectStartDate": { "type": "string", "title": "Project Start Date" },
+                    "creditPeriodStart": { "type": "string", "title": "Crediting Period Start" },
+                    "creditPeriodEnd": { "type": "string", "title": "Crediting Period End" },
+                    "projectProponents": {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "title": "Project Proponents"
+                    },
+                    "projectProponentsWithDetails": {
+                        "type": "array",
+                        "items": { "type": "object" },
+                        "title": "Project Proponents With Details"
+                    },
+                    "locations": {
+                        "type": "array",
+                        "items": { "type": "object" },
+                        "title": "Project Locations"
+                    },
+                    "standardTemplate": { "type": "string", "title": "Standard Template" },
+                    "standardTemplateName": { "type": "string", "title": "Standard Template Name" },
+                    "methodologyTemplateTitle": { "type": "string", "title": "Methodology Template Title" },
+                    "methodologyTemplate": { "type": "string", "title": "Methodology Template" },
+                    "vcsProjectValidatorId": { "type": "string", "title": "VCS Project Validator ID" },
+                    "ccbProjectValidatorId": { "type": "string", "title": "CCB Project Validator ID" },
+                    "ccbStandardName": { "type": "string", "title": "CCB Standard Name" },
+                    "ccbDistinctions": {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "title": "CCB Distinctions"
+                    },
+                    "monitoringYear": {
+                        "type": "integer",
+                        "title": "Monitoring Year",
+                        "minimum": 1900,
+                        "maximum": 2200
+                    },
+                    "baselineActivity": {
+                        "type": "array",
+                        "title": "Baseline Activity",
+                        "minItems": 1,
+                        "items": {
+                            "type": "object",
+                            "required": ["stratum", "harvestType"],
+                            "properties": {
+                                "stratum": { "type": "string", "title": "Stratum", "minLength": 1 },
+                                "harvestType": {
+                                    "type": "string",
+                                    "title": "Harvest Type",
+                                    "minLength": 1
+                                }
+                            }
+                        }
+                    },
+                    "fuelInputs": {
+                        "type": "array",
+                        "title": "Fossil Fuel Inputs",
+                        "minItems": 1,
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "fuelType",
+                                "source",
+                                "ipccEmissionFactor",
+                                "heatingValue",
+                                "density",
+                                "consumptionKl"
+                            ],
+                            "properties": {
+                                "fuelType": { "type": "string", "title": "Fuel Type", "minLength": 1 },
+                                "source": {
+                                    "type": "string",
+                                    "title": "Emission Source",
+                                    "enum": ["E_HARVEST", "E_HAULING", "E_TRANSPORT", "E_PROCESSING"]
+                                },
+                                "ipccEmissionFactor": {
+                                    "type": "number",
+                                    "title": "IPCC Fuel Emission Factor (kg GHG/TJ)",
+                                    "minimum": 0
+                                },
+                                "heatingValue": {
+                                    "type": "number",
+                                    "title": "Heating Value (TJ/kg)",
+                                    "exclusiveMinimum": 0
+                                },
+                                "density": {
+                                    "type": "number",
+                                    "title": "Fuel Density (kg/kL)",
+                                    "exclusiveMinimum": 0
+                                },
+                                "consumptionKl": {
+                                    "type": "number",
+                                    "title": "Fuel Consumption (kL)",
+                                    "minimum": 0
+                                }
+                            }
+                        }
+                    },
+                    "infrastructureBiomass": {
+                        "type": "array",
+                        "title": "Forestry Infrastructure Biomass Inputs (Section 8.1.2, Equation 7)",
+                        "minItems": 1,
+                        "items": {
+                            "type": "object",
+                            "required": ["species", "stratum", "vNotExInfJiBsl", "bcefR", "cfJ"],
+                            "properties": {
+                                "species": { "type": "integer", "title": "j (Tree Species)", "minimum": 1, "maximum": 3 },
+                                "stratum": { "type": "integer", "title": "i (Stratum)", "minimum": 1, "maximum": 3 },
+                                "vNotExInfJiBsl": {
+                                    "type": "number",
+                                    "title": "V_notEX,INF,j,i|BSL (m3/ha)",
+                                    "minimum": 0
+                                },
+                                "bcefR": {
+                                    "type": "number",
+                                    "title": "BCEF_R (t.d.m/m3)",
+                                    "description": "Biomass conversion and expansion factor applicable to wood removals in the project area, per Equation (7) p. 23. Positive multiplier; not capped at 1.",
+                                    "exclusiveMinimum": 0
+                                },
+                                "cfJ": {
+                                    "type": "number",
+                                    "title": "CF_j (tC/t.d.m)",
+                                    "exclusiveMinimum": 0,
+                                    "maximum": 1
+                                }
+                            }
+                        }
+                    },
+                    "residualStandDamage": {
+                        "type": "array",
+                        "title": "Residual Stand Damage Inputs (Section 8.1.2, Equation 6)",
+                        "description": "C_EX is expected to carry the Section 8.1.1 Equation (4) result for the same species j and stratum i.",
+                        "minItems": 1,
+                        "items": {
+                            "type": "object",
+                            "required": ["species", "stratum", "cExJiBsl", "fRsdBsl"],
+                            "properties": {
+                                "species": { "type": "integer", "title": "j (Tree Species)", "minimum": 1, "maximum": 3 },
+                                "stratum": { "type": "integer", "title": "i (Stratum)", "minimum": 1, "maximum": 3 },
+                                "cExJiBsl": { "type": "number", "title": "C_EX,j,i|BSL (tC/ha)", "minimum": 0 },
+                                "fRsdBsl": {
+                                    "type": "number",
+                                    "title": "F_RSD|BSL",
+                                    "description": "Project-specific, per Section 9.1 p.56. Deliberately not capped at 1: every tabulated value exceeds 1.",
+                                    "minimum": 0
+                                }
+                            }
+                        }
+                    },
+                    "woodProducts": {
+                        "type": "array",
+                        "title": "Wood Products Inputs (Section 8.1.3, Equation 11)",
+                        "description": "C_WP is expected to carry the Section 8.1.3 Equation (10) result, which is not implemented in this slice. OF_k defaults are tabulated in Section 9.1, p.69.",
+                        "minItems": 1,
+                        "items": {
+                            "type": "object",
+                            "required": ["stratum", "parcel", "cWpJiBsl", "classes"],
+                            "properties": {
+                                "stratum": { "type": "integer", "title": "i (Stratum)", "minimum": 1, "maximum": 3 },
+                                "parcel": { "type": "integer", "title": "p (Land Parcel)", "minimum": 1 },
+                                "cWpJiBsl": {
+                                    "type": "number",
+                                    "title": "C_WP,i|BSL (tC/ha)",
+                                    "description": "Input. Derived by Equation (10), not implemented in this slice.",
+                                    "minimum": 0
+                                },
+                                "classes": {
+                                    "type": "array",
+                                    "title": "Wood Product Classes (k) and OF_k",
+                                    "minItems": 1,
+                                    "items": {
+                                        "type": "object",
+                                        "required": ["productClass", "ofK"],
+                                        "properties": {
+                                            "productClass": {
+                                                "type": "string",
+                                                "title": "k (Wood Product Class)",
+                                                "enum": [
+                                                    "sawnwood",
+                                                    "woodbasePanels",
+                                                    "otherIndustrialRoundwood",
+                                                    "paperAndPaperboard"
+                                                ]
+                                            },
+                                            "ofK": {
+                                                "type": "number",
+                                                "title": "OF_k (dimensionless)",
+                                                "minimum": 0,
+                                                "maximum": 1
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "deadWood": {
+                        "type": "array",
+                        "title": "Dead Wood (Logging Slash) Inputs (Section 8.1.2, Equation 5)",
+                        "description": "C_HB and C_EX are expected to carry the Section 8.1.1 Equation (3) and (4) results. C_RSD is expected to carry the Equation (6) result, which is not implemented in this slice.",
+                        "minItems": 1,
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "species",
+                                "stratum",
+                                "parcel",
+                                "cHbJiBsl",
+                                "cExJiBsl",
+                                "cRsdJiBsl",
+                                "cNotHbInfJiBsl"
+                            ],
+                            "properties": {
+                                "species": { "type": "integer", "title": "j (Tree Species)", "minimum": 1, "maximum": 3 },
+                                "stratum": { "type": "integer", "title": "i (Stratum)", "minimum": 1, "maximum": 3 },
+                                "parcel": { "type": "integer", "title": "p (Land Parcel)", "minimum": 1 },
+                                "cHbJiBsl": { "type": "number", "title": "C_HB,j,i|BSL (tC/ha)", "minimum": 0 },
+                                "cExJiBsl": { "type": "number", "title": "C_EX,j,i|BSL (tC/ha)", "minimum": 0 },
+                                "cRsdJiBsl": { "type": "number", "title": "C_RSD,j,i|BSL (tC/ha)", "minimum": 0 },
+                                "cNotHbInfJiBsl": { "type": "number", "title": "C_notHB,INF,j,i|BSL (tC/ha)", "minimum": 0 }
+                            }
+                        }
+                    },
+                    "strata": {
+                        "type": "array",
+                        "title": "Stratum and Species Inputs (Section 8.1.1, Equations 3 and 4)",
+                        "minItems": 1,
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "species",
+                                "stratum",
+                                "vExJiBsl",
+                                "vExInfJiBsl",
+                                "bcefR",
+                                "dJ",
+                                "cfJ"
+                            ],
+                            "properties": {
+                                "species": { "type": "integer", "title": "j (Tree Species)", "minimum": 1, "maximum": 3 },
+                                "stratum": { "type": "integer", "title": "i (Stratum)", "minimum": 1, "maximum": 3 },
+                                "vExJiBsl": { "type": "number", "title": "V_EX,j,i|BSL (m3/ha)", "minimum": 0 },
+                                "vExInfJiBsl": { "type": "number", "title": "V_EX,INF,j,i|BSL (m3/ha)", "minimum": 0 },
+                                "bcefR": { "type": "number", "title": "BCEF_R (t.d.m/m3)", "exclusiveMinimum": 0 },
+                                "dJ": { "type": "number", "title": "D_j (t.d.m/m3)", "exclusiveMinimum": 0 },
+                                "cfJ": {
+                                    "type": "number",
+                                    "title": "CF_j (tC/t.d.m)",
+                                    "description": "Carbon fraction. Capped at 1 as a sanity bound; this cap is not quoted from the methodology.",
+                                    "exclusiveMinimum": 0,
+                                    "maximum": 1
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
