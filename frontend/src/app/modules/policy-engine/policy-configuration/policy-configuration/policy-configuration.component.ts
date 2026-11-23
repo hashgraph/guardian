@@ -2136,7 +2136,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 root: this.policyTemplate,
                 entries: this.policyTemplate.policyDocumentation || [],
                 live: this.policyTemplate.status !== PolicyStatus.DRAFT,
-                readonly: !isPolicyDocumentationEditable(this.policyTemplate) || !this.user.POLICIES_POLICY_UPDATE,
+                readonly: !isPolicyDocumentationEditable(this.policy) || !this.user.POLICIES_POLICY_UPDATE,
             },
         })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result: any) => {
