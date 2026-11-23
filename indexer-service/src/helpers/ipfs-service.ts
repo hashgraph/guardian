@@ -1,4 +1,5 @@
 import { CustomError } from '@indexer/common';
+import { readHeliaFile, useHeliaReader } from '@indexer/common/ipfs';
 import axios from 'axios';
 import CID from 'cids';
 
@@ -22,6 +23,9 @@ export class IPFSService {
 
     public static async get(cid: string, timeout: number): Promise<Buffer> {
         try {
+            if (useHeliaReader()) {
+                return await readHeliaFile(cid, timeout);
+            }
             const items = await axios.get(
                 process.env.IPFS_GATEWAY
                     ?.replace('${cid}', cid)
@@ -34,7 +38,7 @@ export class IPFSService {
             );
             return items.data;
         } catch (error) {
-            throw new CustomError(String(error), error.response?.status)
+            throw new CustomError(String(error), error instanceof CustomError ? error.code : error.response?.status)
         }
     }
 

@@ -3,15 +3,15 @@ import CID from 'cids';
 import { BaseNode, CheckFileResponse } from './base-node.js';
 
 export class HttpNode implements BaseNode {
-    private readonly LOAD_TIMEOUT: number = 60 * 1000;
+    protected readonly LOAD_TIMEOUT: number = 60 * 1000;
     private readonly CHECK_TIMEOUT: number = 15 * 1000;
 
-    private parseCID(cid: string): string {
+    protected parseCID(cid: string): string {
         return new CID(cid).toV1().toString('base32');
     }
 
-    public async start() {
-        if (!process.env.IPFS_GATEWAY) {
+    public async start(requireGateway = true) {
+        if (requireGateway && !process.env.IPFS_GATEWAY) {
             console.error('IPFS_GATEWAY not configured');
         }
         if (!process.env.IPFS_CHECK_GATEWAY) {

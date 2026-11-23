@@ -1,5 +1,7 @@
 import { BaseNode } from './ipfs/base-node.js';
 import { HttpNode } from './ipfs/http-node.js';
+import { HeliaNode } from './ipfs/helia-node.js';
+import { useHeliaReader } from '@indexer/common/ipfs';
 // import { IPFSNode } from './ipfs/ipfs-node.js'
 // import { HeliaNode } from './ipfs/helia-node.js'
 // import { KudoNode } from './ipfs/kudo-node.js';
@@ -11,7 +13,7 @@ export class IPFSService {
     public static node: BaseNode;
 
     public static async init() {
-        IPFSService.node = new HttpNode();
+        IPFSService.node = useHeliaReader() ? new HeliaNode() : new HttpNode();
         await IPFSService.node.start();
     }
 
