@@ -24,6 +24,10 @@ export class PolicyApiConfigDialogComponent {
     ];
     public validationErrors: Map<number, string> = new Map();
     public isLargeSize = true;
+    // The policy is already fixed (not a draft): changes are saved at once and affect live API callers
+    public live = false;
+    // The entries cannot be changed (remote policy or no permission)
+    public readonly = false;
 
     // Block types whose APIs should not be exposed externally: excluded from the
     // target dropdown and "Add all", and flagged invalid if present in imported
@@ -74,6 +78,10 @@ export class PolicyApiConfigDialogComponent {
         );
         const existing: IPolicyDocumentationEntry[] = this.config.data?.entries ?? [];
         this.entries = existing.map((e) => ({ ...e }));
+        this.live = !!this.config.data?.live;
+        this.readonly = !!this.config.data?.readonly;
+        // show entries that are already broken (e.g. the block was removed) as soon as the dialog opens
+        this.revalidate();
     }
 
     addEntry(): void {
@@ -246,6 +254,9 @@ export class PolicyApiConfigDialogComponent {
         if (!POLICY_ALIAS_REGEX.test(entry.alias)) {
             return "Alias: lowercase letters, digits, hyphens; use '/' to separate path segments";
         }
+        if (!block) {
+            return 'Block no longer exists in the policy. This endpoint is not accessible anymore, select another block or remove it';
+        }
         if (block && this.isSkippedBlock(block)) {
             return 'Selected block cannot be exposed via API';
         }
@@ -347,6 +358,9 @@ export class PolicyApiConfigDialogComponent {
     }
 
     onSave(): void {
+        if (this.readonly) {
+            return;
+        }
         this.revalidate();
         if (this.validationErrors.size > 0) {
             return;

@@ -5504,6 +5504,17 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
+     * Update only the policy documentation entries
+     * @param policyId
+     * @param policyDocumentation
+     */
+    public static async updatePolicyDocumentation(policyId: string, policyDocumentation: any[]): Promise<Policy> {
+        const model = await new DataBaseHelper(Policy).findOne(policyId);
+        model.policyDocumentation = policyDocumentation;
+        return await new DataBaseHelper(Policy).save(model);
+    }
+
+    /**
      * Get policy tests
      * @param test
      *

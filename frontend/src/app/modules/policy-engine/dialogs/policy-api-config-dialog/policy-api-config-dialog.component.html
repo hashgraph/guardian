@@ -20,7 +20,14 @@
 </div>
 
 <div class="dialog-body">
-  <div class="entries-container">
+  @if (readonly) {
+    <div class="info-banner">These API aliases are read-only for this policy.</div>
+  } @else if (live) {
+    <div class="info-banner warn-banner">
+      Changes are saved immediately and apply to external callers right away. Renaming or removing an alias breaks integrations that still use it.
+    </div>
+  }
+  <div class="entries-container" [class.readonly]="readonly">
     @if (entries.length === 0) {
       <div class="empty-state">
         No API endpoints configured. Click "Add Endpoint" to get started.
@@ -113,19 +120,23 @@
 
 <div class="dialog-footer">
   <div class="footer-left">
+    @if (!readonly) {
     <button class="guardian-button guardian-button-primary" (click)="addEntry()">
       Add Endpoint
     </button>
     <button class="guardian-button guardian-button-secondary" (click)="addAllEntries()">
       Add All Endpoints
     </button>
+    }
   </div>
   <div class="action-buttons">
     <div class="cancel-button dialog-button">
       <button (click)="onClose()" class="guardian-button guardian-button-secondary">Cancel</button>
     </div>
+    @if (!readonly) {
     <div class="confirm-button dialog-button">
       <button (click)="onSave()" class="guardian-button guardian-button-primary" [disabled]="validationErrors.size > 0 && entries.length > 0">Save</button>
     </div>
+    }
   </div>
 </div>

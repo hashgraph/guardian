@@ -1,6 +1,6 @@
 import { DatabaseServer } from '@guardian/common/database-modules/database-server';
 import { Policy } from '@guardian/common/entity/policy';
-import { ISchema, ModuleStatus, SchemaEntity, IgnoreRule, computeReachability, buildMessagesForValidator } from '@guardian/interfaces';
+import { ISchema, ModuleStatus, SchemaEntity, IgnoreRule, computeReachability, buildMessagesForValidator, getPolicyDocumentationIssues } from '@guardian/interfaces';
 import { BlockValidator } from './block-validator.js';
 import { ModuleValidator } from './module-validator.js';
 import { ISerializedErrors } from './interfaces/serialized-errors.interface.js';
@@ -37,6 +37,16 @@ export class PolicyValidator {
      * @private
      */
     private readonly errors: string[];
+    /**
+     * Common warnings
+     * @private
+     */
+    private readonly warnings: string[];
+    /**
+     * API documentation entries
+     * @private
+     */
+    private readonly policyDocumentation: any[];
     /**
      * Permissions
      * @private
@@ -99,6 +109,8 @@ export class PolicyValidator {
         this.tools = new Map();
         this.tags = new Map();
         this.errors = [];
+        this.warnings = [];
+        this.policyDocumentation = policy.policyDocumentation || [];
         this.permissions = ['NO_ROLE', 'ANY_ROLE', 'OWNER'];
         this.topicId = policy.topicId;
         this.policyTokens = policy.policyTokens || [];
@@ -129,6 +141,11 @@ export class PolicyValidator {
         } else {
             this.addPermissions(policy.policyRoles);
             await this.registerBlock(policy.config);
+
+            // Broken API aliases do not block publishing, they only warn
+            for (const issue of getPolicyDocumentationIssues(policy.config, this.policyDocumentation)) {
+                this.warnings.push(issue.message);
+            }
 
             const reachabilityPerBlock = this.getReachability();
 
@@ -341,7 +358,7 @@ export class PolicyValidator {
         const blocksErrors = [];
         const commonErrors = this.errors.slice();
 
-        const commonWarnings: string[] = [];
+        const commonWarnings: string[] = this.warnings.slice();
         const commonInfos: string[] = [];
 
         /**

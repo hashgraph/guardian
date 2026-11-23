@@ -2,7 +2,7 @@ import { CdkDragDrop, CdkDropList, moveItemInArray } from '@angular/cdk/drag-dro
 import { ChangeDetectorRef, Component, HostListener, Inject, OnInit, ViewChild } from '@angular/core';
 import { CodemirrorComponent } from '@ctrl/ngx-codemirror';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ContractType, IContract, LocationType, PolicyAvailability, PolicyCategoryType, PolicyStatus, Schema, SchemaHelper, TagType, Token, UserPermissions } from '@guardian/interfaces';
+import { ContractType, IContract, LocationType, getPolicyDocumentationIssues, PolicyAvailability, PolicyCategoryType, PolicyStatus, Schema, SchemaHelper, TagType, Token, UserPermissions } from '@guardian/interfaces';
 import * as yaml from 'js-yaml';
 import { DialogService } from 'primeng/dynamicdialog';
 import { forkJoin, Observable, of, Subject } from 'rxjs';
@@ -1362,6 +1362,7 @@ export class PolicyConfigurationComponent implements OnInit {
                         this.updatePolicyTemplate(policy);
 
                         this.remapCategories();
+                        this.warnBrokenDocumentation(policy);
                     } else {
                         this.policyTemplate = new PolicyTemplate();
                         this.policyTemplate.setTokens(this.tokens);
@@ -2134,14 +2135,44 @@ export class PolicyConfigurationComponent implements OnInit {
                 blocks: this.policyTemplate.allBlocks,
                 root: this.policyTemplate,
                 entries: this.policyTemplate.policyDocumentation || [],
+                live: this.policyTemplate.status !== PolicyStatus.DRAFT,
+                readonly: this.policyTemplate.status === PolicyStatus.VIEW || !this.user.POLICIES_POLICY_UPDATE,
             },
         })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result: any) => {
             if (Array.isArray(result)) {
-                this.policyTemplate.setPolicyDocumentation(result);
-                this.saveState();
+                this.savePolicyDocumentation(result);
             }
         });
+    }
+
+    private savePolicyDocumentation(entries: any[]) {
+        this.loading = true;
+        this.policyEngineService
+            .updatePolicyDocumentation(this.policyId, entries)
+            .pipe(takeUntil(this._destroy$))
+            .subscribe((policy: any) => {
+                // the server generates the urls, take the saved entries
+                this.policyTemplate.setPolicyDocumentation(policy?.policyDocumentation ?? entries);
+                this.saveState();
+                this.loading = false;
+            }, (e) => {
+                console.error(e.error);
+                this.toastService.error(e?.error?.message || 'Failed to save API documentation', 'API documentation');
+                this.loading = false;
+            });
+    }
+
+    private warnBrokenDocumentation(policy: any) {
+        const issues = getPolicyDocumentationIssues(policy?.config, policy?.policyDocumentation);
+        if (issues.length) {
+            this.toastService.warn(
+                `${issues.length} API alias(es) point to blocks that no longer exist or changed. Open API Documentation to fix them.\n` +
+                issues.map((issue) => issue.message).join('\n'),
+                'API documentation',
+                { sticky: true }
+            );
+        }
     }
 
     public saveAsPolicy() {
@@ -2217,6 +2248,7 @@ export class PolicyConfigurationComponent implements OnInit {
             policyTokens: json?.policyTokens,
             categories: json?.categories,
             config: json?.config,
+            policyDocumentation: json?.policyDocumentation,
             ignoreRules
         }
 

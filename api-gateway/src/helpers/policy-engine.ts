@@ -192,6 +192,20 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
+     * Save only the API documentation entries of a policy
+     * @param policyId
+     * @param entries
+     * @param owner
+     */
+    public async savePolicyDocumentation(
+        policyId: string,
+        entries: any[],
+        owner: IOwner
+    ): Promise<PolicyDTO> {
+        return await this.sendMessage(PolicyEngineEvents.SAVE_POLICY_DOCUMENTATION, { policyId, entries, owner });
+    }
+
+    /**
      * Publish policy
      * @param model
      * @param owner

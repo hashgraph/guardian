@@ -11,6 +11,7 @@ export * from './generate-document.js';
 export * from './sentinel-hub/index.js';
 export * from './permissions-helper.js';
 export * from './policy-helper.js';
+export * from './policy-documentation-helper.js';
 export * from './schema-json.js';
 export * from './policy-editable-field.js';
 export * from './geo-data/index.js';
