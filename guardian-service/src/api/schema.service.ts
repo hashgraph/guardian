@@ -23,6 +23,8 @@ import {
     ModuleStatus,
     Schema,
     SchemaCategory,
+    SchemaEntity,
+    DefaultFieldDictionary,
     SchemaField,
     SchemaHelper,
     SchemaNode,
@@ -119,11 +121,16 @@ function getFieldConfig(schemaConfig: ISchemaTemplateSchemaConfig, field: Schema
 }
 
 function isTemplateFieldLocked(schemaConfig: ISchemaTemplateSchemaConfig, field: SchemaField): boolean {
-    if (!field.templateFieldId) {
+    if (!field.templateFieldId || FIELD_LOCK_IGNORED_NAMES.has(field.name)) {
         return false;
     }
     return getFieldConfig(schemaConfig, field)?.locked !== false;
 }
+
+// System fields (DefaultFieldDictionary) are owned by the schema editor, which rebuilds them on every save, so they are never template-locked.
+const FIELD_LOCK_IGNORED_NAMES = new Set(
+    DefaultFieldDictionary.getDefaultFields(SchemaEntity.VC).map((field: SchemaField) => field.name)
+);
 
 const FIELD_HASH_IGNORED_KEYS = new Set(['path', 'fullPath', 'fullType', 'arrayLvl', 'errors', 'order', 'conditionUserOrdered']);
 
