@@ -3089,61 +3089,61 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scalar/client-side-rendering@npm:0.4.19":
-  version: 0.4.19
-  resolution: "@scalar/client-side-rendering@npm:0.4.19"
+"@scalar/client-side-rendering@npm:0.4.22":
+  version: 0.4.22
+  resolution: "@scalar/client-side-rendering@npm:0.4.22"
   dependencies:
-    "@scalar/helpers": "npm:0.18.0"
-    "@scalar/schemas": "npm:0.17.1"
-    "@scalar/types": "npm:0.28.1"
-    "@scalar/validation": "npm:0.6.7"
-  checksum: 10c0/0f0c3d6f7907b61183f6c2308b7ce17a0b970618046552f4b47e8b4abd661d3b092ffd03b7d3fb636c1cd25df83768eb43dd1af7e6a9aaac3891a5d95a17f97e
+    "@scalar/helpers": "npm:0.19.0"
+    "@scalar/schemas": "npm:0.19.0"
+    "@scalar/types": "npm:0.31.0"
+    "@scalar/validation": "npm:0.6.9"
+  checksum: 10c0/aa586faf4c7fb9970ddd680df08fcecfc288ee38fd2eeb0d6102c4af6c3a3a4981a79c90fa02e53446f3238e01d1051b5f7761e534066f91a848cc870703e411
   languageName: node
   linkType: hard
 
-"@scalar/helpers@npm:0.18.0":
-  version: 0.18.0
-  resolution: "@scalar/helpers@npm:0.18.0"
-  checksum: 10c0/d686d65e7f7881b4b1b12298913f46d5ee86661843d8edaff8cf5277b4e013ae223053cace4097985013aa0ae4e222b28d4433b608fcea1a738ddfd616d3d1a7
+"@scalar/helpers@npm:0.19.0":
+  version: 0.19.0
+  resolution: "@scalar/helpers@npm:0.19.0"
+  checksum: 10c0/fa8202ae703fd3fb142c12a7f3ce7a2f77eda91df51c93a9c41b41f2a8dfb2fd2474697818abf7d686484a394a4ae7be30b99744332785c109f3cca574b68904
   languageName: node
   linkType: hard
 
 "@scalar/nestjs-api-reference@npm:^1.2.11":
-  version: 1.2.37
-  resolution: "@scalar/nestjs-api-reference@npm:1.2.37"
+  version: 1.2.40
+  resolution: "@scalar/nestjs-api-reference@npm:1.2.40"
   dependencies:
-    "@scalar/client-side-rendering": "npm:0.4.19"
-  checksum: 10c0/61516d90f25a2c4e2f5310777744846920c83bcb6236c5fcbe735ecc31255c70fb4a0a5c6be0b346f3552c288ef0424f839349de2a8a842cb10783f9e2caac80
+    "@scalar/client-side-rendering": "npm:0.4.22"
+  checksum: 10c0/0e3de3482cced2dc5d94dc5049a7baae1b2d3410f48981924d706218a55671d1bcb49163d8fb3d6cba60f0b984d3b382bbb3a7912a85dab87e2859cf44193ca9
   languageName: node
   linkType: hard
 
-"@scalar/schemas@npm:0.17.1":
-  version: 0.17.1
-  resolution: "@scalar/schemas@npm:0.17.1"
+"@scalar/schemas@npm:0.19.0":
+  version: 0.19.0
+  resolution: "@scalar/schemas@npm:0.19.0"
   dependencies:
-    "@scalar/helpers": "npm:0.18.0"
-    "@scalar/types": "npm:0.28.1"
-    "@scalar/validation": "npm:0.6.7"
-  checksum: 10c0/4c3a5a0a74752498eaafca82217d7184b1bb5956cc83d8030af7d4a0b64dcb49d4c6a2619673c75c770666042891ddf54e8d7ac6ce61a6281edd829407e0fad9
+    "@scalar/helpers": "npm:0.19.0"
+    "@scalar/types": "npm:0.31.0"
+    "@scalar/validation": "npm:0.6.9"
+  checksum: 10c0/3c194e360a11db473e17057854150cf4a886bd8b28e928f40e343e026bfeab6b3bbb65d95c9e3fd769ab8b726cb1c3c533289ddc69861bd1993657c90ccee955
   languageName: node
   linkType: hard
 
-"@scalar/types@npm:0.28.1":
-  version: 0.28.1
-  resolution: "@scalar/types@npm:0.28.1"
+"@scalar/types@npm:0.31.0":
+  version: 0.31.0
+  resolution: "@scalar/types@npm:0.31.0"
   dependencies:
-    "@scalar/helpers": "npm:0.18.0"
+    "@scalar/helpers": "npm:0.19.0"
     nanoid: "npm:^5.1.16"
     type-fest: "npm:^5.10.0"
     zod: "npm:^4.6.7"
-  checksum: 10c0/3be818d8f665bf6a6ed075797af11c892ca273a998279982fcbbf544d7bf4e6f066493ccccdd16c42c3dc9712602e0dfa0464b57fe59108f5d8f2431731c25e7
+  checksum: 10c0/79495b9ce35c060a1f0ec6ad215757862d8ae8ccc6381ab5c2a565ad1063703801ae5654535067309dfd51fafc455bb77c9a3922f6081da8e8caef06b3b0f297
   languageName: node
   linkType: hard
 
-"@scalar/validation@npm:0.6.7":
-  version: 0.6.7
-  resolution: "@scalar/validation@npm:0.6.7"
-  checksum: 10c0/2dec55865ace25b779e6f0a0eaadfdb72d7645c94b8ea5a948081ba9724e95421a094541cba193f66f014c1293257b4296cafb736df977553a63219ead4dd2e2
+"@scalar/validation@npm:0.6.9":
+  version: 0.6.9
+  resolution: "@scalar/validation@npm:0.6.9"
+  checksum: 10c0/91987bb3ac0417a47a68127a28dc24b8993d227c1e659089a68e84c75c05a0540a78a40829ed1bce112cbb6920cd22c85f5076a3fba2dce766738bda856aec1e
   languageName: node
   linkType: hard
 
