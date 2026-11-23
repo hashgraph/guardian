@@ -211,6 +211,8 @@ Create a new "bucket" on Filebase since we utilize the **IPFS Pinning Service AP
 
 For detailed setup instructions, refer to the official [https://docs.filebase.com/api-documentation/ipfs-pinning-service-api](https://docs.filebase.com/api-documentation/ipfs-pinning-service-api).
 
+Filebase stores the files Guardian uploads. To read them back, Guardian needs a way to read from IPFS. By default it reads through the local IPFS node at `IPFS_PUBLIC_GATEWAY` (`http://ipfs-node:8080/ipfs/{cid}`). If you run without your own IPFS node, set `IPFS_PUBLIC_GATEWAY` to a gateway you control, or turn on the Helia reader. See [Enable the Helia reader](ipfs-reading/enable-helia-reader.md).
+
 ### **4.3 Implement and test a custom IPFS provider:**
 
 We provide a flexible workflow for integrating additional IPFS providers:

@@ -535,6 +535,8 @@
   * [How to change the explorer URL?](developer-tools-and-resources/dev-environments-and-faqs/how-to-change-explorer-url.md)
   * [How to restore account from database/Hashicorp vault during setup?](developer-tools-and-resources/dev-environments-and-faqs/how-to-restore-account-from-database-hashicorp-vault-during-setup.md)
   * [How to Configure HashiCorp Vault?](developer-tools-and-resources/dev-environments-and-faqs/how-to-configure-hashicorp-vault.md)
+  * [IPFS Reading](developer-tools-and-resources/dev-environments-and-faqs/ipfs-reading/README.md)
+    * [Enable the Helia Reader](developer-tools-and-resources/dev-environments-and-faqs/ipfs-reading/enable-helia-reader.md)
   * [How to building from source and run using Docker?](developer-tools-and-resources/dev-environments-and-faqs/building-from-source-and-run-using-docker.md)
   * [How to build from pre-built containers?](developer-tools-and-resources/dev-environments-and-faqs/building-from-pre-build-containers.md)
   * [How to build executables and run manually?](developer-tools-and-resources/dev-environments-and-faqs/build-executables-and-run-manually.md)
