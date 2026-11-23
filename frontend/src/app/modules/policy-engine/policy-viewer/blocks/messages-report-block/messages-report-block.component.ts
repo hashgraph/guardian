@@ -8,7 +8,6 @@ import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialo
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
-import { DatePipe } from '@angular/common';
 import { ContractType } from '@guardian/interfaces';
 import { forkJoin, Observable } from 'rxjs';
 import { AnalyticsService } from 'src/app/services/analytics.service';
@@ -21,6 +20,45 @@ enum DashboardType {
     Advanced = 'Advanced',
     Simplified = 'Simplified'
 }
+
+interface StatusTag {
+    label: string;
+    severity: 'error' | 'grey' | 'green';
+}
+
+/**
+ * Event card width (px), keep in sync with the stylesheet
+ */
+const CARD_WIDTH = 200;
+/**
+ * Event card height (px), keep in sync with the stylesheet
+ */
+const CARD_HEIGHT = 80;
+/**
+ * Row height of the board (px), keep in sync with the stylesheet
+ */
+const ROW_HEIGHT = 104;
+/**
+ * Offset of a catalog card inside its row (px), keep in sync with the stylesheet
+ */
+const TOPIC_TOP = 14;
+/**
+ * Height of a catalog card (px), keep in sync with the stylesheet
+ */
+const TOPIC_HEIGHT = 76;
+/**
+ * Width of a column of the board (px), keep in sync with the stylesheet
+ */
+const COLUMN_WIDTH = 232;
+/**
+ * Consensus times before this date are not real (dry-run ids created by an old build, mocks)
+ */
+const MIN_CONSENSUS_TIME = Date.UTC(2000, 0, 1);
+/**
+ * Fallbacks of the line colours, the stylesheet defines them from the theme
+ */
+const DEFAULT_LINE_COLOR = 'rgba(170, 183, 196, 0.9)';
+const DEFAULT_LINE_SELECTED_COLOR = 'rgba(65, 105, 226, 0.9)';
 
 class LineContainer {
     private container1: HTMLElement | null;
@@ -79,8 +117,8 @@ class Line {
     private readonly offset: number;
     private _parent: HTMLElement | null;
     private _container: LineContainer | null;
-    private readonly color1 = 'rgba(30, 130, 250, 0.8)';
-    private readonly color2 = 'rgba(255, 152, 0, 0.9)';
+    private readonly color1: string;
+    private readonly color2: string;
     public readonly elementId1: string;
     public readonly elementId2: string;
     public line: any;
@@ -93,11 +131,15 @@ class Line {
     constructor(
         elementId1: string,
         elementId2: string,
-        offset: number
+        offset: number,
+        color1: string,
+        color2: string
     ) {
         this.elementId1 = elementId1;
         this.elementId2 = elementId2;
         this.offset = offset;
+        this.color1 = color1;
+        this.color2 = color2;
         this.leaderLine = null;
         this.leaderAnchor1 = null;
         this.leaderAnchor2 = null;
@@ -109,14 +151,14 @@ class Line {
         try {
             this._container = container;
             const options1 = {
-                x: 180,
+                x: CARD_WIDTH - 3,
                 y: this.offset,
                 width: 3,
                 height: 1,
                 color: 'transparent'
             };
             const options2 = {
-                x: 4,
+                x: 0,
                 y: this.offset,
                 width: 3,
                 height: 1,
@@ -223,6 +265,11 @@ export class MessagesReportBlockComponent implements OnInit {
     public tokens!: any[];
     public roles!: any[];
     public selected: any;
+    public relatedIds = new Set<string>();
+    public readonly viewOptions = [
+        { label: 'Simplified', value: DashboardType.Simplified },
+        { label: 'Advanced', value: DashboardType.Advanced }
+    ];
     public searchForm = this.fb.group({
         value: ['', Validators.required]
     });
@@ -244,8 +291,7 @@ export class MessagesReportBlockComponent implements OnInit {
         private dialogService: DialogService,
         private sanitizer: DomSanitizer,
         private contractService: ContractService,
-        private analyticsService: AnalyticsService,
-        private datePipe: DatePipe
+        private analyticsService: AnalyticsService
     ) {
     }
 
@@ -263,6 +309,13 @@ export class MessagesReportBlockComponent implements OnInit {
         } else {
             return this._messages2;
         }
+    }
+
+    /**
+     * The report was calculated, but nothing references the document
+     */
+    public get noEvents(): boolean {
+        return this.status === 'FINISHED' && !this._messages1?.length;
     }
 
     public get gridTemplateRows(): string {
@@ -343,6 +396,7 @@ export class MessagesReportBlockComponent implements OnInit {
                 this.loadRetirementMessages();
             }
         }
+        this.updateRelated();
         this.removeLines();
         setTimeout(() => {
             this.onResize();
@@ -355,7 +409,7 @@ export class MessagesReportBlockComponent implements OnInit {
             if (topic.message?.messageType === 'INSTANCE_POLICY_TOPIC') {
                 const t = { ...topic };
                 t.__parent = null;
-                t.__offset = 20;
+                t.__depth = 0;
                 t.__order = this._topics2.length + 1;
                 t.messages = this.getAllMessages(topic, []);
                 this._topics2.push(t);
@@ -374,8 +428,8 @@ export class MessagesReportBlockComponent implements OnInit {
             message.__order = index + 1;
             this.gridSize = Math.max(this.gridSize, message.__order);
         }
-        this._gridTemplateColumns2 = 'repeat(' + this.gridSize + ', 230px)';
-        this._gridTemplateRows2 = 'repeat(' + this._topics2.length + ', 100px) 30px';
+        this._gridTemplateColumns2 = 'repeat(' + this.gridSize + ', ' + COLUMN_WIDTH + 'px)';
+        this._gridTemplateRows2 = 'repeat(' + this._topics2.length + ', ' + ROW_HEIGHT + 'px)';
     }
 
     private getAllMessages(topic: any, messages: any[]): any[] {
@@ -410,7 +464,7 @@ export class MessagesReportBlockComponent implements OnInit {
                 topic.__policy = parent.__policy;
             }
             topic.__parent = parent;
-            topic.__offset = 15 * offset;
+            topic.__depth = offset - 1;
             topic.__order = this._topics1.length + 1;
             this._topics1.push(topic);
             if (topic.children) {
@@ -431,9 +485,10 @@ export class MessagesReportBlockComponent implements OnInit {
                 this.gridSize = Math.max(this.gridSize, message.__order);
             }
             if (topic.__parent) {
-                topic.__start = 100 * topic.__parent.__order;
-                topic.__end = 100 * topic.__order;
-                topic.__height = topic.__end - topic.__start - 50;
+                // From the bottom of the parent card to the middle of this one
+                topic.__start = (topic.__parent.__order - 1) * ROW_HEIGHT + TOPIC_TOP + TOPIC_HEIGHT;
+                topic.__end = (topic.__order - 1) * ROW_HEIGHT + TOPIC_TOP + TOPIC_HEIGHT / 2;
+                topic.__height = topic.__end - topic.__start;
             }
         }
         for (const message of this._messages1) {
@@ -451,15 +506,16 @@ export class MessagesReportBlockComponent implements OnInit {
                 topic.message.__rationale = topic.__rationale;
             }
         }
-        this._gridTemplateColumns1 = 'repeat(' + this.gridSize + ', 230px)';
-        this._gridTemplateRows1 = 'repeat(' + this._topics1.length + ', 100px) 30px';
+        this._gridTemplateColumns1 = 'repeat(' + this.gridSize + ', ' + COLUMN_WIDTH + 'px)';
+        this._gridTemplateRows1 = 'repeat(' + this._topics1.length + ', ' + ROW_HEIGHT + 'px)';
     }
 
     private parseMessage(topic: any, message: any): any {
         message.__policy = topic.__policy;
         message.__order = message.order + 1;
         message.__status = this.getStatusLabel(message);
-        message.__timestamp = this.getMessageTimestamp(message);
+        message.__statusTag = this.getStatusTag(message);
+        Object.assign(message, this.getMessageTimestamp(message));
         if (message.type === 'DID-Document') {
             message.__role = message.payer === topic.message?.payer ? 'Standard Registry' : 'User';
         }
@@ -665,19 +721,52 @@ export class MessagesReportBlockComponent implements OnInit {
         return null;
     }
 
-    private getMessageTimestamp(message: any): string {
+    private getStatusTag(message: any): StatusTag | null {
+        switch (message.documentStatus) {
+            case 'REVOKE':
+                return { label: 'Revoked', severity: 'error' };
+            case 'FAILED':
+                return { label: 'Failed', severity: 'error' };
+            case 'SUSPEND':
+                return { label: 'Suspended', severity: 'grey' };
+            case 'RESUME':
+                return { label: 'Resumed', severity: 'green' };
+            case 'NEW':
+            case 'ISSUE':
+            case '':
+            case null:
+            case undefined:
+                return null;
+            default:
+                return { label: message.documentStatus, severity: 'grey' };
+        }
+    }
+
+    /**
+     * Time and date of the time axis. The same format for every kind of message
+     * @param date
+     * @private
+     */
+    private formatTimestamp(date: Date): { __time: string, __date: string } {
+        const momentDate = moment(date);
+        if (!momentDate.isValid() || momentDate.valueOf() < MIN_CONSENSUS_TIME) {
+            return { __time: '–', __date: '' };
+        }
+        return {
+            __time: momentDate.format('HH:mm:ss'),
+            __date: momentDate.format('YYYY-MM-DD')
+        };
+    }
+
+    private getMessageTimestamp(message: any): { __time: string, __date: string } {
         if (typeof message.id === 'string') {
             const [seconds, nanos] = message.id.split('.');
-            const date = new Date(
+            return this.formatTimestamp(new Date(
                 parseInt(seconds, 10) * 1000 +
                 Math.floor(parseInt(nanos, 10) / 1000000)
-            );
-            let momentDate = moment(date);
-            if (momentDate.isValid()) {
-                return momentDate.format("YYYY-MM-DD, HH:mm:ss");
-            }
+            ));
         }
-        return '';
+        return this.formatTimestamp(new Date(NaN));
     }
 
     private getVPDocuments(message: any): any[] {
@@ -757,13 +846,15 @@ export class MessagesReportBlockComponent implements OnInit {
             return;
         }
         this.lines = [];
+        const color1 = this.getLineColor('--tc-line-color', DEFAULT_LINE_COLOR);
+        const color2 = this.getLineColor('--tc-line-selected-color', DEFAULT_LINE_SELECTED_COLOR);
         for (const message of messages) {
             if (message.__relationships) {
                 const relationships = message.__relationships.filter((r: any) => r.visible);
-                const offset = 90 / (relationships.length + 1);
+                const offset = CARD_HEIGHT / (relationships.length + 1);
                 for (let index = 0; index < relationships.length; index++) {
                     const relationship = relationships[index];
-                    const line = new Line(relationship.id, message.id, (offset * (index + 1)));
+                    const line = new Line(relationship.id, message.id, (offset * (index + 1)), color1, color2);
                     line.render(container);
                     this.lines.push(line);
                 }
@@ -777,7 +868,43 @@ export class MessagesReportBlockComponent implements OnInit {
         }
     }
 
+    /**
+     * The colour comes from the theme, the stylesheet defines it on the host element.
+     * Lines are recoloured on the next render.
+     */
+    private getLineColor(name: string, fallback: string): string {
+        const element = this.element?.nativeElement;
+        if (element) {
+            const value = getComputedStyle(element).getPropertyValue(name).trim();
+            if (value) {
+                return value;
+            }
+        }
+        return fallback;
+    }
+
+    /**
+     * The selected message, the messages it refers to and the messages that refer to it
+     */
+    private updateRelated() {
+        this.relatedIds = new Set<string>();
+        const selected = this.selected;
+        if (!selected || selected.__ifTopicMessage) {
+            return;
+        }
+        this.relatedIds.add(selected.id);
+        for (const id of selected.relationships || []) {
+            this.relatedIds.add(id);
+        }
+        for (const message of this.messages || []) {
+            if (message.relationships && message.relationships.includes(selected.id)) {
+                this.relatedIds.add(message.id);
+            }
+        }
+    }
+
     private update() {
+        this.updateRelated();
         const container = this.lineContainer.render();
         if (!container) {
             return;
@@ -812,6 +939,56 @@ export class MessagesReportBlockComponent implements OnInit {
         if (Array.isArray(blocks) && blocks.includes(this.id)) {
             this.loadData();
         }
+    }
+
+    public isDimmed(message: any): boolean {
+        return !!this.selected && !this.selected.__ifTopicMessage && !this.relatedIds.has(message.id);
+    }
+
+    public getTopicIcon(topic: any): string {
+        switch (topic?.message?.messageType) {
+            case 'USER_TOPIC':
+                return 'pi-building';
+            case 'POLICY_TOPIC':
+                return 'pi-sitemap';
+            case 'INSTANCE_POLICY_TOPIC':
+                return 'pi-box';
+            case 'DYNAMIC_TOPIC':
+                return 'pi-folder';
+            default:
+                return 'pi-globe';
+        }
+    }
+
+    /**
+     * Icon, tint and title of the detail panel
+     */
+    public getMessageKind(message: any): { icon: string, kind: string, title: string } {
+        if (message.__ifPolicyMessage) {
+            return { icon: 'pi-sitemap', kind: 'policy', title: 'Policy' };
+        }
+        if (message.__ifInstanceMessage) {
+            return { icon: 'pi-box', kind: 'policy', title: 'Instance policy' };
+        }
+        if (message.__ifDIDMessage) {
+            return { icon: 'pi-key', kind: 'reg', title: 'User registration' };
+        }
+        if (message.__ifRoleMessage) {
+            return { icon: 'pi-user', kind: 'role', title: 'Roles & Groups' };
+        }
+        if (message.__ifVCMessage) {
+            return { icon: 'pi-file', kind: 'doc', title: message.__schemaLabel || 'Document' };
+        }
+        if (message.__ifMintMessage) {
+            return { icon: 'pi-receipt', kind: 'token', title: 'Mint token' };
+        }
+        if (message.__ifVPMessage) {
+            return { icon: 'pi-check-circle', kind: 'token', title: 'Mint confirmation' };
+        }
+        if (message.__ifRetireMessage) {
+            return { icon: 'pi-replay', kind: 'retire', title: 'Retirement' };
+        }
+        return { icon: this.getTopicIcon({ message }), kind: 'policy', title: this.getTopicHeader(message) + ' catalog' };
     }
 
     public onSelect(message: any) {
@@ -885,12 +1062,9 @@ export class MessagesReportBlockComponent implements OnInit {
         });
     }
 
-    public onDashboardType(event: any) {
-        if (event) {
-            this.dashboardType = DashboardType.Advanced;
-        } else {
-            this.dashboardType = DashboardType.Simplified;
-        }
+    public onDashboardType(value: DashboardType) {
+        this.dashboardType = value;
+        this.updateRelated();
         this.removeLines();
         setTimeout(() => {
             this.onResize();
@@ -988,7 +1162,7 @@ export class MessagesReportBlockComponent implements OnInit {
                                         if (item.documents[0].credentialSubject[0].tokens.some((token: any) => token.tokenId === this.mintTokenId)) {
                                             item.id = item.consensusTimestamp;
                                             item.__ifRetireMessage = true;
-                                            item.__timestamp = this.datePipe.transform(new Date(item.documents[0].issuanceDate), 'yyyy-MM-dd, hh:mm:ss');
+                                            Object.assign(item, this.formatTimestamp(new Date(item.documents[0].issuanceDate)));
                                             allRetireMessages.push(item);
                                         }
                                     });
@@ -1016,8 +1190,8 @@ export class MessagesReportBlockComponent implements OnInit {
                                 // Todo: Need filtration by serials and token user
                                 this.retirementMessages = [...allRetireMessages];
 
-                                this._gridTemplateColumns1 = 'repeat(' + (this.gridSize + this.retirementMessages.length + 1) + ', 230px)';
-                                this._gridTemplateColumns2 = 'repeat(' + (this.gridSize + this.retirementMessages.length) + ', 230px)';
+                                this._gridTemplateColumns1 = 'repeat(' + (this.gridSize + this.retirementMessages.length + 1) + ', ' + COLUMN_WIDTH + 'px)';
+                                this._gridTemplateColumns2 = 'repeat(' + (this.gridSize + this.retirementMessages.length) + ', ' + COLUMN_WIDTH + 'px)';
                             })
                         }
                     })

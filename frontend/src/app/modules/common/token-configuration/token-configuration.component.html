@@ -4,7 +4,7 @@
       <div class="key-value immutable">
         <div class="switch-btn">
           <label class="p-field-label" for="tokenName">Status</label>
-          <switch-button [on-label]="'Published'" [off-label]="'Draft'" [(value)]="notDraftToken"></switch-button>
+          <guardian-switch-button [onLabel]="'Published'" [offLabel]="'Draft'" [(value)]="notDraftToken"></guardian-switch-button>
         </div>
       </div>
     }
@@ -50,7 +50,7 @@
           be perceived as immutable.
         </div>
         <div class="switch-btn">
-          <switch-button [disalbed]="enableAdminDisabled" [(value)]="enableAdmin" [off-label]="'Disabled'" [on-label]="'Enabled'"></switch-button>
+          <guardian-switch-button [disabled]="enableAdminDisabled" [(value)]="enableAdmin" [offLabel]="'Disabled'" [onLabel]="'Enabled'"></guardian-switch-button>
         </div>
       </div>
       <div class="key-value">
@@ -61,7 +61,7 @@
           The key which can wipe the token balance of an account. If empty, wipe is not possible.
         </div>
         <div class="switch-btn">
-          <switch-button [disalbed]="enableWipeDisabled" [(value)]="enableWipe" [off-label]="'Disabled'" [on-label]="'Enabled'"></switch-button>
+          <guardian-switch-button [disabled]="enableWipeDisabled" [(value)]="enableWipe" [offLabel]="'Disabled'" [onLabel]="'Enabled'"></guardian-switch-button>
         </div>
       </div>
       @if (enableWipe) {
@@ -87,7 +87,7 @@
           not possible.
         </div>
         <div class="switch-btn">
-          <switch-button [disalbed]="enableFreezeDisabled" [(value)]="enableFreeze" [off-label]="'Disabled'" [on-label]="'Enabled'"></switch-button>
+          <guardian-switch-button [disabled]="enableFreezeDisabled" [(value)]="enableFreeze" [offLabel]="'Disabled'" [onLabel]="'Enabled'"></guardian-switch-button>
         </div>
       </div>
       <div class="key-value">
@@ -99,7 +99,7 @@
           required, and KYC grant or revoke operations are not possible.
         </div>
         <div class="switch-btn">
-          <switch-button [disalbed]="enableKYCDisabled" [(value)]="enableKYC" [off-label]="'Disabled'" [on-label]="'Enabled'"></switch-button>
+          <guardian-switch-button [disabled]="enableKYCDisabled" [(value)]="enableKYC" [offLabel]="'Disabled'" [onLabel]="'Enabled'"></guardian-switch-button>
         </div>
       </div>
     </div>

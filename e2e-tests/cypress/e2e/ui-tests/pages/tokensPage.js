@@ -36,7 +36,7 @@ const L = {
         deleteDialog: 'div.guardian-dialog',
         tokenNameInput: 'input#tokenName',
         tokenSymbolInput: 'input#tokenSymbol',
-        statusSwitch: 'switch-button input[type="checkbox"]',
+        statusSwitch: 'guardian-switch-button input[type="checkbox"]',
         keyRow: '.key-value',
         tokenType: 'p-select[formcontrolname="tokenType"]',
         optionItem: 'li[role="option"]',
@@ -199,7 +199,7 @@ export class TokensPage {
         cy.get(selector).should('have.value', value);
     }
 
-    // A switch-button is a checkbox behind a label; its change event is what the form listens to.
+    // A guardian-switch-button is a checkbox behind a label; its change event is what the form listens to.
     _toggleKey(keyName) {
         cy.get(L.manage.dialog).contains(L.manage.keyRow, keyName).find(L.manage.statusSwitch).click({ force: true });
     }
