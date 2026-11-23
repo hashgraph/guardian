@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { DefaultDocumentLoader } from '../../../../../common/dist/document-loader/base/document-loader-default.js';
 import { LocalDidLoader } from '../../../../../common/dist/document-loader/local-did-loader.js';
+import { SchemaHelper } from '../../../../../interfaces/dist/helpers/schema-helper.js';
 import { VCJS } from '../../../../dist/vcjs/vcjs.js';
 
 void DefaultDocumentLoader;
@@ -225,5 +226,101 @@ describe('VCJS validates a condition over two linked groups entry by entry', () 
     it('still reports a length mismatch of either group', async () => {
         const result = await verify([{ check: 1 }, { check: 2 }], [{ value: 'a' }], [{ kind: 'y' }]);
         assert.ok(result.error.details.some(error => error.keyword === 'arrayGroupLength'));
+    });
+});
+
+// Documents built by SchemaHelper: `Source.kind` is shown only when `mode` is `advanced`, and a condition on
+// `Section` requires `Target.reference` unless `sources.kind` is `full`.
+const plain = (name, over = {}) => ({
+    name, title: name, description: name, type: 'string', required: false, isArray: false,
+    isRef: false, readOnly: false, ...over
+});
+const meta = (uuid, name, extra = {}) => ({ uuid, version: '1.0.0', name, description: name, contextURL: 'schema:', ...extra });
+
+function hiddenTriggerSchema() {
+    const mode = plain('mode', { required: true });
+    const kind = plain('kind', { required: true });
+    const reference = plain('reference', { required: true });
+    const sourceDoc = SchemaHelper.buildDocument(meta('src-uuid', 'Source'), [mode, kind],
+        [{ ifCondition: { field: mode, fieldValue: 'advanced' }, thenFields: [kind], elseFields: [] }]);
+    const targetDoc = SchemaHelper.buildDocument(meta('tgt-uuid', 'Target'), [reference], []);
+    const sources = plain('sources', { isArray: true, isRef: true, type: '#src-uuid&1.0.0', fields: [mode, kind], required: true });
+    const targets = plain('targets', { isArray: true, isRef: true, type: '#tgt-uuid&1.0.0', fields: [reference], required: true });
+    const sectionDoc = SchemaHelper.buildDocument(
+        meta('sec-uuid', 'Section', { arrayDependencies: [{ field: ['targets'], on: ['sources'], kind: 'array' }] }),
+        [sources, targets],
+        [{
+            ifCondition: { field: kind, fieldPath: ['sources', 'kind'], fieldValue: 'full' },
+            thenFields: [],
+            elseFields: [],
+            elseTargets: [{ field: reference, fieldPath: ['targets', 'reference'] }]
+        }]
+    );
+    const section = plain('section', { isRef: true, type: '#sec-uuid&1.0.0', fields: [sources, targets], required: true });
+    const rootDoc = SchemaHelper.buildDocument(meta('root-uuid', 'Root'), [section], []);
+    rootDoc.$defs = { '#sec-uuid&1.0.0': sectionDoc, '#src-uuid&1.0.0': sourceDoc, '#tgt-uuid&1.0.0': targetDoc };
+    return rootDoc;
+}
+
+describe('VCJS treats a trigger field hidden by its own entry condition as empty', () => {
+    const ctx = (type) => ({ '@context': ['schema:x'], type });
+    async function verify(sources, targets) {
+        const vcjs = new VCJS();
+        vcjs.schemaLoader = async () => hiddenTriggerSchema();
+        return vcjs.verifySubject({
+            ...ctx('Root'),
+            section: {
+                ...ctx('Section'),
+                sources: sources.map(item => ({ ...ctx('Source'), ...item })),
+                targets: targets.map(item => ({ ...ctx('Target'), ...item }))
+            }
+        });
+    }
+    const conditionErrors = (result) => (result.error?.details || [])
+        .filter(error => error.keyword === 'arrayGroupCondition').map(error => error.instancePath);
+
+    it('requires the target when the trigger is hidden', async () => {
+        const result = await verify([{ mode: 'simple' }], [{}]);
+        assert.equal(result.ok, false);
+        assert.deepEqual(conditionErrors(result), ['/section/targets/0/reference']);
+    });
+
+    it('judges each entry on its own when only one trigger is hidden', async () => {
+        const result = await verify(
+            [{ mode: 'simple' }, { mode: 'advanced', kind: 'full' }],
+            [{}, {}]
+        );
+        assert.equal(result.ok, false);
+        assert.deepEqual(conditionErrors(result), ['/section/targets/0/reference']);
+    });
+
+    it('accepts a hidden trigger when the target is filled', async () => {
+        const result = await verify([{ mode: 'simple' }], [{ reference: 'R' }]);
+        assert.deepEqual(conditionErrors(result), []);
+        assert.equal(result.ok, true);
+    });
+
+    it('accepts a shown trigger that matches, without a target', async () => {
+        const result = await verify([{ mode: 'advanced', kind: 'full' }], [{}]);
+        assert.deepEqual(conditionErrors(result), []);
+        assert.equal(result.ok, true);
+    });
+
+    it('requires the target when the shown trigger does not match', async () => {
+        const result = await verify([{ mode: 'advanced', kind: 'other' }], [{}]);
+        assert.equal(result.ok, false);
+        assert.deepEqual(conditionErrors(result), ['/section/targets/0/reference']);
+    });
+
+    it('accepts a shown trigger that does not match when the target is filled', async () => {
+        const result = await verify([{ mode: 'advanced', kind: 'other' }], [{ reference: 'R' }]);
+        assert.deepEqual(conditionErrors(result), []);
+        assert.equal(result.ok, true);
+    });
+
+    it('rejects a target filled although the shown trigger matches', async () => {
+        const result = await verify([{ mode: 'advanced', kind: 'full' }], [{ reference: 'R' }]);
+        assert.equal(result.ok, false);
+        assert.deepEqual(conditionErrors(result), ['/section/targets/0/reference']);
     });
 });
