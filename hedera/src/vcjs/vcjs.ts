@@ -990,6 +990,7 @@ export class VCJS {
             const parsed = parse(source);
             return collectConditionsFromRoot(parsed?.conditions || [], parsed?.fields || []);
         } catch (error) {
+            console.warn('Linked array conditions are not validated, the schema conditions cannot be read:', error);
             return [];
         }
     }
