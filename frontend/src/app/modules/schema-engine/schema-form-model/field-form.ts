@@ -281,6 +281,8 @@ export class FieldForm {
         this.fieldControls = this.buildFields(fields);
         this.conditionControls = this.buildConditions(conditions);
         if (this.arrayDependencies?.length) {
+            this.arrayGroupCache = null;
+            this.managedSet = null;
             this.alignArrayGroups();
             this.syncArrayDependencyValues();
             this.subscribeArrayDependencyValues();
