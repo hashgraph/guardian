@@ -10,16 +10,16 @@ import { FormulasService } from 'src/app/services/formulas.service';
 import { GeoFilePersistenceService } from 'src/app/services/geo-file-persistence.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
-import { SchemaFormPreferencesService } from 'src/app/services/schema-form-preferences.service';
+import { COMMENTS_WIDTH_STORAGE_KEY, SchemaFormPreferencesService } from 'src/app/services/schema-form-preferences.service';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { SchemaService } from 'src/app/services/schema.service';
 import { TablePersistenceService } from 'src/app/services/table-persistence.service';
 import { ToastService } from 'src/app/services/toast.service';
-import { VCFullscreenDialog } from './vc-fullscreen-dialog.component';
+import { clampCommentsWidth, COMMENTS_WIDTH, VCFullscreenDialog } from './vc-fullscreen-dialog.component';
 
 describe('VCFullscreenDialog', () => {
     function build(): any {
-        return new VCFullscreenDialog({} as any, { data: {} } as any, {} as any, {} as any, {} as any, {} as any, {} as any, {} as any, {} as any, {} as any, {} as any, {} as any, new UntypedFormBuilder(), {} as any, {} as any, {} as any, {} as any, {} as any, {} as any);
+        return new VCFullscreenDialog({} as any, { data: {} } as any, {} as any, {} as any, {} as any, {} as any, {} as any, {} as any, {} as any, {} as any, {} as any, {} as any, new UntypedFormBuilder(), {} as any, {} as any, {} as any, {} as any, {} as any, new SchemaFormPreferencesService());
     }
 
     // Seven takeUntil sites guarded on a subject nothing ever fired, so every
@@ -135,7 +135,6 @@ describe('VCFullscreenDialog', () => {
                     { provide: ToastService, useValue: {} },
                     { provide: TablePersistenceService, useValue: {} },
                     { provide: GeoFilePersistenceService, useValue: {} },
-                    { provide: SchemaFormPreferencesService, useValue: { showFieldMetadata$: of(false), setShowFieldMetadata: () => undefined } },
                 ],
                 schemas: [NO_ERRORS_SCHEMA],
             });
@@ -151,6 +150,66 @@ describe('VCFullscreenDialog', () => {
             fixture.detectChanges();
         };
         const el = (fixture: ComponentFixture<VCFullscreenDialog>, selector: string): HTMLElement | null => fixture.nativeElement.querySelector(selector);
+
+        it('flashes the field a discussion links to for a couple of seconds', fakeAsync(() => {
+            const fixture = render({});
+            const body = document.createElement('div');
+            body.className = 'form-body';
+            const field = document.createElement('section');
+            field.setAttribute('field-id', 'iri/name');
+            field.scrollIntoView = () => undefined;
+            body.appendChild(field);
+            fixture.nativeElement.appendChild(body);
+            fixture.componentInstance.documentViewComponent = { openField: () => undefined } as any;
+            fixture.componentInstance.onLinkField('iri/name');
+            tick(700);
+            expect(field.classList.contains('field-flash')).toBe(true);
+            tick(2500);
+            expect(field.classList.contains('field-flash')).toBe(false);
+        }));
+
+        it('flashes again when the same field is linked twice', fakeAsync(() => {
+            const fixture = render({});
+            const body = document.createElement('div');
+            body.className = 'form-body';
+            const field = document.createElement('section');
+            field.setAttribute('field-id', 'iri/name');
+            field.scrollIntoView = () => undefined;
+            body.appendChild(field);
+            fixture.nativeElement.appendChild(body);
+            fixture.componentInstance.documentViewComponent = { openField: () => undefined } as any;
+            fixture.componentInstance.onLinkField('iri/name');
+            tick(700);
+            tick(1000);
+            fixture.componentInstance.onLinkField('iri/name');
+            tick(700);
+            tick(1500);
+            expect(field.classList.contains('field-flash')).toBe(true);
+            tick(1000);
+            expect(field.classList.contains('field-flash')).toBe(false);
+        }));
+
+        it('stops a flash and a drag when the dialog closes', fakeAsync(() => {
+            const fixture = render({ comments: true, openComments: true });
+            const body = document.createElement('div');
+            body.className = 'form-body';
+            const field = document.createElement('section');
+            field.setAttribute('field-id', 'iri/name');
+            field.scrollIntoView = () => undefined;
+            body.appendChild(field);
+            fixture.nativeElement.appendChild(body);
+            fixture.componentInstance.documentViewComponent = { openField: () => undefined } as any;
+            fixture.componentInstance.onLinkField('iri/name');
+            tick(700);
+            expect(field.classList.contains('field-flash')).toBe(true);
+            el(fixture, '.comments-resize')!.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: 1000, pointerId: 1 }));
+            const before = fixture.componentInstance.commentsWidth;
+            fixture.destroy();
+            expect(field.classList.contains('field-flash')).toBe(false);
+            window.dispatchEvent(new PointerEvent('pointermove', { clientX: 500, pointerId: 1 }));
+            expect(fixture.componentInstance.commentsWidth).toBe(before);
+            tick(3000);
+        }));
 
         it('shows the context line when passed and omits it when empty', fakeAsync(() => {
             expect(el(render({ subtitle: 'Policy · Step' }), '.header-eyebrow')?.textContent).toContain('Policy · Step');
@@ -200,7 +259,6 @@ describe('VCFullscreenDialog', () => {
                     { provide: ToastService, useValue: {} },
                     { provide: TablePersistenceService, useValue: {} },
                     { provide: GeoFilePersistenceService, useValue: {} },
-                    { provide: SchemaFormPreferencesService, useValue: { showFieldMetadata$: of(false), setShowFieldMetadata: () => undefined } },
                 ],
                 schemas: [NO_ERRORS_SCHEMA],
             });
@@ -308,5 +366,94 @@ describe('VCFullscreenDialog', () => {
             expect(el(fixture, '.comments-content')).not.toBeNull();
             expect(el(fixture, '.comments-content')?.hidden).toBe(true);
         }));
+
+    describe('discussions width', () => {
+        const KEY = COMMENTS_WIDTH_STORAGE_KEY;
+        beforeEach(() => localStorage.removeItem(KEY));
+        afterEach(() => localStorage.removeItem(KEY));
+
+        it('clamps to the minimum, the maximum and the share of the container', () => {
+            expect(clampCommentsWidth(100, 2000)).toBe(320);
+            expect(clampCommentsWidth(900, 2000)).toBe(720);
+            expect(clampCommentsWidth(700, 1000)).toBe(600);
+            expect(clampCommentsWidth(450, 1000)).toBe(450);
+        });
+
+        it('lets the minimum win in a narrow container', () => {
+            expect(clampCommentsWidth(500, 400)).toBe(320);
+        });
+
+        it('restores a saved width', () => {
+            localStorage.setItem(KEY, '500');
+            expect(build().commentsWidth).toBe(500);
+        });
+
+        it('falls back to the default for a saved value that is not a number or out of range', () => {
+            localStorage.setItem(KEY, 'abc');
+            expect(build().commentsWidth).toBe(360);
+            localStorage.setItem(KEY, '5000');
+            expect(build().commentsWidth).toBe(360);
+            localStorage.setItem(KEY, '10');
+            expect(build().commentsWidth).toBe(360);
+        });
+
+        it('survives storage that throws', () => {
+            const spy = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('denied'); });
+            try {
+                expect(build().commentsWidth).toBe(360);
+            } finally {
+                spy.mockRestore();
+            }
+        });
+
+        it('applies the width to the panel and drops it when collapsed', fakeAsync(() => {
+            localStorage.setItem(KEY, '480');
+            const fixture = render({ comments: true, openComments: true });
+            expect(el(fixture, '.comments-content')?.style.width).toBe('480px');
+            expect(el(fixture, '.comments-resize')).not.toBeNull();
+            fixture.componentInstance.onCollapse(true);
+            refresh(fixture);
+            expect(el(fixture, '.comments-content')?.style.width).toBe('');
+            expect(el(fixture, '.comments-resize')).toBeNull();
+        }));
+
+        it('keeps a saved width within the share of the dialog when the dialog is narrow', fakeAsync(() => {
+            localStorage.setItem(KEY, '720');
+            const fixture = render({ comments: true, openComments: true });
+            const container = el(fixture, '.step-body-container')!;
+            container.style.width = '800px';
+            container.style.flex = 'none';
+            const panel = el(fixture, '.comments-content')!;
+            expect(container.offsetWidth).toBe(800);
+            // 60 % of 800, plus the 1px border
+            expect(panel.offsetWidth).toBeLessThanOrEqual(481);
+        }));
+
+        it('resets to the default and saves it on double-click', fakeAsync(() => {
+            localStorage.setItem(KEY, '480');
+            const fixture = render({ comments: true, openComments: true });
+            el(fixture, '.comments-resize')!.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+            refresh(fixture);
+            expect(el(fixture, '.comments-content')?.style.width).toBe('360px');
+            expect(localStorage.getItem(KEY)).toBe('360');
+        }));
+
+        it('widens when the handle is dragged left, and saves on release', fakeAsync(() => {
+            const fixture = render({ comments: true, openComments: true });
+            const container = el(fixture, '.step-body-container')!;
+            Object.defineProperty(container, 'offsetWidth', { value: 1400 });
+            const handle = el(fixture, '.comments-resize')!;
+            handle.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: 1000, pointerId: 1 }));
+            window.dispatchEvent(new PointerEvent('pointermove', { clientX: 900, pointerId: 1 }));
+            refresh(fixture);
+            expect(el(fixture, '.comments-content')?.style.width).toBe('460px');
+            window.dispatchEvent(new PointerEvent('pointerup', { clientX: 900, pointerId: 1 }));
+            refresh(fixture);
+            expect(localStorage.getItem(KEY)).toBe('460');
+            window.dispatchEvent(new PointerEvent('pointermove', { clientX: 100, pointerId: 1 }));
+            refresh(fixture);
+            expect(el(fixture, '.comments-content')?.style.width).toBe('460px');
+        }));
+    });
     });
 });

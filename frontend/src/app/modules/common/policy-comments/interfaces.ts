@@ -25,12 +25,19 @@ export interface DiscussionItem {
     users?: string[];
     _count?: number;
     _unread?: number;
-    _short?: string;
-    _icon?: string;
+    _initials?: string;
+    _color?: string;
+    _private?: boolean;
+    _fieldLabel?: string;
+    _fieldKey?: string;
     _users?: {
-        icon: string,
+        did?: string,
         type: string,
-        label: string
+        label: string,
+        owner?: boolean,
+        me?: boolean,
+        _color?: string,
+        _initial?: string
     }[];
     _hidden?: boolean;
 }

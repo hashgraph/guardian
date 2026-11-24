@@ -51,6 +51,23 @@ import { SchemaFormPreferencesService } from 'src/app/services/schema-form-prefe
 import { prepareVcData } from '../../common/models/prepare-vc-data';
 import { ViewerDialog } from '../../policy-engine/dialogs/viewer-dialog/viewer-dialog.component';
 
+/** Width of the discussions panel: where it starts and how far it can be dragged. */
+export const COMMENTS_WIDTH = {
+    default: 360,
+    min: 320,
+    max: 720,
+    maxRatio: 0.6
+};
+
+/** Keeps the width within the range, and within the share of the container; the minimum wins in a narrow container. */
+export function clampCommentsWidth(width: number, containerWidth: number): number {
+    const max = Math.max(
+        COMMENTS_WIDTH.min,
+        Math.min(COMMENTS_WIDTH.max, Math.floor(containerWidth * COMMENTS_WIDTH.maxRatio))
+    );
+    return Math.min(Math.max(width, COMMENTS_WIDTH.min), max);
+}
+
 /**
  * Dialog for display json
  */
@@ -103,6 +120,8 @@ export class VCFullscreenDialog implements OnDestroy {
     public json: string = '';
     public fileSize: number = 0;
     public collapse: boolean = false;
+    public commentsWidth: number = COMMENTS_WIDTH.default;
+    public resizing: boolean = false;
     public discussionData: any = {};
     public discussionAction: boolean = false;
     public exportDocument: boolean;
@@ -159,6 +178,10 @@ export class VCFullscreenDialog implements OnDestroy {
         public formPreferences: SchemaFormPreferencesService
     ) {
         this.dataForm = this.fb.group({});
+        const saved = this.formPreferences.getCommentsWidth();
+        if (saved !== null && saved >= COMMENTS_WIDTH.min && saved <= COMMENTS_WIDTH.max) {
+            this.commentsWidth = saved;
+        }
     }
 
     get currentSelectedVcDoc(): any {
@@ -182,6 +205,10 @@ export class VCFullscreenDialog implements OnDestroy {
     ngOnDestroy(): void {
         this._viewDestroyed$.next();
         this._viewDestroyed$.complete();
+        // A drag or a flash still running when the dialog closes would keep touching a dead view
+        this.endResize?.();
+        clearTimeout(this.flashTimer);
+        this.flashedField?.classList.remove('field-flash');
         // _destroy$ may belong to the caller, so unsubscribe from it rather than complete it
         this._subscription?.unsubscribe();
         this._subscription = null;
@@ -412,12 +439,76 @@ export class VCFullscreenDialog implements OnDestroy {
                 ?.scrollIntoView();
         }, 0);
         setTimeout(() => {
-            this.el.nativeElement
+            const field = this.el.nativeElement
                 ?.querySelector('.form-body')
-                ?.querySelector(`[field-id="${$event}"]`)
-                ?.scrollIntoView();
+                ?.querySelector(`[field-id="${$event}"]`);
+            field?.scrollIntoView();
             this.documentViewComponent?.openField();
+            this.flashField(field);
         }, 600);
+    }
+
+    private endResize: (() => void) | null = null;
+    private flashedField: HTMLElement | null = null;
+    private flashTimer: any;
+
+    /** Marks the field for a couple of seconds so the eye finds it after the jump. */
+    private flashField(field?: HTMLElement | null): void {
+        clearTimeout(this.flashTimer);
+        this.flashedField?.classList.remove('field-flash');
+        this.flashedField = null;
+        if (!field) {
+            return;
+        }
+        // Reading offsetWidth restarts the animation when the same field is linked again
+        void field.offsetWidth;
+        field.classList.add('field-flash');
+        this.flashedField = field;
+        this.flashTimer = setTimeout(() => {
+            field.classList.remove('field-flash');
+            this.flashedField = null;
+        }, 2200);
+    }
+
+    public onResizeStart(event: PointerEvent): void {
+        event.preventDefault();
+        const startX = event.clientX;
+        const containerWidth = (): number =>
+            this.el.nativeElement.querySelector('.step-body-container')?.offsetWidth || window.innerWidth;
+        // Start from what is shown, so a stored width that no longer fits does not make a dead zone
+        const startWidth = clampCommentsWidth(this.commentsWidth, containerWidth());
+        this.resizing = true;
+        const bodySelect = document.body.style.userSelect;
+        document.body.style.userSelect = 'none';
+        try {
+            (event.target as Element)?.setPointerCapture?.(event.pointerId);
+        } catch {
+            // the window listeners below keep the drag working without capture
+        }
+
+        const onMove = (move: PointerEvent) => {
+            this.commentsWidth = clampCommentsWidth(startWidth + (startX - move.clientX), containerWidth());
+            this.ref.markForCheck();
+        };
+        const onEnd = () => {
+            this.endResize = null;
+            window.removeEventListener('pointermove', onMove);
+            window.removeEventListener('pointerup', onEnd);
+            window.removeEventListener('pointercancel', onEnd);
+            document.body.style.userSelect = bodySelect;
+            this.resizing = false;
+            this.formPreferences.setCommentsWidth(this.commentsWidth);
+            this.ref.markForCheck();
+        };
+        this.endResize = onEnd;
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onEnd);
+        window.addEventListener('pointercancel', onEnd);
+    }
+
+    public onResizeReset(): void {
+        this.commentsWidth = COMMENTS_WIDTH.default;
+        this.formPreferences.setCommentsWidth(this.commentsWidth);
     }
 
     public onCollapse($event: boolean) {

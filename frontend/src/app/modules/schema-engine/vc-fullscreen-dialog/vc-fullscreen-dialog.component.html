@@ -182,7 +182,23 @@
           </div>
           @if (comments) {
             <!-- Hidden on purpose in the JSON view: discussions are tied to the rendered fields -->
-            <div class="comments-content" [hidden]="currentTab !== 0">
+            <div
+              class="comments-content"
+              [hidden]="currentTab !== 0"
+              [class.resizing]="resizing"
+              [style.width.px]="collapse ? null : commentsWidth">
+              @if (!collapse) {
+                <div
+                  class="comments-resize"
+                  title="Drag to resize – double-click to reset"
+                  (pointerdown)="onResizeStart($event)"
+                  (dblclick)="onResizeReset()">
+                  <span class="comments-resize-grip"></span>
+                  @if (resizing) {
+                    <span class="comments-resize-tip">{{ commentsWidth }} px</span>
+                  }
+                </div>
+              }
               <policy-comments
                 #discussionComponent
                 [document-id]="id"

@@ -1,343 +1,132 @@
 @if (!collapse) {
   <div class="container" [attr.loading]="loading">
-    <div class="header">
-      <button
-        (click)="onClose()"
-        class="guardian-icon-button big header-collapse">
-        <div class="guardian-button-icon">
-          <svg-icon
-            class="icon-btn"
-            src="/assets/images/icons/collapse-left-fill.svg"
-            [svgClass]="'icon-color-primary'">
-          </svg-icon>
+    <!-- Discussions list -->
+    @if (currentTab === 'discussions') {
+      <div class="header list-header">
+        <div class="header-title-wrap">
+          <div class="header-title">Discussions</div>
+          @if (discussionsTotal) {
+            <span class="count-pill">{{discussionsTotal}}</span>
+          }
         </div>
-      </button>
-      @if (currentTab === 'new-discussion') {
-        <div class="header-container">
-          <div class="component-name">Create New Discussion</div>
-        </div>
-      }
-      @if (currentTab === 'discussions') {
-        <div class="header-container">
-          <div class="component-name">Comments</div>
-        </div>
-      }
-      @if (currentTab === 'messages') {
-        <div class="header-container back" (click)="selectDiscussion()">
-          <div
-            class="component-name"
-            pTooltip="{{currentDiscussion?.name}}"
-            tooltipStyleClass="guardian-tooltip"
-            tooltipPosition="top"
-            [showDelay]="500"
-            [hideDelay]="100"
-          >{{currentDiscussion?.name}}</div>
-        </div>
-      }
-      @if (currentTab === 'discussions') {
-        <div class="header-toolbar">
+        <div class="tools">
           @if (key) {
             <button
-              class="guardian-icon-button group-btn big"
+              class="guardian-icon-button icon-btn list-key"
+              aria-label="Download document key"
+              pTooltip="Download document key"
+              tooltipStyleClass="guardian-tooltip"
+              tooltipPosition="bottom"
               (click)="onKey()">
-              <svg-icon class="icon-btn svg-icon"
-                src="/assets/images/icons/key.svg"
-                svgClass="icon-color-grey-color-3">
-              </svg-icon>
+              <ng-container *ngTemplateOutlet="icKey"></ng-container>
             </button>
           }
-        </div>
-      }
-      @if (currentTab === 'messages' && currentDiscussion) {
-        <div class="header-toolbar">
-          @if (key) {
+          @if (!readonly) {
             <button
-              class="guardian-icon-button group-btn big"
-              (click)="onKey(currentDiscussion)">
-              <svg-icon class="icon-btn svg-icon"
-                src="/assets/images/icons/key.svg"
-                svgClass="icon-color-grey-color-3">
-              </svg-icon>
-            </button>
-          }
-          @if (currentDiscussion._users?.length) {
-            <button
-              class="guardian-icon-button group-btn big"
-              (click)="groupMenu.toggle($event)">
-              <svg-icon class="icon-btn svg-icon"
-                src="/assets/images/icons/group.svg"
-                svgClass="icon-color-grey-color-3">
-              </svg-icon>
+              class="guardian-icon-button icon-btn primary list-new"
+              aria-label="New discussion"
+              pTooltip="New discussion"
+              tooltipStyleClass="guardian-tooltip"
+              tooltipPosition="bottom"
+              (click)="onNewDiscussion()">
+              <ng-container *ngTemplateOutlet="icCompose"></ng-container>
             </button>
           }
           <button
-            class="guardian-icon-button group-btn big"
-            (click)="selectDiscussion()">
-            <svg-icon class="icon-btn svg-icon"
-              src="/assets/images/icons/close.svg"
-              svgClass="icon-color-close">
-            </svg-icon>
+            class="guardian-icon-button icon-btn collapse-btn"
+            aria-label="Collapse"
+            pTooltip="Collapse"
+            tooltipStyleClass="guardian-tooltip"
+            tooltipPosition="bottom"
+            (click)="onClose()">
+            <ng-container *ngTemplateOutlet="icCollapse"></ng-container>
           </button>
-          <p-popover #groupMenu styleClass="guardian-popup">
-            @for (item of currentDiscussion._users; track item) {
-              <div class="discussion-user">
-                <svg-icon
-                  class="icon-btn discussion-user-icon"
-                  src="/assets/images/icons/{{item.icon}}.svg"
-                  [svgClass]="'icon-color-primary'">
-                </svg-icon>
-                <div class="discussion-user-name">
-                  {{item.label}}
-                </div>
-              </div>
-            }
-          </p-popover>
-        </div>
-      }
-    </div>
-    @if (currentTab === 'new-discussion') {
-      <div class="new-discussion">
-        <div class="discussion-form">
-          <form [formGroup]="discussionForm">
-            <div class="form-title">
-              General
-            </div>
-            <div class="guardian-input-container">
-              <label class="form-label" htmlFor="version">Discussion Name</label>
-              <input formControlName="name" id="name" pInputText type="text" />
-            </div>
-            <div class="form-title">
-              Relationships
-            </div>
-            @if (discussionForm.value.field) {
-              <div class="guardian-input-container">
-                <label class="form-label" htmlFor="version">Selected Field</label>
-                <div  class="form-field">
-                  <div class="form-field-icon">
-                    <svg-icon src="/assets/images/icons/16/hashtag.svg" svgClass="icon-color-font"></svg-icon>
-                  </div>
-                  <div class="form-field-name">{{discussionForm.value.fieldName}}</div>
-                  <div class="form-field-delete" (click)="onDeleteFormField()">
-                    <svg-icon  src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
-                  </div>
-                </div>
-              </div>
-            }
-            <div class="guardian-input-container">
-              <label class="form-label" htmlFor="version">Documents</label>
-              <p-multiSelect
-                formControlName="relationships"
-                [options]="documentsList"
-                class="guardian-multiselect full-size"
-                appendTo="body"
-                placeholder="Not selected"
-                optionLabel="label"
-                optionValue="value"
-                filterBy="label"
-                panelStyleClass="guardian-multiselect-panel">
-              </p-multiSelect>
-            </div>
-            <div class="form-title">
-              Privacy Settings
-            </div>
-            <div class="guardian-input-container">
-              <label class="form-label" htmlFor="version">Type</label>
-              <p-select
-                formControlName="privacy"
-                [options]="privacyList"
-                [showClear]="false"
-                class="guardian-dropdown"
-                appendTo="body"
-                placeholder="Not selected"
-                optionLabel="label"
-                optionValue="value"
-                panelStyleClass="guardian-dropdown-panel">
-              </p-select>
-            </div>
-            @if (discussionForm.value.privacy==='roles') {
-              <div class="guardian-input-container">
-                <label class="form-label" htmlFor="version">Roles</label>
-                <p-multiSelect
-                  formControlName="roles"
-                  [options]="rolesList"
-                  class="guardian-multiselect full-size"
-                  appendTo="body"
-                  placeholder="Not selected"
-                  optionLabel="label"
-                  optionValue="value"
-                  filterBy="label"
-                  panelStyleClass="guardian-multiselect-panel">
-                </p-multiSelect>
-              </div>
-            }
-            @if (discussionForm.value.privacy==='users') {
-              <div class="guardian-input-container">
-                <label class="form-label" htmlFor="version">Users</label>
-                <p-multiSelect
-                  formControlName="users"
-                  [options]="usersList"
-                  class="guardian-multiselect full-size"
-                  appendTo="body"
-                  placeholder="Not selected"
-                  optionLabel="label"
-                  optionValue="value"
-                  filterBy="label"
-                  panelStyleClass="guardian-multiselect-panel">
-                </p-multiSelect>
-              </div>
-            }
-          </form>
         </div>
       </div>
-      <div class="toolbar">
-        <button
-          (click)="createNewDiscussion()"
-          class="guardian-button guardian-button-primary new-discussion-btn"
-          [disabled]="discussionForm.invalid"
-        >Create</button>
-        <button
-          (click)="cancelNewDiscussion()"
-          class="guardian-button guardian-button-secondery new-discussion-btn"
-        >Cancel</button>
-      </div>
-      @if (loading) {
-        <div class="guardian-loading">
-          <div class="guardian-loading-image"></div>
-        </div>
-      }
-    }
-    @if (currentTab === 'discussions') {
-      <div class="discussion-filters">
-        <div class="search-filter">
+      <div class="filters">
+        <div class="search">
+          <ng-container *ngTemplateOutlet="icSearch"></ng-container>
           <input
             [(ngModel)]="searchDiscussion"
-            class="guardian-input search-policy-input"
             pInputText
-            placeholder="Search by keyword"
+            placeholder="Search discussions"
             type="text"
             (change)="onSetSearch()"/>
-          <i class="search-icon">
-            <svg-icon
-              class="svg-icon-16"
-              src="/assets/images/icons/16/search.svg"
-              svgClass="icon-color-close">
-            </svg-icon>
-          </i>
         </div>
         @if (searchField) {
-          <div class="field-filter">
-            <div class="field-filter-icon">
-              <svg-icon
-                class="svg-icon-16"
-                src="/assets/images/icons/16/hashtag.svg"
-              svgClass="icon-color-primary"></svg-icon>
-            </div>
-            <div class="field-filter-name">{{searchField.name}}</div>
-            <div class="field-filter-delete" (click)="onDeleteSearch()">
-              <svg-icon
-                class="svg-icon-16"
-                src="/assets/images/icons/16/close.svg"
-              svgClass="icon-color-close"></svg-icon>
-            </div>
+          <div class="field-chip" [title]="fieldNames.get(searchField.field) || ''">
+            <ng-container *ngTemplateOutlet="fieldText; context: { label: getFieldLabel(searchField.field, searchField.name), key: getFieldKey(searchField.field) }"></ng-container>
+            <button class="chip-remove" aria-label="Remove the field filter" (click)="onDeleteSearch()">
+              <ng-container *ngTemplateOutlet="icClose"></ng-container>
+            </button>
           </div>
         }
       </div>
-      <div class="discussions">
-        <div class="full-discussions">
-          @if (!discussionGroups.length) {
-            <div class="not-exist">
-              <div class="not-exist-icon">
-                <svg-icon
-                  src="/assets/images/icons/chat-1.svg"
-                svgClass="icon-color-disabled"></svg-icon>
-              </div>
-              <div class="not-exist-text">There are no discussions added yet.</div>
+      <div class="scroll discussions">
+        @if (!discussionGroups.length) {
+          <div class="empty">
+            <div class="empty-icon"><ng-container *ngTemplateOutlet="icChat"></ng-container></div>
+            <div class="empty-title">{{
+              searchDiscussion ? 'Nothing found' : searchField ? 'No discussions on this field yet' : 'No discussions yet'
+            }}</div>
+            <div class="empty-desc">{{
+              searchDiscussion ? 'Try another keyword.' : 'Start one to ask a question or leave a finding – participants get notified.'
+            }}</div>
+            @if (!readonly && !searchDiscussion) {
+              <button class="btn btn-primary empty-new" (click)="onNewDiscussion()">
+                <ng-container *ngTemplateOutlet="icPlus"></ng-container>
+                New discussion
+              </button>
+            }
+          </div>
+        }
+        @for (group of discussionGroups; track group) {
+          @if (discussionGroups.length > 1) {
+            <div class="disc-group-header" [attr.collapsed]="group.collapsed" (click)="onOpenGroup(group)">
+              <span>{{group.name}} · {{group.items.length}}</span>
+              <span class="chevron"><ng-container *ngTemplateOutlet="icChevron"></ng-container></span>
             </div>
+          } @else {
+            <div class="group-gap"></div>
           }
-          @for (group of discussionGroups; track group) {
+          @for (discussion of group.items; track discussion) {
             <div
-              class="discussion-group"
-              (click)="onOpenGroup(group)"
-              >
-              <div class="discussion-group-header" [attr.collapsed]="group.collapsed" >
-                <div class="discussion-group-name">{{group.name}}</div>
-                <div class="discussion-group-count">({{group.items.length}})</div>
-                <div class="discussion-group-icon">
-                  @if (group.collapsed) {
-                    <svg-icon
-                      src="/assets/images/icons/collapse-down.svg"
-                    svgClass="icon-color-disabled"></svg-icon>
-                  }
-                  @if (!group.collapsed) {
-                    <svg-icon
-                      src="/assets/images/icons/collapse-up.svg"
-                    svgClass="icon-color-disabled"></svg-icon>
+              class="disc-row"
+              [hidden]="discussion._hidden"
+              (click)="onOpen(discussion)">
+              <div class="avatar" [style.background]="discussion._color">
+                {{discussion._initials}}
+                @if (discussion._private) {
+                  <span class="avatar-lock"><ng-container *ngTemplateOutlet="icLockSmall"></ng-container></span>
+                }
+              </div>
+              <div class="row-body">
+                <div
+                  class="row-name"
+                  pTooltip="{{discussion.name}}"
+                  tooltipStyleClass="guardian-tooltip"
+                  tooltipPosition="top"
+                  [showDelay]="500"
+                  [hideDelay]="100">{{discussion.name}}</div>
+                <div class="row-sub">
+                  @if (discussion.field) {
+                    <span class="row-field-icon"><ng-container *ngTemplateOutlet="icHash"></ng-container></span>
+                    <span class="row-field-label">{{discussion._fieldLabel}}</span>
+                    <span class="row-field-key">{{discussion._fieldKey}}</span>
+                  } @else {
+                    <span class="muted">{{discussion._private ? 'Private' : 'Everyone'}} · {{discussion.count | pluralize: 'message' : 'messages'}}</span>
                   }
                 </div>
               </div>
-              @for (discussion of group.items; track discussion) {
-                <div
-                  class="full-discussion"
-                  (click)="onOpen(discussion)"
-                  [attr.hidden]="discussion._hidden"
-                  >
-                  <div class="discussion-privacy">
-                    @if (!discussion.privacy) {
-                      <div></div>
-                    }
-                    @if (discussion.privacy === 'public') {
-                      <div></div>
-                    }
-                    @if (discussion.privacy === 'roles') {
-                      <div></div>
-                    }
-                    @if (discussion.privacy === 'users') {
-                      <div></div>
-                    }
-                  </div>
-                  <div class="discussion-icon">
-                    @if (discussion._icon) {
-                      <svg-icon
-                        src="/assets/images/icons/{{discussion._icon}}.svg"
-                      svgClass="icon-color-primary"></svg-icon>
-                    }
-                    @if (discussion._unread) {
-                      <div class="discussion-count">
-                        {{discussion._unread}}
-                      </div>
-                    }
-                  </div>
-                  <div class="discussion-body">
-                    <div
-                      class="discussion-name"
-                      pTooltip="{{discussion.name}}"
-                      tooltipStyleClass="guardian-tooltip"
-                      tooltipPosition="top"
-                      [showDelay]="500"
-                      [hideDelay]="100"
-                      >
-                      {{discussion.name}}
-                    </div>
-                    @if (discussion.field) {
-                      <div class="discussion-field">
-                        <div class="discussion-field-icon">
-                          <svg-icon
-                            class="svg-icon-16"
-                            src="/assets/images/icons/16/hashtag.svg"
-                          svgClass="icon-color-primary"></svg-icon>
-                        </div>
-                        <div class="discussion-field-name">{{discussion.fieldName}}</div>
-                      </div>
-                    }
-                  </div>
-                </div>
+              @if (discussion._unread) {
+                <span class="unread">{{discussion._unread}}</span>
               }
             </div>
           }
-        </div>
+        }
         @if (loading) {
           <div class="loading-placeholder">
-            @for (i of loadingItems; track i) {
+            @for (i of loadingItems; track $index) {
               <div class="placeholder-item">
                 <div class="placeholder-item-icon"></div>
                 <div class="placeholder-item-body">
@@ -349,114 +138,331 @@
           </div>
         }
       </div>
-      @if (!readonly) {
-        <div class="toolbar">
+    }
+
+    <!-- New discussion -->
+    @if (currentTab === 'new-discussion') {
+      <div class="header back-header">
+        <button
+          class="guardian-icon-button icon-btn create-back"
+          aria-label="Back"
+          pTooltip="All discussions"
+          tooltipStyleClass="guardian-tooltip"
+          tooltipPosition="bottom"
+          (click)="cancelNewDiscussion()">
+          <ng-container *ngTemplateOutlet="icBack"></ng-container>
+        </button>
+        <div class="header-title-wrap">
+          <div class="header-title">New discussion</div>
+        </div>
+        <div class="tools">
           <button
-            (click)="onNewDiscussion()"
-            class="guardian-button guardian-button-primary new-discussion-btn"
-            [disabled]="loading"
-            >
-            <div class="guardian-button-icon">
-              <svg-icon
-                class="icon-btn svg-icon"
-                src="/assets/images/icons/new-chat.svg"
-                [svgClass]="loading ? 'icon-color-disabled' : 'icon-color-secondary'"
-              ></svg-icon>
-            </div>
-            <div class="guardian-button-label">Create New Discussion</div>
+            class="guardian-icon-button icon-btn collapse-btn"
+            aria-label="Collapse"
+            pTooltip="Collapse"
+            tooltipStyleClass="guardian-tooltip"
+            tooltipPosition="bottom"
+            (click)="onClose()">
+            <ng-container *ngTemplateOutlet="icCollapse"></ng-container>
           </button>
         </div>
-      }
-    }
-    @if (currentTab === 'messages') {
-      <div class="discussion-filters message-filters">
-        <div class="search-filter">
-          <input
-            [(ngModel)]="searchMessage"
-            class="guardian-input search-policy-input"
-            pInputText
-            placeholder="Search by keyword"
-            type="text"
-            (change)="onSetMessageSearch()"/>
-          <i class="search-icon">
-            <svg-icon
-              class="svg-icon-16"
-              src="/assets/images/icons/16/search.svg"
-              svgClass="icon-color-close">
-            </svg-icon>
-          </i>
-        </div>
-        @if (currentDiscussion?.field) {
-          <div class="field-filter" (click)="onLinkField(currentDiscussion?.field)">
-            <div class="field-filter-icon">
-              <svg-icon
-                class="svg-icon-16"
-                src="/assets/images/icons/16/hashtag.svg"
-              svgClass="icon-color-primary"></svg-icon>
-            </div>
-            <div class="field-filter-name">{{currentDiscussion?.fieldName}}</div>
-          </div>
-        }
       </div>
-      <div #messageContainer class="messages-container">
-        @if (!comments.data.length) {
-          <div class="messages">
-            <div class="not-exist">
-              <div class="not-exist-icon">
-                <svg-icon
-                  src="/assets/images/icons/chat-1.svg"
-                svgClass="icon-color-disabled"></svg-icon>
-              </div>
-              <div class="not-exist-text">There are no comments added yet.</div>
-            </div>
+      <div class="scroll">
+        <form class="create-form" [formGroup]="discussionForm">
+          <div class="form-field">
+            <label for="discussion-name">Name</label>
+            <input
+              formControlName="name"
+              id="discussion-name"
+              class="form-input"
+              pInputText
+              type="text"
+              maxlength="100"
+              placeholder="e.g. Findings #1" />
           </div>
-        }
-        @if (comments.data.length) {
-          <div class="messages" >
-            @for (item of comments.data; track item) {
-              <div class="message" [attr.owner]="item.isOwner">
-                <div class="message-time">
-                  {{getDate(item.timestamp)}}
-                </div>
-                <div class="message-body">
-                  <div class="message-header">
-                    <div class="message-name">
-                      {{item.senderName}}
-                    </div>
-                    @if (item.senderRole) {
-                      <div class="message-role">
-                        {{item.senderRole}}
+          @if (discussionForm.value.field) {
+            <div class="form-field">
+              <label>About the field</label>
+              <div class="field-chip" [title]="fieldNames.get(discussionForm.value.field) || ''">
+                <ng-container *ngTemplateOutlet="fieldText; context: { label: getFieldLabel(discussionForm.value.field, discussionForm.value.fieldName), key: getFieldKey(discussionForm.value.field) }"></ng-container>
+                <button type="button" class="chip-remove" aria-label="Remove the field" (click)="onDeleteFormField()">
+                  <ng-container *ngTemplateOutlet="icClose"></ng-container>
+                </button>
+              </div>
+            </div>
+          }
+          <div class="form-field">
+            <label>Related documents <span class="optional">– optional</span></label>
+            <p-multiSelect
+              formControlName="relationships"
+              [options]="documentsList"
+              class="guardian-multiselect full-size"
+              appendTo="body"
+              placeholder="Not selected"
+              optionLabel="label"
+              optionValue="value"
+              filterBy="label"
+              panelStyleClass="guardian-multiselect-panel">
+            </p-multiSelect>
+          </div>
+          <div class="form-field">
+            <label>Who can see it</label>
+            <div class="privacy-options">
+              @for (option of privacyList; track option.value) {
+                <div
+                  class="privacy-option"
+                  [class.on]="discussionForm.value.privacy === option.value"
+                  (click)="onPrivacy(option.value)">
+                  <span class="privacy-dot"></span>
+                  <div class="privacy-body">
+                    <div class="privacy-option-title">{{option.label}}</div>
+                    <div class="privacy-option-desc">{{option.description}}</div>
+                    @if (discussionForm.value.privacy === option.value && option.value === 'roles') {
+                      <div class="privacy-picker">
+                        <p-multiSelect
+                          formControlName="roles"
+                          [options]="rolesList"
+                          class="guardian-multiselect full-size"
+                          appendTo="body"
+                          placeholder="Choose roles"
+                          optionLabel="label"
+                          optionValue="value"
+                          filterBy="label"
+                          panelStyleClass="guardian-multiselect-panel">
+                        </p-multiSelect>
+                      </div>
+                    }
+                    @if (discussionForm.value.privacy === option.value && option.value === 'users') {
+                      <div class="privacy-picker">
+                        <p-multiSelect
+                          formControlName="users"
+                          [options]="usersList"
+                          class="guardian-multiselect full-size"
+                          appendTo="body"
+                          placeholder="Choose people"
+                          optionLabel="label"
+                          optionValue="value"
+                          filterBy="label"
+                          panelStyleClass="guardian-multiselect-panel">
+                        </p-multiSelect>
                       </div>
                     }
                   </div>
-                  @if (item.__text) {
-                    <div class="message-text">
+                </div>
+              }
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="form-footer">
+        <button class="btn btn-secondary create-cancel" (click)="cancelNewDiscussion()">Cancel</button>
+        <button
+          class="btn btn-primary create-submit"
+          (click)="createNewDiscussion()"
+          [disabled]="discussionForm.invalid">Create</button>
+      </div>
+      @if (loading) {
+        <div class="guardian-loading">
+          <div class="guardian-loading-image"></div>
+        </div>
+      }
+    }
+
+    <!-- Thread -->
+    @if (currentTab === 'messages') {
+      <div class="header back-header thread-header">
+        <button
+          class="guardian-icon-button icon-btn thread-back"
+          aria-label="All discussions"
+          pTooltip="All discussions"
+          tooltipStyleClass="guardian-tooltip"
+          tooltipPosition="bottom"
+          (click)="selectDiscussion()">
+          <ng-container *ngTemplateOutlet="icBack"></ng-container>
+        </button>
+        <div class="thread-identity" [title]="currentDiscussion?.name || ''" (click)="toggleParticipants()">
+          <div class="avatar small" [style.background]="currentDiscussion?._color">
+            {{currentDiscussion?._initials}}
+            @if (currentDiscussion?._private) {
+              <span class="avatar-lock"><ng-container *ngTemplateOutlet="icLockSmall"></ng-container></span>
+            }
+          </div>
+          <div class="thread-text">
+            <div class="thread-name">{{currentDiscussion?.name}}</div>
+            <div class="thread-sub">
+              @if (currentDiscussion?._private) {
+                <ng-container *ngTemplateOutlet="icLock"></ng-container>
+              } @else {
+                <ng-container *ngTemplateOutlet="icGlobe"></ng-container>
+              }
+              <span>{{getParticipantsSummary(currentDiscussion)}}</span>
+            </div>
+          </div>
+        </div>
+        <div class="tools thread-tools">
+          <button
+            class="guardian-icon-button icon-btn"
+            [class.on]="messageSearchOpen"
+            aria-label="Search messages"
+            pTooltip="Search messages"
+            tooltipStyleClass="guardian-tooltip"
+            tooltipPosition="bottom"
+            (click)="toggleMessageSearch()">
+            <ng-container *ngTemplateOutlet="icSearch"></ng-container>
+          </button>
+          <button
+            class="guardian-icon-button icon-btn collapse-btn"
+            aria-label="Collapse"
+            pTooltip="Collapse"
+            tooltipStyleClass="guardian-tooltip"
+            tooltipPosition="bottom"
+            (click)="onClose()">
+            <ng-container *ngTemplateOutlet="icCollapse"></ng-container>
+          </button>
+        </div>
+      </div>
+
+      @if (participantsOpen && currentDiscussion) {
+        <div class="sheet-backdrop" (click)="toggleParticipants()"></div>
+        <div class="participants-sheet">
+          <div class="sheet-head">
+            <div class="sheet-title">Participants</div>
+            <button class="guardian-icon-button icon-btn" aria-label="Close" (click)="toggleParticipants()">
+              <ng-container *ngTemplateOutlet="icClose"></ng-container>
+            </button>
+          </div>
+          <div class="sheet-visibility">
+            @if (currentDiscussion._private) {
+              <ng-container *ngTemplateOutlet="icLock"></ng-container>
+            } @else {
+              <ng-container *ngTemplateOutlet="icGlobe"></ng-container>
+            }
+            <span>{{
+              currentDiscussion.privacy === 'roles'
+                ? 'Visible to users with the roles below and to the creator.'
+                : currentDiscussion.privacy === 'users'
+                  ? 'Visible only to the people below.'
+                  : 'Everyone who can open this document can read and reply.'
+            }}</span>
+          </div>
+          @if (participantsRoles.length) {
+            <div class="sheet-section">Roles</div>
+            @for (role of participantsRoles; track role) {
+              <div class="participant">
+                <span class="role-icon"><ng-container *ngTemplateOutlet="icShield"></ng-container></span>
+                <span class="participant-name">{{role.label}}</span>
+              </div>
+            }
+          }
+          @if (participantsPeople.length) {
+            <div class="sheet-section">{{currentDiscussion.privacy === 'public' || !currentDiscussion.privacy ? 'Started by' : 'People'}}</div>
+            @for (person of participantsPeople; track person) {
+              <div class="participant">
+                <span class="avatar tiny" [style.background]="person._color">{{person._initial}}</span>
+                <span class="participant-name">{{person.label}}</span>
+                @if (person.me) {
+                  <span class="participant-tag you">You</span>
+                }
+                @if (person.owner) {
+                  <span class="participant-tag">Creator</span>
+                }
+              </div>
+            }
+          }
+          @if (key) {
+            <div class="sheet-action">
+              <button class="btn btn-secondary sheet-key" (click)="onKey(currentDiscussion)">
+                <ng-container *ngTemplateOutlet="icKey"></ng-container>
+                Download discussion key
+              </button>
+            </div>
+          } @else {
+            <div class="sheet-gap"></div>
+          }
+        </div>
+      }
+
+      @if (currentDiscussion?.field) {
+        <div class="field-bar" title="Go to the field in the form" (click)="onLinkField(currentDiscussion?.field)">
+          <span class="field-bar-stripe"></span>
+          <div class="field-bar-text">
+            <span class="field-bar-caption">Field</span>
+            <span class="field-bar-line">
+              <span class="field-bar-label">{{currentDiscussion?._fieldLabel}}</span>
+              <span class="field-bar-key">{{currentDiscussion?._fieldKey}}</span>
+            </span>
+          </div>
+          <span class="field-bar-go"><ng-container *ngTemplateOutlet="icArrowUpRight"></ng-container></span>
+        </div>
+      }
+
+      @if (messageSearchOpen) {
+        <div class="message-search">
+          <div class="search">
+            <ng-container *ngTemplateOutlet="icSearch"></ng-container>
+            <input
+              [(ngModel)]="searchMessage"
+              pInputText
+              placeholder="Search in this discussion"
+              type="text"
+              (change)="onSetMessageSearch()"/>
+          </div>
+        </div>
+      }
+
+      <div #messageContainer class="messages-container">
+        @if (!comments.data.length) {
+          <div class="empty">
+            <div class="empty-icon"><ng-container *ngTemplateOutlet="icChat"></ng-container></div>
+            <div class="empty-title">No messages yet</div>
+            @if (!readonly) {
+              <div class="empty-desc">Write the first message below.</div>
+            }
+          </div>
+        } @else {
+          <div class="messages">
+            @for (item of comments.data; track item) {
+              <div
+                class="message"
+                [class.own]="item.isOwner"
+                [class.cont]="item.__cont">
+                @if (!item.isOwner) {
+                  <span class="avatar tiny" [style.background]="item.__color">{{item.__initial}}</span>
+                }
+                <div class="bubble">
+                  @if (!item.isOwner && !item.__cont) {
+                    <div class="message-header">
+                      <span class="message-name" [style.color]="item.__color">{{item.senderName}}</span>
+                      @if (item.senderRole) {
+                        <span class="message-role">{{item.senderRole}}</span>
+                      }
+                    </div>
+                  }
+                  @if (item.__text?.length) {
+                    <span class="message-text">
                       @for (textItem of item.__text; track textItem) {
                         @if (textItem.type === 'text') {
-                          <span
-                          class="text-type-text">{{textItem.label}}</span>
+                          <span class="text-type-text">{{textItem.label}}</span>
                         }
                         @if (textItem.type === 'tag') {
-                          <span
-                          class="text-type-tag">{{textItem.label}}</span>
+                          <span class="text-type-tag">{{textItem.label}}</span>
                         }
                         @if (textItem.type === 'all') {
-                          <span
-                          class="text-type-all">{{textItem.label}}</span>
+                          <span class="text-type-all">{{textItem.label}}</span>
                         }
                         @if (textItem.type === 'role') {
                           <span
                             class="text-type-role"
                             [pTooltip]="tooltipContent"
                             [tooltipOptions]="{showDelay: 300}"
-                          tooltipPosition="top">{{textItem.label}}</span>
+                            tooltipPosition="top">{{textItem.label}}</span>
                         }
                         @if (textItem.type === 'user') {
                           <span
                             class="text-type-user"
                             [pTooltip]="tooltipContent"
                             [tooltipOptions]="{showDelay: 300}"
-                          tooltipPosition="top">{{textItem.label}}</span>
+                            tooltipPosition="top">{{textItem.label}}</span>
                         }
                         @if (textItem.type === 'field') {
                           <span
@@ -464,7 +470,7 @@
                             (click)="onLinkText(textItem)"
                             [pTooltip]="tooltipContent"
                             [tooltipOptions]="{showDelay: 300}"
-                          tooltipPosition="top">{{textItem.label}}</span>
+                            tooltipPosition="top">{{textItem.label}}</span>
                         }
                         <ng-template #tooltipContent>
                           @if (textItem.tooltip) {
@@ -478,9 +484,9 @@
                           }
                         </ng-template>
                       }
-                    </div>
+                    </span>
                   }
-                  @if (item.__files) {
+                  @if (item.__files?.length) {
                     <div class="message-files">
                       @for (file of item.__files; track file) {
                         <div class="message-file" (click)="onLoadFile(file)">
@@ -489,83 +495,37 @@
                               <div class="guardian-loading-image"></div>
                             </div>
                           }
-                          <div class="file-icon">
-                            <svg-icon src="/assets/images/icons/file.svg" svgClass="icon-color-close"></svg-icon>
-                          </div>
+                          <div class="file-icon"><ng-container *ngTemplateOutlet="icFile"></ng-container></div>
                           <div class="file-metadata">
-                            <div class="file-name">
-                              <span>{{file.name}}</span>
-                            </div>
+                            <div class="file-name">{{file.name}}</div>
                             <div class="file-size">{{getSize(file.size)}}</div>
                           </div>
                         </div>
                       }
                     </div>
                   }
+                  <span class="message-time">{{item.__time}}</span>
                 </div>
               </div>
+              @if (item.__day) {
+                <div class="day-separator">{{item.__day}}</div>
+              }
             }
             @if (!comments.full) {
-              <button
-                (click)="onMore()"
-                class="guardian-button guardian-button-secondery"
-                style="min-height: 30px; margin-bottom: 16px;"
-                >
-                <div class="guardian-button-label">More</div>
-              </button>
+              <button class="more-btn" (click)="onMore()">Load earlier messages</button>
             }
           </div>
         }
       </div>
+
       @if (!readonly) {
-        <div class="toolbar" (drop)="onDrop($event)">
-          <div class="guardian-textarea-container toolbar-textarea">
-            <mwl-text-input-autocomplete-container>
-              <textarea
-                #messageInput
-                placeholder="Write a message"
-                rows="3"
-                [(ngModel)]="textMessage"
-                mwlTextInputAutocomplete
-                [triggerCharacter]="triggerCharacter"
-                [findChoices]="_findChoices"
-                [getChoiceLabel]="_getChoiceLabel"
-                [menuPosition]="'above'"
-                [menuMaxSize]="200"
-                (input)="onText($event)"
-                [maxlength]="600">
-              </textarea>
-              <ng-template let-item #itemTemplate>
-                <div class="autocomplete-item">
-                  @if (item.type === 'user') {
-                    <i class="pi pi-user"></i>
-                  }
-                  @if (item.type === 'all') {
-                    <i class="pi pi-users"></i>
-                  }
-                  @if (item.type === 'role') {
-                    <i class="pi pi-users"></i>
-                  }
-                  @if (item.type === 'field') {
-                    <i class="pi pi-hashtag"></i>
-                  }
-                  <span class="autocomplete-item-name">{{ item.label }}</span>
-                </div>
-              </ng-template>
-            </mwl-text-input-autocomplete-container>
-          </div>
+        <div class="composer" (drop)="onDrop($event)">
           @if (files.length) {
             <div class="toolbar-files">
               @for (file of files; track file) {
-                <div class="toolbar-file {{ files.length>6 ? 'more' : ''}}">
+                <div class="toolbar-file">
                   @if (file.loaded) {
-                    <div class="toolbar-file-icon">
-                      <svg-icon
-                        class="svg-icon-16"
-                        src="/assets/images/icons/16/file.svg"
-                        svgClass="icon-color-primary"
-                      ></svg-icon>
-                    </div>
+                    <div class="toolbar-file-icon"><ng-container *ngTemplateOutlet="icFile"></ng-container></div>
                   }
                   @if (!file.loaded) {
                     <div class="toolbar-file-loading guardian-loading">
@@ -574,47 +534,81 @@
                   }
                   <div class="toolbar-file-metadata">
                     <div class="file-name">{{file.name}}</div>
-                    <!-- <div>{{file.loaded}}</div> -->
                   </div>
-                  <div class="toolbar-file-action" (click)="onDeleteFile(file)">
-                    <svg-icon
-                      class="svg-icon-16"
-                      src="/assets/images/icons/16/close.svg"
-                    svgClass="icon-color-close"></svg-icon>
-                  </div>
+                  <button class="toolbar-file-action" aria-label="Remove the file" (click)="onDeleteFile(file)">
+                    <ng-container *ngTemplateOutlet="icClose"></ng-container>
+                  </button>
                 </div>
               }
               @if (files.length>6) {
-                <div class="toolbar-file-more">
-                  +{{files.length-6}}
-                </div>
+                <div class="toolbar-file-more">+{{files.length-6}}</div>
               }
             </div>
           }
-          <div class="toolbar-actions">
-            <div class="text-length">{{textMessage.length}}/600</div>
+          <div class="composer-row">
             <button
-              class="guardian-icon-button attach-btn big"
+              class="guardian-icon-button icon-btn attach-btn"
+              aria-label="Attach files"
+              pTooltip="Attach files"
+              tooltipStyleClass="guardian-tooltip"
+              tooltipPosition="top"
               (click)="onAttach($event)">
-              <svg-icon
-                class="icon-btn svg-icon"
-                src="/assets/images/icons/attach.svg"
-                [svgClass]="'icon-color-primary'">
-              </svg-icon>
+              <ng-container *ngTemplateOutlet="icAttach"></ng-container>
             </button>
-            <div class="delimiter"></div>
+            <div class="composer-box">
+              <mwl-text-input-autocomplete-container>
+                <textarea
+                  #messageInput
+                  class="composer-input"
+                  placeholder="Write a message…"
+                  rows="1"
+                  [(ngModel)]="textMessage"
+                  mwlTextInputAutocomplete
+                  [triggerCharacter]="triggerCharacter"
+                  [findChoices]="_findChoices"
+                  [getChoiceLabel]="_getChoiceLabel"
+                  [menuPosition]="'above'"
+                  [menuMaxSize]="200"
+                  (menuShown)="menuOpen = true"
+                  (menuHidden)="menuOpen = false"
+                  (keydown)="onMessageKeydown($event)"
+                  (input)="onText($event)"
+                  [maxlength]="maxLength">
+                </textarea>
+                <ng-template let-item #itemTemplate>
+                  <div class="autocomplete-item">
+                    @if (item.type === 'user') {
+                      <i class="pi pi-user"></i>
+                    }
+                    @if (item.type === 'all') {
+                      <i class="pi pi-users"></i>
+                    }
+                    @if (item.type === 'role') {
+                      <i class="pi pi-users"></i>
+                    }
+                    @if (item.type === 'field') {
+                      <i class="pi pi-hashtag"></i>
+                    }
+                    <span class="autocomplete-item-name">{{ item.label }}</span>
+                  </div>
+                </ng-template>
+              </mwl-text-input-autocomplete-container>
+              @if (counterVisible) {
+                <div class="composer-counter" [class.limit]="counterLimit">{{textMessage.length}}/{{maxLength}}</div>
+              }
+            </div>
             <button
-              class="guardian-icon-button send-btn big"
+              class="send-btn"
+              aria-label="Send"
+              title="Send"
               (click)="createComment()"
               [disabled]="sendDisabled">
-              <svg-icon
-                class="icon-btn svg-icon"
-                src="/assets/images/icons/send.svg"
-                [svgClass]="sendDisabled ? 'icon-color-disabled' : 'icon-color-primary'">
-              </svg-icon>
+              <ng-container *ngTemplateOutlet="icSend"></ng-container>
             </button>
           </div>
         </div>
+      } @else {
+        <div class="readonly-note">This document is read-only – you can read the discussion but not reply.</div>
       }
       @if (loading) {
         <div class="guardian-loading message-loading">
@@ -625,58 +619,54 @@
   </div>
 }
 
+<!-- Collapsed rail -->
 @if (collapse) {
-  <div class="collapse-container" [attr.loading]="loading">
-    <div class="header">
+  <div class="rail" [attr.loading]="loading">
+    <div class="rail-top">
       <button
-        (click)="onOpen()"
-        class="guardian-icon-button big header-collapse">
-        <div class="guardian-button-icon">
-          <svg-icon
-            class="icon-btn"
-            src="/assets/images/icons/collapse-right-fill.svg"
-            [svgClass]="'icon-color-primary'">
-          </svg-icon>
-        </div>
+        class="guardian-icon-button icon-btn primary expand-btn"
+        aria-label="Expand"
+        pTooltip="Expand"
+        tooltipStyleClass="guardian-tooltip"
+        tooltipPosition="left"
+        (click)="onOpen()">
+        <ng-container *ngTemplateOutlet="icExpand"></ng-container>
       </button>
     </div>
-    <div class="discussion-filters">
+    <div class="rail-search">
       <button
-        (click)="onOpen()"
-        class="guardian-icon-button big filters-btn">
-        <div class="guardian-button-icon">
-          <svg-icon
-            class="icon-btn"
-            src="/assets/images/icons/search.svg"
-            [svgClass]="'icon-color-disabled'">
-          </svg-icon>
-        </div>
+        class="guardian-icon-button icon-btn"
+        aria-label="Search discussions"
+        (click)="onOpen()">
+        <ng-container *ngTemplateOutlet="icSearch"></ng-container>
       </button>
     </div>
-    <div class="discussions">
-      <div class="collapse-discussions">
-        @for (group of discussionGroups; track group) {
-          <div >
-            @for (discussion of group.items; track discussion) {
-              <div class="collapse-discussion" (click)="onOpen(discussion)">
-                @if (discussion._icon) {
-                  <svg-icon
-                    src="/assets/images/icons/{{discussion._icon}}.svg"
-                  svgClass="icon-color-primary"></svg-icon>
-                }
-                @if (discussion._unread) {
-                  <div class="discussion-count">
-                    {{discussion._unread}}
-                  </div>
-                }
-              </div>
+    <div class="rail-list discussions">
+      @for (group of discussionGroups; track group; let first = $first) {
+        @if (!first) {
+          <div class="rail-divider"></div>
+        }
+        @for (discussion of group.items; track discussion) {
+          <div
+            class="avatar rail-avatar"
+            [style.background]="discussion._color"
+            pTooltip="{{discussion.name}}"
+            tooltipStyleClass="guardian-tooltip"
+            tooltipPosition="left"
+            (click)="onOpen(discussion)">
+            {{discussion._initials}}
+            @if (discussion._private) {
+              <span class="avatar-lock"><ng-container *ngTemplateOutlet="icLockSmall"></ng-container></span>
+            }
+            @if (discussion._unread) {
+              <span class="avatar-badge">{{discussion._unread}}</span>
             }
           </div>
         }
-      </div>
+      }
       @if (loading) {
         <div class="loading-placeholder">
-          @for (i of loadingItems; track i) {
+          @for (i of loadingItems; track $index) {
             <div class="placeholder-item">
               <div class="placeholder-item-icon"></div>
             </div>
@@ -684,20 +674,49 @@
         </div>
       }
     </div>
-    <div class="collapse-toolbar">
-      <button
-        (click)="onNewDiscussion()"
-        class="guardian-button guardian-button-primary open-btn"
-        [disabled]="loading"
-        >
-        <div class="guardian-button-icon">
-          <svg-icon
-            class="icon-btn"
-            src="/assets/images/icons/new-chat.svg"
-            [svgClass]="'icon-color-secondary'">
-          </svg-icon>
-        </div>
-      </button>
-    </div>
+    @if (!readonly) {
+      <div class="rail-foot">
+        <button
+          class="rail-new"
+          aria-label="New discussion"
+          pTooltip="New discussion"
+          tooltipStyleClass="guardian-tooltip"
+          tooltipPosition="left"
+          [disabled]="loading"
+          (click)="onNewDiscussion()">
+          <ng-container *ngTemplateOutlet="icPlus"></ng-container>
+        </button>
+      </div>
+    }
   </div>
 }
+
+<!-- A field: its form label first, its key second -->
+<ng-template #fieldText let-label="label" let-key="key">
+  <span class="chip-icon"><ng-container *ngTemplateOutlet="icHash"></ng-container></span>
+  <span class="chip-text">
+    <span class="chip-label">{{label}}</span>
+    <span class="chip-key">{{key}}</span>
+  </span>
+</ng-template>
+
+<!-- Icons -->
+<ng-template #icSearch><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></ng-template>
+<ng-template #icCollapse><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M15 3v18"/><path d="m8 9 3 3-3 3"/></svg></ng-template>
+<ng-template #icExpand><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M15 3v18"/><path d="m11 9-3 3 3 3"/></svg></ng-template>
+<ng-template #icBack><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg></ng-template>
+<ng-template #icCompose><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4Z"/></svg></ng-template>
+<ng-template #icPlus><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></ng-template>
+<ng-template #icKey><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></svg></ng-template>
+<ng-template #icHash><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/></svg></ng-template>
+<ng-template #icClose><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></ng-template>
+<ng-template #icLockSmall><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></ng-template>
+<ng-template #icLock><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></ng-template>
+<ng-template #icGlobe><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></ng-template>
+<ng-template #icShield><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg></ng-template>
+<ng-template #icChat><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></ng-template>
+<ng-template #icChevron><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></ng-template>
+<ng-template #icAttach><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.4 11.1-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg></ng-template>
+<ng-template #icSend><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4Z"/></svg></ng-template>
+<ng-template #icFile><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></ng-template>
+<ng-template #icArrowUpRight><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg></ng-template>
