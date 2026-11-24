@@ -12,7 +12,7 @@
         <div class="tools">
           @if (key) {
             <button
-              class="icon-btn list-key"
+              class="guardian-icon-button icon-btn list-key"
               aria-label="Download document key"
               pTooltip="Download document key"
               tooltipStyleClass="guardian-tooltip"
@@ -23,7 +23,7 @@
           }
           @if (!readonly) {
             <button
-              class="icon-btn primary list-new"
+              class="guardian-icon-button icon-btn primary list-new"
               aria-label="New discussion"
               pTooltip="New discussion"
               tooltipStyleClass="guardian-tooltip"
@@ -33,7 +33,7 @@
             </button>
           }
           <button
-            class="icon-btn collapse-btn"
+            class="guardian-icon-button icon-btn collapse-btn"
             aria-label="Collapse"
             pTooltip="Collapse"
             tooltipStyleClass="guardian-tooltip"
@@ -114,7 +114,7 @@
                     <span class="row-field-label">{{discussion._fieldLabel}}</span>
                     <span class="row-field-key">{{discussion._fieldKey}}</span>
                   } @else {
-                    <span class="muted">{{discussion._private ? 'Private' : 'Everyone'}} · {{discussion.count}} {{discussion.count === 1 ? 'message' : 'messages'}}</span>
+                    <span class="muted">{{discussion._private ? 'Private' : 'Everyone'}} · {{discussion.count | pluralize: 'message' : 'messages'}}</span>
                   }
                 </div>
               </div>
@@ -144,7 +144,7 @@
     @if (currentTab === 'new-discussion') {
       <div class="header back-header">
         <button
-          class="icon-btn create-back"
+          class="guardian-icon-button icon-btn create-back"
           aria-label="Back"
           pTooltip="All discussions"
           tooltipStyleClass="guardian-tooltip"
@@ -157,7 +157,7 @@
         </div>
         <div class="tools">
           <button
-            class="icon-btn collapse-btn"
+            class="guardian-icon-button icon-btn collapse-btn"
             aria-label="Collapse"
             pTooltip="Collapse"
             tooltipStyleClass="guardian-tooltip"
@@ -272,7 +272,7 @@
     @if (currentTab === 'messages') {
       <div class="header back-header thread-header">
         <button
-          class="icon-btn thread-back"
+          class="guardian-icon-button icon-btn thread-back"
           aria-label="All discussions"
           pTooltip="All discussions"
           tooltipStyleClass="guardian-tooltip"
@@ -301,7 +301,7 @@
         </div>
         <div class="tools thread-tools">
           <button
-            class="icon-btn"
+            class="guardian-icon-button icon-btn"
             [class.on]="messageSearchOpen"
             aria-label="Search messages"
             pTooltip="Search messages"
@@ -311,7 +311,7 @@
             <ng-container *ngTemplateOutlet="icSearch"></ng-container>
           </button>
           <button
-            class="icon-btn collapse-btn"
+            class="guardian-icon-button icon-btn collapse-btn"
             aria-label="Collapse"
             pTooltip="Collapse"
             tooltipStyleClass="guardian-tooltip"
@@ -327,7 +327,7 @@
         <div class="participants-sheet">
           <div class="sheet-head">
             <div class="sheet-title">Participants</div>
-            <button class="icon-btn" aria-label="Close" (click)="toggleParticipants()">
+            <button class="guardian-icon-button icon-btn" aria-label="Close" (click)="toggleParticipants()">
               <ng-container *ngTemplateOutlet="icClose"></ng-container>
             </button>
           </div>
@@ -358,7 +358,7 @@
             <div class="sheet-section">{{currentDiscussion.privacy === 'public' || !currentDiscussion.privacy ? 'Started by' : 'People'}}</div>
             @for (person of participantsPeople; track person) {
               <div class="participant">
-                <span class="avatar tiny" [style.background]="person._color">{{person.label.substring(0, 1).toUpperCase()}}</span>
+                <span class="avatar tiny" [style.background]="person._color">{{person._initial}}</span>
                 <span class="participant-name">{{person.label}}</span>
                 @if (person.me) {
                   <span class="participant-tag you">You</span>
@@ -547,7 +547,7 @@
           }
           <div class="composer-row">
             <button
-              class="icon-btn attach-btn"
+              class="guardian-icon-button icon-btn attach-btn"
               aria-label="Attach files"
               pTooltip="Attach files"
               tooltipStyleClass="guardian-tooltip"
@@ -624,7 +624,7 @@
   <div class="rail" [attr.loading]="loading">
     <div class="rail-top">
       <button
-        class="icon-btn primary expand-btn"
+        class="guardian-icon-button icon-btn primary expand-btn"
         aria-label="Expand"
         pTooltip="Expand"
         tooltipStyleClass="guardian-tooltip"
@@ -635,7 +635,7 @@
     </div>
     <div class="rail-search">
       <button
-        class="icon-btn"
+        class="guardian-icon-button icon-btn"
         aria-label="Search discussions"
         (click)="onOpen()">
         <ng-container *ngTemplateOutlet="icSearch"></ng-container>

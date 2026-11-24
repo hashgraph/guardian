@@ -10,7 +10,7 @@ import { FormulasService } from 'src/app/services/formulas.service';
 import { GeoFilePersistenceService } from 'src/app/services/geo-file-persistence.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
-import { SchemaFormPreferencesService } from 'src/app/services/schema-form-preferences.service';
+import { COMMENTS_WIDTH_STORAGE_KEY, SchemaFormPreferencesService } from 'src/app/services/schema-form-preferences.service';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { SchemaService } from 'src/app/services/schema.service';
 import { TablePersistenceService } from 'src/app/services/table-persistence.service';
@@ -19,7 +19,7 @@ import { clampCommentsWidth, COMMENTS_WIDTH, VCFullscreenDialog } from './vc-ful
 
 describe('VCFullscreenDialog', () => {
     function build(): any {
-        return new VCFullscreenDialog({} as any, { data: {} } as any, {} as any, {} as any, {} as any, {} as any, {} as any, {} as any, {} as any, {} as any, {} as any, {} as any, new UntypedFormBuilder(), {} as any, {} as any, {} as any, {} as any, {} as any, {} as any);
+        return new VCFullscreenDialog({} as any, { data: {} } as any, {} as any, {} as any, {} as any, {} as any, {} as any, {} as any, {} as any, {} as any, {} as any, {} as any, new UntypedFormBuilder(), {} as any, {} as any, {} as any, {} as any, {} as any, new SchemaFormPreferencesService());
     }
 
     // Seven takeUntil sites guarded on a subject nothing ever fired, so every
@@ -135,7 +135,6 @@ describe('VCFullscreenDialog', () => {
                     { provide: ToastService, useValue: {} },
                     { provide: TablePersistenceService, useValue: {} },
                     { provide: GeoFilePersistenceService, useValue: {} },
-                    { provide: SchemaFormPreferencesService, useValue: { showFieldMetadata$: of(false), setShowFieldMetadata: () => undefined } },
                 ],
                 schemas: [NO_ERRORS_SCHEMA],
             });
@@ -260,7 +259,6 @@ describe('VCFullscreenDialog', () => {
                     { provide: ToastService, useValue: {} },
                     { provide: TablePersistenceService, useValue: {} },
                     { provide: GeoFilePersistenceService, useValue: {} },
-                    { provide: SchemaFormPreferencesService, useValue: { showFieldMetadata$: of(false), setShowFieldMetadata: () => undefined } },
                 ],
                 schemas: [NO_ERRORS_SCHEMA],
             });
@@ -370,7 +368,7 @@ describe('VCFullscreenDialog', () => {
         }));
 
     describe('discussions width', () => {
-        const KEY = COMMENTS_WIDTH.storageKey;
+        const KEY = COMMENTS_WIDTH_STORAGE_KEY;
         beforeEach(() => localStorage.removeItem(KEY));
         afterEach(() => localStorage.removeItem(KEY));
 

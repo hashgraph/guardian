@@ -8,6 +8,8 @@ import { Schema, SchemaField, UserPermissions } from '@guardian/interfaces';
 import { CommentsService } from 'src/app/services/comments.service';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { getAvatarColor, getInitials } from './discussion-avatar';
+import { getUserInitials } from 'src/app/utils/user-initials';
+import { PluralizePipe } from '../pipes/pluralize.pipe';
 import { DiscussionGroup, DiscussionItem, FieldItem, LastRead, ListItem, placeholderItems, TextItem, TextItemType } from './interfaces';
 
 /**
@@ -67,6 +69,7 @@ export class PolicyComments {
     /** True while the autocomplete menu is open: Enter then picks a suggestion instead of sending. */
     public menuOpen: boolean = false;
 
+    private readonly pluralize = new PluralizePipe();
     public readonly counterFrom = 1600;
     public readonly maxLength = 2000;
 
@@ -600,6 +603,7 @@ export class PolicyComments {
                 item.me = !!this.owner && item.did === this.owner;
             }
             item._color = getAvatarColor(item.label);
+            item._initial = getUserInitials(item.label).substring(0, 1);
             discussion._users.push(item);
         }
     }
@@ -611,10 +615,10 @@ export class PolicyComments {
         }
         if (discussion.privacy === 'roles') {
             const count = discussion._users?.filter((u) => u.type === 'role').length || 0;
-            return count === 1 ? '1 role' : `${count} roles`;
+            return this.pluralize.transform(count, 'role', 'roles');
         }
         const count = discussion._users?.filter((u) => u.type === 'user').length || 0;
-        return count === 1 ? '1 participant' : `${count} participants`;
+        return this.pluralize.transform(count, 'participant', 'participants');
     }
 
     /** The label of the field in the form, then the name stored with the discussion, then the key. */
@@ -771,7 +775,7 @@ export class PolicyComments {
             }
             item.__text = textItems;
             item.__files = files.map((f) => AttachedFile.fromLink(item.policyId, item.targetId, item.discussionId, f));
-            item.__initial = getInitials(item.senderName).substring(0, 1);
+            item.__initial = getUserInitials(item.senderName).substring(0, 1);
             item.__color = getAvatarColor(item.senderName);
             const time = moment(item.timestamp);
             item.__time = time.isValid() ? time.format('HH:mm') : '';

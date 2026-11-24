@@ -36,7 +36,8 @@ export interface DiscussionItem {
         label: string,
         owner?: boolean,
         me?: boolean,
-        _color?: string
+        _color?: string,
+        _initial?: string
     }[];
     _hidden?: boolean;
 }

@@ -1,3 +1,4 @@
+import { PluralizePipe } from '../pipes/pluralize.pipe';
 import { Component, forwardRef, NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
@@ -103,6 +104,7 @@ describe('PolicyComments', () => {
             declarations: [
                 PolicyComments,
                 MultiSelectStub,
+                PluralizePipe,
                 TextInputAutocompleteDirective,
                 TextInputAutocompleteContainerComponent,
                 TextInputAutocompleteMenuComponent,

@@ -51,13 +51,12 @@ import { SchemaFormPreferencesService } from 'src/app/services/schema-form-prefe
 import { prepareVcData } from '../../common/models/prepare-vc-data';
 import { ViewerDialog } from '../../policy-engine/dialogs/viewer-dialog/viewer-dialog.component';
 
-/** Width of the discussions panel: where it starts, how far it can be dragged, and where it is remembered. */
+/** Width of the discussions panel: where it starts and how far it can be dragged. */
 export const COMMENTS_WIDTH = {
     default: 360,
     min: 320,
     max: 720,
-    maxRatio: 0.6,
-    storageKey: 'guardian.discussions.width'
+    maxRatio: 0.6
 };
 
 /** Keeps the width within the range, and within the share of the container; the minimum wins in a narrow container. */
@@ -67,26 +66,6 @@ export function clampCommentsWidth(width: number, containerWidth: number): numbe
         Math.min(COMMENTS_WIDTH.max, Math.floor(containerWidth * COMMENTS_WIDTH.maxRatio))
     );
     return Math.min(Math.max(width, COMMENTS_WIDTH.min), max);
-}
-
-function readCommentsWidth(): number {
-    try {
-        const saved = Number(localStorage.getItem(COMMENTS_WIDTH.storageKey));
-        if (Number.isFinite(saved) && saved >= COMMENTS_WIDTH.min && saved <= COMMENTS_WIDTH.max) {
-            return saved;
-        }
-    } catch {
-        // storage can be unavailable; the default is fine
-    }
-    return COMMENTS_WIDTH.default;
-}
-
-function saveCommentsWidth(width: number): void {
-    try {
-        localStorage.setItem(COMMENTS_WIDTH.storageKey, String(width));
-    } catch {
-        // not remembered, still applied
-    }
 }
 
 /**
@@ -141,7 +120,7 @@ export class VCFullscreenDialog implements OnDestroy {
     public json: string = '';
     public fileSize: number = 0;
     public collapse: boolean = false;
-    public commentsWidth: number = readCommentsWidth();
+    public commentsWidth: number = COMMENTS_WIDTH.default;
     public resizing: boolean = false;
     public discussionData: any = {};
     public discussionAction: boolean = false;
@@ -199,6 +178,10 @@ export class VCFullscreenDialog implements OnDestroy {
         public formPreferences: SchemaFormPreferencesService
     ) {
         this.dataForm = this.fb.group({});
+        const saved = this.formPreferences.getCommentsWidth();
+        if (saved !== null && saved >= COMMENTS_WIDTH.min && saved <= COMMENTS_WIDTH.max) {
+            this.commentsWidth = saved;
+        }
     }
 
     get currentSelectedVcDoc(): any {
@@ -514,7 +497,7 @@ export class VCFullscreenDialog implements OnDestroy {
             window.removeEventListener('pointercancel', onEnd);
             document.body.style.userSelect = bodySelect;
             this.resizing = false;
-            saveCommentsWidth(this.commentsWidth);
+            this.formPreferences.setCommentsWidth(this.commentsWidth);
             this.ref.markForCheck();
         };
         this.endResize = onEnd;
@@ -525,7 +508,7 @@ export class VCFullscreenDialog implements OnDestroy {
 
     public onResizeReset(): void {
         this.commentsWidth = COMMENTS_WIDTH.default;
-        saveCommentsWidth(this.commentsWidth);
+        this.formPreferences.setCommentsWidth(this.commentsWidth);
     }
 
     public onCollapse($event: boolean) {

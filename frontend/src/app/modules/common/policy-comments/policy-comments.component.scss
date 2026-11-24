@@ -1,4 +1,5 @@
 @use './toolbar-files' as *;
+@use '../../schema-engine/doc-chrome' as chrome;
 
 :host {
     --pc-primary: var(--primary-primary, var(--guardian-primary-color, #4169E2));
@@ -93,22 +94,13 @@ textarea {
 }
 
 .icon-btn {
-    position: relative;
+    /* Base look comes from the theme's guardian-icon-button; this sets the panel's size and tones */
     width: 32px;
     height: 32px;
-    border: none;
-    background: transparent;
     border-radius: 8px;
-    cursor: pointer;
-    display: grid;
-    place-items: center;
     color: var(--pc-text-2);
     flex: none;
     padding: 0;
-
-    * {
-        pointer-events: none;
-    }
 
     &:hover {
         background: var(--pc-sunken);
@@ -126,12 +118,8 @@ textarea {
 }
 
 .btn {
-    height: 36px;
-    border-radius: 8px;
+    @include chrome.regular-button;
     border: 1px solid transparent;
-    padding: 0 14px;
-    font-weight: 600;
-    font-size: 13px;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -155,13 +143,7 @@ textarea {
     }
 
     &.btn-secondary {
-        background: var(--pc-bg);
-        color: var(--pc-text);
-        border-color: var(--pc-border);
-
-        &:hover {
-            background: var(--pc-page);
-        }
+        @include chrome.secondary-button;
     }
 }
 
@@ -1283,11 +1265,6 @@ textarea {
     padding: 0px;
     border: 8px solid #fff;
 
-    &.reverse {
-        display: flex;
-        flex-direction: column-reverse;
-    }
-
     .placeholder-item {
         width: 100%;
         display: flex;
@@ -1348,60 +1325,6 @@ textarea {
             animation: shine-lines var(--loading-animation-duration, 2s) infinite linear;
         }
 
-        .placeholder-item-time {
-            float: left;
-            width: 100px;
-            height: 18px;
-            margin-top: 8px;
-            border-radius: 7px;
-            background-color: #EFF3F7;
-            background-image: linear-gradient(90deg,
-                    var(--loading-base-color, #EFF3F7) 0px,
-                    var(--loading-shine-color, #fdfdfd) 25px,
-                    var(--loading-base-color, #EFF3F7) 50px);
-            background-size: 600px;
-            animation: shine-lines var(--loading-animation-duration, 2s) infinite linear;
-        }
-
-        .placeholder-item-message {
-            float: left;
-            width: 75%;
-            height: 60px;
-            margin-top: 8px;
-            border-radius: 7px;
-            background-color: #EFF3F7;
-            background-image: linear-gradient(90deg,
-                    var(--loading-base-color, #EFF3F7) 0px,
-                    var(--loading-shine-color, #fdfdfd) 25px,
-                    var(--loading-base-color, #EFF3F7) 50px);
-            background-size: 600px;
-            animation: shine-lines var(--loading-animation-duration, 2s) infinite linear;
-        }
-
-        &.type-right {
-            .placeholder-item-body {
-                transform: scale(-1, 1);
-                animation-direction: reverse;
-                animation-delay: 1.64s;
-
-                * {
-                    animation-delay: 1.64s;
-                    animation-direction: reverse;
-                }
-            }
-        }
-
-        .size-1 {
-            height: 40px;
-        }
-
-        .size-2 {
-            height: 60px;
-        }
-
-        .size-3 {
-            height: 80px;
-        }
     }
 
 
