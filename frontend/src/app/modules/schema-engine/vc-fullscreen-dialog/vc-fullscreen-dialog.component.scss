@@ -223,8 +223,8 @@
             }
 
             .comments-content {
+                position: relative;
                 flex: none;
-                width: 340px;
                 min-height: 0;
                 overflow: hidden;
                 border-left: 1px solid var(--guardian-border-color);
@@ -232,11 +232,76 @@
                 &[hidden] {
                     display: none;
                 }
+
+                // The cap holds when the window shrinks; the minimum wins when both clash
+                max-width: 60%;
+                min-width: 320px;
+
+                .comments-resize {
+                    position: absolute;
+                    left: -4px;
+                    top: 0;
+                    bottom: 0;
+                    width: 8px;
+                    cursor: col-resize;
+                    z-index: 5;
+
+                    &::after {
+                        content: '';
+                        position: absolute;
+                        left: 3px;
+                        top: 0;
+                        bottom: 0;
+                        width: 2px;
+                        background: transparent;
+                        transition: background 0.15s;
+                    }
+
+                    .comments-resize-grip {
+                        position: absolute;
+                        left: 1px;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        width: 6px;
+                        height: 32px;
+                        border-radius: 3px;
+                        background: var(--primary-primary, var(--guardian-primary-color));
+                        opacity: 0;
+                        transition: opacity 0.15s;
+                        pointer-events: none;
+                    }
+
+                    .comments-resize-tip {
+                        position: absolute;
+                        top: 50%;
+                        left: 12px;
+                        transform: translateY(-50%);
+                        padding: 3px 7px;
+                        border-radius: 4px;
+                        background: var(--guardian-font-color);
+                        color: var(--guardian-background);
+                        font-size: 11px;
+                        white-space: nowrap;
+                        pointer-events: none;
+                    }
+                }
+
+                .comments-resize:hover,
+                &.resizing .comments-resize {
+                    &::after {
+                        background: var(--primary-primary, var(--guardian-primary-color));
+                    }
+
+                    .comments-resize-grip {
+                        opacity: 1;
+                    }
+                }
             }
 
             &[collapse="true"] {
                 .comments-content {
-                    width: 76px;
+                    width: 56px;
+                    min-width: 0;
                 }
             }
         }
@@ -325,6 +390,12 @@
 }
 
 :host ::ng-deep {
+    /* The field a discussion links to, marked briefly after the jump */
+    .field-flash {
+        animation: field-flash 2.2s ease-out;
+        border-radius: 8px;
+    }
+
     .compare-container .guardian-button {
         @include chrome.compare-button;
     }
@@ -356,5 +427,15 @@
         .p-select-overlay .p-select-list .p-select-option {
             color: var(--guardian-primary-color);
         }
+    }
+}
+@keyframes field-flash {
+    0%, 35% {
+        background-color: color-mix(in srgb, var(--primary-primary, #4169E2) 18%, transparent);
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary-primary, #4169E2) 18%, transparent);
+    }
+    100% {
+        background-color: transparent;
+        box-shadow: 0 0 0 4px transparent;
     }
 }

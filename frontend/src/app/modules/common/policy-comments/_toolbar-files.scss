@@ -1,100 +1,84 @@
 .toolbar-files {
-    margin-top: 8px;
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     gap: 6px;
+    padding: 0 4px 8px;
 
     .toolbar-file {
-        height: 32px;
-        display: flex;
-        flex-direction: row;
+        display: inline-flex;
         align-items: center;
-        border: 1px solid var(--primary-primary, #4169E2);
-        background: #f0f3fc;
+        gap: 4px;
+        max-width: 180px;
+        height: 26px;
+        background: var(--pc-sunken);
         border-radius: 6px;
-        font-family: Inter, sans-serif;
-        font-weight: 500;
+        padding: 0 2px 0 6px;
         font-size: 12px;
-        line-height: 14px;
-        vertical-align: middle;
+        line-height: 16px;
         overflow: hidden;
 
         .toolbar-file-icon {
-            height: 30px;
-            width: 30px;
-            min-width: 30px;
-            padding: 7px;
-            overflow: hidden;
+            display: grid;
+            flex: none;
+            color: var(--pc-primary);
         }
 
         .toolbar-file-loading,
         .guardian-loading {
             position: relative !important;
-            width: 30px !important;
-            height: 30px !important;
-            padding: 6px !important;
+            width: 20px !important;
+            height: 20px !important;
+            padding: 0 !important;
             background: transparent !important;
+            flex: none;
 
             .guardian-loading-image {
-                width: 20px !important;
-                height: 20px !important;
+                width: 16px !important;
+                height: 16px !important;
             }
         }
 
         .toolbar-file-metadata {
-            width: 100%;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            min-width: 0;
 
             .file-name {
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
-                height: 30px;
-                line-height: 30px;
             }
         }
 
-        .toolbar-file-name {
-            flex: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            padding: 0 8px;
-            line-height: 30px;
-        }
-
         .toolbar-file-action {
-            height: 30px;
-            width: 30px;
-            min-width: 30px;
-            padding: 7px;
-            background: #f0f3fc;
+            border: none;
+            background: transparent;
             cursor: pointer;
+            display: grid;
+            place-items: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 4px;
+            color: var(--pc-text-3);
+            flex: none;
+            padding: 0;
 
             &:hover {
-                background: #dce0ea;
+                background: color-mix(in srgb, var(--pc-text) 10%, transparent);
+                color: var(--pc-text);
             }
         }
     }
 
     .toolbar-file-more {
-        border: 1px solid var(--primary-primary, #4169E2);
-        height: 32px;
-        width: 32px;
-        border-radius: 8px;
-        font-family: Inter, sans-serif;
-        font-weight: 500;
+        display: grid;
+        place-items: center;
+        height: 26px;
+        min-width: 26px;
+        border-radius: 6px;
+        background: var(--pc-sunken);
         font-size: 12px;
-        line-height: 14px;
-        vertical-align: middle;
-        color: var(--primary-primary, #4169E2);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        overflow: hidden;
+        font-weight: 600;
+        color: var(--pc-primary);
         user-select: none;
     }
 }

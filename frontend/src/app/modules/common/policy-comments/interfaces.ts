@@ -27,10 +27,19 @@ export interface DiscussionItem {
     _unread?: number;
     _short?: string;
     _icon?: string;
+    _initials?: string;
+    _color?: string;
+    _private?: boolean;
+    _fieldLabel?: string;
+    _fieldKey?: string;
     _users?: {
+        did?: string,
         icon: string,
         type: string,
-        label: string
+        label: string,
+        owner?: boolean,
+        me?: boolean,
+        _color?: string
     }[];
     _hidden?: boolean;
 }

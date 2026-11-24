@@ -7,6 +7,7 @@ import { ProfileService } from 'src/app/services/profile.service';
 import { Schema, SchemaField, UserPermissions } from '@guardian/interfaces';
 import { CommentsService } from 'src/app/services/comments.service';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { getAvatarColor, getInitials } from './discussion-avatar';
 import { DiscussionGroup, DiscussionItem, FieldItem, LastRead, ListItem, placeholderItems, TextItem, TextItemType } from './interfaces';
 
 /**
@@ -45,6 +46,8 @@ export class PolicyComments {
     public privacy: ListItem[] = [];
     public userNames = new Map<string, string>();
     public fieldNames = new Map<string, string>();
+    /** Field path to the label the form shows for it. */
+    public fieldLabels = new Map<string, string>();
     public users: ListItem[] = [];
     public schemas: Schema[] = [];
 
@@ -58,6 +61,14 @@ export class PolicyComments {
     public searchMessage: string = '';
 
     public comments: DataList;
+
+    public participantsOpen: boolean = false;
+    public messageSearchOpen: boolean = false;
+    /** True while the autocomplete menu is open: Enter then picks a suggestion instead of sending. */
+    public menuOpen: boolean = false;
+
+    public readonly counterFrom = 480;
+    public readonly maxLength = 600;
 
     public triggerCharacter: string[] = ['@', '#'];
     public currentTab: 'new-discussion' | 'discussions' | 'messages' = 'discussions';
@@ -73,14 +84,17 @@ export class PolicyComments {
         fieldName: new FormControl<string>(''),
     });
     public privacyList = [{
-        label: 'Public',
+        label: 'Everyone',
         value: 'public',
+        description: 'Anyone who can open this document can read and reply.',
     }, {
-        label: 'Roles',
+        label: 'Selected roles',
         value: 'roles',
+        description: 'Only users with the policy roles you choose.',
     }, {
-        label: 'Users',
+        label: 'Selected people',
         value: 'users',
+        description: 'Only the people you choose. You are always included.',
     }];
     public rolesList: any[] = [];
     public usersList: any[] = [];
@@ -254,6 +268,7 @@ export class PolicyComments {
                 const { page, count } = this.commentsService.parsePage(response);
                 this.parsMessages(page);
                 this.setCommentData(type, page, count, target);
+                this.markMessageRuns();
                 this.refreshCommentScroll(type, page, count);
                 this.updateLastRead();
                 this.setCommentLoading(type, false);
@@ -298,6 +313,7 @@ export class PolicyComments {
             files: this.files.map((f) => f.toJSON())
         };
         this.loading = true;
+        this.sendDisabled = true;
         this.commentsService
             .createComment(
                 this.policyId,
@@ -308,10 +324,12 @@ export class PolicyComments {
                 this.textMessage = '';
                 this.files = [];
                 this.sendDisabled = true;
+                this.resetComposerHeight();
                 const first = this.comments.getFirst();
                 this.loadComments('update', first?.id);
             }, (e) => {
                 this.loading = false;
+                this.updateDisabled();
             });
     }
 
@@ -459,6 +477,7 @@ export class PolicyComments {
         }
 
         this.fieldNames.clear();
+        this.fieldLabels.clear();
         const fieldMap = new Map<string | undefined, string>();
         for (const schema of this.schemas) {
             this.updateFields(schema.fields, fieldMap, '');
@@ -486,6 +505,9 @@ export class PolicyComments {
         if (Array.isArray(fields)) {
             for (const field of fields) {
                 map.set(field.fullPath, `${parent}${field.description}`);
+                if (field.fullPath) {
+                    this.fieldLabels.set(field.fullPath, field.description || field.title || field.name);
+                }
                 this.updateFields(field.fields, map, `${parent}${field.description}/`);
             }
         }
@@ -502,7 +524,7 @@ export class PolicyComments {
         }
 
         const currentGroup: DiscussionGroup = { name: 'Current', items: [], collapsed: false };
-        const relatedGroup: DiscussionGroup = { name: 'Related Documents', items: [], collapsed: false };
+        const relatedGroup: DiscussionGroup = { name: 'Related documents', items: [], collapsed: false };
         const historyGroup: DiscussionGroup = { name: 'Previous version', items: [], collapsed: false };
         for (const discussion of this.discussions) {
             if (discussion.targetId === this.documentId) {
@@ -539,13 +561,20 @@ export class PolicyComments {
         discussion._count = 0;
         discussion._unread = discussion.count;
         discussion._short = (discussion.name || '#').substring(0, 1);
-        discussion._icon = (
-            discussion.privacy === 'users' ||
-            discussion.privacy === 'roles'
-        ) ? 'chat-2' : 'chat-1';
+        discussion._initials = getInitials(discussion.name);
+        discussion._color = getAvatarColor(discussion.name);
+        discussion._private = discussion.privacy === 'users' || discussion.privacy === 'roles';
+        discussion._icon = discussion._private ? 'chat-2' : 'chat-1';
+        if (discussion.field) {
+            discussion._fieldLabel = this.getFieldLabel(discussion.field, discussion.fieldName);
+            discussion._fieldKey = this.getFieldKey(discussion.field);
+        } else {
+            discussion._fieldLabel = '';
+            discussion._fieldKey = '';
+        }
         discussion._users = [];
+        const map = new Map<string, any>();
         if (discussion.privacy === 'users' || discussion.privacy === 'roles') {
-            const map = new Map<string, any>();
             if (discussion.roles) {
                 for (const role of discussion.roles) {
                     map.set(role, {
@@ -558,23 +587,75 @@ export class PolicyComments {
             if (discussion.users) {
                 for (const user of discussion.users) {
                     map.set(user, {
+                        did: user,
                         icon: 'user-2',
                         label: this.getUserName(user),
                         type: 'user'
                     })
                 }
             }
-            if (discussion.owner) {
-                map.set(discussion.owner, {
-                    icon: 'user-2',
-                    label: this.getUserName(discussion.owner),
-                    type: 'user'
-                })
-            }
-            for (const item of map.values()) {
-                discussion._users.push(item);
-            }
         }
+        if (discussion.owner) {
+            // The creator is listed for public discussions too ("Started by")
+            map.set(discussion.owner, {
+                did: discussion.owner,
+                icon: 'user-2',
+                label: this.getUserName(discussion.owner),
+                type: 'user'
+            })
+        }
+        for (const item of map.values()) {
+            if (item.type === 'user') {
+                item.owner = item.did === discussion.owner;
+                item.me = !!this.owner && item.did === this.owner;
+            }
+            item._color = getAvatarColor(item.label || '');
+            discussion._users.push(item);
+        }
+    }
+
+    /** "Everyone", "N roles" or "N participants". */
+    public getParticipantsSummary(discussion?: DiscussionItem | null): string {
+        if (!discussion || discussion.privacy === 'public' || !discussion.privacy) {
+            return 'Everyone';
+        }
+        if (discussion.privacy === 'roles') {
+            const count = discussion._users?.filter((u) => u.type === 'role').length || 0;
+            return count === 1 ? '1 role' : `${count} roles`;
+        }
+        const count = discussion._users?.filter((u) => u.type === 'user').length || 0;
+        return count === 1 ? '1 participant' : `${count} participants`;
+    }
+
+    /** The label of the field in the form, then the name stored with the discussion, then the key. */
+    public getFieldLabel(field?: string | null, fallback?: string | null): string {
+        return (field && this.fieldLabels.get(field)) || fallback || this.getFieldKey(field);
+    }
+
+    /** The last segment of the field path. A stored path is `<schema iri>/<name>[.<name>…]`. */
+    public getFieldKey(field?: string | null): string {
+        const path = field || '';
+        return path.substring(path.indexOf('/') + 1).split('.').pop() || '';
+    }
+
+    public get discussionsTotal(): number {
+        return this.discussionGroups.reduce((total, group) => total + group.items.length, 0);
+    }
+
+    public get participantsRoles() {
+        return this.currentDiscussion?._users?.filter((u) => u.type === 'role') || [];
+    }
+
+    public get participantsPeople() {
+        return this.currentDiscussion?._users?.filter((u) => u.type === 'user') || [];
+    }
+
+    public get counterVisible(): boolean {
+        return this.textMessage.length >= this.counterFrom;
+    }
+
+    public get counterLimit(): boolean {
+        return this.textMessage.length >= this.maxLength;
     }
 
     private parsText(message: any, text: string): TextItem[] {
@@ -700,7 +781,44 @@ export class PolicyComments {
             }
             item.__text = textItems;
             item.__files = files.map((f) => AttachedFile.fromLink(item.policyId, item.targetId, item.discussionId, f));
+            item.__initial = getInitials(item.senderName || '').substring(0, 1);
+            item.__color = getAvatarColor(item.senderName || '');
         }
+    }
+
+    /**
+     * Marks the day boundaries and the runs of one sender over every loaded message.
+     * The list is newest first, so the visually previous message is the next one.
+     */
+    private markMessageRuns() {
+        const data = this.comments.data;
+        for (let i = 0; i < data.length; i++) {
+            const item = data[i];
+            const older = data[i + 1];
+            const day = moment(item.timestamp);
+            const sameDay = !!older && day.isSame(moment(older.timestamp), 'day');
+            item.__day = sameDay ? '' : this.getDayLabel(item.timestamp);
+            item.__cont = sameDay && older.sender === item.sender;
+        }
+    }
+
+    public getDayLabel(date: string): string {
+        const day = moment(date);
+        if (!day.isValid()) {
+            return '';
+        }
+        if (day.isSame(moment(), 'day')) {
+            return 'Today';
+        }
+        if (day.isSame(moment().subtract(1, 'day'), 'day')) {
+            return 'Yesterday';
+        }
+        return day.format('MMM DD');
+    }
+
+    public getTime(date: string): string {
+        const day = moment(date);
+        return day.isValid() ? day.format('HH:mm') : '';
     }
 
     private parsTags(key: '@' | '#', text: string) {
@@ -861,8 +979,8 @@ export class PolicyComments {
     public onText($event: any) {
         if ($event?.target) {
             try {
-                $event.target.style.height = "5px";
-                $event.target.style.height = ($event.target.scrollHeight) + "px";
+                $event.target.style.height = "20px";
+                $event.target.style.height = Math.min($event.target.scrollHeight, 140) + "px";
             } catch (error) {
                 console.error(error);
             }
@@ -870,6 +988,43 @@ export class PolicyComments {
         setTimeout(() => {
             this.updateDisabled();
         });
+    }
+
+    /** Enter sends, Shift+Enter adds a line; while the autocomplete menu is open Enter picks a suggestion. */
+    public onMessageKeydown(event: KeyboardEvent) {
+        if (event.key !== 'Enter' || event.shiftKey || event.isComposing || this.menuOpen) {
+            return;
+        }
+        event.preventDefault();
+        if (!this.sendDisabled) {
+            this.createComment();
+        }
+    }
+
+    private resetComposerHeight() {
+        try {
+            this.messageInput.nativeElement.style.height = '';
+        } catch (error) {
+            return;
+        }
+    }
+
+    public toggleParticipants() {
+        this.participantsOpen = !this.participantsOpen;
+    }
+
+    public toggleMessageSearch() {
+        this.messageSearchOpen = !this.messageSearchOpen;
+        if (!this.messageSearchOpen && this.searchMessage) {
+            this.searchMessage = '';
+            this.onSetMessageSearch();
+        }
+    }
+
+    private resetThreadView() {
+        this.participantsOpen = false;
+        this.messageSearchOpen = false;
+        this.menuOpen = false;
     }
 
     public updateDisabled() {
@@ -946,6 +1101,7 @@ export class PolicyComments {
     }
 
     public onClose() {
+        this.resetThreadView();
         this.textMessage = '';
         this.files = [];
         this.sendDisabled = true;
@@ -957,6 +1113,7 @@ export class PolicyComments {
     }
 
     public onOpen(discussion?: DiscussionItem) {
+        this.resetThreadView();
         this.currentDiscussion = discussion;
         this.collapse = false;
         this.currentTab = discussion ? 'messages' : 'discussions';
@@ -977,6 +1134,7 @@ export class PolicyComments {
     }
 
     public selectDiscussion(discussion?: DiscussionItem) {
+        this.resetThreadView();
         this.textMessage = '';
         this.files = [];
         this.sendDisabled = true;
@@ -1003,6 +1161,10 @@ export class PolicyComments {
             field: this.searchField?.field || null,
             fieldName: this.searchField?.name || null,
         })
+    }
+
+    public onPrivacy(value: string) {
+        this.discussionForm.controls['privacy'].setValue(value);
     }
 
     public onDeleteFormField() {

@@ -51,6 +51,44 @@ import { SchemaFormPreferencesService } from 'src/app/services/schema-form-prefe
 import { prepareVcData } from '../../common/models/prepare-vc-data';
 import { ViewerDialog } from '../../policy-engine/dialogs/viewer-dialog/viewer-dialog.component';
 
+/** Width of the discussions panel: where it starts, how far it can be dragged, and where it is remembered. */
+export const COMMENTS_WIDTH = {
+    default: 360,
+    min: 320,
+    max: 720,
+    maxRatio: 0.6,
+    storageKey: 'guardian.discussions.width'
+};
+
+/** Keeps the width within the range, and within the share of the container; the minimum wins in a narrow container. */
+export function clampCommentsWidth(width: number, containerWidth: number): number {
+    const max = Math.max(
+        COMMENTS_WIDTH.min,
+        Math.min(COMMENTS_WIDTH.max, Math.floor(containerWidth * COMMENTS_WIDTH.maxRatio))
+    );
+    return Math.min(Math.max(width, COMMENTS_WIDTH.min), max);
+}
+
+function readCommentsWidth(): number {
+    try {
+        const saved = Number(localStorage.getItem(COMMENTS_WIDTH.storageKey));
+        if (Number.isFinite(saved) && saved >= COMMENTS_WIDTH.min && saved <= COMMENTS_WIDTH.max) {
+            return saved;
+        }
+    } catch {
+        // storage can be unavailable; the default is fine
+    }
+    return COMMENTS_WIDTH.default;
+}
+
+function saveCommentsWidth(width: number): void {
+    try {
+        localStorage.setItem(COMMENTS_WIDTH.storageKey, String(width));
+    } catch {
+        // not remembered, still applied
+    }
+}
+
 /**
  * Dialog for display json
  */
@@ -103,6 +141,8 @@ export class VCFullscreenDialog implements OnDestroy {
     public json: string = '';
     public fileSize: number = 0;
     public collapse: boolean = false;
+    public commentsWidth: number = readCommentsWidth();
+    public resizing: boolean = false;
     public discussionData: any = {};
     public discussionAction: boolean = false;
     public exportDocument: boolean;
@@ -412,12 +452,73 @@ export class VCFullscreenDialog implements OnDestroy {
                 ?.scrollIntoView();
         }, 0);
         setTimeout(() => {
-            this.el.nativeElement
+            const field = this.el.nativeElement
                 ?.querySelector('.form-body')
-                ?.querySelector(`[field-id="${$event}"]`)
-                ?.scrollIntoView();
+                ?.querySelector(`[field-id="${$event}"]`);
+            field?.scrollIntoView();
             this.documentViewComponent?.openField();
+            this.flashField(field);
         }, 600);
+    }
+
+    private flashedField: HTMLElement | null = null;
+    private flashTimer: any;
+
+    /** Marks the field for a couple of seconds so the eye finds it after the jump. */
+    private flashField(field?: HTMLElement | null): void {
+        clearTimeout(this.flashTimer);
+        this.flashedField?.classList.remove('field-flash');
+        this.flashedField = null;
+        if (!field) {
+            return;
+        }
+        // Reading offsetWidth restarts the animation when the same field is linked again
+        void field.offsetWidth;
+        field.classList.add('field-flash');
+        this.flashedField = field;
+        this.flashTimer = setTimeout(() => {
+            field.classList.remove('field-flash');
+            this.flashedField = null;
+        }, 2200);
+    }
+
+    public onResizeStart(event: PointerEvent): void {
+        event.preventDefault();
+        const startX = event.clientX;
+        const containerWidth = (): number =>
+            this.el.nativeElement.querySelector('.step-body-container')?.offsetWidth || window.innerWidth;
+        // Start from what is shown, so a stored width that no longer fits does not make a dead zone
+        const startWidth = clampCommentsWidth(this.commentsWidth, containerWidth());
+        this.resizing = true;
+        const bodySelect = document.body.style.userSelect;
+        document.body.style.userSelect = 'none';
+        try {
+            (event.target as Element)?.setPointerCapture?.(event.pointerId);
+        } catch {
+            // the window listeners below keep the drag working without capture
+        }
+
+        const onMove = (move: PointerEvent) => {
+            this.commentsWidth = clampCommentsWidth(startWidth + (startX - move.clientX), containerWidth());
+            this.ref.markForCheck();
+        };
+        const onEnd = () => {
+            window.removeEventListener('pointermove', onMove);
+            window.removeEventListener('pointerup', onEnd);
+            window.removeEventListener('pointercancel', onEnd);
+            document.body.style.userSelect = bodySelect;
+            this.resizing = false;
+            saveCommentsWidth(this.commentsWidth);
+            this.ref.markForCheck();
+        };
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onEnd);
+        window.addEventListener('pointercancel', onEnd);
+    }
+
+    public onResizeReset(): void {
+        this.commentsWidth = COMMENTS_WIDTH.default;
+        saveCommentsWidth(this.commentsWidth);
     }
 
     public onCollapse($event: boolean) {
