@@ -231,10 +231,31 @@ form {
     margin: 0 8px;
 }
 
-.dialog-body {
+:host {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.dialog-header,
+.dialog-footer {
+    flex: 0 0 auto;
+}
+
+// Only the body scrolls: the global guardian-dialog rules cap it with viewport maths, here the flex layout does it.
+:host .dialog-body {
+    flex: 1 1 auto;
+    min-height: 0;
     height: 100vh;
-    max-height: 75vh;
+    max-height: none !important;
     overflow-y: auto;
+}
+
+::ng-deep .p-dialog-content:has(> app-policy-wizard-dialog) {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 /*

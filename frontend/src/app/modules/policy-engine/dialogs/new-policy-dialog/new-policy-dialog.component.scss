@@ -17,11 +17,32 @@ form {
     line-height: 14px;
 }
 
-.dialog-body {
-    height: 100vh;
-    max-height: 75vh;
+:host {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.dialog-header,
+.dialog-footer {
+    flex: 0 0 auto;
+}
+
+// Only the body scrolls: the global guardian-dialog rules cap it with viewport maths, here the flex layout does it.
+:host .dialog-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto;
+    max-height: none !important;
     overflow-y: auto;
     margin-bottom: 8px;
+}
+
+::ng-deep .p-dialog-content:has(> new-policy-dialog) {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .guardian-input-container {
