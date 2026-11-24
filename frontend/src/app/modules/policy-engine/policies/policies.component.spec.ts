@@ -1,4 +1,4 @@
-import { Subject } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { PoliciesComponent } from './policies.component';
 
 describe('PoliciesComponent', () => {
@@ -47,6 +47,54 @@ describe('PoliciesComponent', () => {
             (component as any).setVersion({ id: 'p1', uuid: 'u1' });
 
             expect(component.policies![0].previousVersion).toBe('');
+        });
+    });
+
+    describe('openPolicyWizardDialog', () => {
+        function stubServices(tokens: Subject<any[]>) {
+            const openPolicyWizardDialog = vi.fn();
+            (component as any).tokenService = { getTokens: () => tokens };
+            (component as any).schemaService = { getSchemasByPage: () => of({ body: [] }) };
+            (component as any).policyEngineService = { all: () => of([]), getPolicyCategories: () => of([]) };
+            (component as any).wizardService = { openPolicyWizardDialog };
+            return openPolicyWizardDialog;
+        }
+
+        it('does not cover the page with the loading overlay while the dialog data loads', () => {
+            const tokens = new Subject<any[]>();
+            stubServices(tokens);
+            component.loading = false;
+
+            component.openPolicyWizardDialog();
+
+            expect(component.loading).toBe(false);
+            expect(component.wizardLoading).toBe(true);
+        });
+
+        it('opens the wizard once the data is loaded and releases the button', () => {
+            const tokens = new Subject<any[]>();
+            const open = stubServices(tokens);
+            component.loading = false;
+
+            component.openPolicyWizardDialog();
+            tokens.next([]);
+            tokens.complete();
+
+            expect(open).toHaveBeenCalledTimes(1);
+            expect(component.wizardLoading).toBe(false);
+            expect(component.loading).toBe(false);
+        });
+
+        it('ignores a second click while the data is loading', () => {
+            const tokens = new Subject<any[]>();
+            const open = stubServices(tokens);
+
+            component.openPolicyWizardDialog();
+            component.openPolicyWizardDialog();
+            tokens.next([]);
+            tokens.complete();
+
+            expect(open).toHaveBeenCalledTimes(1);
         });
     });
 

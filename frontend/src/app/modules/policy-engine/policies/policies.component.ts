@@ -243,6 +243,7 @@ export class PoliciesComponent implements OnInit {
     public user: UserPermissions = new UserPermissions();
     public policies: any[] | null;
     public loading: boolean = true;
+    public wizardLoading: boolean = false;
     public isConfirmed: boolean = false;
     public pageIndex: number;
     public pageSize: number;
@@ -1809,7 +1810,11 @@ export class PoliciesComponent implements OnInit {
     }
 
     public openPolicyWizardDialog() {
-        this.loading = true;
+        if (this.wizardLoading) {
+            return;
+        }
+        // The data for the dialog is fetched behind the page: the page-wide loading overlay would blank it out.
+        this.wizardLoading = true;
         forkJoin([
             this.tokenService.getTokens(),
             this.schemaService.getSchemasByPage(),
@@ -1849,8 +1854,8 @@ export class PoliciesComponent implements OnInit {
                     policies
                 );
             },
-            () => undefined,
-            () => (this.loading = false)
+            () => (this.wizardLoading = false),
+            () => (this.wizardLoading = false)
         );
     }
 

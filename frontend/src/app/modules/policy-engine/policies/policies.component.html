@@ -111,6 +111,7 @@
             @if (user.POLICIES_POLICY_CREATE) {
               <p-button
                 (click)="openPolicyWizardDialog()"
+                [loading]="wizardLoading"
                 class="toolbar-btn-primary"
                 [pTooltip]="'Policy Wizard'"
                 tooltipPosition="bottom">
