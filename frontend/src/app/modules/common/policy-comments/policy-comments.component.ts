@@ -560,25 +560,17 @@ export class PolicyComments {
         }
         discussion._count = 0;
         discussion._unread = discussion.count;
-        discussion._short = (discussion.name || '#').substring(0, 1);
         discussion._initials = getInitials(discussion.name);
         discussion._color = getAvatarColor(discussion.name);
         discussion._private = discussion.privacy === 'users' || discussion.privacy === 'roles';
-        discussion._icon = discussion._private ? 'chat-2' : 'chat-1';
-        if (discussion.field) {
-            discussion._fieldLabel = this.getFieldLabel(discussion.field, discussion.fieldName);
-            discussion._fieldKey = this.getFieldKey(discussion.field);
-        } else {
-            discussion._fieldLabel = '';
-            discussion._fieldKey = '';
-        }
+        discussion._fieldLabel = this.getFieldLabel(discussion.field, discussion.fieldName);
+        discussion._fieldKey = this.getFieldKey(discussion.field);
         discussion._users = [];
         const map = new Map<string, any>();
-        if (discussion.privacy === 'users' || discussion.privacy === 'roles') {
+        if (discussion._private) {
             if (discussion.roles) {
                 for (const role of discussion.roles) {
                     map.set(role, {
-                        icon: 'group',
                         label: role,
                         type: 'role'
                     })
@@ -588,7 +580,6 @@ export class PolicyComments {
                 for (const user of discussion.users) {
                     map.set(user, {
                         did: user,
-                        icon: 'user-2',
                         label: this.getUserName(user),
                         type: 'user'
                     })
@@ -599,7 +590,6 @@ export class PolicyComments {
             // The creator is listed for public discussions too ("Started by")
             map.set(discussion.owner, {
                 did: discussion.owner,
-                icon: 'user-2',
                 label: this.getUserName(discussion.owner),
                 type: 'user'
             })
@@ -609,7 +599,7 @@ export class PolicyComments {
                 item.owner = item.did === discussion.owner;
                 item.me = !!this.owner && item.did === this.owner;
             }
-            item._color = getAvatarColor(item.label || '');
+            item._color = getAvatarColor(item.label);
             discussion._users.push(item);
         }
     }
@@ -781,8 +771,10 @@ export class PolicyComments {
             }
             item.__text = textItems;
             item.__files = files.map((f) => AttachedFile.fromLink(item.policyId, item.targetId, item.discussionId, f));
-            item.__initial = getInitials(item.senderName || '').substring(0, 1);
-            item.__color = getAvatarColor(item.senderName || '');
+            item.__initial = getInitials(item.senderName).substring(0, 1);
+            item.__color = getAvatarColor(item.senderName);
+            const time = moment(item.timestamp);
+            item.__time = time.isValid() ? time.format('HH:mm') : '';
         }
     }
 
@@ -814,11 +806,6 @@ export class PolicyComments {
             return 'Yesterday';
         }
         return day.format('MMM DD');
-    }
-
-    public getTime(date: string): string {
-        const day = moment(date);
-        return day.isValid() ? day.format('HH:mm') : '';
     }
 
     private parsTags(key: '@' | '#', text: string) {

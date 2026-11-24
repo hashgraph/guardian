@@ -25,8 +25,6 @@ export interface DiscussionItem {
     users?: string[];
     _count?: number;
     _unread?: number;
-    _short?: string;
-    _icon?: string;
     _initials?: string;
     _color?: string;
     _private?: boolean;
@@ -34,7 +32,6 @@ export interface DiscussionItem {
     _fieldKey?: string;
     _users?: {
         did?: string,
-        icon: string,
         type: string,
         label: string,
         owner?: boolean,

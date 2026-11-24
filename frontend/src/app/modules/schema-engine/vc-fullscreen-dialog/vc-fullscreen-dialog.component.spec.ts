@@ -190,6 +190,28 @@ describe('VCFullscreenDialog', () => {
             expect(field.classList.contains('field-flash')).toBe(false);
         }));
 
+        it('stops a flash and a drag when the dialog closes', fakeAsync(() => {
+            const fixture = render({ comments: true, openComments: true });
+            const body = document.createElement('div');
+            body.className = 'form-body';
+            const field = document.createElement('section');
+            field.setAttribute('field-id', 'iri/name');
+            field.scrollIntoView = () => undefined;
+            body.appendChild(field);
+            fixture.nativeElement.appendChild(body);
+            fixture.componentInstance.documentViewComponent = { openField: () => undefined } as any;
+            fixture.componentInstance.onLinkField('iri/name');
+            tick(700);
+            expect(field.classList.contains('field-flash')).toBe(true);
+            el(fixture, '.comments-resize')!.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: 1000, pointerId: 1 }));
+            const before = fixture.componentInstance.commentsWidth;
+            fixture.destroy();
+            expect(field.classList.contains('field-flash')).toBe(false);
+            window.dispatchEvent(new PointerEvent('pointermove', { clientX: 500, pointerId: 1 }));
+            expect(fixture.componentInstance.commentsWidth).toBe(before);
+            tick(3000);
+        }));
+
         it('shows the context line when passed and omits it when empty', fakeAsync(() => {
             expect(el(render({ subtitle: 'Policy · Step' }), '.header-eyebrow')?.textContent).toContain('Policy · Step');
             expect(el(render({}), '.header-eyebrow')).toBeNull();

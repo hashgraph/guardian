@@ -222,6 +222,10 @@ export class VCFullscreenDialog implements OnDestroy {
     ngOnDestroy(): void {
         this._viewDestroyed$.next();
         this._viewDestroyed$.complete();
+        // A drag or a flash still running when the dialog closes would keep touching a dead view
+        this.endResize?.();
+        clearTimeout(this.flashTimer);
+        this.flashedField?.classList.remove('field-flash');
         // _destroy$ may belong to the caller, so unsubscribe from it rather than complete it
         this._subscription?.unsubscribe();
         this._subscription = null;
@@ -461,6 +465,7 @@ export class VCFullscreenDialog implements OnDestroy {
         }, 600);
     }
 
+    private endResize: (() => void) | null = null;
     private flashedField: HTMLElement | null = null;
     private flashTimer: any;
 
@@ -503,6 +508,7 @@ export class VCFullscreenDialog implements OnDestroy {
             this.ref.markForCheck();
         };
         const onEnd = () => {
+            this.endResize = null;
             window.removeEventListener('pointermove', onMove);
             window.removeEventListener('pointerup', onEnd);
             window.removeEventListener('pointercancel', onEnd);
@@ -511,6 +517,7 @@ export class VCFullscreenDialog implements OnDestroy {
             saveCommentsWidth(this.commentsWidth);
             this.ref.markForCheck();
         };
+        this.endResize = onEnd;
         window.addEventListener('pointermove', onMove);
         window.addEventListener('pointerup', onEnd);
         window.addEventListener('pointercancel', onEnd);

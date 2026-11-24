@@ -419,8 +419,7 @@
               <div class="empty-desc">Write the first message below.</div>
             }
           </div>
-        }
-        @if (comments.data.length) {
+        } @else {
           <div class="messages">
             @for (item of comments.data; track item) {
               <div
@@ -505,7 +504,7 @@
                       }
                     </div>
                   }
-                  <span class="message-time">{{getTime(item.timestamp)}}</span>
+                  <span class="message-time">{{item.__time}}</span>
                 </div>
               </div>
               @if (item.__day) {
@@ -524,7 +523,7 @@
           @if (files.length) {
             <div class="toolbar-files">
               @for (file of files; track file) {
-                <div class="toolbar-file {{ files.length>6 ? 'more' : ''}}">
+                <div class="toolbar-file">
                   @if (file.loaded) {
                     <div class="toolbar-file-icon"><ng-container *ngTemplateOutlet="icFile"></ng-container></div>
                   }
