@@ -67,8 +67,8 @@ export class PolicyComments {
     /** True while the autocomplete menu is open: Enter then picks a suggestion instead of sending. */
     public menuOpen: boolean = false;
 
-    public readonly counterFrom = 480;
-    public readonly maxLength = 600;
+    public readonly counterFrom = 1600;
+    public readonly maxLength = 2000;
 
     public triggerCharacter: string[] = ['@', '#'];
     public currentTab: 'new-discussion' | 'discussions' | 'messages' = 'discussions';

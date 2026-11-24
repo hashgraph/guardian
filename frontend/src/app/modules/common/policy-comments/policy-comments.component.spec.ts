@@ -368,15 +368,15 @@ describe('PolicyComments', () => {
             expect(service.createComment).not.toHaveBeenCalled();
         });
 
-        it('shows the counter from 480 characters and marks the limit at 600', () => {
+        it('shows the counter from 1600 characters and marks the limit at 2000', () => {
             setup();
             openThread();
-            type('a'.repeat(479));
+            type('a'.repeat(1599));
             expect(el('.composer-counter')).toBeNull();
-            type('a'.repeat(480));
-            expect(text('.composer-counter')).toBe('480/600');
+            type('a'.repeat(1600));
+            expect(text('.composer-counter')).toBe('1600/2000');
             expect(el('.composer-counter')!.classList.contains('limit')).toBe(false);
-            type('a'.repeat(600));
+            type('a'.repeat(2000));
             expect(el('.composer-counter')!.classList.contains('limit')).toBe(true);
         });
     });
