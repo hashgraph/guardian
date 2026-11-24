@@ -517,8 +517,8 @@ export class MockHelper {
 
     private static getTimestamp(): Timestamp {
         const time = Date.now();
-        const seconds = Math.floor(time / 100);
-        const nanos = Math.floor((time - seconds + Math.random()) * 1000000);
+        const seconds = Math.floor(time / 1000);
+        const nanos = Math.floor(((time % 1000) + Math.random()) * 1000000);
         return new Timestamp(seconds, nanos);
     }
 
