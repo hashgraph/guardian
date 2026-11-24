@@ -352,15 +352,57 @@ describe('PolicyComments', () => {
             expect(event.defaultPrevented).toBe(false);
         });
 
-        it('does not send on Enter while the autocomplete menu is open', async () => {
+        it('leaves Enter to the autocomplete menu while it has a suggestion to pick', async () => {
             setup();
             openThread();
-            type('hello @');
-            await settle();
-            (el('textarea') as HTMLElement).dispatchEvent(new KeyboardEvent('keypress', { key: '@', bubbles: true }));
+            const textarea = el('textarea') as HTMLTextAreaElement;
+            textarea.focus();
+            textarea.value = 'hello ';
+            textarea.setSelectionRange(6, 6);
+            textarea.dispatchEvent(new KeyboardEvent('keypress', { key: '@', bubbles: true }));
             fixture.detectChanges();
+            textarea.value = 'hello @';
+            textarea.setSelectionRange(7, 7);
+            textarea.dispatchEvent(new Event('input'));
+            fixture.detectChanges();
+            await settle();
+            await settle();
+            expect(component.autocomplete?.menuHasChoice).toBe(true);
             press({ key: 'Enter' });
             expect(service.createComment).not.toHaveBeenCalled();
+        });
+
+        it('sends on Enter when the open menu has no match to pick', async () => {
+            setup();
+            openThread();
+            const textarea = el('textarea') as HTMLTextAreaElement;
+            textarea.focus();
+            textarea.value = 'hello ';
+            textarea.setSelectionRange(6, 6);
+            textarea.dispatchEvent(new KeyboardEvent('keypress', { key: '@', bubbles: true }));
+            fixture.detectChanges();
+            expect(component.menuOpen).toBe(true);
+            textarea.value = 'hello @zzzz';
+            textarea.setSelectionRange(11, 11);
+            textarea.dispatchEvent(new Event('input'));
+            fixture.detectChanges();
+            await settle();
+            await settle();
+            expect(component.menuOpen).toBe(true);
+            const event = press({ key: 'Enter' });
+            expect(service.createComment).toHaveBeenCalledTimes(1);
+            expect(event.defaultPrevented).toBe(true);
+        });
+
+        it('does not send a message that is only whitespace', async () => {
+            setup();
+            openThread();
+            type('   \n ');
+            await settle();
+            const event = press({ key: 'Enter' });
+            expect(service.createComment).not.toHaveBeenCalled();
+            expect(event.defaultPrevented).toBe(true);
+            expect(component.sendDisabled).toBe(true);
         });
 
         it('does not send an empty message', () => {

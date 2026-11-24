@@ -7,6 +7,7 @@ import { ProfileService } from 'src/app/services/profile.service';
 import { Schema, SchemaField, UserPermissions } from '@guardian/interfaces';
 import { CommentsService } from 'src/app/services/comments.service';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { TextInputAutocompleteDirective } from '../angular-text-input-autocomplete/text-input-autocomplete.directive';
 import { getAvatarColor, getInitials } from './discussion-avatar';
 import { getUserInitials } from 'src/app/utils/user-initials';
 import { PluralizePipe } from '../pipes/pluralize.pipe';
@@ -32,6 +33,7 @@ export class PolicyComments {
 
     @ViewChild('messageContainer', { static: false }) messageContainer: any;
     @ViewChild('messageInput', { static: false }) messageInput: any;
+    @ViewChild(TextInputAutocompleteDirective, { static: false }) autocomplete?: TextInputAutocompleteDirective;
 
     @Output('link') linkEvent = new EventEmitter<any>();
     @Output('collapse') collapseEvent = new EventEmitter<boolean>();
@@ -981,10 +983,20 @@ export class PolicyComments {
         });
     }
 
-    /** Enter sends, Shift+Enter adds a line; while the autocomplete menu is open Enter picks a suggestion. */
+    /** Enter sends, Shift+Enter adds a line; while the autocomplete menu has a suggestion to pick, Enter picks it. */
     public onMessageKeydown(event: KeyboardEvent) {
-        if (event.key !== 'Enter' || event.shiftKey || event.isComposing || this.menuOpen) {
+        if (event.key !== 'Enter' || event.shiftKey || event.isComposing) {
             return;
+        }
+        if (this.menuOpen) {
+            if (this.autocomplete?.menuHasChoice) {
+                return;
+            }
+            if (this.autocomplete?.menuLoading) {
+                // Suggestions are on their way; do not send and do not add a line
+                event.preventDefault();
+                return;
+            }
         }
         event.preventDefault();
         if (!this.sendDisabled) {
@@ -1028,7 +1040,7 @@ export class PolicyComments {
             }
             this.sendDisabled = false;
             return;
-        } else if (this.textMessage) {
+        } else if (this.textMessage?.trim()) {
             this.sendDisabled = false;
             return;
         } else {

@@ -100,6 +100,17 @@ export class TextInputAutocompleteDirective implements OnDestroy {
 
     private menuHidden$ = new Subject<void>();
 
+    /** True while the open menu has a highlighted choice, i.e. the menu itself will take Enter. */
+    public get menuHasChoice(): boolean {
+        const menu = this.menu?.component.instance;
+        return !!menu && menu.choices.indexOf(menu.activeChoice) > -1;
+    }
+
+    /** True while the open menu is still looking for choices. */
+    public get menuLoading(): boolean {
+        return !!this.menu?.component.instance.choiceLoading;
+    }
+
     private usingShortcut = false;
     private usingShortcutCharacter: string = '';
 
