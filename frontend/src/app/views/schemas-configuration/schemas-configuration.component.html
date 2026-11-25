@@ -172,16 +172,18 @@
                     </span>
                 }
                 <span class="sc-save-indicator"
-                      [class.dirty]="hasUnsavedChanges && !isSaving"
-                      [class.saving]="isSaving"
-                      [class.saved]="!hasUnsavedChanges && !isSaving">
+                      [class.dirty]="hasUnsavedChanges && !isSaving && !isSchemaDataLoading"
+                      [class.saving]="isSaving || isSchemaDataLoading"
+                      [class.saved]="!hasUnsavedChanges && !isSaving && !isSchemaDataLoading">
                     <i class="pi"
-                       [class.pi-exclamation-circle]="hasUnsavedChanges && !isSaving"
-                       [class.pi-spin]="isSaving"
-                       [class.pi-spinner]="isSaving"
-                       [class.pi-check-circle]="!hasUnsavedChanges && !isSaving"></i>
+                       [class.pi-exclamation-circle]="hasUnsavedChanges && !isSaving && !isSchemaDataLoading"
+                       [class.pi-spin]="isSaving || isSchemaDataLoading"
+                       [class.pi-spinner]="isSaving || isSchemaDataLoading"
+                       [class.pi-check-circle]="!hasUnsavedChanges && !isSaving && !isSchemaDataLoading"></i>
                     @if (isSaving) {
                         <span>Saving…</span>
+                    } @else if (isSchemaDataLoading) {
+                        <span>Loading schema data...</span>
                     } @else if (hasUnsavedChanges) {
                         <span>Unsaved changes</span>
                     } @else {
@@ -189,10 +191,10 @@
                     }
                 </span>
                 <button class="sc-btn-save-all"
-                        [class.dirty]="hasUnsavedChanges && (isTemplateConfigMode || currentSchemaErrorCount === 0)"
-                        [class.invalid]="hasUnsavedChanges && !isTemplateConfigMode && currentSchemaErrorCount > 0"
-                        [class.clean]="!hasUnsavedChanges"
-                        [disabled]="isTemplateReadonly || !hasUnsavedChanges || isSaving || (!isTemplateConfigMode && currentSchemaErrorCount > 0)"
+                        [class.dirty]="hasUnsavedChanges && !isSchemaDataLoading && (isTemplateConfigMode || currentSchemaErrorCount === 0)"
+                        [class.invalid]="hasUnsavedChanges && !isSchemaDataLoading && !isTemplateConfigMode && currentSchemaErrorCount > 0"
+                        [class.clean]="!hasUnsavedChanges || isSchemaDataLoading"
+                        [disabled]="isTemplateReadonly || !hasUnsavedChanges || isSaving || isSchemaDataLoading || (!isTemplateConfigMode && currentSchemaErrorCount > 0)"
                         (click)="saveAll()">
                     <i [class]="isNewVersionMode ? 'pi pi-copy' : 'pi pi-save'"></i>
                     {{ isNewVersionMode ? 'New Version' : 'Save all' }}
@@ -2717,7 +2719,7 @@
         <button class="sc-btn" (click)="showNewSchemaDialog = false">Cancel</button>
         <button
             class="sc-btn sc-btn-primary"
-            [disabled]="!newSchemaName.trim() || newSchemaSaving"
+            [disabled]="!newSchemaName.trim() || newSchemaSaving || isSchemaDataLoading"
             (click)="saveNewSchema()">
             @if (newSchemaSaving) {
                 <p-progressSpinner [style]="{ width: '14px', height: '14px' }"></p-progressSpinner>
