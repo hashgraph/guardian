@@ -580,12 +580,20 @@ export class DocumentGenerator {
         option: GenerateOption,
         rowPresets?: Record<string, any>,
     ): any {
-        const preset = rowPresets?.[field.name];
-        if (field.isArray && field.isRef && Array.isArray(preset) && preset.length) {
-            // A repeatable sub-schema: every preset entry is completed on its own and none is dropped
-            return preset.map((entry) =>
-                DocumentGenerator._generateField(field, context, option, { [field.name]: entry })
-            );
+        if (field.isArray && field.isRef) {
+            // The field example of a repeatable sub-schema is a list of rows
+            const example = field.examples?.[0];
+            const preset = rowPresets?.[field.name] ?? (Array.isArray(example) ? example : undefined);
+            if (Array.isArray(preset) && preset.length) {
+                // Every preset entry is completed on its own and none is dropped
+                return preset.map((entry) =>
+                    DocumentGenerator._generateField(field, context, option, {
+                        [field.name]: DocumentGenerator._isPlainObject(entry)
+                            ? Object.fromEntries(Object.entries(entry).filter(([, value]) => value !== null))
+                            : entry
+                    })
+                );
+            }
         }
         return DocumentGenerator._wrapArray(
             field,
