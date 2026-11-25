@@ -1576,7 +1576,7 @@ export class HederaSDKHelper {
     ): Promise<TransactionRecord> {
         await this.virtualTransactionLog(this.dryRun, type, userId);
         return {
-            consensusTimestamp: Timestamp.fromDate(Date.now())
+            consensusTimestamp: Timestamp.fromDate(new Date())
         } as any
     }
 

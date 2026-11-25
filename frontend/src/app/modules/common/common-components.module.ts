@@ -6,7 +6,6 @@ import { DatetimePicker } from './datetime-picker/datetime-picker.component';
 import { HederaExplorer } from './hedera-explorer/hedera-explorer.component';
 import { SelectMenuButton } from './select-menu/select-menu.component';
 import { AsyncProgressComponent } from './async-progress/async-progress.component';
-import { SwitchButton } from './switch-button/switch-button.component';
 import { FileDragNDropComponent } from './file-drag-n-drop/file-drag-n-drop.component';
 import { IconPreviewDialog } from './icon-preview-dialog/icon-preview-dialog.component';
 import { TokenConfigurationComponent } from './token-configuration/token-configuration.component';
@@ -69,7 +68,6 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
         HederaExplorer,
         SelectMenuButton,
         AsyncProgressComponent,
-        SwitchButton,
         FileDragNDropComponent,
         IconPreviewDialog,
         TokenConfigurationComponent,
@@ -139,7 +137,6 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
         DatetimePicker,
         HederaExplorer,
         SelectMenuButton,
-        SwitchButton,
         AsyncProgressComponent,
         FileDragNDropComponent,
         IconPreviewDialog,

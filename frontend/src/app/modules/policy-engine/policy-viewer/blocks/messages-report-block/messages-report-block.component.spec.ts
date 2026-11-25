@@ -1,10 +1,11 @@
 import type { Mock } from 'vitest';
-import { CommonModule, DatePipe } from '@angular/common';
-import { Component, EventEmitter, Input, NO_ERRORS_SCHEMA, Output } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule, UntypedFormBuilder } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 import { DialogService } from 'primeng/dynamicdialog';
+import moment from 'moment';
 import { of } from 'rxjs';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { ContractService } from 'src/app/services/contract.service';
@@ -19,7 +20,6 @@ describe('MessagesReportBlockComponent document availability', () => {
 
     function readMessages(message: any): any[] {
         const component: any = Object.create(MessagesReportBlockComponent.prototype);
-        component.datePipe = new DatePipe('en-US');
         component.contractService = { getContracts: () => of({ body: [] }) };
         component.analyticsService = { checkIndexer: () => of(false) };
         component.static = {
@@ -53,14 +53,6 @@ describe('MessagesReportBlockComponent document availability', () => {
     });
 });
 
-@Component({ selector: 'switch-button', template: '', standalone: false })
-class SwitchButtonStub {
-    @Input('on-label') on!: string;
-    @Input('off-label') off!: string;
-    @Input('value') value!: boolean;
-    @Output('valueChange') valueChange = new EventEmitter<boolean>();
-}
-
 describe('MessagesReportBlockComponent document cards', () => {
     let fixture: ComponentFixture<MessagesReportBlockComponent>;
     let openDialog: Mock;
@@ -69,9 +61,8 @@ describe('MessagesReportBlockComponent document cards', () => {
         openDialog = vi.fn().mockReturnValue({ onClose: of(null) });
         await TestBed.configureTestingModule({
             imports: [CommonModule, ReactiveFormsModule],
-            declarations: [MessagesReportBlockComponent, SwitchButtonStub],
+            declarations: [MessagesReportBlockComponent],
             providers: [
-                DatePipe,
                 UntypedFormBuilder,
                 { provide: PolicyEngineService, useValue: {} },
                 { provide: WebSocketService, useValue: {} },
@@ -164,5 +155,176 @@ describe('MessagesReportBlockComponent document cards', () => {
         selectCard(id);
         expect(documentLinks().length).toBe(0);
         expect(openDialog).not.toHaveBeenCalled();
+    });
+});
+
+describe('MessagesReportBlockComponent trust chain view', () => {
+    let fixture: ComponentFixture<MessagesReportBlockComponent>;
+    let contractService: { getContracts: Mock; getRetireVCsFromIndexer: Mock };
+    let analyticsService: { checkIndexer: Mock };
+
+    const TOKEN_ID = '0.0.5001';
+    const mintSchema = { contextUrl: 'schema:mint', name: 'MintToken', document: {} };
+    const projectSchema = { contextUrl: 'schema:project', name: 'Project Description', document: {} };
+
+    beforeEach(async () => {
+        contractService = {
+            getContracts: vi.fn().mockReturnValue(of({ body: [] })),
+            getRetireVCsFromIndexer: vi.fn().mockReturnValue(of({ body: [] })),
+        };
+        analyticsService = { checkIndexer: vi.fn().mockReturnValue(of(false)) };
+        await TestBed.configureTestingModule({
+            imports: [CommonModule, ReactiveFormsModule],
+            declarations: [MessagesReportBlockComponent],
+            providers: [
+                UntypedFormBuilder,
+                { provide: PolicyEngineService, useValue: {} },
+                { provide: WebSocketService, useValue: {} },
+                { provide: PolicyHelper, useValue: {} },
+                { provide: DialogService, useValue: { open: vi.fn() } },
+                { provide: ContractService, useValue: contractService },
+                { provide: AnalyticsService, useValue: analyticsService },
+            ],
+            schemas: [NO_ERRORS_SCHEMA],
+        }).compileComponents();
+        vi.useFakeTimers();
+        fixture = TestBed.createComponent(MessagesReportBlockComponent);
+    });
+
+    afterEach(() => {
+        fixture?.destroy();
+        vi.useRealTimers();
+    });
+
+    function message(id: string, extra: any = {}): any {
+        return {
+            id, order: 0, type: 'VC-Document', topicId: '0.0.20',
+            issuer: 'did:example:issuer', relationships: [], ...extra,
+        };
+    }
+
+    function vc(contextUrl: string, subject: any = {}): any {
+        return { '@context': [contextUrl], issuer: 'did:example:issuer', credentialSubject: [subject] };
+    }
+
+    function render(messages: any[], options: { children?: any[]; schemas?: any[] } = {}): void {
+        fixture.componentInstance.static = {
+            status: 'FINISHED', target: messages[0].id,
+            report: {
+                schemas: options.schemas || [projectSchema, mintSchema], users: [], roles: [],
+                tokens: [{ tokenId: TOKEN_ID, name: 'Carbon', symbol: 'CRB' }],
+                topics: [{
+                    topicId: '0.0.20',
+                    message: { type: 'Topic', messageType: 'INSTANCE_POLICY_TOPIC',
+                        name: 'Policy instance', owner: 'did:example:registry' },
+                    children: options.children || [], messages,
+                }],
+            },
+        };
+        fixture.detectChanges();
+    }
+
+    function axisTimes(): string[] {
+        return fixture.debugElement.queryAll(By.css('.tc-axis .tick b'))
+            .map((tick) => tick.nativeElement.textContent.trim());
+    }
+
+    function card(id: string) {
+        return fixture.debugElement.query(By.css(`[id="${id}"]`));
+    }
+
+    describe('time axis', () => {
+        it('shows a dash for an id whose time is not a real consensus time', () => {
+            render([message('1795.454658047')]);
+            expect(axisTimes()).toEqual(['–']);
+        });
+
+        it('shows a 24-hour time for a real consensus id', () => {
+            render([message('1795454658.047000000')]);
+            const [time] = axisTimes();
+            expect(time).toMatch(/^\d{2}:\d{2}:\d{2}$/);
+            expect(time).toBe(moment(1795454658047).format('HH:mm:ss'));
+        });
+
+        it('shows an afternoon retirement on a 24-hour clock', () => {
+            const issuanceDate = new Date(2026, 10, 23, 15, 30, 45).toISOString();
+            contractService.getContracts.mockReturnValue(of({
+                body: [{ topicId: '0.0.700', wipeTokenIds: [TOKEN_ID] }]
+            }));
+            analyticsService.checkIndexer.mockReturnValue(of(true));
+            contractService.getRetireVCsFromIndexer.mockReturnValue(of({
+                body: [{
+                    consensusTimestamp: '1795542344.000000010',
+                    documents: [{
+                        issuanceDate,
+                        credentialSubject: [{ contractId: '0.0.700', user: '0.0.9', tokens: [{ tokenId: TOKEN_ID, count: 1 }] }],
+                    }],
+                }]
+            }));
+
+            render([message('1795454658.047000000', {
+                document: vc('schema:mint', { tokenId: TOKEN_ID, amount: '5' }),
+            })]);
+
+            expect(axisTimes()).toContain('15:30:45');
+        });
+    });
+
+    describe('document cards', () => {
+        it('titles a revoked document with its schema and tags the status', () => {
+            const id = '1795454658.047000000';
+            render([message(id, { documentStatus: 'REVOKE', document: vc('schema:project') })]);
+
+            const element = card(id).nativeElement as HTMLElement;
+            expect(element.querySelector('.message-header')!.textContent!.trim()).toBe('Project Description');
+            expect(element.querySelector('.p-tag')!.textContent!.trim()).toBe('Revoked');
+        });
+
+        it('shows no status tag for a regular document', () => {
+            const id = '1795454658.047000000';
+            render([message(id, { documentStatus: 'ISSUE', document: vc('schema:project') })]);
+            expect(card(id).nativeElement.querySelector('.p-tag')).toBeNull();
+        });
+    });
+
+    describe('dashboard type', () => {
+        const child = (): any => ({
+            topicId: '0.0.30', message: { type: 'Topic', messageType: 'DYNAMIC_TOPIC', name: 'Project' },
+            children: [], messages: [message('1795454659.000000000', { order: 1, topicId: '0.0.30' })],
+        });
+
+        it('renders one catalog row per topic in the advanced view and one in the simplified view', () => {
+            render([message('1795454658.047000000')], { children: [child()] });
+            const topicCards = () => fixture.debugElement.queryAll(By.css('.topic-info')).length;
+
+            expect(topicCards()).toBe(1);
+            fixture.componentInstance.onDashboardType('Advanced' as any);
+            fixture.detectChanges();
+            expect(topicCards()).toBe(2);
+            fixture.componentInstance.onDashboardType('Simplified' as any);
+            fixture.detectChanges();
+            expect(topicCards()).toBe(1);
+        });
+    });
+
+    describe('selection', () => {
+        it('dims the events that are not related to the selected one', () => {
+            const a = '1795454658.000000001';
+            const b = '1795454659.000000002';
+            const c = '1795454660.000000003';
+            render([
+                message(a),
+                message(b, { order: 1, relationships: [a] }),
+                message(c, { order: 2 }),
+            ]);
+
+            expect(card(a).classes['dim']).toBeFalsy();
+            card(a).nativeElement.click();
+            fixture.detectChanges();
+
+            expect(card(a).classes['dim']).toBeFalsy();
+            expect(card(b).classes['dim']).toBeFalsy();
+            expect(card(c).classes['dim']).toBe(true);
+        });
     });
 });

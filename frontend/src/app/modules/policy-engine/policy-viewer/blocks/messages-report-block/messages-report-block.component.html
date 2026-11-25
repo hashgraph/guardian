@@ -1,8 +1,114 @@
-<div class="content" [attr.readonly-block]="readonly">
-  <ng-template #preloader>
-    <div class="preloader-image"></div>
-  </ng-template>
+<!-- Hedera information of the detail panel -->
+<ng-template #hederaInfo let-topicId="topicId" let-messageId="messageId" let-index="index" let-payer="payer"
+  let-payerLabel="payerLabel">
+  <div class="dr-sec">
+    <h4>Hedera information</h4>
+    <div class="kv">
+      <div class="k">Topic ID</div>
+      <div class="v mono">
+        @if (topicId) {
+          <hedera-explorer [params]="topicId" type="topics">{{ topicId }}</hedera-explorer>
+        } @else {
+          –
+        }
+      </div>
+    </div>
+    <div class="kv">
+      <div class="k">Message ID</div>
+      <div class="v mono">
+        @if (messageId) {
+          <hedera-explorer [params]="topicId" [subParams]="index" subType="messages"
+            type="topics">{{ messageId }}</hedera-explorer>
+        } @else {
+          –
+        }
+      </div>
+    </div>
+    <div class="kv">
+      <div class="k">{{ payerLabel }}</div>
+      <div class="v mono">
+        @if (payer) {
+          <hedera-explorer [params]="payer" type="accounts">{{ payer }}</hedera-explorer>
+        } @else {
+          –
+        }
+      </div>
+    </div>
+  </div>
+</ng-template>
 
+<!-- Issuer of the detail panel -->
+<ng-template #issuerInfo let-user="user">
+  @if (user) {
+    <div class="dr-sec">
+      <h4>Issuer</h4>
+      @if (user.did) {
+        <div class="kv">
+          <div class="k">DID</div>
+          <div class="v mono">{{ user.did }}</div>
+        </div>
+      }
+      @if (user.group) {
+        <div class="kv">
+          <div class="k">Group</div>
+          <div class="v">{{ user.group }}</div>
+        </div>
+      }
+      @if (user.role) {
+        <div class="kv">
+          <div class="k">Role</div>
+          <div class="v">{{ user.role }}</div>
+        </div>
+      }
+    </div>
+  }
+</ng-template>
+
+<!-- Token of the detail panel -->
+<ng-template #tokenInfo let-token="token" let-amount="amount">
+  @if (token) {
+    <div class="dr-sec">
+      <h4>Token</h4>
+      <div class="kv">
+        <div class="k">Token name</div>
+        <div class="v">{{ token.name }}</div>
+      </div>
+      <div class="kv">
+        <div class="k">Token ID</div>
+        <div class="v mono">{{ token.tokenId }}</div>
+      </div>
+      <div class="kv">
+        <div class="k">Amount</div>
+        <div class="v">{{ amount }}</div>
+      </div>
+    </div>
+  }
+</ng-template>
+
+<!-- Relationships of the detail panel -->
+<ng-template #relationshipsInfo let-relationships="relationships">
+  @if (relationships && relationships.length) {
+    <div class="dr-sec">
+      <h4>Relationships</h4>
+      @for (relationship of relationships; track relationship) {
+        <div (click)="onSelectById(relationship)" class="rel" role="button" tabindex="0"
+          (keydown.enter)="onSelectById(relationship)">
+          <span class="ico k-doc"><i class="pi pi-file"></i></span>
+          <span [attr.title]="relationship.name" class="rel-name">{{ relationship.name }}</span>
+          <i class="pi pi-chevron-right chev"></i>
+        </div>
+      }
+    </div>
+  }
+</ng-template>
+
+<!-- Link that opens the document -->
+<ng-template #openDocument let-item="item">
+  <a (click)="onOpenDocument(item)" (keydown.enter)="onOpenDocument(item)" class="field-link" role="button"
+    tabindex="0"><i class="pi pi-eye"></i>Open document</a>
+</ng-template>
+
+<div class="content" [attr.readonly-block]="readonly">
   @if (loading) {
     <div class="loading">
       <div class="preloader-image preloader-image-l-size"></div>
@@ -10,873 +116,537 @@
   }
 
   @if (status === 'STARTED') {
-    <div class="sub-loading">
-      <div class="loading-text">
-        <div>
-          <div class="preloader-image preloader-image-l-size"></div>
-        </div>
-        <div>Please wait while your report is calculated</div>
-        <div>This may take a few minutes ...</div>
-      </div>
+    <div class="tc-state">
+      <div class="preloader-image preloader-image-l-size"></div>
+      <h3>Building the trust chain</h3>
+      <p>This can take a few minutes. You can leave this page and come back – the report keeps calculating.</p>
     </div>
   }
 
   @if (status === 'FAILED') {
-    <div class="sub-loading">
-      <div class="error-text">
-        An unexpected error occurred.
-      </div>
-      <div>
-        <button (click)="onClear()" color="primary" mat-raised-button>
-          Clear
-        </button>
-      </div>
+    <div class="tc-state">
+      <div class="big-ico err"><i class="pi pi-exclamation-triangle"></i></div>
+      <h3>The report could not be built</h3>
+      <p>An unexpected error occurred while calculating the trust chain@if (target) { for <b>{{ target }}</b>}.</p>
+      <button (click)="onClear()" class="p-button-outlined tc-state-btn" icon="pi pi-arrow-left" label="Search again"
+        pButton type="button"></button>
     </div>
   }
 
   @if (!status) {
-    <div class="dashboard">
-      <form (ngSubmit)="onSearch()" [formGroup]="searchForm" class="filters">
-        <div class="p-fluid">
-          <div class="p-inputgroup search-input">
-            <input formControlName="value" pInputText placeholder="HASH/ID" type="text" />
-            <button
-              [disabled]="!searchForm.valid"
-              class="p-button-icon-only"
-              icon="pi pi-search"
-              pButton
-              type="submit">
-            </button>
-          </div>
-        </div>
+    <div class="tc-state">
+      <div class="big-ico"><i class="pi pi-link"></i></div>
+      <h3>Trace a document's trust chain</h3>
+      <p>Enter the hash or the Hedera message ID of a document to see every policy event and relationship behind it.</p>
+      <form (ngSubmit)="onSearch()" [formGroup]="searchForm" class="search">
+        <span class="search-field">
+          <i class="pi pi-search"></i>
+          <input formControlName="value" pInputText placeholder="Hash or message ID" type="text" />
+        </span>
+        <button [disabled]="!searchForm.valid" label="Search" pButton type="submit"></button>
       </form>
     </div>
   }
 
   @if (status === 'FINISHED') {
-    <div class="dashboard">
-      <div class="toolbar">
-        <div class="target">
-          <div class="target-label">Selected document:</div>
-          <div class="target-value">{{ target }}</div>
-          <div (click)="onClear()" class="target-btn">
-            Clear
-          </div>
-        </div>
-        <div class="switch-btn">
-          <switch-button (valueChange)="onDashboardType($event)" [off-label]="'Simplified'" [on-label]="'Advanced'"
-          [value]="dashboardType==='Advanced'"></switch-button>
-        </div>
+    <div class="tc-toolbar">
+      <div class="tc-target">
+        <span class="tc-target-label">Selected document</span>
+        <span class="tc-chip">
+          <span [attr.title]="target" class="tc-chip-value">{{ target }}</span>
+          <sf-copy [value]="target"></sf-copy>
+        </span>
+        <button (click)="onClear()" class="tc-btn-text" type="button">
+          <i class="pi pi-times"></i>Clear
+        </button>
       </div>
-      <div class="dashboard-grid">
-        <div class="dashboard-left">
-          <div class="dashboard-top">
-            Policy Message Catalog
-          </div>
-          <div [style.gridTemplateRows]="gridTemplateRows" class="dashboard-rows">
-            @for (topic of topics; track topic) {
-              <div [style.gridRow]="topic.__order" [style.paddingLeft.px]="topic.__offset"
-                class="dashboard-header">
-                <div (click)="onSelect(topic.message)" [attr.readonly]="!topic.message"
-                  [attr.selected]="topic.message && topic.message === selected"
-                  class="topic-info">
-                  <div class="topic-header">
-                    <i class="pi pi-cloud"></i>
-                    {{ getTopicHeader(topic.message) }}
-                  </div>
-                  <div class="topic-data">
-                    @if (topic.message) {
-                      <div class="topic-text">
-                        {{ getTopicName(topic) }}
-                      </div>
-                    }
-                    <div class="topic-id">{{ topic.topicId }}</div>
-                  </div>
-                </div>
-              </div>
-              @if (topic.__parent) {
-                <div [style.height.px]="topic.__height" [style.left.px]="topic.__offset"
-                [style.top.px]="topic.__start" class="topic-line"></div>
-              }
-            }
-          </div>
-        </div>
-        <div class="dashboard-center">
-          <div class="dashboard-top">
-            Policy Events
-          </div>
-          <div [style.gridTemplateRows]="gridTemplateRows" class="dashboard-rows dashboard-scroll">
-            <div id="leader-line-container-1"></div>
-            <div id="leader-line-container-2"></div>
-            @for (topic of topics; track topic) {
-              <div [style.gridRow]="topic.__order"
-                [style.gridTemplateColumns]="gridTemplateColumns"
-                class="dashboard-row">
-                @for (message of topic.messages; track message) {
-                  <div [style.gridColumn]="message.__order"
-                    class="dashboard-col">
-                    <div (click)="onSelect(message)" [attr.selected]="message === selected" [id]="message.id"
-                      class="message-info">
-                      @if (message.__ifPolicyMessage) {
-                        <div class="message-header">
-                          <svg-icon src="/assets/images/icons/policy.svg"
-                          svgClass="icon-style-policy"></svg-icon>
-                          Create policy
-                        </div>
-                        <div class="message-data">
-                          <div class="message-name">{{ message.name }}</div>
-                          <div class="message-owner">{{ message.owner }}</div>
-                        </div>
-                      }
-                      @if (message.__ifInstanceMessage) {
-                        <div class="message-header">
-                          <svg-icon src="/assets/images/icons/policy.svg"
-                          svgClass="icon-style-policy"></svg-icon>
-                          Publish policy
-                        </div>
-                        <div class="message-data">
-                          <div class="message-name">{{ message.name }}</div>
-                          <div class="message-name">Version: {{ message.version }}</div>
-                        </div>
-                      }
-                      @if (message.__ifDIDMessage) {
-                        <div class="message-header">
-                          <i class="pi pi-key"></i>
-                          Registration
-                        </div>
-                        <div class="message-data">
-                          <div class="message-name">
-                            {{ message.__role }}
-                          </div>
-                          <div class="message-owner">{{ message.did }}</div>
-                        </div>
-                      }
-                      @if (message.__ifVCMessage) {
-                        <div class="message-header">
-                          <i class="pi pi-file"></i>
-                          {{ message.__status }}
-                        </div>
-                        <div class="message-data">
-                          @if (message.__schemaLabel) {
-                            <div class="message-name">
-                              {{ message.__schemaLabel }}
-                            </div>
-                          }
-                          <div class="message-owner">{{ message.__userName }}</div>
-                        </div>
-                      }
-                      @if (message.__ifMintMessage) {
-                        <div class="message-header">
-                          <i class="pi pi-receipt"></i>
-                          Mint token
-                        </div>
-                        <div class="message-data">
-                          @if (message.__tokenName) {
-                            <div class="message-name">{{ message.__tokenName }}
-                            </div>
-                          }
-                          <div class="message-owner">{{ message.__userName }}</div>
-                        </div>
-                      }
-                      @if (message.__ifVPMessage) {
-                        <div class="message-header">
-                          <i class="pi pi-receipt"></i>
-                          Mint confirmation
-                        </div>
-                        <div class="message-data">
-                          @if (message.__amount) {
-                            <div class="message-name">
-                              Amount: <span>{{ message.__amount }} {{ message.__token.symbol }}</span>
-                            </div>
-                          }
-                          <div class="message-owner">{{ message.__userName }}</div>
-                        </div>
-                      }
-                      @if (message.__ifRoleMessage) {
-                        <div class="message-header">
-                          <i class="pi pi-user"></i>
-                          Roles & Groups
-                        </div>
-                        <div class="message-data">
-                          @if (message.role) {
-                            <div class="message-name">
-                              Role: {{ message.role }}
-                            </div>
-                          }
-                          @if (!message.role && message.group) {
-                            <div class="message-name">
-                              Group: {{ message.group }}
-                            </div>
-                          }
-                          <div class="message-owner">{{ message.__issuer }}</div>
-                        </div>
-                      }
-                      @if (message.__ifRetireMessage) {
-                        <div class="message-header">
-                          <i class="pi pi-receipt"></i>
-                          Retirement
-                        </div>
-                        <div class="message-data">
-                          @if (message.documents[0]?.credentialSubject[0]?.contractId) {
-                            <div class="message-name">
-                              Contract ID: <span>{{message.documents[0].credentialSubject[0].contractId}}</span>
-                            </div>
-                          }
-                          @if (message.documents[0]?.credentialSubject[0]?.user) {
-                            <div class="message-name">
-                              User ID: <span>{{message.documents[0].credentialSubject[0].user}}</span>
-                            </div>
-                          }
-                        </div>
-                      }
-                    </div>
-                  </div>
-                }
-              </div>
-            }
-            <div [style.gridRow]="topics.length+1" [style.gridTemplateColumns]="gridTemplateColumns"
-              class="dashboard-timeline">
-              @for (message of messages; track message) {
-                <div [style.gridColumn]="message.__order"
-                  class="message-timestamp">
-                  {{ message.__timestamp }}
-                </div>
-              }
-            </div>
-          </div>
-        </div>
-        @if (selected) {
-          <div class="dashboard-right">
-            <div class="dashboard-right-header">
-              <span>{{ selected.topicId }}</span>
-              <span>
-                <i class="pi pi-chevron-right"></i>
-              </span>
-              <span>{{ selected.id }}</span>
-              <div (click)="onSelect(null)" class="dashboard-right-close">
-                <i class="pi pi-times"></i>
-              </div>
-            </div>
-            <div class="dashboard-right-body">
-              @if (selected.__ifPolicyMessage) {
-                <div class="document-header">
-                  <svg-icon src="/assets/images/icons/policy.svg" svgClass="icon-style-policy"></svg-icon>
-                  Policy
-                </div>
-                <div class="field-delimiter" data-label="Policy"></div>
-                <div class="field">
-                  <div class="field-name">Policy name:</div>
-                  <div class="field-value">{{ selected.name }}</div>
-                </div>
-                <div class="field">
-                  <div class="field-name">Policy description:</div>
-                  <div class="field-value">{{ selected.description }}</div>
-                </div>
-                <div class="field">
-                  <div class="field-name">Policy creator:</div>
-                  <div class="field-value">{{ selected.owner }}</div>
-                </div>
-                <div class="field-delimiter" data-label="Hedera Information"></div>
-                <div class="field">
-                  <div class="field-name">Topic ID:</div>
-                  <div class="field-value">
-                    <hedera-explorer [params]="selected.topicId"
-                      type="topics">{{ selected.topicId }}
-                    </hedera-explorer>
-                  </div>
-                </div>
-                <div class="field">
-                  <div class="field-name">Message ID:</div>
-                  <div class="field-value">
-                    <hedera-explorer [params]="selected.topicId" [subParams]="selected.index" subType="messages"
-                      type="topics">{{ selected.id }}
-                    </hedera-explorer>
-                  </div>
-                </div>
-                <div class="field">
-                  <div class="field-name">Sender:</div>
-                  <div class="field-value">
-                    <hedera-explorer [params]="selected.payer"
-                      type="accounts">{{ selected.payer }}
-                    </hedera-explorer>
-                  </div>
-                </div>
-              }
-              @if (selected.__ifInstanceMessage) {
-                <div class="document-header">
-                  <svg-icon src="/assets/images/icons/policy.svg" svgClass="icon-style-policy"></svg-icon>
-                  Instance policy
-                </div>
-                <div class="field-delimiter" data-label="Policy"></div>
-                <div class="field">
-                  <div class="field-name">Policy name:</div>
-                  <div class="field-value">{{ selected.name }}</div>
-                </div>
-                <div class="field">
-                  <div class="field-name">Policy description:</div>
-                  <div class="field-value">{{ selected.description }}</div>
-                </div>
-                <div class="field">
-                  <div class="field-name">Policy creator:</div>
-                  <div class="field-value">{{ selected.owner }}</div>
-                </div>
-                <div class="field">
-                  <div class="field-name">Policy version:</div>
-                  <div class="field-value">{{ selected.version }}</div>
-                </div>
-                <div class="field-delimiter" data-label="Hedera Information"></div>
-                <div class="field">
-                  <div class="field-name">Topic ID:</div>
-                  <div class="field-value">
-                    <hedera-explorer [params]="selected.topicId"
-                      type="topics">{{ selected.topicId }}
-                    </hedera-explorer>
-                  </div>
-                </div>
-                <div class="field">
-                  <div class="field-name">Message ID:</div>
-                  <div class="field-value">
-                    <hedera-explorer [params]="selected.topicId" [subParams]="selected.index" subType="messages"
-                      type="topics">{{ selected.id }}
-                    </hedera-explorer>
-                  </div>
-                </div>
-                <div class="field">
-                  <div class="field-name">Sender:</div>
-                  <div class="field-value">
-                    <hedera-explorer [params]="selected.payer"
-                      type="accounts">{{ selected.payer }}
-                    </hedera-explorer>
-                  </div>
-                </div>
-              }
-              @if (selected.__ifDIDMessage) {
-                <div class="document-header">
-                  <i class="pi pi-key"></i>
-                  User registration
-                </div>
-                <div class="field-delimiter" data-label="Document"></div>
-                <div class="field">
-                  <div class="field-name">DID:</div>
-                  <div class="field-value">{{ selected.did }}</div>
-                </div>
-                @if (selected.document) {
-                  <div class="field">
-                    <div class="field-name">DID document:</div>
-                    <div class="field-value">
-                      <span (click)="onOpenDocument(selected)" class="field-link">Open document</span>
-                    </div>
-                  </div>
-                }
-                <div class="field-delimiter" data-label="Hedera Information"></div>
-                <div class="field">
-                  <div class="field-name">Topic ID:</div>
-                  <div class="field-value">
-                    <hedera-explorer [params]="selected.topicId"
-                      type="topics">{{ selected.topicId }}
-                    </hedera-explorer>
-                  </div>
-                </div>
-                <div class="field">
-                  <div class="field-name">Message ID:</div>
-                  <div class="field-value">
-                    <hedera-explorer [params]="selected.topicId" [subParams]="selected.index" subType="messages"
-                      type="topics">{{ selected.id }}
-                    </hedera-explorer>
-                  </div>
-                </div>
-                <div class="field">
-                  <div class="field-name">Sender:</div>
-                  <div class="field-value">
-                    <hedera-explorer [params]="selected.payer"
-                      type="accounts">{{ selected.payer }}
-                    </hedera-explorer>
-                  </div>
-                </div>
-              }
-              @if (selected.__ifRoleMessage) {
-                <div class="document-header">
-                  <i class="pi pi-user"></i>
-                  Roles & Groups
-                </div>
-                <div class="field-delimiter" data-label="Document"></div>
-                @if (selected.__user.did) {
-                  <div class="field">
-                    <div class="field-name">DID:</div>
-                    <div class="field-value">{{ selected.__user.did }}</div>
-                  </div>
-                }
-                @if (selected.role) {
-                  <div class="field">
-                    <div class="field-name">Role:</div>
-                    <div class="field-value">{{ selected.role }}</div>
-                  </div>
-                }
-                @if (selected.group) {
-                  <div class="field">
-                    <div class="field-name">Groups:</div>
-                    <div class="field-value">{{ selected.group }}</div>
-                  </div>
-                }
-                @if (selected.document) {
-                  <div class="field">
-                    <div class="field-name">Document artifact:</div>
-                    <div class="field-value">
-                      <span (click)="onOpenDocument(selected)" class="field-link">Open document</span>
-                    </div>
-                  </div>
-                }
-                <div class="field-delimiter" data-label="Hedera Information"></div>
-                <div class="field">
-                  <div class="field-name">Topic ID:</div>
-                  <div class="field-value">
-                    <hedera-explorer [params]="selected.topicId"
-                      type="topics">{{ selected.topicId }}
-                    </hedera-explorer>
-                  </div>
-                </div>
-                <div class="field">
-                  <div class="field-name">Message ID:</div>
-                  <div class="field-value">
-                    <hedera-explorer [params]="selected.topicId" [subParams]="selected.index" subType="messages"
-                      type="topics">{{ selected.id }}
-                    </hedera-explorer>
-                  </div>
-                </div>
-                <div class="field">
-                  <div class="field-name">Sender:</div>
-                  <div class="field-value">
-                    <hedera-explorer [params]="selected.payer"
-                      type="accounts">{{ selected.payer }}
-                    </hedera-explorer>
-                  </div>
-                </div>
-              }
-              @if (selected.__ifVCMessage) {
-                <div class="document-header">
-                  <i class="pi pi-file"></i>
-                  Document
-                </div>
-                <div class="field-delimiter" data-label="Document"></div>
-                @if (selected.__schemaLabel) {
-                  <div class="field">
-                    <div class="field-name">Schema:</div>
-                    <div class="field-value">{{ selected.__schemaLabel }}</div>
-                  </div>
-                }
-                @if (selected.__status) {
-                  <div class="field">
-                    <div class="field-name">Document status:</div>
-                    <div class="field-value">{{ selected.__status }}</div>
-                  </div>
-                }
-                @if (selected.document) {
-                  <div class="field">
-                    <div class="field-name">Document artifact:</div>
-                    <div class="field-value">
-                      <span (click)="onOpenDocument(selected)" class="field-link">Open document</span>
-                    </div>
-                  </div>
-                }
-                @if (selected.__user) {
-                  <div class="field-delimiter" data-label="Issuer"></div>
-                  @if (selected.__user.did) {
-                    <div class="field">
-                      <div class="field-name">DID:</div>
-                      <div class="field-value">{{ selected.__user.did }}</div>
-                    </div>
-                  }
-                  @if (selected.__user.group) {
-                    <div class="field">
-                      <div class="field-name">Group:</div>
-                      <div class="field-value">{{ selected.__user.group }}</div>
-                    </div>
-                  }
-                  @if (selected.__user.role) {
-                    <div class="field">
-                      <div class="field-name">Role:</div>
-                      <div class="field-value">{{ selected.__user.role }}</div>
-                    </div>
-                  }
-                }
-                <div class="field-delimiter" data-label="Hedera Information"></div>
-                <div class="field">
-                  <div class="field-name">Topic ID:</div>
-                  <div class="field-value">
-                    <hedera-explorer [params]="selected.topicId"
-                      type="topics">{{ selected.topicId }}
-                    </hedera-explorer>
-                  </div>
-                </div>
-                <div class="field">
-                  <div class="field-name">Message ID:</div>
-                  <div class="field-value">
-                    <hedera-explorer [params]="selected.topicId" [subParams]="selected.index" subType="messages"
-                      type="topics">{{ selected.id }}
-                    </hedera-explorer>
-                  </div>
-                </div>
-                <div class="field">
-                  <div class="field-name">Sender:</div>
-                  <div class="field-value">
-                    <hedera-explorer [params]="selected.payer"
-                      type="accounts">{{ selected.payer }}
-                    </hedera-explorer>
-                  </div>
-                </div>
-                @if (selected.__relationships && selected.__relationships.length) {
-                  <div class="field-delimiter" data-label="Relationships"></div>
-                  <div class="array-field">
-                    @for (relationship of selected.__relationships; track relationship) {
-                      <div class="array-value">
-                        <div (click)="onSelectById(relationship)" class="relationship-document">
-                          <i class="pi pi-file"></i>
-                          {{ relationship.name }}
-                        </div>
-                      </div>
-                    }
-                  </div>
-                }
-              }
-              @if (selected.__ifMintMessage) {
-                <div class="document-header">
-                  <svg-icon class="svg-icon" src="/assets/images/icons/token.svg"></svg-icon>
-                  Mint token
-                </div>
-                @if (selected.__token) {
-                  <div class="field-delimiter" data-label="Token"></div>
-                  <div class="field">
-                    <div class="field-name">Token name:</div>
-                    <div class="field-value">{{ selected.__token.name }}</div>
-                  </div>
-                  <div class="field">
-                    <div class="field-name">Token ID:</div>
-                    <div class="field-value">{{ selected.__token.tokenId }}</div>
-                  </div>
-                  <div class="field">
-                    <div class="field-name">Amount:</div>
-                    <div class="field-value">{{ selected.__amount }}</div>
-                  </div>
-                }
-                <div class="field-delimiter" data-label="Document"></div>
-                @if (selected.document) {
-                  <div class="field">
-                    <div class="field-name">Document artifact:</div>
-                    <div class="field-value">
-                      <span (click)="onOpenDocument(selected)" class="field-link">Open document</span>
-                    </div>
-                  </div>
-                }
-                @if (selected.__user) {
-                  <div class="field-delimiter" data-label="Issuer"></div>
-                  @if (selected.__user.did) {
-                    <div class="field">
-                      <div class="field-name">DID:</div>
-                      <div class="field-value">{{ selected.__user.did }}</div>
-                    </div>
-                  }
-                  @if (selected.__user.group) {
-                    <div class="field">
-                      <div class="field-name">Group:</div>
-                      <div class="field-value">{{ selected.__user.group }}</div>
-                    </div>
-                  }
-                  @if (selected.__user.role) {
-                    <div class="field">
-                      <div class="field-name">Role:</div>
-                      <div class="field-value">{{ selected.__user.role }}</div>
-                    </div>
-                  }
-                }
-                <div class="field-delimiter" data-label="Hedera Information"></div>
-                <div class="field">
-                  <div class="field-name">Topic ID:</div>
-                  <div class="field-value">
-                    <hedera-explorer [params]="selected.topicId"
-                      type="topics">{{ selected.topicId }}
-                    </hedera-explorer>
-                  </div>
-                </div>
-                <div class="field">
-                  <div class="field-name">Message ID:</div>
-                  <div class="field-value">
-                    <hedera-explorer [params]="selected.topicId" [subParams]="selected.index" subType="messages"
-                      type="topics">{{ selected.id }}
-                    </hedera-explorer>
-                  </div>
-                </div>
-                <div class="field">
-                  <div class="field-name">Sender:</div>
-                  <div class="field-value">
-                    <hedera-explorer [params]="selected.payer"
-                      type="accounts">{{ selected.payer }}
-                    </hedera-explorer>
-                  </div>
-                </div>
-                @if (selected.__relationships && selected.__relationships.length) {
-                  <div class="field-delimiter" data-label="Relationships"></div>
-                  <div class="array-field">
-                    @for (relationship of selected.__relationships; track relationship) {
-                      <div class="array-value">
-                        <div (click)="onSelectById(relationship)" class="relationship-document">
-                          <i class="pi pi-file"></i>
-                          {{ relationship.name }}
-                        </div>
-                      </div>
-                    }
-                  </div>
-                }
-              }
-              @if (selected.__ifVPMessage) {
-                <div class="document-header">
-                  <svg-icon src="/assets/images/icons/receipt.svg" svgClass="icon-style-receipt"></svg-icon>
-                  Mint confirmation
-                </div>
-                <div class="field-delimiter" data-label="Document"></div>
-                @if (selected.__documents) {
-                  <div class="field">
-                    <div class="field-name">Documents:</div>
-                    <div class="field-value">
-                      @for (item of selected.__documents; track item) {
-                        <div (click)="onOpenDocument(item)"
-                          class="field-link-array">{{ item.__name }}
-                        </div>
-                      }
-                    </div>
-                  </div>
-                }
-                @if (selected.__token) {
-                  <div class="field-delimiter" data-label="Token"></div>
-                  <div class="field">
-                    <div class="field-name">Token name:</div>
-                    <div class="field-value">{{ selected.__token.name }}</div>
-                  </div>
-                  <div class="field">
-                    <div class="field-name">Token ID:</div>
-                    <div class="field-value">{{ selected.__token.tokenId }}</div>
-                  </div>
-                  <div class="field">
-                    <div class="field-name">Amount:</div>
-                    <div class="field-value">{{ selected.__amount }}</div>
-                  </div>
-                }
-                @if (selected.__user) {
-                  <div class="field-delimiter" data-label="Issuer"></div>
-                  @if (selected.__user.did) {
-                    <div class="field">
-                      <div class="field-name">DID:</div>
-                      <div class="field-value">{{ selected.__user.did }}</div>
-                    </div>
-                  }
-                  @if (selected.__user.group) {
-                    <div class="field">
-                      <div class="field-name">Group:</div>
-                      <div class="field-value">{{ selected.__user.group }}</div>
-                    </div>
-                  }
-                  @if (selected.__user.role) {
-                    <div class="field">
-                      <div class="field-name">Role:</div>
-                      <div class="field-value">{{ selected.__user.role }}</div>
-                    </div>
-                  }
-                }
-                <div class="field-delimiter" data-label="Hedera Information"></div>
-                <div class="field">
-                  <div class="field-name">Topic ID:</div>
-                  <div class="field-value">
-                    <hedera-explorer [params]="selected.topicId"
-                      type="topics">{{ selected.topicId }}
-                    </hedera-explorer>
-                  </div>
-                </div>
-                <div class="field">
-                  <div class="field-name">Message ID:</div>
-                  <div class="field-value">
-                    <hedera-explorer [params]="selected.topicId" [subParams]="selected.index" subType="messages"
-                      type="topics">{{ selected.id }}
-                    </hedera-explorer>
-                  </div>
-                </div>
-                <div class="field">
-                  <div class="field-name">Sender:</div>
-                  <div class="field-value">
-                    <hedera-explorer [params]="selected.payer"
-                      type="accounts">{{ selected.payer }}
-                    </hedera-explorer>
-                  </div>
-                </div>
-                @if (selected.__relationships && selected.__relationships.length) {
-                  <div class="field-delimiter" data-label="Relationships"></div>
-                  <div class="array-field">
-                    @for (relationship of selected.__relationships; track relationship) {
-                      <div class="array-value">
-                        <div (click)="onSelectById(relationship)" class="relationship-document">
-                          <i class="pi pi-file"></i>
-                          {{ relationship.name }}
-                        </div>
-                      </div>
-                    }
-                  </div>
-                }
-              }
-              @if (selected.__ifTopicMessage) {
-                <div class="document-header">
-                  <i class="pi pi-cloud"></i>
-                  Catalog
-                </div>
-                <div class="field-delimiter" data-label="Topic Information"></div>
-                <div class="field">
-                  <div class="field-name">Topic name:</div>
-                  <div class="field-value">{{ selected.name }}</div>
-                </div>
-                <div class="field">
-                  <div class="field-name">Topic description:</div>
-                  <div class="field-value">{{ selected.description }}</div>
-                </div>
-                <div class="field">
-                  <div class="field-name">Topic type:</div>
-                  <div class="field-value">
-                    {{ getTopicHeader(selected) }} catalog
-                  </div>
-                </div>
-                @if (selected.owner) {
-                  <div class="field">
-                    <div class="field-name">Topic creator:</div>
-                    <div class="field-value">{{ selected.owner }}</div>
-                  </div>
-                }
-                @if (selected.__rationale && selected.__rationale.__ifPolicyMessage) {
-                  <div class="field-delimiter" data-label="Policy"></div>
-                  <div class="field">
-                    <div class="field-name">Policy name:</div>
-                    <div class="field-value">{{ selected.__rationale.name }}</div>
-                  </div>
-                  <div class="field">
-                    <div class="field-name">Policy description:</div>
-                    <div class="field-value">{{ selected.__rationale.description }}</div>
-                  </div>
-                }
-                @if (selected.__rationale && selected.__rationale.__ifInstanceMessage) {
-                  <div class="field-delimiter" data-label="Policy"></div>
-                  <div class="field">
-                    <div class="field-name">Policy name:</div>
-                    <div class="field-value">{{ selected.__rationale.name }}</div>
-                  </div>
-                  <div class="field">
-                    <div class="field-name">Policy description:</div>
-                    <div class="field-value">{{ selected.__rationale.description }}</div>
-                  </div>
-                  <div class="field">
-                    <div class="field-name">Policy version:</div>
-                    <div class="field-value">{{ selected.__rationale.version }}</div>
-                  </div>
-                }
-                <div class="field-delimiter" data-label="Hedera Information"></div>
-                <div class="field">
-                  <div class="field-name">Topic ID:</div>
-                  <div class="field-value">
-                    <hedera-explorer [params]="selected.topicId"
-                      type="topics">{{ selected.topicId }}
-                    </hedera-explorer>
-                  </div>
-                </div>
-                <div class="field">
-                  <div class="field-name">Message ID:</div>
-                  <div class="field-value">
-                    <hedera-explorer [params]="selected.topicId" [subParams]="selected.index" subType="messages"
-                      type="topics">{{ selected.id }}
-                    </hedera-explorer>
-                  </div>
-                </div>
-                <div class="field">
-                  <div class="field-name">Sender:</div>
-                  <div class="field-value">
-                    <hedera-explorer [params]="selected.payer"
-                      type="accounts">{{ selected.payer }}
-                    </hedera-explorer>
-                  </div>
-                </div>
-              }
-              @if (selected.__ifRetireMessage) {
-                <div class="document-header">
-                  <i class="pi pi-receipt"></i>
-                  Retirement message
-                </div>
-                <div class="field-delimiter" data-label="Document"></div>
-                @if (selected.documents) {
-                  <div class="field">
-                    <div class="field-name">Document artifact:</div>
-                    <div class="field-value">
-                      <span class="field-link" (click)="onOpenDocument(selected)">Open document</span>
-                    </div>
-                  </div>
-                }
-                <div class="field-delimiter" data-label="Retirement Information"></div>
-                <div class="field">
-                  <div class="field-name">Contract ID:</div>
-                  <div class="field-value">{{selected.documents[0].credentialSubject[0].contractId}}</div>
-                </div>
-                @if (selected.owner) {
-                  <div class="field">
-                    <div class="field-name">User ID:</div>
-                    <div class="field-value">{{selected.documents[0].credentialSubject[0].user}}</div>
-                  </div>
-                }
-                @if (selected.consensusTimestamp) {
-                  <div class="field">
-                    <div class="field-name">Transaction:</div>
-                    <div class="field-value">{{selected.consensusTimestamp}}</div>
-                  </div>
-                }
-                @for (token of selected.documents[0].credentialSubject[0]?.tokens; track token) {
-                  <div>
-                    <div class="field-delimiter"></div>
-                    <div class="field">
-                      <div class="field-name">Token ID:</div>
-                      <div class="field-value">{{token.tokenId}}</div>
-                    </div>
-                    @if (token.serials && token.serials.length > 0) {
-                      <div class="field">
-                        <div class="field-name">Instance ID:</div>
-                        <div class="field-value">{{token.serials.join(', ')}}</div>
-                      </div>
-                    }
-                    @if (!token.serials || token.serials.length <= 0) {
-                      <div class="field">
-                        <div class="field-name">Amount:</div>
-                        <div class="field-value">{{token.count}}</div>
-                      </div>
-                    }
-                  </div>
-                }
-                <div class="field-delimiter" data-label="Hedera Information"></div>
-                <div class="field">
-                  <div class="field-name">Topic ID:</div>
-                  <div class="field-value">
-                    <hedera-explorer type="topics"
-                    [params]="selected.topicId">{{selected.topicId}}</hedera-explorer>
-                  </div>
-                </div>
-                <div class="field">
-                  <div class="field-name">Message ID:</div>
-                  <div class="field-value">
-                    <hedera-explorer type="topics" [params]="selected.topicId" subType="messages"
-                    [subParams]="selected.sequenceNumber">{{selected.consensusTimestamp}}</hedera-explorer>
-                  </div>
-                </div>
-                <div class="field">
-                  <div class="field-name">Owner:</div>
-                  <div class="field-value">
-                    <hedera-explorer type="accounts"
-                    [params]="selected.owner">{{selected.owner}}</hedera-explorer>
-                  </div>
-                </div>
-              }
-            </div>
-          </div>
+      <div class="tc-spacer"></div>
+      <div class="tc-legend">
+        <span><i class="sw"></i>Relationship</span>
+        <span><i class="sw hl"></i>Selected</span>
+      </div>
+      <div class="tc-seg" role="group" aria-label="View">
+        @for (option of viewOptions; track option.value) {
+          <button (click)="onDashboardType(option.value)" [attr.aria-pressed]="option.value === dashboardType"
+            [class.on]="option.value === dashboardType" type="button">{{ option.label }}</button>
         }
       </div>
     </div>
+
+    @if (noEvents) {
+      <div class="tc-state">
+        <div class="big-ico"><i class="pi pi-inbox"></i></div>
+        <h3>No events found</h3>
+        <p>No policy messages reference this document yet.</p>
+      </div>
+    } @else {
+      <div class="tc-main">
+        <div class="tc-scroll">
+          <div class="tc-board">
+            <div class="tc-colhead">
+              <div class="h-cat">Message catalog</div>
+              <div class="h-events">Policy events</div>
+            </div>
+            <div class="tc-rows">
+              <div class="tc-cat">
+                @for (topic of topics; track topic) {
+                  <div class="tc-cat-row">
+                    <div (click)="topic.message && onSelect(topic.message)"
+                      [attr.readonly]="!topic.message"
+                      [class.sel]="topic.message && topic.message === selected"
+                      [style.marginLeft]="'calc(12px + var(--tc-indent) * ' + topic.__depth + ')'"
+                      [attr.title]="getTopicHeader(topic.message) + (getTopicName(topic) ? ' – ' + getTopicName(topic) : '')"
+                      class="topic topic-info">
+                      <div class="t-head">
+                        <i [class]="'pi ' + getTopicIcon(topic)"></i>
+                        <span>{{ getTopicHeader(topic.message) }}</span>
+                      </div>
+                      @if (topic.message && getTopicName(topic)) {
+                        <div class="t-sub">{{ getTopicName(topic) }}</div>
+                      }
+                      <div class="t-id">{{ topic.topicId }}</div>
+                    </div>
+                  </div>
+                  @if (topic.__parent) {
+                    <div [style.height.px]="topic.__height"
+                      [style.left]="'calc(12px + var(--tc-indent) * ' + topic.__depth + ' - 8px)'"
+                      [style.top.px]="topic.__start" class="tree-line"></div>
+                  }
+                }
+              </div>
+              <div class="tc-events">
+                <div id="leader-line-container-1"></div>
+                <div id="leader-line-container-2"></div>
+                @for (topic of topics; track topic) {
+                  <div [style.gridTemplateColumns]="gridTemplateColumns" class="tc-lane">
+                    @for (message of topic.messages; track message) {
+                      <div [style.gridColumn]="message.__order" class="tc-cell">
+                        <div (click)="onSelect(message)" (keydown.enter)="onSelect(message)"
+                          [class.dim]="isDimmed(message)" [class.sel]="message === selected"
+                          [attr.selected]="message === selected" [id]="message.id" class="ev message-info"
+                          tabindex="0">
+                          @if (message.__ifPolicyMessage) {
+                            <div class="e-head message-header">
+                              <span class="ico k-policy"><i class="pi pi-sitemap"></i></span>
+                              <span>Create policy</span>
+                            </div>
+                            <div [attr.title]="message.name" class="e-l1"><span>{{ message.name }}</span></div>
+                            <div [attr.title]="message.owner" class="e-l2 mono">{{ message.owner }}</div>
+                          }
+                          @if (message.__ifInstanceMessage) {
+                            <div class="e-head message-header">
+                              <span class="ico k-policy"><i class="pi pi-box"></i></span>
+                              <span>Publish policy</span>
+                            </div>
+                            <div [attr.title]="message.name" class="e-l1"><span>{{ message.name }}</span></div>
+                            <div [attr.title]="'Version: ' + message.version" class="e-l2">Version: {{ message.version }}</div>
+                          }
+                          @if (message.__ifDIDMessage) {
+                            <div class="e-head message-header">
+                              <span class="ico k-reg"><i class="pi pi-key"></i></span>
+                              <span>Registration</span>
+                            </div>
+                            <div [attr.title]="message.__role" class="e-l1"><span>{{ message.__role }}</span></div>
+                            <div [attr.title]="message.did" class="e-l2 mono">{{ message.did }}</div>
+                          }
+                          @if (message.__ifVCMessage) {
+                            <div [attr.title]="message.__schemaLabel || 'Document'" class="e-head message-header">
+                              <span class="ico k-doc"><i class="pi pi-file"></i></span>
+                              <span>{{ message.__schemaLabel || 'Document' }}</span>
+                            </div>
+                            <div class="e-l1">
+                              <span [attr.title]="message.__userName">{{ message.__userName }}</span>
+                              @if (message.__statusTag) {
+                                <span [class]="'p-tag p-tag-' + message.__statusTag.severity">{{ message.__statusTag.label }}</span>
+                              }
+                            </div>
+                            <div [attr.title]="message.__issuer" class="e-l2 mono">{{ message.__issuer }}</div>
+                          }
+                          @if (message.__ifMintMessage) {
+                            <div class="e-head message-header">
+                              <span class="ico k-token"><i class="pi pi-receipt"></i></span>
+                              <span>Mint token</span>
+                            </div>
+                            <div [attr.title]="message.__tokenName" class="e-l1">
+                              <span>{{ message.__tokenName }}</span>
+                            </div>
+                            <div [attr.title]="message.__userName" class="e-l2">{{ message.__userName }}</div>
+                          }
+                          @if (message.__ifVPMessage) {
+                            <div class="e-head message-header">
+                              <span class="ico k-token"><i class="pi pi-check-circle"></i></span>
+                              <span>Mint confirmation</span>
+                            </div>
+                            <div [attr.title]="message.__amount ? 'Amount: ' + message.__amount + ' ' + (message.__token?.symbol || '') : null" class="e-l1">
+                              @if (message.__amount) {
+                                <span>Amount: {{ message.__amount }} {{ message.__token?.symbol }}</span>
+                              }
+                            </div>
+                            <div [attr.title]="message.__userName" class="e-l2">{{ message.__userName }}</div>
+                          }
+                          @if (message.__ifRoleMessage) {
+                            <div class="e-head message-header">
+                              <span class="ico k-role"><i class="pi pi-user"></i></span>
+                              <span>Roles & Groups</span>
+                            </div>
+                            <div [attr.title]="message.role ? 'Role: ' + message.role : (message.group ? 'Group: ' + message.group : null)" class="e-l1">
+                              @if (message.role) {
+                                <span>Role: {{ message.role }}</span>
+                              }
+                              @if (!message.role && message.group) {
+                                <span>Group: {{ message.group }}</span>
+                              }
+                            </div>
+                            <div [attr.title]="message.__issuer" class="e-l2 mono">{{ message.__issuer }}</div>
+                          }
+                          @if (message.__ifRetireMessage) {
+                            <div class="e-head message-header">
+                              <span class="ico k-retire"><i class="pi pi-replay"></i></span>
+                              <span>Retirement</span>
+                            </div>
+                            <div [attr.title]="message.documents[0]?.credentialSubject[0]?.contractId ? 'Contract ID: ' + message.documents[0].credentialSubject[0].contractId : null" class="e-l1">
+                              @if (message.documents[0]?.credentialSubject[0]?.contractId) {
+                                <span>Contract ID: {{ message.documents[0].credentialSubject[0].contractId }}</span>
+                              }
+                            </div>
+                            <div [attr.title]="message.documents[0]?.credentialSubject[0]?.user ? 'User ID: ' + message.documents[0].credentialSubject[0].user : null" class="e-l2">
+                              @if (message.documents[0]?.credentialSubject[0]?.user) {
+                                User ID: {{ message.documents[0].credentialSubject[0].user }}
+                              }
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+            <div class="tc-axis">
+              <div class="axis-cat">Consensus time</div>
+              <div [style.gridTemplateColumns]="gridTemplateColumns" class="axis-ticks">
+                @for (message of messages; track message) {
+                  <div [style.gridColumn]="message.__order" class="tick">
+                    <b>{{ message.__time }}</b>{{ message.__date }}
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+
+        @if (selected) {
+          <aside class="dashboard-right">
+            @let kind = getMessageKind(selected);
+            <div class="dr-head">
+              <span [class]="'ico k-' + kind.kind">
+                <i [class]="'pi ' + kind.icon"></i>
+              </span>
+              <div class="dr-heading">
+                <div [attr.title]="kind.title" class="dr-title">{{ kind.title }}</div>
+                <div class="dr-crumb">
+                  <span [attr.title]="selected.topicId">{{ selected.topicId }}</span>
+                  <i class="pi pi-chevron-right"></i>
+                  <span [attr.title]="selected.id">{{ selected.id }}</span>
+                </div>
+              </div>
+              <button (click)="onSelect(null)" aria-label="Close" class="icon-btn" title="Close" type="button">
+                <i class="pi pi-times"></i>
+              </button>
+            </div>
+            <div class="dr-body">
+              @if (selected.__ifPolicyMessage) {
+                <div class="dr-sec">
+                  <h4>Policy</h4>
+                  <div class="kv">
+                    <div class="k">Policy name</div>
+                    <div class="v">{{ selected.name }}</div>
+                  </div>
+                  <div class="kv">
+                    <div class="k">Policy description</div>
+                    <div class="v">{{ selected.description }}</div>
+                  </div>
+                  <div class="kv">
+                    <div class="k">Policy creator</div>
+                    <div class="v mono">{{ selected.owner }}</div>
+                  </div>
+                </div>
+                <ng-container *ngTemplateOutlet="hederaInfo; context: {
+                  topicId: selected.topicId, messageId: selected.id, index: selected.index,
+                  payer: selected.payer, payerLabel: 'Sender' }"></ng-container>
+              }
+              @if (selected.__ifInstanceMessage) {
+                <div class="dr-sec">
+                  <h4>Policy</h4>
+                  <div class="kv">
+                    <div class="k">Policy name</div>
+                    <div class="v">{{ selected.name }}</div>
+                  </div>
+                  <div class="kv">
+                    <div class="k">Policy description</div>
+                    <div class="v">{{ selected.description }}</div>
+                  </div>
+                  <div class="kv">
+                    <div class="k">Policy creator</div>
+                    <div class="v mono">{{ selected.owner }}</div>
+                  </div>
+                  <div class="kv">
+                    <div class="k">Policy version</div>
+                    <div class="v">{{ selected.version }}</div>
+                  </div>
+                </div>
+                <ng-container *ngTemplateOutlet="hederaInfo; context: {
+                  topicId: selected.topicId, messageId: selected.id, index: selected.index,
+                  payer: selected.payer, payerLabel: 'Sender' }"></ng-container>
+              }
+              @if (selected.__ifDIDMessage) {
+                <div class="dr-sec">
+                  <h4>Document</h4>
+                  <div class="kv">
+                    <div class="k">DID</div>
+                    <div class="v mono">{{ selected.did }}</div>
+                  </div>
+                  @if (selected.document) {
+                    <div class="kv">
+                      <div class="k">DID document</div>
+                      <div class="v">
+                        <ng-container *ngTemplateOutlet="openDocument; context: { item: selected }"></ng-container>
+                      </div>
+                    </div>
+                  }
+                </div>
+                <ng-container *ngTemplateOutlet="hederaInfo; context: {
+                  topicId: selected.topicId, messageId: selected.id, index: selected.index,
+                  payer: selected.payer, payerLabel: 'Sender' }"></ng-container>
+              }
+              @if (selected.__ifRoleMessage) {
+                <div class="dr-sec">
+                  <h4>Document</h4>
+                  @if (selected.__user.did) {
+                    <div class="kv">
+                      <div class="k">DID</div>
+                      <div class="v mono">{{ selected.__user.did }}</div>
+                    </div>
+                  }
+                  @if (selected.role) {
+                    <div class="kv">
+                      <div class="k">Role</div>
+                      <div class="v">{{ selected.role }}</div>
+                    </div>
+                  }
+                  @if (selected.group) {
+                    <div class="kv">
+                      <div class="k">Groups</div>
+                      <div class="v">{{ selected.group }}</div>
+                    </div>
+                  }
+                  @if (selected.document) {
+                    <div class="kv">
+                      <div class="k">Document artifact</div>
+                      <div class="v">
+                        <ng-container *ngTemplateOutlet="openDocument; context: { item: selected }"></ng-container>
+                      </div>
+                    </div>
+                  }
+                </div>
+                <ng-container *ngTemplateOutlet="hederaInfo; context: {
+                  topicId: selected.topicId, messageId: selected.id, index: selected.index,
+                  payer: selected.payer, payerLabel: 'Sender' }"></ng-container>
+              }
+              @if (selected.__ifVCMessage) {
+                <div class="dr-sec">
+                  <h4>Document</h4>
+                  @if (selected.__schemaLabel) {
+                    <div class="kv">
+                      <div class="k">Schema</div>
+                      <div class="v">{{ selected.__schemaLabel }}</div>
+                    </div>
+                  }
+                  @if (selected.__status) {
+                    <div class="kv">
+                      <div class="k">Document status</div>
+                      <div class="v">
+                        <span [class]="'pv-status pv-status--' + getStatusTone(selected)">{{ selected.__status }}</span>
+                      </div>
+                    </div>
+                  }
+                  @if (selected.document) {
+                    <div class="kv">
+                      <div class="k">Document artifact</div>
+                      <div class="v">
+                        <ng-container *ngTemplateOutlet="openDocument; context: { item: selected }"></ng-container>
+                      </div>
+                    </div>
+                  }
+                </div>
+                <ng-container *ngTemplateOutlet="issuerInfo; context: { user: selected.__user }"></ng-container>
+                <ng-container *ngTemplateOutlet="hederaInfo; context: {
+                  topicId: selected.topicId, messageId: selected.id, index: selected.index,
+                  payer: selected.payer, payerLabel: 'Sender' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="relationshipsInfo; context: { relationships: selected.__relationships }"></ng-container>
+              }
+              @if (selected.__ifMintMessage) {
+                <ng-container
+                  *ngTemplateOutlet="tokenInfo; context: { token: selected.__token, amount: selected.__amount }"></ng-container>
+                <div class="dr-sec">
+                  <h4>Document</h4>
+                  @if (selected.document) {
+                    <div class="kv">
+                      <div class="k">Document artifact</div>
+                      <div class="v">
+                        <ng-container *ngTemplateOutlet="openDocument; context: { item: selected }"></ng-container>
+                      </div>
+                    </div>
+                  }
+                </div>
+                <ng-container *ngTemplateOutlet="issuerInfo; context: { user: selected.__user }"></ng-container>
+                <ng-container *ngTemplateOutlet="hederaInfo; context: {
+                  topicId: selected.topicId, messageId: selected.id, index: selected.index,
+                  payer: selected.payer, payerLabel: 'Sender' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="relationshipsInfo; context: { relationships: selected.__relationships }"></ng-container>
+              }
+              @if (selected.__ifVPMessage) {
+                <div class="dr-sec">
+                  <h4>Document</h4>
+                  @if (selected.__documents) {
+                    <div class="kv">
+                      <div class="k">Documents</div>
+                      <div class="v">
+                        @for (item of selected.__documents; track item) {
+                          <a (click)="onOpenDocument(item)" (keydown.enter)="onOpenDocument(item)"
+                            class="field-link-array" role="button" tabindex="0">{{ item.__name }}</a>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+                <ng-container
+                  *ngTemplateOutlet="tokenInfo; context: { token: selected.__token, amount: selected.__amount }"></ng-container>
+                <ng-container *ngTemplateOutlet="issuerInfo; context: { user: selected.__user }"></ng-container>
+                <ng-container *ngTemplateOutlet="hederaInfo; context: {
+                  topicId: selected.topicId, messageId: selected.id, index: selected.index,
+                  payer: selected.payer, payerLabel: 'Sender' }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="relationshipsInfo; context: { relationships: selected.__relationships }"></ng-container>
+              }
+              @if (selected.__ifTopicMessage) {
+                <div class="dr-sec">
+                  <h4>Topic information</h4>
+                  <div class="kv">
+                    <div class="k">Topic name</div>
+                    <div class="v">{{ selected.name }}</div>
+                  </div>
+                  <div class="kv">
+                    <div class="k">Topic description</div>
+                    <div class="v">{{ selected.description }}</div>
+                  </div>
+                  <div class="kv">
+                    <div class="k">Topic type</div>
+                    <div class="v">{{ getTopicHeader(selected) }} catalog</div>
+                  </div>
+                  @if (selected.owner) {
+                    <div class="kv">
+                      <div class="k">Topic creator</div>
+                      <div class="v mono">{{ selected.owner }}</div>
+                    </div>
+                  }
+                </div>
+                @if (selected.__rationale && selected.__rationale.__ifPolicyMessage) {
+                  <div class="dr-sec">
+                    <h4>Policy</h4>
+                    <div class="kv">
+                      <div class="k">Policy name</div>
+                      <div class="v">{{ selected.__rationale.name }}</div>
+                    </div>
+                    <div class="kv">
+                      <div class="k">Policy description</div>
+                      <div class="v">{{ selected.__rationale.description }}</div>
+                    </div>
+                  </div>
+                }
+                @if (selected.__rationale && selected.__rationale.__ifInstanceMessage) {
+                  <div class="dr-sec">
+                    <h4>Policy</h4>
+                    <div class="kv">
+                      <div class="k">Policy name</div>
+                      <div class="v">{{ selected.__rationale.name }}</div>
+                    </div>
+                    <div class="kv">
+                      <div class="k">Policy description</div>
+                      <div class="v">{{ selected.__rationale.description }}</div>
+                    </div>
+                    <div class="kv">
+                      <div class="k">Policy version</div>
+                      <div class="v">{{ selected.__rationale.version }}</div>
+                    </div>
+                  </div>
+                }
+                <ng-container *ngTemplateOutlet="hederaInfo; context: {
+                  topicId: selected.topicId, messageId: selected.id, index: selected.index,
+                  payer: selected.payer, payerLabel: 'Sender' }"></ng-container>
+              }
+              @if (selected.__ifRetireMessage) {
+                <div class="dr-sec">
+                  <h4>Document</h4>
+                  @if (selected.documents) {
+                    <div class="kv">
+                      <div class="k">Document artifact</div>
+                      <div class="v">
+                        <ng-container *ngTemplateOutlet="openDocument; context: { item: selected }"></ng-container>
+                      </div>
+                    </div>
+                  }
+                </div>
+                <div class="dr-sec">
+                  <h4>Retirement information</h4>
+                  <div class="kv">
+                    <div class="k">Contract ID</div>
+                    <div class="v mono">{{ selected.documents[0].credentialSubject[0].contractId }}</div>
+                  </div>
+                  @if (selected.owner) {
+                    <div class="kv">
+                      <div class="k">User ID</div>
+                      <div class="v mono">{{ selected.documents[0].credentialSubject[0].user }}</div>
+                    </div>
+                  }
+                  @if (selected.consensusTimestamp) {
+                    <div class="kv">
+                      <div class="k">Transaction</div>
+                      <div class="v mono">{{ selected.consensusTimestamp }}</div>
+                    </div>
+                  }
+                </div>
+                @for (token of selected.documents[0].credentialSubject[0]?.tokens; track token) {
+                  <div class="dr-sec">
+                    <h4>Token</h4>
+                    <div class="kv">
+                      <div class="k">Token ID</div>
+                      <div class="v mono">{{ token.tokenId }}</div>
+                    </div>
+                    @if (token.serials && token.serials.length > 0) {
+                      <div class="kv">
+                        <div class="k">Instance ID</div>
+                        <div class="v">{{ token.serials.join(', ') }}</div>
+                      </div>
+                    }
+                    @if (!token.serials || token.serials.length <= 0) {
+                      <div class="kv">
+                        <div class="k">Amount</div>
+                        <div class="v">{{ token.count }}</div>
+                      </div>
+                    }
+                  </div>
+                }
+                <ng-container *ngTemplateOutlet="hederaInfo; context: {
+                  topicId: selected.topicId, messageId: selected.consensusTimestamp, index: selected.sequenceNumber,
+                  payer: selected.owner, payerLabel: 'Owner' }"></ng-container>
+              }
+            </div>
+          </aside>
+        }
+      </div>
+    }
   }
 </div>
