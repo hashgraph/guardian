@@ -162,3 +162,22 @@ describe('DocumentGenerator test values of repeatable sub-documents', () => {
         assert.equal(value[0].type, 'ChildSchema&1.0.0');
     });
 });
+
+describe('DocumentGenerator edge cases of repeatable sub-document values', () => {
+    it('keeps a null in a preset row', () => {
+        const value = DocumentGenerator.generateField(
+            subField({ isArray: true }), ['iri'], null, { child: [{ amount: 5, label: null }] }
+        );
+        assert.equal(value[0].amount, 5);
+        assert.equal(value[0].label, null);
+    });
+
+    it('uses the test value when the preset list is empty', () => {
+        const value = DocumentGenerator.generateField(
+            subField({ isArray: true, examples: [[{ amount: 9, label: 'T' }]] }), ['iri'], null, { child: [] }
+        );
+        assert.equal(value.length, 1);
+        assert.equal(value[0].amount, 9);
+        assert.equal(value[0].label, 'T');
+    });
+});
