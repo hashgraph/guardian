@@ -19,11 +19,20 @@
     flex-direction: column;
     overflow: hidden;
     container-type: inline-size;
+    // The page font is a light Helvetica, the design uses Inter
+    font-family: var(--font-family-inter, Inter), -apple-system, "Segoe UI", sans-serif;
+    font-size: 14px;
+    font-weight: 400;
     color: var(--guardian-font-color);
     background: var(--guardian-background);
     border: 1px solid var(--guardian-border-color);
     border-radius: 8px;
     box-shadow: 0 2px 6px var(--guardian-shadow);
+}
+
+// PrimeIcons size themselves to 1rem, the badges and buttons below set their own size
+.pi {
+    font-size: inherit;
 }
 
 *[readonly-block="true"] {
@@ -55,6 +64,7 @@
 
     h3 {
         margin: 0;
+        font-family: inherit;
         font-size: 18px;
         font-weight: 600;
     }
@@ -62,6 +72,9 @@
     p {
         margin: 0;
         max-width: 440px;
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: 400;
         line-height: 20px;
         color: var(--guardian-grey-color-4);
     }
@@ -166,6 +179,56 @@
 
 .tc-spacer {
     flex: 1;
+}
+
+// Clear
+.tc-btn-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--guardian-grey-color-4);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+
+    &:hover {
+        color: var(--color-primary);
+        background: var(--guardian-hover);
+    }
+}
+
+// Simplified / Advanced
+.tc-seg {
+    display: inline-flex;
+    padding: 3px;
+    border-radius: 8px;
+    background: var(--guardian-grey-color);
+
+    button {
+        height: 26px;
+        padding: 0 14px;
+        cursor: pointer;
+        font: inherit;
+        font-size: 13px;
+        color: var(--guardian-grey-color-4);
+        background: transparent;
+        border: none;
+        border-radius: 6px;
+
+        &.on {
+            font-weight: 600;
+            color: var(--color-primary);
+            background: var(--guardian-background);
+            box-shadow: 0 1px 3px var(--guardian-shadow);
+        }
+    }
 }
 
 .tc-legend {
@@ -577,7 +640,7 @@
     display: flex;
     flex: none;
     flex-direction: column;
-    width: 380px;
+    width: 400px;
     min-height: 0;
     background: var(--guardian-background);
     border-left: 1px solid var(--guardian-border-color);
@@ -587,7 +650,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 14px 16px;
+    padding: 14px 12px 14px 16px;
     border-bottom: 1px solid var(--guardian-border-color);
 
     .ico {
@@ -683,12 +746,37 @@
 
     .v {
         min-width: 0;
-        word-break: break-all;
+        // Long ids break where they must, words break at spaces
+        overflow-wrap: anywhere;
 
         &.mono {
             font-family: var(--tc-mono);
             font-size: 12px;
         }
+    }
+}
+
+// The explorer link: a monospace value with an arrow after it
+.kv .v ::ng-deep .hedera-link {
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: 400 !important;
+    text-transform: none !important;
+    border-bottom: none !important;
+
+    &:not(.hedera-link-inactive):hover {
+        text-decoration: underline;
+    }
+
+    &:not(.hedera-link-inactive)::after {
+        content: '\e93c';
+        margin-left: 4px;
+        font-family: primeicons;
+        font-size: 10px;
+        font-style: normal;
+        font-weight: 400;
+        text-decoration: none;
+        display: inline-block;
     }
 }
 

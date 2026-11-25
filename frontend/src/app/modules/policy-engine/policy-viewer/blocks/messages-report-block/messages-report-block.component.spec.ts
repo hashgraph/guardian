@@ -2,10 +2,9 @@ import type { Mock } from 'vitest';
 import { CommonModule, DatePipe } from '@angular/common';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormsModule, ReactiveFormsModule, UntypedFormBuilder } from '@angular/forms';
+import { ReactiveFormsModule, UntypedFormBuilder } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 import { DialogService } from 'primeng/dynamicdialog';
-import { SelectButtonModule } from 'primeng/selectbutton';
 import moment from 'moment';
 import { of } from 'rxjs';
 import { AnalyticsService } from 'src/app/services/analytics.service';
@@ -62,7 +61,7 @@ describe('MessagesReportBlockComponent document cards', () => {
     beforeEach(async () => {
         openDialog = vi.fn().mockReturnValue({ onClose: of(null) });
         await TestBed.configureTestingModule({
-            imports: [CommonModule, FormsModule, ReactiveFormsModule, SelectButtonModule],
+            imports: [CommonModule, ReactiveFormsModule],
             declarations: [MessagesReportBlockComponent],
             providers: [
                 DatePipe,
@@ -177,7 +176,7 @@ describe('MessagesReportBlockComponent trust chain view', () => {
         };
         analyticsService = { checkIndexer: vi.fn().mockReturnValue(of(false)) };
         await TestBed.configureTestingModule({
-            imports: [CommonModule, FormsModule, ReactiveFormsModule, SelectButtonModule],
+            imports: [CommonModule, ReactiveFormsModule],
             declarations: [MessagesReportBlockComponent],
             providers: [
                 DatePipe,

@@ -6,20 +6,32 @@
     <div class="kv">
       <div class="k">Topic ID</div>
       <div class="v mono">
-        <hedera-explorer [params]="topicId" type="topics">{{ topicId }}</hedera-explorer>
+        @if (topicId) {
+          <hedera-explorer [params]="topicId" type="topics">{{ topicId }}</hedera-explorer>
+        } @else {
+          –
+        }
       </div>
     </div>
     <div class="kv">
       <div class="k">Message ID</div>
       <div class="v mono">
-        <hedera-explorer [params]="topicId" [subParams]="index" subType="messages"
-          type="topics">{{ messageId }}</hedera-explorer>
+        @if (messageId) {
+          <hedera-explorer [params]="topicId" [subParams]="index" subType="messages"
+            type="topics">{{ messageId }}</hedera-explorer>
+        } @else {
+          –
+        }
       </div>
     </div>
     <div class="kv">
       <div class="k">{{ payerLabel }}</div>
       <div class="v mono">
-        <hedera-explorer [params]="payer" type="accounts">{{ payer }}</hedera-explorer>
+        @if (payer) {
+          <hedera-explorer [params]="payer" type="accounts">{{ payer }}</hedera-explorer>
+        } @else {
+          –
+        }
       </div>
     </div>
   </div>
@@ -82,7 +94,7 @@
         <div (click)="onSelectById(relationship)" class="rel" role="button" tabindex="0"
           (keydown.enter)="onSelectById(relationship)">
           <span class="ico k-doc"><i class="pi pi-file"></i></span>
-          <span class="rel-name">{{ relationship.name }}</span>
+          <span [attr.title]="relationship.name" class="rel-name">{{ relationship.name }}</span>
           <i class="pi pi-chevron-right chev"></i>
         </div>
       }
@@ -140,21 +152,25 @@
     <div class="tc-toolbar">
       <div class="tc-target">
         <span class="tc-target-label">Selected document</span>
-        <span class="tc-chip" title="Message ID">
-          <span class="tc-chip-value">{{ target }}</span>
+        <span class="tc-chip">
+          <span [attr.title]="target" class="tc-chip-value">{{ target }}</span>
           <sf-copy [value]="target"></sf-copy>
         </span>
-        <button (click)="onClear()" class="p-button-text" icon="pi pi-times" label="Clear" pButton
-          type="button"></button>
+        <button (click)="onClear()" class="tc-btn-text" type="button">
+          <i class="pi pi-times"></i>Clear
+        </button>
       </div>
       <div class="tc-spacer"></div>
       <div class="tc-legend">
         <span><i class="sw"></i>Relationship</span>
         <span><i class="sw hl"></i>Selected</span>
       </div>
-      <p-selectbutton (onChange)="onDashboardType($event.value)" [allowEmpty]="false" [ngModel]="dashboardType"
-        [options]="viewOptions" optionLabel="label" optionValue="value"
-        styleClass="guardian-select-button"></p-selectbutton>
+      <div class="tc-seg" role="group" aria-label="View">
+        @for (option of viewOptions; track option.value) {
+          <button (click)="onDashboardType(option.value)" [attr.aria-pressed]="option.value === dashboardType"
+            [class.on]="option.value === dashboardType" type="button">{{ option.label }}</button>
+        }
+      </div>
     </div>
 
     @if (noEvents) {
@@ -223,7 +239,7 @@
                               <span>Publish policy</span>
                             </div>
                             <div [attr.title]="message.name" class="e-l1"><span>{{ message.name }}</span></div>
-                            <div class="e-l2">Version: {{ message.version }}</div>
+                            <div [attr.title]="'Version: ' + message.version" class="e-l2">Version: {{ message.version }}</div>
                           }
                           @if (message.__ifDIDMessage) {
                             <div class="e-head message-header">
@@ -261,7 +277,7 @@
                               <span class="ico k-token"><i class="pi pi-check-circle"></i></span>
                               <span>Mint confirmation</span>
                             </div>
-                            <div class="e-l1">
+                            <div [attr.title]="message.__amount ? 'Amount: ' + message.__amount + ' ' + (message.__token?.symbol || '') : null" class="e-l1">
                               @if (message.__amount) {
                                 <span>Amount: {{ message.__amount }} {{ message.__token?.symbol }}</span>
                               }
@@ -273,7 +289,7 @@
                               <span class="ico k-role"><i class="pi pi-user"></i></span>
                               <span>Roles & Groups</span>
                             </div>
-                            <div class="e-l1">
+                            <div [attr.title]="message.role ? 'Role: ' + message.role : (message.group ? 'Group: ' + message.group : null)" class="e-l1">
                               @if (message.role) {
                                 <span>Role: {{ message.role }}</span>
                               }
@@ -288,12 +304,12 @@
                               <span class="ico k-retire"><i class="pi pi-replay"></i></span>
                               <span>Retirement</span>
                             </div>
-                            <div class="e-l1">
+                            <div [attr.title]="message.documents[0]?.credentialSubject[0]?.contractId ? 'Contract ID: ' + message.documents[0].credentialSubject[0].contractId : null" class="e-l1">
                               @if (message.documents[0]?.credentialSubject[0]?.contractId) {
                                 <span>Contract ID: {{ message.documents[0].credentialSubject[0].contractId }}</span>
                               }
                             </div>
-                            <div class="e-l2">
+                            <div [attr.title]="message.documents[0]?.credentialSubject[0]?.user ? 'User ID: ' + message.documents[0].credentialSubject[0].user : null" class="e-l2">
                               @if (message.documents[0]?.credentialSubject[0]?.user) {
                                 User ID: {{ message.documents[0].credentialSubject[0].user }}
                               }
@@ -326,11 +342,11 @@
                 <i [class]="'pi ' + getMessageKind(selected).icon"></i>
               </span>
               <div class="dr-heading">
-                <div class="dr-title">{{ getMessageKind(selected).title }}</div>
+                <div [attr.title]="getMessageKind(selected).title" class="dr-title">{{ getMessageKind(selected).title }}</div>
                 <div class="dr-crumb">
-                  <span>{{ selected.topicId }}</span>
+                  <span [attr.title]="selected.topicId">{{ selected.topicId }}</span>
                   <i class="pi pi-chevron-right"></i>
-                  <span>{{ selected.id }}</span>
+                  <span [attr.title]="selected.id">{{ selected.id }}</span>
                 </div>
               </div>
               <button (click)="onSelect(null)" aria-label="Close" class="icon-btn" title="Close" type="button">
@@ -448,7 +464,9 @@
                   @if (selected.__status) {
                     <div class="kv">
                       <div class="k">Document status</div>
-                      <div class="v">{{ selected.__status }}</div>
+                      <div class="v">
+                        <span [class]="'pv-status pv-status--' + getStatusTone(selected)">{{ selected.__status }}</span>
+                      </div>
                     </div>
                   }
                   @if (selected.document) {

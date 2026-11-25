@@ -1,5 +1,5 @@
 import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
-import { Component, ElementRef, HostListener, Input, OnInit } from '@angular/core';
+import { Component, ElementRef, HostListener, Input, OnDestroy, OnInit } from '@angular/core';
 import { UntypedFormBuilder, Validators } from '@angular/forms';
 import { DomSanitizer } from '@angular/platform-browser';
 import moment from 'moment';
@@ -236,7 +236,7 @@ class Line {
     styleUrls: ['./messages-report-block.component.scss'],
     standalone: false
 })
-export class MessagesReportBlockComponent implements OnInit {
+export class MessagesReportBlockComponent implements OnInit, OnDestroy {
     private _topics1!: any[];
     private _topics2!: any[];
     private _messages1!: any[];
@@ -249,6 +249,7 @@ export class MessagesReportBlockComponent implements OnInit {
         'leader-line-container-1', 'leader-line-container-2'
     );
     private lines!: Line[] | null;
+    private resizeObserver?: ResizeObserver;
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
@@ -721,6 +722,23 @@ export class MessagesReportBlockComponent implements OnInit {
         return null;
     }
 
+    /**
+     * Tone of the status chip, the chip is the one the document grids of the policy viewer use
+     */
+    public getStatusTone(message: any): 'ok' | 'wait' | 'bad' | 'neutral' {
+        switch (message?.documentStatus) {
+            case 'REVOKE':
+            case 'FAILED':
+                return 'bad';
+            case 'SUSPEND':
+                return 'wait';
+            case 'RESUME':
+                return 'ok';
+            default:
+                return 'neutral';
+        }
+    }
+
     private getStatusTag(message: any): StatusTag | null {
         switch (message.documentStatus) {
             case 'REVOKE':
@@ -925,6 +943,7 @@ export class MessagesReportBlockComponent implements OnInit {
             this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
         }
         this.onResize();
+        this.observeLayout();
         this.loadData();
     }
 
@@ -932,6 +951,7 @@ export class MessagesReportBlockComponent implements OnInit {
         if (this.socket) {
             this.socket.unsubscribe();
         }
+        this.resizeObserver?.disconnect();
         this.removeLines();
     }
 
@@ -1105,6 +1125,39 @@ export class MessagesReportBlockComponent implements OnInit {
             })!;
             dialogRef.onClose.subscribe(async (result) => {
             });
+        }
+    }
+
+    /**
+     * The block is as tall as the free space under its top edge. The edge moves and the width changes when the
+     * page around the block changes (the menu is shown or hidden), not only when the window is resized.
+     */
+    private observeLayout() {
+        const container = this.element?.nativeElement?.children[0];
+        if (!container || typeof ResizeObserver === 'undefined') {
+            return;
+        }
+        this.resizeObserver = new ResizeObserver(() => {
+            this.onResize();
+            this.alignLines();
+        });
+        this.resizeObserver.observe(container);
+        this.resizeObserver.observe(document.body);
+    }
+
+    /**
+     * The arrows follow the cards, when the board moves on the page
+     */
+    private alignLines() {
+        if (!this.lines || !this.lineContainer.render()) {
+            return;
+        }
+        for (const item of this.lines) {
+            try {
+                item.line?.position();
+            } catch (error) {
+                console.error(error);
+            }
         }
     }
 
