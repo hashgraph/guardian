@@ -1,0 +1,587 @@
+{
+ "type": "request-vc-draft",
+ "version": "1.0.0",
+ "schema": "#98d44a6c-9ea5-454e-8ebb-9f44d522da65",
+ "policyId": "SET_FROM_YOUR_INSTANCE",
+ "blockId": "SET_FROM_YOUR_INSTANCE",
+ "document": {
+  "verificationId": "VER-2028-001",
+  "templateVersion": "v5.0B",
+  "projectName": "Kilimanjaro Safe Water Project",
+  "verificationPeriodStart": "2028-01-01",
+  "verificationPeriodEnd": "2028-12-31",
+  "documentCompletionDate": "2028-01-31",
+  "documentVersion": "v1.0",
+  "vcsStandardVersion": "VCS Standard v5.0",
+  "methodologyIdVersion": "VMR0015 v1.0 (Revision to AMS-III.AV v09.0) with CDM TOOL03, VT0010, TOOL33, VT0008 and the CDM Standard and Guideline for Sampling and Surveys",
+  "clientNameContact": "Rural Access Water Ltd., Amara Ndosi, contact@ruralaccesswater.example",
+  "vvbId": "VVB-EWV-001",
+  "vvbName": "Earthwise Verification Services Ltd. (sample VVB), audits@earthwise-vvb.example",
+  "approvedBy": "Samuel Kariuki (Technical Director)",
+  "teamLead": "Grace Mushi (lead auditor)",
+  "teamMembers": "Grace Mushi (lead auditor); Daniel Okello (technical expert, water quality and sampling); Priya Raman (independent technical reviewer)",
+  "summary": "Verification of monitoring period 2028-01-01 to 2028-12-31 (MR MR-2027-001) against VCS v5.0 and VMR0015 v1.0, reasonable assurance, 5% materiality. Document review, site visit and recalculation. 0 CARs, 1 CL (closed), 0 FARs. Verified reductions: 1,556.947181 tCO2e.",
+  "s1_introduction": {
+   "objective": "To assess whether the project meets the VCS Program rules and correctly applies VMR0015.",
+   "scopeAndCriteria": "VCS Standard v5.0, VMR0015 v1.0, AMS-III.AV v09.0 and its tools; scope: MR MR-2027-001 and its records.",
+   "levelOfAssurance": "Reasonable assurance",
+   "materialityThreshold": "5% (project below 300,000 tCO2e per year)",
+   "summaryDescriptionOfProject": "Kilimanjaro Safe Water Project: free distribution and maintenance of 3,000 gravity-fed ceramic-membrane household filters with a solar-assisted UV stage to 3,000 households (about 12,000 people) in four zones (Kibosho, Uru, Old Moshi and Mbokomu wards of Moshi Rural District, Kilimanjaro Region, Tanzania). The filters replace boiling of drinking water on three-stone woody-biomass fires. Emission reductions are quantified with VMR0015 v1.0 / AMS-III.AV v09.0."
+  },
+  "s2_process": {
+   "methodAndCriteria": {
+    "methodAndCriteria": "Document review, interviews and a site visit, assessed against the VCS Standard and VMR0015."
+   },
+   "documentReview": {
+    "reviewSummary": {
+     "reviewStartDate": "2028-01-10",
+     "reviewCompletionDate": "2028-01-28",
+     "daysWorked": 12,
+     "descriptionOfReview": "Review of the MR, monthly meter records, the 400 functionality-check records, laboratory reports and the policy calculation.",
+     "auditTeamMembers": "Grace Mushi (lead auditor); Daniel Okello (technical expert, water quality and sampling); Priya Raman (independent technical reviewer)"
+    },
+    "documentReviewDetails": [
+     {
+      "reviewStartDate": "2028-01-05",
+      "reviewCompletionDate": "2028-01-25",
+      "descriptionOfReview": "Desk review of the monitoring report, the calculation records and the supporting evidence.",
+      "auditTeamMemberS": "Grace Mushi (team lead), Daniel Okello (technical expert)"
+     }
+    ]
+   },
+   "interviews": {
+    "processProjectProponent": "Interviews with the operations manager and all four zone technicians on site.",
+    "processStakeholderGroups": "40 households selected at random from the functionality-check sample (10 per zone)."
+   },
+   "siteVisits": {
+    "siteVisitStart": "2028-01-17",
+    "siteVisitEnd": "2028-01-19",
+    "visitIncludedFacilities": true,
+    "methodsAndObjectives": "Inspect filters and meters, re-read 60 meters, observe E. coli sampling, verify the network and water-quality checks.",
+    "locationsVisited": "Kibosho, Uru, Old Moshi and Mbokomu wards of Moshi Rural District, Kilimanjaro Region, Tanzania; the four service points and the laboratory.",
+    "teamMembers": "Grace Mushi (lead auditor); Daniel Okello (technical expert)",
+    "siteVisitFormat": "On site: the four zones, the Moshi warehouse and the four service points"
+   },
+   "carResolution": {
+    "resolutionProcess": "Findings logged, answered with evidence, closed by the lead auditor.",
+    "totalCARs": 0,
+    "totalCLs": 1,
+    "totalFARs": 0,
+    "totalAll": 1
+   },
+   "eligibilityForValidationActivities": "The VVB is accredited for validation and verification in sectoral scope 3 (sample record)."
+  },
+  "s3_validationFindings": {
+   "methodologyDeviations": {
+    "assessmentConclusion": "No deviations were applied in this period.",
+    "assessmentProcess": "Checked the MR for methodology deviations.",
+    "methodologyDeviations": {
+     "assessmentConclusion": "Not applicable: no methodology deviation or project description deviation is applied. Confirmed by document review.",
+     "assessmentProcess": "Not applicable: no methodology deviation or project description deviation is applied. Confirmed by document review.",
+     "evidenceGathered": [
+      {
+       "evidenceDescriptionAndType": "Monitoring report section on methodology deviations and supporting records (document review)",
+       "assessmentProcess": "Not applicable: no methodology deviation or project description deviation is applied. Confirmed by document review."
+      }
+     ]
+    }
+   },
+   "projectDescriptionDeviations": {
+    "assessmentConclusion": "No project description deviations.",
+    "assessmentProcess": "Compared the implemented project with the registered PD.",
+    "projectDescriptionDeviations": {
+     "assessmentConclusion": "Not applicable: no methodology deviation or project description deviation is applied. Confirmed by document review.",
+     "assessmentProcess": "Not applicable: no methodology deviation or project description deviation is applied. Confirmed by document review.",
+     "evidenceGathered": [
+      {
+       "evidenceDescriptionAndType": "Monitoring report section on project description deviations and supporting records (document review)",
+       "assessmentProcess": "Not applicable: no methodology deviation or project description deviation is applied. Confirmed by document review."
+      }
+     ]
+    }
+   },
+   "newProjectActivityInstances": {
+    "assessmentConclusion": "Not a grouped project; no new instances.",
+    "assessmentProcess": "Checked whether new instances were added.",
+    "newProjectActivityInstancesInGroupedProj": {
+     "assessmentConclusion": "Not applicable: the project is not a grouped project. Confirmed by document review.",
+     "assessmentProcess": "Not applicable: the project is not a grouped project. Confirmed by document review.",
+     "evidenceGathered": [
+      {
+       "evidenceDescriptionAndType": "Monitoring report section on new project activity instances in grouped projects and supporting records (document review)",
+       "assessmentProcess": "Not applicable: the project is not a grouped project. Confirmed by document review."
+      }
+     ]
+    }
+   },
+   "baselineReassessment": {
+    "assessmentConclusion": "Not due in the first crediting period.",
+    "assessmentProcess": "Checked whether a baseline reassessment was due.",
+    "baselineReassessment": {
+     "assessmentConclusion": "Not applicable: first crediting period; no baseline reassessment is due. Confirmed by document review.",
+     "assessmentProcess": "Not applicable: first crediting period; no baseline reassessment is due. Confirmed by document review.",
+     "evidenceGathered": [
+      {
+       "evidenceDescriptionAndType": "Monitoring report section on baseline reassessment and supporting records (document review)",
+       "assessmentProcess": "Not applicable: first crediting period; no baseline reassessment is due. Confirmed by document review."
+      }
+     ]
+    }
+   }
+  },
+  "s4_verificationFindings": {
+   "implementationStatus": {
+    "generalImplementationStatus": {
+     "assessmentConclusion": "All 3,000 filters were distributed and operating as described in the MR.",
+     "assessmentProcess": "Inspected 60 filters in the four zones and the distribution register.",
+     "evidenceGathered": [
+      {
+       "evidenceDescriptionAndType": "Monitoring report section on general implementation status and supporting records (document review)",
+       "assessmentProcess": "Document review of the monitoring report section on general implementation status, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+      },
+      {
+       "evidenceDescriptionAndType": "Monitoring report section on general implementation status and supporting records (document review)",
+       "assessmentProcess": "Document review of the monitoring report section on general implementation status, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+      },
+      {
+       "evidenceDescriptionAndType": "Monitoring report section on general implementation status and supporting records (document review)",
+       "assessmentProcess": "Document review of the monitoring report section on general implementation status, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+      },
+      {
+       "evidenceDescriptionAndType": "Monitoring report section on general implementation status and supporting records (document review)",
+       "assessmentProcess": "Document review of the monitoring report section on general implementation status, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+      }
+     ]
+    },
+    "lossEvents": {
+     "assessmentConclusion": "Not applicable: no carbon stocks; no loss events.",
+     "assessmentProcess": "Checked for loss events.",
+     "evidenceGathered": [
+      {
+       "evidenceDescriptionAndType": "Monitoring report section on loss events and supporting records (document review)",
+       "assessmentProcess": "Not applicable: the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply. Confirmed by document review."
+      }
+     ]
+    }
+   },
+   "projectDetails": {
+    "auditHistory": {
+     "assessmentConclusion": "Validation by the same VVB on 15-December-2026; this is the first verification.",
+     "justificationAndAssessmentConclusion": "The audit history conforms to VCS Standard v5.0 and VMR0015 v1.0; no open findings."
+    },
+    "sectoralScopeAndClassification": {
+     "assessmentConclusion": "Sectoral scope 3; unchanged."
+    },
+    "projectLocation": {
+     "assessmentConclusion": "All sampled filters are inside the four registered zones.",
+     "assessmentProcess": "Checked the GPS coordinates of the sampled households.",
+     "evidenceGathered": [
+      {
+       "evidenceDescriptionAndType": "Monitoring report section on project location and supporting records (document review)",
+       "assessmentProcess": "Document review of the monitoring report section on project location, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+      }
+     ]
+    },
+    "doubleCounting": {
+     "noDoubleIssuance": {
+      "assessmentConclusion": "No double issuance.",
+      "assessmentProcess": "Searched other registries and checked the proponent declaration."
+     },
+     "registrationOtherGhgPrograms": {
+      "assessmentConclusion": "Not registered under another GHG programme.",
+      "assessmentProcess": "Searched other GHG programmes."
+     }
+    },
+    "doubleClaiming": {
+     "noDoubleClaimingEts": {
+      "assessmentConclusion": "No emissions trading programme covers the sources.",
+      "assessmentProcess": "Checked emissions trading coverage."
+     },
+     "noDoubleClaimingOtherCredit": {
+      "assessmentConclusion": "No other environmental credit was received.",
+      "assessmentProcess": "Reviewed funding agreements."
+     },
+     "scope3Emissions": {
+      "assessmentConclusion": "No scope 3 claims by buyers.",
+      "assessmentProcess": "Reviewed buyer declarations."
+     },
+     "evidenceGathered": [
+      {
+       "evidenceDescriptionAndType": "Monitoring report section on no double claiming with other forms of environmental credit and supporting records (document review)",
+       "assessmentProcess": "Not applicable: the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme. Confirmed by document review."
+      }
+     ]
+    },
+    "sustainableDevelopmentContributions": {
+     "assessmentConclusion": "Reported contributions are supported by records.",
+     "assessmentProcess": "Compared reported SDG contributions with records.",
+     "evidenceGathered": [
+      {
+       "evidenceDescriptionAndType": "Monitoring report section on sustainable development contributions and supporting records (document review)",
+       "assessmentProcess": "Document review of the monitoring report section on sustainable development contributions, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+      }
+     ]
+    },
+    "additionalInformation": {
+     "sensitiveInformation": {
+      "assessmentConclusion": "None withheld."
+     },
+     "ccpLabelEligibility": {
+      "assessmentConclusion": "No CCP label is requested."
+     },
+     "corsiaLabelEligibility": {
+      "assessmentConclusion": "No CORSIA label is requested."
+     }
+    },
+    "sensitiveInformation": {
+     "assessmentConclusion": "Not applicable: no information is excluded from the public version of this document. Confirmed by document review."
+    },
+    "coreCarbonPrinciplesLabelEligibility": {
+     "assessmentConclusion": "Not assessed - no CCP or CORSIA label was requested for this sample project."
+    },
+    "corsiaLabelEligibility": {
+     "assessmentConclusion": "Not assessed - no CCP or CORSIA label was requested for this sample project."
+    },
+    "noDoubleIssuance": {
+     "assessmentConclusion": "Not applicable: the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme. Confirmed by document review.",
+     "assessmentProcess": "Not applicable: the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme. Confirmed by document review.",
+     "evidenceGathered": [
+      {
+       "evidenceDescriptionAndType": "Monitoring report section on no double issuance and supporting records (document review)",
+       "assessmentProcess": "Not applicable: the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme. Confirmed by document review."
+      }
+     ]
+    },
+    "registrationWithOtherGHGPrograms": {
+     "assessmentConclusion": "Not applicable: the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme. Confirmed by document review.",
+     "assessmentProcess": "Not applicable: the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme. Confirmed by document review.",
+     "evidenceGathered": [
+      {
+       "evidenceDescriptionAndType": "Monitoring report section on registration with other ghg programs and supporting records (document review)",
+       "assessmentProcess": "Not applicable: the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme. Confirmed by document review."
+      }
+     ]
+    },
+    "noDoubleClaimingWithEmissionsTradingProg": {
+     "assessmentConclusion": "Not applicable: the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme. Confirmed by document review.",
+     "assessmentProcess": "Not applicable: the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme. Confirmed by document review.",
+     "evidenceGathered": [
+      {
+       "evidenceDescriptionAndType": "Monitoring report section on no double claiming with emissions trading programs or binding emission limits and supporting records (document review)",
+       "assessmentProcess": "Not applicable: the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme. Confirmed by document review."
+      }
+     ]
+    },
+    "supplyChainScope3Emissions": {
+     "assessmentConclusion": "The project reduces household woodfuel use for boiling water; it does not change the emissions footprint of a product or service that a company buys or sells, so no Scope 3 double claiming arises.",
+     "assessmentProcess": "The project reduces household woodfuel use for boiling water; it does not change the emissions footprint of a product or service that a company buys or sells, so no Scope 3 double claiming arises.",
+     "evidenceGathered": [
+      {
+       "evidenceDescriptionAndType": "The project reduces household woodfuel use for boiling water; it does not change the emissions footprint of a product or service that a company buys or sells, so no Scope 3 double claiming arises.",
+       "assessmentProcess": "The project reduces household woodfuel use for boiling water; it does not change the emissions footprint of a product or service that a company buys or sells, so no Scope 3 double claiming arises."
+      }
+     ]
+    },
+    "rightToOperateAndRightToReductionsAndRem": {
+     "assessmentConclusion": "The right to operate and right to reductions and removals conforms to VCS Standard v5.0 and VMR0015 v1.0; no open findings.",
+     "assessmentProcess": "Document review of the monitoring report section on right to operate and right to reductions and removals, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0.",
+     "evidenceGathered": [
+      {
+       "evidenceDescriptionAndType": "Monitoring report section on right to operate and right to reductions and removals and supporting records (document review)",
+       "assessmentProcess": "Document review of the monitoring report section on right to operate and right to reductions and removals, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+      }
+     ]
+    },
+    "landOrResourceRightsAnalysis": {
+     "assessmentConclusion": "The land or resource rights analysis conforms to VCS Standard v5.0 and VMR0015 v1.0; no open findings.",
+     "assessmentProcess": "Document review of the monitoring report section on land or resource rights analysis, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0.",
+     "evidenceGathered": [
+      {
+       "evidenceDescriptionAndType": "Monitoring report section on land or resource rights analysis and supporting records (document review)",
+       "assessmentProcess": "Document review of the monitoring report section on land or resource rights analysis, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+      }
+     ]
+    }
+   },
+   "quantification": {
+    "accuracyOfCalculations": {
+     "assessmentConclusion": "The recalculation matches the policy result of 1,556.947181 tCO2e; the calculation is accurate.",
+     "assessmentProcess": "Recalculated QPW, m, BE, PE and ER for each zone from the meter data and the 400 sampled functionality checks."
+    },
+    "qualityOfEvidence": {
+     "assessmentConclusion": "Evidence is sufficient and appropriate.",
+     "assessmentProcess": "Traced meter readings, laboratory reports and survey records to source documents for a random 10% of records."
+    },
+    "otherRelevantQuantification": {
+     "nonPermanenceRiskAnalysis": {
+      "assessmentConclusion": "Not applicable to a non-AFOLU project.",
+      "assessmentProcess": "Checked applicability."
+     },
+     "bufferPoolAllocation": {
+      "assessmentConclusion": "No buffer contribution applies to a non-AFOLU project.",
+      "assessmentProcess": "Checked applicability."
+     },
+     "longTermAverage": {
+      "assessmentConclusion": "Not applicable.",
+      "assessmentProcess": "Checked applicability."
+     },
+     "deMinimisQuantification": {
+      "assessmentConclusion": "No source was excluded as de minimis.",
+      "assessmentProcess": "Checked sources excluded as de minimis."
+     }
+    },
+    "deMinimisQuantification": {
+     "assessmentConclusion": "Not applicable: no GHG source or carbon pool is excluded as de minimis. Confirmed by document review.",
+     "assessmentProcess": "Not applicable: no GHG source or carbon pool is excluded as de minimis. Confirmed by document review.",
+     "evidenceGathered": [
+      {
+       "evidenceDescriptionAndType": "Monitoring report section on de minimis quantification and supporting records (document review)",
+       "assessmentProcess": "Not applicable: no GHG source or carbon pool is excluded as de minimis. Confirmed by document review."
+      }
+     ]
+    }
+   },
+   "monitoring": {
+    "monitoringPlan": {
+     "assessmentConclusion": "Monitoring followed the plan, including the annual table 13 and table 14 checks.",
+     "assessmentProcess": "Checked monitoring against the registered plan.",
+     "evidenceGathered": [
+      {
+       "evidenceDescriptionAndType": "Monitoring report section on monitoring plan and supporting records (document review)",
+       "assessmentProcess": "Document review of the monitoring report section on monitoring plan, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+      }
+     ]
+    }
+   }
+  },
+  "s4_2_8_v50B": {
+   "demonstration": [
+    {
+     "item": "Right to operate and right to reductions",
+     "conclusionAndProcess": "No change in the period; user agreements for new replacement units sampled. Conforms."
+    }
+   ],
+   "landOrResourceRights": [
+    {
+     "item": "Land or resource rights",
+     "conclusionAndProcess": "No land or resource rights affected. Conforms."
+    }
+   ]
+  },
+  "s4_3_v50B": {
+   "stakeholderIdentification": [
+    {
+     "item": "Stakeholder identification",
+     "conclusionAndProcess": "Stakeholder list updated with two new ward officers; reviewed. Conforms."
+    }
+   ],
+   "stakeholderConsultation": [
+    {
+     "item": "Ongoing consultation",
+     "conclusionAndProcess": "Quarterly ward meetings held; minutes reviewed. Conforms."
+    }
+   ],
+   "fpicAndBenefitSharingCustomary": [
+    {
+     "item": "Customary rights holders and Indigenous Peoples",
+     "conclusionAndProcess": "Not applicable."
+    }
+   ],
+   "benefitSharingOthers": [
+    {
+     "item": "Benefit sharing",
+     "conclusionAndProcess": "214 free replacement elements issued; records sampled. Conforms."
+    }
+   ],
+   "stakeholderInputTracker": [
+    {
+     "item": "Stakeholder input tracker",
+     "conclusionAndProcess": "Two inputs on replacement speed, both answered within 14 days. Conforms."
+    }
+   ],
+   "grievanceRedressMechanism": [
+    {
+     "item": "Grievance redress",
+     "conclusionAndProcess": "Two grievances received and resolved within 14 days. Conforms."
+    }
+   ],
+   "managementExpertise": [
+    {
+     "item": "Management capacity",
+     "conclusionAndProcess": "Staffing unchanged; refresher training held. Conforms."
+    }
+   ],
+   "esgRiskMonitoring": [
+    {
+     "item": "ESG risk monitoring",
+     "conclusionAndProcess": "No realised ESG risks; mitigation measures implemented. Conforms."
+    }
+   ],
+   "stakeholderIdentification2": {
+    "assessmentConclusion": "The stakeholder identification conforms to VCS Standard v5.0 and VMR0015 v1.0; no open findings.",
+    "assessmentProcess": "Document review of the monitoring report section on stakeholder identification, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0.",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Monitoring report section on stakeholder identification and supporting records (document review)",
+      "assessmentProcess": "Document review of the monitoring report section on stakeholder identification, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+     }
+    ]
+   },
+   "stakeholderConsultationAndOngoingCommuni": {
+    "assessmentConclusion": "The stakeholder consultation and ongoing communication conforms to VCS Standard v5.0 and VMR0015 v1.0; no open findings.",
+    "assessmentProcess": "Document review of the monitoring report section on stakeholder consultation and ongoing communication, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0.",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Monitoring report section on stakeholder consultation and ongoing communication and supporting records (document review)",
+      "assessmentProcess": "Document review of the monitoring report section on stakeholder consultation and ongoing communication, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+     }
+    ]
+   },
+   "freePriorAndInformedConsentAndBenefitSha": {
+    "assessmentConclusion": "The free, prior, and informed consent and benefit-sharing conforms to VCS Standard v5.0 and VMR0015 v1.0; no open findings.",
+    "assessmentProcess": "Document review of the monitoring report section on free, prior, and informed consent and benefit-sharing, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0.",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Monitoring report section on free, prior, and informed consent and benefit-sharing and supporting records (document review)",
+      "assessmentProcess": "Document review of the monitoring report section on free, prior, and informed consent and benefit-sharing, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+     }
+    ]
+   },
+   "benefitSharingForOtherRightsHolders": {
+    "assessmentConclusion": "The benefit-sharing for other rights holders conforms to VCS Standard v5.0 and VMR0015 v1.0; no open findings.",
+    "assessmentProcess": "Document review of the monitoring report section on benefit-sharing for other rights holders, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0.",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Monitoring report section on benefit-sharing for other rights holders and supporting records (document review)",
+      "assessmentProcess": "Document review of the monitoring report section on benefit-sharing for other rights holders, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+     }
+    ]
+   },
+   "stakeholderInputTracker2": {
+    "assessmentConclusion": "The stakeholder input tracker conforms to VCS Standard v5.0 and VMR0015 v1.0; no open findings.",
+    "assessmentProcess": "Document review of the monitoring report section on stakeholder input tracker, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0.",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Monitoring report section on stakeholder input tracker and supporting records (document review)",
+      "assessmentProcess": "Document review of the monitoring report section on stakeholder input tracker, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+     }
+    ]
+   },
+   "grievanceRedressMechanism2": {
+    "assessmentConclusion": "The grievance redress mechanism conforms to VCS Standard v5.0 and VMR0015 v1.0; no open findings.",
+    "assessmentProcess": "Document review of the monitoring report section on grievance redress mechanism, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0.",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Monitoring report section on grievance redress mechanism and supporting records (document review)",
+      "assessmentProcess": "Document review of the monitoring report section on grievance redress mechanism, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+     }
+    ]
+   },
+   "managementExpertise2": {
+    "assessmentConclusion": "The management expertise conforms to VCS Standard v5.0 and VMR0015 v1.0; no open findings.",
+    "assessmentProcess": "Document review of the monitoring report section on management expertise, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0.",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Monitoring report section on management expertise and supporting records (document review)",
+      "assessmentProcess": "Document review of the monitoring report section on management expertise, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+     }
+    ]
+   },
+   "environmentalSocialAndGovernanceRiskMoni": {
+    "assessmentConclusion": "The environmental, social, and governance risk monitoring conforms to VCS Standard v5.0 and VMR0015 v1.0; no open findings.",
+    "assessmentProcess": "Document review of the monitoring report section on environmental, social, and governance risk monitoring, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0.",
+    "evidenceGathered": [
+     {
+      "evidenceDescriptionAndType": "Monitoring report section on environmental, social, and governance risk monitoring and supporting records (document review)",
+      "assessmentProcess": "Document review of the monitoring report section on environmental, social, and governance risk monitoring, interviews with the project proponent and checks of the supporting records against VCS Standard v5.0 and VMR0015 v1.0."
+     }
+    ]
+   }
+  },
+  "s5_verificationOpinion": {
+   "conclusionSummary": {
+    "dateOfOpinion": "2028-01-31",
+    "projectName": "Kilimanjaro Safe Water Project",
+    "ghgStatement": "The proponent states 1,556.947181 tCO2e of reductions for 2028-01-01 to 2028-12-31; the statement is the responsibility of the proponent.",
+    "objectivesScopeCriteria": "Objective: verify the GHG statement. Scope: MR and records for the period. Criteria: VCS Standard v5.0, VMR0015 v1.0, AMS-III.AV v09.0 and its tools.",
+    "dataAndInformationSupportingStatement": "Historical (measured) data."
+   },
+   "conclusionOnAchievedReductions": {
+    "verificationPeriodStart": "2028-01-01",
+    "verificationPeriodEnd": "2028-12-31",
+    "achievedByVintage": [
+     {
+      "country": "United Republic of Tanzania",
+      "methodology": "VMR0015 v1.0",
+      "vintageStart": "2028-01-01",
+      "vintageEnd": "2028-12-31",
+      "netBaselineEmissions": 1558.271693,
+      "netProjectEmissions": 1.324512,
+      "leakageEmissions": 0,
+      "totalNetReductions": 1556.947181,
+      "totalNetRemovals": 0,
+      "totalNetReductionsAndRemovals": 1556.947181
+     }
+    ],
+    "verifiedByVintage": [
+     {
+      "vintageStart": "2028-01-01",
+      "vintageEnd": "2028-12-31",
+      "totalNetReductions": 1556.947181,
+      "totalNetRemovals": 0,
+      "totalNetReductionsAndRemovals": 1556.947181
+     }
+    ],
+    "verifiedGHGEmissionReductionsAndCarbonDi": 1556.947181
+   },
+   "exAnteVsExPost": {
+    "comparison": [
+     {
+      "vintageStart": "2028-01-01",
+      "vintageEnd": "2028-12-31",
+      "exAnteReductionsRemovals": 1666.620262,
+      "achievedReductionsRemovals": 1556.947181,
+      "percentDifference": -6.58,
+      "explanationForDifference": "Monitored functionality (m = 0.93 against 0.95 planned) and metered volume (12.54 million L against 13.14 million L planned) were lower than the ex-ante assumptions."
+     }
+    ]
+   }
+  },
+  "verificationConclusion": "Verified",
+  "ERverified": 1556.947181,
+  "appendix2CarsClsFars": [
+   {
+    "findingId": "CL-01",
+    "dateRaised": "2028-01-20",
+    "raisedBy": "Daniel Okello",
+    "findingType": "CL",
+    "documentReference": "MR annex 3 (laboratory reports)",
+    "summaryOfFinding": "Two E. coli results lacked the laboratory batch number.",
+    "assessmentAndConclusion": "Batch numbers added from the laboratory register and traced; closed 2028-01-24."
+   }
+  ],
+  "appendix3Competence": [
+   {
+    "name": "Grace Mushi",
+    "role": "Lead auditor",
+    "qualifications": "VCS lead auditor; 9 years of validation and verification in household energy and water projects; ISO 14064-3 trained"
+   },
+   {
+    "name": "Daniel Okello",
+    "role": "Technical expert",
+    "qualifications": "MSc water engineering; 7 years of water-quality laboratory and sampling work; technical expert for AMS-III.AV"
+   },
+   {
+    "name": "Priya Raman",
+    "role": "Technical reviewer",
+    "qualifications": "Independent technical reviewer; 10 years of CDM/VCS review experience in sectoral scope 3; not part of the audit team"
+   }
+  ],
+  "documentHistory": [
+   {
+    "fileName": "KSW-2027-001_Verification_Report_2028_VER-2028-001.pdf",
+    "description": "Verification of the 2028 monitoring report (VER-2028-001)"
+   }
+  ]
+ }
+}

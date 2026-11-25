@@ -1,0 +1,174 @@
+PP_Kilimanjaro: chooses role Project Proponent
+PP_Other: chooses role Project Proponent
+VVB_One: chooses role VVB
+VVB_Rejected: chooses role VVB
+PP_Kilimanjaro: submits pp_create_account_form
+  save   pp_account_save                              PP Profile #1 -> status "Waiting for Approval", type pp_account
+  step   pp_account_waiting_info                      (UI step, not simulated)
+PP_Other: submits pp_create_account_form
+  save   pp_account_save                              PP Profile #2 -> status "Waiting for Approval", type pp_account
+  step   pp_account_waiting_info                      (UI step, not simulated)
+VVB_One: submits vb_create_account_form
+  save   vb_account_save                              VVB Profile #3 -> status "Waiting for Approval", type vb_account
+  step   vb_account_waiting_info                      (UI step, not simulated)
+VVB_Rejected: submits vb_create_account_form
+  save   vb_account_save                              VVB Profile #4 -> status "Waiting for Approval", type vb_account
+  step   vb_account_waiting_info                      (UI step, not simulated)
+SR: presses admin_pp_account_approve_button on PP Profile #1
+  save   admin_pp_account_approve_save                PP Profile #1 -> status "Registry approved", type pp_account
+  step   pp_main                                      (UI step, not simulated)
+SR: presses admin_pp_account_approve_button on PP Profile #2
+  save   admin_pp_account_approve_save                PP Profile #2 -> status "Registry approved", type pp_account
+  step   pp_main                                      (UI step, not simulated)
+SR: presses admin_vb_account_approve_button on VVB Profile #3
+  save   admin_vb_account_approve_save                VVB Profile #3 -> status "Registry approved", type vb_account
+  step   vb_main                                      (UI step, not simulated)
+SR: presses admin_vb_account_reject_button on VVB Profile #4
+  save   admin_vb_account_reject_save                 VVB Profile #4 -> status "Registry rejected"
+PP_Kilimanjaro: submits pp_project_description_form
+  logic  pp_project_id_unique                         passed
+  save   pp_project_description_save                  VCS Project Description #6 -> status "Waiting for Approval", type pp_project_description
+  switch pp_project_description_switch                -> v5.0B
+  switch pp_ex_post_ante_switch                       -> Ex Ante
+  math   pp_err_calculation_pd_vcs_ex_ante            ERR(Ex Ante) of VCS Project Description #6: annual ER 1666.620262475
+  save   pp_reduction_removal_save                    ERR(Ex Ante) of VCS Project Description #6 -> status "Calculated", type pp_emission_reduction_removal
+PP_Other: submits pp_project_description_form
+PP_Kilimanjaro: pp_project_description_assign -> VVB_One
+  save   pp_project_description_assign_save           VCS Project Description #6 -> status "Waiting for Approval"
+VVB_One: presses vb_pd_approve_button on VCS Project Description #6
+  save   vb_pd_approve_save                           VCS Project Description #6 -> status "Third-party verifier approved", type pp_project_description
+VVB_Rejected: submits vb_validation_report_form (from VCS Project Description #6)
+VVB_One: submits vb_validation_report_form (from VCS Project Description #6)
+VVB_One: submits vb_validation_report_form (from VCS Project Description #6)
+  check  vb_validation_precheck                       passed (child validator, before any event)
+  save   vb_validation_report_save                    Validation Report #15 -> status "Waiting for Approval", type validation_report
+VVB_One: vb_validation_report_assign -> PP_Kilimanjaro
+  save   vb_validation_report_assign_save             Validation Report #15 -> status "Waiting for Approval"
+SR: presses admin_pp_pd_approve_button on VCS Project Description #6
+SR: presses admin_vb_validation_report_approve_button on Validation Report #15
+  save   admin_vb_validation_report_approve_save      Validation Report #15 -> status "Registry approved", type validation_report
+SR: presses admin_pp_pd_approve_button on VCS Project Description #6
+  check  admin_pp_pd_register_check                   passed
+  save   admin_pp_pd_approve_save                     VCS Project Description #6 -> status "Registered", type pp_project_description
+PP_Kilimanjaro: submits pp_monitoring_report_form (from VCS Project Description #6)
+  logic  pp_mr_period_overlap                         passed
+  save   pp_monitoring_report_save                    VCS Monitoring Report #17 -> status "Waiting for Approval", type pp_monitoring_report
+  switch pp_monitoring_report_switch                  -> v5.0B
+  switch pp_ex_post_ante_switch                       -> Ex Post
+  math   pp_err_calculation_mr_vcs_ex_post            ERR(Ex Post) of VCS Monitoring Report #17: ER 1556.947181413
+  save   pp_reduction_removal_save                    ERR(Ex Post) of VCS Monitoring Report #17 -> status "Calculated", type pp_emission_reduction_removal
+PP_Kilimanjaro: pp_monitoring_report_assign -> VVB_One
+  save   pp_monitoring_report_assign_save             VCS Monitoring Report #17 -> status "Waiting for Approval", type pp_monitoring_report
+VVB_One: presses vb_mr_approve_button on VCS Monitoring Report #17
+  save   vb_mr_approve_save                           VCS Monitoring Report #17 -> status "Third-party verifier approved", type pp_monitoring_report
+SR: presses admin_pp_mr_approve_button on VCS Monitoring Report #17
+  logic  admin_mr_period_overlap_check                passed
+  save   admin_pp_mr_approve_save                     VCS Monitoring Report #17 -> status "Registry approved", type pp_monitoring_report
+PP_Kilimanjaro: pp_emission_reduction_removal_assign -> VVB_One
+  save   pp_emission_reduction_removal_assign_save    ERR(Ex Post) of VCS Monitoring Report #17 -> status "Calculated"
+VVB_One: submits vb_verification_report_form (from ERR(Ex Post) of VCS Monitoring Report #17)
+  check  vb_verification_precheck                     passed (child validator, before any event)
+  save   vb_verification_report_save                  VVB Verification Report #20 -> status "Waiting for Approval", type verification_report
+  save   vb_err_locked_save                           ERR(Ex Post) of VCS Monitoring Report #17 -> status "Verification submitted", type pp_emission_reduction_removal
+VVB_One: vb_verification_report_assign -> PP_Kilimanjaro
+  save   vb_verification_report_assign_save           VVB Verification Report #20 -> status "Waiting for Approval"
+SR: presses admin_vb_verification_report_approve_button on VVB Verification Report #20
+  save   admin_vb_verification_report_approve_save    VVB Verification Report #20 -> status "Registry approved", type verification_report
+PP_Kilimanjaro: submits pp_vcu_request_form (from VVB Verification Report #20)
+  check  pp_vcu_request_precheck                      passed (child validator, before any event)
+  save   pp_vcu_request_save                          VMR0015 VCU Issuance Request #22 -> status "Waiting for issuance", type vcu_issuance_request
+  save   pp_verification_vcu_requested_save           VVB Verification Report #20 -> status "VCU requested", type verification_report
+SR: presses admin_err_issue_button on VMR0015 VCU Issuance Request #22
+  check  admin_err_issue_validator                    passed
+  logic  admin_err_issue_guard                        passed
+  save   admin_err_issued_save                        VMR0015 VCU Issuance Request #22 -> status "Issued", type vcu_issuance_request
+  MINT   mint_by_report                               1556 VCU (rule min(ERverified, ERcalculated) = 1556.947181413) to did:sim:PP_Kilimanjaro
+PP_Kilimanjaro: submits pp_monitoring_report_form (from VCS Project Description #6)
+PP_Kilimanjaro: submits pp_monitoring_report_form (from VCS Project Description #6)
+  logic  pp_mr_period_overlap                         passed
+  save   pp_monitoring_report_save                    VCS Monitoring Report #26 -> status "Waiting for Approval", type pp_monitoring_report
+  switch pp_monitoring_report_switch                  -> v5.0B
+  switch pp_ex_post_ante_switch                       -> Ex Post
+  math   pp_err_calculation_mr_vcs_ex_post            ERR(Ex Post) of VCS Monitoring Report #26: ER 1556.947181413 | flags: days in the monitoring period: 365 were typed but the period dates 2028-01-01 to 2028-12-31 give 366 days (both dates in
+  save   pp_reduction_removal_save                    ERR(Ex Post) of VCS Monitoring Report #26 -> status "Calculated", type pp_emission_reduction_removal
+PP_Kilimanjaro: submits pp_monitoring_report_form (from VCS Project Description #6)
+PP_Kilimanjaro: submits pp_monitoring_report_form (from VCS Project Description #6)
+PP_Kilimanjaro: pp_monitoring_report_assign -> VVB_One
+  save   pp_monitoring_report_assign_save             VCS Monitoring Report #26 -> status "Waiting for Approval", type pp_monitoring_report
+VVB_One: presses vb_mr_approve_button on VCS Monitoring Report #26
+  save   vb_mr_approve_save                           VCS Monitoring Report #26 -> status "Third-party verifier approved", type pp_monitoring_report
+SR: presses admin_pp_mr_approve_button on VCS Monitoring Report #26
+  logic  admin_mr_period_overlap_check                passed
+  save   admin_pp_mr_approve_save                     VCS Monitoring Report #26 -> status "Registry approved", type pp_monitoring_report
+PP_Kilimanjaro: pp_emission_reduction_removal_assign -> VVB_One
+  save   pp_emission_reduction_removal_assign_save    ERR(Ex Post) of VCS Monitoring Report #26 -> status "Calculated"
+VVB_One: submits vb_verification_report_form (from ERR(Ex Post) of VCS Monitoring Report #26)
+  check  vb_verification_precheck                     passed (child validator, before any event)
+  save   vb_verification_report_save                  VVB Verification Report #33 -> status "Waiting for Approval", type verification_report
+  save   vb_err_locked_save                           ERR(Ex Post) of VCS Monitoring Report #26 -> status "Verification submitted", type pp_emission_reduction_removal
+VVB_One: vb_verification_report_assign -> PP_Kilimanjaro
+  save   vb_verification_report_assign_save           VVB Verification Report #33 -> status "Waiting for Approval"
+SR: presses admin_vb_verification_report_reject_button on VVB Verification Report #33
+  save   admin_vb_verification_report_reject_save     VVB Verification Report #33 -> status "Registry rejected", type verification_report
+SR: presses admin_err_reopen_button on ERR(Ex Post) of VCS Monitoring Report #26
+  check  admin_err_reopen_validator                   passed
+  logic  admin_err_reopen_guard                       passed
+  save   admin_err_reopen_save                        ERR(Ex Post) of VCS Monitoring Report #26 -> status "Calculated", type pp_emission_reduction_removal
+  logic  admin_err_reopen_guard                       passed
+  save   admin_err_reopen_save                        ERR(Ex Post) of VCS Monitoring Report #26 -> status "Calculated", type pp_emission_reduction_removal
+VVB_One: submits vb_verification_report_form (from ERR(Ex Post) of VCS Monitoring Report #26)
+  check  vb_verification_precheck                     passed (child validator, before any event)
+  save   vb_verification_report_save                  VVB Verification Report #35 -> status "Waiting for Approval", type verification_report
+  save   vb_err_locked_save                           ERR(Ex Post) of VCS Monitoring Report #26 -> status "Verification submitted", type pp_emission_reduction_removal
+VVB_One: vb_verification_report_assign -> PP_Kilimanjaro
+  save   vb_verification_report_assign_save           VVB Verification Report #35 -> status "Waiting for Approval"
+SR: presses admin_vb_verification_report_approve_button on VVB Verification Report #35
+  save   admin_vb_verification_report_approve_save    VVB Verification Report #35 -> status "Registry approved", type verification_report
+PP_Kilimanjaro: submits pp_vcu_request_form (from VVB Verification Report #35)
+  check  pp_vcu_request_precheck                      passed (child validator, before any event)
+  save   pp_vcu_request_save                          VMR0015 VCU Issuance Request #37 -> status "Waiting for issuance", type vcu_issuance_request
+  save   pp_verification_vcu_requested_save           VVB Verification Report #35 -> status "VCU requested", type verification_report
+SR: presses admin_err_issue_button on VMR0015 VCU Issuance Request #37
+  check  admin_err_issue_validator                    passed
+  logic  admin_err_issue_guard                        passed
+  save   admin_err_issued_save                        VMR0015 VCU Issuance Request #37 -> status "Issued", type vcu_issuance_request
+  MINT   mint_by_report                               1556 VCU (rule min(ERverified, ERcalculated) = 1556.947181413) to did:sim:PP_Kilimanjaro
+SR: presses admin_err_reopen_button on ERR(Ex Post) of VCS Monitoring Report #17
+SR: presses admin_err_reopen_button on ERR(Ex Post) of VCS Monitoring Report #26
+  check  admin_err_reopen_validator                   passed
+  check  admin_err_issue_validator                    passed
+PP_Kilimanjaro: submits pp_vcu_request_form (from VVB Verification Report #35)
+  check  pp_vcu_request_precheck                      passed (child validator, before any event)
+  save   pp_vcu_request_save                          VMR0015 VCU Issuance Request #40 -> status "Waiting for issuance", type vcu_issuance_request
+  save   pp_verification_vcu_requested_save           VVB Verification Report #35 -> status "VCU requested", type verification_report
+SR: presses admin_err_issue_button on VMR0015 VCU Issuance Request #40
+  check  admin_err_issue_validator                    passed
+VVB_One: submits vb_verification_report_form (from ERR(Ex Post) of VCS Monitoring Report #17)
+PP_Kilimanjaro: submits pp_monitoring_report_form (from VCS Project Description #6)
+  logic  pp_mr_period_overlap                         passed
+  save   pp_monitoring_report_save                    VCS Monitoring Report #44 -> status "Waiting for Approval", type pp_monitoring_report
+  switch pp_monitoring_report_switch                  -> v5.0B
+  switch pp_ex_post_ante_switch                       -> Ex Post
+  math   pp_err_calculation_mr_vcs_ex_post            ERR(Ex Post) of VCS Monitoring Report #44: ER 1556.947181413 | flags: section S1: latest biennial SDW quality check (2027-11-20) is older than two years at the period end (2029-12-31) - tabl
+  save   pp_reduction_removal_save                    ERR(Ex Post) of VCS Monitoring Report #44 -> status "Calculated", type pp_emission_reduction_removal
+PP_Kilimanjaro: pp_monitoring_report_assign -> VVB_One
+  save   pp_monitoring_report_assign_save             VCS Monitoring Report #44 -> status "Waiting for Approval", type pp_monitoring_report
+VVB_One: presses vb_mr_approve_button on VCS Monitoring Report #44
+  save   vb_mr_approve_save                           VCS Monitoring Report #44 -> status "Third-party verifier approved", type pp_monitoring_report
+SR: presses admin_pp_mr_reject_button on VCS Monitoring Report #44
+  save   admin_pp_mr_reject_save                      VCS Monitoring Report #44 -> status "Registry rejected", type pp_monitoring_report
+PP_Kilimanjaro: pp_emission_reduction_removal_assign -> VVB_One
+  save   pp_emission_reduction_removal_assign_save    ERR(Ex Post) of VCS Monitoring Report #44 -> status "Calculated"
+VVB_One: submits vb_verification_report_form (from ERR(Ex Post) of VCS Monitoring Report #44)
+  check  vb_verification_precheck                     passed (child validator, before any event)
+  save   vb_verification_report_save                  VVB Verification Report #47 -> status "Waiting for Approval", type verification_report
+  save   vb_err_locked_save                           ERR(Ex Post) of VCS Monitoring Report #44 -> status "Verification submitted", type pp_emission_reduction_removal
+VVB_One: vb_verification_report_assign -> PP_Kilimanjaro
+  save   vb_verification_report_assign_save           VVB Verification Report #47 -> status "Waiting for Approval"
+SR: presses admin_vb_verification_report_approve_button on VVB Verification Report #47
+  save   admin_vb_verification_report_approve_save    VVB Verification Report #47 -> status "Registry approved", type verification_report
+PP_Kilimanjaro: submits pp_vcu_request_form (from VVB Verification Report #47)
+  check  pp_vcu_request_precheck                      passed (child validator, before any event)
+  save   pp_vcu_request_save                          VMR0015 VCU Issuance Request #49 -> status "Waiting for issuance", type vcu_issuance_request
+  save   pp_verification_vcu_requested_save           VVB Verification Report #47 -> status "VCU requested", type verification_report
+SR: presses admin_err_issue_button on VMR0015 VCU Issuance Request #49

@@ -1,0 +1,28 @@
+Documents produced: 12 vs 14
+[Guardian system document MintToken]  1 vs 1
+    #1: identical
+[Guardian system document UserRole]  2 vs 2
+    #1: identical
+    #2: identical
+[PP Profile]  1 vs 1
+    #1: identical
+[VCS Monitoring Report]  1 vs 2
+    #1: identical
+    only in the second run, #2: {"monitoringPeriodStart": "2028-01-01", "monitoringPeriodEnd": "2028-12-31"}
+[VCS Project Description]  1 vs 1
+    #1: identical
+[VMR0015 Emission Reductions (ERR)]  2 vs 3
+    #1: identical
+    #2: identical
+    only in the second run, #3: {"ER_final_total": 1556.947181413, "dataQualityFlags": "days in the monitoring period: 365 were typed but the period dates 2028-01-01 to 2028-12-31 give 366 days (both dates included); the policy used 366 days"}
+[VMR0015 VCU Issuance Request]  1 vs 1
+    #1: 1 field(s) differ
+        /ERverified: 1556.947181 -> 1556.947181413
+[VVB Profile]  1 vs 1
+    #1: identical
+[VVB Verification Report]  1 vs 1
+    #1: 1 field(s) differ
+        /ERverified: 1556.947181 -> 1556.947181413
+[Validation Report]  1 vs 1
+    #1: identical
+RESULT: 10 paired document(s) identical; see the lines above for every difference

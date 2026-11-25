@@ -1,0 +1,10 @@
+{
+ "type": "request-vc-draft",
+ "version": "1.0.0",
+ "schema": "#058aef89-3fdb-4f9b-8066-2b298854a6e0&1.0.1",
+ "policyId": "SET_FROM_YOUR_INSTANCE",
+ "blockId": "SET_FROM_YOUR_INSTANCE",
+ "document": {
+  "requestNote": "Request issuance for VER-2027-001 (MR MR-2027-001, period 2027-01-01 to 2027-12-31)."
+ }
+}

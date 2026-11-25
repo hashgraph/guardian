@@ -1,0 +1,1055 @@
+{
+ "type": "request-vc-draft",
+ "version": "1.0.0",
+ "schema": "#ecc894cb-0f25-41b9-b3ef-9b6c219fb15a",
+ "policyId": "SET_FROM_YOUR_INSTANCE",
+ "blockId": "SET_FROM_YOUR_INSTANCE",
+ "document": {
+  "templateVersion": "v5.0A",
+  "ghgType": "Ex Ante",
+  "methodologyRecords": {
+   "sections": [
+    {
+     "sectionId": "S1",
+     "sectionName": "Zone 1 - Kibosho",
+     "technology": "Point-of-use (POU) household device",
+     "region": "Kibosho ward, Moshi Rural District",
+     "deviceModel": "Gravity-fed ceramic-membrane household filter with solar-assisted UV stage (20 L storage)",
+     "householdsServed": 750,
+     "P_y": 3000,
+     "qpwOption": "Option 1 - measured volume (flow meter / standard vessel)",
+     "qpwEstimate": 4000000,
+     "m_estimate": 0.95,
+     "baselineFuels": [
+      {
+       "fuelId": "F1",
+       "fuelCategory": "Non-renewable biomass (woody biomass or charcoal)",
+       "fuelType": "Woody biomass",
+       "baselineDeviceType": "Three-stone fire or conventional woody-biomass device without grate and chimney (table 4(b) default 0.10)",
+       "BL_fuel": 0.85,
+       "EF_CO2": 112,
+       "EF_nonCO2": 9.46,
+       "EF_source": "3 - IPCC default (values printed in VMR0015 s9.1)",
+       "fNRB": 0.62,
+       "fNRBDeterminationRef": "FNRB-1"
+      }
+     ]
+    },
+    {
+     "sectionId": "S2",
+     "sectionName": "Zone 2 - Uru",
+     "technology": "Point-of-use (POU) household device",
+     "region": "Uru ward, Moshi Rural District",
+     "deviceModel": "Gravity-fed ceramic-membrane household filter with solar-assisted UV stage (20 L storage)",
+     "householdsServed": 750,
+     "P_y": 3000,
+     "qpwOption": "Option 1 - measured volume (flow meter / standard vessel)",
+     "qpwEstimate": 3500000,
+     "m_estimate": 0.95,
+     "baselineFuels": [
+      {
+       "fuelId": "F1",
+       "fuelCategory": "Non-renewable biomass (woody biomass or charcoal)",
+       "fuelType": "Woody biomass",
+       "baselineDeviceType": "Three-stone fire or conventional woody-biomass device without grate and chimney (table 4(b) default 0.10)",
+       "BL_fuel": 0.85,
+       "EF_CO2": 112,
+       "EF_nonCO2": 9.46,
+       "EF_source": "3 - IPCC default (values printed in VMR0015 s9.1)",
+       "fNRB": 0.62,
+       "fNRBDeterminationRef": "FNRB-1"
+      }
+     ]
+    },
+    {
+     "sectionId": "S3",
+     "sectionName": "Zone 3 - Old Moshi",
+     "technology": "Point-of-use (POU) household device",
+     "region": "Old Moshi ward, Moshi Rural District",
+     "deviceModel": "Gravity-fed ceramic-membrane household filter with solar-assisted UV stage (20 L storage)",
+     "householdsServed": 750,
+     "P_y": 3000,
+     "qpwOption": "Option 1 - measured volume (flow meter / standard vessel)",
+     "qpwEstimate": 3140000,
+     "m_estimate": 0.95,
+     "baselineFuels": [
+      {
+       "fuelId": "F1",
+       "fuelCategory": "Non-renewable biomass (woody biomass or charcoal)",
+       "fuelType": "Woody biomass",
+       "baselineDeviceType": "Three-stone fire or conventional woody-biomass device without grate and chimney (table 4(b) default 0.10)",
+       "BL_fuel": 0.85,
+       "EF_CO2": 112,
+       "EF_nonCO2": 9.46,
+       "EF_source": "3 - IPCC default (values printed in VMR0015 s9.1)",
+       "fNRB": 0.62,
+       "fNRBDeterminationRef": "FNRB-1"
+      }
+     ]
+    },
+    {
+     "sectionId": "S4",
+     "sectionName": "Zone 4 - Mbokomu",
+     "technology": "Point-of-use (POU) household device",
+     "region": "Mbokomu ward, Moshi Rural District",
+     "deviceModel": "Gravity-fed ceramic-membrane household filter with solar-assisted UV stage (20 L storage)",
+     "householdsServed": 750,
+     "P_y": 3000,
+     "qpwOption": "Option 1 - measured volume (flow meter / standard vessel)",
+     "qpwEstimate": 2500000,
+     "m_estimate": 0.95,
+     "baselineFuels": [
+      {
+       "fuelId": "F1",
+       "fuelCategory": "Non-renewable biomass (woody biomass or charcoal)",
+       "fuelType": "Woody biomass",
+       "baselineDeviceType": "Three-stone fire or conventional woody-biomass device without grate and chimney (table 4(b) default 0.10)",
+       "BL_fuel": 0.85,
+       "EF_CO2": 112,
+       "EF_nonCO2": 9.46,
+       "EF_source": "3 - IPCC default (values printed in VMR0015 s9.1)",
+       "fNRB": 0.62,
+       "fNRBDeterminationRef": "FNRB-1"
+      }
+     ]
+    }
+   ],
+   "fnrbDeterminations": [
+    {
+     "determinationId": "FNRB-1",
+     "fuelType": "Woody biomass",
+     "option": "Option 3 - latest TOOL33 default (national Table 3 / regional Table 2)",
+     "tool33Value": 0.62,
+     "tool33Table": "Table 3 - national default",
+     "countryOrRegion": "United Republic of Tanzania",
+     "fNRBApplied": 0.62,
+     "validFrom": "2026-10-01",
+     "validTo": "2031-09-30"
+    }
+   ],
+   "leakageAdjustment": {
+    "option": "0.95 - AMS-I.E net-to-gross default",
+    "adjLeDefault": 0.95,
+    "fixedAtValidation": true
+   },
+   "additionality": {
+    "tool": "VT0008 (any scale)",
+    "investmentAnalysisApplied": "Not applied",
+    "N_all": 2,
+    "N_diff": 1,
+    "narrative": "VT0008 applied. Step 1 (alternatives) is not applied because AMS-III.AV sets the baseline scenario. Regulatory surplus: no Tanzanian law or regulation requires households in Moshi Rural District to treat drinking water or use filtration devices (Water Supply and Sanitation Act 2019 reviewed). Step 2 barrier analysis: households cannot pay the upfront filter price (about 1.5 months of median rural cash income) and no micro-finance product covers it; carbon revenue funds free distribution and the maintenance network. Step 4 common practice: 2 similar household-filter activities exist in the region (N_all = 2), 1 of them uses an essentially different technology, chlorination tablets (N_diff = 1); F = 1 - N_diff/N_all = 0.5, above 20 %, but N_all - N_diff = 1, not more than 3, so under VT0008 Step 4 the project is not common practice."
+   },
+   "crediting_years": 5,
+   "interactiveEffectsSurvey": [
+    {
+     "surveyType": "Baseline survey",
+     "surveyRef": "BLS-2026-01",
+     "questionIncluded": true,
+     "householdsSurveyed": 384,
+     "householdsWithInteractiveEffect": 0,
+     "proportionApplied": 0,
+     "treatment": "No household reported that boiling drinking water changed other cooking or heating fuel use; no adjustment applied (VMR0015 s9.3(1))."
+    }
+   ]
+  },
+  "appendix2": {
+   "a21_1": {
+    "BL_fuel_i": {
+     "dataParameter": "BL_fuel,i",
+     "dataUnit": "fraction",
+     "description": "Proportion of baseline households boiling drinking water with fuel i (woody biomass)",
+     "equationNumber": "VMR0015 Eq.(1)",
+     "sourceOfData": "Baseline survey BLS-2026-01 (384 households, 90/10)",
+     "valueApplied": "0.85",
+     "valueBasis": "Single value",
+     "value": 0.85,
+     "justification": "85% of surveyed households boiled drinking water on a three-stone woody-biomass fire; the other 15% are not credited.",
+     "purposeOfData": "Calculation of baseline emissions"
+    },
+    "EF_b_k_CO2": {
+     "dataParameter": "EF_CO2,i",
+     "dataUnit": "tCO2/TJ",
+     "description": "CO2 emission factor of woody biomass combustion",
+     "equationNumber": "VMR0015 Eq.(1), s9.1",
+     "sourceOfData": "IPCC 2006 default as printed in VMR0015 s9.1",
+     "valueApplied": "112",
+     "valueBasis": "Single value",
+     "value": 112,
+     "justification": "VMR0015 s9.1 order of preference: no project-specific or national value is available, so the IPCC default printed in the methodology applies.",
+     "purposeOfData": "Calculation of baseline emissions"
+    },
+    "EF_b_k_nonCO2": {
+     "dataParameter": "EF_nonCO2,i",
+     "dataUnit": "tCO2e/TJ",
+     "description": "Non-CO2 (CH4 + N2O) emission factor of woody biomass combustion",
+     "equationNumber": "VMR0015 Eq.(1), s9.1",
+     "sourceOfData": "IPCC 2006 default as printed in VMR0015 s9.1",
+     "valueApplied": "9.46",
+     "valueBasis": "Single value",
+     "value": 9.46,
+     "justification": "Default printed in VMR0015 s9.1; not multiplied by fNRB, as the methodology requires.",
+     "purposeOfData": "Calculation of baseline emissions"
+    },
+    "eta_wb": {
+     "dataParameter": "n_wb",
+     "dataUnit": "fraction",
+     "description": "Efficiency of the baseline water-boiling device (three-stone fire)",
+     "equationNumber": "AMS-III.AV Eq.(5)",
+     "sourceOfData": "Site-specific value from water boiling tests (AMS-III.AV v09.0 table 4 allows measured or literature values; the optional default for a three-stone fire is 0.10)",
+     "valueApplied": "0.15",
+     "valueBasis": "Single value",
+     "value": 0.15,
+     "justification": "Illustrative sample value: mean thermal efficiency of 15 % measured in water boiling tests on 30 baseline three-stone fires across the four zones. The optional table 4 default of 0.10 is not used.",
+     "purposeOfData": "Calculation of baseline emissions"
+    },
+    "LS": {
+     "dataParameter": "LS",
+     "dataUnit": "years",
+     "description": "Expected technical life span of the project appliance",
+     "equationNumber": "Applicability (AMS-III.AV)",
+     "sourceOfData": "Manufacturer's specification (ceramic element replaced every 2 years under the maintenance plan)",
+     "valueApplied": "7",
+     "valueBasis": "Single value",
+     "value": 7,
+     "justification": "Life span of 7 years exceeds the 5-year crediting period; failed units are replaced within 14 days.",
+     "purposeOfData": "Applicability / eligibility"
+    },
+    "SEC": {
+     "dataParameter": "SEC",
+     "dataUnit": "kJ/L",
+     "description": "Specific energy consumption to boil one litre of water in the baseline device",
+     "equationNumber": "AMS-III.AV Eq.(5)",
+     "sourceOfData": "Calculated: SEC = 357.48 / n_wb",
+     "valueApplied": "2383.2",
+     "valueBasis": "Single value",
+     "value": 2383.2,
+     "justification": "All Eq.(5) defaults apply (T_i, T_f, WH, WHE), so SEC = 357.48 / 0.15 = 2383.2 kJ/L.",
+     "purposeOfData": "Calculation of baseline emissions"
+    },
+    "secEquation": "Eq.(5) - all defaults apply (SEC = 357.48 / eta_wb)",
+    "X_boil": {
+     "dataParameter": "X_boil",
+     "dataUnit": "fraction",
+     "description": "Fraction of the population served for which the common practice of water treatment is or would have been water boiling (AMS-III.AV Eq.(1))",
+     "equationNumber": "VMR0015 Eq.(1)",
+     "sourceOfData": "Baseline survey BLS-2026-01",
+     "valueApplied": "0.88",
+     "valueBasis": "Single value",
+     "value": 0.88,
+     "justification": "88 % of the persons in the surveyed baseline households boil their drinking water (baseline survey BLS-2026-01, 90/10 met).",
+     "purposeOfData": "Calculation of baseline emissions"
+    }
+   },
+   "a21_3": {
+    "EF_PE_A_L": {
+     "dataParameter": "EF_PE,A,L",
+     "dataUnit": "tCO2/MWh",
+     "description": "Emission factor of grid electricity used by the UV stages and pumps at service points",
+     "equationNumber": "VT0010 v1.1 Eq.(5), (7)-(9)",
+     "sourceOfData": "TANESCO grid combined-margin factor (national value)",
+     "valueApplied": "0.42",
+     "valueBasis": "Single value",
+     "value": 0.42,
+     "justification": "National grid combined margin applied under VT0010 Scenario A.",
+     "purposeOfData": "Calculation of project emissions"
+    }
+   },
+   "a21_5": {
+    "Adj_LE": {
+     "dataParameter": "Adj_LE",
+     "dataUnit": "fraction",
+     "description": "Leakage adjustment applied to baseline emissions",
+     "equationNumber": "VMR0015 s8.3",
+     "sourceOfData": "AMS-I.E net-to-gross default (cited by AMS-III.AV s5.4)",
+     "valueApplied": "0.95",
+     "valueBasis": "Single value",
+     "value": 0.95,
+     "justification": "Default 0.95 fixed at validation; no survey-based value used.",
+     "purposeOfData": "Calculation of leakage"
+    }
+   },
+   "a22_1": {
+    "m": {
+     "dataParameter": "m",
+     "dataUnit": "fraction",
+     "description": "Proportion of appliances meeting the technical standard, operating, and giving E. coli < 1 cfu/100 ml",
+     "equationNumber": "VMR0015 Eq.(1); AMS-III.AV table 11",
+     "sourceOfData": "Annual functionality check on a random sample of 100 appliances per zone",
+     "measurementMethods": "Visit, visual check of the element and seals, and outlet sample for E. coli (membrane filtration)",
+     "frequency": "Annual",
+     "valueApplied": "0.95",
+     "valueBasis": "Single value",
+     "value": 0.95,
+     "monitoringEquipment": "Portable incubator; membrane filtration kit",
+     "qaqc": "90/10 sampling (CDM Sampling Standard v09.0); laboratory LDL <= 1 cfu/100 ml; 10% of visits re-checked by the Operations Manager",
+     "purposeOfData": "Calculation of baseline emissions"
+    },
+    "P_y": {
+     "dataParameter": "P_y",
+     "dataUnit": "persons",
+     "description": "Persons served by the project appliances",
+     "equationNumber": "AMS-III.AV para 18 (5.5 L cap)",
+     "sourceOfData": "Distribution register and household survey",
+     "measurementMethods": "Household register (persons per household) checked at each visit",
+     "frequency": "Annual",
+     "valueApplied": "12000",
+     "valueBasis": "Single value",
+     "value": 12000,
+     "qaqc": "Register cross-checked with village records",
+     "purposeOfData": "Calculation of baseline emissions"
+    },
+    "QPW_y": {
+     "dataParameter": "QPW_y",
+     "dataUnit": "L/yr",
+     "description": "Quantity of purified water used for drinking",
+     "equationNumber": "VMR0015 Eq.(1)",
+     "sourceOfData": "Totalised inline household flow meters (Option 1)",
+     "measurementMethods": "Monthly meter readings by zone technicians, summed per zone",
+     "frequency": "Monthly, aggregated annually",
+     "valueApplied": "1.314e+07",
+     "valueBasis": "Single value",
+     "value": 13140000,
+     "monitoringEquipment": "Inline flow meter, 1% accuracy",
+     "qaqc": "Meters calibrated before installation; outliers above 5.5 L/person/day capped by the calculation",
+     "purposeOfData": "Calculation of baseline emissions"
+    },
+    "SDW_network_check": {
+     "dataParameter": "SDW network check",
+     "dataUnit": "persons connected",
+     "description": "Persons connected to a public piped safe-drinking-water network (excluded)",
+     "equationNumber": "AMS-III.AV table 13",
+     "sourceOfData": "MUWSA network maps and ward office",
+     "measurementMethods": "Annual check with the utility and the ward office",
+     "frequency": "Annual",
+     "valueApplied": "0",
+     "valueBasis": "Single value",
+     "value": 0,
+     "qaqc": "Written confirmation from the utility filed",
+     "purposeOfData": "Applicability / eligibility"
+    },
+    "SDW_quality": {
+     "dataParameter": "SDW quality check",
+     "dataUnit": "pass (1) / fail (0)",
+     "description": "Water from the appliances meets the safe-drinking-water standard",
+     "equationNumber": "AMS-III.AV table 14",
+     "sourceOfData": "Accredited laboratory test report",
+     "measurementMethods": "Outlet samples tested against TZS 789 / WHO parameters",
+     "frequency": "At least once every two years (done annually)",
+     "valueApplied": "1",
+     "valueBasis": "Single value",
+     "value": 1,
+     "qaqc": "Accredited laboratory; chain-of-custody forms",
+     "purposeOfData": "Applicability / eligibility"
+    },
+    "WQ_fail_share": {
+     "dataParameter": "WQ fail share",
+     "dataUnit": "fraction",
+     "description": "Share of sampled appliances failing the E. coli test",
+     "equationNumber": "AMS-III.AV table 11 (10% gate)",
+     "sourceOfData": "Functionality check E. coli results",
+     "measurementMethods": "Failures / appliances with an E. coli result",
+     "frequency": "Annual",
+     "valueApplied": "0",
+     "valueBasis": "Single value",
+     "value": 0.0,
+     "qaqc": "More than 10% failing would void the period",
+     "purposeOfData": "Applicability / eligibility"
+    }
+   },
+   "a22_3": {
+    "EC_Grid_L": {
+     "dataParameter": "EC_Grid,L",
+     "dataUnit": "MWh/yr",
+     "description": "Grid electricity used by UV stages and booster pumps at the four service points",
+     "equationNumber": "VT0010 v1.1 Eq.(5), (7)-(9)",
+     "sourceOfData": "Sub-meters at each service point",
+     "measurementMethods": "Monthly sub-meter readings (8 kWh/day in total)",
+     "frequency": "Monthly",
+     "valueApplied": "2.92",
+     "valueBasis": "Single value",
+     "value": 2.92,
+     "monitoringEquipment": "Utility kWh sub-meter",
+     "qaqc": "Meters calibrated by the utility; readings photographed",
+     "purposeOfData": "Calculation of project emissions"
+    },
+    "TDL_PE_A_L": {
+     "dataParameter": "TDL_PE,A,L",
+     "dataUnit": "fraction",
+     "description": "Technical transmission and distribution losses of the grid",
+     "equationNumber": "VT0010 v1.1 Eq.(5)",
+     "sourceOfData": "Sample record: 8 % stands in for a grid-specific loss value from the national utility; where no such data are documented, the VT0010 v1.1 default of 20 % for project electricity consumption applies",
+     "measurementMethods": "Default value",
+     "frequency": "Fixed for the crediting period",
+     "valueApplied": "0.08",
+     "valueBasis": "Single value",
+     "value": 0.08,
+     "qaqc": "Default from the tool",
+     "purposeOfData": "Calculation of project emissions"
+    }
+   },
+   "a22_4": {
+    "f_NRB_i_y": {
+     "dataParameter": "fNRB,i,y",
+     "dataUnit": "fraction",
+     "description": "Fraction of non-renewable woody biomass",
+     "equationNumber": "VMR0015 Eq.(1), s9.2",
+     "sourceOfData": "Test value chosen for this sample (not the published TOOL33 figure for Tanzania); a real PD enters the current TOOL33 Table 3 value",
+     "measurementMethods": "Latest TOOL33 default looked up at each verification",
+     "frequency": "Each verification",
+     "valueApplied": "0.62",
+     "valueBasis": "Single value",
+     "value": 0.62,
+     "qaqc": "Real project: the VVB checks the value against the current TOOL33 table",
+     "purposeOfData": "Calculation of baseline emissions"
+    }
+   }
+  },
+  "section2_v50A": {},
+  "projectId": "PD-KSW-2027-001",
+  "projectName": "Kilimanjaro Safe Water Project",
+  "startDate": "2026-10-01",
+  "section1": {
+   "summaryDescription": {
+    "summaryText": "The project distributes 3,000 ceramic-membrane point-of-use water filters across four zones of Moshi Rural District, Tanzania, serving approximately 12,000 people. Before the project, households boiled drinking water over three-stone wood fires. The filters remove the need to boil, avoiding non-renewable woody biomass combustion.",
+    "preProjectScenario": "Households collected water from unimproved or partially improved sources and boiled it over three-stone open fires using non-renewable firewood.",
+    "estAnnualAvgER": 1666.62,
+    "estTotalER": 8333.1
+   },
+   "auditHistorySection": [
+    {
+     "auditType": "None - first validation",
+     "program": "VCS",
+     "vvbName": "To be appointed for validation",
+     "dateOfOpeningMeeting": "Not applicable - first validation; the project has no previous audit.",
+     "monitoringPeriodStart": "Not applicable - first validation; the project has no previous audit.",
+     "monitoringPeriodEnd": "Not applicable - first validation; the project has no previous audit."
+    }
+   ],
+   "sectoralScope": {
+    "sectoralScope": "03 - Energy demand",
+    "projectCategory": "Not applicable (non-AFOLU project)",
+    "projectActivityType": "Low-GHG safe drinking water production (household point-of-use filters)"
+   },
+   "projectEligibility": {
+    "deadlinesForParticipation": "The project start date is 01-October-2026 and validation is being pursued within the timeframe set by the VCS Standard for projects to complete validation after their start date.",
+    "afoluEligibility": "Not applicable - this is a non-AFOLU energy demand project (VCS sectoral scope 03). No AFOLU eligibility requirements apply.",
+    "otherProgramEligibility": "The project is not registered, and has never sought registration, under any other GHG program.",
+    "capacityLimitEligibility": "Estimated reductions of about 1,667 tCO2e per year are well within the small-scale limit applicable to AMS-III.AV Type III activities (60 kt CO2e per year).",
+    "pipelineListingDeadline": "Not applicable: the pipeline listing request was submitted before 1 January 2027",
+    "pipelineListingRequestDate": "2026-10-01",
+    "dateOfListingAsUnderValidation": "2026-11-20",
+    "registrationRequestDeadline": "Within the VCS Standard v5.0 period after validation (sample record)",
+    "initialCreditingPeriodStartDate": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+    "dateOfRegistrationRequestInTheOtherGHGPr": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+    "dateOfProjectInactivityInTheOtherGHGProg": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+    "justification": "Not applicable - no capacity limit applies to this project activity under VMR0015.",
+    "justification2": "Not applicable - no capacity limit applies to this project activity under VMR0015.",
+    "justification3": "Not applicable - no capacity limit applies to this project activity under VMR0015.",
+    "justification4": "Not applicable - no capacity limit applies to this project activity under VMR0015.",
+    "justification5": "Not applicable - no capacity limit applies to this project activity under VMR0015."
+   },
+   "projectProponent": {
+    "contacts": [
+     {
+      "orgName": "Rural Access Water Ltd.",
+      "contactPerson": "Amara Ndosi",
+      "title": "Managing Director",
+      "address": "Moshi, Kilimanjaro Region, Tanzania",
+      "telephone": "+255 22 000 0000",
+      "email": "contact@ruralaccesswater.co.tz"
+     }
+    ]
+   },
+   "otherEntities": [
+    {
+     "orgName": "None",
+     "role": "No other entities are involved in the project; Rural Access Water Ltd. is the sole project proponent and operator.",
+     "contactPerson": "Not applicable - no other entity",
+     "title": "Not applicable - no other entity",
+     "address": "Not applicable - no other entity",
+     "telephone": "Not applicable - no other entity",
+     "email": "Not applicable - no other entity",
+     "descriptionOfInvolvement": "Not applicable - no other entity is involved; Rural Access Water Ltd. is the sole project proponent and operator."
+    }
+   ],
+   "section1_7_v50A": {
+    "projectOwnership": "Rural Access Water Ltd. is the project proponent and owns the 3,000 household filters and the four service points until handover to the households.",
+    "evidenceOfOwnership": "Purchase invoices for the filters, the lease agreements for the four service points, signed household user agreements, and the memorandum of understanding with Moshi District Council (Ref. MDC/WS/2026/14).",
+    "ownershipOfReductions": "Each household assigns its claim to the emission reductions to the proponent in the signed user agreement, in exchange for the free filter, replacement elements and maintenance."
+   },
+   "creditingPeriodDetail": {
+    "creditingStartDate": "2026-10-01",
+    "creditingEndDate": "2031-09-30",
+    "creditingJustification": "Five-year crediting period, renewable (VCS v5 rule for energy and industry projects); the baseline is reassessed at each renewal.",
+    "creditingPeriodLength": "Five years (renewable)",
+    "creditingPeriodNumber": 1,
+    "maxTotalDuration": "Up to 15 years (three consecutive five-year crediting periods)"
+   },
+   "estimatedGHG": {
+    "projectScale": "Project (300 000 tCO2e/year or less)",
+    "estimatedNetReductionsAndRemovalsByVinta": [
+     {
+      "vintagePeriodStart": "2026-10-01",
+      "vintagePeriodEnd": "2026-12-31",
+      "estimatedNetReductionsAndRemovalsTCO2e": 420.079628
+     },
+     {
+      "vintagePeriodStart": "2027-01-01",
+      "vintagePeriodEnd": "2027-12-31",
+      "estimatedNetReductionsAndRemovalsTCO2e": 1666.620262
+     },
+     {
+      "vintagePeriodStart": "2028-01-01",
+      "vintagePeriodEnd": "2028-12-31",
+      "estimatedNetReductionsAndRemovalsTCO2e": 1666.620262
+     },
+     {
+      "vintagePeriodStart": "2029-01-01",
+      "vintagePeriodEnd": "2029-12-31",
+      "estimatedNetReductionsAndRemovalsTCO2e": 1666.620262
+     },
+     {
+      "vintagePeriodStart": "2030-01-01",
+      "vintagePeriodEnd": "2030-12-31",
+      "estimatedNetReductionsAndRemovalsTCO2e": 1666.620262
+     },
+     {
+      "vintagePeriodStart": "2031-01-01",
+      "vintagePeriodEnd": "2031-09-30",
+      "estimatedNetReductionsAndRemovalsTCO2e": 1246.540635
+     }
+    ],
+    "totalEstimatedNetReductionsAndRemovalsIn": "8333.101312 tCO2e",
+    "totalNumberOfYearsInThisCreditingPeriod": "5",
+    "averageAnnualNetReductionsAndRemovalsInT": "1666.620262 tCO2e"
+   },
+   "projectDesign": {
+    "designType": "Single project (not grouped)",
+    "instanceEligibilityCriteria": "Not applicable - single project design.",
+    "projectActivityInstances": [
+     {
+      "projectActivityInstance": "Single project activity: 3,000 household filters in four zones (not a grouped project)",
+      "explanation": "One device type, one distribution programme, monitored together; the four zones are sections S1-S4 in the methodology records."
+     }
+    ],
+    "groupedProjectEligibilityAreas": [
+     {
+      "eligibilityAreaID": "Not applicable - the project is not a grouped project.",
+      "summaryOfCharacteristics": "Not applicable - the project is not a grouped project.",
+      "batchID": "Not applicable - the project is not a grouped project."
+     }
+    ],
+    "eligibilityCriteriaPerEligibilityArea": [
+     {
+      "eligibilityAreaID": "Not applicable - the project is not a grouped project.",
+      "uniquelyIdentifiable": "Not applicable - the project is not a grouped project.",
+      "baselineScenario": "Not applicable - the project is not a grouped project.",
+      "additionality": "Not applicable - the project is not a grouped project.",
+      "technologyOrMeasure": "Not applicable - the project is not a grouped project.",
+      "methodologyApplicabilityConditions": "Not applicable - the project is not a grouped project."
+     }
+    ]
+   },
+   "conditionsPrior": {
+    "priorConditions": "Households used unimproved or partially improved water sources and boiled drinking water over three-stone open wood fires.",
+    "listOfFacilitiesSystemsAndEquipment": "None - no water treatment facilities, systems or equipment existed in the four zones before the project.",
+    "ecosystemType": "Not applicable - the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply.",
+    "currentAndHistoricalLandUse": "Not applicable - the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply.",
+    "currentAndHistoricalEnvironmentalConditi": "Not applicable - the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply."
+   },
+   "activityDescription": {
+    "technologyDescription": "Gravity-fed ceramic-membrane filters with solar-assisted UV polishing.",
+    "technologySystemOrEquipment": [
+     {
+      "technologySystemOrEquipment": "Gravity-fed ceramic-membrane household filter with solar-assisted UV stage (20 L storage)",
+      "ageAndAverageLifetime": "New units; manufacturer rated life 7 years (ceramic element replaced every 2 years)",
+      "technicalSpecifications": "20 L storage, ceramic membrane, solar-assisted UV stage; meets TZS 789 (Annex 5)",
+      "typeAndLevelOfServiceProvided": "Safe drinking water for 3,000 households (about 12,000 people), up to 5.5 L per person per day credited"
+     }
+    ],
+    "implementationSchedule2": [
+     {
+      "date": "2026-08-12",
+      "milestoneOrAction": "Stakeholder consultation",
+      "description": "Village meetings in the four zones"
+     },
+     {
+      "date": "2026-11-20",
+      "milestoneOrAction": "Validation",
+      "description": "Validation by Earthwise Verification Services Ltd. (sample VVB)"
+     },
+     {
+      "date": "2026-10-01",
+      "milestoneOrAction": "Project start and distribution",
+      "description": "3,000 filters distributed and installed"
+     },
+     {
+      "date": "2027-01-01",
+      "milestoneOrAction": "First monitoring period",
+      "description": "Metering, functionality survey and water-quality checks"
+     }
+    ]
+   },
+   "projectLocationDetail": {
+    "countryRegion": "Tanzania - Kilimanjaro Region, Moshi Rural District",
+    "locations": [
+     {
+      "instanceId": "ZONE-1",
+      "adminArea": "Moshi Rural District, Kilimanjaro Region",
+      "latitude": 0,
+      "longitude": 0,
+      "boundaryDescription": "Zone 1 household cluster served by 900 filters",
+      "kmlFileRef": "zone1.kml"
+     }
+    ],
+    "regionStateProvince": "Kilimanjaro Region",
+    "communityMunicipalityCity": "Kibosho, Uru, Old Moshi and Mbokomu wards"
+   },
+   "complianceWithLaws": {
+    "lawsAndOtherRegulatoryFrameworks": [
+     {
+      "nameOfLawOrRegulatoryFramework": "Water Supply and Sanitation Act, 2019 (Tanzania)",
+      "explanationOfCompliance": "Household treatment devices do not require a water supply licence; the district council recognises the programme (MoU Ref. MDC/WS/2026/14)."
+     },
+     {
+      "nameOfLawOrRegulatoryFramework": "Environmental Management Act, 2004 (Cap. 191, Tanzania)",
+      "explanationOfCompliance": "No environmental impact assessment is required for household point-of-use devices (district confirmation, Annex 3)."
+     }
+    ]
+   },
+   "otherGhgPrograms": {
+    "doubleIssuanceControls": "Project is not registered under any other GHG programme. Registry searches conducted at validation and each verification.",
+    "rejectedByOtherPrograms": "The project has not been rejected by any other GHG program.",
+    "reductionsAndRemovalsClaimedUnderAnother": [
+     {
+      "vintagePeriodStart": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+      "vintagePeriodEnd": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+      "volume": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+      "serialNumberS": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+      "otherRelevantIdentificationInformation": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme."
+     }
+    ],
+    "nameAndContactInformationOfProgramAdmini": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+    "detailsOfParticipation": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+    "evidenceOfNoDoubleCounting": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+    "nameOfOtherGHGProgram": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+    "projectID": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+    "dateOfProjectInactivity": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+    "evidenceThatTheProjectIsConsideredInacti": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+    "nameOfOtherGHGProgram2": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+    "dateOfRejection": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+    "reasonForRejection": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme."
+   },
+   "otherFormsOfCredit": {
+    "emissionsTradingProgram": "The project is not within any emissions trading programme or binding emission limit.",
+    "otherEnvironmentalCredit": "No other environmental credits are sought or received.",
+    "scope3Controls": "Written statements obtained from all offtakers confirming no Scope 3 claims.",
+    "nameAndContactInformationOfProgramOrLimi": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+    "detailsOfParticipation": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+    "projectActivitiesIncluded": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+    "reductionsAndRemovalsIncluded": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+    "vintagePeriodS": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+    "evidenceOfNoDoubleCounting": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+    "nameAndContactInformationOfCreditSystemA": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+    "detailsOfParticipation2": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+    "vintagePeriodS2": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+    "projectActivityScope": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+    "otherInformation": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+    "evidenceOfNoDoubleCounting2": "Not applicable - the project is not registered with, has not applied to and was not rejected by any other GHG program, and takes part in no emissions trading program or other environmental credit scheme.",
+    "justification": "The project reduces household woodfuel use for boiling water; it does not change the emissions footprint of a product or service that a company buys or sells, so no Scope 3 double claiming arises.",
+    "justification2": "The project reduces household woodfuel use for boiling water; it does not change the emissions footprint of a product or service that a company buys or sells, so no Scope 3 double claiming arises."
+   },
+   "sdContributions": {
+    "sustainableDevelopmentContribution": [
+     {
+      "sdContributionNumber": "1",
+      "sdgTarget": "SDG 6.1 - safe and affordable drinking water for all",
+      "sdContributionIndicatorTypeAndName": "Outcome indicator: number of people using a project water filter",
+      "indicatorMetadata": "Count of people in households with a functioning filter (annual functionality survey, AMS-III.AV table 11)",
+      "plannedActivitiesAndExpectedContribution": "Distribute 3,000 household filters in 2027; about 12,000 people gain access to safe drinking water",
+      "relevantNationalSDGObjectives": "Tanzania Development Vision 2025: access to clean and safe water for all"
+     }
+    ]
+   },
+   "additionalInfo": {
+    "leakageManagement": "Leakage from non-renewable biomass is addressed within the baseline through Adj_LE = 0.95, fixed at validation (VMR0015 Section 8.3) following the AMS-I.E leakage procedure required by AMS-III.AV Section 5.4.",
+    "commerciallySensitiveInfo": "None. No information excluded from the public version.",
+    "furtherInformation": "None.",
+    "sensitiveInfoTable": [
+     {
+      "sectionNumber": "None",
+      "infoToExclude": "No information is excluded from the public version.",
+      "descriptionExplanation": "All project information, including the device register summary, is made public; household names are held privately as personal data."
+     }
+    ]
+   },
+   "projectStartAndCrediting": [
+    {
+     "projectStartDatePD": "2026-10-01",
+     "startDateJustification": "First devices distributed 01-October-2026, evidenced by signed distribution records.",
+     "initialCreditingStartDate": "2026-10-01"
+    }
+   ]
+  },
+  "section3": {
+   "methodologyDetails": {
+    "methodologyDetails": [
+     {
+      "type2": "Methodology",
+      "methodologyModuleOrToolIDNumber": "VMR0015",
+      "version": "1.0",
+      "name": "Revision to AMS-III.AV: Low Greenhouse Gas Emitting Safe Drinking Water Production Systems"
+     },
+     {
+      "type2": "Methodology",
+      "methodologyModuleOrToolIDNumber": "AMS-III.AV",
+      "version": "09.0",
+      "name": "Low greenhouse gas emitting safe drinking water production systems"
+     },
+     {
+      "type2": "Tool",
+      "methodologyModuleOrToolIDNumber": "VT0010",
+      "version": "1.1",
+      "name": "Emissions from Electricity Consumption and Generation"
+     },
+     {
+      "type2": "Tool",
+      "methodologyModuleOrToolIDNumber": "VT0008",
+      "version": "1.0",
+      "name": "Additionality Assessment"
+     },
+     {
+      "type2": "Tool",
+      "methodologyModuleOrToolIDNumber": "CDM TOOL03",
+      "version": "03.0",
+      "name": "Tool to calculate project or leakage CO2 emissions from fossil fuel combustion"
+     },
+     {
+      "type2": "Tool",
+      "methodologyModuleOrToolIDNumber": "CDM TOOL33",
+      "version": "03.0",
+      "name": "Default values for common parameters"
+     },
+     {
+      "type2": "Standard",
+      "methodologyModuleOrToolIDNumber": "CDM Sampling and surveys",
+      "version": "09.0",
+      "name": "Standard: Sampling and surveys for CDM project activities and programmes of activities"
+     }
+    ]
+   },
+   "applicabilityEligibility": {
+    "eligibility": {
+     "methodologyEligibilityStatement": "AMS-III.AV v09.0 as revised by Verra VMR0015 v1.0 is an approved VCS methodology revision for low greenhouse-gas-emitting safe drinking water production systems, eligible for use under the VCS Program."
+    },
+    "applicabilityConditions": {
+     "c2KioskSolarDisinfection": "Not applicable - no water kiosk uses solar disinfection",
+     "c2KioskSolarDisinfectionEvidence": "The project distributes household ceramic filters only; the four service points sell replacement elements and do not treat or sell water.",
+     "c3SoilFiltrationWells": "Not applicable - no boreholes or wells",
+     "c3SoilFiltrationWellsEvidence": "No borehole, well or soil filtration scheme is part of the project.",
+     "c4aNoPublicNetwork": "Met - no public network supplied SDW to the project boundary",
+     "c4aNoPublicNetworkEvidence": "Moshi District infrastructure register (Annex 4) and the November 2026 network check recorded below: no public safe-water network reaches the four zones.",
+     "c4bTechnologyStandard": "Met",
+     "c4bTechnologyStandardEvidence": "Filters meet the Tanzanian national drinking water standard TZS 789 across physical, chemical and microbiological parameters, verified by accredited laboratory challenge-water testing (Annex 5).",
+     "c4cReplacementAccess": "Not applicable - rated life is not shorter than the crediting period",
+     "c4cReplacementAccessEvidence": "Manufacturer's rated life of the filter unit is 7 years, longer than the 5-year crediting period; the ceramic element is replaced every 2 years under the maintenance plan and failed units within 14 days.",
+     "c4dSafeWaterDelivered": "Met",
+     "c4dSafeWaterDeliveredEvidence": "Pre-registration field test of 40 installed filters: all treated-water samples below 1 cfu E. coli per 100 ml (LDL 1 cfu), Annex 7.",
+     "vmrReddAssessment": "Assessed and reported",
+     "vmrReddAssessmentEvidence": "National assessment on 15 November 2026: no REDD+ project or jurisdictional REDD+ programme overlaps the expected fuel source area (table below).",
+     "cond3BaselineBoiling": "Baseline household survey (n=384, stratified by zone) confirms 88% of the served population boiled drinking water using firewood.",
+     "cond4VMR0015Interacting": "No participating household received an improved cookstove or other interacting technology during the crediting period, confirmed against the distribution register.",
+     "reddDoubleCountingAssessment": [
+      {
+       "assessmentDate": "2026-11-15",
+       "overlapFound": false,
+       "reddProgramsIdentified": "None - no REDD+ project or jurisdictional program overlaps the project area.",
+       "findings": "No overlap identified."
+      }
+     ],
+     "sdwPublicDistributionNetworkCheck": [
+      {
+       "checkDate": "2026-11-15",
+       "networkExists": false,
+       "affectedBuildings": "None - no public distribution network installed in the project area.",
+       "evidenceRef": "Annex 4 - District infrastructure register."
+      }
+     ]
+    },
+    "geographicEligibility": "No geographic restriction in AMS-III.AV v09.0 or VMR0015 v1.0; Tanzania is eligible.",
+    "capacityLimitEligibility": "Not applicable - no capacity limit applies to this project activity under VMR0015.",
+    "applicabilityOfMethodology": [
+     {
+      "methodologyModuleOrToolID": "AMS-III.AV v09.0 / VMR0015 v1.0",
+      "applicabilityCondition": "Para 2: water kiosks using solar disinfection",
+      "justificationOfConformance": "Not applicable - no water kiosk uses solar disinfection."
+     },
+     {
+      "methodologyModuleOrToolID": "AMS-III.AV v09.0 / VMR0015 v1.0",
+      "applicabilityCondition": "Para 3: soil filtration schemes",
+      "justificationOfConformance": "Not applicable - no boreholes or wells."
+     },
+     {
+      "methodologyModuleOrToolID": "AMS-III.AV v09.0 / VMR0015 v1.0",
+      "applicabilityCondition": "Para 4(a): no public SDW network before the project",
+      "justificationOfConformance": "Met - district infrastructure register and the November 2026 network check."
+     },
+     {
+      "methodologyModuleOrToolID": "AMS-III.AV v09.0 / VMR0015 v1.0",
+      "applicabilityCondition": "Para 4(b): technology meets the performance standard",
+      "justificationOfConformance": "Met - accredited laboratory challenge-water testing to TZS 789 (Annex 5)."
+     },
+     {
+      "methodologyModuleOrToolID": "AMS-III.AV v09.0 / VMR0015 v1.0",
+      "applicabilityCondition": "Para 4(c): replacement systems",
+      "justificationOfConformance": "Not applicable - rated life 7 years exceeds the 5-year crediting period."
+     },
+     {
+      "methodologyModuleOrToolID": "AMS-III.AV v09.0 / VMR0015 v1.0",
+      "applicabilityCondition": "Para 4(d): microbiologically safe water delivered",
+      "justificationOfConformance": "Met - 40 installed filters tested below 1 cfu E. coli per 100 ml (Annex 7)."
+     },
+     {
+      "methodologyModuleOrToolID": "AMS-III.AV v09.0 / VMR0015 v1.0",
+      "applicabilityCondition": "VMR0015 s4: REDD+ double-counting assessment",
+      "justificationOfConformance": "Assessed and reported - no overlapping REDD+ project or programme."
+     }
+    ]
+   },
+   "projectBoundary": {
+    "boundaryDiagramRef": "Annex 2, Figure 1 - Project boundary diagram",
+    "ghgSourcesTable": [
+     {
+      "scenario": "Baseline",
+      "gas": "CO2, CH4, N2O",
+      "included": "Yes",
+      "justification": "Main baseline source per AMS-III.AV; CO2 counted only for the non-renewable fraction, CH4/N2O counted in full via EF_nonCO2 (VMR0015 Section 9.1).",
+      "carbonPool": "Not applicable - the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply."
+     }
+    ],
+    "deMinimis": {
+     "deMinimisExcluded": false,
+     "deMinimisStatement": "None excluded. All sources required by AMS-III.AV (baseline biomass/fossil fuel combustion for water boiling; project fossil fuel and grid electricity use) are included."
+    },
+    "deMinimisThreshold": "Not applicable - no GHG source or carbon pool is excluded as de minimis.",
+    "thresholdApplicability": "Not applicable - no GHG source or carbon pool is excluded as de minimis.",
+    "deMinimisComparisonPeriod": [
+     {
+      "periodType": "Not applicable - no GHG source or carbon pool is excluded as de minimis.",
+      "dateFrom": "Not applicable - no GHG source or carbon pool is excluded as de minimis.",
+      "dateTo": "Not applicable - no GHG source or carbon pool is excluded as de minimis.",
+      "reductionsAndRemovalsGenerated": "Not applicable - no GHG source or carbon pool is excluded as de minimis."
+     }
+    ],
+    "deMinimisQuantificationPerGHGSourceOrCar": [
+     {
+      "ghgSourceCarbonPool": "Not applicable - the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply.",
+      "quantification": "Not applicable - the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply.",
+      "result": "Not applicable - the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply."
+     }
+    ]
+   },
+   "baselineScenario": {
+    "baselineScenario": "Continued boiling of drinking water over three-stone open fires using non-renewable woody biomass.",
+    "scenarioJustification": "Step 1: identify realistic alternatives - continued boiling, unsubsidised filter purchase, or no treatment. Step 2: barrier analysis - filters unaffordable at household income levels. Step 3: continued boiling is the only plausible baseline.",
+    "stepDemonstration": "AMS-III.AV baseline determination applied. JMP data shows 42% improved-source access in the district, placing the project in Case 2.",
+    "keyAssumptionsJustification": "Boiling efficiency of 0.15 is the survey-weighted average across three-stone fires. Wood share of 0.85 reflects survey findings. fNRB of 0.62 is the published national default for Tanzania.",
+    "baselineReassessment": {
+     "reassessmentSteps": "At each crediting period renewal the baseline will be reassessed using current JMP data and a repeat household survey.",
+     "policyChangeEvaluation": "No national or sectoral policy change during the period affects baseline validity.",
+     "baselineStillValid": true
+    },
+    "baselineInteractiveEffects": "The baseline survey asked which device is used for each weekly drinking-water boil; 12% of boils use an improved cookstove, reflected proportionally in the survey-weighted n_wb of 0.15."
+   },
+   "additionality": {
+    "regulatorySurplus": {},
+    "additionalityMethods": {
+     "additionalityDemonstration": "Capital cost per unit exceeds two months of median household income in the district and no financing mechanism exists. Carbon finance is the sole revenue source funding distribution, maintenance and testing.",
+     "commonPracticeAnalysis": "Certified point-of-use water filters are used by under 3% of households in the district."
+    },
+    "lawsReviewedForRegulatorySurplus": [
+     {
+      "nameOfLawOrRegulatoryFramework": "Water Supply and Sanitation Act, 2019 (Tanzania)",
+      "explanationOfHowItAppliesToTheProject": "No law requires households to use water filters, so the project is not required by law (regulatory surplus)."
+     },
+     {
+      "nameOfLawOrRegulatoryFramework": "Environmental Management Act, 2004 (Cap. 191, Tanzania)",
+      "explanationOfHowItAppliesToTheProject": "No law requires households to use water filters, so the project is not required by law (regulatory surplus)."
+     }
+    ],
+    "methodApplied": "VT0008 Additionality Assessment (VMR0015 s7(a))"
+   },
+   "methodologyDeviations": {
+    "methodologyDeviationsApplied": false,
+    "methodologyDeviation": [
+     {
+      "referenceNumber": "Not applicable - no methodology deviation or project description deviation is applied.",
+      "titleOfDeviation": "Not applicable - no methodology deviation or project description deviation is applied.",
+      "methodologyModuleOrToolDetails": "Not applicable - no methodology deviation or project description deviation is applied.",
+      "descriptionOfDeviation": "Not applicable - no methodology deviation or project description deviation is applied.",
+      "justificationForTheDeviation": "Not applicable - no methodology deviation or project description deviation is applied.",
+      "conformanceToVCSProgramRules": "Not applicable - no methodology deviation or project description deviation is applied."
+     }
+    ]
+   }
+  },
+  "section4": {
+   "baselineEmissions": {
+    "beEquation": "BE_y = QPW_y x m x X_boil x SEC x SUM_i BL_fuel,i x ((EF_CO2,i x fNRB,i) + EF_nonCO2,i) x 10^-9 x Adj_LE (VMR0015 Eq.(1)); fNRB = 1 for fossil fuels. SEC = [WH x (T_f - T_i) + 0.01 x WHE] / eta_wb (AMS-III.AV Eq.(4)) or 357.48 / eta_wb (Eq.(5)), as selected in Appendix 2."
+   },
+   "projectEmissions": {
+    "peEquation": "PE_y = PE_FF,y + PE_EC,y (AMS-III.AV Eq.(6)). PE_FF,y = FC_i,y x COEF_i,y (CDM TOOL03 Eq.(1)), with COEF = w_C x 44/12 (Option A, mass, Eq.(2)), w_C x rho x 44/12 (Option A, volume, Eq.(3)) or NCV x EF_CO2 (Option B, Eq.(4)). PE_EC,y follows Verra VT0010 v1.1, which replaces CDM TOOL05 for this methodology (VMR0015 s8.2): PE_EC,y = PE_A + PE_B + PE_C, with PE_A = EC_PE,A x EF_A x (1 + TDL_A) (Eq.(5), (7)), EC_PE,B = MIN(EC_Grid ; EG_PBWA / (1 + TDL_B)) (Eq.(9)), PE_B per Eq.(8) and shared plants per Eq.(11), (13), (14). EC is in MWh/yr and EF in t CO2/MWh, so PE is in t CO2/yr."
+   },
+   "leakageEmissions": {
+    "leakageEquation": "LE_y = 0 (VMR0015 Sec8.3: non-renewable biomass leakage is folded into BE_y via Adj_LE, not added separately)",
+    "leakageAssessment": "Adj_LE = 0.95 was fixed at validation following the AMS-I.E leakage procedure (AMS-III.AV Section 5.4) and is applied within BE_y as VMR0015 Section 8.3 requires; no separate additive leakage term is calculated (LE_y = 0)."
+   },
+   "otherQuantification": {
+    "nonPermanence": {
+     "nonPermanenceApplicable": false,
+     "nonPermanenceStatement": "Not applicable - emission reductions come from avoided combustion of non-renewable biomass and fossil fuel, not from a carbon stock, so there is no reversal risk and no buffer pool contribution.",
+     "nonPermanenceRiskRating": [
+      {
+       "applicability": "Not applicable - the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply."
+      }
+     ],
+     "bufferPoolAllocationReductionsAndRemoval": [
+      {
+       "country": "Not applicable - the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply.",
+       "methodology": "Not applicable - the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply.",
+       "bufferPoolAllocationReductions": "Not applicable - the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply.",
+       "bufferPoolAllocationRemovals": "Not applicable - the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply.",
+       "totalBufferPoolAllocation": "Not applicable - the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply."
+      }
+     ]
+    },
+    "longTermAverage": {
+     "longTermAverageApplicable": false,
+     "longTermAverageStatement": "Not applicable - no carbon stock is created or harvested; the project is an energy demand-side activity.",
+     "hasTheLTABeenUpdatedBasedOnMonitoredData": "Not applicable - the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply.",
+     "isTheNumberOfGHGCreditsIssuedBelowTheLTA": "Not applicable - the project is not an AFOLU project (sectoral scope 3, energy demand), so carbon pools, non-permanence risk, the buffer pool and the long-term average do not apply."
+    },
+    "bufferPoolAllocation": {}
+   },
+   "estimatedReductions": {
+    "quantification": {
+     "erEquation": "ER_y = BE_y - PE_y - LE_y, floored at zero and gated on the water-quality pass rate (>=90%)",
+     "erSummaryNarrative": "Estimated net reductions of approximately 1,667 tCO2e per year, about 8,333 tCO2e over the five-year crediting period."
+    },
+    "summary": {},
+    "estimatedReductionsAndRemovalsNoNonPerma": [
+     {
+      "vintagePeriodStart": "2026-10-01",
+      "vintagePeriodEnd": "2026-12-31",
+      "estimatedBaselineEmissionsTCO2e": 420.413477,
+      "estimatedProjectEmissionsTCO2e": 0.33385,
+      "estimatedLeakageEmissionsTCO2e": 0,
+      "estimatedNetReductionsTCO2e": 420.079628,
+      "estimatedNetRemovalsTCO2e": 0,
+      "totalEstimatedNetReductionsAndRemovalsTC": 420.079628
+     },
+     {
+      "vintagePeriodStart": "2027-01-01",
+      "vintagePeriodEnd": "2027-12-31",
+      "estimatedBaselineEmissionsTCO2e": 1667.944774,
+      "estimatedProjectEmissionsTCO2e": 1.324512,
+      "estimatedLeakageEmissionsTCO2e": 0,
+      "estimatedNetReductionsTCO2e": 1666.620262,
+      "estimatedNetRemovalsTCO2e": 0,
+      "totalEstimatedNetReductionsAndRemovalsTC": 1666.620262
+     },
+     {
+      "vintagePeriodStart": "2028-01-01",
+      "vintagePeriodEnd": "2028-12-31",
+      "estimatedBaselineEmissionsTCO2e": 1667.944774,
+      "estimatedProjectEmissionsTCO2e": 1.324512,
+      "estimatedLeakageEmissionsTCO2e": 0,
+      "estimatedNetReductionsTCO2e": 1666.620262,
+      "estimatedNetRemovalsTCO2e": 0,
+      "totalEstimatedNetReductionsAndRemovalsTC": 1666.620262
+     },
+     {
+      "vintagePeriodStart": "2029-01-01",
+      "vintagePeriodEnd": "2029-12-31",
+      "estimatedBaselineEmissionsTCO2e": 1667.944774,
+      "estimatedProjectEmissionsTCO2e": 1.324512,
+      "estimatedLeakageEmissionsTCO2e": 0,
+      "estimatedNetReductionsTCO2e": 1666.620262,
+      "estimatedNetRemovalsTCO2e": 0,
+      "totalEstimatedNetReductionsAndRemovalsTC": 1666.620262
+     },
+     {
+      "vintagePeriodStart": "2030-01-01",
+      "vintagePeriodEnd": "2030-12-31",
+      "estimatedBaselineEmissionsTCO2e": 1667.944774,
+      "estimatedProjectEmissionsTCO2e": 1.324512,
+      "estimatedLeakageEmissionsTCO2e": 0,
+      "estimatedNetReductionsTCO2e": 1666.620262,
+      "estimatedNetRemovalsTCO2e": 0,
+      "totalEstimatedNetReductionsAndRemovalsTC": 1666.620262
+     },
+     {
+      "vintagePeriodStart": "2031-01-01",
+      "vintagePeriodEnd": "2031-09-30",
+      "estimatedBaselineEmissionsTCO2e": 1247.531297,
+      "estimatedProjectEmissionsTCO2e": 0.990662,
+      "estimatedLeakageEmissionsTCO2e": 0,
+      "estimatedNetReductionsTCO2e": 1246.540635,
+      "estimatedNetRemovalsTCO2e": 0,
+      "totalEstimatedNetReductionsAndRemovalsTC": 1246.540635
+     }
+    ]
+   }
+  },
+  "section5": {
+   "dataAndParameters": {
+    "availableAtValidation": {
+     "appendix2CrossReference": "Appendix 2, table A2.1: A2.1.1 (BL_fuel,i, EF_CO2,i, EF_nonCO2,i, n_wb, SEC, X_boil, LS), A2.1.3 (EF_PE,A,L), A2.1.5 (Adj_LE). Monitored parameters: Appendix 2, table A2.2 (A2.2.1 m, P_y, QPW_y, SDW checks, WQ fail share; A2.2.3 EC_Grid,L and TDL; A2.2.4 fNRB) and section 5.2."
+    }
+   },
+   "monitoringPlan": {
+    "dataCollection": {
+     "dataFlow": "Meter readings recorded on standard field forms, entered centrally within 5 working days, reconciled quarterly.",
+     "diagramRef": "Annex 3 - Monitoring system data flow diagram"
+    },
+    "calibration": {
+     "calibrationProcedures": "Flow meters calibrated annually by an accredited service provider."
+    },
+    "personnel": {
+     "orgStructure": "The Operations Manager is responsible for monitoring. Four zone technicians collect meter readings monthly."
+    },
+    "internalAudit": {
+     "internalAuditQAQC": "Quarterly internal audit of 10% of records against source field forms."
+    },
+    "nonConformances": {
+     "nonConformanceHandling": "Logged, assigned an owner, corrective action tracked to closure."
+    },
+    "sampling": {
+     "samplingApproach": "Stratified random sampling by zone per the CDM sampling standard."
+    }
+   }
+  },
+  "documentCompletionDate": "2026-11-15",
+  "documentVersion": "1.0",
+  "requestType": "Registration request",
+  "vcsStandardVersionUsedForValidation": "VCS Standard v5.0",
+  "methodologyIDAndVersion": "VMR0015 v1.0 (revision of AMS-III.AV v09.0)",
+  "projectProponentNameAndContact": "Rural Access Water Ltd., Amara Ndosi, contact@ruralaccesswater.example",
+  "preparedBy": "Rural Access Water Ltd.",
+  "documentHistory": [
+   {
+    "documentFileName": "PD-KSW-2027-001_PD_v1.0.pdf",
+    "description": "First version"
+   }
+  ],
+  "sensitiveInformation": [
+   {
+    "sectionNumber": "Not applicable - no information is excluded from the public version of this document.",
+    "informationToBeExcluded": "Not applicable - no information is excluded from the public version of this document.",
+    "descriptionAndExplanation": "Not applicable - no information is excluded from the public version of this document."
+   }
+  ],
+  "creditingPeriodStart": "2026-10-01",
+  "creditingPeriodEnd": "2031-09-30"
+ }
+}
