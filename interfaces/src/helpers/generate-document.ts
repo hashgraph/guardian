@@ -580,6 +580,13 @@ export class DocumentGenerator {
         option: GenerateOption,
         rowPresets?: Record<string, any>,
     ): any {
+        const preset = rowPresets?.[field.name];
+        if (field.isArray && field.isRef && Array.isArray(preset) && preset.length) {
+            // A repeatable sub-schema: every preset entry is completed on its own and none is dropped
+            return preset.map((entry) =>
+                DocumentGenerator._generateField(field, context, option, { [field.name]: entry })
+            );
+        }
         return DocumentGenerator._wrapArray(
             field,
             DocumentGenerator._generateField(field, context, option, rowPresets)

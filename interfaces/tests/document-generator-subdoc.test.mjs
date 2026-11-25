@@ -94,3 +94,31 @@ describe('DocumentGenerator.generateDocument', () => {
         assert.notEqual(a.id, b.id);
     });
 });
+
+describe('DocumentGenerator presets inside repeatable sub-documents', () => {
+    const arrayField = () => subField({ isArray: true });
+
+    it('keeps every preset entry of a repeatable sub-schema', () => {
+        const value = DocumentGenerator.generateField(arrayField(), ['iri'], null, {
+            child: [{ amount: 25 }, { amount: 30, label: 'second' }]
+        });
+        assert.equal(value.length, 2);
+        assert.equal(value[0].amount, 25);
+        assert.equal(value[1].amount, 30);
+        assert.equal(value[1].label, 'second');
+    });
+
+    it('fills only the fields a preset entry leaves out', () => {
+        const value = DocumentGenerator.generateField(arrayField(), ['iri'], null, { child: [{ amount: 25 }] });
+        assert.equal(value[0].amount, 25);
+        assert.equal(value[0].label, 'example');
+        assert.equal(value[0].type, 'ChildSchema&1.0.0');
+    });
+
+    it('keeps presets of a repeatable sub-schema in a generated document', () => {
+        const schema = { iri: '#Root', type: 'Root', conditions: [], fields: [arrayField()] };
+        const doc = DocumentGenerator.generateDocument(schema, undefined, { child: [{ amount: 25 }] });
+        assert.equal(doc.child.length, 1);
+        assert.equal(doc.child[0].amount, 25);
+    });
+});
