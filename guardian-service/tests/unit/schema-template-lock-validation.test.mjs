@@ -151,6 +151,91 @@ describe('validateTemplateSchemaUpdateByConfig', () => {
         );
     });
 
+    describe('custom sub-schema field pointing at a template schema', () => {
+        const childIri = '#child-schema';
+        const childDefinition = {
+            title: 'Child',
+            description: 'Child',
+            type: 'object',
+            properties: {
+                '@context': { oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }], readOnly: true },
+                type: { oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }], readOnly: true },
+                id: { type: 'string', readOnly: true },
+                child_field: {
+                    title: 'Child field',
+                    description: 'Child field',
+                    readOnly: false,
+                    type: 'string',
+                    templateFieldId: 'child-template-field',
+                },
+            },
+            required: ['@context', 'type'],
+            additionalProperties: false,
+        };
+        const withCustomLink = (extra = {}) => schema({
+            document: {
+                ...schemaDocument({
+                    field_1: {
+                        title: 'Field 1',
+                        description: 'Field 1',
+                        type: 'string',
+                        templateFieldId: 'template-field-1',
+                    },
+                    custom_link: {
+                        title: 'custom_link',
+                        description: 'Custom link',
+                        readOnly: false,
+                        type: 'array',
+                        items: { $ref: childIri },
+                    },
+                    ...extra,
+                }),
+                $defs: { [childIri]: childDefinition },
+            },
+            defs: [childIri],
+        });
+        const withoutCustomLink = () => schema({
+            document: schemaDocument({
+                field_1: {
+                    title: 'Field 1',
+                    description: 'Field 1',
+                    type: 'string',
+                    templateFieldId: 'template-field-1',
+                },
+            }),
+        });
+
+        it('allows deleting it although the schema it points at has locked template fields', () => {
+            assert.doesNotThrow(() => validateTemplateSchemaUpdateByConfig(
+                withCustomLink(),
+                withoutCustomLink(),
+                { customFieldsLocked: false }
+            ));
+        });
+
+        it('still rejects removing a locked template field of the schema itself', () => {
+            const next = schema({
+                document: {
+                    ...schemaDocument({
+                        custom_link: {
+                            title: 'custom_link',
+                            description: 'Custom link',
+                            readOnly: false,
+                            type: 'array',
+                            items: { $ref: childIri },
+                        },
+                    }),
+                    $defs: { [childIri]: childDefinition },
+                },
+                defs: [childIri],
+            });
+            assert.throws(
+                () => validateTemplateSchemaUpdateByConfig(withCustomLink(), next, {}),
+                /locked by schema template and cannot be removed/
+            );
+        });
+    });
+
     it('allows editing an existing custom field even when new custom fields are locked', () => {
         const previous = schema({
             document: schemaDocument({
