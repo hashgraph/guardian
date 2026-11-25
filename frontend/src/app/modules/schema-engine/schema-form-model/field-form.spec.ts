@@ -798,6 +798,128 @@ describe('FieldForm links declared in a non-repeatable sub-schema', () => {
     });
 });
 
+for (const { mode, validateLikeDryRun } of [
+    { mode: 'schema preview', validateLikeDryRun: false },
+    { mode: 'Dry Run form', validateLikeDryRun: true },
+]) describe(`FieldForm links with conditions in a non-repeatable sub-schema (${mode})`, () => {
+    let form: FieldForm;
+    afterEach(() => form?.destroy());
+
+    const sectionDocument = (withCondition = true): any => {
+        const section = documentOf([link]);
+        section.required = ['locations', 'instances'];
+        section.$defs['#loc'].properties.reference = { type: 'string' };
+        section.$defs['#loc'].required = ['reference'];
+        section.$defs['#inst'].properties.kind = { type: 'string' };
+        if (withCondition) {
+            section.allOf = [{
+                if: {
+                    properties: { instances: { properties: { kind: { const: 'full' } }, required: ['kind'] } },
+                    required: ['instances'],
+                },
+                then: { properties: { locations: { required: ['reference'] } } },
+                else: { properties: { locations: { properties: { reference: false } } } },
+            }];
+        }
+        return section;
+    };
+
+    const build = (document: any, preset?: any): void => {
+        form = new FieldForm(new UntypedFormGroup({}), 0, validateLikeDryRun);
+        form.setData({ schema: new Schema({ iri: document.$id, document }), preset });
+        form.build();
+    };
+
+    const buildParent = (withCondition = true, preset?: any): FieldForm => {
+        const section = sectionDocument(withCondition);
+        build({
+            $id: '#parent', type: 'object',
+            properties: { section: { $ref: section.$id } }, required: ['section'],
+            $defs: { [section.$id]: section, ...section.$defs },
+        }, preset);
+        const child = controlOf(form, 'section').model;
+        if (!(child instanceof FieldForm)) {
+            throw new Error('Expected a sub-schema form');
+        }
+        return child;
+    };
+
+    for (const withCondition of [true, false]) it(`synchronizes additions and removal with child condition = ${withCondition}`, () => {
+        const section = buildParent(withCondition);
+        const locations = controlOf(section, 'locations');
+        const instances = controlOf(section, 'instances');
+        expect(locations.list?.length).toBe(1);
+        expect(instances.list?.length).toBe(1);
+        expect(form.isManagedArray(instances)).toBe(true);
+        expect(form.isManagedArray(locations)).toBe(false);
+
+        for (const name of ['North', 'South', 'East']) {
+            section.addItem(locations);
+            setEntryValue(locations, locations.list!.length - 1, 'instanceName', name);
+        }
+        expect(locations.list?.length).toBe(4);
+        expect(instances.list?.length).toBe(4);
+        expect(entryValue(instances, 2, 'copiedName')).toBe('South');
+        expect(section.getEntryTitle(instances, instances.list![2])).toBe('South');
+
+        section.removeItem(locations, locations.list![2]);
+        expect(locations.list?.length).toBe(3);
+        expect(instances.list?.length).toBe(3);
+        expect(entryValue(instances, 2, 'copiedName')).toBe('East');
+        expect(form.isManagedArray(instances)).toBe(true);
+    });
+
+    it('aligns missing dependent entries when a parent document is opened', () => {
+        const section = buildParent(true, {
+            section: {
+                locations: ['North', 'South', 'East', 'West'].map(instanceName => ({ instanceName })),
+                instances: [{ kind: 'other' }],
+            },
+        });
+        const instances = controlOf(section, 'instances');
+        expect(instances.list?.length).toBe(4);
+        expect(instances.list?.map((_, index) => entryValue(instances, index, 'copiedName')))
+            .toEqual(['North', 'South', 'East', 'West']);
+        expect(entryValue(instances, 0, 'kind')).toBe('other');
+        expect(form.isManagedArray(instances)).toBe(true);
+    });
+
+    it('keeps the condition scoped to the matching entry as linked entries change', () => {
+        const section = buildParent();
+        const locations = controlOf(section, 'locations');
+        const instances = controlOf(section, 'instances');
+        section.addItem(locations);
+        expect(instances.list?.length).toBe(2);
+        expect(locations.list![0].control.get('reference')).toBeNull();
+        expect(locations.list![1].control.get('reference')).toBeNull();
+
+        setEntryValue(instances, 1, 'kind', 'full');
+        expect(locations.list![0].control.get('reference')).toBeNull();
+        const reference = locations.list![1].control.get('reference');
+        expect(reference?.errors?.['required']).toBe(true);
+        reference!.setValue('ref');
+        expect(reference!.valid).toBe(true);
+
+        setEntryValue(instances, 1, 'kind', 'other');
+        expect(locations.list![1].control.get('reference')).toBeNull();
+        section.addItem(locations);
+        expect(instances.list?.length).toBe(3);
+        expect(form.isManagedArray(instances)).toBe(true);
+    });
+
+    it('keeps the same link and condition working in the standalone sub-schema', () => {
+        build(sectionDocument());
+        const locations = controlOf(form, 'locations');
+        const instances = controlOf(form, 'instances');
+        form.addItem(locations);
+        expect(instances.list?.length).toBe(2);
+        expect(form.isManagedArray(instances)).toBe(true);
+        setEntryValue(instances, 1, 'kind', 'full');
+        expect(locations.list![0].control.get('reference')).toBeNull();
+        expect(locations.list![1].control.get('reference')?.errors?.['required']).toBe(true);
+    });
+});
+
 describe('FieldForm — revealed errors', () => {
     const document: any = {
         $id: '#pf&1.0.0',
