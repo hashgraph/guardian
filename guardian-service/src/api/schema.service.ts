@@ -102,10 +102,14 @@ function arrayDependencyComparableHash(dependency: any): string {
     return SchemaHelper.stableStringify(dependency);
 }
 
+/**
+ * Flattens a field tree. Children are included only for template fields, because the
+ * children of a custom field belong to the schema it references.
+ */
 function flattenFields(fields: SchemaField[], result: SchemaField[] = []): SchemaField[] {
     for (const field of fields || []) {
         result.push(field);
-        if (Array.isArray(field.fields)) {
+        if (field.templateFieldId && Array.isArray(field.fields)) {
             flattenFields(field.fields, result);
         }
     }
