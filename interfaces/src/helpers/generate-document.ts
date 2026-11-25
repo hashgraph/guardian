@@ -580,6 +580,25 @@ export class DocumentGenerator {
         option: GenerateOption,
         rowPresets?: Record<string, any>,
     ): any {
+        if (field.isArray && field.isRef) {
+            const preset = rowPresets?.[field.name];
+            const example = field.examples?.[0];
+            // An empty preset list means no preset; the field example of a repeatable sub-schema is a list of rows
+            const rows = (Array.isArray(preset) && preset.length) ? preset : undefined;
+            const exampleRows = (!rows && Array.isArray(example) && example.length) ? example : undefined;
+            const list = rows ?? exampleRows;
+            if (list) {
+                // Every row is completed on its own and none is dropped
+                return list.map((entry) =>
+                    DocumentGenerator._generateField(field, context, option, {
+                        [field.name]: (exampleRows && DocumentGenerator._isPlainObject(entry))
+                            // A saved test value row may hold null for an untouched field
+                            ? Object.fromEntries(Object.entries(entry).filter(([, value]) => value !== null))
+                            : entry
+                    })
+                );
+            }
+        }
         return DocumentGenerator._wrapArray(
             field,
             DocumentGenerator._generateField(field, context, option, rowPresets)

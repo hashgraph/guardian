@@ -94,3 +94,90 @@ describe('DocumentGenerator.generateDocument', () => {
         assert.notEqual(a.id, b.id);
     });
 });
+
+describe('DocumentGenerator presets inside repeatable sub-documents', () => {
+    const arrayField = () => subField({ isArray: true });
+
+    it('keeps every preset entry of a repeatable sub-schema', () => {
+        const value = DocumentGenerator.generateField(arrayField(), ['iri'], null, {
+            child: [{ amount: 25 }, { amount: 30, label: 'second' }]
+        });
+        assert.equal(value.length, 2);
+        assert.equal(value[0].amount, 25);
+        assert.equal(value[1].amount, 30);
+        assert.equal(value[1].label, 'second');
+    });
+
+    it('fills only the fields a preset entry leaves out', () => {
+        const value = DocumentGenerator.generateField(arrayField(), ['iri'], null, { child: [{ amount: 25 }] });
+        assert.equal(value[0].amount, 25);
+        assert.equal(value[0].label, 'example');
+        assert.equal(value[0].type, 'ChildSchema&1.0.0');
+    });
+
+    it('keeps presets of a repeatable sub-schema in a generated document', () => {
+        const schema = { iri: '#Root', type: 'Root', conditions: [], fields: [arrayField()] };
+        const doc = DocumentGenerator.generateDocument(schema, undefined, { child: [{ amount: 25 }] });
+        assert.equal(doc.child.length, 1);
+        assert.equal(doc.child[0].amount, 25);
+    });
+});
+
+describe('DocumentGenerator test values of repeatable sub-documents', () => {
+    const entries = [{ label: 'Location 1', amount: 123 }, { label: 'Location 2', amount: 5 }];
+
+    it('uses the configured test value entries of a repeatable sub-schema', () => {
+        const value = DocumentGenerator.generateField(
+            subField({ isArray: true, examples: [entries] }), ['iri'], null, {}
+        );
+        assert.equal(value.length, 2);
+        assert.equal(value[0].label, 'Location 1');
+        assert.equal(value[1].label, 'Location 2');
+        assert.equal(value[0].amount, 123);
+        assert.equal(value[0].type, 'ChildSchema&1.0.0');
+        assert.deepEqual(value[0]['@context'], ['iri']);
+    });
+
+    it('generates the fields a test value row leaves out or sets to null', () => {
+        const value = DocumentGenerator.generateField(
+            subField({ isArray: true, examples: [[{ amount: 7, label: null }]] }), ['iri'], null, {}
+        );
+        assert.equal(value.length, 1);
+        assert.equal(value[0].amount, 7);
+        assert.equal(value[0].label, 'example');
+    });
+
+    it('prefers the preset over the configured test value', () => {
+        const value = DocumentGenerator.generateField(
+            subField({ isArray: true, examples: [entries] }), ['iri'], null, { child: [{ amount: 25 }] }
+        );
+        assert.equal(value.length, 1);
+        assert.equal(value[0].amount, 25);
+    });
+
+    it('ignores a test value that is not a list of objects', () => {
+        const value = DocumentGenerator.generateField(
+            subField({ isArray: true, examples: [['x']] }), ['iri'], null, {}
+        );
+        assert.equal(value[0].type, 'ChildSchema&1.0.0');
+    });
+});
+
+describe('DocumentGenerator edge cases of repeatable sub-document values', () => {
+    it('keeps a null in a preset row', () => {
+        const value = DocumentGenerator.generateField(
+            subField({ isArray: true }), ['iri'], null, { child: [{ amount: 5, label: null }] }
+        );
+        assert.equal(value[0].amount, 5);
+        assert.equal(value[0].label, null);
+    });
+
+    it('uses the test value when the preset list is empty', () => {
+        const value = DocumentGenerator.generateField(
+            subField({ isArray: true, examples: [[{ amount: 9, label: 'T' }]] }), ['iri'], null, { child: [] }
+        );
+        assert.equal(value.length, 1);
+        assert.equal(value[0].amount, 9);
+        assert.equal(value[0].label, 'T');
+    });
+});
