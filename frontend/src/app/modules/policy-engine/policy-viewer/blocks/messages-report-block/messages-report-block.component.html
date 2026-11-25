@@ -337,12 +337,13 @@
 
         @if (selected) {
           <aside class="dashboard-right">
+            @let kind = getMessageKind(selected);
             <div class="dr-head">
-              <span [class]="'ico k-' + getMessageKind(selected).kind">
-                <i [class]="'pi ' + getMessageKind(selected).icon"></i>
+              <span [class]="'ico k-' + kind.kind">
+                <i [class]="'pi ' + kind.icon"></i>
               </span>
               <div class="dr-heading">
-                <div [attr.title]="getMessageKind(selected).title" class="dr-title">{{ getMessageKind(selected).title }}</div>
+                <div [attr.title]="kind.title" class="dr-title">{{ kind.title }}</div>
                 <div class="dr-crumb">
                   <span [attr.title]="selected.topicId">{{ selected.topicId }}</span>
                   <i class="pi pi-chevron-right"></i>

@@ -1,5 +1,5 @@
 import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
-import { Component, ElementRef, HostListener, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, ElementRef, HostListener, Input, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { UntypedFormBuilder, Validators } from '@angular/forms';
 import { DomSanitizer } from '@angular/platform-browser';
 import moment from 'moment';
@@ -241,8 +241,6 @@ export class MessagesReportBlockComponent implements OnInit, OnDestroy {
     private _topics2!: any[];
     private _messages1!: any[];
     private _messages2!: any[];
-    private _gridTemplateRows1!: string;
-    private _gridTemplateRows2!: string;
     private _gridTemplateColumns1!: string;
     private _gridTemplateColumns2!: string;
     private lineContainer = new LineContainer(
@@ -285,6 +283,7 @@ export class MessagesReportBlockComponent implements OnInit, OnDestroy {
 
     constructor(
         private element: ElementRef,
+        private zone: NgZone,
         private fb: UntypedFormBuilder,
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
@@ -317,14 +316,6 @@ export class MessagesReportBlockComponent implements OnInit, OnDestroy {
      */
     public get noEvents(): boolean {
         return this.status === 'FINISHED' && !this._messages1?.length;
-    }
-
-    public get gridTemplateRows(): string {
-        if (this.dashboardType === DashboardType.Advanced) {
-            return this._gridTemplateRows1;
-        } else {
-            return this._gridTemplateRows2;
-        }
     }
 
     public get gridTemplateColumns(): string {
@@ -381,8 +372,6 @@ export class MessagesReportBlockComponent implements OnInit, OnDestroy {
         this.tokens = [];
         this.roles = [];
 
-        this._gridTemplateRows1 = '';
-        this._gridTemplateRows2 = '';
         this._gridTemplateColumns1 = '';
         this._gridTemplateColumns2 = '';
 
@@ -430,7 +419,6 @@ export class MessagesReportBlockComponent implements OnInit, OnDestroy {
             this.gridSize = Math.max(this.gridSize, message.__order);
         }
         this._gridTemplateColumns2 = 'repeat(' + this.gridSize + ', ' + COLUMN_WIDTH + 'px)';
-        this._gridTemplateRows2 = 'repeat(' + this._topics2.length + ', ' + ROW_HEIGHT + 'px)';
     }
 
     private getAllMessages(topic: any, messages: any[]): any[] {
@@ -508,7 +496,6 @@ export class MessagesReportBlockComponent implements OnInit, OnDestroy {
             }
         }
         this._gridTemplateColumns1 = 'repeat(' + this.gridSize + ', ' + COLUMN_WIDTH + 'px)';
-        this._gridTemplateRows1 = 'repeat(' + this._topics1.length + ', ' + ROW_HEIGHT + 'px)';
     }
 
     private parseMessage(topic: any, message: any): any {
@@ -1137,12 +1124,16 @@ export class MessagesReportBlockComponent implements OnInit, OnDestroy {
         if (!container || typeof ResizeObserver === 'undefined') {
             return;
         }
-        this.resizeObserver = new ResizeObserver(() => {
-            this.onResize();
-            this.alignLines();
+        // The callback only touches the DOM, it needs no change detection
+        this.zone.runOutsideAngular(() => {
+            this.resizeObserver = new ResizeObserver(() => {
+                if (this.onResize()) {
+                    this.alignLines();
+                }
+            });
+            this.resizeObserver.observe(container);
+            this.resizeObserver.observe(document.body);
         });
-        this.resizeObserver.observe(container);
-        this.resizeObserver.observe(document.body);
     }
 
     /**
@@ -1162,13 +1153,19 @@ export class MessagesReportBlockComponent implements OnInit, OnDestroy {
     }
 
     @HostListener('window:resize')
-    onResize() {
+    onResize(): boolean {
         const container = this.element?.nativeElement?.children[0];
-        if (container) {
-            const box = container.getBoundingClientRect();
-            const height = window.innerHeight - box.top - 5;
-            container.style.height = height + 'px';
+        if (!container) {
+            return false;
         }
+        const box = container.getBoundingClientRect();
+        const height = window.innerHeight - box.top - 5 + 'px';
+        // The block is observed, a write of the same height would only trigger the observer again
+        if (container.style.height === height) {
+            return false;
+        }
+        container.style.height = height;
+        return true;
     }
 
     private loadRetirementMessages() {
