@@ -1,5 +1,5 @@
 import type { Mock } from 'vitest';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule, UntypedFormBuilder } from '@angular/forms';
@@ -20,7 +20,6 @@ describe('MessagesReportBlockComponent document availability', () => {
 
     function readMessages(message: any): any[] {
         const component: any = Object.create(MessagesReportBlockComponent.prototype);
-        component.datePipe = new DatePipe('en-US');
         component.contractService = { getContracts: () => of({ body: [] }) };
         component.analyticsService = { checkIndexer: () => of(false) };
         component.static = {
@@ -64,7 +63,6 @@ describe('MessagesReportBlockComponent document cards', () => {
             imports: [CommonModule, ReactiveFormsModule],
             declarations: [MessagesReportBlockComponent],
             providers: [
-                DatePipe,
                 UntypedFormBuilder,
                 { provide: PolicyEngineService, useValue: {} },
                 { provide: WebSocketService, useValue: {} },
@@ -179,7 +177,6 @@ describe('MessagesReportBlockComponent trust chain view', () => {
             imports: [CommonModule, ReactiveFormsModule],
             declarations: [MessagesReportBlockComponent],
             providers: [
-                DatePipe,
                 UntypedFormBuilder,
                 { provide: PolicyEngineService, useValue: {} },
                 { provide: WebSocketService, useValue: {} },

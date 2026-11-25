@@ -710,16 +710,13 @@ export class MessagesReportBlockComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Tone of the status chip, the chip is the one the document grids of the policy viewer use
+     * Tone of the status chip (the chip of the document grids), it follows the severity of the status tag of the card
      */
-    public getStatusTone(message: any): 'ok' | 'wait' | 'bad' | 'neutral' {
-        switch (message?.documentStatus) {
-            case 'REVOKE':
-            case 'FAILED':
+    public getStatusTone(message: any): 'ok' | 'bad' | 'neutral' {
+        switch (message?.__statusTag?.severity) {
+            case 'error':
                 return 'bad';
-            case 'SUSPEND':
-                return 'wait';
-            case 'RESUME':
+            case 'green':
                 return 'ok';
             default:
                 return 'neutral';
@@ -1127,9 +1124,12 @@ export class MessagesReportBlockComponent implements OnInit, OnDestroy {
         // The callback only touches the DOM, it needs no change detection
         this.zone.runOutsideAngular(() => {
             this.resizeObserver = new ResizeObserver(() => {
-                if (this.onResize()) {
-                    this.alignLines();
-                }
+                // Resizing the observed block in the callback itself makes the browser report a loop error
+                window.requestAnimationFrame(() => {
+                    if (this.onResize()) {
+                        this.alignLines();
+                    }
+                });
             });
             this.resizeObserver.observe(container);
             this.resizeObserver.observe(document.body);
