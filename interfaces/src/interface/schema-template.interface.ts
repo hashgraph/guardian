@@ -85,7 +85,9 @@ export enum SchemaTemplateUpdateConflictType {
     /** An unlocked template field was edited in the policy; the update would overwrite the edit. */
     FIELD_MODIFIED_IN_POLICY = 'FIELD_MODIFIED_IN_POLICY',
     /** An unlocked template field was deleted from the policy; the update would bring it back. */
-    FIELD_REMOVED_IN_POLICY = 'FIELD_REMOVED_IN_POLICY'
+    FIELD_REMOVED_IN_POLICY = 'FIELD_REMOVED_IN_POLICY',
+    /** A custom field the policy added is about to be removed because the template locks custom fields or conditions. */
+    CUSTOM_FIELD_REMOVED_BY_LOCK = 'CUSTOM_FIELD_REMOVED_BY_LOCK'
 }
 
 export enum SchemaTemplateUpdateResolutionAction {

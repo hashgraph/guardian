@@ -478,7 +478,7 @@
         .diff-detail-row {
             display: grid;
             grid-template-columns: 120px minmax(0, 1fr) 28px minmax(0, 1fr);
-            align-items: start;
+            align-items: stretch;
             min-height: 36px;
             border-bottom: 1px solid var(--guardian-border-color, #e1e7ef);
 
@@ -505,6 +505,11 @@
         }
 
         .diff-detail-value {
+            // Shows the whole value, so a long one (advisory text) grows the row instead of being
+            // clipped inside its padding and running into the next row.
+            display: block;
+            -webkit-line-clamp: unset;
+            overflow: visible;
             min-width: 0;
             padding: 8px 10px;
             color: var(--guardian-font-color, #23252e);

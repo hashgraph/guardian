@@ -1736,7 +1736,7 @@ describe('buildSchemaTemplateUpdatePreviewFromContext — condition removal', ()
         assert.equal(preview.conflicts.length, 0, 'locked conditions leave nothing for the user to resolve');
     });
 
-    it('raises no conflict when customFieldsLocked already removes the field unconditionally', () => {
+    it('raises a keep/reset conflict when customFieldsLocked removes the field', () => {
         const trigger = field('trigger', { templateFieldId: 'tpl-trigger-1' });
         const branchCustom = field('branchCustom');
         const policyDocument = SchemaHelper.buildDocument(
@@ -1754,11 +1754,12 @@ describe('buildSchemaTemplateUpdatePreviewFromContext — condition removal', ()
 
         const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
 
-        assert.equal(preview.conflicts.length, 0, 'nothing left to resolve when the field is being removed unconditionally anyway');
+        assert.deepEqual(preview.conflicts.map((c) => [c.type, c.fieldName]), [['CUSTOM_FIELD_REMOVED_BY_LOCK', 'branchCustom']],
+            'the lock removal is offered as keep/reset instead of happening silently');
         assert.ok(preview.changes.some((c) => c.type === 'CUSTOM_FIELD_REMOVE'));
     });
 
-    it('removes condition custom fields without a keep offer when conditionsLocked', () => {
+    it('offers keep/reset for condition custom fields when conditionsLocked', () => {
         const trigger = field('trigger', { templateFieldId: 'tpl-trigger-1' });
         const branchCustom = field('branchCustom');
         const rootCustom = field('rootCustom');
@@ -1778,9 +1779,9 @@ describe('buildSchemaTemplateUpdatePreviewFromContext — condition removal', ()
 
         const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
 
-        assert.equal(preview.canApply, true);
-        assert.equal(preview.conflicts.length, 0,
-            'conditionsLocked means policy condition additions are removed automatically, not kept by resolution');
+        assert.deepEqual(preview.conflicts.map((c) => [c.type, c.fieldName, c.allowedActions]),
+            [['CUSTOM_FIELD_REMOVED_BY_LOCK', 'branchCustom', ['KEEP_CUSTOM_CHANGES', 'RESET_TO_TEMPLATE']]],
+            'a custom field in a condition is offered keep/reset; the root custom field is not affected');
         assert.ok(preview.changes.some((c) => c.type === 'CUSTOM_FIELD_REMOVE' && c.fieldName === 'branchCustom'));
         assert.ok(preview.changes.some((c) => c.type === 'CUSTOM_FIELD_PRESERVE' && c.fieldName === 'rootCustom'));
     });
@@ -1809,8 +1810,9 @@ describe('buildSchemaTemplateUpdatePreviewFromContext — condition removal', ()
 
         const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
 
-        assert.equal(preview.canApply, true);
-        assert.equal(preview.conflicts.length, 0);
+        // The target's wrapper field is a custom field in the condition, so the lock removal of it
+        // is offered like any other; the cross-schema target itself is still removed with no choice.
+        assert.deepEqual(preview.conflicts.map((c) => [c.type, c.fieldName]), [['CUSTOM_FIELD_REMOVED_BY_LOCK', 'parentRef']]);
         assert.ok(preview.changes.some((c) =>
             c.type === 'CONDITION_REMOVE' &&
             c.fieldName === '(cross-schema target)' &&

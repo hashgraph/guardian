@@ -284,6 +284,31 @@ describe('fields inside a condition branch behave like any other field', () => {
     });
 });
 
+describe('advisory text in the field diff', () => {
+    const base = { name: 'f', title: 'f', description: 'f', type: 'string', required: false, isArray: false, isRef: false };
+    const withComment = (advisoryText) => ({
+        ...base,
+        comment: JSON.stringify({ term: 'f', '@id': 'https://www.schema.org/text', ...(advisoryText ? { advisoryText } : {}) }),
+    });
+    const advisory = (previous, next) =>
+        buildFieldChangeDetails(previous, next).find((d) => d.label === 'Advisory text');
+
+    it('shows the old and new text when it changes', () => {
+        const detail = advisory(withComment('Old help'), withComment('New help'));
+        assert.deepEqual([detail.before, detail.after], ['Old help', 'New help']);
+    });
+
+    it('shows a removed text as a dash', () => {
+        const detail = advisory(withComment('Old help'), withComment());
+        assert.deepEqual([detail.before, detail.after], ['Old help', '-']);
+    });
+
+    it('reports nothing when a snapshot that only has it in the comment meets the parsed field', () => {
+        const parsed = { ...withComment('Same'), advisoryText: 'Same' };
+        assert.equal(advisory(withComment('Same'), parsed), undefined);
+    });
+});
+
 describe('field type labels in the diff match the schema editor', () => {
     const typeDetail = (previous, next) =>
         buildFieldChangeDetails(previous, next).find((d) => d.label === 'Type');

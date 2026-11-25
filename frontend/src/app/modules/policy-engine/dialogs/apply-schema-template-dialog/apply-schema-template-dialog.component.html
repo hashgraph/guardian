@@ -333,7 +333,7 @@
                           [class.selected]="resolutions[conflict.id] === action"
                           [attr.aria-pressed]="resolutions[conflict.id] === action"
                           (click)="setResolution(conflict, action)">
-                          {{ getActionLabel(action) }}
+                          {{ getActionLabel(action, conflict) }}
                         </button>
                       }
                       @if (conflict.blockedBy?.length) {

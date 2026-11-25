@@ -262,6 +262,8 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
                     return change.type === 'CONDITION_REMOVE' && change.fieldName === conflict.fieldName;
                 case 'REPEATABLE_LINK_REMOVED_WITH_POLICY_USAGE':
                     return change.type === 'REPEATABLE_LINK_REMOVE' && change.fieldName === conflict.fieldName;
+                case 'CUSTOM_FIELD_REMOVED_BY_LOCK':
+                    return change.type === 'CUSTOM_FIELD_REMOVE' && change.fieldName === conflict.fieldName;
                 default:
                     return false;
             }
@@ -389,6 +391,8 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
                 return 'Changed in policy';
             case 'FIELD_REMOVED_IN_POLICY':
                 return 'Deleted in policy';
+            case 'CUSTOM_FIELD_REMOVED_BY_LOCK':
+                return 'Removed by template lock';
             default:
                 return 'Removed from template';
         }
@@ -402,7 +406,10 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
         return conflict.fieldName || conflict.schemaName || 'Template';
     }
 
-    public getActionLabel(action: SchemaTemplateUpdateResolutionAction): string {
+    public getActionLabel(action: SchemaTemplateUpdateResolutionAction, conflict?: SchemaTemplateUpdateConflict): string {
+        if (conflict?.type === 'CUSTOM_FIELD_REMOVED_BY_LOCK') {
+            return action === SchemaTemplateUpdateResolutionAction.KEEP_CUSTOM_CHANGES ? 'Keep field' : 'Remove field';
+        }
         switch (action) {
             case SchemaTemplateUpdateResolutionAction.KEEP_CUSTOM_CHANGES:
                 return 'Keep policy changes';

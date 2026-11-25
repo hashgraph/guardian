@@ -794,6 +794,33 @@ function normalizeSnapshotSchemas(
     return result;
 }
 
+function toSnapshotIfCondition(ifCondition: any, templateSchemaByIri: Map<string, string>): any {
+    if (!ifCondition || typeof ifCondition !== 'object') {
+        return ifCondition;
+    }
+    const result = { ...ifCondition };
+    if (result.field) {
+        result.field = toSnapshotField(result.field, templateSchemaByIri);
+    }
+    for (const group of ['AND', 'OR']) {
+        if (Array.isArray(result[group])) {
+            result[group] = result[group].map((item: any) => toSnapshotIfCondition(item, templateSchemaByIri));
+        }
+    }
+    return result;
+}
+
+// A sub-schema field inside a condition branch is stored by its template schema id, like a
+// top-level one, so it does not change just because the template was imported again.
+function toSnapshotConditions(conditions: any[], templateSchemaByIri: Map<string, string>): any[] {
+    return (conditions || []).map((condition) => ({
+        ...condition,
+        ifCondition: toSnapshotIfCondition(condition?.ifCondition, templateSchemaByIri),
+        thenFields: (condition?.thenFields || []).map((field: any) => toSnapshotField(field, templateSchemaByIri)),
+        elseFields: (condition?.elseFields || []).map((field: any) => toSnapshotField(field, templateSchemaByIri))
+    }));
+}
+
 function toSnapshotSchema(
     schema: Schema,
     templateSchemaByIri: Map<string, string>
@@ -808,7 +835,7 @@ function toSnapshotSchema(
         fields: (parsed.fields || [])
             .filter((field) => !SYSTEM_ENVELOPE_FIELD_NAMES.has(field?.name))
             .map((field) => toSnapshotField(field, templateSchemaByIri)),
-        conditions: SchemaHelper.cloneSchemaRuntimeValue(parsed.conditions || []),
+        conditions: toSnapshotConditions(SchemaHelper.cloneSchemaRuntimeValue(parsed.conditions || []), templateSchemaByIri),
         arrayDependencies: SchemaHelper.cloneSchemaRuntimeValue(parsed.arrayDependencies || [])
     };
 }
@@ -879,6 +906,30 @@ function createConflict(
         allowedActions: [],
         ...data
     };
+}
+
+/**
+ * Custom fields have no templateFieldId, so the conflict is keyed by the field's path, which is
+ * unique within a schema, instead of its display name, which is not.
+ */
+function lockRemovalConflictId(templateSchemaId: string | undefined, field: any): string {
+    return [
+        SchemaTemplateUpdateConflictType.CUSTOM_FIELD_REMOVED_BY_LOCK,
+        templateSchemaId || '',
+        '',
+        String(field?.path || field?.name || '')
+    ].join(':');
+}
+
+function isLockRemovalKept(
+    templateSchemaId: string | undefined,
+    field: any,
+    conflicts: ISchemaTemplateUpdateConflict[],
+    resolutions: Map<string, SchemaTemplateUpdateResolutionAction>
+): boolean {
+    const id = lockRemovalConflictId(templateSchemaId, field);
+    return conflicts.some((conflict) => conflict.id === id)
+        && resolutions.get(id) === SchemaTemplateUpdateResolutionAction.KEEP_CUSTOM_CHANGES;
 }
 
 function getSnapshotSchemaConfig(
@@ -1468,11 +1519,19 @@ export function normalizeFieldForDiff(field: any): any {
         result.comment = comment;
     }
     delete result.$comment;
+    // A snapshot field can hold advisoryText only inside its comment, so derive the top-level
+    // property from it the way the parser does, to compare like with like.
+    const advisoryText = comment && typeof comment === 'object' ? comment.advisoryText : undefined;
+    if (result.advisoryText === undefined && typeof advisoryText === 'string' && advisoryText.trim()) {
+        result.advisoryText = advisoryText.trim();
+    }
     if (refTemplateSchemaId) {
         result.$ref = `template-schema:${refTemplateSchemaId}`;
         result.type = 'subSchema';
         delete result.context;
         delete result.fields;
+        // The nested schema's own conditions are diffed on that schema, not through its parent field.
+        delete result.conditions;
     }
     return result;
 }
@@ -1481,13 +1540,38 @@ function fieldHash(field: any): string {
     return SchemaHelper.stableStringify(normalizeFieldForDiff(field));
 }
 
+function normalizeIfConditionForDiff(ifCondition: any): any {
+    if (!ifCondition || typeof ifCondition !== 'object') {
+        return ifCondition;
+    }
+    const result = { ...ifCondition };
+    if (result.field) {
+        result.field = normalizeFieldForDiff(result.field);
+    }
+    for (const group of ['AND', 'OR']) {
+        if (Array.isArray(result[group])) {
+            result[group] = result[group].map((item: any) => normalizeIfConditionForDiff(item));
+        }
+    }
+    return result;
+}
+
+function normalizeConditionsForDiff(conditions: any[] | undefined): any[] {
+    return (conditions || []).map((condition) => ({
+        ...condition,
+        ifCondition: normalizeIfConditionForDiff(condition?.ifCondition),
+        thenFields: (condition?.thenFields || []).map((field: any) => normalizeFieldForDiff(field)),
+        elseFields: (condition?.elseFields || []).map((field: any) => normalizeFieldForDiff(field))
+    }));
+}
+
 function snapshotSchemaHash(schema: ISchemaTemplateSnapshotSchema | undefined): string {
     return SchemaHelper.stableStringify({
         name: schema?.name,
         description: schema?.description,
         entity: schema?.entity,
         fields: (schema?.fields || []).map((field) => normalizeFieldForDiff(field)),
-        conditions: schema?.conditions || []
+        conditions: normalizeConditionsForDiff(schema?.conditions)
     });
 }
 
@@ -1924,6 +2008,7 @@ export function buildFieldChangeDetails(previous: any, next: any): ISchemaTempla
     return buildDetails(fieldDetailsSource(previous), fieldDetailsSource(next), [
         { key: 'fieldName', label: 'Field Name' },
         { key: 'typeLabel', label: 'Type' },
+        { key: 'advisoryText', label: 'Advisory text' },
         { key: 'refTemplateSchemaId', label: 'Sub-schema' },
         { key: 'semanticId', label: 'Semantic ID' },
         { key: 'term', label: 'Term' },
@@ -2474,6 +2559,23 @@ export function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<Ret
 
         for (const field of policyCustomFields) {
             if (nextSchemaConfig.customFieldsLocked || conditionFieldNamesToRemove.has(field.name)) {
+                const lockName = nextSchemaConfig.customFieldsLocked ? 'custom fields' : 'conditions';
+                conflicts.push({
+                    ...createConflict(
+                        SchemaTemplateUpdateConflictType.CUSTOM_FIELD_REMOVED_BY_LOCK,
+                        `The template locks ${lockName} in schema "${nextSchema.name}", so the custom field "${getFieldDisplayName(field)}" added in the policy will be removed.`,
+                        {
+                            templateSchemaId,
+                            schemaName: nextSchema.name,
+                            fieldName: getFieldDisplayName(field),
+                            allowedActions: [
+                                SchemaTemplateUpdateResolutionAction.KEEP_CUSTOM_CHANGES,
+                                SchemaTemplateUpdateResolutionAction.RESET_TO_TEMPLATE
+                            ]
+                        }
+                    ),
+                    id: lockRemovalConflictId(templateSchemaId, field)
+                });
                 changes.push(createChange(
                     SchemaTemplateUpdateChangeType.CUSTOM_FIELD_REMOVE,
                     `Custom field "${field.title || field.name}" will be removed from schema "${nextSchema.name}".`,
@@ -3013,14 +3115,20 @@ export function preparePolicySchemaUpdate(
     const sourceParsed = new InterfaceSchema(source as ISchema, true);
     const previousSnapshotConditions = previousSnapshotSchema?.conditions || [];
     const previousSnapshotDocument = buildSnapshotSchemaDocument(previousSnapshotSchema);
-    const custom = schemaConfig.customFieldsLocked ? [] : customFieldsFromParsedFields(previousParsed.fields || []);
+    const keptThroughLock = (field: any): boolean =>
+        isLockRemovalKept(source.templateSchemaId, field, conditionConflicts, conditionResolutions);
+    const allCustom = customFieldsFromParsedFields(previousParsed.fields || []);
+    const custom = schemaConfig.customFieldsLocked ? allCustom.filter(keptThroughLock) : allCustom;
 
     const previousConditions = previousParsed.conditions || [];
     const sourceConditions = sourceParsed.conditions || [];
     const placements = analyzeConditionFieldPlacements(previousConditions, sourceConditions, custom);
-    const conditionFieldNamesToRemove = schemaConfig.conditionsLocked
-        ? conditionCustomFieldNames(previousConditions, custom)
-        : new Set<string>();
+    const keptFieldNames = new Set<string>(custom.filter(keptThroughLock).map((field) => field.name));
+    const conditionFieldNamesToRemove = new Set<string>(
+        schemaConfig.conditionsLocked
+            ? Array.from(conditionCustomFieldNames(previousConditions, custom)).filter((fieldName) => !keptFieldNames.has(fieldName))
+            : []
+    );
 
     // dropFieldNames also excludes the field from the root-properties merge below, so an
     // orphaned condition the user didn't choose to keep is dropped entirely, not left
