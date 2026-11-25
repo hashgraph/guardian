@@ -82,6 +82,8 @@ textarea {
         color: var(--pc-text-3);
         background: var(--pc-sunken);
         padding: 1px 7px;
+        position: relative;
+        top: 1px;
         border-radius: 10px;
     }
 

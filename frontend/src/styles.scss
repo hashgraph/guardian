@@ -179,6 +179,15 @@ p-table {
     display: none;
 }
 
+/* Tooltips are attached to <body>, so this has to be global: keeps a short label on one line */
+.p-tooltip.nowrap-tooltip {
+    max-width: none;
+
+    .p-tooltip-text {
+        white-space: nowrap;
+    }
+}
+
 button.mat-raised-button,
 button.mat-button {
     /*width: 260px;*/
