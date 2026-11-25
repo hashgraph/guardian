@@ -305,8 +305,8 @@
             [class.on]="messageSearchOpen"
             aria-label="Search messages"
             pTooltip="Search messages"
-            tooltipStyleClass="guardian-tooltip"
-            tooltipPosition="bottom"
+            tooltipStyleClass="guardian-tooltip nowrap-tooltip"
+            tooltipPosition="left"
             (click)="toggleMessageSearch()">
             <ng-container *ngTemplateOutlet="icSearch"></ng-container>
           </button>
@@ -637,6 +637,9 @@
       <button
         class="guardian-icon-button icon-btn"
         aria-label="Search discussions"
+        pTooltip="Search discussions"
+        tooltipStyleClass="guardian-tooltip"
+        tooltipPosition="left"
         (click)="onOpen()">
         <ng-container *ngTemplateOutlet="icSearch"></ng-container>
       </button>
