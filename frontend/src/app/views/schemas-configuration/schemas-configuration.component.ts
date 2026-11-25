@@ -4,7 +4,7 @@ import { HttpResponse } from '@angular/common/http';
 import { EMPTY, Observable, Subject, Subscription, firstValueFrom, forkJoin, of } from 'rxjs';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { SchemaFormPreferencesService } from 'src/app/services/schema-form-preferences.service';
-import { catchError, debounceTime, distinctUntilChanged, map, shareReplay, switchMap, take, takeUntil } from 'rxjs/operators';
+import { catchError, debounceTime, distinctUntilChanged, finalize, map, shareReplay, switchMap, take, takeUntil } from 'rxjs/operators';
 import { DefaultFieldDictionary, DocumentGenerator, IFormulaLink, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ModuleStatus, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus, ISchemaArrayDependency, ISchemaArrayDependencyMapping, DEFAULT_IWA_VERSION, IwaVersion, resolveIwaVersion, IPropertySuggestionResult, IPropertySuggestionRequest } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
 import { TagsService } from 'src/app/services/tag.service';
@@ -206,6 +206,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     // last-saved signature per schema, so a reverted edit can clear the dirty flag
     private savedSignatures = new Map<string, string>();
     public isSaving: boolean = false;
+    private pendingSubSchemaLoads = 0;
     private _subSchemasByIri = new Map<string, Schema>();
     @ViewChild('arrayLinkEditor')
     public arrayDependencyEditor?: ElementRef<HTMLElement>;
@@ -2317,6 +2318,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             this.saveTemplateConfig(onSaved, onFailed);
             return;
         }
+        if (this.hasUnsavedChanges && !this.isSaving && this.isSchemaDataLoading) {
+            this.reportError('Save all', { message: 'Wait for loading to finish before saving.' });
+            onFailed?.();
+            return;
+        }
         if (!this.hasUnsavedChanges || this.isSaving || !this.allDirtySchemasValid) { onFailed?.(); return; }
         // Iterate dirtyIds and prefer selectedSchema over the sidebar copy to avoid
         // saving a stale object when loadSchemas() ran after the user started editing.
@@ -4071,11 +4077,16 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
     }
 
+    public get isSchemaDataLoading(): boolean {
+        return this.schemaLoading || this.pendingSubSchemaLoads > 0;
+    }
+
     private hydrateSubSchemaFields(subSchema: Schema): void {
         const id = subSchema.id || (subSchema as any)._id;
         if (!id) { return; }
+        this.pendingSubSchemaLoads++;
         this.schemaService.getSchemaWithSubSchemas(this.getCategory(), id, this.topic)
-            .pipe(takeUntil(this.destroy$))
+            .pipe(takeUntil(this.destroy$), finalize(() => this.pendingSubSchemaLoads--))
             .subscribe({
                 next: (data: any) => {
                     if (!data?.schema) { return; }
@@ -4684,7 +4695,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public saveNewSchema(): void {
         const name = this.newSchemaName.trim();
-        if (!name) { return; }
+        if (!name || this.isSchemaDataLoading) { return; }
         const schema = new Schema();
         schema.name = name;
         schema.entity = this.type === 'system' ? SchemaEntity.STANDARD_REGISTRY : SchemaEntity.NONE;
