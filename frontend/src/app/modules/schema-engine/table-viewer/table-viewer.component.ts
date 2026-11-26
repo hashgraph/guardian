@@ -11,6 +11,7 @@ import { IndexedDbRegistryService } from '../../../services/indexed-db-registry.
 import { GzipService } from '../../../services/gzip.service';
 import { DB_NAME, STORES_NAME } from '../../../constants';
 import { IPFSService } from 'src/app/services/ipfs.service';
+import { tableCsvFileName } from '../../../utils/table-csv-file-name';
 
 type TableRefLike = {
     type?: string;
@@ -34,6 +35,7 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
 
     @Input()
     public title?: string;
+    @Input() description?: string;
     @Input() delimiter: string = ',';
     @Input() tableIndex?: number;
     @Input() formulaActions?: ITableFormulaActions | null;
@@ -469,7 +471,7 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
             this.dialog.open(TableDialogComponent, {
                 header: 'View table',
                 width: '90%',
-                data: { columnDefs, rowData: parsed.rows, readOnly: true,
+                data: { columnDefs, rowData: parsed.rows, readOnly: true, fixedColumns: !!this.declaredColumns?.length,
                     formulaActions: { column: (key: string) => this.columnFormula(key),
                         cell: (key: string, rowIndex: number) => this.cellFormula(key, rowIndex) } },
             });
@@ -495,7 +497,7 @@ export class TableViewerComponent implements OnChanges, OnDestroy {
     }
 
     private makeDownloadFileName(): string {
-        return `table-${Date.now()}.csv`;
+        return tableCsvFileName(this.description);
     }
 
     public downloadCsv(): void {

@@ -10,6 +10,7 @@
                 [declaredColumns]="item.tableColumns || []"
                 [formulaActions]="getTableFormulaActions(item)"
                 [title]="item.title || item.description || item.name"
+                [description]="item.description"
             ></table-viewer>
         </div>
     } @else if (isRichText(item)) {

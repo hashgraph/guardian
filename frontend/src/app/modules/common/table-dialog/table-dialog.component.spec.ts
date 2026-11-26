@@ -9,7 +9,7 @@ describe('TableDialogComponent', () => {
         TestBed.configureTestingModule({
             declarations: [TableDialogComponent],
             providers: [
-                { provide: DynamicDialogRef, useValue: { close: () => {} } },
+                { provide: DynamicDialogRef, useValue: { close: vi.fn() } },
                 { provide: DynamicDialogConfig, useValue: { data } },
             ],
             schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -42,6 +42,96 @@ describe('TableDialogComponent', () => {
         expect(dataColumns(component).length).toBe(2);
         expect(dataColumns(component).map((def) => def.field)).toEqual(['year', 'co2_tonnes']);
         expect(dataColumns(component).map((def) => def.headerName)).toEqual(['Year', 'CO2 (tonnes)']);
+    });
+
+    it('keeps one column definition array on every initialization path', () => {
+        for (const data of [
+            {},
+            { columnDefs: declaredDefs },
+            { columnDefs: declaredDefs, fixedColumns: true },
+            { columnDefs: declaredDefs, fixedColumns: true, rowData: [{ year: '2025' }] },
+            { columnDefs: declaredDefs, readOnly: true },
+        ]) {
+            const component = build(data);
+            const columns = component.columnDefs;
+
+            expect(component.columnDefs).toBe(columns);
+            expect(columns[0].colId).toBe('__row__');
+            expect(columns.length).toBeGreaterThan(1);
+        }
+    });
+
+    for (const readOnly of [false, true]) {
+        it(`keeps columns stable while scrolling and growing rows with readOnly=${readOnly}`, () => {
+            const component = build({ columnDefs: declaredDefs, fixedColumns: true, readOnly,
+                rowData: [{ year: '2025', co2_tonnes: '10' }] });
+            const columns = component.columnDefs;
+            const api = {
+                getLastDisplayedRowIndex: () => component.rowData.length - 1,
+                getDisplayedCenterColumns: () => [{ getColId: () => 'co2_tonnes' }],
+                setGridOption: vi.fn(),
+                sizeColumnsToFit: vi.fn(),
+                setColumnWidths: vi.fn(),
+            };
+            Object.assign(component, { api });
+
+            component.onBodyScroll({} as any);
+            component.onBodyScroll({} as any);
+
+            expect(component.columnDefs).toBe(columns);
+            expect(dataColumns(component).map(def => def.field)).toEqual(['year', 'co2_tonnes']);
+            expect(dataColumns(component).every(def => def.editable === !readOnly)).toBe(true);
+            expect(component.rowData.length).toBe(201);
+            expect(component.rowData[0]).toEqual({ year: '2025', co2_tonnes: '10' });
+            expect(component.rowData[200]).toEqual({ year: '', co2_tonnes: '' });
+            expect(api.setGridOption.mock.calls.map(call => call[0])).toEqual(['rowData', 'rowData']);
+            expect(api.sizeColumnsToFit).not.toHaveBeenCalled();
+            expect(api.setColumnWidths.mock.calls.every(call => call[0][0].key === '__row__')).toBe(true);
+        });
+    }
+
+    it('updates the stored column array once when an old table grows on scroll', () => {
+        const component = build({});
+        const columns = component.columnDefs;
+        const api = {
+            getLastDisplayedRowIndex: () => 0,
+            getDisplayedCenterColumns: () => [{ getColId: () => 'C26' }],
+            setGridOption: vi.fn(),
+            sizeColumnsToFit: vi.fn(),
+        };
+        Object.assign(component, { api });
+
+        component.onBodyScroll({} as any);
+        const grownColumns = component.columnDefs;
+        component.onBodyScroll({} as any);
+
+        expect(component.columnDefs).not.toBe(columns);
+        expect(component.columnDefs).toBe(grownColumns);
+        expect(component.columnDefs[0]).toBe(columns[0]);
+        expect(dataColumns(component).length).toBe(36);
+        expect(dataColumns(component)[35].field).toBe('C36');
+        expect(component.rowData[0].C36).toBe('');
+        expect(api.setGridOption).toHaveBeenCalledExactlyOnceWith('columnDefs', component.columnDefs);
+    });
+
+    it('saves edited cells and newly pasted rows without changing schema columns', () => {
+        const component = build({ columnDefs: declaredDefs, fixedColumns: true,
+            rowData: [{ year: '2025', co2_tonnes: '10' }] });
+        const columns = component.columnDefs;
+        const api = { setGridOption: vi.fn(), setColumnWidths: vi.fn(), stopEditing: vi.fn() };
+        Object.assign(component, { api });
+
+        component.onPasteStart({ data: [['2026', '20', 'extra']], target: { rowIndex: 1 } });
+        component.rowData[1].year = '2026';
+        component.rowData[1].co2_tonnes = '20';
+        component.save();
+
+        expect(component.columnDefs).toBe(columns);
+        expect(api.stopEditing).toHaveBeenCalledOnce();
+        expect(TestBed.inject(DynamicDialogRef).close).toHaveBeenCalledExactlyOnceWith({
+            columnDefs: columns.slice(1),
+            rowData: [{ year: '2025', co2_tonnes: '10' }, { year: '2026', co2_tonnes: '20' }],
+        });
     });
 
     it('generates blank rows keyed by the declared keys', () => {

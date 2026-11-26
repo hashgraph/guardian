@@ -277,6 +277,17 @@ describe('SchemaFormViewComponent', () => {
     const texts = (fixture: ComponentFixture<SchemaFormViewComponent>, selector: string): string[] => Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll(selector)).map((node) => node.textContent!.replace(/\s+/g, ' ').trim());
 
     describe('values', () => {
+        it('passes the form label to table downloads separately from the title', () => {
+            const description = 'Import table-scroll-site-data.csv here.';
+            const fixture = render([field('siteTable', {
+                customType: 'table', title: 'Site data (input)', description,
+            })], { siteTable: JSON.stringify({ type: 'table', csv: 'Year\n2025' }) });
+            const viewer = fixture.debugElement.query(By.css('table-viewer'));
+
+            expect(viewer.properties['description']).toBe(description);
+            expect(viewer.properties['title']).toBe('Site data (input)');
+        });
+
         it('shows false and 0 and says "No" for a boolean that is false', () => {
             const fixture = render([field('count', { type: 'number' }), field('flag', { type: 'boolean' })], { count: 0, flag: false });
             expect(texts(fixture, '.sf-ro-value')).toEqual(['0', 'No']);

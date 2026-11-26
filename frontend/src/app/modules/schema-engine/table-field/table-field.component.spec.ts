@@ -17,14 +17,14 @@ describe('TableFieldComponent', () => {
         { name: 'CO2 (tonnes)', key: 'co2_tonnes' },
     ];
 
-    const build = (imports: any[] = []): TableFieldComponent => {
+    const build = (imports: any[] = [], csvService: Partial<CsvService> = {}): TableFieldComponent => {
         TestBed.resetTestingModule();
         TestBed.configureTestingModule({
             imports,
             declarations: [TableFieldComponent],
             providers: [
                 { provide: DialogService, useValue: {} },
-                { provide: CsvService, useValue: {} },
+                { provide: CsvService, useValue: csvService },
                 { provide: ArtifactService, useValue: {} },
                 { provide: IndexedDbRegistryService, useValue: { registerStores: () => Promise.resolve() } },
                 { provide: GzipService, useValue: {} },
@@ -106,11 +106,37 @@ describe('TableFieldComponent', () => {
         expect(component.previewHeaderNameFor('co2_tonnes', 1)).toBe('CO2 (tonnes)');
     });
 
-    it('names a downloaded file after the type and the moment', () => {
-        const component = build();
-        component.item = { name: 'field4', field: {} } as any;
+    describe('CSV download names', () => {
+        afterEach(() => vi.restoreAllMocks());
 
-        expect((component as any).makeDownloadFileName()).toMatch(/^table-\d+\.csv$/);
+        for (const repeated of [false, true]) {
+            it(`uses the form description for a downloaded file with repeated=${repeated}`, async () => {
+                const component = build([], new CsvService());
+                const description = 'BECH4,manure/y: (one row per project instance and year)';
+                const control = { value: JSON.stringify({ type: 'table', columnKeys: ['C1'], rows: [{ C1: '10' }] }) };
+                component.item = repeated
+                    ? { name: 'field4', index: '0', control } as any
+                    : { name: 'field4', title: 'Technical title', description, field: {}, control } as any;
+                component.ownerField = { description: repeated ? description : 'Other description' } as any;
+                const names: string[] = [];
+                vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function(this: HTMLAnchorElement) {
+                    names.push(this.download);
+                });
+
+                await component.downloadCsv();
+
+                expect(names).toEqual(['BECH4,manure_y_ (one row per project instance and year).csv']);
+                expect(component.importError).toBeUndefined();
+            });
+        }
+
+        it('uses a timestamp when the form description is empty', () => {
+            const component = build();
+            component.item = { name: 'field4', title: 'Title', description: '', field: {} } as any;
+            vi.spyOn(Date, 'now').mockReturnValue(1795624180459);
+
+            expect(component['makeDownloadFileName']()).toBe('table-1795624180459.csv');
+        });
     });
 
     it('shows blank preview rows only when columns are declared', () => {
