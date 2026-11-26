@@ -2696,4 +2696,380 @@ export class EntityService {
         }
     }
     //#endregion
+
+    //#region MINT TOKEN SEARCH (Issue #5021)
+    @MessagePattern(IndexerMessageAPI.GET_MINT_TOKEN_DOCUMENTS)
+    async getMintTokenDocuments(
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<VP>>> {
+        try {
+            const {
+                minAmount,
+                maxAmount,
+                dateFrom,
+                dateTo,
+                ...params
+            } = msg;
+            const options = parsePageParams(params);
+            const filters = parsePageFilters(params, new Set([
+                'analytics.tokenId',
+                'analytics.policyId',
+            ]));
+            filters.type = MessageType.VP_DOCUMENT;
+            filters['analytics.tokenId'] = filters['analytics.tokenId'] || { $exists: true, $ne: null };
+
+            if (minAmount || maxAmount) {
+                const amountFilter: any = {};
+                if (minAmount) {
+                    amountFilter.$gte = Number(minAmount);
+                }
+                if (maxAmount) {
+                    amountFilter.$lte = Number(maxAmount);
+                }
+                filters['analytics.tokenAmount'] = amountFilter;
+            }
+
+            if (dateFrom || dateTo) {
+                const dateFilter: any = {};
+                if (dateFrom) {
+                    dateFilter.$gte = dateFrom;
+                }
+                if (dateTo) {
+                    dateFilter.$lte = dateTo;
+                }
+                filters.consensusTimestamp = dateFilter;
+            }
+
+            const em = DataBaseHelper.getEntityManager();
+            const [rows, count] = (await em.findAndCount(
+                Message,
+                filters,
+                options
+            )) as [VP[], number];
+
+            // Enrich with token metadata
+            const tokenIds = new Set<string>();
+            for (const row of rows) {
+                if (row.analytics?.tokenId) {
+                    tokenIds.add(row.analytics.tokenId);
+                }
+            }
+
+            const tokenMap = new Map<string, any>();
+            if (tokenIds.size > 0) {
+                const tokens = await em.find(TokenCache, {
+                    tokenId: { $in: [...tokenIds] },
+                });
+                for (const token of tokens) {
+                    tokenMap.set(token.tokenId, token);
+                }
+            }
+
+            // Enrich with policy metadata
+            const policyIds = new Set<string>();
+            for (const row of rows) {
+                if (row.analytics?.policyId) {
+                    policyIds.add(row.analytics.policyId);
+                }
+            }
+
+            const policyMap = new Map<string, any>();
+            if (policyIds.size > 0) {
+                const policies = await em.find(Message, {
+                    type: MessageType.INSTANCE_POLICY,
+                    consensusTimestamp: { $in: [...policyIds] },
+                } as any, {
+                    fields: ['consensusTimestamp', 'options'],
+                });
+                for (const policy of policies) {
+                    policyMap.set(policy.consensusTimestamp, policy);
+                }
+            }
+
+            const items = rows.map((row) => {
+                const token = row.analytics?.tokenId
+                    ? tokenMap.get(row.analytics.tokenId)
+                    : null;
+                const policy = row.analytics?.policyId
+                    ? policyMap.get(row.analytics.policyId)
+                    : null;
+                return {
+                    ...row,
+                    // Explicit top-level fields per maintainer requirements
+                    policyId: row.analytics?.policyId || null,
+                    policyDescription: policy?.options?.description || null,
+                    geography: (row.analytics as any)?.geography || null,
+                    token: token ? {
+                        tokenId: token.tokenId,
+                        name: token.name,
+                        symbol: token.symbol,
+                        type: token.type,
+                        treasury: token.treasury,
+                        totalSupply: token.totalSupply,
+                    } : null,
+                    policy: policy ? {
+                        name: policy.options?.name || policy.consensusTimestamp,
+                        description: policy.options?.description || null,
+                    } : null,
+                };
+            });
+
+            const result = {
+                items,
+                pageIndex: options.offset / options.limit,
+                pageSize: options.limit,
+                total: count,
+                order: options.orderBy,
+            };
+            return new MessageResponse<Page<VP>>(result);
+        } catch (error) {
+            return new MessageError(error, getErrorCode(error.code));
+        }
+    }
+
+    @MessagePattern(IndexerMessageAPI.GET_MINT_TOKEN_DOCUMENT)
+    async getMintTokenDocument(
+        @Payload() msg: { messageId: string }
+    ): Promise<AnyResponse<any>> {
+        try {
+            const { messageId } = msg;
+            const em = DataBaseHelper.getEntityManager();
+            let item = await em.findOne(Message, {
+                consensusTimestamp: messageId,
+                type: MessageType.VP_DOCUMENT,
+                'analytics.tokenId': { $exists: true, $ne: null },
+            } as any);
+            const row = await em.findOne(MessageCache, {
+                consensusTimestamp: messageId,
+            });
+
+            if (!item) {
+                return new MessageResponse<any>({
+                    id: messageId,
+                    row,
+                });
+            }
+
+            item = await loadDocuments(item, true);
+
+            let token = null;
+            if (item.analytics?.tokenId) {
+                token = await em.findOne(TokenCache, {
+                    tokenId: item.analytics.tokenId,
+                });
+            }
+
+            let policyMessage = null;
+            if (item.analytics?.policyId) {
+                policyMessage = await em.findOne(Message, {
+                    type: MessageType.INSTANCE_POLICY,
+                    consensusTimestamp: item.analytics.policyId,
+                } as any);
+            }
+
+            return new MessageResponse<any>({
+                id: messageId,
+                uuid: item.uuid,
+                item,
+                row,
+                token: token ? {
+                    tokenId: token.tokenId,
+                    name: token.name,
+                    symbol: token.symbol,
+                    type: token.type,
+                    treasury: token.treasury,
+                    totalSupply: token.totalSupply,
+                } : null,
+                policy: policyMessage ? {
+                    consensusTimestamp: policyMessage.consensusTimestamp,
+                    options: policyMessage.options,
+                } : null,
+            });
+        } catch (error) {
+            return new MessageError(error, getErrorCode(error.code));
+        }
+    }
+
+    @MessagePattern(IndexerMessageAPI.GET_MINT_TOKEN_FILTERS)
+    async getMintTokenFilters(): Promise<AnyResponse<any>> {
+        try {
+            const em = DataBaseHelper.getEntityManager();
+
+            const policyIds = await em.find(Message, {
+                type: MessageType.VP_DOCUMENT,
+                'analytics.tokenId': { $exists: true, $ne: null },
+                'analytics.policyId': { $exists: true, $ne: null },
+            } as any, {
+                fields: ['analytics'],
+            });
+
+            const uniquePolicyIds = [...new Set(
+                policyIds
+                    .map((m: any) => m.analytics?.policyId)
+                    .filter(Boolean)
+            )];
+
+            const policies = await em.find(Message, {
+                type: MessageType.INSTANCE_POLICY,
+                consensusTimestamp: { $in: uniquePolicyIds },
+            } as any, {
+                fields: ['consensusTimestamp', 'options'],
+            });
+
+            const policyOptions = policies.map((p: any) => ({
+                id: p.consensusTimestamp,
+                name: p.options?.name || p.consensusTimestamp,
+            }));
+
+            const tokenIds = [...new Set(
+                policyIds
+                    .map((m: any) => m.analytics?.tokenId)
+                    .filter(Boolean)
+            )];
+
+            const tokens = await em.find(TokenCache, {
+                tokenId: { $in: tokenIds },
+            });
+
+            const tokenOptions = tokens.map((t: any) => ({
+                id: t.tokenId,
+                name: t.name || t.tokenId,
+                symbol: t.symbol,
+            }));
+
+            return new MessageResponse({
+                policies: policyOptions,
+                tokens: tokenOptions,
+            });
+        } catch (error) {
+            return new MessageError(error, getErrorCode(error.code));
+        }
+    }
+    //#endregion
+
+    //#region PROJECT PRACTICES SEARCH (Issue #5019)
+    @MessagePattern(IndexerMessageAPI.GET_PROJECT_PRACTICES)
+    async getProjectPractices(
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<VC>>> {
+        try {
+            const { 'analytics.schemaName': schemaName, ...params } = msg as any;
+            const options = parsePageParams(params);
+            const filters = parsePageFilters(params, new Set([
+                'analytics.policyId',
+                'analytics.schemaId',
+            ]));
+            filters.type = MessageType.VC_DOCUMENT;
+            filters.$or = [
+                { 'options.initId': { $exists: false } },
+                { 'options.initId': null },
+                { 'options.initId': undefined },
+                { 'options.initId': '' },
+            ];
+
+            if (schemaName) {
+                filters['analytics.schemaName'] = createRegex(schemaName);
+            }
+
+            const em = DataBaseHelper.getEntityManager();
+            const [rows, count] = (await em.findAndCount(
+                Message,
+                filters,
+                options
+            )) as [VC[], number];
+
+            const policyIds = new Set<string>();
+            for (const row of rows) {
+                if (row.analytics?.policyId) {
+                    policyIds.add(row.analytics.policyId);
+                }
+            }
+
+            const policyMap = new Map<string, any>();
+            if (policyIds.size > 0) {
+                const policies = await em.find(Message, {
+                    type: MessageType.INSTANCE_POLICY,
+                    consensusTimestamp: { $in: [...policyIds] },
+                } as any, {
+                    fields: ['consensusTimestamp', 'options'],
+                });
+                for (const policy of policies) {
+                    policyMap.set(policy.consensusTimestamp, policy);
+                }
+            }
+
+            const items = rows.map((item) => {
+                const policy = item.analytics?.policyId
+                    ? policyMap.get(item.analytics.policyId)
+                    : null;
+                return {
+                    ...item,
+                    analytics: item.analytics ? {
+                        ...item.analytics,
+                        schemaName: item.analytics.schemaName,
+                    } : undefined,
+                    policy: policy ? {
+                        name: policy.options?.name || policy.consensusTimestamp,
+                    } : null,
+                };
+            });
+
+            const result = {
+                items,
+                pageIndex: options.offset / options.limit,
+                pageSize: options.limit,
+                total: count,
+                order: options.orderBy,
+            };
+            return new MessageResponse<Page<VC>>(result);
+        } catch (error) {
+            return new MessageError(error, getErrorCode(error.code));
+        }
+    }
+
+    @MessagePattern(IndexerMessageAPI.GET_PROJECT_PRACTICES_FILTERS)
+    async getProjectPracticesFilters(): Promise<AnyResponse<any>> {
+        try {
+            const em = DataBaseHelper.getEntityManager();
+
+            const schemaNames = await em.find(Message, {
+                type: MessageType.VC_DOCUMENT,
+                'analytics.schemaName': { $exists: true, $ne: null },
+            } as any, {
+                fields: ['analytics'],
+            });
+
+            const uniqueSchemaNames = [...new Set(
+                schemaNames
+                    .map((m: any) => m.analytics?.schemaName)
+                    .filter(Boolean)
+            )].sort();
+
+            const policyIds = [...new Set(
+                schemaNames
+                    .map((m: any) => m.analytics?.policyId)
+                    .filter(Boolean)
+            )];
+
+            const policies = await em.find(Message, {
+                type: MessageType.INSTANCE_POLICY,
+                consensusTimestamp: { $in: policyIds },
+            } as any, {
+                fields: ['consensusTimestamp', 'options'],
+            });
+
+            const policyOptions = policies.map((p: any) => ({
+                id: p.consensusTimestamp,
+                name: p.options?.name || p.consensusTimestamp,
+            }));
+
+            return new MessageResponse({
+                schemaNames: uniqueSchemaNames,
+                policies: policyOptions,
+            });
+        } catch (error) {
+            return new MessageError(error, getErrorCode(error.code));
+        }
+    }
+    //#endregion
 }
