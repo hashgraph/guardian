@@ -1,0 +1,84 @@
+{
+    "name": "VM0010 Hauling Fuel Emissions",
+    "description": "Slice-scoped output of logic/calculate-hauling-fuel-814.js. Carries Eq (16) E_HAULING = FC_HAULING * EF_FUEL * SUM(V_EX * A_i).",
+    "entity": "VC",
+    "system": false,
+    "sourceVersion": "1.0.0",
+    "document": {
+        "$id": "#hauling-fuel-814",
+        "title": "VM0010 Hauling Fuel Emissions",
+        "type": "object",
+        "required": ["@context", "type", "credentialSubject"],
+        "properties": {
+            "@context": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "type": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "credentialSubject": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "$ref": "#hauling-fuel-814-subject" }
+            }
+        },
+        "defs": {
+            "hauling-fuel-814-subject": {
+                "type": "object",
+                "required": ["ref", "year", "haulingFuelEmissions", "haulingFuelDetails"],
+                "properties": {
+                    "ref": { "type": "string", "title": "Project ID" },
+                    "year": { "type": "integer", "title": "Monitoring Year" },
+                    "haulingFuelEmissions": {
+                        "type": "number",
+                        "title": "Total Hauling Fuel Emissions E_HAULING (tCO2e)",
+                        "minimum": 0
+                    },
+                    "haulingFuelDetails": {
+                        "type": "array",
+                        "title": "Per-Plot Hauling Fuel Details",
+                        "minItems": 1,
+                        "items": {
+                            "type": "object",
+                            "required": ["plotId", "species", "stratum", "areaHa", "volumeEx", "fuelConsumption", "emissionsTco2e"],
+                            "properties": {
+                                "plotId": {
+                                    "type": "string",
+                                    "title": "Plot Identifier"
+                                },
+                                "species": {
+                                    "type": "integer",
+                                    "title": "Species j",
+                                    "minimum": 1,
+                                    "maximum": 3
+                                },
+                                "stratum": {
+                                    "type": "integer",
+                                    "title": "Stratum i",
+                                    "minimum": 1,
+                                    "maximum": 3
+                                },
+                                "areaHa": {
+                                    "type": "number",
+                                    "title": "Plot Area (ha)",
+                                    "minimum": 0
+                                },
+                                "volumeEx": {
+                                    "type": "number",
+                                    "title": "Extracted Volume V_EX (m3/ha)",
+                                    "minimum": 0
+                                },
+                                "fuelConsumption": {
+                                    "type": "number",
+                                    "title": "Fuel Consumption FC_HAULING (L/ha)",
+                                    "minimum": 0
+                                },
+                                "emissionsTco2e": {
+                                    "type": "number",
+                                    "title": "Plot Emissions E_HAULING,i (tCO2e)",
+                                    "minimum": 0
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
