@@ -20,6 +20,9 @@ spec:
       containers:
         - image: gcr.io/hedera-registry/topic-viewer:2.14.2
           name: topic-viewer
+          env:
+            - name: IPFS_PUBLIC_GATEWAY
+              value: "http://ipfs-node:8080/ipfs/{cid}"
           ports:
             - containerPort: 3006
             - containerPort: 5009

@@ -1,18 +1,23 @@
-import { ipfsCid, ipfsDryRunId, ipfsFileType, ipfsGatewayLink } from './ipfs-file';
+import { ipfsCid, ipfsDryRunId, ipfsFileType } from './ipfs-file';
 
 describe('IPFS file links', () => {
     const v0 = 'QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG';
     const v1 = 'bafybeiavprz5ld3ktizv4gsqos3dg7nbexcrhvtswzvoatgmea5ncvr3di';
 
-    it('uses the gateway for IPFS values and preserves the query', () => {
+    it('extracts the CID independently of the gateway and query', () => {
         for (const suffix of ['', '?fileName=area.kml&extension=kml']) {
-            expect(ipfsGatewayLink(`ipfs://${v0}${suffix}`)).toBe(`https://ipfs.io/ipfs/${v0}${suffix}`);
+            for (const prefix of ['ipfs://', 'https://ipfs.io/ipfs/', 'https://other.gateway/ipfs/']) {
+                expect(ipfsCid(`${prefix}${v0}${suffix}`)).toBe(v0);
+            }
         }
     });
 
-    it('keeps other values unchanged', () => {
-        for (const value of ['', v0, 'https://example.com/doc.pdf', `https://ipfs.io/ipfs/${v1}`]) {
-            expect(ipfsGatewayLink(value)).toBe(value);
+    it('extracts a CID from a bare value or a gateway without changing the input', () => {
+        for (const value of [v0, `https://ipfs.io/ipfs/${v0}`]) {
+            expect(ipfsCid(value)).toBe(v0);
+        }
+        for (const value of ['', 'https://example.com/doc.pdf']) {
+            expect(ipfsCid(value)).toBe('');
         }
     });
 

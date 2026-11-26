@@ -289,6 +289,8 @@ services:
     build:
       context: .
       dockerfile: ./topic-viewer/Dockerfile
+    environment:
+      IPFS_PUBLIC_GATEWAY: http://ipfs-node:8080/ipfs/{cid}
     expose:
       - '3006'
       - '5009'

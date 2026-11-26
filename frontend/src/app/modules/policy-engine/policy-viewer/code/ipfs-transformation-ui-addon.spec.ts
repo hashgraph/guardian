@@ -396,4 +396,46 @@ describe('IpfsTransformationUIAddonCode', () => {
         expect(document.credentialSubject[0].group.field2.geoFile.resourceUrl).toContain('/api/v1/ipfs/file/');
         expect(document.credentialSubject[0].group.field2.geoFile.cid).toBeUndefined();
     });
+
+    const gatewayCid = 'bafybeiavprz5ld3ktizv4gsqos3dg7nbexcrhvtswzvoatgmea5ncvr3di';
+    for (const [template, expected] of [
+        ['ipfs://{cid}', `ipfs://${gatewayCid}`],
+        ['https://ipfs.io/ipfs/{cid}', `https://ipfs.io/ipfs/${gatewayCid}`],
+        ['https://ipfs.io/ipfs', `https://ipfs.io/ipfs/${gatewayCid}`],
+        ['https://ipfs.guardianservice.app/ipfs/{cid}', `https://ipfs.guardianservice.app/ipfs/${gatewayCid}`],
+        ['/api/v1/ipfs/file/{cid}', `/api/v1/ipfs/file/${gatewayCid}`],
+    ]) {
+        it(`uses the saved template ${template} without substitution`, async () => {
+            const config = { transformationType: 'ipfsGateway', ipfsGatewayTemplate: template };
+            const addon = createAddon(config);
+            const document: any = { file: `ipfs://${gatewayCid}` };
+            await addon.run({ document, params: {}, history: [] });
+            expect(document.file).toEqual({ resourceUrl: expected });
+            expect(config.ipfsGatewayTemplate).toBe(template);
+        });
+    }
+
+    it('uses the IPFS URI template for table, geo and markdown references', async () => {
+        const addon = createAddon({ transformationType: 'ipfsGateway', ipfsGatewayTemplate: 'ipfs://{cid}' });
+        const document: any = {
+            table: tableValue({ cid: gatewayCid }),
+            geo: geoValue({ cid: gatewayCid }),
+            markdown: `Report ![file](ipfs://${gatewayCid})`,
+        };
+        await addon.run({ document, params: {}, history: [] });
+        const expected = `ipfs://${gatewayCid}`;
+        expect(document.table.resourceUrl).toBe(expected);
+        expect(document.geo.geoFile.resourceUrl).toBe(expected);
+        expect(document.markdown).toBe(`Report ![file](${expected})`);
+    });
+
+    it('keeps Base64 output unchanged with the IPFS URI template', async () => {
+        const getFile = vi.fn().mockReturnValue(of(gzipHeader.buffer));
+        const addon = createAddon({ transformationType: 'base64', ipfsGatewayTemplate: 'ipfs://{cid}' }, { getFile });
+        const document: any = { file: `ipfs://${gatewayCid}` };
+        await addon.run({ document, params: {}, history: [] });
+        expect(document.file.base64String).toContain('data:application/gzip;base64,');
+        expect(document.file.resourceUrl).toBeUndefined();
+        expect(getFile).toHaveBeenCalledExactlyOnceWith(gatewayCid);
+    });
 });

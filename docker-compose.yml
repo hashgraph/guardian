@@ -271,6 +271,8 @@ services:
 
   topic-viewer:
     image: gcr.io/hedera-registry/topic-viewer:${GUARDIAN_VERSION:-latest}
+    environment:
+      IPFS_PUBLIC_GATEWAY: http://ipfs-node:8080/ipfs/{cid}
     expose:
       - '3006'
       - '5009'

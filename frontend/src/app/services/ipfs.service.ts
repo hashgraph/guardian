@@ -37,10 +37,18 @@ export class IPFSService {
         });
     }
 
-    public getFile(cid: string): Observable<ArrayBuffer> {
+    public getFile(cid: string, silent = false): Observable<ArrayBuffer> {
         return this.http.get(`${this.url}/file/${cid}`, {
             responseType: 'arraybuffer',
+            context: new HttpContext().set(SILENT_HTTP_ERRORS, silent),
         });
+    }
+
+    public getFileBlob(cid: string): Observable<Blob> {
+        if (!cid) {
+            return throwError(() => new Error('File not found'));
+        }
+        return this.getFile(cid, true).pipe(map(this.toFileBlob));
     }
 
     public getFileFromDryRunStorage(cid: string, silent = false): Observable<ArrayBuffer> {
@@ -56,7 +64,11 @@ export class IPFSService {
             return throwError(() => new Error('File not found'));
         }
         return this.getFileFromDryRunStorage(encodeURIComponent(id), true)
-            .pipe(map((bytes) => new Blob([bytes], { type: ipfsFileType(bytes) })));
+            .pipe(map(this.toFileBlob));
+    }
+
+    private toFileBlob(bytes: ArrayBuffer): Blob {
+        return new Blob([bytes], { type: ipfsFileType(bytes) });
     }
 
     public getJsonFile(cid: string): Observable<any> {

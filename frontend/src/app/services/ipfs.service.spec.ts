@@ -138,3 +138,48 @@ describe('IPFSService dry-run file reader', () => {
         expect(get.mock.lastCall?.[0]).toContain('/dry-run');
     });
 });
+
+describe('IPFSService file Blob reader', () => {
+    const cid = 'bafybeiavprz5ld3ktizv4gsqos3dg7nbexcrhvtswzvoatgmea5ncvr3di';
+    const build = () => {
+        const http = Object.create(HttpClient.prototype);
+        const get = vi.fn((_url: string, _options?: { responseType?: string; context?: HttpContext }) => of(new ArrayBuffer(0)));
+        http.get = get;
+        return { service: new IPFSService(http), get };
+    };
+
+    it('reads a file from the authenticated backend and preserves its bytes and detected type', async () => {
+        const { service, get } = build();
+        const bytes = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]).buffer;
+        get.mockReturnValue(of(bytes));
+        const blob = await firstValueFrom(service.getFileBlob(cid));
+        expect(blob.type).toBe('image/png');
+        expect(await blob.arrayBuffer()).toEqual(bytes);
+        expect(get).toHaveBeenCalledTimes(1);
+        const [url, options] = get.mock.calls[0];
+        expect(url).toBe(`/api/v1/ipfs/file/${cid}`);
+        expect(options).toEqual(expect.objectContaining({ responseType: 'arraybuffer' }));
+        expect(options?.context?.get(SILENT_HTTP_ERRORS)).toBe(true);
+    });
+
+    it('keeps global error handling enabled for existing file readers', () => {
+        const { service, get } = build();
+        get.mockReturnValue(of(new ArrayBuffer(0)));
+        service.getFile(cid);
+        expect(get.mock.calls[0][1]?.context?.get(SILENT_HTTP_ERRORS)).toBe(false);
+    });
+
+    it('does not request an empty CID', async () => {
+        const { service, get } = build();
+        await expect(firstValueFrom(service.getFileBlob(''))).rejects.toThrowError('File not found');
+        expect(get).not.toHaveBeenCalled();
+    });
+
+    it('propagates backend failures to the file opener', async () => {
+        const { service, get } = build();
+        const failure = new Error('missing');
+        get.mockReturnValue(throwError(() => failure));
+        await expect(firstValueFrom(service.getFileBlob(cid))).rejects.toBe(failure);
+        expect(get).toHaveBeenCalledTimes(1);
+    });
+});

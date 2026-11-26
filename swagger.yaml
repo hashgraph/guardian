@@ -30761,8 +30761,8 @@ paths:
                   owner: did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
                   messageId: '1773670900.819264517'
                   category: TAG
-                  documentURL: https://ipfs.io/ipfs/example
-                  contextURL: https://ipfs.io/ipfs/example
+                  documentURL: ipfs://example
+                  contextURL: ipfs://example
                   document: {}
                   context: {}
         '401':
@@ -31001,8 +31001,8 @@ paths:
                   owner: did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
                   messageId: '1773670900.819264517'
                   category: TAG
-                  documentURL: https://ipfs.io/ipfs/example
-                  contextURL: https://ipfs.io/ipfs/example
+                  documentURL: ipfs://example
+                  contextURL: ipfs://example
                   document: {}
                   context: {}
         '401':
@@ -31089,8 +31089,8 @@ paths:
                   owner: did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
                   messageId: '1773670900.819264517'
                   category: TAG
-                  documentURL: https://ipfs.io/ipfs/example
-                  contextURL: https://ipfs.io/ipfs/example
+                  documentURL: ipfs://example
+                  contextURL: ipfs://example
                   document: {}
                   context: {}
         '401':
@@ -31168,8 +31168,8 @@ paths:
                   owner: did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
                   messageId: '1773670900.819264517'
                   category: TAG
-                  documentURL: https://ipfs.io/ipfs/example
-                  contextURL: https://ipfs.io/ipfs/example
+                  documentURL: ipfs://example
+                  contextURL: ipfs://example
                   document: {}
                   context: {}
         '401':
