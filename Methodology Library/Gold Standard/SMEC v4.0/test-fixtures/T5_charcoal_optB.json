@@ -1,0 +1,54 @@
+{
+ "_provenance": {
+  "description": "Option B charcoal (MSL 0.13, fNRB 1.0, NCV 0.0295)",
+  "source": "Synthetic fixture; constants IPCC-2006-ballpark. Built for the SMEC v4.0 digitization bounty.",
+  "expected_emission_reduction": {
+   "be_unadj_y": 1559.4275839999996,
+   "be_unc_y": 1559.4275839999996,
+   "be_adj_y": 1403.4848255999996,
+   "bau_y": 1559.4275839999996,
+   "be_y": 1403.4848255999996,
+   "delta_y": 155.9427584,
+   "ae_y": 1060.663296,
+   "le_embodied_y": 13.600000000000001,
+   "le_market_y": 6.856430591999993,
+   "le_y": 20.456430591999993,
+   "he_ind": 0.9,
+   "er_y": 288.08294604799966
+  }
+ },
+ "methodology_method": "smec_v4.0",
+ "monitoring_period": {
+  "from": "2026-01-01",
+  "to": "2026-12-31"
+ },
+ "er_inputs": {
+  "daf": 0.1,
+  "vintageYear": 2026,
+  "newUnits": 800,
+  "techLifetimeYrs": 3,
+  "baselinePairs": [
+   {
+    "n_stoves": 800,
+    "usage": 0.88,
+    "p_fuel": 0.6174999999999999,
+    "ncv": 0.0295,
+    "ef_co2": 112.0,
+    "fnrb": 1.0,
+    "ef_nonco2": 9.6
+   }
+  ],
+  "activityPairs": [
+   {
+    "n_stoves": 800,
+    "usage": 0.88,
+    "p_fuel": 0.42,
+    "ncv": 0.0295,
+    "ef_co2": 112.0,
+    "fnrb": 1.0,
+    "ef_nonco2": 9.6
+   }
+  ]
+ },
+ "emission_reduction": {}
+}

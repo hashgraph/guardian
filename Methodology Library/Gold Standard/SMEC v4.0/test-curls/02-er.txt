@@ -1,0 +1,37 @@
+curl --location 'https://<YOUR_GUARDIAN_HOST>/api/v1/policies/<POLICY_ID>/blocks/<BLOCK_ID>' \
+--header 'Authorization: Bearer <YOUR_GUARDIAN_API_TOKEN>' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "document": {
+        "methodology_method": "smec_v4.0",
+        "monitoring_period": { "from": "2026-01-01", "to": "2026-12-31" },
+        "baseline_emissions": {
+            "baseline_option": "option_b_msl",
+            "fuel_type": "wood",
+            "hn_b": 4.5,
+            "pb_mean": 2.1375,
+            "precision_90_10_met": "yes",
+            "cap_threshold_check": "below threshold (0.75 t/cap/yr)",
+            "suppressed_demand_evidence": "SYNTHETIC FIXTURE - see test-fixtures/"
+        },
+        "project_emissions": {
+            "activity_scenario_id": "p1",
+            "n_p_y": 1000,
+            "u_p_y": 0.92,
+            "pp_mean_y": 1.30,
+            "precision_90_10_met": "yes"
+        },
+        "er_inputs": {
+            "daf": 0.10,
+            "vintageYear": 2026,
+            "newUnits": 1000,
+            "techLifetimeYrs": 3,
+            "creditingYear": 1,
+            "baselinePairs": [ { "n_stoves": 1000, "usage": 0.92, "p_fuel": 2.1375, "ncv": 0.0156, "ef_co2": 112.0, "fnrb": 0.80, "ef_nonco2": 4.8 } ],
+            "activityPairs": [ { "n_stoves": 1000, "usage": 0.92, "p_fuel": 1.30, "ncv": 0.0156, "ef_co2": 112.0, "fnrb": 0.80, "ef_nonco2": 4.8 } ]
+        },
+        "emission_reduction": {}
+    }
+}'
+
+REM Expected er_y = 726.66552832 tCO2e (fixture T1_optB_shortlived_2026)
