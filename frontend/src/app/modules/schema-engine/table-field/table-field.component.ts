@@ -14,6 +14,7 @@ import { ITableField, SchemaField } from '@guardian/interfaces';
 import {DB_NAME, STORES_NAME} from "../../../constants";
 import { firstValueFrom } from 'rxjs';
 import { IPFSService } from 'src/app/services/ipfs.service';
+import { tableCsvFileName } from '../../../utils/table-csv-file-name';
 
 export interface ITableFieldRequired extends ITableField {
     columnKeys: string[];
@@ -787,7 +788,10 @@ export class TableFieldComponent implements OnInit, OnDestroy {
     }
 
     private makeDownloadFileName(): string {
-        return `table-${Date.now()}.csv`;
+        const label = this.item && 'field' in this.item
+            ? this.item.description
+            : this.ownerField?.description;
+        return tableCsvFileName(label);
     }
 
     async downloadCsv(): Promise<void> {

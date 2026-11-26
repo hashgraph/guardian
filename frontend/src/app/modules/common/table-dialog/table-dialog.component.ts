@@ -26,7 +26,7 @@ export class TableDialogComponent implements OnInit {
 
     private dataColumnDefs: ColDef[] = [];
 
-    get columnDefs(): ColDef[] { return [this.rowNumberCol, ...this.dataColumnDefs]; }
+    public columnDefs: ColDef[] = [];
 
     rowData: any[] = [];
     defaultColDef: ColDef = { editable: true, resizable: true, minWidth: 100 };
@@ -102,13 +102,11 @@ export class TableDialogComponent implements OnInit {
             if (!this.rowData.length) {
                 this.rowData = Array.from({ length: this.initRows }, () => this.makeEmptyRow());
             }
-
-            return;
-        }
-
-        if (!this.dataColumnDefs.length || (!this.rowData.length && !this.readOnly)) {
+        } else if (!this.dataColumnDefs.length || (!this.rowData.length && !this.readOnly)) {
             this.initBlank(this.initRows, this.initCols);
         }
+
+        this.columnDefs = [this.rowNumberCol, ...this.dataColumnDefs];
     }
 
     private updateRowNumberWidth(): void {
@@ -205,6 +203,7 @@ export class TableDialogComponent implements OnInit {
             for (let i = start; i < minCols; i++) {
                 this.dataColumnDefs.push(this.makeColDef(i));
             }
+            this.columnDefs = [this.rowNumberCol, ...this.dataColumnDefs];
             this.api?.setGridOption('columnDefs', this.columnDefs);
             columnsChanged = true;
 
