@@ -1,0 +1,42 @@
+{
+    "name": "VVB",
+    "description": "Validation and Verification Body (VVB) registry entry used by the Project Proponent to assign monitoring reports for verification.",
+    "entity": "VC",
+    "system": false,
+    "sourceVersion": "1.0.0",
+    "document": {
+        "$id": "#vvb",
+        "title": "VVB",
+        "type": "object",
+        "required": ["@context", "type", "credentialSubject"],
+        "properties": {
+            "@context": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "type": { "type": "array", "items": { "type": "string" }, "readOnly": true },
+            "credentialSubject": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "$ref": "#vvb-subject" }
+            }
+        },
+        "defs": {
+            "vvb-subject": {
+                "type": "object",
+                "required": ["id", "field0"],
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "title": "VVB DID",
+                        "description": "Decentralized identifier of the validation and verification body.",
+                        "minLength": 1
+                    },
+                    "field0": {
+                        "type": "string",
+                        "title": "VVB Name",
+                        "description": "Human-readable name of the validation and verification body.",
+                        "minLength": 1
+                    }
+                }
+            }
+        }
+    }
+}

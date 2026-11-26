@@ -1,0 +1,1593 @@
+{
+    "_comment": [
+        "Slice-scoped ACM0010 block tree.",
+        "Structure mirrors the repository precedents:",
+        "  Methodology Library/Tutorials/001-hello-world/Hello World.policy  (container + requestVcDocumentBlock)",
+        "  Methodology Library/DLT Earth Methodology Bounty Program/VM0047 V1.1/VM0047_1.1.policy  (customLogicBlock + done(), interfaceContainerBlock stage grouping)",
+        "  Methodology Library/Verra/Verified Carbon Standard (VCS)/VM0033/VM0033.policy  (dataTransformationAddon on a submission block, policyNavigation role/step shape)",
+        "blockType strings and key sets are taken verbatim from those files.",
+        "Field values are development placeholders: no live Hedera account or topic is used.",
+        "",
+        "WORKFLOW SHELL: the tree is grouped into five named stages so the already",
+        "verified calculation slices have an explicit position in the policy. Only the",
+        "five block types asserted by test/load-artifact.test.mjs are used, and only the",
+        "three existing schemas are referenced. No Project Hub block is added by this",
+        "shell; the pre-existing dataTransformationAddon on the project description is",
+        "left exactly as it was."
+    ],
+    "policy": {
+        "name": "ACM0010 Manure Management - Vertical Slice",
+        "description": "Vertical slice of ACM0010 GHG emission reductions from manure management systems. Baseline quantification (BE_CH4,y, BE_N2O,y, BE_y) and aerobic project emissions (PE_Aer,y) with a staged AWMS treatment chain and volatile solids derived from herd parameters.",
+        "topicDescription": "ACM0010 vertical slice",
+        "availability": "private",
+        "locationType": "local",
+        "codeVersion": "1.5.1",
+        "policyRoles": [
+            {
+                "uuid": "acm0010-role-project-proponent",
+                "name": "Project Proponent",
+                "description": "Defines the project, submits the project description and monitoring data.",
+                "roleId": null,
+                "groupId": null,
+                "default": true
+            },
+            {
+                "uuid": "acm0010-role-vvb",
+                "name": "VVB",
+                "description": "Independent validation and verification body.",
+                "roleId": null,
+                "groupId": null,
+                "default": false
+            }
+        ],
+        "policyTopics": [
+            {
+                "type": "any",
+                "name": "Project",
+                "description": "ACM0010 project topic for the vertical slice.",
+                "static": false,
+                "memoObj": "topic"
+            }
+        ],
+        "policyNavigation": [
+            {
+                "role": "Project Proponent",
+                "steps": [
+                    {
+                        "name": "Project Identification",
+                        "block": "acm0010_stage_identification",
+                        "level": 1
+                    },
+                    {
+                        "name": "New Project Description",
+                        "block": "acm0010_project_description",
+                        "level": 2
+                    },
+                    {
+                        "name": "Baseline Quantification",
+                        "block": "acm0010_stage_quantification",
+                        "level": 1
+                    },
+                    {
+                        "name": "Calculation Record",
+                        "block": "acm0010_stage_record",
+                        "level": 1
+                    },
+                    {
+                        "name": "New Calculation Record",
+                        "block": "acm0010_calculation_record",
+                        "level": 2
+                    },
+                    {
+                        "name": "Monitoring Report",
+                        "block": "acm0010_stage_monitoring",
+                        "level": 1
+                    },
+                    {
+                        "name": "New Monitoring Report",
+                        "block": "acm0010_monitoring_report",
+                        "level": 2
+                    }
+                ]
+            },
+            {
+                "role": "VVB",
+                "steps": [
+                    {
+                        "name": "VVB Registration",
+                        "block": "acm0010_vvb_registration_stage",
+                        "level": 1
+                    },
+                    {
+                        "name": "Register VVB",
+                        "block": "acm0010_vvb_registration",
+                        "level": 2
+                    },
+                    {
+                        "name": "Verify Monitoring Report",
+                        "block": "acm0010_vvb_verify_report",
+                        "level": 1
+                    },
+                    {
+                        "name": "Verified Report",
+                        "block": "acm0010_vvb_report_verified",
+                        "level": 2
+                    },
+                    {
+                        "name": "Rejected Report",
+                        "block": "acm0010_vvb_report_rejected",
+                        "level": 2
+                    }
+                ]
+            },
+            {
+                "role": "NO_ROLE",
+                "steps": []
+            },
+            {
+                "role": "OWNER",
+                "steps": [
+                    {
+                        "name": "VVB Approval",
+                        "block": "acm0010_stage_vvb_approval",
+                        "level": 1
+                    },
+                    {
+                        "name": "VVB Registry",
+                        "block": "acm0010_vvb_approval_grid",
+                        "level": 2
+                    }
+                ]
+            }
+        ],
+        "config": {
+            "id": "acm0010-root-container",
+            "blockType": "interfaceContainerBlock",
+            "defaultActive": true,
+            "permissions": [
+                "ANY_ROLE"
+            ],
+            "onErrorAction": "no-action",
+            "uiMetaData": {
+                "type": "blank",
+                "title": "ACM0010"
+            },
+            "tag": "acm0010_root",
+            "children": [
+                {
+                    "id": "acm0010-stage-identification",
+                    "blockType": "interfaceContainerBlock",
+                    "defaultActive": true,
+                    "permissions": [
+                        "ANY_ROLE"
+                    ],
+                    "onErrorAction": "no-action",
+                    "uiMetaData": {
+                        "type": "blank",
+                        "title": "Project Identification"
+                    },
+                    "tag": "acm0010_stage_identification",
+                    "children": [
+                        {
+                            "id": "acm0010-submit-pd",
+                            "blockType": "requestVcDocumentBlock",
+                            "defaultActive": true,
+                            "permissions": [
+                                "Project Proponent"
+                            ],
+                            "onErrorAction": "no-action",
+                            "editType": "new",
+                            "uiMetaData": {
+                                "type": "dialog",
+                                "content": "New Project Description",
+                                "dialogContent": "ACM0010 Project Description",
+                                "description": "Submit the ACM0010 project description for the slice",
+                                "title": "New ACM0010 Project Description"
+                            },
+                            "presetFields": [],
+                            "enableAdditionalData": false,
+                            "schema": "project-description",
+                            "schemaFile": "schemas/project-description.schema.json",
+                            "idType": "UUID",
+                            "tag": "acm0010_project_description",
+                            "children": [
+                                {
+                                    "id": "acm0010-pd-hub-transform",
+                                    "blockType": "dataTransformationAddon",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "Project Proponent"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "uiMetaData": {},
+                                    "expressionFile": "logic/project-hub-project-description-custom.js",
+                                    "tag": "project-description",
+                                    "children": [],
+                                    "events": [],
+                                    "artifacts": []
+                                }
+                            ],
+                            "events": [],
+                            "artifacts": []
+                        }
+                    ],
+                    "events": [],
+                    "artifacts": []
+                },
+                {
+                    "id": "acm0010-stage-quantification",
+                    "blockType": "interfaceContainerBlock",
+                    "defaultActive": true,
+                    "permissions": [
+                        "ANY_ROLE"
+                    ],
+                    "onErrorAction": "no-action",
+                    "uiMetaData": {
+                        "type": "blank",
+                        "title": "Baseline Quantification"
+                    },
+                    "tag": "acm0010_stage_quantification",
+                    "children": [
+                        {
+                            "id": "acm0010-calc-baseline-ch4",
+                            "blockType": "customLogicBlock",
+                            "defaultActive": true,
+                            "permissions": [
+                                "Project Proponent"
+                            ],
+                            "onErrorAction": "stop",
+                            "uiMetaData": {},
+                            "expressionFile": "logic/calculate-baseline-ch4.js",
+                            "documentSigner": "owner",
+                            "idType": "UUID",
+                            "outputSchema": "baseline-emission-reduction-calculation",
+                            "outputSchemaFile": "schemas/baseline-emission-reduction-calculation.schema.json",
+                            "tag": "acm0010_calculate_baseline_ch4",
+                            "children": [
+                                {
+                                    "id": "acm0010-calc-source-pd",
+                                    "blockType": "documentsSourceAddon",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "Project Proponent"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "filters": [],
+                                    "dataType": "vc-documents",
+                                    "schema": "project-description",
+                                    "tag": "acm0010_pd_source",
+                                    "children": [],
+                                    "events": [],
+                                    "artifacts": []
+                                }
+                            ],
+                            "events": [],
+                            "artifacts": []
+                        },
+                        {
+                            "id": "acm0010-calc-leakage",
+                            "blockType": "customLogicBlock",
+                            "defaultActive": true,
+                            "permissions": [
+                                "Project Proponent"
+                            ],
+                            "onErrorAction": "stop",
+                            "uiMetaData": {},
+                            "expressionFile": "logic/calculate-leakage.js",
+                            "documentSigner": "owner",
+                            "idType": "UUID",
+                            "outputSchema": "baseline-emission-reduction-calculation",
+                            "outputSchemaFile": "schemas/baseline-emission-reduction-calculation.schema.json",
+                            "tag": "acm0010_calculate_leakage",
+                            "children": [
+                                {
+                                    "id": "acm0010-calc-leakage-source-pd",
+                                    "blockType": "documentsSourceAddon",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "Project Proponent"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "filters": [],
+                                    "dataType": "vc-documents",
+                                    "schema": "project-description",
+                                    "tag": "acm0010_leakage_pd_source",
+                                    "children": [],
+                                    "events": [],
+                                    "artifacts": []
+                                }
+                            ],
+                            "events": [],
+                            "artifacts": []
+                        },
+                        {
+                            "id": "acm0010-calc-er",
+                            "blockType": "customLogicBlock",
+                            "defaultActive": true,
+                            "permissions": [
+                                "Project Proponent"
+                            ],
+                            "onErrorAction": "stop",
+                            "uiMetaData": {},
+                            "expressionFile": "logic/calculate-er.js",
+                            "documentSigner": "owner",
+                            "idType": "UUID",
+                            "outputSchema": "baseline-emission-reduction-calculation",
+                            "outputSchemaFile": "schemas/baseline-emission-reduction-calculation.schema.json",
+                            "tag": "acm0010_calculate_er",
+                            "children": [
+                                {
+                                    "id": "acm0010-calc-er-source-pd",
+                                    "blockType": "documentsSourceAddon",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "Project Proponent"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "filters": [],
+                                    "dataType": "vc-documents",
+                                    "schema": "project-description",
+                                    "tag": "acm0010_er_pd_source",
+                                    "children": [],
+                                    "events": [],
+                                    "artifacts": []
+                                }
+                            ],
+                            "events": [],
+                            "artifacts": []
+                        },
+                        {
+                            "id": "acm0010-calc-pe-flare",
+                            "blockType": "customLogicBlock",
+                            "defaultActive": true,
+                            "permissions": [
+                                "Project Proponent"
+                            ],
+                            "onErrorAction": "stop",
+                            "uiMetaData": {},
+                            "expressionFile": "logic/calculate-pe-flare.js",
+                            "documentSigner": "owner",
+                            "idType": "UUID",
+                            "outputSchema": "baseline-emission-reduction-calculation",
+                            "outputSchemaFile": "schemas/baseline-emission-reduction-calculation.schema.json",
+                            "tag": "acm0010_calculate_pe_flare",
+                            "children": [
+                                {
+                                    "id": "acm0010-calc-pe-flare-source-pd",
+                                    "blockType": "documentsSourceAddon",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "Project Proponent"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "filters": [],
+                                    "dataType": "vc-documents",
+                                    "schema": "project-description",
+                                    "tag": "acm0010_pe_flare_pd_source",
+                                    "children": [],
+                                    "events": [],
+                                    "artifacts": []
+                                }
+                            ],
+                            "events": [],
+                            "artifacts": []
+                        },
+                        {
+                            "id": "acm0010-calc-pe-transport",
+                            "blockType": "customLogicBlock",
+                            "defaultActive": true,
+                            "permissions": [
+                                "Project Proponent"
+                            ],
+                            "onErrorAction": "stop",
+                            "uiMetaData": {},
+                            "expressionFile": "logic/calculate-pe-transport.js",
+                            "documentSigner": "owner",
+                            "idType": "UUID",
+                            "outputSchema": "baseline-emission-reduction-calculation",
+                            "outputSchemaFile": "schemas/baseline-emission-reduction-calculation.schema.json",
+                            "tag": "acm0010_calculate_pe_transport",
+                            "children": [
+                                {
+                                    "id": "acm0010-calc-pe-transport-source-pd",
+                                    "blockType": "documentsSourceAddon",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "Project Proponent"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "filters": [],
+                                    "dataType": "vc-documents",
+                                    "schema": "project-description",
+                                    "tag": "acm0010_pe_transport_pd_source",
+                                    "children": [],
+                                    "events": [],
+                                    "artifacts": []
+                                }
+                            ],
+                            "events": [],
+                            "artifacts": []
+                        },
+                        {
+                            "id": "acm0010-calc-pe-elec-heat",
+                            "blockType": "customLogicBlock",
+                            "defaultActive": true,
+                            "permissions": [
+                                "Project Proponent"
+                            ],
+                            "onErrorAction": "stop",
+                            "uiMetaData": {},
+                            "expressionFile": "logic/calculate-pe-elec-heat.js",
+                            "documentSigner": "owner",
+                            "idType": "UUID",
+                            "outputSchema": "baseline-emission-reduction-calculation",
+                            "outputSchemaFile": "schemas/baseline-emission-reduction-calculation.schema.json",
+                            "tag": "acm0010_calculate_pe_elec_heat",
+                            "children": [
+                                {
+                                    "id": "acm0010-calc-pe-elec-heat-source-pd",
+                                    "blockType": "documentsSourceAddon",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "Project Proponent"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "filters": [],
+                                    "dataType": "vc-documents",
+                                    "schema": "project-description",
+                                    "tag": "acm0010_pe_elec_heat_pd_source",
+                                    "children": [],
+                                    "events": [],
+                                    "artifacts": []
+                                }
+                            ],
+                            "events": [],
+                            "artifacts": []
+                        },
+                        {
+                            "id": "acm0010-calc-pe-ad",
+                            "blockType": "customLogicBlock",
+                            "defaultActive": true,
+                            "permissions": [
+                                "Project Proponent"
+                            ],
+                            "onErrorAction": "stop",
+                            "uiMetaData": {},
+                            "expressionFile": "logic/calculate-pe-ad.js",
+                            "documentSigner": "owner",
+                            "idType": "UUID",
+                            "outputSchema": "baseline-emission-reduction-calculation",
+                            "outputSchemaFile": "schemas/baseline-emission-reduction-calculation.schema.json",
+                            "tag": "acm0010_calculate_pe_ad",
+                            "children": [
+                                {
+                                    "id": "acm0010-calc-pe-ad-source-pd",
+                                    "blockType": "documentsSourceAddon",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "Project Proponent"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "filters": [],
+                                    "dataType": "vc-documents",
+                                    "schema": "project-description",
+                                    "tag": "acm0010_pe_ad_pd_source",
+                                    "children": [],
+                                    "events": [],
+                                    "artifacts": []
+                                }
+                            ],
+                            "events": [],
+                            "artifacts": []
+                        }
+                    ],
+                    "events": [],
+                    "artifacts": []
+                },
+                {
+                    "id": "acm0010-stage-record",
+                    "blockType": "interfaceContainerBlock",
+                    "defaultActive": true,
+                    "permissions": [
+                        "ANY_ROLE"
+                    ],
+                    "onErrorAction": "no-action",
+                    "uiMetaData": {
+                        "type": "blank",
+                        "title": "Calculation Record"
+                    },
+                    "tag": "acm0010_stage_record",
+                    "children": [
+                        {
+                            "id": "acm0010-calculation-record",
+                            "blockType": "requestVcDocumentBlock",
+                            "defaultActive": true,
+                            "permissions": [
+                                "Project Proponent"
+                            ],
+                            "onErrorAction": "no-action",
+                            "editType": "new",
+                            "uiMetaData": {
+                                "type": "dialog",
+                                "content": "New Calculation Record",
+                                "dialogContent": "ACM0010 Calculation Record",
+                                "description": "Submit the result of the ACM0010 quantification for this monitoring year",
+                                "title": "New ACM0010 Calculation Record"
+                            },
+                            "presetFields": [],
+                            "enableAdditionalData": false,
+                            "schema": "baseline-emission-reduction-calculation",
+                            "schemaFile": "schemas/baseline-emission-reduction-calculation.schema.json",
+                            "idType": "UUID",
+                            "tag": "acm0010_calculation_record",
+                            "children": [
+                                {
+                                    "id": "acm0010-record-source-calc",
+                                    "blockType": "documentsSourceAddon",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "Project Proponent"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "filters": [],
+                                    "dataType": "vc-documents",
+                                    "schema": "baseline-emission-reduction-calculation",
+                                    "tag": "acm0010_calc_record_source",
+                                    "children": [],
+                                    "events": [],
+                                    "artifacts": []
+                                }
+                            ],
+                            "events": [],
+                            "artifacts": []
+                        }
+                    ],
+                    "events": [],
+                    "artifacts": []
+                },
+                {
+                    "id": "acm0010-stage-monitoring",
+                    "blockType": "interfaceContainerBlock",
+                    "defaultActive": true,
+                    "permissions": [
+                        "ANY_ROLE"
+                    ],
+                    "onErrorAction": "no-action",
+                    "uiMetaData": {
+                        "type": "blank",
+                        "title": "Monitoring Report"
+                    },
+                    "tag": "acm0010_stage_monitoring",
+                    "children": [
+                        {
+                            "id": "acm0010-submit-monitoring-report",
+                            "blockType": "requestVcDocumentBlock",
+                            "defaultActive": true,
+                            "permissions": [
+                                "Project Proponent"
+                            ],
+                            "onErrorAction": "no-action",
+                            "editType": "new",
+                            "uiMetaData": {
+                                "type": "dialog",
+                                "content": "New Monitoring Report",
+                                "dialogContent": "ACM0010 Monitoring Report",
+                                "description": "Submit the ACM0010 monitoring report for this monitoring year",
+                                "title": "New ACM0010 Monitoring Report"
+                            },
+                            "presetFields": [],
+                            "enableAdditionalData": false,
+                            "schema": "monitoring-report",
+                            "schemaFile": "schemas/monitoring-report.schema.json",
+                            "idType": "UUID",
+                            "tag": "acm0010_monitoring_report",
+                            "children": [
+                                {
+                                    "id": "acm0010-mr-hub-transform",
+                                    "blockType": "dataTransformationAddon",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "Project Proponent"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "uiMetaData": {},
+                                    "expressionFile": "logic/monitoring-report-project-description-custom.js",
+                                    "tag": "monitoring-report",
+                                    "children": [],
+                                    "events": [],
+                                    "artifacts": []
+                                },
+                                {
+                                    "id": "acm0010-mr-filters",
+                                    "blockType": "filtersAddon",
+                                    "defaultActive": true,
+                                    "permissions": [
+                                        "Project Proponent"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "uiMetaData": {
+                                        "options": [],
+                                        "content": "Project ID"
+                                    },
+                                    "type": "dropdown",
+                                    "field": "document.credentialSubject.0.ref",
+                                    "optionName": "document.credentialSubject.0.ref",
+                                    "optionValue": "document.credentialSubject.0.ref",
+                                    "canBeEmpty": true,
+                                    "tag": "acm0010_mr_filters",
+                                    "children": [
+                                        {
+                                            "id": "acm0010-mr-filtered",
+                                            "blockType": "documentsSourceAddon",
+                                            "defaultActive": false,
+                                            "permissions": [
+                                                "Project Proponent"
+                                            ],
+                                            "onErrorAction": "no-action",
+                                            "filters": [],
+                                            "dataType": "vc-documents",
+                                            "schema": "monitoring-report",
+                                            "tag": "acm0010_mr_filtered_reports",
+                                            "children": [],
+                                            "events": [],
+                                            "artifacts": []
+                                        }
+                                    ],
+                                    "events": [],
+                                    "artifacts": []
+                                },
+                                {
+                                    "id": "acm0010-mr-history",
+                                    "blockType": "historyAddon",
+                                    "defaultActive": true,
+                                    "permissions": [
+                                        "Project Proponent"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "uiMetaData": {},
+                                    "tag": "acm0010_mr_history"
+                                },
+                                {
+                                    "id": "acm0010-mr-assign-vvb",
+                                    "blockType": "interfaceActionBlock",
+                                    "defaultActive": true,
+                                    "permissions": [
+                                        "Project Proponent"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "uiMetaData": {
+                                        "options": [],
+                                        "content": "VVB"
+                                    },
+                                    "type": "dropdown",
+                                    "field": "assignedTo",
+                                    "bindBlock": "acm0010_mr_save_assign_vvb",
+                                    "name": "document.credentialSubject.0.field0",
+                                    "value": "document.credentialSubject.0.id",
+                                    "tag": "acm0010_mr_assign_vvb",
+                                    "children": [
+                                        {
+                                            "id": "acm0010-mr-assign-vvb-docs",
+                                            "blockType": "documentsSourceAddon",
+                                            "defaultActive": false,
+                                            "permissions": [
+                                                "Project Proponent"
+                                            ],
+                                            "onErrorAction": "no-action",
+                                            "filters": [
+                                                {
+                                                    "value": "APPROVED",
+                                                    "field": "option.status",
+                                                    "type": "equal"
+                                                }
+                                            ],
+                                            "dataType": "vc-documents",
+                                            "schema": "vvb",
+                                            "tag": "acm0010_mr_assign_vvb_docs",
+                                            "children": [],
+                                            "events": [],
+                                            "artifacts": []
+                                        }
+                                    ],
+                                    "events": [
+                                        {
+                                            "target": "acm0010_mr_save_assign_vvb",
+                                            "source": "acm0010_mr_assign_vvb",
+                                            "input": "RunEvent",
+                                            "output": "DropdownEvent",
+                                            "actor": "",
+                                            "disabled": false
+                                        }
+                                    ],
+                                    "artifacts": []
+                                },
+                                {
+                                    "id": "acm0010-mr-save-assign-vvb",
+                                    "blockType": "sendToGuardianBlock",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "Project Proponent"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "uiMetaData": {},
+                                    "options": [],
+                                    "dataType": "",
+                                    "entityType": "report",
+                                    "dataSource": "database",
+                                    "documentType": "vc",
+                                    "stopPropagation": true,
+                                    "tag": "acm0010_mr_save_assign_vvb",
+                                    "children": [],
+                                    "events": [
+                                        {
+                                            "target": "acm0010_vvb_report_grid",
+                                            "source": "acm0010_mr_save_assign_vvb",
+                                            "input": "",
+                                            "output": "RefreshEvent",
+                                            "actor": "",
+                                            "disabled": false
+                                        }
+                                    ],
+                                    "artifacts": []
+                                },
+                                {
+                                    "id": "acm0010-mr-revoke",
+                                    "blockType": "revocationBlock",
+                                    "defaultActive": true,
+                                    "permissions": [
+                                        "Project Proponent"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "uiMetaData": {},
+                                    "tag": "acm0010_mr_revoke_report"
+                                },
+                                {
+                                    "id": "acm0010-mr-notify-error",
+                                    "blockType": "notificationBlock",
+                                    "defaultActive": true,
+                                    "permissions": [
+                                        "Project Proponent"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "uiMetaData": {},
+                                    "title": "Monitoring Report",
+                                    "message": "The monitoring report could not be processed. Please review the submitted data and try again.",
+                                    "type": "ERROR",
+                                    "user": "DOCUMENT_OWNER",
+                                    "tag": "acm0010_mr_notify_error"
+                                },
+                                {
+                                    "id": "acm0010-mr-switch",
+                                    "blockType": "switchBlock",
+                                    "defaultActive": true,
+                                    "permissions": [
+                                        "Project Proponent"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "uiMetaData": {},
+                                    "executionFlow": "firstTrue",
+                                    "conditions": [
+                                        {
+                                            "type": "unconditional",
+                                            "tag": "Condition_0"
+                                        }
+                                    ],
+                                    "tag": "acm0010_mr_switch"
+                                }
+                            ],
+                            "events": [
+                                {
+                                    "target": "acm0010_mr_save_report",
+                                    "source": "acm0010_monitoring_report",
+                                    "input": "RunEvent",
+                                    "output": "RunEvent",
+                                    "actor": "",
+                                    "disabled": false
+                                }
+                            ],
+                            "artifacts": []
+                        },
+                        {
+                            "id": "acm0010-mr-save-report",
+                            "blockType": "sendToGuardianBlock",
+                            "defaultActive": false,
+                            "permissions": [
+                                "Project Proponent"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {},
+                            "options": [
+                                {
+                                    "name": "status",
+                                    "value": "Waiting for Verification"
+                                }
+                            ],
+                            "dataType": "",
+                            "entityType": "report",
+                            "dataSource": "database",
+                            "documentType": "vc",
+                            "stopPropagation": false,
+                            "tag": "acm0010_mr_save_report",
+                            "children": [],
+                            "events": [
+                                {
+                                    "target": "acm0010_vvb_report_grid",
+                                    "source": "acm0010_mr_save_report",
+                                    "input": "",
+                                    "output": "RefreshEvent",
+                                    "actor": "",
+                                    "disabled": false
+                                }
+                            ],
+                            "artifacts": []
+                        }
+                    ],
+                    "events": [],
+                    "artifacts": []
+                },
+                {
+                    "id": "acm0010-stage-vvb",
+                    "blockType": "interfaceContainerBlock",
+                    "defaultActive": true,
+                    "permissions": [
+                        "VVB"
+                    ],
+                    "onErrorAction": "no-action",
+                    "uiMetaData": {
+                        "type": "blank",
+                        "title": "VVB Verification"
+                    },
+                    "tag": "acm0010_stage_vvb",
+                    "children": [
+                        {
+                            "id": "acm0010-vvb-registration-container",
+                            "blockType": "interfaceContainerBlock",
+                            "defaultActive": true,
+                            "permissions": [
+                                "VVB"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {
+                                "type": "blank",
+                                "title": "VVB Registration"
+                            },
+                            "tag": "acm0010_vvb_registration_stage",
+                            "children": [
+                                {
+                                    "id": "acm0010-vvb-registration",
+                                    "blockType": "requestVcDocumentBlock",
+                                    "defaultActive": true,
+                                    "permissions": [
+                                        "VVB"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "editType": "new",
+                                    "uiMetaData": {
+                                        "type": "dialog",
+                                        "content": "Register VVB",
+                                        "dialogContent": "VVB Registration",
+                                        "description": "Register this organisation as a validation and verification body",
+                                        "title": "VVB Registration"
+                                    },
+                                    "presetFields": [
+                                        {
+                                            "name": "field0",
+                                            "title": "VVB Name",
+                                            "value": "field0",
+                                            "readonly": false
+                                        }
+                                    ],
+                                    "enableAdditionalData": false,
+                                    "schema": "vvb",
+                                    "schemaFile": "schemas/vvb.schema.json",
+                                    "idType": "OWNER",
+                                    "tag": "acm0010_vvb_registration",
+                                    "children": [
+                                        {
+                                            "id": "acm0010-vvb-registration-rejected",
+                                            "blockType": "documentsSourceAddon",
+                                            "defaultActive": false,
+                                            "permissions": [
+                                                "VVB"
+                                            ],
+                                            "onErrorAction": "no-action",
+                                            "filters": [
+                                                {
+                                                    "value": "REJECTED",
+                                                    "field": "option.status",
+                                                    "type": "equal"
+                                                }
+                                            ],
+                                            "dataType": "vc-documents",
+                                            "schema": "vvb",
+                                            "onlyOwnDocuments": true,
+                                            "tag": "acm0010_vvb_registration_rejected",
+                                            "children": [],
+                                            "events": [],
+                                            "artifacts": []
+                                        }
+                                    ],
+                                    "events": [
+                                        {
+                                            "target": "acm0010_vvb_save_registration",
+                                            "source": "acm0010_vvb_registration",
+                                            "input": "RunEvent",
+                                            "output": "RunEvent",
+                                            "actor": "",
+                                            "disabled": false
+                                        }
+                                    ],
+                                    "artifacts": []
+                                },
+                                {
+                                    "id": "acm0010-vvb-save-registration",
+                                    "blockType": "sendToGuardianBlock",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "VVB"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "uiMetaData": {},
+                                    "options": [
+                                        {
+                                            "name": "status",
+                                            "value": "Waiting for Approval"
+                                        }
+                                    ],
+                                    "dataType": "",
+                                    "entityType": "vvb",
+                                    "dataSource": "database",
+                                    "documentType": "vc",
+                                    "stopPropagation": false,
+                                    "tag": "acm0010_vvb_save_registration",
+                                    "children": [],
+                                    "events": [],
+                                    "artifacts": []
+                                }
+                            ],
+                            "events": [],
+                            "artifacts": []
+                        },
+                        {
+                            "id": "acm0010-vvb-verify-report",
+                            "blockType": "interfaceContainerBlock",
+                            "defaultActive": true,
+                            "permissions": [
+                                "VVB"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {
+                                "type": "blank",
+                                "title": "Verify Monitoring Report"
+                            },
+                            "tag": "acm0010_vvb_verify_report",
+                            "children": [
+                                {
+                                    "id": "acm0010-vvb-report-grid",
+                                    "blockType": "interfaceDocumentsSourceBlock",
+                                    "defaultActive": true,
+                                    "permissions": [
+                                        "VVB"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "uiMetaData": {
+                                        "fields": [
+                                            {
+                                                "title": "Project ID",
+                                                "name": "document.credentialSubject.0.ref",
+                                                "tooltip": "",
+                                                "type": "text"
+                                            },
+                                            {
+                                                "title": "Monitoring Year",
+                                                "name": "document.credentialSubject.0.monitoringYear",
+                                                "tooltip": "",
+                                                "type": "text"
+                                            },
+                                            {
+                                                "title": "Emission Reductions (tCO2e)",
+                                                "name": "document.credentialSubject.0.emissionReductionsTCo2e",
+                                                "tooltip": "",
+                                                "type": "text"
+                                            },
+                                            {
+                                                "title": "Status",
+                                                "name": "option.status",
+                                                "tooltip": "",
+                                                "type": "text",
+                                                "width": ""
+                                            },
+                                            {
+                                                "title": "Operation",
+                                                "name": "option.status",
+                                                "tooltip": "",
+                                                "type": "block",
+                                                "action": "",
+                                                "url": "",
+                                                "dialogContent": "",
+                                                "dialogClass": "",
+                                                "dialogType": "",
+                                                "bindBlock": "acm0010_vvb_approve_report_btn",
+                                                "bindGroup": "acm0010_vvb_waiting_reports",
+                                                "width": "150px"
+                                            },
+                                            {
+                                                "title": "Document",
+                                                "name": "document",
+                                                "tooltip": "",
+                                                "type": "button",
+                                                "action": "dialog",
+                                                "url": "",
+                                                "dialogContent": "VC",
+                                                "dialogClass": "",
+                                                "dialogType": "json",
+                                                "bindBlock": "",
+                                                "content": "View Document",
+                                                "uiClass": "link",
+                                                "width": "170px"
+                                            }
+                                        ]
+                                    },
+                                    "dependencies": [
+                                        "acm0010_vvb_save_verified_report",
+                                        "acm0010_vvb_save_rejected_report"
+                                    ],
+                                    "tag": "acm0010_vvb_report_grid",
+                                    "children": [
+                                        {
+                                            "id": "acm0010-vvb-waiting-for-verification-reports",
+                                            "blockType": "documentsSourceAddon",
+                                            "defaultActive": true,
+                                            "permissions": [
+                                                "VVB"
+                                            ],
+                                            "onErrorAction": "no-action",
+                                            "filters": [
+                                                {
+                                                    "value": "Waiting for Verification",
+                                                    "field": "option.status",
+                                                    "type": "equal"
+                                                }
+                                            ],
+                                            "dataType": "vc-documents",
+                                            "schema": "monitoring-report",
+                                            "onlyAssignDocuments": true,
+                                            "tag": "acm0010_vvb_waiting_reports",
+                                            "children": [],
+                                            "events": [],
+                                            "artifacts": []
+                                        },
+                                        {
+                                            "id": "acm0010-vvb-verified-reports",
+                                            "blockType": "documentsSourceAddon",
+                                            "defaultActive": false,
+                                            "permissions": [
+                                                "VVB"
+                                            ],
+                                            "onErrorAction": "no-action",
+                                            "filters": [
+                                                {
+                                                    "value": "Verified",
+                                                    "field": "option.status",
+                                                    "type": "equal"
+                                                }
+                                            ],
+                                            "dataType": "vc-documents",
+                                            "schema": "monitoring-report",
+                                            "onlyAssignDocuments": true,
+                                            "tag": "acm0010_vvb_verified_reports",
+                                            "children": [],
+                                            "events": [],
+                                            "artifacts": []
+                                        },
+                                        {
+                                            "id": "acm0010-vvb-rejected-reports",
+                                            "blockType": "documentsSourceAddon",
+                                            "defaultActive": false,
+                                            "permissions": [
+                                                "VVB"
+                                            ],
+                                            "onErrorAction": "no-action",
+                                            "filters": [
+                                                {
+                                                    "value": "REJECTED",
+                                                    "field": "option.status",
+                                                    "type": "equal"
+                                                }
+                                            ],
+                                            "dataType": "vc-documents",
+                                            "schema": "monitoring-report",
+                                            "onlyAssignDocuments": true,
+                                            "tag": "acm0010_vvb_rejected_reports",
+                                            "children": [],
+                                            "events": [],
+                                            "artifacts": []
+                                        },
+                                        {
+                                            "id": "acm0010-vvb-project-filter",
+                                            "blockType": "filtersAddon",
+                                            "defaultActive": true,
+                                            "permissions": [
+                                                "VVB"
+                                            ],
+                                            "onErrorAction": "no-action",
+                                            "uiMetaData": {
+                                                "options": [],
+                                                "content": "Project ID"
+                                            },
+                                            "type": "dropdown",
+                                            "field": "document.credentialSubject.0.ref",
+                                            "optionName": "document.credentialSubject.0.id",
+                                            "optionValue": "document.credentialSubject.0.id",
+                                            "canBeEmpty": true,
+                                            "tag": "acm0010_vvb_project_filter",
+                                            "children": [
+                                                {
+                                                    "id": "acm0010-vvb-project-filter-source",
+                                                    "blockType": "documentsSourceAddon",
+                                                    "defaultActive": true,
+                                                    "permissions": [
+                                                        "VVB"
+                                                    ],
+                                                    "onErrorAction": "no-action",
+                                                    "filters": [],
+                                                    "dataType": "vc-documents",
+                                                    "schema": "project-description",
+                                                    "onlyAssignDocuments": false,
+                                                    "tag": "acm0010_vvb_project_filter_source",
+                                                    "children": [],
+                                                    "events": [],
+                                                    "artifacts": []
+                                                }
+                                            ],
+                                            "events": [],
+                                            "artifacts": []
+                                        },
+                                        {
+                                            "id": "acm0010-vvb-history",
+                                            "blockType": "historyAddon",
+                                            "defaultActive": true,
+                                            "permissions": [
+                                                "VVB"
+                                            ],
+                                            "onErrorAction": "no-action",
+                                            "uiMetaData": {},
+                                            "tag": "acm0010_vvb_history"
+                                        }
+                                    ],
+                                    "events": [],
+                                    "artifacts": []
+                                },
+                                {
+                                    "id": "acm0010-vvb-approve-btn",
+                                    "blockType": "buttonBlock",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "VVB"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "uiMetaData": {
+                                        "buttons": [
+                                            {
+                                                "tag": "Button_0",
+                                                "name": "Verify",
+                                                "type": "selector",
+                                                "filters": [],
+                                                "field": "option.status",
+                                                "value": "Verified",
+                                                "uiClass": "btn-approve"
+                                            },
+                                            {
+                                                "tag": "Button_1",
+                                                "name": "Reject",
+                                                "type": "selector-dialog",
+                                                "filters": [],
+                                                "title": "Reject",
+                                                "description": "Enter reject reason",
+                                                "field": "option.status",
+                                                "value": "REJECTED",
+                                                "uiClass": "btn-reject"
+                                            }
+                                        ]
+                                    },
+                                    "tag": "acm0010_vvb_approve_report_btn",
+                                    "children": [],
+                                    "events": [
+                                        {
+                                            "target": "acm0010_vvb_save_verified_report",
+                                            "source": "acm0010_vvb_approve_report_btn",
+                                            "input": "RunEvent",
+                                            "output": "Button_0",
+                                            "actor": "",
+                                            "disabled": false
+                                        },
+                                        {
+                                            "target": "acm0010_vvb_save_rejected_report",
+                                            "source": "acm0010_vvb_approve_report_btn",
+                                            "input": "RunEvent",
+                                            "output": "Button_1",
+                                            "actor": "",
+                                            "disabled": false
+                                        }
+                                    ],
+                                    "artifacts": []
+                                },
+                                {
+                                    "id": "acm0010-vvb-save-verified",
+                                    "blockType": "sendToGuardianBlock",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "VVB"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "uiMetaData": {},
+                                    "options": [
+                                        {
+                                            "name": "status",
+                                            "value": "Verified"
+                                        }
+                                    ],
+                                    "dataType": "",
+                                    "entityType": "report",
+                                    "dataSource": "database",
+                                    "documentType": "vc",
+                                    "stopPropagation": false,
+                                    "tag": "acm0010_vvb_save_verified_report",
+                                    "children": [],
+                                    "events": [],
+                                    "artifacts": []
+                                },
+                                {
+                                    "id": "acm0010-vvb-save-rejected",
+                                    "blockType": "sendToGuardianBlock",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "VVB"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "uiMetaData": {},
+                                    "options": [
+                                        {
+                                            "name": "status",
+                                            "value": "REJECTED"
+                                        }
+                                    ],
+                                    "dataType": "",
+                                    "entityType": "report",
+                                    "dataSource": "database",
+                                    "documentType": "vc",
+                                    "stopPropagation": false,
+                                    "tag": "acm0010_vvb_save_rejected_report",
+                                    "children": [],
+                                    "events": [],
+                                    "artifacts": []
+                                }
+                            ],
+                            "events": [],
+                            "artifacts": []
+                        },
+                        {
+                            "id": "acm0010-vvb-report-verified",
+                            "blockType": "informationBlock",
+                            "defaultActive": true,
+                            "permissions": [
+                                "VVB"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {
+                                "type": "blank",
+                                "title": "Verified Report"
+                            },
+                            "tag": "acm0010_vvb_report_verified"
+                        },
+                        {
+                            "id": "acm0010-vvb-report-rejected",
+                            "blockType": "informationBlock",
+                            "defaultActive": true,
+                            "permissions": [
+                                "VVB"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {
+                                "type": "blank",
+                                "title": "Rejected Report"
+                            },
+                            "tag": "acm0010_vvb_report_rejected"
+                        }
+                    ],
+                    "events": [],
+                    "artifacts": []
+                },
+                {
+                    "id": "acm0010-stage-vvb-approval",
+                    "blockType": "interfaceContainerBlock",
+                    "defaultActive": true,
+                    "permissions": [
+                        "OWNER"
+                    ],
+                    "onErrorAction": "no-action",
+                    "uiMetaData": {
+                        "type": "blank",
+                        "title": "VVB Approval"
+                    },
+                    "tag": "acm0010_stage_vvb_approval",
+                    "children": [
+                        {
+                            "id": "acm0010-vvb-approval-grid",
+                            "blockType": "interfaceDocumentsSourceBlock",
+                            "defaultActive": true,
+                            "permissions": [
+                                "OWNER"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {
+                                "fields": [
+                                    {
+                                        "title": "VVB DID",
+                                        "name": "document.credentialSubject.0.id",
+                                        "tooltip": "",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "title": "VVB Name",
+                                        "name": "document.credentialSubject.0.field0",
+                                        "tooltip": "",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "title": "Status",
+                                        "name": "option.status",
+                                        "tooltip": "",
+                                        "type": "text",
+                                        "width": ""
+                                    },
+                                    {
+                                        "title": "Operation",
+                                        "name": "option.status",
+                                        "tooltip": "",
+                                        "type": "block",
+                                        "action": "",
+                                        "url": "",
+                                        "dialogContent": "",
+                                        "dialogClass": "",
+                                        "dialogType": "",
+                                        "bindBlock": "acm0010_vvb_approval_btn",
+                                        "bindGroup": "acm0010_vvb_approval_waiting",
+                                        "width": "150px"
+                                    },
+                                    {
+                                        "title": "Document",
+                                        "name": "document",
+                                        "tooltip": "",
+                                        "type": "button",
+                                        "action": "dialog",
+                                        "url": "",
+                                        "dialogContent": "VC",
+                                        "dialogClass": "",
+                                        "dialogType": "json",
+                                        "bindBlock": "",
+                                        "content": "View Document",
+                                        "uiClass": "link",
+                                        "width": "170px"
+                                    }
+                                ]
+                            },
+                            "dependencies": [
+                                "acm0010_vvb_save_approved_registration",
+                                "acm0010_vvb_save_rejected_registration"
+                            ],
+                            "tag": "acm0010_vvb_approval_grid",
+                            "children": [
+                                {
+                                    "id": "acm0010-acm0010-vvb-approval-waiting",
+                                    "blockType": "documentsSourceAddon",
+                                    "defaultActive": true,
+                                    "permissions": [
+                                        "OWNER"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "filters": [
+                                        {
+                                            "value": "Waiting for Approval",
+                                            "field": "option.status",
+                                            "type": "equal"
+                                        }
+                                    ],
+                                    "dataType": "vc-documents",
+                                    "schema": "vvb",
+                                    "tag": "acm0010_vvb_approval_waiting",
+                                    "children": [],
+                                    "events": [],
+                                    "artifacts": []
+                                },
+                                {
+                                    "id": "acm0010-acm0010-vvb-approval-approved",
+                                    "blockType": "documentsSourceAddon",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "OWNER"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "filters": [
+                                        {
+                                            "value": "APPROVED",
+                                            "field": "option.status",
+                                            "type": "equal"
+                                        }
+                                    ],
+                                    "dataType": "vc-documents",
+                                    "schema": "vvb",
+                                    "tag": "acm0010_vvb_approval_approved",
+                                    "children": [],
+                                    "events": [],
+                                    "artifacts": []
+                                },
+                                {
+                                    "id": "acm0010-acm0010-vvb-approval-rejected",
+                                    "blockType": "documentsSourceAddon",
+                                    "defaultActive": false,
+                                    "permissions": [
+                                        "OWNER"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "filters": [
+                                        {
+                                            "value": "REJECTED",
+                                            "field": "option.status",
+                                            "type": "equal"
+                                        }
+                                    ],
+                                    "dataType": "vc-documents",
+                                    "schema": "vvb",
+                                    "tag": "acm0010_vvb_approval_rejected",
+                                    "children": [],
+                                    "events": [],
+                                    "artifacts": []
+                                },
+                                {
+                                    "id": "acm0010-vvb-approval-history",
+                                    "blockType": "historyAddon",
+                                    "defaultActive": true,
+                                    "permissions": [
+                                        "OWNER"
+                                    ],
+                                    "onErrorAction": "no-action",
+                                    "uiMetaData": {},
+                                    "tag": "acm0010_vvb_approval_history"
+                                }
+                            ],
+                            "events": [],
+                            "artifacts": []
+                        },
+                        {
+                            "id": "acm0010-vvb-approval-btn",
+                            "blockType": "buttonBlock",
+                            "defaultActive": false,
+                            "permissions": [
+                                "OWNER"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {
+                                "buttons": [
+                                    {
+                                        "tag": "Button_0",
+                                        "name": "Approve",
+                                        "type": "selector",
+                                        "filters": [],
+                                        "field": "option.status",
+                                        "value": "APPROVED",
+                                        "uiClass": "btn-approve"
+                                    },
+                                    {
+                                        "tag": "Button_1",
+                                        "name": "Reject",
+                                        "type": "selector-dialog",
+                                        "filters": [],
+                                        "title": "Reject",
+                                        "description": "Enter reject reason",
+                                        "field": "option.status",
+                                        "value": "REJECTED",
+                                        "uiClass": "btn-reject"
+                                    }
+                                ]
+                            },
+                            "tag": "acm0010_vvb_approval_btn",
+                            "children": [],
+                            "events": [
+                                {
+                                    "target": "acm0010_vvb_save_approved_registration",
+                                    "source": "acm0010_vvb_approval_btn",
+                                    "input": "RunEvent",
+                                    "output": "Button_0",
+                                    "actor": "",
+                                    "disabled": false
+                                },
+                                {
+                                    "target": "acm0010_vvb_save_rejected_registration",
+                                    "source": "acm0010_vvb_approval_btn",
+                                    "input": "RunEvent",
+                                    "output": "Button_1",
+                                    "actor": "",
+                                    "disabled": false
+                                }
+                            ],
+                            "artifacts": []
+                        },
+                        {
+                            "id": "acm0010-vvb-save-approved-registration",
+                            "blockType": "sendToGuardianBlock",
+                            "defaultActive": false,
+                            "permissions": [
+                                "OWNER"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {},
+                            "options": [
+                                {
+                                    "name": "status",
+                                    "value": "APPROVED"
+                                }
+                            ],
+                            "dataType": "",
+                            "entityType": "vvb",
+                            "dataSource": "database",
+                            "documentType": "vc",
+                            "stopPropagation": false,
+                            "tag": "acm0010_vvb_save_approved_registration",
+                            "children": [],
+                            "events": [
+                                {
+                                    "target": "acm0010_vvb_approval_grid",
+                                    "source": "acm0010_vvb_save_approved_registration",
+                                    "input": "",
+                                    "output": "RefreshEvent",
+                                    "actor": "",
+                                    "disabled": false
+                                }
+                            ],
+                            "artifacts": []
+                        },
+                        {
+                            "id": "acm0010-vvb-save-rejected-registration",
+                            "blockType": "sendToGuardianBlock",
+                            "defaultActive": false,
+                            "permissions": [
+                                "OWNER"
+                            ],
+                            "onErrorAction": "no-action",
+                            "uiMetaData": {},
+                            "options": [
+                                {
+                                    "name": "status",
+                                    "value": "REJECTED"
+                                }
+                            ],
+                            "dataType": "",
+                            "entityType": "vvb",
+                            "dataSource": "database",
+                            "documentType": "vc",
+                            "stopPropagation": false,
+                            "tag": "acm0010_vvb_save_rejected_registration",
+                            "children": [],
+                            "events": [
+                                {
+                                    "target": "acm0010_vvb_approval_grid",
+                                    "source": "acm0010_vvb_save_rejected_registration",
+                                    "input": "",
+                                    "output": "RefreshEvent",
+                                    "actor": "",
+                                    "disabled": false
+                                }
+                            ],
+                            "artifacts": []
+                        }
+                    ],
+                    "events": [],
+                    "artifacts": []
+                }
+            ],
+            "events": [],
+            "artifacts": []
+        }
+    }
+}
